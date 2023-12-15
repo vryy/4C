@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_prestress_strategy_constant.H"
 
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_coordinate_system_provider.H"
 #include "baci_mat_par_bundle.H"
@@ -21,6 +21,8 @@
 #include "baci_mixture_rule.H"
 
 #include <memory>
+
+BACI_NAMESPACE_OPEN
 
 MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -57,7 +59,7 @@ void MIXTURE::ConstantPrestressStrategy::EvaluatePrestress(const MixtureRule& mi
   // setup prestretch
   const CORE::LINALG::Matrix<9, 1> prestretch_vector(params_->prestretch_.data(), true);
 
-  UTILS::VOIGT::Matrix9x1to3x3(prestretch_vector, G);
+  CORE::LINALG::VOIGT::Matrix9x1to3x3(prestretch_vector, G);
 }
 
 void MIXTURE::ConstantPrestressStrategy::Update(
@@ -66,3 +68,4 @@ void MIXTURE::ConstantPrestressStrategy::Update(
     CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
 }
+BACI_NAMESPACE_CLOSE

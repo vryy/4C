@@ -29,6 +29,8 @@
 #include "baci_cut_clnwrapper.H"
 #endif
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  * Constructor for the selfcut                                     wirtz 05/13
  *----------------------------------------------------------------------------*/
@@ -1016,7 +1018,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
               // getting element center for this element
               CORE::LINALG::Matrix<3, 1> element_center;
               Element *elmnt = *el;
-              if (elmnt->Shape() != ::DRT::Element::hex8)
+              if (elmnt->Shape() != CORE::FE::CellType::hex8)
               {
                 std::cout << "==| WARNING: Element Type != hex8 not supported by check "
                              "Graph::HasTouchingEdge! |==\n"
@@ -1209,3 +1211,5 @@ Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> CORE::GEO::CUT::IMPL::Poin
       exit(EXIT_FAILURE);
   }
 }
+
+BACI_NAMESPACE_CLOSE

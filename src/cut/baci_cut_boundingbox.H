@@ -11,9 +11,10 @@
 #ifndef BACI_CUT_BOUNDINGBOX_H
 #define BACI_CUT_BOUNDINGBOX_H
 
-#include "baci_cut_clnwrapper.H"
 #include "baci_cut_tolerance.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -68,7 +69,7 @@ namespace CORE::GEO
 
      public:
       /// destructor
-      virtual ~BoundingBox(){};
+      virtual ~BoundingBox() = default;
 
       /*!
        \brief Make the boundingbox larger to include this edge within the box
@@ -154,21 +155,20 @@ namespace CORE::GEO
       /// empty constructor
       ConcreteBoundingBox() : BoundingBox(){};
 
-      /// destructor
-      virtual ~ConcreteBoundingBox(){};
-
       /** add a new point under consideration of the problem dimension. If a
        *  2-dimensional problem is observed, we ignore the z-coordinate and keep
        *  a value of zero. */
-      virtual void AddPoint(const double* x);
+      void AddPoint(const double* x) override;
 
       /** \brief [derived]
        *
        *  special treatment of the 2-D case if necessary. */
-      virtual bool Within(double norm, const double* x) const;
+      bool Within(double norm, const double* x) const override;
     };  // class ConcreteBoundingBox
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

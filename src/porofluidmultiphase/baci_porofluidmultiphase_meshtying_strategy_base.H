@@ -13,6 +13,8 @@
 #include "baci_inpar_porofluidmultiphase.H"
 #include "baci_porofluidmultiphase_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class ArtNet;
@@ -37,7 +39,7 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! destructor
-    virtual ~MeshtyingStrategyBase() { return; };
+    virtual ~MeshtyingStrategyBase() = default;
 
     //! prepare time loop
     virtual void PrepareTimeLoop() = 0;
@@ -146,5 +148,7 @@ namespace POROFLUIDMULTIPHASE
   };
 
 }  // namespace POROFLUIDMULTIPHASE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_BASE_H

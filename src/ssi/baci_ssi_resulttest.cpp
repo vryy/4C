@@ -11,10 +11,12 @@
 
 #include "baci_adapter_scatra_base_algorithm.H"
 #include "baci_adapter_str_ssiwrapper.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_ssi_monolithic.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -91,3 +93,5 @@ void SSI::SSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr,
     ++test_count;
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@
 #include "baci_cut_element.H"
 #include "baci_cut_side.H"
 
+BACI_NAMESPACE_OPEN
+
 CORE::GEO::CUT::Line::Line(
     Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element)
     : p1_(p1), p2_(p2)
@@ -85,3 +87,5 @@ bool CORE::GEO::CUT::Line::IsInternalCut(Side* side)
 {
   return cut_sides_.count(side) > 0 and not side->OnEdge(this);
 }
+
+BACI_NAMESPACE_CLOSE

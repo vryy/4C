@@ -12,6 +12,8 @@
 #include "baci_so3_nurbs27.H"
 #include "baci_so3_tet4.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -29,7 +31,7 @@ namespace DRT
 
       static So_hex8PlastType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -59,7 +61,7 @@ namespace DRT
 
       static So_hex18PlastType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -89,7 +91,7 @@ namespace DRT
 
       static So_hex27PlastType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -119,7 +121,7 @@ namespace DRT
 
       static So_tet4PlastType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -149,7 +151,7 @@ namespace DRT
 
       static So_nurbs27PlastType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -175,4 +177,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // SO3_SSN_PLAST_ELETYPES_H_

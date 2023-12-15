@@ -14,6 +14,8 @@
 #include "baci_fsi_monolithicstructuresplit.H"
 #include "baci_inpar_xfem.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class FluidFluidFSI;
@@ -39,14 +41,14 @@ namespace FSI
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// update subsequent fields, recover the Lagrange multiplier and relax the ALE-mesh
-    virtual void Update();
+    void Update() override;
 
     /// start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
    private:
     /// setup of extractor for merged Dirichlet maps
-    void SetupDBCMapExtractor();
+    void SetupDBCMapExtractor() override;
 
     /// access type-cast pointer to problem-specific fluid-wrapper
     const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField() { return fluid_; }
@@ -61,5 +63,7 @@ namespace FSI
     Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_FLUIDFLUIDMONOLITHIC_STRUCTURESPLIT_H

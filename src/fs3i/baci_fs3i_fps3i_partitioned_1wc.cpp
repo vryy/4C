@@ -38,6 +38,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor                                           hemmler 07/14 |
  *----------------------------------------------------------------------*/
@@ -278,3 +280,5 @@ bool FS3I::PartFPS3I_1WC::ScatraConvergenceCheck(const int itnum)
   }
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

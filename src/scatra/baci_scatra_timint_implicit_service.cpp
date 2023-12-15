@@ -8,41 +8,30 @@
 */
 /*----------------------------------------------------------------------*/
 
-// clang-format off
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_base.H"
-#include "baci_scatra_utils.H"
-
 #include "baci_coupling_adapter.H"
-
 #include "baci_fluid_rotsym_periodicbc_utils.H"
 #include "baci_fluid_turbulence_dyn_smag.H"
 #include "baci_fluid_turbulence_dyn_vreman.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_parameter_list.H"
-
-#include "baci_nurbs_discret.H"
-
-#include "baci_scatra_ele_action.H"
-
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_scatra_turbulence_hit_scalar_forcing.H"
-
-
-#include <MLAPI_Workspace.h>
-#include <MLAPI_Aggregation.h>
-
-
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
-
 #include "baci_io_runtime_csv_writer.H"
-// clang-format on
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_nurbs_discret.H"
+#include "baci_scatra_ele_action.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_timint_meshtying_strategy_base.H"
+#include "baci_scatra_turbulence_hit_scalar_forcing.H"
+#include "baci_scatra_utils.H"
+
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Workspace.h>
+
+BACI_NAMESPACE_OPEN
 
 
 /*==========================================================================*
@@ -58,10 +47,7 @@
 /*----------------------------------------------------------------------*
  | calculate fluxes inside domain and/or on boundary         fang 07/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcFlux(
-    const bool writetofile,  //!< flag for writing flux info to file
-    const int num            //!< field number
-)
+void SCATRA::ScaTraTimIntImpl::CalcFlux(const bool writetofile)
 {
   switch (calcflux_domain_)
   {
@@ -92,7 +78,7 @@ void SCATRA::ScaTraTimIntImpl::CalcFlux(
     case INPAR::SCATRA::flux_total:
     {
       // calculate normal flux vector field only for the user-defined boundary conditions:
-      flux_boundary_ = CalcFluxAtBoundary(writetofile, num);
+      flux_boundary_ = CalcFluxAtBoundary(writetofile);
 
       break;
     }
@@ -197,9 +183,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
-    const bool writetofile,  //!< ?
-    const int num            //!< field number
-)
+    const bool writetofile)
 {
   // The normal flux calculation is based on the idea proposed in
   // GRESHO ET AL.,
@@ -522,7 +506,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     {
       std::ostringstream temp;
       temp << icond;
-      temp << num;
+      temp << discret_->Name();
       const std::string fname = problem_->OutputControlFile()->FileName() +
                                 ".boundaryflux_ScaTraFluxCalc_" + temp.str() + ".txt";
 
@@ -1203,13 +1187,12 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(const int step, const double time) c
 
 
 /*----------------------------------------------------------------------*
- | output restart information                                fang 01/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputRestart() const
+void SCATRA::ScaTraTimIntImpl::WriteRestart() const
 {
-  // output restart information associated with meshtying strategy
-  strategy_->OutputRestart();
-}  // SCATRA::ScaTraTimIntImpl::OutputRestart()
+  // output restart information associated with mesh tying strategy
+  strategy_->WriteRestart();
+}
 
 
 /*----------------------------------------------------------------------*
@@ -1406,9 +1389,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
         extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
     if (scale_sep_solvernumber != (-1))  // create a dummy solver
     {
-      Teuchos::RCP<CORE::LINALG::Solver> solver =
-          Teuchos::rcp(new CORE::LINALG::Solver(problem_->SolverParams(scale_sep_solvernumber),
-              discret_->Comm(), problem_->ErrorFile()->Handle()));
+      Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          problem_->SolverParams(scale_sep_solvernumber), discret_->Comm()));
       // compute the null space,
       discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
       // and, finally, extract the ML parameters
@@ -1507,7 +1489,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
  | construct toggle vector for Dirichlet dofs                  gjb 11/08|
  | assures backward compatibility for avm3 solver; should go away once  |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
+Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
 {
   if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
@@ -1760,41 +1742,6 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(
 /*----------------------------------------------------------------------*
  | Calculate the reconstructed nodal gradient of phi        winter 04/17|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodesPatchRecon(
-    const Teuchos::RCP<const Epetra_Vector> phi, const int dimension, bool scalenormal,
-    bool returnnodal)
-{
-  // create the parameters for the discretization
-  Teuchos::ParameterList eleparams;
-
-  // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_grad_ele_center, eleparams);
-
-  const int dim = problem_->NDim();
-
-  Teuchos::RCP<Epetra_MultiVector> gradphi =
-      SCATRA::ScaTraTimIntImpl::ComputeSuperconvergentPatchRecovery(
-          phi, "phinp", dim, eleparams, dimension);
-
-  if (scalenormal) SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(gradphi);
-
-  if (!returnnodal)
-  {
-    // As the object is a MultiVector, this has to be done to keep the structure from before...
-    //  not the nicest way but better than nothing.
-    gradphi->ReplaceMap(*(discret_->DofRowMap()));
-    Teuchos::rcp((*gradphi)(0), false)->ReplaceMap(*(discret_->DofRowMap()));
-    Teuchos::rcp((*gradphi)(1), false)->ReplaceMap(*(discret_->DofRowMap()));
-    Teuchos::rcp((*gradphi)(2), false)->ReplaceMap(*(discret_->DofRowMap()));
-  }
-
-  return gradphi;
-}
-
-/*----------------------------------------------------------------------*
- | Calculate the reconstructed nodal gradient of phi        winter 04/17|
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergentPatchRecovery(
     Teuchos::RCP<const Epetra_Vector> state, const std::string& statename, const int numvec,
     Teuchos::ParameterList& eleparams, const int dim)
@@ -1828,164 +1775,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergen
   }
 
   return Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*
- | Calculate the reconstructed nodal gradient of phi        winter 04/14|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodesL2Projection(
-    const Teuchos::RCP<const Epetra_Vector> phi, bool scalenormal, bool returnnodal)
-{
-  // create the parameters for the discretization
-  Teuchos::ParameterList eleparams;
-
-  // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::recon_gradients_at_nodes, eleparams);
-
-  //  ///=========================================
-  //  // Need to change call in scatra_ele_calc_general_service.cpp CalcGradientAtNodes(..,..,..)
-  //  //  if these lines are uncommented.
-  //  Teuchos::RCP<Epetra_MultiVector> gradPhi = Teuchos::rcp(new
-  //  Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
-  //
-  //  // zero out matrix entries
-  //  sysmat_->Zero();
-  //
-  //  // set vector values needed by elements
-  //  discret_->ClearState();
-  //  discret_->SetState("phinp",phi);
-  //
-  //  Teuchos::RCP<Epetra_MultiVector> rhs_vectors = Teuchos::rcp(new
-  //  Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
-  //
-  //  discret_->Evaluate(eleparams,sysmat_,Teuchos::null,Teuchos::rcp((*rhs_vectors)(0),false),Teuchos::rcp((*rhs_vectors)(1),false),Teuchos::rcp((*rhs_vectors)(2),false));
-  //
-  //  discret_->ClearState();
-  //
-  //  // finalize the complete matrix
-  //  sysmat_->Complete();
-  //
-  //  //TODO Remove for-loop and add Belos solver instead
-  //  for (int idim=0; idim<3 ; idim++)
-  //    solver_->Solve(sysmat_->EpetraOperator(),Teuchos::rcp((*gradPhi)(idim),false),Teuchos::rcp((*rhs_vectors)(idim),false),true,true);
-  //
-  //  ///=========================================
-
-  ///**********************************
-
-  // Probably not the nicest way...
-  // Might want to have L2_projection incorporated into two-phase surface tension parameters
-  const Teuchos::ParameterList& scatradyn = problem_->ScalarTransportDynamicParams();
-  const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
-
-  const int dim = problem_->NDim();
-
-  Teuchos::RCP<Epetra_MultiVector> gradphi =
-      SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(phi, "phinp", dim, eleparams, lstsolver);
-
-  if (scalenormal) SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(gradphi);
-
-  if (!returnnodal)
-  {
-    // As the object is a MultiVector, this has to be done to keep the structure from before...
-    //  not the nicest way but better than nothing.
-    gradphi->ReplaceMap(*(discret_->DofRowMap()));
-    Teuchos::rcp((*gradphi)(0), false)->ReplaceMap(*(discret_->DofRowMap()));
-    Teuchos::rcp((*gradphi)(1), false)->ReplaceMap(*(discret_->DofRowMap()));
-    Teuchos::rcp((*gradphi)(2), false)->ReplaceMap(*(discret_->DofRowMap()));
-  }
-  return gradphi;
-}
-
-/*----------------------------------------------------------------------*
- | Calculate the L2-projection of a scalar                  winter 04/14|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(
-    const Teuchos::RCP<const Epetra_Vector>& state, const std::string& statename, const int numvec,
-    Teuchos::ParameterList& eleparams, const int solvernumber)
-{
-  // Warning, this is only tested so far for 1 scalar field!!!
-
-  // dependent on the desired projection, just remove this line
-  if (not state->Map().SameAs(*discret_->DofRowMap()))
-    dserror("input map is not a dof row map of the fluid");
-
-  // TODO: make a temporary copy, as SetState does not allow to use references to RCP (adapt
-  // SetState in discret)
-  const Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*discret_->DofRowMap(), false);
-  tmp->Update(1.0, *state, 0.0);
-
-  // set given state for element evaluation
-  discret_->SetState(statename, tmp);
-
-  return DRT::UTILS::ComputeNodalL2Projection(discret_, statename, numvec, eleparams, solvernumber);
-}
-
-
-/*----------------------------------------------------------------------*
- | Calculate the reconstructed nodal gradient of phi        winter 04/17|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodesMeanAverage(
-    const Teuchos::RCP<const Epetra_Vector> phi, bool scalenormal, bool returnnodal)
-{
-  Teuchos::RCP<Epetra_MultiVector> gradphi =
-      SCATRA::SCATRAUTILS::ComputeGradientAtNodesMeanAverage<3>(discret_, phi, 0);
-
-  if (scalenormal) SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(gradphi);
-
-  if (returnnodal)
-  {
-    gradphi->ReplaceMap(*(discret_->NodeRowMap()));
-    Teuchos::rcp((*gradphi)(0), false)->ReplaceMap(*(discret_->NodeRowMap()));
-    Teuchos::rcp((*gradphi)(1), false)->ReplaceMap(*(discret_->NodeRowMap()));
-    Teuchos::rcp((*gradphi)(2), false)->ReplaceMap(*(discret_->NodeRowMap()));
-  }
-
-  return gradphi;
-}
-
-
-/*----------------------------------------------------------------------*
- | Scale gradient field to unit vector                      winter 04/17|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(Teuchos::RCP<Epetra_MultiVector> state)
-{
-  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
-  {
-    // get the processor's local scatra node
-    DRT::Node* lscatranode = discret_->lRowNode(lnodeid);
-
-    // find out the global dof id of the last(!) dof at the scatra node
-    const int numscatradof = discret_->NumDof(0, lscatranode);
-    const int globalscatradofid = discret_->Dof(0, lscatranode, numscatradof - 1);
-    const int localscatradofid = phinp_->Map().LID(globalscatradofid);
-    // const int localscatradofid = (state)->Map().LID(globalscatradofid);
-    if (localscatradofid < 0) dserror("localdofid not found in map for given globaldofid");
-
-    const int numcol = (*state).NumVectors();
-    //    if( numcol != (int)nsd) dserror("number of columns in Epetra_MultiVector is not
-    //    identically to nsd");
-
-    double lengthofvector_squared = 0.0;
-
-    // loop over dimensions (= number of columns in multivector)
-    for (int col = 0; col < numcol; col++)
-    {
-      // get columns vector of multivector
-      double value = ((*state)[col])[localscatradofid];
-      lengthofvector_squared += value * value;
-    }
-
-    // loop over dimensions (= number of columns in multivector)
-    for (int col = 0; col < numcol; col++)
-    {
-      // set smoothed gradient entry of phi into column of global multivector
-      if (lengthofvector_squared > 1e-30)
-        ((*state)[col])[localscatradofid] /= sqrt(lengthofvector_squared);
-    }
-  }
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*
@@ -3336,3 +3125,5 @@ void SCATRA::ScalarHandler::CheckIsSetup() const
 {
   if (not issetup_) dserror("ScalarHanlder is not set up. Call Setup() first.");
 }
+
+BACI_NAMESPACE_CLOSE

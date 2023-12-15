@@ -39,6 +39,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 04/11 |
@@ -80,7 +81,7 @@ MAT::DamageType MAT::DamageType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::DamageType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::DamageType::Create(const std::vector<char>& data)
 {
   MAT::Damage* plastic = new MAT::Damage();
   plastic->Unpack(data);
@@ -103,9 +104,9 @@ MAT::Damage::Damage(MAT::PAR::Damage* params) : params_(params), plastic_step_(f
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 04/11 |
  *----------------------------------------------------------------------*/
-void MAT::Damage::Pack(DRT::PackBuffer& data) const
+void MAT::Damage::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -155,10 +156,8 @@ void MAT::Damage::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -2351,7 +2350,7 @@ void MAT::Damage::SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM
     int eleID,                                      // current element ID
     double Dgamma,                                  // plastic multiplier
     double G,                                       // shear modulus
-    double bulk,                                    // bulk modulus
+    double bulk_modulus,                            // bulk modulus
     double p_tilde,                                 // undamaged pressure
     double q_tilde,                                 // undamaged trial von Mises equivalent stress
     double energyrelrate,                           // damage energy release rate
@@ -2519,7 +2518,7 @@ void MAT::Damage::SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM
 
     // ----------------------------------------------------- damaged elastic term
     // C^{ep} = (1 - D_{n+1}) . C^e = omega_{n+1} . C^e
-    //        = omega_{n+1} . 2G . I_d + omega_{n+1} . bulk . id2 \otimes id2
+    //        = omega_{n+1} . 2G . I_d + omega_{n+1} . bulk_modulus . id2 \otimes id2
     // add standard isotropic elasticity tensor C^e first
     if (heaviside == 0)
     {
@@ -2569,9 +2568,10 @@ void MAT::Damage::SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM
       double ResTan = Domega - Hiso / (3.0 * G) * std::pow(aux, damexp) -
                       auxb * damexp * Ytan / damden * std::pow(aux, (damexp - 1));
       // derivative of residual function dF/dp_tilde . dp_tilde/dDgamma
-      // DResDp_tilde = s . (q_tilde - sigma_y)/(3G) . std::pow((-Y/r), s-1) . p_tilde /(r . bulk)
+      // DResDp_tilde = s . (q_tilde - sigma_y)/(3G) . std::pow((-Y/r), s-1) . p_tilde /(r .
+      // bulk_modulus)
       double DResDp_tilde =
-          damexp * auxb * std::pow(aux, (damexp - 1.0)) * p_tilde / (damden * bulk);
+          damexp * auxb * std::pow(aux, (damexp - 1.0)) * p_tilde / (damden * bulk_modulus);
       // derivative of residual function F w.r.t. q_tilde
       double DResDq_tilde = DomegaDq_tilde + std::pow(aux, damexp) / (3.0 * G);
 
@@ -2586,7 +2586,7 @@ void MAT::Damage::SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM
       double a1 = -DResDq_tilde / ResTan;
 
       // a2 = - DResDp_tilde / ResTan
-      //    = - s . p_tilde . (q_tilde - sigma_y) / (3G . r . bulk . ResTan) .(-Y/r)^{s-1};
+      //    = - s . p_tilde . (q_tilde - sigma_y) / (3G . r . bulk_modulus . ResTan) .(-Y/r)^{s-1};
       double a2 = 0.0;
       a2 = -DResDp_tilde / ResTan;
 
@@ -2611,15 +2611,15 @@ void MAT::Damage::SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM
         a = (2.0 * G * sigma_y * omega) / q_tilde;
         b = 2.0 * G * (a1 * Hiso * omega + a4 * sigma_y - sigma_y * omega / q_tilde);
       }
-      // c = bulk . (a2 . Hiso . omega + a3 . sigma_y) / sqrt(3/2)
+      // c = bulk_modulus . (a2 . Hiso . omega + a3 . sigma_y) / sqrt(3/2)
       double c = 0.0;
-      c = bulk * (a2 * Hiso * omega + a3 * sigma_y) / sqrt(3.0 / 2.0);
+      c = bulk_modulus * (a2 * Hiso * omega + a3 * sigma_y) / sqrt(3.0 / 2.0);
       // d = p_tilde . 2G . sqrt(3/2) . a4
       double d = 0.0;
       d = (p_tilde * 2.0 * G * sqrt(3.0 / 2.0) * a4);
-      // e = bulk . (omega + p_tilde . a3)
+      // e = bulk_modulus . (omega + p_tilde . a3)
       double e = 0.0;
-      e = bulk * (omega + p_tilde * a3);
+      e = bulk_modulus * (omega + p_tilde * a3);
 
       // ------------------------------- assemble elasto-plastic material tangent
 
@@ -2673,16 +2673,16 @@ void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
     double Dgamma,                                   // plastic multiplier
     double s_N,  // s_N = 2 G . (Dgamma / omega)^2 . dy/ds_tilde : N_tilde
     double g,    // g = (2 G . (Dgamma / omega) + Hkin . Dgamma / (1 + Hkin_rec . Dgamma) / q_tilde
-    double h_alg,       // see definition of expression above
-    double G,           // shear modulus
-    double dkappa_dR,   // derivative of the hardening curve
-    double bulk,        // bulk modulus
-    double Hkin,        // kinematic hardening variable 1 (kinematic hardening modulus)
-    double Hkin_rec,    // kinematic hardening variable 2 (saturation effect)
-    double Nbetaold,    // N_beta = Hkin_rec . N_tilde : beta_n, CARO:Nbetaold =N_tilde : beta_n
-    int gp,             // current Gauss point
-    double qbar_tilde,  // effective trial stress ^tilde
-    double y,           // (-Y / r)^s
+    double h_alg,         // see definition of expression above
+    double G,             // shear modulus
+    double dkappa_dR,     // derivative of the hardening curve
+    double bulk_modulus,  // bulk modulus
+    double Hkin,          // kinematic hardening variable 1 (kinematic hardening modulus)
+    double Hkin_rec,      // kinematic hardening variable 2 (saturation effect)
+    double Nbetaold,      // N_beta = Hkin_rec . N_tilde : beta_n, CARO:Nbetaold =N_tilde : beta_n
+    int gp,               // current Gauss point
+    double qbar_tilde,    // effective trial stress ^tilde
+    double y,             // (-Y / r)^s
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> dy_dsigma_tilde,
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>
         b_NbetaoldN  // beta_n - 2/3 . (N_tilde : beta_n) . N_tilde
@@ -2728,7 +2728,7 @@ void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
   double omega = 1.0 - damagecurr_->at(gp);
 
   // ------------------------------------------ elastic undamaged tangent
-  // C^e = 2G . I_d + bulk . id2 \otimes id2
+  // C^e = 2G . I_d + bulk_modulus . id2 \otimes id2
   SetupCmat(cmat);
 
   if (heaviside == 0)
@@ -2736,7 +2736,7 @@ void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
     // ------------------------------------------------ damaged elastic tangent
 
     // C^e_D = (1 - D_{n+1}) . C^e = omega_{n+1} . C^e
-    //        = omega_{n+1} . 2G . I_d + omega_{n+1} . bulk . id2 \otimes id2
+    //        = omega_{n+1} . 2G . I_d + omega_{n+1} . bulk_modulus . id2 \otimes id2
     // add standard isotropic elasticity tensor C^e first
     cmat.Scale(omega);
   }
@@ -2891,7 +2891,7 @@ void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
 
     // cep_tilde_dydsigma_tilde = (Dgamma / omega) . C^{~,ep} : dy/dsigma_tilde
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> cep_tilde_dydsigma_tilde(false);
-    cep_tilde_dydsigma_tilde.Multiply((Dgamma / omega), Cep_tilde, dy_dsigma_tilde, 0.0);
+    cep_tilde_dydsigma_tilde.Multiply((Dgamma / omega), Cep_tilde, dy_dsigma_tilde);
     // C^{ep} += - stress_tilde \otimes cep_tilde_dydsigma_tilde
     cmat.MultiplyNT((-1.0), stress_tilde, cep_tilde_dydsigma_tilde, 1.0);
 
@@ -3083,3 +3083,5 @@ bool MAT::Damage::VisData(const std::string& name, std::vector<double>& data, in
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

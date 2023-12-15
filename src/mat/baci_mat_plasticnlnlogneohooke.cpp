@@ -29,6 +29,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                                 |
@@ -63,7 +65,7 @@ MAT::PlasticNlnLogNeoHookeType MAT::PlasticNlnLogNeoHookeType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::PlasticNlnLogNeoHookeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::PlasticNlnLogNeoHookeType::Create(const std::vector<char>& data)
 {
   MAT::PlasticNlnLogNeoHooke* plasticneo = new MAT::PlasticNlnLogNeoHooke();
   plasticneo->Unpack(data);
@@ -89,9 +91,9 @@ MAT::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(MAT::PAR::PlasticNlnLogNeoHook
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Pack(DRT::PackBuffer& data) const
+void MAT::PlasticNlnLogNeoHooke::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -134,10 +136,8 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -599,3 +599,5 @@ bool MAT::PlasticNlnLogNeoHooke::VisData(
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

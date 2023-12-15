@@ -15,7 +15,6 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_io_control.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_serialdensevector.H"
@@ -24,9 +23,12 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_Time.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
@@ -300,7 +302,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
       Teuchos::RCP<DRT::Element> actele = curr->second;
 
       static const int probdim = DRT::Problem::Instance()->NDim();
-      const DRT::Element::DiscretizationType distype = actele->Shape();
+      const CORE::FE::CellType distype = actele->Shape();
       const int dim = CORE::DRT::UTILS::getDimension(distype);
       const bool isboundary = (dim != probdim);
       const int nen = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
@@ -374,65 +376,65 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
 
       if (isboundary) switch (distype)
         {
-          case DRT::Element::nurbs2:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs2>(
+          case CORE::FE::CellType::nurbs2:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs3:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs3>(
+          case CORE::FE::CellType::nurbs3:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs4:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs4>(
+          case CORE::FE::CellType::nurbs4:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs9:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs9>(
+          case CORE::FE::CellType::nurbs9:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs8:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs8>(
+          case CORE::FE::CellType::nurbs8:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs27:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs27>(
+          case CORE::FE::CellType::nurbs27:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
             dserror("invalid element shape for least squares dirichlet evaluation: %s",
-                DistypeToString(distype).c_str());
+                CORE::FE::CellTypeToString(distype).c_str());
             break;
         }
       else
         switch (distype)
         {
-          case DRT::Element::nurbs2:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs2>(
+          case CORE::FE::CellType::nurbs2:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs3:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs3>(
+          case CORE::FE::CellType::nurbs3:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs4:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs4>(
+          case CORE::FE::CellType::nurbs4:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs9:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs9>(
+          case CORE::FE::CellType::nurbs9:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs8:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs8>(
+          case CORE::FE::CellType::nurbs8:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs27:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs27>(
+          case CORE::FE::CellType::nurbs27:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
             dserror("invalid element shape for least squares dirichlet evaluation: %s",
-                DistypeToString(distype).c_str());
+                CORE::FE::CellTypeToString(distype).c_str());
             break;
         }
 
@@ -466,8 +468,8 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   //  if(myrank==0)
   //    cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<"\n";
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(
-      new CORE::LINALG::Solver(p, discret.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(p, discret.Comm()));
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
   const_cast<DRT::Discretization&>(discret).ComputeNullSpaceIfNecessary(solver->Params());
@@ -499,7 +501,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<DRT::Element> actele,
     const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
@@ -509,12 +511,12 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int dim = CORE::FE::dim<distype>;
 
   const int ndbcdofs = (int)lm.size();
 
   // set element data
-  static const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int nen = CORE::FE::num_nodes<distype>;
 
   // dofblocks (number of DOFs with Dirichlet condition per node)
   const int dofblock = ndbcdofs / nen;
@@ -525,7 +527,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
 
   for (int inode = 0; inode < nen; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     for (int idim = 0; idim < dim + 1; ++idim)
     {
       xyze(idim, inode) = x[idim];
@@ -600,7 +602,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
       {
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                                .EvaluateTimeDerivative(position.values(), time, deg, rr);
       }
 
@@ -640,7 +642,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT::Element> actele,
     const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
@@ -650,11 +652,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int dim = CORE::FE::dim<distype>;
   const int ndbcdofs = (int)lm.size();
 
   // set element data
-  static const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int nen = CORE::FE::num_nodes<distype>;
 
   // dofblocks (number of DOFs with Dirichlet condition per node)
   const int dofblock = ndbcdofs / nen;
@@ -665,7 +667,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
 
   for (int inode = 0; inode < nen; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     for (int idim = 0; idim < dim; ++idim)
     {
       xyze(idim, inode) = x[idim];
@@ -750,11 +752,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
       {
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                                .EvaluateTimeDerivative(position.values(), time, deg, rr);
 
         functfac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                        .Evaluate(position.values(), time, rr);
       }
 
@@ -790,3 +792,5 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

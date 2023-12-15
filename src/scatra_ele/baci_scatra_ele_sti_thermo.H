@@ -13,6 +13,8 @@ transport
 
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -21,7 +23,7 @@ namespace DRT
     class ScaTraEleDiffManagerSTIThermo;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleSTIThermo
     {
      public:
@@ -210,4 +212,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

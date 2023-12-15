@@ -24,6 +24,8 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -65,8 +67,7 @@ namespace XFEM
     );
 
     //! destructor
-    virtual ~CouplingBase() { return; }
-
+    virtual ~CouplingBase() = default;
     virtual void SetDofSetCouplingMap(const std::map<std::string, int>& dofset_coupling_map)
     {
       dofset_coupling_map_ = dofset_coupling_map;
@@ -129,14 +130,14 @@ namespace XFEM
     void Status(const int coupling_idx, const int side_start_gid);
 
 
-    const std::string DisNameToString(Teuchos::RCP<DRT::Discretization> dis)
+    std::string DisNameToString(Teuchos::RCP<DRT::Discretization> dis)
     {
       if (dis == Teuchos::null) return "---";
 
       return dis->Name();
     }
 
-    const std::string TypeToStringForPrint(const INPAR::XFEM::EleCouplingCondType& type)
+    std::string TypeToStringForPrint(const INPAR::XFEM::EleCouplingCondType& type)
     {
       if (type == INPAR::XFEM::CouplingCond_SURF_FSI_PART)
         return "XFSI Partitioned";
@@ -170,7 +171,7 @@ namespace XFEM
       return "UNKNOWN";
     }
 
-    const std::string AveragingToStringForPrint(const INPAR::XFEM::AveragingStrategy& strategy)
+    std::string AveragingToStringForPrint(const INPAR::XFEM::AveragingStrategy& strategy)
     {
       if (strategy == INPAR::XFEM::Xfluid_Sided)
         return "XFLUID-sided averaging";
@@ -605,5 +606,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_COUPLING_BASE_H

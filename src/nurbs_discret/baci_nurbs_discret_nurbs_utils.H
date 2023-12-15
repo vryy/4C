@@ -13,6 +13,8 @@
 
 #include "baci_nurbs_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace NURBS
@@ -64,16 +66,16 @@ namespace DRT
 
 
     //! determine whether a given element is a NURBS element or not
-    inline bool IsNurbs(DRT::Element::DiscretizationType distype)
+    inline bool IsNurbs(CORE::FE::CellType distype)
     {
       switch (distype)
       {
-        case DRT::Element::nurbs8:
-        case DRT::Element::nurbs27:
-        case DRT::Element::nurbs4:
-        case DRT::Element::nurbs9:
-        case DRT::Element::nurbs2:
-        case DRT::Element::nurbs3:
+        case CORE::FE::CellType::nurbs8:
+        case CORE::FE::CellType::nurbs27:
+        case CORE::FE::CellType::nurbs4:
+        case CORE::FE::CellType::nurbs9:
+        case CORE::FE::CellType::nurbs2:
+        case CORE::FE::CellType::nurbs3:
         {
           return true;
           break;
@@ -199,5 +201,7 @@ namespace DRT
   }  // namespace NURBS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // NURBS_DISCRET_NURBS_UTILS_H

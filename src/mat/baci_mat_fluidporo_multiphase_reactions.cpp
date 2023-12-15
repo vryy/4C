@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | rstandard constructor                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -64,7 +66,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroMultiPhaseReactions::CreateMateri
 MAT::FluidPoroMultiPhaseReactionsType MAT::FluidPoroMultiPhaseReactionsType::instance_;
 
 
-DRT::ParObject* MAT::FluidPoroMultiPhaseReactionsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroMultiPhaseReactionsType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroMultiPhaseReactions* FluidPoroMultiPhaseReactions =
       new MAT::FluidPoroMultiPhaseReactions();
@@ -127,9 +129,9 @@ void MAT::FluidPoroMultiPhaseReactions::Clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhaseReactions::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoroMultiPhaseReactions::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -155,10 +157,8 @@ void MAT::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
   Clear();
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover paramsreac_
   int matid(-1);
@@ -204,3 +204,5 @@ int MAT::FluidPoroMultiPhaseReactions::ReacID(const unsigned index) const
     return -1;
   }
 }
+
+BACI_NAMESPACE_CLOSE

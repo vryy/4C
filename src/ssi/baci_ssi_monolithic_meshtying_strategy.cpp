@@ -22,6 +22,8 @@
 
 #include <Epetra_Map.h>
 
+BACI_NAMESPACE_OPEN
+
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const bool is_scatra_manifold,
@@ -456,3 +458,4 @@ Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::BuildMeshtyingStrategy(const bool 
 
   return meshtying_strategy;
 }
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -68,7 +69,7 @@ namespace ALE
         int nsd,                                                ///> number space dimensions
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
-    virtual ~Meshtying() { return; };
+    virtual ~Meshtying() = default;
 
     //! Set up mesh-tying framework
     virtual Teuchos::RCP<CORE::LINALG::SparseOperator> Setup(
@@ -212,5 +213,7 @@ namespace ALE
   };  // end  class Meshtying
 }  // end namespace ALE
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_MESHTYING_H

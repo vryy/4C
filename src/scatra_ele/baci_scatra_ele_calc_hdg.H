@@ -18,6 +18,8 @@
 #include "baci_scatra_ele_hdg.H"
 #include "baci_scatra_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace DRT
@@ -25,40 +27,36 @@ namespace DRT
   namespace ELEMENTS
   {
     //! Scatra HDG element implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcHDG : public ScaTraEleInterface
     {
      public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
       static const unsigned int nsd_ = probdim;
 
       //! number of faces on element
-      static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
       /// Evaluate supporting methods of the element
       /*!
         Interface function for supporting methods of the element
        */
 
-      virtual ~ScaTraEleCalcHDG() { return; }
-
       //! Singleton access method
       static ScaTraEleCalcHDG<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname, bool create = true);
 
       //! evaluate service routine
-      virtual int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! interpolates an HDG solution to the element nodes for output
       virtual int NodeBasedValues(DRT::Element* ele, DRT::Discretization& discretization,
@@ -76,18 +74,18 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! evaluate action for off-diagonal system matrix block
-      virtual int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3)
+          CORE::LINALG::SerialDenseVector& elevec3) override
       {
         dserror("Not implemented!");
         return -1;
       }
 
       //! Setup element evaluation
-      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) { return 0; }
+      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override { return 0; }
 
       //! projection of Dirichlet function field
       int ProjectDirichField(DRT::Element* ele, Teuchos::ParameterList& params,
@@ -361,5 +359,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_HDG_H

@@ -45,8 +45,6 @@ NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-10
 TOLRES                          1.0E-06
 TOLCONSTR                       1.0E-03
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 MAXITER                         15
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

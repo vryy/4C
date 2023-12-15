@@ -19,10 +19,12 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::MeritFunction::Infeasibility::Infeasibility(
-    const Teuchos::ParameterList& params, const NOX::Utils& u)
+    const Teuchos::ParameterList& params, const ::NOX::Utils& u)
     : /* utils_( u ), */
       infeasibility_type_(mrtfct_vague)
 {
@@ -77,7 +79,7 @@ void NOX::NLN::MeritFunction::Infeasibility::SetType(const std::string& type_nam
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Infeasibility::computef(const NOX::Abstract::Group& grp) const
+double NOX::NLN::MeritFunction::Infeasibility::computef(const ::NOX::Abstract::Group& grp) const
 {
   if (not grp.isF())
     dserror(
@@ -95,7 +97,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computef(const NOX::Abstract::Gro
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::MeritFunction::Infeasibility::computeGradient(
-    const NOX::Abstract::Group& group, NOX::Abstract::Vector& result) const
+    const ::NOX::Abstract::Group& group, ::NOX::Abstract::Vector& result) const
 {
   dserror("Currently unsupported.");
   exit(EXIT_FAILURE);
@@ -104,7 +106,7 @@ void NOX::NLN::MeritFunction::Infeasibility::computeGradient(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
-    const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const
+    const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
   {
@@ -125,7 +127,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::MeritFunction::Infeasibility::computeQuadraticModel(
-    const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const
+    const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   dserror("Currently unsupported.");
   exit(EXIT_FAILURE);
@@ -134,7 +136,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeQuadraticModel(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::MeritFunction::Infeasibility::computeQuadraticMinimizer(
-    const NOX::Abstract::Group& grp, NOX::Abstract::Vector& result) const
+    const ::NOX::Abstract::Group& grp, ::NOX::Abstract::Vector& result) const
 {
   dserror("Currently unsupported.");
   exit(EXIT_FAILURE);
@@ -153,3 +155,5 @@ enum NOX::NLN::MeritFunction::MeritFctName NOX::NLN::MeritFunction::Infeasibilit
 {
   return infeasibility_type_;
 }
+
+BACI_NAMESPACE_CLOSE

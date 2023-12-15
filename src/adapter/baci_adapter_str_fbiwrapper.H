@@ -12,12 +12,14 @@
 
 #include "baci_adapter_str_fsiwrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 namespace CORE::LINALG
@@ -27,7 +29,7 @@ namespace CORE::LINALG
 
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVolumeMeshtyingVtkOutputParams;
+  class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
 }
 namespace ADAPTER
 {
@@ -36,9 +38,6 @@ namespace ADAPTER
    public:
     /// constructor
     explicit FBIStructureWrapper(Teuchos::RCP<Structure> structure);
-
-    /// Destructor
-    virtual ~FBIStructureWrapper() { ; }
 
     /// extracts interface velocities at \f$t_{n}\f$
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
@@ -83,7 +82,7 @@ namespace ADAPTER
     virtual void SetupMultiMapExtractor();
 
     /// Get Runtime VTK Output data
-    virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> GetIOData();
+    virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> GetIOData();
 
    private:
     /// Map extractor seperating the beam elements from the structure elements
@@ -91,5 +90,7 @@ namespace ADAPTER
 
   };  // class FSIStructureWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

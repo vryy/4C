@@ -16,6 +16,8 @@
 #include "baci_inpar_bio.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -30,15 +32,14 @@ namespace DRT
       ArtNetFactory() { return; }
 
       //! dtor
-      virtual ~ArtNetFactory() { return; }
-
+      virtual ~ArtNetFactory() = default;
       //! ProvideImpl
-      static ArteryEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
-          INPAR::ARTDYN::ImplType problem, const std::string& disname);
+      static ArteryEleInterface* ProvideImpl(
+          CORE::FE::CellType distype, INPAR::ARTDYN::ImplType problem, const std::string& disname);
 
      private:
       //! define ArteryEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static ArteryEleInterface* DefineProblemType(
           INPAR::ARTDYN::ImplType problem, const std::string& disname);
 
@@ -50,5 +51,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_ARTERY_ELE_FACTORY_H

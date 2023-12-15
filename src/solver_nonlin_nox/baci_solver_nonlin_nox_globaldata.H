@@ -27,12 +27,6 @@ namespace Teuchos
 {
   class ParameterList;
 }
-
-namespace CORE::LINALG
-{
-  class Solver;
-}
-
 namespace NOX
 {
   class Utils;
@@ -56,7 +50,17 @@ namespace NOX
   {
     class UserDefinedFactory;
   }  // namespace Direction
+}  // namespace NOX
 
+BACI_NAMESPACE_OPEN
+
+namespace CORE::LINALG
+{
+  class Solver;
+}
+
+namespace NOX
+{
   namespace NLN
   {
     namespace CONSTRAINT
@@ -77,12 +81,12 @@ namespace NOX
       GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
           const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
               linSolvers,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const OptimizationProblemType& type, const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-          const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
           const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-          const Teuchos::RCP<NOX::Epetra::Scaling>& iscale);
+          const Teuchos::RCP<::NOX::Epetra::Scaling>& iscale);
 
       /*! CONSTRAINED OPTIMIZATION
        * inclusive the constraint interfaces map
@@ -90,8 +94,8 @@ namespace NOX
       GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
           const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
               linSolvers,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const OptimizationProblemType& type,
           const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr);
 
@@ -101,9 +105,9 @@ namespace NOX
       GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
           const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
               linSolvers,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-          const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec);
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec);
 
       /*! UNCONSTRAINED OPTIMIZATION
        *  constructor without the constraint interface map (pure unconstrained optimization)
@@ -111,17 +115,17 @@ namespace NOX
       GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
           const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
               linSolvers,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac);
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac);
 
       //! destructor
-      virtual ~GlobalData(){};
+      virtual ~GlobalData() = default;
 
       //! return the nox_utils class
-      const NOX::Utils& GetNoxUtils() const;
+      const ::NOX::Utils& GetNoxUtils() const;
 
       //! return the nox_utils class pointer
-      const Teuchos::RCP<NOX::Utils>& GetNoxUtilsPtr() const;
+      const Teuchos::RCP<::NOX::Utils>& GetNoxUtilsPtr() const;
 
       //! return the nln parameter list
       const Teuchos::ParameterList& GetNlnParameterList() const;
@@ -143,13 +147,13 @@ namespace NOX
       GetLinSolvers();
 
       //! return the user-defined preconditioner interface
-      const Teuchos::RCP<NOX::Epetra::Interface::Required> GetRequiredInterface();
+      Teuchos::RCP<::NOX::Epetra::Interface::Required> GetRequiredInterface();
 
       //! return the user-defined preconditioner interface
-      const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> GetJacobianInterface();
+      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> GetJacobianInterface();
 
       //! return the user-defined preconditioner interface
-      const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> GetPreconditionerInterface();
+      Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> GetPreconditionerInterface();
 
       //! return the user-defined constraint interface map
       const NOX::NLN::CONSTRAINT::ReqInterfaceMap& GetConstraintInterfaces();
@@ -158,7 +162,7 @@ namespace NOX
       const NOX::NLN::CONSTRAINT::PrecInterfaceMap& GetConstraintPrecInterfaces();
 
       //! return linear system scaling object
-      const Teuchos::RCP<NOX::Epetra::Scaling>& GetScalingObject();
+      const Teuchos::RCP<::NOX::Epetra::Scaling>& GetScalingObject();
 
      private:
       //! setup the nln_utils class
@@ -192,13 +196,13 @@ namespace NOX
       const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> linSolvers_;
 
       /// required interface pointer
-      Teuchos::RCP<NOX::Epetra::Interface::Required> iReqPtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Required> iReqPtr_;
 
       /// jacobian interface pointer
-      Teuchos::RCP<NOX::Epetra::Interface::Jacobian> iJacPtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> iJacPtr_;
 
       /// preconditioner interface pointer
-      Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iPrecPtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> iPrecPtr_;
 
       /// map of required interface pointer for constrained problems
       NOX::NLN::CONSTRAINT::ReqInterfaceMap iConstr_;
@@ -207,25 +211,27 @@ namespace NOX
       NOX::NLN::CONSTRAINT::PrecInterfaceMap iConstrPrec_;
 
       /// scaling object (for the linear system)
-      Teuchos::RCP<NOX::Epetra::Scaling> iScale_;
+      Teuchos::RCP<::NOX::Epetra::Scaling> iScale_;
 
       /// merit function pointer
-      Teuchos::RCP<NOX::MeritFunction::Generic> mrtFctPtr_;
+      Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr_;
 
       /// user provided direction factory
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> direction_factory_;
+      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> direction_factory_;
 
       /// pre/post operator pointer for the NOX::NLN::Solver pre/post operator
-      Teuchos::RCP<NOX::Observer> prePostOpPtr_;
+      Teuchos::RCP<::NOX::Observer> prePostOpPtr_;
 
       /// True if it is a constrained problem
       bool isConstrained_;
 
       /// output object
-      Teuchos::RCP<NOX::Utils> noxUtils_;
+      Teuchos::RCP<::NOX::Utils> noxUtils_;
     };  // namespace GlobalData
   }     // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_GLOBALDATA_H

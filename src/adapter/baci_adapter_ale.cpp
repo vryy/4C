@@ -25,6 +25,7 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_linalg_sparsematrix.H"
@@ -35,6 +36,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(
@@ -43,9 +46,6 @@ ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(
   SetupAle(prbdyn, actdis);
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-ADAPTER::AleBaseAlgorithm::~AleBaseAlgorithm() {}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -95,9 +95,8 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
         "No linear solver defined for ALE problems. Please set "
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-          actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // ---------------------------------------------------------------------------
@@ -292,3 +291,5 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

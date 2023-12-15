@@ -12,6 +12,7 @@
 
 #include "baci_mortar_manager_base.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -52,11 +53,7 @@ namespace CONTACT
     */
     CoManager(DRT::Discretization& discret, double alphaf = 0.0);
 
-    /*!
-    \brief Destructor
 
-    */
-    virtual ~CoManager() = default;
 
     //! @name Access methods
     //! @{
@@ -171,5 +168,7 @@ namespace CONTACT
 
   };  // class CoManager
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_MANAGER_H

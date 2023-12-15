@@ -12,7 +12,6 @@
 #ifndef BACI_LIB_UTILS_H
 #define BACI_LIB_UTILS_H
 
-#include "baci_inpar_scatra.H"
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -23,6 +22,8 @@
 #include <Teuchos_RCP.hpp>
 
 #include <random>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -221,17 +222,12 @@ namespace DRT
       return;
     }
 
-
-    /*!
-    \brief extract location vector of the element dofs based on the numdof of the discretization
-
-    Instead of the element function "location vector" here the discretization is
-    used to identify the number of degrees of freedom of each node
-
-    \author henke
-   */
-    void DisBasedLocationVector(const DRT::Discretization& dis, const DRT::Element& ele,
-        std::vector<int>& lm, const int num);
+    enum class L2ProjectionSystemType
+    {
+      l2_proj_system_std,
+      l2_proj_system_lumped,
+      l2_proj_system_dual
+    };
 
     /*!
       \brief compute L2 projection of a dof based field onto a node based field in a least
@@ -250,22 +246,20 @@ namespace DRT
         const int& numvec,                      ///< number of entries per node to project
         Teuchos::ParameterList& params,         ///< parameter list that contains the element action
         const int& solvernumber,  ///< solver number for solving the resulting global system
-        const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type =
-            INPAR::SCATRA::l2_proj_system_std);
+        const enum L2ProjectionSystemType& l2_proj_type =
+            L2ProjectionSystemType::l2_proj_system_std);
 
     Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(Discretization& dis,
         const Epetra_Map& noderowmap, const Epetra_Map& elecolmap, const std::string& statename,
         const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-        const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-        const Epetra_Map* fullnoderowmap = nullptr,
+        const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap = nullptr,
         const std::map<int, int>* slavetomastercolnodesmap = nullptr,
         Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
 
     Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(Discretization& dis,
         const Epetra_Map& noderowmap, const unsigned& numcolele, const std::string& statename,
         const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-        const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-        const Epetra_Map* fullnoderowmap = nullptr,
+        const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap = nullptr,
         const std::map<int, int>* slavetomastercolnodesmap = nullptr,
         Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
 
@@ -360,7 +354,7 @@ namespace DRT
      public:
       RestartManager();
 
-      virtual ~RestartManager();
+      virtual ~RestartManager() = default;
 
       /// setup of restart manager
       void SetupRestartManager(const double restartinterval, const int restartevry);
@@ -403,27 +397,16 @@ namespace DRT
     };
 
     /**
-     *            \brief Default error handling of fgets().
+     * \brief Default error handling of scanf().
      *
-     *            \note In debug mode, this function prints out a warning if the
-     *            End-of-File was reached without reading any character.
-     *            \param output (in): output provided by the call of fgets()
-     *            \param stream (in): the FILE pointer passed to fgets()
-     *            \param filename (in): name of the file being processed by fgets()
-     *            \throws dserror() occurs if the error indicator was set while reading
-     *            \author Hagmeyer
-     */
-    void Checkfgets(char* output, FILE* stream, std::string filenename);
-    /**
-     *            \brief Default error handling of scanf().
-     *
-     *            \param output (in): output provided by the call of scanf()
-     *            \throws dserror() occurs if the function returns without reading any
-     * input \author Hagmeyer
+     * \param output (in): output provided by the call of scanf()
+     * \throws dserror() occurs if the function returns without reading any
      */
     void Checkscanf(int output);
   }  // namespace UTILS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_H

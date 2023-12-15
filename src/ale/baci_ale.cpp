@@ -20,7 +20,6 @@
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_locsys.H"
 #include "baci_lib_periodicbc.H"
@@ -31,9 +30,12 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_preconditioner_linalg.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 #define SCALING_INFNORM true
 
@@ -158,8 +160,8 @@ void ALE::Ale::SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const 
 
           // evaluate component d of function
           double initialval = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), 0, d);
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  .Evaluate(lnode->X().data(), 0, d);
 
           int err = dispn_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
@@ -358,7 +360,7 @@ void ALE::Ale::EvaluateElements()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name)
+std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name)
 {
   switch (name)
   {
@@ -935,3 +937,5 @@ void ALE::AleLinear::EvaluateElements()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 #include "baci_linalg_sparsematrix.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   class TimIntBDF2 : public virtual ScaTraTimIntImpl
@@ -43,7 +45,7 @@ namespace SCATRA
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
     /// read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
@@ -115,8 +117,7 @@ namespace SCATRA
     /// add parameters specific for time-integration scheme
     void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
-    /// write additional data required for restart
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     /// return the right time-scaling-factor for the true residual
     double ResidualScaling() const override { return 1.0 / (dta_ * theta_); }
@@ -131,4 +132,6 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> fsphinp_;
   };  // class TimIntBDF2
 }  // namespace SCATRA
-#endif  // SCATRA_TIMINT_BDF2_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_SCATRA_TIMINT_BDF2_H

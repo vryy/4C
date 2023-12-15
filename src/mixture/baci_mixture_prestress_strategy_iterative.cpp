@@ -19,6 +19,8 @@
 #include "baci_mixture_constituent_elasthyper.H"
 #include "baci_mixture_rule.H"
 
+BACI_NAMESPACE_OPEN
+
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : PrestressStrategy(matdata),
@@ -48,7 +50,7 @@ void MIXTURE::IterativePrestressStrategy::Setup(
 }
 
 void MIXTURE::IterativePrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
-    const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
+    const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
     MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
@@ -95,3 +97,4 @@ void MIXTURE::IterativePrestressStrategy::Update(
   VS.MultiplyTN(VT, S);
   G.MultiplyNN(VS, VT);
 }
+BACI_NAMESPACE_CLOSE

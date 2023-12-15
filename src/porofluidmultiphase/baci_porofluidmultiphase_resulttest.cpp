@@ -9,10 +9,12 @@
 
 #include "baci_porofluidmultiphase_resulttest.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_porofluidmultiphase_meshtying_strategy_base.H"
 #include "baci_porofluidmultiphase_timint_implicit.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -296,3 +298,5 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
 
   return result;
 }  // POROFLUIDMULTIPHASE::ResultTest::ResultSpecial
+
+BACI_NAMESPACE_CLOSE

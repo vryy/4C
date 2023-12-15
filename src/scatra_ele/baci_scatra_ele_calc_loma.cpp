@@ -31,9 +31,11 @@
 #include "baci_scatra_ele_parameter_turbulence.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcLoma<distype>* DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
@@ -52,7 +54,7 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype>* DRT::ELEMENTS::ScaTraEleCalcLoma<dist
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
@@ -77,7 +79,7 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
 /*----------------------------------------------------------------------*
  |  evaluate single loma material  (protected)                vg 12/13  |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -116,7 +118,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
 /*----------------------------------------------------------------------*
  | material mixfrac                                            vg 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -175,7 +177,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
 /*----------------------------------------------------------------------*
  | material Sutherland                                         vg 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -236,7 +238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
 /*----------------------------------------------------------------------*
  | material temperature-dependent water                        vg 07/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatTempDepWater(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -293,7 +295,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatTempDepWater(
 /*----------------------------------------------------------------------*
  | material Arrhenius PV                                       vg 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -368,7 +370,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
 /*----------------------------------------------------------------------*
  | material Arrhenius Spec                                     vg 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -430,7 +432,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
 /*----------------------------------------------------------------------*
  | material Arrhenius Spec                                     vg 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -504,7 +506,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
 /*----------------------------------------------------------------------*
  | material Ferech PV                                          vg 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -580,7 +582,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
 /*----------------------------------------------------------------------*
  | material thermo St. Venant Kirchhoff                        vg 02/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatThermoStVenantKirchhoff(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -639,7 +641,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatThermoStVenantKirchhoff(
 /*----------------------------------------------------------------------*
  | material Yoghurt                                            vg 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -688,7 +690,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
 /*-----------------------------------------------------------------------------*
  | compute rhs containing bodyforce                                 ehrl 11/13 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
     double& rhsint,       //!< rhs containing bodyforce at Gauss point
     const double densnp,  //!< density at t_(n+1)
@@ -728,7 +730,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
  |  re-implementatio: calculation of convective element matrix: add conservative contributions  ehrl
  11/13 |
  *------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const CORE::LINALG::Matrix<nsd_, 1>& convelint, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
@@ -757,7 +759,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(
 /*------------------------------------------------------------------- *
  | re-implementatio: adaption of convective term for rhs   ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::RecomputeConvPhiForRhs(double& conv_phi,
     const int k, const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double densnp, const double densn,
@@ -809,23 +811,25 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::RecomputeConvPhiForRhs(double& c
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::pyramid5>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

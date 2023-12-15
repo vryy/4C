@@ -12,17 +12,15 @@
 /*----------------------------------------------------------------------*/
 #include "baci_so3_sh8.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 struct _SOH8_DATA;
 
-namespace UTILS
+namespace CORE::LINALG::VOIGT
 {
-  namespace VOIGT
-  {
-    enum class NotationType;
-  }
-}  // namespace UTILS
+  enum class NotationType;
+}
 
 namespace DRT
 {
@@ -41,7 +39,7 @@ namespace DRT
 
       static So_sh8p8Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -224,7 +222,7 @@ namespace DRT
       /// Pack this class so it can be communicated
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
@@ -246,8 +244,6 @@ namespace DRT
           DRT::INPUT::LineDefinition* linedef) override;
 
 
-      /// Destructor
-      ~So_sh8p8() override;
 
       //@}
 
@@ -658,7 +654,7 @@ namespace DRT
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               sqfderf,                                         ///< diff. squared matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,  ///< symmetric 2-tensor
-          ::UTILS::VOIGT::NotationType outvoigt6);
+          CORE::LINALG::VOIGT::NotationType outvoigt6);
 
       /// Derivative of "square" of non-symmetric 2-tensor by itself
       ///
@@ -753,8 +749,9 @@ namespace DRT
               bm,                                            ///< (out) 6x6 Voigt matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
           const bool transpose,                              ///< 3x3 input matrix is transposed
-          ::UTILS::VOIGT::NotationType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-          ::UTILS::VOIGT::NotationType
+          CORE::LINALG::VOIGT::NotationType
+              rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
+          CORE::LINALG::VOIGT::NotationType
               colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
       );
 
@@ -905,10 +902,10 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+BACI_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*/
 /* definitions of above declared template functions */
 #include "baci_so3_sh8p8_eas.H"
-
 
 #endif  // SO3_SH8P8_H

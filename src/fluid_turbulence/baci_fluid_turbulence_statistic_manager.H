@@ -24,6 +24,7 @@ overhead as possible from the time integration method.
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -71,14 +72,14 @@ namespace FLD
     \brief One-Step-Theta Constructor (public)
 
     */
-    TurbulenceStatisticManager(FluidImplicitTimeInt& timeint);
+    TurbulenceStatisticManager(FluidImplicitTimeInt& fluid);
 
 
     /*!
     \brief Destructor
 
     */
-    virtual ~TurbulenceStatisticManager();
+    virtual ~TurbulenceStatisticManager() = default;
 
 
     //! @name managing methods
@@ -168,7 +169,7 @@ namespace FLD
     \brief remote access method to general mean statistics manager
 
     */
-    const Teuchos::RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
+    Teuchos::RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
     {
       return statistics_general_mean_;
     }
@@ -334,5 +335,7 @@ namespace FLD
   };  // end class TurbulenceStatisticManager
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TURBULENCE_STATISTIC_MANAGER_H

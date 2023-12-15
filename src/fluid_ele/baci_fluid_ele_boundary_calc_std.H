@@ -15,6 +15,8 @@
 #include "baci_fluid_ele_boundary_calc.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Condition;
@@ -24,7 +26,7 @@ namespace DRT
   {
     class FluidBoundary;
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleBoundaryCalcStd : public FluidBoundaryImpl<distype>
     {
       typedef DRT::ELEMENTS::FluidBoundaryImpl<distype> my;
@@ -42,5 +44,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

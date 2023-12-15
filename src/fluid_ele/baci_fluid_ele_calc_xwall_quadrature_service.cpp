@@ -17,11 +17,13 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_newtonianfluid.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------*
  | Prepare custom (direction-dependent) Gauss rule                  bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::PrepareGaussRule()
 {
   // which is the wall-normal element direction?
@@ -49,9 +51,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::PrepareGaussRule()
 
   if (minyp > 15.0) numgpnorm_ = numgpnormow_;
 
-  if (distype == DRT::Element::tet4)
+  if (distype == CORE::FE::CellType::tet4)
   {
-    CORE::DRT::UTILS::GaussIntegration intpointsplane(DRT::Element::tet4, 2 * numgpnorm_ - 1);
+    CORE::DRT::UTILS::GaussIntegration intpointsplane(CORE::FE::CellType::tet4, 2 * numgpnorm_ - 1);
     my::intpoints_ = intpointsplane;
   }
   else  // hex8
@@ -59,9 +61,11 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::PrepareGaussRule()
     cgp_ = Teuchos::rcp(
         new CORE::DRT::UTILS::CollectedGaussPoints(numgpnorm_ * numgpplane_ * numgpplane_));
     // get the quad9 gaussrule for the in plane integration
-    CORE::DRT::UTILS::GaussIntegration intpointsplane(DRT::Element::quad8, 2 * numgpplane_ - 1);
+    CORE::DRT::UTILS::GaussIntegration intpointsplane(
+        CORE::FE::CellType::quad8, 2 * numgpplane_ - 1);
     // get the quad9 gaussrule for the in normal integration
-    CORE::DRT::UTILS::GaussIntegration intpointsnormal(DRT::Element::line3, 2 * numgpnorm_ - 1);
+    CORE::DRT::UTILS::GaussIntegration intpointsnormal(
+        CORE::FE::CellType::line3, 2 * numgpnorm_ - 1);
 
     // 0.9 corresponds to an angle of 25.8 deg
     if (dot1 < 0.90 && dot2 < 0.90 && dot3 < 0.90)
@@ -69,7 +73,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::PrepareGaussRule()
        // e.g. in corners
       cgp_->IncreaseReserved(
           (numgpnorm_ * numgpnorm_ * numgpnorm_) - (numgpnorm_ * numgpplane_ * numgpplane_));
-      CORE::DRT::UTILS::GaussIntegration intpointsplane(DRT::Element::quad8, 2 * numgpnorm_ - 1);
+      CORE::DRT::UTILS::GaussIntegration intpointsplane(
+          CORE::FE::CellType::quad8, 2 * numgpnorm_ - 1);
       // start loop over integration points in layer
       for (CORE::DRT::UTILS::GaussIntegration::iterator iquadplane = intpointsplane.begin();
            iquadplane != intpointsplane.end(); ++iquadplane)
@@ -135,7 +140,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::PrepareGaussRule()
   return;
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Sysmat(
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
@@ -174,5 +179,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Sysmat(
   return;
 }
 
-template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8, DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::hex8,
+    DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
+    DRT::ELEMENTS::Fluid::xwall>;
+
+BACI_NAMESPACE_CLOSE

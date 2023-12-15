@@ -15,6 +15,8 @@
 
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -47,8 +49,7 @@ namespace ADAPTER
   {
    public:
     /// virtual destructor to get polymorph destruction
-    virtual ~FluidMovingBoundary() {}
-
+    virtual ~FluidMovingBoundary() = default;
     //! @name Misc
 
     /// direct access to discretization
@@ -143,8 +144,7 @@ namespace ADAPTER
         const Teuchos::ParameterList& prbdyn, std::string condname);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~FluidMovingBoundaryBaseAlgorithm() {}
-
+    virtual ~FluidMovingBoundaryBaseAlgorithm() = default;
     /// fluid field solver
     const Teuchos::RCP<FluidMovingBoundary>& MBFluidField() { return fluid_; }
 
@@ -153,5 +153,7 @@ namespace ADAPTER
     Teuchos::RCP<FluidMovingBoundary> fluid_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

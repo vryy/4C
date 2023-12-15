@@ -7,9 +7,8 @@ equations
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_constituent_remodelfiber_expl.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
@@ -18,10 +17,13 @@ equations
 #include "baci_mixture_constituent_remodelfiber_material_exponential.H"
 #include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
+#include "baci_utils_function_of_time.H"
 
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
+
+BACI_NAMESPACE_OPEN
 
 // anonymous namespace for helper classes and functions
 namespace
@@ -83,7 +85,8 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_RemodelFiberExpl::MaterialT
   return INPAR::MAT::mix_remodelfiber_expl;
 }
 
-void MIXTURE::MixtureConstituent_RemodelFiberExpl::PackConstituent(DRT::PackBuffer& data) const
+void MIXTURE::MixtureConstituent_RemodelFiberExpl::PackConstituent(
+    CORE::COMM::PackBuffer& data) const
 {
   MIXTURE::MixtureConstituent::PackConstituent(data);
   anisotropy_extension_.PackAnisotropy(data);
@@ -185,17 +188,17 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::Update(const CORE::LINALG::Ma
   }
 }
 
-void MIXTURE::MixtureConstituent_RemodelFiberExpl::RegisterVtkOutputDataNames(
+void MIXTURE::MixtureConstituent_RemodelFiberExpl::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  MixtureConstituent::RegisterVtkOutputDataNames(names_and_size);
+  MixtureConstituent::RegisterOutputDataNames(names_and_size);
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig_h"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_growth_scalar"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_lambda_r"] = 1;
 }
 
-bool MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateVtkOutputData(
+bool MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig_h")
@@ -230,7 +233,7 @@ bool MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateVtkOutputData(
     }
     return true;
   }
-  return MixtureConstituent::EvaluateVtkOutputData(name, data);
+  return MixtureConstituent::EvaluateOutputData(name, data);
 }
 
 CORE::LINALG::Matrix<6, 1> MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateCurrentPK2(
@@ -315,7 +318,7 @@ double MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateDepositionStretch(
   }
 
   return DRT::Problem::Instance()
-      ->FunctionById<DRT::UTILS::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
+      ->FunctionById<CORE::UTILS::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
       .Evaluate(time);
 }
 void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdateHomeostaticValues(
@@ -354,3 +357,4 @@ double MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateLambdaExt(
   return 1.0 /
          std::sqrt(EvaluateiCext(iFext).Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }
+BACI_NAMESPACE_CLOSE

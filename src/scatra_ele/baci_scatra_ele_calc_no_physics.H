@@ -15,6 +15,8 @@
 
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -30,7 +32,7 @@ namespace DRT
      * @tparam distype Element shape type
      * @tparam probdim Number of space dimensions of the problem
      */
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcNoPhysics : public ScaTraEleCalc<distype, probdim>
     {
      public:
@@ -48,7 +50,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       //! protected constructor for singletons
@@ -56,5 +58,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_NO_PHYSICS_H

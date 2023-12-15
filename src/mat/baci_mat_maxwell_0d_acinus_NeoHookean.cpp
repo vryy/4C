@@ -19,13 +19,15 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 
 #include "baci_mat_maxwell_0d_acinus_NeoHookean.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_red_airways_elem_params.h"
 #include "baci_red_airways_elementbase.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -46,7 +48,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_NeoHookean::CreateMateri
 MAT::Maxwell_0d_acinusNeoHookeanType MAT::Maxwell_0d_acinusNeoHookeanType::instance_;
 
 
-DRT::ParObject* MAT::Maxwell_0d_acinusNeoHookeanType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell_0d_acinusNeoHookeanType::Create(const std::vector<char>& data)
 {
   MAT::Maxwell_0d_acinus_NeoHookean* mxwll_0d_acin = new MAT::Maxwell_0d_acinus_NeoHookean();
   mxwll_0d_acin->Unpack(data);
@@ -69,9 +71,9 @@ MAT::Maxwell_0d_acinus_NeoHookean::Maxwell_0d_acinus_NeoHookean(MAT::PAR::Maxwel
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_NeoHookean::Pack(DRT::PackBuffer& data) const
+void MAT::Maxwell_0d_acinus_NeoHookean::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject
@@ -91,11 +93,8 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Pack(DRT::PackBuffer& data) const
 void MAT::Maxwell_0d_acinus_NeoHookean::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // Extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  ;
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract matid
   int matid;
@@ -167,3 +166,5 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Evaluate(CORE::LINALG::SerialDenseVector
   rhs(0) = -1.0 * (Kp_n * (p1n - p2n)) * NumOfAcini;
   rhs(1) = 1.0 * (Kp_n * (p1n - p2n)) * NumOfAcini;
 }
+
+BACI_NAMESPACE_CLOSE

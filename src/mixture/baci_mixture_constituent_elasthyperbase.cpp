@@ -20,6 +20,8 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -64,17 +66,17 @@ MIXTURE::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituent_ElastHyperBase::PackConstituent(DRT::PackBuffer& data) const
+void MIXTURE::MixtureConstituent_ElastHyperBase::PackConstituent(CORE::COMM::PackBuffer& data) const
 {
   MixtureConstituent::PackConstituent(data);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  DRT::ParObject::AddtoPack(data, matid);
+  CORE::COMM::ParObject::AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
-  DRT::ParObject::AddtoPack(data, prestretch_);
+  CORE::COMM::ParObject::AddtoPack(data, prestretch_);
 
   cosyAnisotropyExtension_.PackAnisotropy(data);
 
@@ -99,7 +101,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UnpackConstituent(
 
   // matid and recover params_
   int matid;
-  DRT::ParObject::ExtractfromPack(position, data, matid);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, matid);
 
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
   {
@@ -122,7 +124,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UnpackConstituent(
 
   summandProperties_.Unpack(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, prestretch_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, prestretch_);
 
   cosyAnisotropyExtension_.UnpackAnisotropy(data, position);
 
@@ -219,7 +221,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(
   }
 }
 
-void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
+void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   if (prestressStrategy_ != nullptr)
@@ -228,7 +230,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
   }
 }
 
-bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
+bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (prestressStrategy_ != nullptr &&
@@ -238,7 +240,7 @@ bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
     {
       static CORE::LINALG::Matrix<9, 1> tmp(false);
       tmp.Clear();
-      UTILS::VOIGT::Matrix3x3to9x1(prestretch_[gp], tmp);
+      CORE::LINALG::VOIGT::Matrix3x3to9x1(prestretch_[gp], tmp);
 
       for (int i = 0; i < 9; ++i)
       {
@@ -249,3 +251,4 @@ bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
   }
   return false;
 }
+BACI_NAMESPACE_CLOSE

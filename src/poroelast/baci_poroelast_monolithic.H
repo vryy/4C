@@ -15,6 +15,13 @@
 #include "baci_poroelast_base.H"
 #include "baci_poroelast_utils.H"
 
+namespace Teuchos
+{
+  class Time;
+}
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -26,11 +33,6 @@ namespace CORE::LINALG
   class Equilibration;
   enum class EquilibrationMethod;
 }  // namespace CORE::LINALG
-
-namespace Teuchos
-{
-  class Time;
-}
 
 namespace POROELAST
 {
@@ -154,7 +156,7 @@ namespace POROELAST
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc (with structural and fluid
     //! increment separately)
     void UpdateStateIncrementally(
-        Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
+        Teuchos::RCP<const Epetra_Vector> s_iterinc, Teuchos::RCP<const Epetra_Vector> f_iterinc);
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
@@ -164,17 +166,18 @@ namespace POROELAST
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> sx,  //!< structural increment between iteration i and i+1
-        Teuchos::RCP<const Epetra_Vector> fx,  //!< fluid increment between iteration i and i+1
+    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+                      s_iterinc,  //!< structural increment between iteration i and i+1
+        Teuchos::RCP<const Epetra_Vector>
+            f_iterinc,  //!< fluid increment between iteration i and i+1
         bool firstiter) override;
 
     //! evaluate fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void EvaluateFields(Teuchos::RCP<const Epetra_Vector> x);
+    virtual void EvaluateFields(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! evaluate fields seperately at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void EvaluateFields(
-        Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
+        Teuchos::RCP<const Epetra_Vector> s_iterinc, Teuchos::RCP<const Epetra_Vector> f_iterinc);
 
     //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
@@ -227,7 +230,8 @@ namespace POROELAST
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
     //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
+    virtual void RecoverLagrangeMultiplierAfterNewtonStep(
+        Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! Setup solver for monolithic system
     bool SetupSolver() override;
@@ -283,10 +287,8 @@ namespace POROELAST
     //! @name Printing and output
     //!@{
 
-    int printscreen_;    //!< print infos to standard out every printscreen_ steps
-    bool printiter_;     //!< print intermediate iterations during solution
-    bool printerrfile_;  //!< print infos to error file #errfile_
-    FILE* errfile_;      //!< error file handle
+    int printscreen_;  //!< print infos to standard out every printscreen_ steps
+    bool printiter_;   //!< print intermediate iterations during solution
 
     //!@}
 
@@ -438,4 +440,6 @@ namespace POROELAST
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // POROELAST_MONOLITHIC_H

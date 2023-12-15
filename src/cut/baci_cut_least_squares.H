@@ -18,6 +18,8 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 namespace CORE::GEO
 {
   namespace CUT
@@ -32,7 +34,6 @@ namespace CORE::GEO
           : matri_(matri), sourc_(sourc)
       {
       }
-      ~LeastSquares(){};
 
       /*!
       \brief Performs the linear least squares. The resulting equations are solved using
@@ -52,5 +53,7 @@ namespace CORE::GEO
     };
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -17,12 +17,14 @@
 
 #include <unordered_map>
 
-
-// Forward declarations.
 namespace
 {
   class GeometryPairLineToSurfacePatchTest;
 }
+
+BACI_NAMESPACE_OPEN
+
+// Forward declarations.
 namespace GEOMETRYPAIR
 {
   struct ConnectedFace;
@@ -41,23 +43,23 @@ namespace GEOMETRYPAIR
   /**
    * \brief This structure "converts" a DRT face element type to the underlying volume element.
    */
-  template <DRT::Element::DiscretizationType discretization>
+  template <CORE::FE::CellType discretization>
   struct FaceDiscretizationTypeToVolumeElement
   {
     using volume_type_ = void;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad4>
+  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad4>
   {
     using volume_type_ = t_hex8;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad8>
+  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad8>
   {
     using volume_type_ = t_hex20;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad9>
+  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad9>
   {
     using volume_type_ = t_hex27;
   };
@@ -95,7 +97,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    virtual ~FaceElement(){};
+    virtual ~FaceElement() = default;
 
     /**
      * \brief Get the RCP to the DRT face element.
@@ -211,10 +213,6 @@ namespace GEOMETRYPAIR
           face_position_(true),
           n_dof_other_element_(0){};
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~FaceElementTemplate(){};
 
     /**
      * \brief Get the face GIDs and set the reference configuration.
@@ -352,10 +350,6 @@ namespace GEOMETRYPAIR
     {
     }
 
-    /**
-     * \brief Destructor.
-     */
-    ~FaceElementPatchTemplate(){};
 
     /**
      * \brief Set the patch information of the patch connected to this face element.
@@ -471,10 +465,7 @@ namespace GEOMETRYPAIR
           third_direction_(-1),
           third_direction_factor_(0){};
 
-    /**
-     * \brief Destructor.
-     */
-    ~FaceElementTemplateExtendedVolume() = default;
+
 
     /**
      * \brief Get the face GIDs and set the reference configuration.
@@ -581,5 +572,7 @@ namespace GEOMETRYPAIR
       const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

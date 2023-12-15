@@ -10,20 +10,22 @@
 
 #include "baci_so3_hex8fbar.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_hex8fbarType DRT::ELEMENTS::So_hex8fbarType::instance_;
 
 DRT::ELEMENTS::So_hex8fbarType& DRT::ELEMENTS::So_hex8fbarType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_hex8fbar(-1, -1);
   object->Unpack(data);
@@ -91,7 +93,7 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) : DRT::ELEMENTS::So_hex8(id, owner)
 {
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8 + 1));
 
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
@@ -128,9 +130,9 @@ DRT::Element* DRT::ELEMENTS::So_hex8fbar::Clone() const
  |  Pack data                                                  (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_hex8fbar::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -149,10 +151,9 @@ void DRT::ELEMENTS::So_hex8fbar::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_hex8fbar::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -163,10 +164,7 @@ void DRT::ELEMENTS::So_hex8fbar::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             popp 07/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8fbar::~So_hex8fbar() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                               popp 07/10|
@@ -179,3 +177,5 @@ void DRT::ELEMENTS::So_hex8fbar::Print(std::ostream& os) const
   std::cout << data_;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include "baci_fluid_timint_red.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -30,20 +32,18 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntRedModelsOst();
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief read restart data
 
     */
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
 
    protected:
@@ -52,5 +52,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_RED_OST_H

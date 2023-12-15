@@ -15,6 +15,8 @@
 #include "baci_mat_material.H"
 #include "baci_so3_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /// Several parameters which are fixed for Solid Hex27
 const int NUMNOD_SOH27 = 27;  ///< number of nodes
 const int NODDOF_SOH27 = 3;   ///< number of dofs per node
@@ -40,7 +42,7 @@ namespace DRT
 
       static So_hex27Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -112,7 +114,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element
@@ -142,12 +144,6 @@ namespace DRT
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
-      /*!
       \brief Return unique ParObject id
 
       every class implementing ParObject needs a unique id defined at the
@@ -164,7 +160,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -174,11 +170,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_hex27() override;
 
       //@}
 
@@ -322,7 +313,7 @@ namespace DRT
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
-      const std::vector<double> soh27_ElementCenterRefeCoords();
+      std::vector<double> soh27_ElementCenterRefeCoords();
 
       //@}
 
@@ -425,11 +416,11 @@ namespace DRT
       void soh27_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass);
 
       //! Evaluate Hex27 Shapefcts to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> soh27_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> soh27_shapefcts();
       //! Evaluate Hex27 Derivs to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> soh27_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> soh27_derivs();
       //! Evaluate Hex27 Weights to keep them static
-      const std::vector<double> soh27_weights();
+      std::vector<double> soh27_weights();
 
       //! Evaluate shapefunction, derivative and gaussweights
       void soh27_shapederiv(CORE::LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27>**
@@ -474,5 +465,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_HEX27_H

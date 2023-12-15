@@ -8,10 +8,12 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_shell7p_line.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition,
@@ -61,7 +63,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(CORE::DRT::UTILS::GaussRule1D::line_2point);
   CORE::LINALG::SerialDenseVector shape_functions(numnode);
   CORE::LINALG::SerialDenseMatrix derivatives(1, numnode);
-  const DRT::Element::DiscretizationType shape = Shape();
+  const CORE::FE::CellType shape = Shape();
 
   // integration
   for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
@@ -99,7 +101,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, i);
         }
 
@@ -129,3 +131,4 @@ void DRT::ELEMENTS::Shell7pLine::LineIntegration(double& dL,
 
   dL = sqrt(dL);
 }
+BACI_NAMESPACE_CLOSE

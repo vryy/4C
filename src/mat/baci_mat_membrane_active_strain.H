@@ -20,10 +20,12 @@
 /*----------------------------------------------------------------------*
  | headers                                         brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_membrane_material_interfaces.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | active strain membrane material                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
@@ -41,9 +43,6 @@ namespace MAT
      public:
       /// standard constructor
       Membrane_ActiveStrain(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      virtual ~Membrane_ActiveStrain() { ; }
 
       /// @name material parameters
       //@{
@@ -75,20 +74,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
     };
     // class Membrane_ActiveStrain
 
   }  // namespace PAR
 
-  class Membrane_ActiveStrainType : public DRT::ParObjectType
+  class Membrane_ActiveStrainType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "Membrane_ActiveStrainType"; }
+    std::string Name() const override { return "Membrane_ActiveStrainType"; }
 
     static Membrane_ActiveStrainType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Membrane_ActiveStrainType instance_;
@@ -117,7 +116,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return Membrane_ActiveStrainType::Instance().UniqueParObjectId();
     }
@@ -130,7 +129,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -142,43 +141,43 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_membrane_activestrain;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new Membrane_ActiveStrain(*this));
     }
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// setup
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /// Standard SO3 evaluate (not meant to be used)
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
         Teuchos::ParameterList& params,      ///< Container for additional information
         CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
         CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
         int gp,                              ///< Gauss point
-        int eleGID)                          ///< Element ID
+        int eleGID) override                 ///< Element ID
     {
       dserror("This a membrane material. Calling So3 evaluate does not make sense.");
     };
@@ -195,19 +194,19 @@ namespace MAT
         CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
 
     /// Update internal variables
-    virtual void Update();
+    void Update() override;
 
     /// Reset internal variables
-    virtual void ResetStep();
+    void ResetStep() override;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    private:
     /// My material parameters
@@ -253,4 +252,6 @@ namespace MAT
 
 }  // namespace MAT
 // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_MEMBRANE_ACTIVE_STRAIN_H

@@ -22,6 +22,8 @@ builds the bridge between the xfluid class and the cut-library
 
 #include <Epetra_IntVector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -86,8 +88,6 @@ namespace XFEM
         const int step          ///< time step
     );
 
-    //! destructor
-    ~ConditionManager() { return; }
 
     // TODO: we need set private and public !!! this however causes moving functions in the header
     // file!
@@ -793,5 +793,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_CONDITION_MANAGER_H

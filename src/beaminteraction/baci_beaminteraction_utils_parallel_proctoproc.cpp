@@ -11,21 +11,23 @@
 
 #include "baci_beaminteraction_utils_parallel_proctoproc.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_MpiComm.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& discret,
+void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<BACI::DRT::Discretization> const& discret,
     std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
     std::vector<std::pair<int, std::vector<int>>>& recvdata)
 {
   // build exporter
-  DRT::Exporter exporter(discret->Comm());
+  CORE::COMM::Exporter exporter(discret->Comm());
   int const numproc = discret->Comm().NumProc();
   int const myrank = discret->Comm().MyPID();
 
@@ -41,10 +43,10 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& disc
     std::vector<std::pair<int, std::vector<int>>>::const_iterator iter;
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
-      DRT::PackBuffer data;
-      DRT::ParObject::AddtoPack(data, *iter);
+      CORE::COMM::PackBuffer data;
+      CORE::COMM::ParObject::AddtoPack(data, *iter);
       data.StartPacking();
-      DRT::ParObject::AddtoPack(data, *iter);
+      CORE::COMM::ParObject::AddtoPack(data, *iter);
       sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
     }
     targetprocs[p->first] = 1;
@@ -86,7 +88,7 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& disc
       while (index < rdata.size())
       {
         std::pair<int, std::vector<int>> pair;
-        DRT::ParObject::ExtractfromPack(index, rdata, pair);
+        CORE::COMM::ParObject::ExtractfromPack(index, rdata, pair);
         recvdata.push_back(pair);
       }
       if (index != rdata.size())
@@ -100,3 +102,5 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& disc
   // safety, should be a no time operation if everything works fine before
   discret->Comm().Barrier();
 }
+
+BACI_NAMESPACE_CLOSE

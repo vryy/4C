@@ -13,11 +13,13 @@
 
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ConditionObjectType DRT::ConditionObjectType::instance_;
 
 
-DRT::ParObject* DRT::ConditionObjectType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ConditionObjectType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::Condition();
   object->Unpack(data);
@@ -658,9 +660,9 @@ void DRT::Condition::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Condition::Pack(DRT::PackBuffer& data) const
+void DRT::Condition::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -684,10 +686,9 @@ void DRT::Condition::Pack(DRT::PackBuffer& data) const
 void DRT::Condition::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Container
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -721,3 +722,5 @@ void DRT::Condition::AdjustId(const int shift)
 
   swap(*geometry_, geometry);
 }
+
+BACI_NAMESPACE_CLOSE

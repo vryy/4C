@@ -13,14 +13,15 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_geometry_element_coordtrafo.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   /// base class of gauss point collection
   class GaussPoints
   {
    public:
-    virtual ~GaussPoints() {}
-
+    virtual ~GaussPoints() = default;
     /// number of gauss points
     virtual int NumPoints() const = 0;
 
@@ -61,15 +62,15 @@ namespace CORE::DRT::UTILS
 
     void IncreaseReserved(int size) { gp_.reserve(gp_.size() + size); }
 
-    virtual int NumPoints() const { return gp_.size(); }
+    int NumPoints() const override { return gp_.size(); }
 
-    virtual int NumDimension() const { return 3; }
+    int NumDimension() const override { return 3; }
 
-    virtual const double* Point(int point) const { return &gp_[point].data[0]; }
+    const double* Point(int point) const override { return &gp_[point].data[0]; }
 
-    virtual double Weight(int point) const { return gp_[point].data[3]; }
+    double Weight(int point) const override { return gp_[point].data[3]; }
 
-    virtual void Print() const
+    void Print() const override
     {
       std::cout << " collected gauss points:\n";
       for (int i = 0; i < NumPoints(); ++i)
@@ -108,7 +109,7 @@ namespace CORE::DRT::UTILS
     void Append(Teuchos::RCP<GaussPoints> gp) { gp_.push_back(gp); }
 
     /// number of gauss points
-    virtual int NumPoints() const
+    int NumPoints() const override
     {
       int numpoints = 0;
       for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
@@ -121,17 +122,17 @@ namespace CORE::DRT::UTILS
     }
 
     /// spacial dimension
-    virtual int NumDimension() const { return gp_[0]->NumDimension(); }
+    int NumDimension() const override { return gp_[0]->NumDimension(); }
 
     /// gauss point coordinates
-    virtual const double* Point(int point) const
+    const double* Point(int point) const override
     {
       Teuchos::RCP<GaussPoints> gp = Find(point);
       return gp->Point(point);
     }
 
     /// gauss weight
-    virtual double Weight(int point) const
+    double Weight(int point) const override
     {
       Teuchos::RCP<GaussPoints> gp = Find(point);
       return gp->Weight(point);
@@ -146,7 +147,7 @@ namespace CORE::DRT::UTILS
     }
 
     /// debug print
-    virtual void Print() const
+    void Print() const override
     {
       for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
            ++i)
@@ -182,12 +183,11 @@ namespace CORE::DRT::UTILS
    public:
     static GaussPointCache& Instance();
 
-    Teuchos::RCP<GaussPoints> Create(::DRT::Element::DiscretizationType distype, int degree);
+    Teuchos::RCP<GaussPoints> Create(CORE::FE::CellType distype, int degree);
 
    private:
     /// cache of already created gauss rules
-    std::map<std::pair<::DRT::Element::DiscretizationType, int>, Teuchos::RCP<GaussPoints>>
-        gp_cache_;
+    std::map<std::pair<CORE::FE::CellType, int>, Teuchos::RCP<GaussPoints>> gp_cache_;
   };
 
   /// gauss integration interface
@@ -240,10 +240,10 @@ namespace CORE::DRT::UTILS
     typedef GaussPointIterator const_iterator;
 
     /// construct the optimal (normal) rule for a given element shape
-    GaussIntegration(::DRT::Element::DiscretizationType distype);
+    GaussIntegration(CORE::FE::CellType distype);
 
     /// construct rule for a given element shape
-    GaussIntegration(::DRT::Element::DiscretizationType distype, int degree);
+    GaussIntegration(CORE::FE::CellType distype, int degree);
 
     /// construct with a known set of gauss points
     explicit GaussIntegration(Teuchos::RCP<GaussPoints> gp) : gp_(gp) {}
@@ -278,10 +278,9 @@ namespace CORE::DRT::UTILS
     void SetPoints(Teuchos::RCP<GaussPoints> gp) { gp_ = gp; }
 
     /// Create Gauss integration rule of given degree
-    template <::DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static Teuchos::RCP<GaussPoints> CreateProjected(
-        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-            ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
+        const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& xie,
         int degree)
     {
       Teuchos::RCP<GaussPoints> gp = GaussPointCache::Instance().Create(distype, degree);
@@ -297,14 +296,13 @@ namespace CORE::DRT::UTILS
 
     /// Project the given Gauss points in local coordinate system of the element to its global
     /// coordinate system
-    template <::DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static void ProjectGaussPointsLocalToGlobal(
-        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-            ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
+        const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& xie,
         GaussIntegration& intpoints, Teuchos::RCP<CollectedGaussPoints>& cgp)
     {
-      const int nsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-      const int nen = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      const int nsd = CORE::FE::dim<distype>;
+      const int nen = CORE::FE::num_nodes<distype>;
 
       CORE::LINALG::Matrix<nen, 1> funct;
       CORE::LINALG::Matrix<nsd, nen> deriv;
@@ -336,14 +334,13 @@ namespace CORE::DRT::UTILS
 
     /// Project the given Gauss points in global coordinate system of the element to its local
     /// coordinate system
-    template <::DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal(
-        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-            ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
+        const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& xie,
         GaussIntegration& intpoints, const bool& throw_error = true)
     {
-      const int nsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-      const int nen = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      const int nsd = CORE::FE::dim<distype>;
+      const int nen = CORE::FE::num_nodes<distype>;
 
       CORE::LINALG::Matrix<nen, 1> funct;
       CORE::LINALG::Matrix<nsd, nen> deriv;
@@ -386,5 +383,7 @@ namespace CORE::DRT::UTILS
   };
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -12,8 +12,11 @@
 #include "baci_scatra_timint_cardiac_monodomain_scheme.H"
 
 #include "baci_io.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_ele_action.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -31,10 +34,6 @@ SCATRA::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainOST::~TimIntCardiacMonodomainOST() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
@@ -54,10 +53,10 @@ void SCATRA::TimIntCardiacMonodomainOST::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::Update(const int num)
+void SCATRA::TimIntCardiacMonodomainOST::Update()
 {
   // Standard Update
-  TimIntOneStepTheta::Update(num);
+  TimIntOneStepTheta::Update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::ElementMaterialTimeUpdate();
@@ -66,12 +65,11 @@ void SCATRA::TimIntCardiacMonodomainOST::Update(const int num)
 }
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::OutputRestart() const
+void SCATRA::TimIntCardiacMonodomainOST::WriteRestart() const
 {
   // Call function from baseclass
-  TimIntOneStepTheta::OutputRestart();
+  TimIntOneStepTheta::WriteRestart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(
@@ -131,10 +129,6 @@ SCATRA::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainBDF2::~TimIntCardiacMonodomainBDF2() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
@@ -154,10 +148,10 @@ void SCATRA::TimIntCardiacMonodomainBDF2::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::Update(const int num)
+void SCATRA::TimIntCardiacMonodomainBDF2::Update()
 {
   // Standard Update
-  TimIntBDF2::Update(num);
+  TimIntBDF2::Update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::ElementMaterialTimeUpdate();
@@ -166,12 +160,11 @@ void SCATRA::TimIntCardiacMonodomainBDF2::Update(const int num)
 }
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::OutputRestart() const
+void SCATRA::TimIntCardiacMonodomainBDF2::WriteRestart() const
 {
   // Call function from baseclass
-  TimIntBDF2::OutputRestart();
+  TimIntBDF2::WriteRestart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(
@@ -220,10 +213,6 @@ SCATRA::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainGenAlpha::~TimIntCardiacMonodomainGenAlpha() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
@@ -243,10 +232,10 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::Update(const int num)
+void SCATRA::TimIntCardiacMonodomainGenAlpha::Update()
 {
   // Standard Update
-  TimIntGenAlpha::Update(num);
+  TimIntGenAlpha::Update();
 
   // time update of myocard material
   TimIntCardiacMonodomain::ElementMaterialTimeUpdate();
@@ -255,12 +244,11 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::Update(const int num)
 }
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::OutputRestart() const
+void SCATRA::TimIntCardiacMonodomainGenAlpha::WriteRestart() const
 {
   // Call function from baseclass
-  TimIntGenAlpha::OutputRestart();
+  TimIntGenAlpha::WriteRestart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(
@@ -302,3 +290,5 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::AddTimeIntegrationSpecificVectors(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

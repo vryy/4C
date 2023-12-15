@@ -14,9 +14,9 @@
 #include "baci_adapter_fld_poro.H"
 #include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_coupling_adapter.H"
-#include "baci_fpsi_defines.H"
 #include "baci_fpsi_utils.H"
 #include "baci_io_control.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -27,6 +27,8 @@
 #include "baci_structure_aux.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -91,10 +93,6 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   }
   FluidField()->Discretization()->FillComplete(true, false, false);
 }  // MonolithicBase
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FPSI::MonolithicBase::~MonolithicBase() {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicBase::ReadRestart(int step)
@@ -205,8 +203,6 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
       directsolve_(true),
       printscreen_(true),
       printiter_(true),
-      printerrfile_(true),
-      errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
       timer_("FPSI Monolithic", true),
       isfirsttimestep_(true),
       islinesearch_(false),
@@ -422,7 +418,7 @@ void FPSI::Monolithic::TimeStep()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::Evaluate");
 
@@ -442,9 +438,9 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Teuchos::RCP<const Epetra_Vector> pfx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
-  if (x != Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
-    ExtractFieldVectors(x, sx, pfx, fx, ax, (iter_ == 1 and !active_FD_check_));
+    ExtractFieldVectors(stepinc, sx, pfx, fx, ax, (iter_ == 1 and !active_FD_check_));
   }
   else
   {
@@ -518,8 +514,7 @@ void FPSI::Monolithic::SetupSolver()
                   solvertype == INPAR::SOLVER::SolverType::superlu);
 
   if (directsolve_)
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
   else
     // create a linear solver
     CreateLinearSolver();
@@ -651,8 +646,7 @@ void FPSI::Monolithic::CreateLinearSolver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      fpsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(fpsisolverparams, Comm()));
 
   // use solver blocks for structure and fluid
   const Teuchos::ParameterList& ssolverparams =
@@ -686,7 +680,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   // fixing length of Inverse1 nullspace (solver/preconditioner ML)
   {
     std::string inv = "Inverse1";
-    const Epetra_Map& oldmap = *(PoroField()->StructureField()->DofRowMap());
+    const Epetra_Map& oldmap = *(DRT::Problem::Instance()->GetDis("structure")->DofRowMap());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(structure_block_, structure_block_).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
@@ -714,7 +708,6 @@ void FPSI::Monolithic::CreateLinearSolver()
   {
     std::string inv = "Inverse4";
     const Epetra_Map& oldmap = *(AleField()->DofRowMap());
-    ;
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(ale_i_block_, ale_i_block_).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
@@ -1177,14 +1170,6 @@ void FPSI::Monolithic::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  return;
 }  // PrintNewtonIter()
 
 /*----------------------------------------------------------------------*/
@@ -1790,3 +1775,5 @@ void FPSI::Monolithic::SetConductivity(double conduct)
   if (FPSICoupl() != Teuchos::null) FPSICoupl()->SetConductivity(conduct);
   conductivity_ = conduct;  // remove me...
 }
+
+BACI_NAMESPACE_CLOSE

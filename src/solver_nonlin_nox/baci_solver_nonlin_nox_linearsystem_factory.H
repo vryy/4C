@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief %NOX::NLN factory to create a %NOX::Epetra::LinearSystem.
+\brief %NOX::NLN factory to create a %::NOX::Epetra::LinearSystem.
 
 
 
@@ -17,18 +17,10 @@
 
 #include <Teuchos_RCP.hpp>
 
-// forward declaration
-namespace CORE::LINALG
-{
-  class Solver;
-  class SparseOperator;
-}  // namespace CORE::LINALG
-
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
-
 namespace NOX
 {
   namespace Epetra
@@ -43,7 +35,19 @@ namespace NOX
       class Preconditioner;
     }  // namespace Interface
   }    // namespace Epetra
+}  // namespace NOX
 
+BACI_NAMESPACE_OPEN
+
+// forward declaration
+namespace CORE::LINALG
+{
+  class Solver;
+  class SparseOperator;
+}  // namespace CORE::LINALG
+
+namespace NOX
+{
   namespace NLN
   {
     class GlobalData;
@@ -55,16 +59,14 @@ namespace NOX
         //! Constructor.
         Factory();
 
-        //! Destructor.
-        ~Factory(){};
 
-        Teuchos::RCP<NOX::Epetra::LinearSystem> BuildLinearSystem(
+        Teuchos::RCP<::NOX::Epetra::LinearSystem> BuildLinearSystem(
             const NOX::NLN::LinSystem::LinearSystemType& linsystype,
             NOX::NLN::GlobalData& noxNlnGlobalData,
             const Teuchos::RCP<CORE::LINALG::SparseOperator>& jac,
-            const Teuchos::RCP<NOX::Epetra::Vector>& cloneVector,
+            const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,
             const Teuchos::RCP<CORE::LINALG::SparseOperator>& precMat,
-            const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject) const;
+            const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject) const;
       };
 
       /*! \brief Nonmember helper function for the NOX::NLN::LinearSystem::Factory.
@@ -72,16 +74,18 @@ namespace NOX
       \relates NOX::NLN::LinearSystem::Factory
 
       */
-      Teuchos::RCP<NOX::Epetra::LinearSystem> BuildLinearSystem(
+      Teuchos::RCP<::NOX::Epetra::LinearSystem> BuildLinearSystem(
           const NOX::NLN::LinSystem::LinearSystemType& linsystype,
           NOX::NLN::GlobalData& noxNlnGlobalData,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& jac,
-          const Teuchos::RCP<NOX::Epetra::Vector>& cloneVector,
+          const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& precMat,
-          const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject);
+          const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject);
     }  // namespace LinSystem
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_LINEARSYSTEM_FACTORY_H

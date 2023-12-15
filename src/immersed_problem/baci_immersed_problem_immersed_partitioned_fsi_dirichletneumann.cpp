@@ -22,6 +22,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichletNeumann(
     const Epetra_Comm& comm)
@@ -1062,3 +1063,5 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ResetImmersedInformation(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

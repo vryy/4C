@@ -14,6 +14,8 @@
 
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /* --------------------------------------------------------------------
                           Constructor
    -------------------------------------------------------------------- */
@@ -27,13 +29,6 @@ CORE::LINALG::LinalgPrecondOperator::LinalgPrecondOperator(Teuchos::RCP<Epetra_O
   return;
 }  // CORE::LINALG::LinalgPrecondOperator::LinalgPrecondOperator
 
-/* --------------------------------------------------------------------
-                          Destructor
-   -------------------------------------------------------------------- */
-CORE::LINALG::LinalgPrecondOperator::~LinalgPrecondOperator()
-{
-  return;
-}  // CORE::LINALG::LinalgPrecondOperator::~KrylovProjector
 
 /* --------------------------------------------------------------------
                     (Modified) ApplyInverse call
@@ -55,3 +50,5 @@ int CORE::LINALG::LinalgPrecondOperator::ApplyInverse(
 
   return (ierr);
 }  // CORE::LINALG::LinalgPrecondOperator::ApplyInverse
+
+BACI_NAMESPACE_CLOSE

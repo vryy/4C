@@ -22,6 +22,8 @@ general static parameters required for scalar transport element evaluation.
 #include "baci_inpar_turbulence.H"
 #include "baci_scatra_ele_parameter_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -42,7 +44,7 @@ namespace DRT
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+          ) override;
 
       //! @name return turbulence parameters
       //! @{
@@ -135,4 +137,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

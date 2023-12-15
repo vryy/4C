@@ -19,6 +19,8 @@ header file
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace CORE::GEO
@@ -29,9 +31,6 @@ namespace CORE::GEO
   //! shortcut for a vector of BoundaryCell pointers
   typedef std::vector<Teuchos::RCP<CORE::GEO::BoundaryIntCell>> BoundaryIntCellPtrs;
 
-  //! shortcut for a vector of DomainIntCells
-  typedef std::vector<CORE::GEO::DomainIntCell> DomainIntCells;
-
 
   //! based on this element property, one can speed up geometry algorithms
   enum EleGeoType
@@ -41,5 +40,7 @@ namespace CORE::GEO
     HIGHERORDER
   };
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_GEO_UTILS_H

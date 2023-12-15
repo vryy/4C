@@ -13,6 +13,8 @@
 #include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -253,3 +255,5 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::d2Wdrij2(
   else
     return 0.0;
 }
+
+BACI_NAMESPACE_CLOSE

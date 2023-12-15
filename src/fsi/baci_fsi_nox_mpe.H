@@ -18,6 +18,8 @@
 #include <NOX_Utils.H>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace FSI
@@ -68,25 +70,24 @@ namespace NOX
     Mathematics 36(3): 305-337, 1991.
     doi:10.1016/0377-0427(91)90013-A
     */
-    class MinimalPolynomial : public NOX::Direction::Generic
+    class MinimalPolynomial : public ::NOX::Direction::Generic
     {
      public:
       //! Constructor
-      MinimalPolynomial(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
+      MinimalPolynomial(const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params);
 
-      //! Destructor
-      ~MinimalPolynomial();
 
       // derived
-      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+      bool reset(
+          const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;
 
       // derived
-      bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-          const NOX::Solver::Generic& solver);
+      bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+          const ::NOX::Solver::Generic& solver) override;
 
       // derived
-      virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-          const NOX::Solver::LineSearchBased& solver);
+      bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
+          const ::NOX::Solver::LineSearchBased& solver) override;
 
      private:
       //! Print error message and throw error
@@ -94,7 +95,7 @@ namespace NOX
 
      private:
       //! Printing Utils
-      Teuchos::RCP<NOX::Utils> utils_;
+      Teuchos::RCP<::NOX::Utils> utils_;
 
       int kmax_;
       double omega_;
@@ -103,11 +104,11 @@ namespace NOX
     };
 
     /// simple factory that creates MPE direction object
-    class MinimalPolynomialFactory : public NOX::Direction::UserDefinedFactory
+    class MinimalPolynomialFactory : public ::NOX::Direction::UserDefinedFactory
     {
      public:
-      virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(
-          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
+      Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
+          const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
         return Teuchos::rcp(new MinimalPolynomial(gd->getUtils(), params));
       }
@@ -115,5 +116,7 @@ namespace NOX
 
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

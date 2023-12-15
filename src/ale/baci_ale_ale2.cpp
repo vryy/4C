@@ -12,11 +12,13 @@
 #include "baci_ale_ale2.H"
 
 #include "baci_ale_ale2_nurbs.H"
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
 
@@ -24,7 +26,7 @@ DRT::ELEMENTS::Ale2Type& DRT::ELEMENTS::Ale2Type::Instance() { return instance_;
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::Ale2Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Ale2Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Ale2* object = new DRT::ELEMENTS::Ale2(-1, -1);
   object->Unpack(data);
@@ -123,32 +125,31 @@ DRT::Element* DRT::ELEMENTS::Ale2::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Ale2::Shape() const
 {
   switch (NumNode())
   {
     case 3:
-      return tri3;
+      return CORE::FE::CellType::tri3;
     case 4:
-      return quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      return quad9;
+      return CORE::FE::CellType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Ale2::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -163,10 +164,9 @@ void DRT::ELEMENTS::Ale2::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Ale2::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -175,10 +175,6 @@ void DRT::ELEMENTS::Ale2::Unpack(const std::vector<char>& data)
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale2::~Ale2() {}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -194,46 +190,37 @@ void DRT::ELEMENTS::Ale2::Print(std::ostream& os) const
 /*----------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Ale2::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Ale2Line, Ale2>(DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Ale2Line, Ale2>(CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Ale2::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (distype)
   {
-    case quad4:
-    case nurbs4:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::nurbs4:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
-    case quad8:
-    case quad9:
-    case nurbs9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::nurbs9:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case tri3:
+    case CORE::FE::CellType::tri3:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
-    case tri6:
+    case CORE::FE::CellType::tri6:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:
@@ -242,3 +229,5 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(
   }
   return rule;
 }
+
+BACI_NAMESPACE_CLOSE

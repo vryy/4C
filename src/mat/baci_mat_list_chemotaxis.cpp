@@ -19,6 +19,8 @@ is just a "control instance".
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | standard constructor                                      thon 06/15 |
@@ -59,7 +61,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatListChemotaxis::CreateMaterial()
 MAT::MatListChemotaxisType MAT::MatListChemotaxisType::instance_;
 
 
-DRT::ParObject* MAT::MatListChemotaxisType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MatListChemotaxisType::Create(const std::vector<char>& data)
 {
   MAT::MatListChemotaxis* MatListChemotaxis = new MAT::MatListChemotaxis();
   MatListChemotaxis->Unpack(data);
@@ -121,9 +123,9 @@ void MAT::MatListChemotaxis::Clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemotaxis::Pack(DRT::PackBuffer& data) const
+void MAT::MatListChemotaxis::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -150,10 +152,8 @@ void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
   Clear();
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover paramsreac_
   int matid(-1);
@@ -200,3 +200,5 @@ int MAT::MatListChemotaxis::PairID(const unsigned index) const
     return -1;
   }
 }
+
+BACI_NAMESPACE_CLOSE

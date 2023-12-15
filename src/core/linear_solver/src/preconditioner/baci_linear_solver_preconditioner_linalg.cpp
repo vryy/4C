@@ -13,12 +13,19 @@
 
 #include "baci_lib_discret.H"
 #include "baci_lib_node.H"
-#include "baci_linalg_mlapi_operator.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linear_solver_method_linalg.H"
 
 #include <Ifpack.h>
+#include <ml_common.h>
+#include <ml_epetra.h>
+#include <ml_epetra_operator.h>
+#include <ml_epetra_utils.h>
+#include <ml_include.h>
+#include <ml_MultiLevelPreconditioner.h>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -33,8 +40,9 @@ CORE::LINALG::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex, Teuchos::RCP<::DRT::Discretization> fdis,
-    Teuchos::RCP<Epetra_Map> inodes, bool structuresplit)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex,
+    Teuchos::RCP<BACI::DRT::Discretization> fdis, Teuchos::RCP<Epetra_Map> inodes,
+    bool structuresplit)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Preconditioner::Setup");
 
@@ -90,26 +98,12 @@ void CORE::LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
     if (doml)
     {
       Teuchos::ParameterList& mllist = solver_->Params().sublist("ML Parameters");
-      // see whether we use standard ml or our own mlapi operator
-      const bool domlapioperator = mllist.get<bool>("CORE::LINALG::AMG_Operator", false);
-      if (domlapioperator)
-      {
-        // create a copy of the scaled matrix
-        // so we can reuse the preconditioner several times
-        prec_ = Teuchos::null;
-        Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
-        prec_ = Teuchos::rcp(new CORE::LINALG::AMG_Operator(Pmatrix_, mllist, true));
-      }
-      else
-      {
-        // create a copy of the scaled (and downwinded) matrix
-        // so we can reuse the preconditioner several times
-        prec_ = Teuchos::null;
-        Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
-        prec_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_, mllist, true));
-        // for debugging ML
-        // dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
-      }
+
+      // create a copy of the scaled (and downwinded) matrix
+      // so we can reuse the preconditioner several times
+      prec_ = Teuchos::null;
+      Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
+      prec_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_, mllist, true));
     }
   }
 }
@@ -223,3 +217,5 @@ const Epetra_Map& CORE::LINALG::Preconditioner::OperatorRangeMap() const
 {
   return prec_->OperatorRangeMap();
 }
+
+BACI_NAMESPACE_CLOSE

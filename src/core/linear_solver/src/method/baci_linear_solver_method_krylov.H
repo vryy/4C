@@ -23,6 +23,8 @@
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_Matrix.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   //! krylov subspace linear solvers with right-side preconditioning
@@ -31,9 +33,7 @@ namespace CORE::LINEAR_SOLVER
   {
    public:
     //! Constructor
-    KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
-
-    int ApplyInverse(const VectorType& X, VectorType& Y) override;
+    KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params);
 
     int Ncall() { return ncall_; }
 
@@ -78,9 +78,6 @@ namespace CORE::LINEAR_SOLVER
 
     //! (internal) parameter lists
     Teuchos::ParameterList& params_;
-
-    //! file to write output to (proc 0 only, can be nullptr on input)
-    FILE* outfile_;
 
     //! initial guess and solution
     Teuchos::RCP<VectorType> x_;
@@ -269,5 +266,7 @@ namespace CORE::LINEAR_SOLVER
 #endif
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

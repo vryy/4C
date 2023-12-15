@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief %NOX::NLN implementation of a %NOX::Epetra::Group
+\brief %NOX::NLN implementation of a %::NOX::Epetra::Group
        to handle unconstrained problems.
 
 
@@ -22,12 +22,14 @@
 
 #include <NOX_StatusTest_NormF.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Group::Group(Teuchos::ParameterList& printParams, Teuchos::ParameterList& grpOptionParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
-    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
-    : NOX::Epetra::Group(printParams, i, x, linSys),
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
+    const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
+    : ::NOX::Epetra::Group(printParams, i, x, linSys),
       skipUpdateX_(false),
       corr_type_(NOX::NLN::CorrectionType::vague),
       prePostOperatorPtr_(Teuchos::rcp(new NOX::NLN::GROUP::PrePostOperator(grpOptionParams)))
@@ -37,15 +39,15 @@ NOX::NLN::Group::Group(Teuchos::ParameterList& printParams, Teuchos::ParameterLi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Group::Group(const NOX::NLN::Group& source, CopyType type)
-    : NOX::Epetra::Group(source, type),
+NOX::NLN::Group::Group(const NOX::NLN::Group& source, ::NOX::CopyType type)
+    : ::NOX::Epetra::Group(source, type),
       skipUpdateX_(false),
       corr_type_(NOX::NLN::CorrectionType::vague),
       prePostOperatorPtr_(source.prePostOperatorPtr_)
 {
   switch (type)
   {
-    case DeepCopy:
+    case ::NOX::DeepCopy:
     {
       skipUpdateX_ = source.skipUpdateX_;
       corr_type_ = source.corr_type_;
@@ -59,24 +61,24 @@ NOX::NLN::Group::Group(const NOX::NLN::Group& source, CopyType type)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Group::clone(CopyType type) const
+Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Group::clone(::NOX::CopyType type) const
 {
-  Teuchos::RCP<NOX::Abstract::Group> newgrp = Teuchos::rcp(new NOX::NLN::Group(*this, type));
+  Teuchos::RCP<::NOX::Abstract::Group> newgrp = Teuchos::rcp(new NOX::NLN::Group(*this, type));
   return newgrp;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group& NOX::NLN::Group::operator=(const NOX::Abstract::Group& source)
+::NOX::Abstract::Group& NOX::NLN::Group::operator=(const ::NOX::Abstract::Group& source)
 {
-  return operator=(dynamic_cast<const NOX::Epetra::Group&>(source));
+  return operator=(dynamic_cast<const ::NOX::Epetra::Group&>(source));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group& NOX::NLN::Group::operator=(const NOX::Epetra::Group& source)
+::NOX::Abstract::Group& NOX::NLN::Group::operator=(const ::NOX::Epetra::Group& source)
 {
-  NOX::Epetra::Group::operator=(source);
+  ::NOX::Epetra::Group::operator=(source);
   const NOX::NLN::Group& nln_src = dynamic_cast<const NOX::NLN::Group&>(source);
 
   this->skipUpdateX_ = nln_src.skipUpdateX_;
@@ -90,7 +92,7 @@ NOX::Abstract::Group& NOX::NLN::Group::operator=(const NOX::Epetra::Group& sourc
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::resetIsValid()
 {
-  NOX::Epetra::Group::resetIsValid();
+  ::NOX::Epetra::Group::resetIsValid();
   ev_.isvalid_ = false;
   corr_type_ = NOX::NLN::CorrectionType::vague;
 }
@@ -98,12 +100,12 @@ void NOX::NLN::Group::resetIsValid()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::computeX(
-    const NOX::Abstract::Group& grp, const NOX::Abstract::Vector& d, double step)
+    const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& d, double step)
 {
   // Cast to appropriate type, then call the "native" computeX
   const NOX::NLN::Group* nlngrp = dynamic_cast<const NOX::NLN::Group*>(&grp);
   if (nlngrp == nullptr) throwError("computeX", "dyn_cast to nox_nln_group failed!");
-  const NOX::Epetra::Vector& epetrad = dynamic_cast<const NOX::Epetra::Vector&>(d);
+  const ::NOX::Epetra::Vector& epetrad = dynamic_cast<const ::NOX::Epetra::Vector&>(d);
 
   computeX(*nlngrp, epetrad, step);
   return;
@@ -112,7 +114,7 @@ void NOX::NLN::Group::computeX(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::computeX(
-    const NOX::NLN::Group& grp, const NOX::Epetra::Vector& d, double step)
+    const NOX::NLN::Group& grp, const ::NOX::Epetra::Vector& d, double step)
 {
   skipUpdateX_ = false;
   prePostOperatorPtr_->runPreComputeX(grp, d.getEpetraVector(), step, *this);
@@ -129,29 +131,29 @@ void NOX::NLN::Group::computeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::setF(Teuchos::RCP<NOX::Epetra::Vector> Fptr)
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::setF(Teuchos::RCP<::NOX::Epetra::Vector> Fptr)
 {
   if (Fptr == Teuchos::null or Fptr->getEpetraVector().Map().NumGlobalElements() == 0)
-    return NOX::Abstract::Group::BadDependency;
+    return ::NOX::Abstract::Group::BadDependency;
 
   RHSVector = *Fptr;
   isValidRHS = true;
 
-  return NOX::Abstract::Group::Ok;
+  return ::NOX::Abstract::Group::Ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::setJacobianOperator(
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::setJacobianOperator(
     const Teuchos::RCP<const Epetra_Operator> jacOperator)
 {
   if (jacOperator == Teuchos::null or jacOperator->OperatorRangeMap().NumGlobalElements() == 0)
-    return NOX::Abstract::Group::BadDependency;
+    return ::NOX::Abstract::Group::BadDependency;
 
   sharedLinearSystem.getObject(this)->setJacobianOperatorForSolve(jacOperator);
   isValidJacobian = true;
 
-  return NOX::Abstract::Group::Ok;
+  return ::NOX::Abstract::Group::Ok;
 }
 
 /*----------------------------------------------------------------------------*
@@ -164,14 +166,14 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
 {
   prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(), *this);
 
-  if (isF()) return NOX::Abstract::Group::Ok;
+  if (isF()) return ::NOX::Abstract::Group::Ok;
 
   const bool success = userInterfacePtr->computeF(xVector.getEpetraVector(),
-      RHSVector.getEpetraVector(), NOX::Epetra::Interface::Required::Residual);
+      RHSVector.getEpetraVector(), ::NOX::Epetra::Interface::Required::Residual);
 
   if (not success)
   {
@@ -181,15 +183,15 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
   isValidRHS = true;
 
   prePostOperatorPtr_->runPostComputeF(RHSVector.getEpetraVector(), *this);
-  return NOX::Abstract::Group::Ok;
+  return ::NOX::Abstract::Group::Ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
 {
   // initialize the return type
-  NOX::Abstract::Group::ReturnType ret = NOX::Abstract::Group::Failed;
+  ::NOX::Abstract::Group::ReturnType ret = ::NOX::Abstract::Group::Failed;
 
   // update right hand side vector
   if (!isF() and isJacobian())
@@ -214,14 +216,14 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
     isValidRHS = true;
     isValidJacobian = true;
 
-    ret = NOX::Abstract::Group::Ok;
+    ret = ::NOX::Abstract::Group::Ok;
     prePostOperatorPtr_->runPostComputeF(RHSVector.getEpetraVector(), *this);
   }
   // nothing to do, because all quantities are up-to-date
   else
   {
     prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(), *this);
-    ret = NOX::Abstract::Group::Ok;
+    ret = ::NOX::Abstract::Group::Ok;
   }
 
   return ret;
@@ -229,7 +231,7 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeElementVolumes(
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeElementVolumes(
     Teuchos::RCP<Epetra_Vector>& ele_vols) const
 {
   const bool success =
@@ -240,8 +242,8 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeElementVolumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeTrialElementVolumes(
-    Teuchos::RCP<Epetra_Vector>& ele_vols, const NOX::Abstract::Vector& dir, double step)
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeTrialElementVolumes(
+    Teuchos::RCP<Epetra_Vector>& ele_vols, const ::NOX::Abstract::Vector& dir, double step)
 {
   if (tmpVectorPtr.is_null() or !tmpVectorPtr->Map().SameAs(xVector.getEpetraVector().Map()) or
       tmpVectorPtr.get() == &xVector.getEpetraVector())
@@ -249,7 +251,7 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeTrialElementVolumes(
   else
     tmpVectorPtr->Scale(1.0, xVector.getEpetraVector());
 
-  const NOX::Epetra::Vector& dir_epetra = dynamic_cast<const NOX::Epetra::Vector&>(dir);
+  const ::NOX::Epetra::Vector& dir_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   tmpVectorPtr->Update(step, dir_epetra.getEpetraVector(), 1.0);
 
   const bool success = GetNlnReqInterfacePtr()->computeElementVolumes(*tmpVectorPtr, ele_vols);
@@ -259,13 +261,13 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeTrialElementVolumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianInverse(
-    Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianInverse(Teuchos::ParameterList& p,
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   prePostOperatorPtr_->runPreApplyJacobianInverse(input, result, xVector, *this);
 
-  NOX::Abstract::Group::ReturnType status =
-      NOX::Epetra::Group::applyJacobianInverse(p, input, result);
+  ::NOX::Abstract::Group::ReturnType status =
+      ::NOX::Epetra::Group::applyJacobianInverse(p, input, result);
 
   prePostOperatorPtr_->runPostApplyJacobianInverse(input, result, xVector, *this);
 
@@ -274,8 +276,8 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianInverse(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianBlock(
-    const NOX::Epetra::Vector& input, Teuchos::RCP<NOX::Epetra::Vector>& result, unsigned rbid,
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianBlock(
+    const ::NOX::Epetra::Vector& input, Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid,
     unsigned cbid) const
 {
   if (not isJacobian())
@@ -288,12 +290,12 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianBlock(
 
   const bool success = nlnSharedLinearSystem->applyJacobianBlock(input, result, rbid, cbid);
 
-  return (success ? NOX::Abstract::Group::Ok : NOX::Abstract::Group::Failed);
+  return (success ? ::NOX::Abstract::Group::Ok : ::NOX::Abstract::Group::Failed);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeCorrectionSystem(
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeCorrectionSystem(
     const enum NOX::NLN::CorrectionType type)
 {
   prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(), *this);
@@ -317,7 +319,7 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeCorrectionSystem(
 
   prePostOperatorPtr_->runPostComputeF(RHSVector.getEpetraVector(), *this);
 
-  return NOX::Abstract::Group::Ok;
+  return ::NOX::Abstract::Group::Ok;
 }
 
 /*----------------------------------------------------------------------------*
@@ -337,13 +339,13 @@ Teuchos::RCP<const NOX::NLN::Interface::Required> NOX::NLN::Group::GetNlnReqInte
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const std::vector<double>> NOX::NLN::Group::GetRHSNorms(
-    const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
-    Teuchos::RCP<const std::vector<NOX::StatusTest::NormF::ScaleType>> scale) const
+    Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale) const
 {
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<NOX::StatusTest::NormF::ScaleType>(
-        chQ.size(), NOX::StatusTest::NormF::Unscaled));
+    scale = Teuchos::rcp(new std::vector<::NOX::StatusTest::NormF::ScaleType>(
+        chQ.size(), ::NOX::StatusTest::NormF::Unscaled));
 
   Teuchos::RCP<std::vector<double>> norms = Teuchos::rcp(new std::vector<double>(0));
 
@@ -351,7 +353,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::Group::GetRHSNorms(
   for (std::size_t i = 0; i < chQ.size(); ++i)
   {
     rval = GetNlnReqInterfacePtr()->GetPrimaryRHSNorms(RHSVector.getEpetraVector(), chQ[i], type[i],
-        (*scale)[i] == NOX::StatusTest::NormF::Scaled);
+        (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
     if (rval >= 0.0)
     {
       norms->push_back(rval);
@@ -373,11 +375,11 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::Group::GetRHSNorms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double>> NOX::NLN::Group::GetSolutionUpdateRMS(
-    const NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
+    const ::NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
     const std::vector<double>& rTol, const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
     const std::vector<bool>& disable_implicit_weighting) const
 {
-  const NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const NOX::Epetra::Vector&>(xOld);
+  const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   Teuchos::RCP<std::vector<double>> rms = Teuchos::rcp(new std::vector<double>(0));
 
   double rval = -1.0;
@@ -405,11 +407,11 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::GetSolutionUpdateRMS(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Group::GetTrialUpdateNorm(const NOX::Abstract::Vector& dir,
-    const NOX::Abstract::Vector::NormType normtype, const StatusTest::QuantityType quantity,
+double NOX::NLN::Group::GetTrialUpdateNorm(const ::NOX::Abstract::Vector& dir,
+    const ::NOX::Abstract::Vector::NormType normtype, const StatusTest::QuantityType quantity,
     const StatusTest::NormUpdate::ScaleType scale) const
 {
-  const std::vector<NOX::Abstract::Vector::NormType> normtypes(1, normtype);
+  const std::vector<::NOX::Abstract::Vector::NormType> normtypes(1, normtype);
   const std::vector<StatusTest::QuantityType> quantities(1, quantity);
   const std::vector<StatusTest::NormUpdate::ScaleType> scales(1, scale);
 
@@ -420,10 +422,10 @@ double NOX::NLN::Group::GetTrialUpdateNorm(const NOX::Abstract::Vector& dir,
     tmpVectorPtr->Scale(1.0, xVector.getEpetraVector());
 
   // change the internally stored x-vector for the norm evaluation
-  NOX::Epetra::Vector& x_mutable = const_cast<NOX::Epetra::Vector&>(xVector);
+  ::NOX::Epetra::Vector& x_mutable = const_cast<::NOX::Epetra::Vector&>(xVector);
   x_mutable.update(1.0, dir, 1.0);
 
-  NOX::Epetra::Vector xold(tmpVectorPtr, NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector xold(tmpVectorPtr, ::NOX::Epetra::Vector::CreateView);
 
   const double rval =
       GetSolutionUpdateNorms(xold, normtypes, quantities, Teuchos::rcpFromRef(scales))->at(0);
@@ -437,11 +439,11 @@ double NOX::NLN::Group::GetTrialUpdateNorm(const NOX::Abstract::Vector& dir,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double>> NOX::NLN::Group::GetSolutionUpdateNorms(
-    const NOX::Abstract::Vector& xOld, const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const ::NOX::Abstract::Vector& xOld, const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const
 {
-  const NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const NOX::Epetra::Vector&>(xOld);
+  const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
     scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(
         chQ.size(), StatusTest::NormUpdate::Unscaled));
@@ -475,11 +477,11 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::GetSolutionUpdateNorms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double>> NOX::NLN::Group::GetPreviousSolutionNorms(
-    const NOX::Abstract::Vector& xOld, const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const ::NOX::Abstract::Vector& xOld, const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const
 {
-  const NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const NOX::Epetra::Vector&>(xOld);
+  const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
     scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(
         chQ.size(), StatusTest::NormUpdate::Unscaled));
@@ -519,12 +521,12 @@ double NOX::NLN::Group::GetModelValue(const enum MeritFunction::MeritFctName mer
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Group::GetLinearizedModelTerms(const NOX::Abstract::Vector& dir,
+double NOX::NLN::Group::GetLinearizedModelTerms(const ::NOX::Abstract::Vector& dir,
     const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
     const enum NOX::NLN::MeritFunction::LinOrder linorder,
     const enum NOX::NLN::MeritFunction::LinType lintype) const
 {
-  const NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const NOX::Epetra::Vector&>(dir);
+  const ::NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
 
   return GetNlnReqInterfacePtr()->GetLinearizedModelTerms(
@@ -560,16 +562,16 @@ void NOX::NLN::Group::ResetLinSysPrePostOperator(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::adjustPseudoTimeStep(double& delta, const double& stepSize,
-    const NOX::Abstract::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+    const ::NOX::Abstract::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver)
 {
-  const NOX::Epetra::Vector& dirEpetra = dynamic_cast<const NOX::Epetra::Vector&>(dir);
+  const ::NOX::Epetra::Vector& dirEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   adjustPseudoTimeStep(delta, stepSize, dirEpetra, ptcsolver);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::adjustPseudoTimeStep(double& delta, const double& stepSize,
-    const NOX::Epetra::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+    const ::NOX::Epetra::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver)
 {
   if (!isF() or !isJacobian())
     throwError("AdjustPseudoTimeStep", "F and/or the jacobian are not evaluated!");
@@ -617,7 +619,7 @@ bool NOX::NLN::Group::isJacobian() const
 {
   if (isValidJacobian and not sharedLinearSystem.isOwner(this)) sharedLinearSystem.getObject(this);
 
-  return NOX::Epetra::Group::isJacobian();
+  return ::NOX::Epetra::Group::isJacobian();
 }
 
 /*----------------------------------------------------------------------------*
@@ -639,12 +641,12 @@ const Epetra_BlockMap& NOX::NLN::Group::getDofMap() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::CreateBackupState(const NOX::Abstract::Vector& dir) const
+void NOX::NLN::Group::CreateBackupState(const ::NOX::Abstract::Vector& dir) const
 {
   Teuchos::RCP<NOX::NLN::Interface::Required> nln_required =
       Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr, true);
 
-  const NOX::Epetra::Vector* epetra_dir = dynamic_cast<const NOX::Epetra::Vector*>(&dir);
+  const ::NOX::Epetra::Vector* epetra_dir = dynamic_cast<const ::NOX::Epetra::Vector*>(&dir);
   if (not epetra_dir) dserror("Dynamic cast failed.");
 
   nln_required->CreateBackupState(epetra_dir->getEpetraVector());
@@ -710,10 +712,10 @@ void NOX::NLN::Group::replaceDiagonalOfJacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianConditionNumber(
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianConditionNumber(
     const NOX::NLN::LinSystem::ConditionNumber condnum_type, bool printOutput)
 {
-  if (isConditionNumber()) return NOX::Abstract::Group::Ok;
+  if (isConditionNumber()) return ::NOX::Abstract::Group::Ok;
 
   if (xVector.getEpetraVector().Comm().NumProc() != 1) dserror("Only serial mode is supported!");
 
@@ -727,7 +729,7 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianCondition
 
       if (ev_.real_min_ == 0)
       {
-        utils.out(NOX::Utils::Warning) << "Jacobian is singular!" << std::endl;
+        utils.out(::NOX::Utils::Warning) << "Jacobian is singular!" << std::endl;
         conditionNumber = std::numeric_limits<double>::infinity();
       }
       else
@@ -752,20 +754,22 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianCondition
   }
 
   if (printOutput)
-    utils.out() << "Condition number = " << NOX::Utils::sciformat(conditionNumber, 5) << std::endl;
+    utils.out() << "Condition number = " << ::NOX::Utils::sciformat(conditionNumber, 5)
+                << std::endl;
 
   isValidConditionNumber = true;
 
-  return NOX::Abstract::Group::Ok;
+  return ::NOX::Abstract::Group::Ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianEigenvalues(bool printOutput)
+::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianEigenvalues(
+    bool printOutput)
 {
   if (xVector.getEpetraVector().Comm().NumProc() != 1) dserror("Works only in serial mode!");
 
-  if (ev_.isvalid_) return NOX::Abstract::Group::Ok;
+  if (ev_.isvalid_) return ::NOX::Abstract::Group::Ok;
 
   Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
       Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this), true);
@@ -784,7 +788,7 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianEigenvalu
 
   ev_.isvalid_ = true;
 
-  return NOX::Abstract::Group::Ok;
+  return ::NOX::Abstract::Group::Ok;
 }
 
 /*----------------------------------------------------------------------------*
@@ -854,3 +858,5 @@ void NOX::NLN::Group::getDofsFromElements(
 {
   GetNlnReqInterfacePtr()->getDofsFromElements(my_ele_gids, my_ele_dofs);
 }
+
+BACI_NAMESPACE_CLOSE

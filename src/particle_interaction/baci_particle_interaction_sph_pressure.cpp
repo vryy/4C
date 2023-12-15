@@ -19,6 +19,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -101,3 +103,5 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
   // refresh pressure of ghosted particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(pressuretorefresh_);
 }
+
+BACI_NAMESPACE_CLOSE

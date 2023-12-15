@@ -13,7 +13,6 @@
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_structure_timint_ab2.H"
 #include "baci_structure_timint_centrdiff.H"
@@ -29,6 +28,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* create marching time integrator */
@@ -66,7 +67,9 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
   // TODO: add contact solver...
 
   // check if we have a problem that needs to be prestressed
-  if (::UTILS::PRESTRESS::IsAny())
+  if (Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+          DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
+      INPAR::STR::PreStress::none)
   {
     sti = Teuchos::rcp(new STR::TimIntPrestress(
         timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
@@ -179,3 +182,5 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate(const Teuchos::ParameterList
 }
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

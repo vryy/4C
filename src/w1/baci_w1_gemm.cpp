@@ -28,6 +28,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*======================================================================*/
@@ -44,7 +46,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
   // element porperties
   const int numnode = NumNode();
   const int edof = numnode * Wall1::noddof_;
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   // Gaussian points
   const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
   // GEMM coefficients
@@ -597,3 +599,5 @@ void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(const double& alphafgemm, const dou
 }
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

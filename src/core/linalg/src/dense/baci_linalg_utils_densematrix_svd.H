@@ -10,10 +10,12 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_SVD_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_SVD_H
 
-#include "baci_lib_exporter.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Teuchos_LAPACK.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -26,7 +28,7 @@ namespace CORE::LINALG
    \param SIGMA (in/out):M-by-N matrix which is zero except for its min(m,n) diagonal elements
    \param Vt (in/out):   V is a N-by-N orthogonal matrix, actually returned is V^T
    */
-  void SVD(const CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix& U,
+  void SVD(const CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix& Q,
       CORE::LINALG::SerialDenseMatrix& SIGMA, CORE::LINALG::SerialDenseMatrix& Vt);
 
   /*!
@@ -73,5 +75,7 @@ namespace CORE::LINALG
   }
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_DENSEMATRIX_SVD_H

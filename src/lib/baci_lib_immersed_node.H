@@ -10,21 +10,23 @@
 #define BACI_LIB_IMMERSED_NODE_H
 
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
   class Node;
 
-  class ImmersedNodeType : public DRT::ParObjectType
+  class ImmersedNodeType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ImmersedNodeType"; }
+    std::string Name() const override { return "ImmersedNodeType"; }
 
     static ImmersedNodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
 
    private:
@@ -56,7 +58,7 @@ namespace DRT
     \param coords (in): vector of nodal coordinates, length 3
     \param owner  (in): Owner of this node.
     */
-    ImmersedNode(int id, const double* coords, const int owner);
+    ImmersedNode(int id, const std::vector<double>& coords, const int owner);
 
     /*!
     \brief Copy Constructor
@@ -70,13 +72,8 @@ namespace DRT
     \brief Deep copy the derived class and return pointer to it
 
     */
-    virtual DRT::ImmersedNode* Clone() const;
+    DRT::ImmersedNode* Clone() const override;
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~ImmersedNode();
 
     /*!
     \brief Return unique ParObject id
@@ -84,7 +81,7 @@ namespace DRT
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ImmersedNodeType::Instance().UniqueParObjectId();
     }
@@ -95,7 +92,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -103,7 +100,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /*!
     \brief set 'true' if node is covered by an immersed discretization
@@ -139,17 +136,17 @@ namespace DRT
     /*!
     \brief Print this node
     */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /*! \brief Query names of node data to be visualized using BINIO
      *
      */
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /*! \brief Query data to be visualized using BINIO of a given name
      *
      */
-    virtual bool VisData(const std::string& name, std::vector<double>& data);
+    bool VisData(const std::string& name, std::vector<double>& data) override;
 
    protected:
     //! @name immersed information
@@ -168,4 +165,6 @@ std::ostream& operator<<(std::ostream& os, const DRT::ImmersedNode& immersednode
 
 
 
-#endif  // IMMERSED_PROBLEM_IMMERSED_NODE_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_LIB_IMMERSED_NODE_H

@@ -18,6 +18,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::MeritFunction::Factory::Factory()
@@ -27,10 +29,10 @@ NOX::NLN::MeritFunction::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::BuildMeritFunction(
+Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::BuildMeritFunction(
     const NOX::NLN::GlobalData& noxNlnGlobalData) const
 {
-  Teuchos::RCP<NOX::MeritFunction::Generic> mrtFctPtr;
+  Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr;
 
   const Teuchos::ParameterList& solverOptionsList =
       noxNlnGlobalData.GetNlnParameterList().sublist("Solver Options");
@@ -47,11 +49,11 @@ Teuchos::RCP<NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::Buil
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::MeritFunction::Generic>
+Teuchos::RCP<::NOX::MeritFunction::Generic>
 NOX::NLN::MeritFunction::Factory::BuildUnconstrainedMeritFunction(
     const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const
 {
-  Teuchos::RCP<NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
+  Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
 
   if (mftype == "Sum of Squares")
   {
@@ -74,11 +76,11 @@ NOX::NLN::MeritFunction::Factory::BuildUnconstrainedMeritFunction(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::MeritFunction::Generic>
+Teuchos::RCP<::NOX::MeritFunction::Generic>
 NOX::NLN::MeritFunction::Factory::BuildConstrainedMeritFunction(
     const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const
 {
-  Teuchos::RCP<NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
+  Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
 
   if (mftype == "Sum of Squares")
   {
@@ -105,9 +107,11 @@ NOX::NLN::MeritFunction::Factory::BuildConstrainedMeritFunction(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::BuildMeritFunction(
+Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::BuildMeritFunction(
     const NOX::NLN::GlobalData& noxNlnGlobalData)
 {
   const Factory factory;
   return factory.BuildMeritFunction(noxNlnGlobalData);
 }
+
+BACI_NAMESPACE_CLOSE

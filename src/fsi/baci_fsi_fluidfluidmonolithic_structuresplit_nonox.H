@@ -13,6 +13,8 @@ using XFEM
 
 #include "baci_fsi_monolithic_nonox.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -54,23 +56,23 @@ namespace FSI
 
 
     */
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
    protected:
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall);
+    void SetupRHS(Epetra_Vector& f, bool firstcall) override;
 
     /// setup composed system block matrix
-    virtual void SetupSystemMatrix();
+    void SetupSystemMatrix() override;
     //@}
 
     /// create merged map of DOF in the final system from all fields
-    virtual void CreateCombinedDofRowMap();
+    void CreateCombinedDofRowMap() override;
 
     /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override;
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
@@ -80,7 +82,7 @@ namespace FSI
         CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     /// create merged map with Dirichlet-constrained DOF from all fields
-    virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+    Teuchos::RCP<Epetra_Map> CombinedDBCMap() override;
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -95,21 +97,21 @@ namespace FSI
     //! \param sx (o) structural displacements
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
-        Teuchos::RCP<const Epetra_Vector>& ax);
+        Teuchos::RCP<const Epetra_Vector>& ax) override;
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
-    virtual void RecoverLagrangeMultiplier();
+    void RecoverLagrangeMultiplier() override;
 
     /// compute the residual and incremental norms required for convergence check
-    virtual void BuildConvergenceNorms();
+    void BuildConvergenceNorms() override;
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /// output of fluid, structure & ALE-quantities and Lagrange multiplier
-    virtual void Output();
+    void Output() override;
 
     /*!
      * In case of a change in the fluid DOF row maps during the Newton loop (full Newton approach),
@@ -117,7 +119,7 @@ namespace FSI
      * \author kruse
      * \date 05/14
      */
-    virtual void HandleFluidDofMapChangeInNewton();
+    void HandleFluidDofMapChangeInNewton() override;
 
     /*!
      * Determine a change in fluid DOF map
@@ -127,7 +129,7 @@ namespace FSI
      * \author kruse
      * \date 05/14
      */
-    virtual bool HasFluidDofMapChanged(const Epetra_BlockMap& fluidincrementmap);
+    bool HasFluidDofMapChanged(const Epetra_BlockMap& fluidincrementmap) override;
 
    private:
     /// build block vector from field vectors
@@ -202,5 +204,7 @@ namespace FSI
     //@}
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

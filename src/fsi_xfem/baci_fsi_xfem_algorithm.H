@@ -18,6 +18,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -53,8 +55,6 @@ namespace FSI
     AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
         const ADAPTER::FieldWrapper::Fieldtype type);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~AlgorithmXFEM();
 
     //! setup
     virtual void Setup();
@@ -66,8 +66,8 @@ namespace FSI
     virtual void SetupSystem() = 0;
 
     //! read restart data
-    virtual void ReadRestart(int step  //!< step number where the calculation is continued
-        ) = 0;
+    void ReadRestart(int step  //!< step number where the calculation is continued
+        ) override = 0;
 
     //--------------------------------------------------------------------------//
     //! @name Access to single fields
@@ -76,10 +76,10 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::StructurePoroWrapper>& StructurePoro() { return structureporo_; }
 
     //! access to fluid field
-    const Teuchos::RCP<::FLD::XFluid>& FluidField() { return fluid_; }
+    const Teuchos::RCP<FLD::XFluid>& FluidField() { return fluid_; }
 
     //! access to ale field
-    const Teuchos::RCP<::ADAPTER::AleFpsiWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField() { return ale_; }
 
     //! is an monolithic ale computations
     bool HaveAle() { return (AleField() != Teuchos::null); }
@@ -94,16 +94,16 @@ namespace FSI
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep() = 0;
+    void PrepareTimeStep() override = 0;
 
     //! calculate stresses, strains, energies
     virtual void PrepareOutput(bool force_prepare);
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! write output
-    virtual void Output() = 0;
+    void Output() override = 0;
 
     //@}
 
@@ -111,10 +111,10 @@ namespace FSI
     //! @name Underlying fields
 
     //! underlying structure / poro of the FSI/FPSI problem
-    Teuchos::RCP<::ADAPTER::StructurePoroWrapper> structureporo_;
+    Teuchos::RCP<ADAPTER::StructurePoroWrapper> structureporo_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<::FLD::XFluid> fluid_;
+    Teuchos::RCP<FLD::XFluid> fluid_;
 
     // underlying ale of the FSI problem
     Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale_;
@@ -137,4 +137,6 @@ namespace FSI
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // FSI_XFEM_ALGORITHM_H

@@ -16,6 +16,8 @@
 #include "baci_cut_meshintersection.H"
 #include "baci_cut_parentintersection.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace LINALG
 {
@@ -45,16 +47,17 @@ namespace CORE::GEO
       void FindNodePositions();
 
       void AddElement(int eid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
-          const double* lsv, const bool lsv_only_plus_domain);
+          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, const double* lsv,
+          const bool lsv_only_plus_domain);
 
       void AddLevelSetSide(int levelset_sid);
 
       void AddMeshCuttingSide(int sid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
-          int mi);
+          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, int mi);
     };
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -61,5 +63,7 @@ namespace POROELAST
 
   }  // namespace UTILS
 }  // namespace POROELAST
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_UTILS_CLONESTRATEGY_H

@@ -43,6 +43,7 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_tsi_defines.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 08/11 |
@@ -79,7 +80,7 @@ MAT::ThermoPlasticLinElastType MAT::ThermoPlasticLinElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 08/11 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ThermoPlasticLinElastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ThermoPlasticLinElastType::Create(const std::vector<char>& data)
 {
   MAT::ThermoPlasticLinElast* plastic = new MAT::ThermoPlasticLinElast();
   plastic->Unpack(data);
@@ -106,9 +107,9 @@ MAT::ThermoPlasticLinElast::ThermoPlasticLinElast(MAT::PAR::ThermoPlasticLinElas
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 08/11 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::Pack(DRT::PackBuffer& data) const
+void MAT::ThermoPlasticLinElast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -163,10 +164,8 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -355,7 +354,7 @@ void MAT::ThermoPlasticLinElast::Update()
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,
+    const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,
     Teuchos::ParameterList& params,                  // parameter list for communication & HISTORY
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  // material stiffness matrix
@@ -390,12 +389,12 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   CORE::LINALG::Matrix<6, 1> id2(true);
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
 
-  // linstrain (in): independent variable passed from the element
+  // glstrain (in): independent variable passed from the element
   //  strain^p: evolution is determined by the flow rule, history varible
   //  strain^e: definition of additive decomposition:
   //  strain^e = strain - strain^p
   // REMARK: stress-like 6-Voigt vector
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> strain(*linstrain);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> strain(*glstrain);
 
   //---------------------------------------------------------------------------
   // elastic predictor (trial values)
@@ -1560,3 +1559,5 @@ bool MAT::ThermoPlasticLinElast::VisData(
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

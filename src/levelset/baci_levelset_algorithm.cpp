@@ -21,6 +21,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 09/13 |
@@ -60,11 +62,6 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> d
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- | deconstructor                                        rasthofer 09/13 |
- *----------------------------------------------------------------------*/
-SCATRA::LevelSetAlgorithm::~LevelSetAlgorithm() {}
 
 
 /*----------------------------------------------------------------------*
@@ -265,7 +262,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
   if (Step() == 0)
   {
     // write out initial state
-    Output();
+    CheckAndWriteOutputAndRestart();
 
     // compute error for problems with analytical solution (initial field!)
     EvaluateErrorComparedToAnalyticalSol();
@@ -303,7 +300,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    CheckAndWriteOutputAndRestart();
 
   }  // while
 
@@ -406,9 +403,8 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
 }
 
 /*----------------------------------------------------------------------*
- | output of solution                                   rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::Output(const int num)
+void SCATRA::LevelSetAlgorithm::CheckAndWriteOutputAndRestart()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
@@ -418,7 +414,7 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
   // -----------------------------------------------------------------
 
   // solution output and potentially restart data and/or flux data
-  if (DoOutput())
+  if (IsResultStep())
   {
     // step number and time (only after that data output is possible)
     output_->NewStep(step_, time_);
@@ -431,17 +427,15 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
 
     // write output to Gmsh postprocessing files
     if (outputgmsh_) OutputToGmsh(step_, time_);
-
-    // add restart data
-    if (step_ % uprestart_ == 0) OutputRestart();
   }
+
+  // add restart data
+  if (IsRestartStep()) WriteRestart();
 
   // -----------------------------------------------------------------
   //             further level-set specific values
   // -----------------------------------------------------------------
   OutputOfLevelSetSpecificValues();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -476,3 +470,5 @@ void SCATRA::LevelSetAlgorithm::SetTimeStep(const double time, const int step)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

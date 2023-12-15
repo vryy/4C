@@ -12,8 +12,8 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_coupanisoexpo.H"
@@ -25,9 +25,10 @@
 #include <tuple>
 
 
-
 namespace
 {
+  using namespace BACI;
+
   class CoupAnisoExpoAnisotropyExtensionElementFiberTest
       : public ::testing::TestWithParam<std::tuple<int, int>>
   {
@@ -47,7 +48,7 @@ namespace
       for (std::size_t i = 0; i < 2; ++i)
       {
         eleTensors_[i].MultiplyNT(eleFibers_[i], eleFibers_[i]);
-        UTILS::VOIGT::Stresses::MatrixToVector(eleTensors_[i], eleTensors_stress_[i]);
+        CORE::LINALG::VOIGT::Stresses::MatrixToVector(eleTensors_[i], eleTensors_stress_[i]);
       }
 
       SetupAnisotropyExtension();

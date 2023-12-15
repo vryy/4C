@@ -15,6 +15,8 @@
 #include "baci_lib_utils_reference_configuration.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|
  *----------------------------------------------------------------------*/
@@ -348,31 +350,34 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
 
   // get center and normal of leaf1-element
   const DRT::Element* ele1 = Discret().gElement(ele1gid);
-  const DRT::Element::DiscretizationType dtele1 = ele1->Shape();
+  const CORE::FE::CellType dtele1 = ele1->Shape();
   switch (dtele1)
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::tri3>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::tri3>(ele1, xicele1, ele1normal);
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri3>(
+          ele1, xicele1, ele1normal);
     }
     break;
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::tri6>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::tri6>(ele1, xicele1, ele1normal);
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri6>(
+          ele1, xicele1, ele1normal);
     }
     break;
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
       xicele1.PutScalar(0.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::quad4>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::quad4>(ele1, xicele1, ele1normal);
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::quad4>(
+          ele1, xicele1, ele1normal);
     }
     break;
     default:
@@ -381,27 +386,27 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
   }
   // get center of master element
   const DRT::Element* ele2 = Discret().gElement(ele2gid);
-  const DRT::Element::DiscretizationType dtele2 = ele2->Shape();
+  const CORE::FE::CellType dtele2 = ele2->Shape();
   switch (dtele2)
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::tri3>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
           ele2, xicele2, ele2coords);
     }
     break;
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::tri6>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
           ele2, xicele2, ele2coords);
     }
     break;
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
       xicele2.PutScalar(0.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::quad4>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
           ele2, xicele2, ele2coords);
     }
     break;
@@ -540,3 +545,5 @@ void CONTACT::UnbiasedSelfBinaryTree::CommunicateSearchElementsAllProcs()
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -10,9 +10,12 @@
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_calc_lib_integration.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
@@ -21,56 +24,60 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
 {
   switch (element.Shape())
   {
-    case DRT::Element::hex8:
-      return EvaluateNeumann<DRT::Element::hex8>(
+    case CORE::FE::CellType::hex8:
+      return EvaluateNeumann<CORE::FE::CellType::hex8>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::hex27:
-      return EvaluateNeumann<DRT::Element::hex27>(
+    case CORE::FE::CellType::hex27:
+      return EvaluateNeumann<CORE::FE::CellType::hex27>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::hex20:
-      return EvaluateNeumann<DRT::Element::hex20>(
+    case CORE::FE::CellType::hex20:
+      return EvaluateNeumann<CORE::FE::CellType::hex20>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::hex18:
-      return EvaluateNeumann<DRT::Element::hex18>(
+    case CORE::FE::CellType::hex18:
+      return EvaluateNeumann<CORE::FE::CellType::hex18>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::pyramid5:
-      return EvaluateNeumann<DRT::Element::pyramid5>(
+    case CORE::FE::CellType::nurbs27:
+      return EvaluateNeumann<CORE::FE::CellType::nurbs27>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::wedge6:
-      return EvaluateNeumann<DRT::Element::wedge6>(
+    case CORE::FE::CellType::pyramid5:
+      return EvaluateNeumann<CORE::FE::CellType::pyramid5>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::tet4:
-      return EvaluateNeumann<DRT::Element::tet4>(
+    case CORE::FE::CellType::wedge6:
+      return EvaluateNeumann<CORE::FE::CellType::wedge6>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::tet10:
-      return EvaluateNeumann<DRT::Element::tet10>(
+    case CORE::FE::CellType::tet4:
+      return EvaluateNeumann<CORE::FE::CellType::tet4>(
+          element, discretization, condition, dof_index_array, element_force_vector, total_time);
+      break;
+    case CORE::FE::CellType::tet10:
+      return EvaluateNeumann<CORE::FE::CellType::tet10>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     default:
       dserror(
-          "The discretization type you are trying to evaluate the Neumann condition for is not yet "
+          "The cell type you are trying to evaluate the Neumann condition for is not yet "
           "implemented in EvaluateNeumannByElement.");
       break;
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)
 {
-  constexpr auto numdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-  constexpr auto numnod = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  constexpr auto numdim = CORE::FE::dim<celltype>;
+  constexpr auto numnod = CORE::FE::num_nodes<celltype>;
   CORE::DRT::UTILS::GaussIntegration gauss_integration =
-      CreateGaussIntegration<distype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<distype>());
+      CreateGaussIntegration<celltype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<celltype>());
 
   // get values and switches from the condition
   const auto& onoff = *condition.Get<std::vector<int>>("onoff");
@@ -94,13 +101,13 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
   // get ids of functions of space and time
   const auto* function_ids = condition.Get<std::vector<int>>("funct");
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(element, discretization, dof_index_array);
+  const ElementNodes<celltype> nodal_coordinates =
+      EvaluateElementNodes<celltype>(element, discretization, dof_index_array);
 
-  ForEachGaussPoint<distype>(nodal_coordinates, gauss_integration,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
-          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
-          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+  ForEachGaussPoint<celltype>(nodal_coordinates, gauss_integration,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+          const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         if (jacobian_mapping.determinant_ == 0.0)
           dserror("The determinant of the jacobian is zero for element with id %i", element.Id());
@@ -111,7 +118,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
         // material/reference co-ordinates of Gauss point
         CORE::LINALG::Matrix<numdim, 1> gauss_point_reference_coordinates;
         gauss_point_reference_coordinates.MultiplyTN(
-            nodal_coordinates.reference_, shape_functions.shapefunctions_);
+            nodal_coordinates.reference_coordinates_, shape_functions.shapefunctions_);
 
         for (auto dim = 0; dim < numdim; dim++)
         {
@@ -122,7 +129,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
             const double function_scale_factor =
                 (function_number > 0)
                     ? DRT::Problem::Instance()
-                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(function_number - 1)
                           .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                     : 1.0;
 
@@ -141,3 +148,4 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
         }
       });
 }
+BACI_NAMESPACE_CLOSE

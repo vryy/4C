@@ -10,7 +10,10 @@
 #include "baci_scatra_timint_poromulti.H"
 
 #include "baci_io.H"
+#include "baci_lib_discret.H"
 #include "baci_poromultiphase_scatra_utils.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                             vuong  08/16 |
@@ -280,19 +283,15 @@ void SCATRA::ScaTraTimIntPoroMultiOST::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  vuong  08/16 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiOST::~ScaTraTimIntPoroMultiOST() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiOST::Update(const int num)
+void SCATRA::ScaTraTimIntPoroMultiOST::Update()
 {
-  TimIntOneStepTheta::Update(num);
-  ScaTraTimIntPoroMulti::Update(num);
+  TimIntOneStepTheta::Update();
+  ScaTraTimIntPoroMulti::Update();
 
   return;
 }
@@ -327,19 +326,15 @@ void SCATRA::ScaTraTimIntPoroMultiBDF2::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  vuong  08/16 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiBDF2::~ScaTraTimIntPoroMultiBDF2() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiBDF2::Update(const int num)
+void SCATRA::ScaTraTimIntPoroMultiBDF2::Update()
 {
-  TimIntBDF2::Update(num);
-  ScaTraTimIntPoroMulti::Update(num);
+  TimIntBDF2::Update();
+  ScaTraTimIntPoroMulti::Update();
 
   return;
 }
@@ -375,19 +370,15 @@ void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  vuong  08/16 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiGenAlpha::~ScaTraTimIntPoroMultiGenAlpha() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Update(const int num)
+void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Update()
 {
-  TimIntGenAlpha::Update(num);
-  ScaTraTimIntPoroMulti::Update(num);
+  TimIntGenAlpha::Update();
+  ScaTraTimIntPoroMulti::Update();
 
   return;
 }
@@ -422,19 +413,17 @@ void SCATRA::ScaTraTimIntPoroMultiStationary::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  vuong  08/16 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiStationary::~ScaTraTimIntPoroMultiStationary() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                         vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiStationary::Update(const int num)
+void SCATRA::ScaTraTimIntPoroMultiStationary::Update()
 {
-  TimIntStationary::Update(num);
-  ScaTraTimIntPoroMulti::Update(num);
+  TimIntStationary::Update();
+  ScaTraTimIntPoroMulti::Update();
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

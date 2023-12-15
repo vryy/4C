@@ -15,6 +15,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::FluidIntFaceType DRT::ELEMENTS::FluidIntFaceType::instance_;
 
@@ -78,7 +80,7 @@ DRT::Element* DRT::ELEMENTS::FluidIntFace::Clone() const
  |                                                             (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::FluidIntFace::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::FluidIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
@@ -88,7 +90,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::FluidIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidIntFace::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this FluidIntFace element does not support communication");
   return;
@@ -104,10 +106,6 @@ void DRT::ELEMENTS::FluidIntFace::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                          schott 03/12 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidIntFace::~FluidIntFace() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -577,16 +575,7 @@ void DRT::ELEMENTS::FluidIntFace::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   dserror("Lines of FluidIntFace not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }
 
 /*----------------------------------------------------------------------*
@@ -594,16 +583,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   dserror("Surfaces of FluidIntFace not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }
 
 /*----------------------------------------------------------------------*
@@ -637,3 +617,5 @@ int DRT::ELEMENTS::FluidIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,11 +13,13 @@
 
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcLS : public ScaTraEleCalc<distype>
     {
      private:
@@ -29,8 +31,6 @@ namespace DRT
       using my::nsd_;
 
      public:
-      virtual ~ScaTraEleCalcLS() {}
-
       /// Singleton access method
       static ScaTraEleCalcLS<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
@@ -41,7 +41,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      private:
       // calculate error compared to analytical solution
@@ -54,5 +54,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

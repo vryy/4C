@@ -3,7 +3,6 @@ baci_auto_define_module()
 set(_geometry_pair_dependencies
     # cmake-format: sortable
     beam3
-    beaminteraction
     core
     inpar
     lib

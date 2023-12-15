@@ -8,13 +8,15 @@
 
 #include "baci_mixture_constituent_elasthyper_damage.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_isoneohooke.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::MixtureConstituent_ElastHyperDamage(
@@ -48,11 +50,12 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_ElastHyperDamage::MaterialT
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituent_ElastHyperDamage::PackConstituent(DRT::PackBuffer& data) const
+void MIXTURE::MixtureConstituent_ElastHyperDamage::PackConstituent(
+    CORE::COMM::PackBuffer& data) const
 {
   MixtureConstituent_ElastHyperBase::PackConstituent(data);
 
-  DRT::ParObject::AddtoPack(data, current_reference_growth_);
+  CORE::COMM::ParObject::AddtoPack(data, current_reference_growth_);
 }
 
 // Unpack the constituent
@@ -61,7 +64,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::UnpackConstituent(
 {
   MixtureConstituent_ElastHyperBase::UnpackConstituent(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, current_reference_growth_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_reference_growth_);
 }
 
 // Reads the element from the input file
@@ -88,7 +91,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::Update(CORE::LINALG::Matrix<3
 
   current_reference_growth_[gp] =
       DRT::Problem::Instance()
-          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
+          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
           .Evaluate(gprefecoord.A(), totaltime, 0);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);
@@ -119,3 +122,4 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::EvaluateElasticPart(
   MAT::ElastHyperEvaluateElasticPart(
       F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
 }
+BACI_NAMESPACE_CLOSE

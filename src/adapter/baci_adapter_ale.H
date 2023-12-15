@@ -23,6 +23,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace DRT
@@ -76,7 +78,7 @@ namespace ADAPTER
   {
    public:
     //! virtual to get polymorph destruction
-    virtual ~Ale(){};
+    virtual ~Ale() = default;
 
     //! @name Vector access
 
@@ -115,7 +117,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) = 0;
 
@@ -261,7 +263,7 @@ namespace ADAPTER
     );
 
     //! virtual destructor to support polymorph destruction
-    virtual ~AleBaseAlgorithm();
+    virtual ~AleBaseAlgorithm() = default;
 
     //! Teuchos::RCP version of ale field solver
     Teuchos::RCP<Ale> AleField() { return ale_; }
@@ -282,5 +284,7 @@ namespace ADAPTER
   };  // class AleBaseAlgorithm
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_H

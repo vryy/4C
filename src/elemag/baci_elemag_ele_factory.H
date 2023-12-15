@@ -13,6 +13,8 @@
 
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -26,20 +28,20 @@ namespace DRT
       ElemagFactory() { return; }
 
       //! dtor
-      virtual ~ElemagFactory() { return; }
-
+      virtual ~ElemagFactory() = default;
       //! ProvideImpl
-      static ElemagEleInterface* ProvideImpl(
-          DRT::Element::DiscretizationType distype, std::string problem);
+      static ElemagEleInterface* ProvideImpl(CORE::FE::CellType distype, std::string problem);
 
      private:
       //! define ElemagEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static ElemagEleInterface* DefineProblemType(std::string problem);
     };
 
   }  // namespace ELEMENTS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_ELE_FACTORY_H

@@ -15,6 +15,8 @@
 
 #include "baci_poroelast_scatra_part.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
@@ -24,3 +26,5 @@ POROELASTSCATRA::PoroScatraPart::PoroScatraPart(
 {
   PoroField()->SetupSolver();
 }
+
+BACI_NAMESPACE_CLOSE

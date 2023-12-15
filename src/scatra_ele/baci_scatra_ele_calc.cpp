@@ -14,7 +14,6 @@
 #include "baci_discretization_fem_general_utils_gder2.H"
 #include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_electrode.H"
@@ -27,10 +26,13 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_parameter_turbulence.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
     const int numdofpernode, const int numscal, const std::string& disname)
     : numdofpernode_(numdofpernode),
@@ -90,7 +92,7 @@ DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
@@ -120,7 +122,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -175,7 +177,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -304,7 +306,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, int& nlayer)
@@ -376,7 +378,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(D
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     CORE::LINALG::SerialDenseVector& subgrdiff)
@@ -794,7 +796,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Element* ele)
 {
   std::vector<DRT::Condition*> myneumcond;
@@ -837,8 +839,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Elemen
         const double functfac =
             (functnum > 0)
                 ? DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                      .Evaluate((ele->Nodes()[jnode])->X(), scatraparatimint_->Time(), idof)
+                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                      .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), idof)
                 : 1.0;
         (bodyforce_[idof])(jnode) = (*onoff)[idof] * (*val)[idof] * functfac;
       }
@@ -856,7 +858,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Elemen
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::OtherNodeBasedSourceTerms(
     const std::vector<int>& lm, DRT::Discretization& discretization, Teuchos::ParameterList& params)
 {
@@ -888,7 +890,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::OtherNodeBasedSourceTerms(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ReadElementCoordinates(const DRT::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
@@ -897,7 +899,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ReadElementCoordinates(cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   // use one-point Gauss rule to do calculations at the element center
@@ -913,7 +915,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtE
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtIntPoint(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
@@ -947,7 +949,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtI
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInParameterSpace()
 {
   double det = 0.0;
@@ -1099,7 +1101,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInP
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMaterialParams(const DRT::Element* ele,
     std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
     double& visc, const int iquad)
@@ -1127,7 +1129,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMaterialParams(const DRT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Materials(
     const Teuchos::RCP<const MAT::Material> material, const int k, double& densn, double& densnp,
     double& densam, double& visc, const int iquad)
@@ -1165,7 +1167,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Materials(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
     const Teuchos::RCP<const MAT::Material> material, const int k, double& densn, double& densnp,
     double& densam, double& visc, const int iquad)
@@ -1217,7 +1219,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
     const Teuchos::RCP<const MAT::Material> material, double& densn, double& densnp,
     double& densam) const
@@ -1240,7 +1242,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatElectrode(
     const Teuchos::RCP<const MAT::Material> material)
 {
@@ -1253,7 +1255,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatElectrode(
 
 /*---------------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetLaplacianStrongForm(
     CORE::LINALG::Matrix<nen_, 1>& diff)
 {
@@ -1270,7 +1272,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetLaplacianStrongForm(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDivergence(
     double& vdiv, const CORE::LINALG::Matrix<nsd_, nen_>& evel)
 {
@@ -1287,7 +1289,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDivergence(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetRhsInt(
     double& rhsint, const double densnp, const int k)
 {
@@ -1300,7 +1302,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetRhsInt(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConv(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv)
@@ -1325,7 +1327,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConv(
 
 /*------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddCons(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
@@ -1347,7 +1349,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddCons(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatDiff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
@@ -1369,7 +1371,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatDiff(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatTransConvDiffStab(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timetaufac,
     const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
@@ -1450,7 +1452,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatTransConvDiffStab(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(
     CORE::LINALG::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam)
 {
@@ -1459,7 +1461,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(
     CORE::LINALG::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam,
     const CORE::LINALG::Matrix<nen_, 1>& sfunct, const CORE::LINALG::Matrix<nen_, 1>& tfunct) const
@@ -1484,7 +1486,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMassStab(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double taufac, const double densam,
     const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
@@ -1533,7 +1535,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMassStab(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatReact(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double timetaufac, const double taufac, const double densnp,
@@ -1663,7 +1665,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatReact(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSLinMass(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double fac,
     const double densam, const double densnp)
@@ -1691,7 +1693,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSLinMass(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ComputeRhsInt(
     double& rhsint, const double densam, const double densnp, const double hist)
 {
@@ -1714,7 +1716,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ComputeRhsInt(
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeScatraResForRhs(double& scatrares,
     const int k, const CORE::LINALG::Matrix<nen_, 1>& diff, const double densn, const double densnp,
     double& rea_phi, const double rhsint)
@@ -1763,7 +1765,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeScatraResForRhs(do
 
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeConvPhiForRhs(const int k,
     const CORE::LINALG::Matrix<nsd_, 1>& sgvelint, const double densnp, const double densn,
     const double vdiv)
@@ -1826,7 +1828,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeConvPhiForRhs(cons
 
 /*-------------------------------------------------------------------------------------- *
  *---------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSHistAndSource(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double rhsint)
 {
@@ -1841,7 +1843,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSHistAndSource(
 
 /*-------------------------------------------------------------------- *
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSConv(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
@@ -1858,7 +1860,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSConv(
 
 /*-------------------------------------------------------------------- *
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSDiff(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
@@ -1878,7 +1880,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSDiff(
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSTransConvDiffStab(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhstaufac, const double densnp,
     const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
@@ -1913,7 +1915,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSTransConvDiffStab(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSReact(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
     const double rea_phi, const double densnp, const double scatrares)
@@ -1945,7 +1947,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSReact(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSFSSGD(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double sgdiff,
     const CORE::LINALG::Matrix<nsd_, 1> fsgradphi)
@@ -1963,7 +1965,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSFSSGD(
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSMFS(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double densnp,
     const CORE::LINALG::Matrix<nsd_, 1> mfsggradphi, const CORE::LINALG::Matrix<nsd_, 1> mfsgvelint,
@@ -2002,7 +2004,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSMFS(
 
 /*-----------------------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
     const DRT::Element* const ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const int k, const int iquad, const double timefacfac,
@@ -2044,7 +2046,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
 
 /*-------------------------------------------------------------------- *
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
     const DRT::Element* const ele, CORE::LINALG::SerialDenseVector& erhs, const double rhsfac)
 {
@@ -2062,10 +2064,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
   {
     for (int d = 0; d < static_cast<int>(nsd_); ++d)
     {
-      current[d] +=
-          funct_(jnode) * DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functno - 1)
-                              .Evaluate((ele->Nodes()[jnode])->X(), scatraparatimint_->Time(), d);
+      current[d] += funct_(jnode) *
+                    DRT::Problem::Instance()
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functno - 1)
+                        .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), d);
     }
   }
 
@@ -2080,11 +2082,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetInternalVariablesForMatAndRHS()
 {
   scatravarmanager_->SetInternalVariables(funct_, derxy_, ephinp_, ephin_, econvelnp_, ehist_);
 }
+
+BACI_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

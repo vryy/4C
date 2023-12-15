@@ -17,6 +17,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -99,9 +101,6 @@ namespace CONTACT
       /// constructor
       TimeMonitor();
 
-      /// destructor
-      ~TimeMonitor() = default;
-
       /// set communicator
       void setComm(const Epetra_Comm* comm)
       {
@@ -152,5 +151,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_TIMEMONITOR_H

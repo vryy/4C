@@ -21,6 +21,8 @@
 #include <ostream>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // Attention: In the case a CORE::LINALG::Matrix is created with float_type ClnWrapper,
 // include the header "/cut/cut_clnwrapper.H" before this header is processed.
 
@@ -761,7 +763,7 @@ namespace CORE::LINALG
         pointer to the matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void scaleMatrix(const value_type fac, value_type* mat);
+    inline void scaleMatrix(const value_type factor, value_type* mat);
 
     /// Dot product
     /*!
@@ -1620,8 +1622,8 @@ namespace CORE::LINALG
         matrix the values are read from, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void abs(CORE::LINALG::SerialDenseMatrix::Base& out,
-        const CORE::LINALG::SerialDenseMatrix::Base& in);
+    inline void abs(CORE::LINALG::SerialDenseMatrix::Base& dest,
+        const CORE::LINALG::SerialDenseMatrix::Base& src);
 
     /// Calculate reciprocal values of a matrix
     /*!
@@ -1635,8 +1637,8 @@ namespace CORE::LINALG
         matrix the values are read from, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void reciprocal(CORE::LINALG::SerialDenseMatrix::Base& out,
-        const CORE::LINALG::SerialDenseMatrix::Base& in);
+    inline void reciprocal(CORE::LINALG::SerialDenseMatrix::Base& dest,
+        const CORE::LINALG::SerialDenseMatrix::Base& src);
 
     /// 1-norm
     /*!
@@ -2638,10 +2640,10 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void scaleMatrix(const value_type scalar, value_type* mat)
+    inline void scaleMatrix(const value_type factor, value_type* mat)
     {
-      *mat *= scalar;
-      for (unsigned int c = 1; c < i * j; ++c) *(++mat) *= scalar;
+      *mat *= factor;
+      for (unsigned int c = 1; c < i * j; ++c) *(++mat) *= factor;
     }
 
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_left,
@@ -4837,8 +4839,6 @@ namespace CORE::LINALG
    public:
     /// Constructor
     FixedSizeSerialDenseSolver();
-    /// Destructor
-    ~FixedSizeSerialDenseSolver();
 
     /// Is matrix factored?
     /*!
@@ -4936,11 +4936,6 @@ namespace CORE::LINALG
   {
     DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
     DENSEERROR::Checker<rows == cols>::Matrix_size_in_solver_must_be_square();
-  }
-
-  template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::~FixedSizeSerialDenseSolver()
-  {
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
@@ -5131,5 +5126,7 @@ namespace CORE::LINALG
 
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_FIXEDSIZEMATRIX_H

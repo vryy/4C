@@ -9,14 +9,16 @@
 
 #include "baci_structure_resulttest.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_structure_timint.H"
 
 #include <Epetra_Vector.h>
 
 #include <string>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -212,3 +214,5 @@ double StruResultTest::GetSpecialResultForTesting(const std::string& quantity)
 
   return result;
 }
+
+BACI_NAMESPACE_CLOSE

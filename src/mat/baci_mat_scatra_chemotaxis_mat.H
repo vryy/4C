@@ -10,9 +10,11 @@ This file contains the base material for chemotactic scalars.
 #ifndef BACI_MAT_SCATRA_CHEMOTAXIS_MAT_H
 #define BACI_MAT_SCATRA_CHEMOTAXIS_MAT_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -26,11 +28,8 @@ namespace MAT
       /// standard constructor
       ScatraChemotaxisMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~ScatraChemotaxisMat() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// number of scalars in this pair
       const int numscal_;
@@ -45,14 +44,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ScatraChemotaxisMatType : public DRT::ParObjectType
+  class ScatraChemotaxisMatType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ScatraChemotaxisMatType"; }
+    std::string Name() const override { return "ScatraChemotaxisMatType"; }
 
     static ScatraChemotaxisMatType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraChemotaxisMatType instance_;
@@ -77,7 +76,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ScatraChemotaxisMatType::Instance().UniqueParObjectId();
     }
@@ -92,7 +91,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -106,18 +105,18 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_scatra_chemotaxis;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraChemotaxisMat(*this));
     }
@@ -132,7 +131,7 @@ namespace MAT
     std::vector<int>* Pair() const { return (std::vector<int>*)params_->pair_; }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
@@ -140,5 +139,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_SCATRA_CHEMOTAXIS_MAT_H

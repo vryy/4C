@@ -12,6 +12,8 @@
 
 #include "baci_fsi_overlapprec.H"
 
+BACI_NAMESPACE_OPEN
+
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
@@ -54,25 +56,22 @@ namespace FSI
         ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
         bool structuresplit, int symmetric, double omega = 1.0, int iterations = 1,
         double somega = 1.0, int siterations = 0, double fomega = 1.0, int fiterations = 0,
-        double aomega = 1.0, int aiterations = 0, FILE* err = nullptr);
-
-    /// destruction
-    ~LungOverlappingBlockMatrix(){};
+        double aomega = 1.0, int aiterations = 0);
 
     /** \name Attribute access functions */
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     //@}
 
     /// setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     Teuchos::RCP<LungSchurComplement> StructSchur_;
     Teuchos::RCP<LungSchurComplement> FluidSchur_;
@@ -88,5 +87,7 @@ namespace FSI
     INPAR::FSI::PrecConstr prec_;  /// preconditioner for constraint system
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

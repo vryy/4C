@@ -9,11 +9,13 @@ space-time varying coefficients
 
 #include "baci_matelast_coupanisoneohooke_VarProp.H"
 
-#include "baci_lib_function.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_material.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
@@ -34,7 +36,7 @@ MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
 {
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
@@ -134,7 +136,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
   const double* coordgpref_ = pos_->data();
   double stressFact_ =
       DRT::Problem::Instance()
-          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
+          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
           .Evaluate(coordgpref_, time_, 0);
 
 
@@ -184,3 +186,5 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetFiberVecs(const double newgamma
 
   params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
 }
+
+BACI_NAMESPACE_CLOSE

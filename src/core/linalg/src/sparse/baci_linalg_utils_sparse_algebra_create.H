@@ -9,7 +9,7 @@
 #ifndef BACI_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
 #define BACI_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
 
-#include "baci_lib_exporter.H"
+#include "baci_lib_dofset_interface.H"
 #include "baci_linalg_blocksparsematrix.H"
 
 #include <Epetra_Comm.h>
@@ -22,6 +22,8 @@
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -98,7 +100,7 @@ namespace CORE::LINALG
       \date 02/08
      */
   void CreateMapExtractorFromDiscretization(
-      const ::DRT::Discretization& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor);
+      const BACI::DRT::Discretization& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor);
 
   /*!
     \brief Creates MapExtractor to split dofs at certain position
@@ -119,8 +121,8 @@ namespace CORE::LINALG
     \author u.kue
     \date 02/08
    */
-  void CreateMapExtractorFromDiscretization(const ::DRT::Discretization& dis,
-      const ::DRT::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor);
+  void CreateMapExtractorFromDiscretization(const BACI::DRT::Discretization& dis,
+      const BACI::DRT::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor);
 
 
   /*!
@@ -140,9 +142,11 @@ namespace CORE::LINALG
     \author schott
     \date 12/11
    */
-  void CreateMapExtractorFromDiscretization(const ::DRT::Discretization& dis, int ndim_field1,
+  void CreateMapExtractorFromDiscretization(const BACI::DRT::Discretization& dis, int ndim_field1,
       int ndim_field2, CORE::LINALG::MultiMapExtractor& extractor);
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H

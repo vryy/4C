@@ -12,6 +12,8 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
@@ -23,9 +25,9 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
   setStringToIntegralParameter<RebalanceType>("METHOD", "hypergraph",
       "Type of rebalance/partition algorithm to be used for decomposing the entire mesh into "
       "subdomains for parallel computing.",
-      tuple<std::string>("none", "hypergraph", "recursive_coordinate_bisection"),
+      tuple<std::string>("none", "hypergraph", "recursive_coordinate_bisection", "monolithic"),
       tuple<RebalanceType>(RebalanceType::none, RebalanceType::hypergraph,
-          RebalanceType::recursive_coordinate_bisection),
+          RebalanceType::recursive_coordinate_bisection, RebalanceType::monolithic),
       &meshpartitioning);
 
   DoubleParameter("IMBALANCE_TOL", 1.1,
@@ -33,3 +35,5 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
       "meshes read from input files.",
       &meshpartitioning);
 }
+
+BACI_NAMESPACE_CLOSE

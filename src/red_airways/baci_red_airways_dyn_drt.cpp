@@ -30,6 +30,8 @@
 #include <ctime>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  * Main control routine for reduced dimensional airway network including|
@@ -86,8 +88,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
   // Create the solver
   std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle());
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // 5. Set parameters in list required for all schemes
@@ -156,9 +157,6 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
     airwayimplicit->ReadRestart(restart);
   }
 
-  // Handle errors
-  airwaystimeparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
-
   if (!CoupledTo3D)
   {
     // Call time-integration scheme for 0D problem
@@ -214,3 +212,5 @@ void redairway_tissue_dyn()
   // Do the actual testing
   DRT::Problem::Instance()->TestAll(actdis->Comm());
 }
+
+BACI_NAMESPACE_CLOSE

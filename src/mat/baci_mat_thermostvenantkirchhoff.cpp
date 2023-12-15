@@ -19,6 +19,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_stvenantkirchhoff.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -54,7 +56,7 @@ MAT::ThermoStVenantKirchhoffType MAT::ThermoStVenantKirchhoffType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ThermoStVenantKirchhoffType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ThermoStVenantKirchhoffType::Create(const std::vector<char>& data)
 {
   auto* thrstvenantk = new MAT::ThermoStVenantKirchhoff();
   thrstvenantk->Unpack(data);
@@ -94,9 +96,9 @@ void MAT::ThermoStVenantKirchhoff::CreateThermoMaterialIfSet()
 /*----------------------------------------------------------------------*
  |  Pack (public)                                            dano 02/10 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Pack(DRT::PackBuffer& data) const
+void MAT::ThermoStVenantKirchhoff::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -116,10 +118,8 @@ void MAT::ThermoStVenantKirchhoff::Pack(DRT::PackBuffer& data) const
 void MAT::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -532,3 +532,5 @@ void MAT::ThermoStVenantKirchhoff::GetCthermoAtTempnp_T(CORE::LINALG::Matrix<6, 
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

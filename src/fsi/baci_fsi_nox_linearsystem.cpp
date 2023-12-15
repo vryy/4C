@@ -25,13 +25,15 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<Epetra_Operator>& J, const NOX::Epetra::Vector& cloneVector,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::RCP<NOX::Epetra::Scaling> s)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::RCP<::NOX::Epetra::Scaling> s)
     : utils_(printParams),
       jacInterfacePtr_(iJac),
       jacType_(EpetraOperator),
@@ -44,7 +46,7 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timer_("", true),
       timeApplyJacbianInverse_(0.0)
 {
-  tmpVectorPtr_ = Teuchos::rcp(new NOX::Epetra::Vector(cloneVector));
+  tmpVectorPtr_ = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
 
   jacType_ = getOperatorType(*jacPtr_);
 
@@ -92,7 +94,7 @@ void NOX::FSI::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::FSI::LinearSystem::applyJacobian(
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   jacPtr_->SetUseTranspose(false);
   int status = jacPtr_->Apply(input.getEpetraVector(), result.getEpetraVector());
@@ -104,7 +106,7 @@ bool NOX::FSI::LinearSystem::applyJacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::FSI::LinearSystem::applyJacobianTranspose(
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   jacPtr_->SetUseTranspose(true);
   int status = jacPtr_->Apply(input.getEpetraVector(), result.getEpetraVector());
@@ -117,7 +119,7 @@ bool NOX::FSI::LinearSystem::applyJacobianTranspose(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::FSI::LinearSystem::applyJacobianInverse(
-    Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
+    Teuchos::ParameterList& p, const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   // Zero out the delta X of the linear problem if requested by user.
   if (zeroInitialGuess_) result.init(0.0);
@@ -155,8 +157,8 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::FSI::LinearSystem::applyRightPreconditioning(bool useTranspose,
-    Teuchos::ParameterList& params, const NOX::Epetra::Vector& input,
-    NOX::Epetra::Vector& result) const
+    Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
+    ::NOX::Epetra::Vector& result) const
 {
   if (&result != &input) result = input;
 
@@ -166,12 +168,12 @@ bool NOX::FSI::LinearSystem::applyRightPreconditioning(bool useTranspose,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Scaling> NOX::FSI::LinearSystem::getScaling() { return scaling_; }
+Teuchos::RCP<::NOX::Epetra::Scaling> NOX::FSI::LinearSystem::getScaling() { return scaling_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::FSI::LinearSystem::resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject)
+void NOX::FSI::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
 {
   scaling_ = scalingObject;
 }
@@ -179,7 +181,7 @@ void NOX::FSI::LinearSystem::resetScaling(const Teuchos::RCP<NOX::Epetra::Scalin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::computeJacobian(const NOX::Epetra::Vector& x)
+bool NOX::FSI::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 {
   bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(), *jacPtr_);
   return success;
@@ -189,7 +191,7 @@ bool NOX::FSI::LinearSystem::computeJacobian(const NOX::Epetra::Vector& x)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::FSI::LinearSystem::createPreconditioner(
-    const NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
 {
   return false;
 }
@@ -203,7 +205,7 @@ bool NOX::FSI::LinearSystem::destroyPreconditioner() const { return false; }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::FSI::LinearSystem::recomputePreconditioner(
-    const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
 {
   return false;
 }
@@ -281,8 +283,10 @@ void NOX::FSI::LinearSystem::setPrecOperatorForSolve(
 void NOX::FSI::LinearSystem::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utils_.isPrintType(NOX::Utils::Error))
+  if (utils_.isPrintType(::NOX::Utils::Error))
     utils_.out() << "NOX::FSI::LinearSystem::" << functionName << " - " << errorMsg << std::endl;
 
   throw "NOX Error";
 }
+
+BACI_NAMESPACE_CLOSE

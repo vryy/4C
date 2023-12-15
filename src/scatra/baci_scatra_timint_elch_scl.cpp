@@ -14,7 +14,6 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parallel.H"
@@ -29,6 +28,9 @@
 #include "baci_scatra_resulttest_elch.H"
 #include "baci_scatra_timint_elch_service.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -91,19 +93,20 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
   sdyn_micro->set("INITIALFIELD", initial_field_type);
   sdyn_micro->set("INITFUNCNO", elchparams_->sublist("SCL").get<int>("INITFUNCNO"));
 
-  micro_timint_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  micro_timint_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*sdyn_micro, *sdyn_micro,
+      problem->SolverParams(sdyn_micro->get<int>("LINEAR_SOLVER")), "scatra_micro", false));
 
-  micro_timint_->Init(*sdyn_micro, *sdyn_micro,
-      problem->SolverParams(sdyn_micro->get<int>("LINEAR_SOLVER")), "scatra_micro", false);
+  micro_timint_->Init();
 
   auto dofset_vel = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(3, 0, 0, true));
   if (micro_timint_->ScaTraField()->Discretization()->AddDofSet(dofset_vel) != 1)
     dserror("unexpected number of dofsets in the scatra micro discretization");
+  MicroScaTraField()->SetNumberOfDofSetVelocity(1);
+
   MicroScaTraField()->Discretization()->FillComplete();
 
   RedistributeMicroDiscretization();
 
-  MicroScaTraField()->SetNumberOfDofSetVelocity(1);
   MicroScaTraField()->SetVelocityField();
 
   micro_timint_->Setup();
@@ -170,8 +173,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
 
   // setup solver for coupled problem
   solver_elch_scl_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      problem->SolverParams(elchparams_->sublist("SCL").get<int>("SOLVER")), discret_->Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle()));
+      problem->SolverParams(elchparams_->sublist("SCL").get<int>("SOLVER")), discret_->Comm()));
 
   switch (matrixtype_elch_scl_)
   {
@@ -231,20 +233,20 @@ void SCATRA::ScaTraTimIntElchSCL::PrepareTimeStep()
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCL::Update(const int num)
+void SCATRA::ScaTraTimIntElchSCL::Update()
 {
-  ScaTraTimIntElch::Update(num);
+  ScaTraTimIntElch::Update();
 
-  MicroScaTraField()->Update(num);
+  MicroScaTraField()->Update();
 }
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCL::Output(int num)
+void SCATRA::ScaTraTimIntElchSCL::CheckAndWriteOutputAndRestart()
 {
-  ScaTraTimIntElch::Output(num);
+  ScaTraTimIntElch::CheckAndWriteOutputAndRestart();
 
-  MicroScaTraField()->Output(num);
+  MicroScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*
@@ -436,7 +438,7 @@ void SCATRA::ScaTraTimIntElchSCL::WriteCouplingToCSV(
 
         if (DRT::UTILS::IsNodeGIDOnThisProc(*discret_, macro_node_gid))
         {
-          const auto* const macro_coords = discret_->gNode(macro_node_gid)->X();
+          const auto& macro_coords = discret_->gNode(macro_node_gid)->X();
 
           file.open(file_name_coords, std::fstream::app);
           file << std::setprecision(16) << std::scientific;
@@ -448,7 +450,7 @@ void SCATRA::ScaTraTimIntElchSCL::WriteCouplingToCSV(
 
         if (DRT::UTILS::IsNodeGIDOnThisProc(*MicroScaTraField()->Discretization(), mirco_node_gid))
         {
-          const auto* const micro_coords =
+          const auto& micro_coords =
               MicroScaTraField()->Discretization()->gNode(mirco_node_gid)->X();
 
           file.open(file_name_coords, std::fstream::app);
@@ -483,7 +485,7 @@ bool SCATRA::ScaTraTimIntElchSCL::BreakNewtonLoopAndPrintConvergence()
   auto macro_increment = macro_micro_dofs_->ExtractOtherVector(increment_elch_scl_);
 
   double residual_L2, micro_residual_L2, macro_residual_L2, increment_L2, micro_increment_L2,
-      macro_increment_L2, state_L2, micro_state_L2, macro_state_L2;
+      macro_increment_L2, micro_state_L2, macro_state_L2;
   residual_elch_scl_->Norm2(&residual_L2);
   micro_residual->Norm2(&micro_residual_L2);
   macro_residual->Norm2(&macro_residual_L2);
@@ -496,19 +498,17 @@ bool SCATRA::ScaTraTimIntElchSCL::BreakNewtonLoopAndPrintConvergence()
   // safety checks
   if (std::isnan(residual_L2) or std::isnan(micro_residual_L2) or std::isnan(macro_residual_L2) or
       std::isnan(increment_L2) or std::isnan(micro_increment_L2) or
-      std::isnan(macro_increment_L2) or std::isnan(state_L2) or std::isnan(micro_state_L2) or
-      std::isnan(macro_state_L2))
+      std::isnan(macro_increment_L2) or std::isnan(micro_state_L2) or std::isnan(macro_state_L2))
     dserror("Calculated vector norm is not a number!");
   if (std::isinf(residual_L2) or std::isinf(micro_residual_L2) or std::isinf(macro_residual_L2) or
       std::isinf(increment_L2) or std::isinf(micro_increment_L2) or
-      std::isinf(macro_increment_L2) or std::isinf(state_L2) or std::isinf(micro_state_L2) or
-      std::isinf(macro_state_L2))
+      std::isinf(macro_increment_L2) or std::isinf(micro_state_L2) or std::isinf(macro_state_L2))
     dserror("Calculated vector norm is infinity!");
 
   micro_state_L2 = micro_state_L2 < 1.0e-10 ? 1.0 : micro_state_L2;
   macro_state_L2 = macro_state_L2 < 1.0e-10 ? 1.0 : micro_state_L2;
 
-  state_L2 = std::sqrt(std::pow(micro_state_L2, 2) + std::pow(macro_state_L2, 2));
+  const double state_L2 = std::sqrt(std::pow(micro_state_L2, 2) + std::pow(macro_state_L2, 2));
 
   micro_increment_L2 = micro_increment_L2 / micro_state_L2;
   macro_increment_L2 = macro_increment_L2 / macro_state_L2;
@@ -1269,3 +1269,5 @@ void SCATRA::ScaTraTimIntElchSCL::TestResults()
   DRT::Problem::Instance()->AddFieldTest(CreateMicroFieldTest());
   DRT::Problem::Instance()->TestAll(discret_->Comm());
 }
+
+BACI_NAMESPACE_CLOSE

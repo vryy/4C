@@ -20,6 +20,8 @@
 #include <memory>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -59,9 +61,6 @@ namespace PARTICLEENGINE
      * \param[in] comm communicator
      */
     explicit UniqueGlobalIdHandler(const Epetra_Comm& comm, const std::string& objectname);
-
-    //! destructor
-    ~UniqueGlobalIdHandler() = default;
 
     /*!
      * \brief init unique global identifier handler
@@ -216,4 +215,6 @@ namespace PARTICLEENGINE
 }  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

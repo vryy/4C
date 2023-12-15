@@ -33,9 +33,11 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 03/13 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -48,9 +50,6 @@ namespace MAT
      public:
       //! standard constructor
       ThermoPlasticHyperElast(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      //! destructor
-      virtual ~ThermoPlasticHyperElast() { ; }
 
       //! @name material parameters
       //@{
@@ -83,21 +82,21 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class ThermoPlasticHyperElast
 
   }  // namespace PAR
 
 
-  class ThermoPlasticHyperElastType : public DRT::ParObjectType
+  class ThermoPlasticHyperElastType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ThermoPlasticHyperElastType"; }
+    std::string Name() const override { return "ThermoPlasticHyperElastType"; }
 
     static ThermoPlasticHyperElastType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ThermoPlasticHyperElastType instance_;
@@ -123,7 +122,7 @@ namespace MAT
     every class implementing ParObject needs a unique id defined at the
     top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ThermoPlasticHyperElastType::Instance().UniqueParObjectId();
     }
@@ -138,7 +137,7 @@ namespace MAT
 
     \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -152,27 +151,27 @@ namespace MAT
     \param data (in) : vector storing all data to be unpacked into this
     instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     //! @name Access methods
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_thermoplhyperelast;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ThermoPlasticHyperElast(*this));
     }
@@ -184,7 +183,7 @@ namespace MAT
     double PoissonRatio() const { return params_->poissonratio_; }
 
     //! density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     //! shear modulus
     double ShearMod() const { return 0.5 * (params_->youngs_) / (1.0 + params_->poissonratio_); }
@@ -214,7 +213,7 @@ namespace MAT
     virtual double InitTemp() const { return params_->inittemp_; }
 
     //! return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
@@ -259,24 +258,24 @@ namespace MAT
     bool Initialized() const { return (isinit_ and (defgrdcurr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //@}
 
     //! @name Evaluation methods
 
     //! initialise internal stress variables
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    virtual void Update();
+    void Update() override;
 
     //! evaluate material law
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>*
-                              defgrd,  //!< input deformation gradient for multiplicative sp
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>*
+                      defgrd,  //!< input deformation gradient for multiplicative sp
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>*
             glstrain,                    //!< input Green-Lagrange strain (redundant with defo
                                          //   but used for neo-hooke evaluation; maybe remove
@@ -286,7 +285,7 @@ namespace MAT
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*
             cmat,  //!< output (mandatory) material stiffness matrix
         int gp,    ///< Gauss point
-        int eleGID);
+        int eleGID) override;
 
     //! evaluate the elasto-plastic tangent
     void SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
@@ -349,7 +348,7 @@ namespace MAT
     );
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    virtual bool NeedsDefgrd() { return true; };
+    bool NeedsDefgrd() override { return true; };
 
     //@}
 
@@ -413,4 +412,6 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_THERMOPLASTICHYPERELAST_H

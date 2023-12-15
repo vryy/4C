@@ -11,11 +11,13 @@
 
 #include "baci_mat_elasthyper_service.H"
 
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_service.H"
 
 #include <Epetra_Vector.h>
+
+BACI_NAMESPACE_OPEN
 
 void MAT::ElastHyperEvaluate(const CORE::LINALG::Matrix<3, 3>& defgrd,
     const CORE::LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
@@ -37,16 +39,16 @@ void MAT::ElastHyperEvaluate(const CORE::LINALG::Matrix<3, 3>& defgrd,
   ddPII.Clear();
 
   // Evaluate identity tensor
-  UTILS::VOIGT::IdentityMatrix(id2);
+  CORE::LINALG::VOIGT::IdentityMatrix(id2);
 
   // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
 
   // Invert Right Cauchy Green Strain tensor
-  UTILS::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
+  CORE::LINALG::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
 
   // Evaluate principle invariants
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
 
   // Evaluate derivatives of potsum w.r.t the principal invariants
   ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum, properties, gp, eleGID);
@@ -177,13 +179,13 @@ void MAT::ElastHyperAddIsotropicStressCmat(CORE::LINALG::Matrix<6, 1>& S_stress,
   static CORE::LINALG::Matrix<6, 1> iC_stress(false);
   // 4th order identity tensor (rows and colums are stress-like)
   static CORE::LINALG::Matrix<6, 6> id4sharp(false);
-  UTILS::VOIGT::FourthOrderIdentityMatrix<UTILS::VOIGT::NotationType::stress,
-      UTILS::VOIGT::NotationType::stress>(id4sharp);
+  CORE::LINALG::VOIGT::FourthOrderIdentityMatrix<CORE::LINALG::VOIGT::NotationType::stress,
+      CORE::LINALG::VOIGT::NotationType::stress>(id4sharp);
 
   // initialize matrices
-  UTILS::VOIGT::IdentityMatrix(id2);
-  UTILS::VOIGT::Strains::ToStressLike(C_strain, C_stress);
-  UTILS::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
+  CORE::LINALG::VOIGT::IdentityMatrix(id2);
+  CORE::LINALG::VOIGT::Strains::ToStressLike(C_strain, C_stress);
+  CORE::LINALG::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
 
   // compose coefficients
   CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
@@ -330,7 +332,7 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
     S_stress(5) += prsts(al) * prdir(2, al) * prdir(0, al);  // S^31
   }
 
-  using map = UTILS::VOIGT::IndexMappings;
+  using map = CORE::LINALG::VOIGT::IndexMappings;
 
   // integration factor prfact_{al be}
   static CORE::LINALG::Matrix<6, 1> prfact1(true);
@@ -402,7 +404,7 @@ void MAT::ElastHyperAddAnisotropicMod(CORE::LINALG::Matrix<6, 1>& S_stress,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum)
 {
   static CORE::LINALG::Matrix<6, 1> iC_stress(false);
-  UTILS::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
+  CORE::LINALG::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
@@ -466,7 +468,7 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
   // defgrd = F (i)
   // dfgrd = F in Voigt - Notation
   static CORE::LINALG::Matrix<9, 1> dfgrd(true);
-  UTILS::VOIGT::Matrix3x3to9x1(defgrd, dfgrd);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(defgrd, dfgrd);
 
   // Cof(F) = J*F^(-T)
   static CORE::LINALG::Matrix<3, 3> CoFacF(true);  // Cof(F) in Matrix-Notation
@@ -474,7 +476,7 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
   CoFacF.Invert(defgrd);
   CoFacF.Scale(J);
   // sort in Voigt-Notation and invert!
-  UTILS::VOIGT::Matrix3x3to9x1(CoFacF, CofF);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(CoFacF, CofF);
 
   // id4 (9x9)
   static CORE::LINALG::Matrix<9, 9> ID4(true);
@@ -567,3 +569,5 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
           std::cout << "Eigenvalues of the Frechet Derivative are: " << EWFreD << std::endl;
         }
 }
+
+BACI_NAMESPACE_CLOSE

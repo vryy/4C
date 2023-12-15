@@ -46,6 +46,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor                                           hemmler 07/14 |
@@ -224,21 +226,23 @@ void FS3I::PartFPS3I::Init()
     dserror(
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
-  fluidscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  fluidscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+      fs3idyn, scatradyn, problem->SolverParams(linsolver1number), "scatra1", true));
 
   // now we can call Init() on the scatra time integrator
-  fluidscatra_->Init(fs3idyn, scatradyn, problem->SolverParams(linsolver1number), "scatra1", true);
+  fluidscatra_->Init();
   fluidscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetPressure(1);
 
-  structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+      fs3idyn, scatradyn, problem->SolverParams(linsolver2number), "scatra2", true));
 
   // only now we must call Init() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
-  structscatra_->Init(fs3idyn, scatradyn, problem->SolverParams(linsolver2number), "scatra2", true);
+  structscatra_->Init();
   structscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(2);
@@ -508,9 +512,9 @@ void FS3I::PartFPS3I::SetupSystem()
       (scatravec_[0])->ScaTraField()->Discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
-  scatrasolvparams->set("solver", "umfpack");
-  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      scatrasolvparams, firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      "SOLVER", INPAR::SOLVER::SolverType::umfpack, scatrasolvparams);
+  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(scatrasolvparams, firstscatradis->Comm()));
 #else
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
   // get solver number used for fs3i
@@ -535,8 +539,8 @@ void FS3I::PartFPS3I::SetupSystem()
     dserror("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(coupledscatrasolvparams,
-      firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  scatrasolver_ =
+      Teuchos::rcp(new CORE::LINALG::Solver(coupledscatrasolvparams, firstscatradis->Comm()));
   // get the solver number used for structural ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
@@ -803,3 +807,5 @@ void FS3I::PartFPS3I::ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vect
                          ->FluidField()
                          ->Velnp());  // we extract the velocities as well. We sort them out later.
 }
+
+BACI_NAMESPACE_CLOSE

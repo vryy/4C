@@ -10,19 +10,21 @@
 
 #include "baci_so3_nstet5.H"
 
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_prestress_service.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::NStet5Type DRT::ELEMENTS::NStet5Type::instance_;
 
@@ -31,7 +33,7 @@ DRT::ELEMENTS::NStet5Type& DRT::ELEMENTS::NStet5Type::Instance() { return instan
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-DRT::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::NStet5(-1, -1);
   object->Unpack(data);
@@ -231,13 +233,13 @@ DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+    pstype_ = BACI::UTILS::PRESTRESS::GetType();
+    pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
         DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));
 }
 
@@ -254,22 +256,19 @@ DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old)
 {
   for (int i = 0; i < 16; ++i) sublm_[i] = old.sublm_[i];
 
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              gee 03/12|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStet5::~NStet5() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::NStet5::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -288,9 +287,9 @@ void DRT::ELEMENTS::NStet5::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
-    DRT::ParObject::AddtoPack(data, *prestress_);
+    CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
 }
 
@@ -302,10 +301,9 @@ void DRT::ELEMENTS::NStet5::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::NStet5::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -321,7 +319,7 @@ void DRT::ELEMENTS::NStet5::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -390,32 +388,14 @@ void DRT::ELEMENTS::NStet5::Print(std::ostream& os) const
  */
 /*====================================================================*/
 
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                  gee 03/12|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Volumes()
-{
-  dserror("volume not impl. yet");
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
 
 /*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                             gee 03/12|
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -423,15 +403,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Surfaces()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 
@@ -641,3 +614,5 @@ int DRT::ELEMENTS::NStet5Type::Initialize(DRT::Discretization& dis)
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,10 +14,12 @@
 #include <NOX_Utils.H>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::Newton::Newton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
-    : NOX::Direction::Newton(gd, params),
+NOX::FSI::Newton::Newton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
+    : ::NOX::Direction::Newton(gd, params),
       utils_(gd->getUtils()),
       desirednlnres_(0.),
       currentnlnres_(0.),
@@ -25,7 +27,7 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::Param
       better_(0.1),
       verbosity_(INPAR::FSI::verbosity_full)
 {
-  // needed because NOX::Direction::Newton::Newton() does not call
+  // needed because ::NOX::Direction::Newton::Newton() does not call
   // NOX::FSI::Newton::reset()
   paramsPtr = &params;
 
@@ -40,21 +42,21 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::Param
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool NOX::FSI::Newton::reset(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   paramsPtr = &params;
 
   Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
   plaintol_ = lsParams.get<double>("base tolerance");
 
-  return NOX::Direction::Newton::reset(gd, params);
+  return ::NOX::Direction::Newton::reset(gd, params);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool NOX::FSI::Newton::compute(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp, const NOX::Solver::Generic& solver)
+    ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   TEUCHOS_FUNC_TIME_MONITOR("NOX::FSI::Newton::compute");
 
@@ -108,7 +110,7 @@ bool NOX::FSI::Newton::compute(
   cresiduals_.clear();
   dresiduals_.clear();
 
-  return NOX::Direction::Newton::compute(dir, grp, solver);
+  return ::NOX::Direction::Newton::compute(dir, grp, solver);
 }
 
 
@@ -120,3 +122,5 @@ void NOX::FSI::Newton::Residual(double current, double desired)
   cresiduals_.push_back(current);
   dresiduals_.push_back(desired);
 }
+
+BACI_NAMESPACE_CLOSE

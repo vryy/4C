@@ -13,16 +13,18 @@
 #include "baci_mortar_element.H"
 #include "baci_mortar_strategy_factory.H"
 
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CONTACT
 {
   class MtAbstractStrategy;
 }  // namespace CONTACT
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 namespace MORTAR
 {
@@ -41,13 +43,10 @@ namespace MORTAR
     {
      public:
       //! constructor
-      FactoryMT(){};
-
-      //! destructor
-      virtual ~FactoryMT(){};
+      FactoryMT() = default;
 
       //! derived
-      virtual void Setup();
+      void Setup() override;
 
       /*! \brief Read and check meshtying/contact input parameters
        *
@@ -124,5 +123,7 @@ namespace MORTAR
     };  // class FactoryMT
   }     // namespace STRATEGY
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_MESHTYING_STRATEGY_FACTORY_H

@@ -12,11 +12,13 @@
 
 #include "baci_mat_myocard_minimal.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
@@ -531,3 +533,5 @@ void Myocard_Minimal::ResizeInternalStateVariables(int gp)
  |  get number of Gauss points                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
 int Myocard_Minimal::GetNumberOfGP() const { return v_.size(); };
+
+BACI_NAMESPACE_CLOSE

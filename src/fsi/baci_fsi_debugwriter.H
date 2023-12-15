@@ -12,6 +12,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -82,8 +84,7 @@ namespace FSI
      public:
       SimpleDebugWriter(Teuchos::RCP<DRT::Discretization> dis, const std::string& name);
 
-      virtual ~SimpleDebugWriter() {}
-
+      virtual ~SimpleDebugWriter() = default;
       /// announce new time step
       /*!
         Results in a new control file
@@ -124,8 +125,7 @@ namespace FSI
      public:
       MonolithicDebugWriter(FSI::Monolithic& algorithm);
 
-      virtual ~MonolithicDebugWriter() {}
-
+      virtual ~MonolithicDebugWriter() = default;
       /// announce new time step
       /*!
         Results in a new control file
@@ -153,5 +153,7 @@ namespace FSI
     };
   }  // namespace UTILS
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

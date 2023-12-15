@@ -16,6 +16,8 @@ Bauer
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Ion::Ion(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -37,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Ion::CreateMaterial()
 MAT::IonType MAT::IonType::instance_;
 
 
-DRT::ParObject* MAT::IonType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::IonType::Create(const std::vector<char>& data)
 {
   MAT::Ion* ion = new MAT::Ion();
   ion->Unpack(data);
@@ -57,9 +59,9 @@ MAT::Ion::Ion(MAT::PAR::Ion* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Ion::Pack(DRT::PackBuffer& data) const
+void MAT::Ion::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -94,12 +96,8 @@ void MAT::Ion::Pack(DRT::PackBuffer& data) const
 void MAT::Ion::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "wrong instance type data. type = %d, UniqueParObjectId()=%d", type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -122,3 +120,5 @@ void MAT::Ion::Unpack(const std::vector<char>& data)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,14 +12,16 @@
 
 #include "baci_lib_gridgenerator.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elementdefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_rebalance.H"
 
 #include <algorithm>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -62,12 +64,13 @@ namespace DRT
       Teuchos::RCP<Epetra_Map> elementColMap;
 
       // Create initial (or final) map of row elements
-      DRT::Element::DiscretizationType distype_enum = DRT::StringToDistype(inputData.distype_);
+      CORE::FE::CellType distype_enum = CORE::FE::StringToCellType(inputData.distype_);
       int numnewele = inputData.interval_[0] * inputData.interval_[1] * inputData.interval_[2];
       if (inputData.autopartition_)  // linear map
       {
         int scale = 1;
-        if (distype_enum == DRT::Element::wedge6 or distype_enum == DRT::Element::wedge15)
+        if (distype_enum == CORE::FE::CellType::wedge6 or
+            distype_enum == CORE::FE::CellType::wedge15)
         {
           scale = 2;
         }
@@ -76,8 +79,8 @@ namespace DRT
       else  // fancy final box map
       {
         // Error for invalid element types!!!
-        if (distype_enum != DRT::Element::hex8 and distype_enum != DRT::Element::hex20 and
-            distype_enum != DRT::Element::hex27)
+        if (distype_enum != CORE::FE::CellType::hex8 and
+            distype_enum != CORE::FE::CellType::hex20 and distype_enum != CORE::FE::CellType::hex27)
         {
           dserror("This map-partition is only available for HEX-elements!");
         }
@@ -182,9 +185,9 @@ namespace DRT
         // Create specified elemnts
         switch (distype_enum)
         {
-          case DRT::Element::hex8:
-          case DRT::Element::hex20:
-          case DRT::Element::hex27:
+          case CORE::FE::CellType::hex8:
+          case CORE::FE::CellType::hex20:
+          case CORE::FE::CellType::hex27:
           {
             Teuchos::RCP<DRT::Element> ele =
                 CreateHexElement(eleid, inputData.node_gid_of_first_new_node_, myrank, linedef,
@@ -193,8 +196,8 @@ namespace DRT
             dis.AddElement(ele);
             break;
           }
-          case DRT::Element::wedge6:
-          case DRT::Element::wedge15:
+          case CORE::FE::CellType::wedge6:
+          case CORE::FE::CellType::wedge15:
           {
             Teuchos::RCP<DRT::Element> ele = DRT::GRIDGENERATOR::CreateWedgeElement(eleid,
                 inputData.node_gid_of_first_new_node_, myrank, linedef, inputData.interval_,
@@ -275,7 +278,7 @@ namespace DRT
         size_t j = (posid / nx) % ny;
         size_t k = posid / (nx * ny);
 
-        double coords[3];
+        std::vector<double> coords(3, 0.0);
         coords[0] = static_cast<double>(i) / (2 * inputData.interval_[0]) *
                         (inputData.top_corner_point_[0] - inputData.bottom_corner_point_[0]) +
                     inputData.bottom_corner_point_[0];
@@ -327,7 +330,7 @@ namespace DRT
     {
       // Reserve nodeids for this element type
       std::vector<int> nodeids(
-          CORE::DRT::UTILS::getNumberOfElementNodes(DRT::StringToDistype(distype)));
+          CORE::DRT::UTILS::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
 
       // current element position
       const size_t ex = 2 * (eleid % interval[0]);
@@ -379,7 +382,7 @@ namespace DRT
           break;
       }
       // let the factory create a matching empty element
-      Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(elementtype, distype, eleid, myrank);
+      Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(elementtype, distype, eleid, myrank);
       ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
       ele->ReadElement(elementtype, distype, linedef);
       return ele;
@@ -397,7 +400,7 @@ namespace DRT
     {
       // Reserve nodeids for this element type
       std::vector<int> nodeids(
-          CORE::DRT::UTILS::getNumberOfElementNodes(DRT::StringToDistype(distype)));
+          CORE::DRT::UTILS::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
 
       // HEX-equivalent element
       int hex_equiv_eleid = int(eleid / 2);
@@ -456,6 +459,7 @@ namespace DRT
             nodeids[13] = nodeoffset + ((ez + 2) * ny + ey + 2) * nx + ex + 1;  // HEX-eqvi: 18
             nodeids[8] = nodeoffset + (ez * ny + ey + 1) * nx + ex + 1;         // HEX-eqvi: 20
             nodeids[14] = nodeoffset + ((ez + 2) * ny + ey + 1) * nx + ex + 1;  // HEX-eqvi: 25
+            [[fallthrough]];
           case 6:
             nodeids[0] = nodeoffset + (ez * ny + ey) * nx + ex + 2;            // HEX-eqvi: 1
             nodeids[1] = nodeoffset + (ez * ny + ey + 2) * nx + ex + 2;        // HEX-eqvi: 2
@@ -473,7 +477,7 @@ namespace DRT
       }
 
       // let the factory create a matching empty element
-      Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(elementtype, distype, eleid, myrank);
+      Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(elementtype, distype, eleid, myrank);
       ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
       ele->ReadElement(elementtype, distype, linedef);
       return ele;
@@ -481,3 +485,5 @@ namespace DRT
 
   }  // namespace GRIDGENERATOR
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

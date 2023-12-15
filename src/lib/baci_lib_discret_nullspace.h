@@ -9,6 +9,8 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -30,5 +32,7 @@ namespace DRT
   Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const DRT::Discretization& dis, const int numdf,
       const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

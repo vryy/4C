@@ -25,6 +25,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   /**
    * Class to test the local coupling matrices calculated by the beam to fluid meshtying gpts pair.
    */
@@ -67,7 +69,7 @@ namespace
       beam_element->SetNodeIds(2, dummy_node_ids);
       Teuchos::RCP<DRT::ELEMENTS::Fluid> fluid_element =
           Teuchos::rcp(new DRT::ELEMENTS::Fluid(1, 0));
-      fluid_element->SetDisType(DRT::Element::hex8);
+      fluid_element->SetDisType(CORE::FE::CellType::hex8);
 
       // Set up the beam element.
       std::vector<double> xrefe(6);
@@ -90,9 +92,8 @@ namespace
       std::vector<const DRT::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*fluid_element));
-      pair.CreateGeometryPair(evaluation_data_);
+      pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
       pair.Init(intersection_params, pair_elements);
-      pair.CastGeometryPair()->Setup();
       pair.ele1posref_ = q_beam;
       pair.ele2posref_ = q_fluid;
 

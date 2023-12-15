@@ -23,6 +23,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A) { Ifpack_PrintSparsity(A); }
@@ -264,3 +266,5 @@ void CORE::LINALG::WriteEpetraMultiVectorAsXpetra(
 {
   Xpetra::IO<double, int, int, Node>::Write(filename, *Xpetra::toXpetra<int, Node>(vec));
 }
+
+BACI_NAMESPACE_CLOSE

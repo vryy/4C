@@ -21,11 +21,14 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_structure_aux.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 // constructor (public)
@@ -302,14 +305,12 @@ void FSI::MonolithicNoNOX::LinearSolve()
 #ifndef moresolvers
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
-  solver_ =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver),
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(
+      new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver), Comm()));
 #else
   // get UMFPACK...
   Teuchos::ParameterList solverparams = DRT::Problem::Instance()->UMFPACKSolverParams();
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
 #endif
 
 
@@ -319,7 +320,7 @@ void FSI::MonolithicNoNOX::LinearSolve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   Teuchos::RCP<const Epetra_Vector> sx;
   Teuchos::RCP<const Epetra_Vector> fx;
@@ -327,7 +328,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   // Save the inner fluid map that includes the background fluid DOF in order to
   // determine a change.
-  const Epetra_BlockMap fluidincrementmap = Extractor().ExtractVector(x, 1)->Map();
+  const Epetra_BlockMap fluidincrementmap = Extractor().ExtractVector(step_increment, 1)->Map();
 
   if (not firstcall_)
   {
@@ -341,7 +342,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     // The update of the latest increment with step increment:
     // x^n+1_i+1 = x^n     + stepinc
 
-    x_sum_->Update(1.0, *x, 1.0);
+    x_sum_->Update(1.0, *step_increment, 1.0);
 
     ExtractFieldVectors(x_sum_, sx, fx, ax);
 
@@ -417,7 +418,7 @@ void FSI::MonolithicNoNOX::SetDefaultParameters(
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method", "User Defined");
-  //   Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
+  //   Teuchos::RCP<::NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
   //   dirParams.set("User Defined Direction Factory",newtonfactory);
 
 
@@ -635,3 +636,5 @@ void FSI::MonolithicNoNOX::PrepareTimeStep()
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           Extractor(), Extractor(), 81, false, true));
 }
+
+BACI_NAMESPACE_CLOSE

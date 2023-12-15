@@ -13,6 +13,8 @@
 
 #include <Teuchos_LAPACK.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CORE::LINALG::DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A)
@@ -42,3 +44,5 @@ double CORE::LINALG::DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A)
     if (ipiv[i] != i + 1) d *= -1.0;
   return d;
 }
+
+BACI_NAMESPACE_CLOSE

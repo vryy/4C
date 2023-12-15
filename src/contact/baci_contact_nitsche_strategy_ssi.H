@@ -13,6 +13,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -74,7 +76,7 @@ namespace CONTACT
     void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bp) const override;
 
     /*!
      * @brief get the pointer to the matrix block
@@ -83,7 +85,7 @@ namespace CONTACT
      * @return pointer to matrix block
      */
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+        const enum CONTACT::MatBlockType& bp) const;
 
     //! don't want = operator
     CoNitscheStrategySsi operator=(const CoNitscheStrategySsi& old) = delete;
@@ -92,13 +94,13 @@ namespace CONTACT
 
    protected:
     Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bt) const override;
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) override;
+        const enum CONTACT::MatBlockType& bt) override;
 
-    void CompleteMatrixBlockPtr(const enum DRT::UTILS::MatBlockType& bt,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
+    void CompleteMatrixBlockPtr(
+        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     //! current scalar state vector
     Teuchos::RCP<Epetra_Vector> curr_state_scalar_;
@@ -112,4 +114,6 @@ namespace CONTACT
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kds_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_STRATEGY_SSI_H

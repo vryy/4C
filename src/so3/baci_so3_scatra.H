@@ -16,6 +16,8 @@
 #include "baci_inpar_scatra.H"
 #include "baci_so3_scatra_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -31,7 +33,7 @@ namespace DRT
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    template <class so3_ele, CORE::FE::CellType distype>
     class So3_Scatra : public so3_ele
     {
       //! @name Friends
@@ -72,8 +74,7 @@ namespace DRT
 
 
       //! number of element nodes (
-      static const int numnod_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ = CORE::FE::num_nodes<distype>;
       //! number of space dimensions
       static const int numdim_ = 3;
       //! number of dofs per node
@@ -104,13 +105,13 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tet4:
+          case CORE::FE::CellType::tet4:
           {
             return So_tet4ScatraType::Instance().UniqueParObjectId();
           }
-          case DRT::Element::tet10:
+          case CORE::FE::CellType::tet10:
             return So_tet10ScatraType::Instance().UniqueParObjectId();
-          case DRT::Element::hex8:
+          case CORE::FE::CellType::hex8:
           {
             // cast the most specialised element
             // otherwise cast fails, because hex8fbar == hex8
@@ -121,9 +122,9 @@ namespace DRT
             else
               return So_hex8ScatraType::Instance().UniqueParObjectId();
           }
-          case DRT::Element::hex27:
+          case CORE::FE::CellType::hex27:
             return So_hex27ScatraType::Instance().UniqueParObjectId();
-          case DRT::Element::wedge6:
+          case CORE::FE::CellType::wedge6:
             return So_weg6ScatraType::Instance().UniqueParObjectId();
           default:
             dserror("unknown element type!");
@@ -139,7 +140,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -163,15 +164,15 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tet4:
+          case CORE::FE::CellType::tet4:
           {
             const auto* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
             if (ele != nullptr) return So_tet4ScatraType::Instance();
             break;
           }
-          case DRT::Element::tet10:
+          case CORE::FE::CellType::tet10:
             return So_tet10ScatraType::Instance();
-          case DRT::Element::hex8:
+          case CORE::FE::CellType::hex8:
           {
             // cast the most specialised element
             // otherwise cast fails, because hex8fbar == hex8
@@ -182,9 +183,9 @@ namespace DRT
             else
               return So_hex8ScatraType::Instance();
           }
-          case DRT::Element::hex27:
+          case CORE::FE::CellType::hex27:
             return So_hex27ScatraType::Instance();
-          case DRT::Element::wedge6:
+          case CORE::FE::CellType::wedge6:
             return So_weg6ScatraType::Instance();
           default:
             dserror("unknown element type!");
@@ -323,11 +324,11 @@ namespace DRT
        * @brief calculate nonlinear B-operator (6x24)
        *
        * @param[out] bop    nonlinear B-operator
-       * @param[in] defgrd  deformation gradient
+       * @param[in] defgrad  deformation gradient
        * @param[in] N_XYZ   (material) derivative of shape functions
        */
       void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
-          const CORE::LINALG::Matrix<numdim_, numdim_>* defgrd,
+          const CORE::LINALG::Matrix<numdim_, numdim_>* defgrad,
           const CORE::LINALG::Matrix<numdim_, numnod_>* N_XYZ) const;
       //@}
 
@@ -368,5 +369,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_SCATRA_H

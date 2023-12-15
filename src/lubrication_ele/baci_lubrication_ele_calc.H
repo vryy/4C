@@ -19,6 +19,8 @@
 #include "baci_lubrication_ele_action.H"
 #include "baci_lubrication_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace DRT
@@ -64,8 +66,7 @@ namespace DRT
       Lubrication object.
     */
 
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class LubricationEleCalc : public LubricationEleInterface
     {
      protected:
@@ -75,8 +76,6 @@ namespace DRT
       LubricationEleCalc(const std::string& disname);
 
      public:
-      virtual ~LubricationEleCalc(){};
-
       //! singleton access method
       static LubricationEleCalc<distype, probdim>* Instance(const std::string& disname);
 
@@ -84,28 +83,28 @@ namespace DRT
       /// since only derived child classes are free to be allocated!!
 
       /// Setup element evaluation
-      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization);
+      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override;
 
       /// Evaluate the element
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       // Evaluate the off-diagonal coupling block of monotlitic EHL matrix
-      virtual int EvaluateEHLMon(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateEHLMon(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
@@ -123,20 +122,20 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       /*========================================================================*/
       //! @name static member variables
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
       static const int nsd_ = probdim;
 
       //! space dimension of Lubrication element (only for flat domains nsd_ele_ = nsd_)
-      static const int nsd_ele_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ele_ = CORE::FE::dim<distype>;
 
      protected:
       /*========================================================================*/
@@ -404,7 +403,7 @@ namespace DRT
      public:
       LubricationEleInternalVariableManager() : prenp_(0.0), gradpre_(true) { return; }
 
-      virtual ~LubricationEleInternalVariableManager(){};
+      virtual ~LubricationEleInternalVariableManager() = default;
 
       // compute and set internal variables
       void SetInternalVariables(CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
@@ -454,7 +453,7 @@ namespace DRT
      public:
       LubricationEleViscManager() : visc_(0.0) { return; }
 
-      virtual ~LubricationEleViscManager(){};
+      virtual ~LubricationEleViscManager() = default;
 
       //! Set the isotropic diffusion coefficient
       virtual void SetIsotropicVisc(const double visc)
@@ -475,5 +474,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_ELE_CALC_H

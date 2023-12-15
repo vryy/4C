@@ -10,14 +10,16 @@ growth laws.
 
 #include "baci_mat_growth.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_growth_law.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
 #include <utility>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -175,9 +177,9 @@ MAT::Growth::Growth(MAT::PAR::Growth* params)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::Pack(DRT::PackBuffer& data) const
+void MAT::Growth::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -219,10 +221,8 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -275,7 +275,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataelastic);
   if (dataelastic.size() > 0)
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic);  // Unpack is done here
     auto* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel == nullptr) dserror("failed to unpack elastic material");
     matelastic_ = Teuchos::rcp(matel);
@@ -448,7 +448,7 @@ bool MAT::GrowthVolumetric::VisData(
 MAT::GrowthVolumetricType MAT::GrowthVolumetricType::instance_;
 
 /*----------------------------------------------------------------------------*/
-DRT::ParObject* MAT::GrowthVolumetricType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::GrowthVolumetricType::Create(const std::vector<char>& data)
 {
   auto* grow = new MAT::GrowthVolumetric();
   grow->Unpack(data);
@@ -666,7 +666,7 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
     // elastic fiber stretch
     CORE::LINALG::Matrix<3, 3> C(true);
-    UTILS::VOIGT::Strains::VectorToMatrix(Cvec, C);
+    CORE::LINALG::VOIGT::Strains::VectorToMatrix(Cvec, C);
 
     CORE::LINALG::Matrix<3, 1> CDir(true);
     CDir.MultiplyNN(1.0, C, refdir_);
@@ -754,7 +754,7 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
 
   // transform Cdach into a vector
   CORE::LINALG::Matrix<6, 1> Cdachvec(true);
-  UTILS::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
 
   //--------------------------------------------------------------------------------------
   // call material law with elastic part of defgr and elastic part of glstrain
@@ -774,14 +774,14 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
   CORE::LINALG::Matrix<3, 3> Sdach(true);
-  UTILS::VOIGT::Stresses::VectorToMatrix(Sdachvec, Sdach);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(Sdachvec, Sdach);
 
   CORE::LINALG::Matrix<3, 3> tmp(true);
   tmp.MultiplyNT(Sdach, F_ginv);
   CORE::LINALG::Matrix<3, 3> S(true);
   S.MultiplyNN(F_ginv, tmp);
 
-  UTILS::VOIGT::Stresses::MatrixToVector(S, *stress);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(S, *stress);
 
   // trace of elastic Mandel stress Mdach = Cdach Sdach
   tr_mandel_e_->at(gp) = Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1) +
@@ -796,9 +796,9 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
+void MAT::GrowthVolumetric::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -871,10 +871,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -1129,3 +1126,5 @@ void MAT::GrowthVolumetric::ReadFiber(DRT::INPUT::LineDefinition* linedef, std::
   // fill final fiber vector
   for (int i = 0; i < 3; ++i) fiber_vector(i) = fiber1[i] / f1norm;
 }
+
+BACI_NAMESPACE_CLOSE

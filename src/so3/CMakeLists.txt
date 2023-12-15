@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(_so3_dependencies
     # cmake-format: sortable
-    comm
     contact
     core
     fiber
@@ -14,7 +13,6 @@ set(_so3_dependencies
     mat
     nurbs_discret
     structure_new
-    surfstress
     thermo
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_so3_dependencies})

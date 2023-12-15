@@ -10,6 +10,8 @@
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -83,3 +85,4 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddCoupDerivVol(
              36. * c3 * (sqrt(J * J) - 1.) * pow(J * J, -5. / 2.) * J * J -
              6. * c3 * (sqrt(J * J) - 1.) * pow(J * J, -3. / 2.);
 }
+BACI_NAMESPACE_CLOSE

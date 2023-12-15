@@ -21,6 +21,8 @@
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_thermo_ele_impl_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                           dano 11/12 |
  *----------------------------------------------------------------------*/
@@ -35,7 +37,7 @@ namespace DRT
     //!
     //! A structural 3 dimensional solid displacement element for large deformations
     //! and with small and large strains
-    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    template <class so3_ele, CORE::FE::CellType distype>
     class So3_Thermo : public so3_ele
     {
       //! @name Friends
@@ -61,13 +63,11 @@ namespace DRT
       //! Makes a deep copy of a Element
       So3_Thermo(const So3_Thermo& old);
 
-      //! Destructor
-      ~So3_Thermo() override = default;
 
       //@}
 
       //! number of element nodes
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
       //! number of space dimensions
       static const int nsd_ = 3;
       //! number of dofs per node
@@ -98,7 +98,7 @@ namespace DRT
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
@@ -197,7 +197,7 @@ namespace DRT
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
-      virtual void InitJacobianMapping(DRT::Discretization& dis);
+      virtual void InitJacobianMapping(DRT::Discretization& dis);  // NOLINT(modernize-use-override)
 
       //@}
 
@@ -235,9 +235,6 @@ namespace DRT
       std::vector<CORE::LINALG::Matrix<nsd_, 1>> xsi_;
 
       CORE::DRT::UTILS::GaussIntegration intpoints_;
-
-      //! flag indicating higher order element
-      bool ishigherorder_;
 
       //! @name TSI related stuff
 
@@ -312,7 +309,7 @@ namespace DRT
       //! Add whatever your material needs, but make sure that exchange is not
       //! overdone performance-wise.
       void Materialize(CORE::LINALG::Matrix<numstr_, 1>*
-                           stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
+                           couplstress,  //!< (o): Voigt-Vector of stresses at current gp
           CORE::LINALG::Matrix<numstr_, 1>*
               ctemp,  //!< (o): temperature dependent tangent matrix at current gp
           CORE::LINALG::Matrix<1, 1>*
@@ -394,4 +391,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // SO3_THERMO_H

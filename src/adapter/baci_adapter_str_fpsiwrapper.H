@@ -14,6 +14,8 @@
 
 #include "baci_adapter_str_fsiwrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class FPSIStructureWrapper : public FSIStructureWrapper
@@ -21,9 +23,6 @@ namespace ADAPTER
    public:
     /// constructor
     explicit FPSIStructureWrapper(Teuchos::RCP<Structure> structure);
-
-    /// Destructor
-    virtual ~FPSIStructureWrapper() { ; }
 
     /*!
     \brief extract interface displacements at \f$t_{n}\f$
@@ -46,4 +45,6 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp(bool FPSI = false);
   };
 }  // namespace ADAPTER
+BACI_NAMESPACE_CLOSE
+
 #endif

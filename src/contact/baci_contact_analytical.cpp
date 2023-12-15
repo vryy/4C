@@ -14,6 +14,8 @@
 
 #include <math.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Analytical solutions for 2D problems                      popp 06/11|
@@ -457,3 +459,5 @@ void CONTACT::AnalyticalSolutions3D(const CORE::LINALG::Matrix<3, 1>& pos,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

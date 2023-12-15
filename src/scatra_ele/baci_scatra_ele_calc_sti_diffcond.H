@@ -13,24 +13,26 @@
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_sti_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     // forward declarations
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcElch;
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcElchDiffCond;
     class ScaTraEleDiffManagerElchDiffCond;
     class ScaTraEleDiffManagerSTIThermo;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchDiffCond;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchDiffCond;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcSTIDiffCond : public ScaTraEleCalc<distype>, public ScaTraEleSTIElch<distype>
     {
      public:
@@ -42,7 +44,7 @@ namespace DRT
      private:
       //! abbreviations
       using my = ScaTraEleCalc<distype>;
-      using myelch = ScaTraEleCalcElch<distype, CORE::DRT::UTILS::DisTypeToDim<distype>::dim>;
+      using myelch = ScaTraEleCalcElch<distype, CORE::FE::dim<distype>>;
       using mystielch = ScaTraEleSTIElch<distype>;
       using my::nen_;
       using my::nsd_;
@@ -63,14 +65,14 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! calculate element matrix and element right-hand side vector
       void Sysmat(DRT::Element* ele,                  ///< current element
           CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,      ///< element right-hand side vector
           CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
-      );
+          ) override;
 
       //! element matrix and right-hand side vector contributions arising from Joule's heat
       void CalcMatAndRhsJoule(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
@@ -78,7 +80,7 @@ namespace DRT
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
-      );
+          ) override;
 
       //! element matrix and right-hand side vector contributions arising from Joule's heat
       void CalcMatAndRhsJouleSolid(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
@@ -94,7 +96,7 @@ namespace DRT
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
-      );
+          ) override;
 
       //! element matrix and right-hand side vector contributions arising from Soret effect
       void CalcMatAndRhsSoret(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
@@ -102,7 +104,7 @@ namespace DRT
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
-      );
+          ) override;
 
       //! fill element matrix with linearizations of discrete thermo residuals w.r.t. scatra dofs
       void SysmatODThermoScatra(DRT::Element* ele,  //!< current element
@@ -113,7 +115,7 @@ namespace DRT
       //! residuals w.r.t. scatra dofs
       void CalcMatJouleOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
-      );
+          ) override;
 
       //! provide element matrix with linearizations of Joule's heat term in discrete thermo
       //! residuals w.r.t. scatra dofs
@@ -125,20 +127,20 @@ namespace DRT
       //! residuals w.r.t. scatra dofs
       void CalcMatMixingOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
-      );
+          ) override;
 
       //! provide element matrix with linearizations of Soret effect term in discrete thermo
       //! residuals w.r.t. scatra dofs
       void CalcMatSoretOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
-      );
+          ) override;
 
       //! extract quantities for element evaluation
       void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                  //!< parameter list
           DRT::Discretization& discretization,             //!< discretization
           DRT::Element::LocationArray& la                  //!< location array
-      );
+          ) override;
 
       //! get material parameters
       void GetMaterialParams(const DRT::Element* ele,  //!< current element
@@ -147,7 +149,7 @@ namespace DRT
           std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
           double& visc,                                //!< fluid viscosity
           const int iquad = -1                         //!< ID of current integration point
-      );
+          ) override;
 
       //! evaluate Soret material
       void MatSoret(const Teuchos::RCP<const MAT::Material> material,  //!< Soret material
@@ -163,7 +165,7 @@ namespace DRT
       );
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! get thermo diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerSTIThermo> DiffManager()
@@ -186,4 +188,6 @@ namespace DRT
     };  // class ScaTraEleCalcSTIDiffCond
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

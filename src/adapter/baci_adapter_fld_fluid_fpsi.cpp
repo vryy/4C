@@ -14,6 +14,8 @@
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_fpsi_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /* constructor */
 ADAPTER::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
@@ -68,3 +70,5 @@ void ADAPTER::FluidFPSI::UseBlockMatrix(bool splitmatrix)
   fluidimpl_->UseBlockMatrix(condelements, *Interface(), *Interface(), condelements, *Interface(),
       *Interface(), splitmatrix);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -37,6 +37,8 @@ between the xfluid class and the cut-library
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 XFEM::MeshCoupling::MeshCoupling(
@@ -746,7 +748,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_
   else if (*evaltype == "funct_interpolated")
   {
     // evaluate function at node at current time
-    EvaluateFunction(final_values, node->X(), cond, time);
+    EvaluateFunction(final_values, node->X().data(), cond, time);
   }
   else if (*evaltype == "funct_gausspoint")
   {
@@ -765,7 +767,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_
   {
     if (step_ == 0)  // evaluate initialization function at node at current time
     {
-      EvaluateFunction(final_values, node->X(), cond, time);
+      EvaluateFunction(final_values, node->X().data(), cond, time);
     }
     else
       ComputeInterfaceVelocityFromDisplacement(final_values, node, dt, evaltype);
@@ -788,14 +790,14 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
   else if (*evaltype == "funct")
   {
     // evaluate function at node at current time
-    EvaluateFunction(final_values, node->X(), cond, time);
+    EvaluateFunction(final_values, node->X().data(), cond, time);
   }
   else if (*evaltype == "implementation")
   {
     // evaluate implementation
     // TODO: get the function name from the condition!!!
     std::string function_name = "ROTATING_BEAM";
-    EvaluateImplementation(final_values, node->X(), cond, time, function_name);
+    EvaluateImplementation(final_values, node->X().data(), cond, time, function_name);
   }
   else
     dserror("evaltype not supported %s", evaltype->c_str());
@@ -1841,11 +1843,11 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
     for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
     {
       DRT::Element* fluid_ele = bg_dis_->lRowElement(ele);
-      if (fluid_ele->Shape() == DRT::Element::hex8)
+      if (fluid_ele->Shape() == CORE::FE::CellType::hex8)
       {
         CORE::LINALG::Matrix<3, 8> xyze(true);
         CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
-        double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(xyze);
+        double vol = XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
       else
@@ -2339,7 +2341,7 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) return;
 
-  if (coupl_ele->Shape() == DRT::Element::hex8)
+  if (coupl_ele->Shape() == CORE::FE::CellType::hex8)
   {
     DRT::ELEMENTS::So_hex8* solid_ele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(coupl_ele);
     if (solid_ele == nullptr)
@@ -2688,3 +2690,5 @@ void XFEM::MeshCouplingFluidFluid::Output(
     cutter_output_->WriteVector("idispnpi_res", idispnpi_);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -6,14 +6,12 @@
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "-march=native -Wall -Wno-unknown-pragmas -Wno-unused-local-typedefs -Werror=vla",
+        "CMAKE_CXX_FLAGS": "-march=native",
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_C_FLAGS": "-Wall -march=native -Wno-unknown-pragmas",
+        "CMAKE_C_FLAGS": "-march=native",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-lhdf5_hl -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
-        "CMAKE_Fortran_FLAGS": "-Wall",
-        "CMAKE_Fortran_FLAGS_RELEASE": "-O5 -funroll-all-loops -malign-double",
         "BACI_WITH_GOOGLETEST": "OFF",
         "BUILD_DOXYGEN": "OFF"
       }
@@ -29,17 +27,16 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpic++",
         "CMAKE_C_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpicc",
-        "CMAKE_Fortran_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpif90",
-        "INCLUDE_INSTALL_DIR": "/lnm/include",
-        "LIB_INSTALL_DIR": "/lnm/lib",
-        "Trilinos_PREFIX": "/lnm/2022_Q1/trilinos_openmpi-4.1.5",
-        "QHULL_LIBRARY_DIR": "/lnm/lib",
-        "QHULL_INCLUDE_DIR": "/lnm/include/qhull",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=gold",
+        "CLN_INCLUDE_DIR": "/lnm/packages/cln/1-3-4/include",
+        "SEARCH_CLN_LIBRARY_DIR": "/lnm/packages/cln/1-3-4/lib",
         "BLAS_LIBRARIES": "/cluster/intel/compilers_and_libraries_2016.1.150/linux/mkl/lib/intel64_lin/libmkl_gf_lp64.so;/cluster/intel/compilers_and_libraries_2016.1.150/linux/mkl/lib/intel64_lin/libmkl_sequential.so;/cluster/intel/compilers_and_libraries_2016.1.150/linux/mkl/lib/intel64_lin/libmkl_core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so",
         "LAPACK_LIBRARIES": "/cluster/intel/compilers_and_libraries_2016.1.150/linux/mkl/lib/intel64_lin/libmkl_gf_lp64.so;/cluster/intel/compilers_and_libraries_2016.1.150/linux/mkl/lib/intel64_lin/libmkl_sequential.so;/cluster/intel/compilers_and_libraries_2016.1.150/linux/mkl/lib/intel64_lin/libmkl_core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so",
         "BLA_VENDOR": "MKL_2016.1.150",
         "MPI_RUN": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpirun",
-        "PVPYTHON": "/lnm/programs64/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython"
+        "QHULL_LIBRARY_DIR": "/lnm/packages/qhull/2012-1/lib",
+        "QHULL_INCLUDE_DIR": "/lnm/packages/qhull/2012-1/include/libqhull",
+        "Trilinos_PREFIX": "/lnm/packages/trilinos/15-0-0/release"
       }
     },
     {
@@ -51,17 +48,15 @@
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RELEASE",
-        "CMAKE_C_FLAGS": "-Wall -Wno-unknown-pragmas -mfpmath=sse -msse3",
         "CMAKE_CXX_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpic++",
         "CMAKE_C_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpicc",
-        "CMAKE_Fortran_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpif90",
-	"CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=gold",
-	"CLN_INCLUDE_DIR": "/lnm/packages/cln/1-3-4/include",
-	"SEARCH_CLN_LIBRARY_DIR": "/lnm/packages/cln/1-3-4/lib",
-	"MPI_RUN": "/opt/openmpi/4.1.5/gcc/bin/mpirun",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=gold",
+        "CLN_INCLUDE_DIR": "/lnm/packages/cln/1-3-4/include",
+        "SEARCH_CLN_LIBRARY_DIR": "/lnm/packages/cln/1-3-4/lib",
+        "MPI_RUN": "/opt/openmpi/4.1.5/gcc/bin/mpirun",
         "QHULL_LIBRARY_DIR": "/lnm/packages/qhull/2012-1/lib",
         "QHULL_INCLUDE_DIR": "/lnm/packages/qhull/2012-1/include/libqhull",
-	"Trilinos_PREFIX": "/lnm/packages/trilinos/2022_Q1"
+        "Trilinos_PREFIX": "/lnm/packages/trilinos/15-0-0/release"
       }
     },
     {
@@ -76,22 +71,21 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/lnm/mpi407_gcc930/bin/mpic++",
         "CMAKE_C_COMPILER": "/lnm/mpi407_gcc930/bin/mpicc",
-        "CMAKE_Fortran_COMPILER": "/lnm/mpi407_gcc930/bin/mpif90",
-        "INCLUDE_INSTALL_DIR": "/lnm/include",
-        "LIB_INSTALL_DIR": "/lnm/lib",
-        "Trilinos_PREFIX": "/lnm/2022_Q1/trilinos/trilinos_release",
-        "QHULL_LIBRARY_DIR": "/lnm/lib",
-        "QHULL_INCLUDE_DIR": "/lnm/include/qhull",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=gold",
+        "CLN_INCLUDE_DIR": "/lnm/packages/cln/1-3-4/include",
+        "SEARCH_CLN_LIBRARY_DIR": "/lnm/packages/cln/1-3-4/lib",
         "ACMLDIR": "/opt/acml4.4.0/gfortran64",
         "AMDLIBMDIR": "/opt/acml4.4.0/gfortran64",
         "BLAS_LIBRARIES": "/opt/acml4.4.0/gfortran64/lib/libacml.a /opt/acml4.4.0/gfortran64/lib/libacml_mv.a",
         "LAPACK_LIBRARIES": "/opt/acml4.4.0/gfortran64/lib/libacml.a /opt/acml4.4.0/gfortran64/lib/libacml_mv.a",
         "BLA_VENDOR": "ACML.4.4.0",
-        "MPI_RUN": "/lnm/mpi407_gcc930/bin/mpirun",
-        "PVPYTHON": "/lnm/programs64/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
         "Boost_NO_BOOST_CMAKE": "ON",
         "BOOST_INCLUDEDIR": "/lnm/boost/gcc9/include",
-        "BOOST_LIBRARYDIR": "/lnm/boost/gcc9/lib"
+        "BOOST_LIBRARYDIR": "/lnm/boost/gcc9/lib",
+        "MPI_RUN": "/lnm/mpi407_gcc930/bin/mpirun",
+        "QHULL_LIBRARY_DIR": "/lnm/packages/qhull/2012-1/lib",
+        "QHULL_INCLUDE_DIR": "/lnm/packages/qhull/2012-1/include/libqhull",
+        "Trilinos_PREFIX": "/lnm/packages/trilinos/15-0-0/release"
       }
     }
   ]

@@ -11,6 +11,8 @@ determinant
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::ELASTIC::PAR::Coup3Pow::Coup3Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
@@ -55,3 +57,4 @@ void MAT::ELASTIC::Coup3Pow::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>&
         1. / 9. * c * d * (d - 1.) * pow(prinv(2), -4. / 3.) *
             pow((pow(prinv(2), 1. / 3.) - 1.), d - 2.);
 }
+BACI_NAMESPACE_CLOSE

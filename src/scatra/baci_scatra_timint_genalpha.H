@@ -13,6 +13,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   class TimIntGenAlpha : public virtual ScaTraTimIntImpl
@@ -46,7 +48,7 @@ namespace SCATRA
 
     void ComputeTimeDerivPot0(const bool init) override{};
 
-    void Update(const int num = 0) override;
+    void Update() override;
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
@@ -110,7 +112,7 @@ namespace SCATRA
 
     void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     double ResidualScaling() const override { return 1.0 / (dta_ * genalphafac_); }
 
@@ -133,4 +135,6 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // SCATRA_TIMINT_GENALPHA_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_SCATRA_TIMINT_GENALPHA_H

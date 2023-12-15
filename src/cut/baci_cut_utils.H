@@ -30,6 +30,8 @@
 #include <vector>
 #endif
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -136,10 +138,9 @@ namespace CORE::GEO
      *
      *  \date 07/16
      *  \author hiermeier */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, typename valtype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <unsigned probdim, CORE::FE::CellType distype, typename valtype,
+        unsigned numNodesElement = CORE::FE::num_nodes<distype>,
+        unsigned dim = CORE::FE::dim<distype>>
     valtype EvalDerivsInParameterSpace(
         const CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
         const CORE::LINALG::Matrix<dim, 1, valtype>& rst,
@@ -253,10 +254,9 @@ namespace CORE::GEO
      *
      *  \author hiermeier
      *  \date 08/16 */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, typename valtype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <unsigned probdim, CORE::FE::CellType distype, typename valtype,
+        unsigned numNodesElement = CORE::FE::num_nodes<distype>,
+        unsigned dim = CORE::FE::dim<distype>>
     inline valtype EvalDerivsInParameterSpace(
         const CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
         const CORE::LINALG::Matrix<dim, 1, valtype>& rst,
@@ -379,11 +379,9 @@ namespace CORE::GEO
      *  \param unit_normal (in) : scale the normal to unit length
      *
      *  \author hiermeier \date 12/16 */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, class T1, class T2,
-        class T3,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <unsigned probdim, CORE::FE::CellType distype, class T1, class T2, class T3,
+        unsigned numNodesElement = CORE::FE::num_nodes<distype>,
+        unsigned dim = CORE::FE::dim<distype>>
     void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr,
         bool unit_normal = true)
     {
@@ -439,30 +437,32 @@ namespace CORE::GEO
      *
      *  \author hiermeier \date 12/16 */
     template <unsigned probdim, class T1, class T2, class T3>
-    void EvalNormalVectors(::DRT::Element::DiscretizationType distype, const T1& xyze,
-        const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr, bool unit_normal = true)
+    void EvalNormalVectors(CORE::FE::CellType distype, const T1& xyze, const T2& rst,
+        T3& normalvec1, T3* normalvec2 = nullptr, bool unit_normal = true)
     {
       switch (distype)
       {
-        case ::DRT::Element::line2:
-          EvalNormalVectors<probdim, ::DRT::Element::line2>(
+        case CORE::FE::CellType::line2:
+          EvalNormalVectors<probdim, CORE::FE::CellType::line2>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case ::DRT::Element::tri3:
-          EvalNormalVectors<probdim, ::DRT::Element::tri3>(
+        case CORE::FE::CellType::tri3:
+          EvalNormalVectors<probdim, CORE::FE::CellType::tri3>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case ::DRT::Element::quad4:
-          EvalNormalVectors<probdim, ::DRT::Element::quad4>(
+        case CORE::FE::CellType::quad4:
+          EvalNormalVectors<probdim, CORE::FE::CellType::quad4>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
         default:
           dserror("Currently unsupported discretization type: %s",
-              ::DRT::DistypeToString(distype).c_str());
+              CORE::FE::CellTypeToString(distype).c_str());
           exit(EXIT_FAILURE);
       }
     }
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

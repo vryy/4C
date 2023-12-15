@@ -23,6 +23,8 @@
 #include "baci_mortar_element.H"
 #include "baci_mortar_integrator.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Visualize contact stuff with gmsh                         popp 08/08|
  *----------------------------------------------------------------------*/
@@ -136,7 +138,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         double xi[2] = {0.0, 0.0};
 
         // 2D linear case (2noded line elements)
-        if (element->Shape() == DRT::Element::line2)
+        if (element->Shape() == CORE::FE::CellType::line2)
         {
           if (element->IsSlave())
           {
@@ -165,7 +167,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 2D quadratic case (3noded line elements)
-        if (element->Shape() == DRT::Element::line3)
+        if (element->Shape() == CORE::FE::CellType::line3)
         {
           if (element->IsSlave())
           {
@@ -200,7 +202,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D linear case (3noded triangular elements)
-        if (element->Shape() == DRT::Element::tri3)
+        if (element->Shape() == CORE::FE::CellType::tri3)
         {
           if (element->IsSlave())
           {
@@ -237,7 +239,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D bilinear case (4noded quadrilateral elements)
-        if (element->Shape() == DRT::Element::quad4)
+        if (element->Shape() == CORE::FE::CellType::quad4)
         {
           if (element->IsSlave())
           {
@@ -276,7 +278,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D quadratic case (6noded triangular elements)
-        if (element->Shape() == DRT::Element::tri6)
+        if (element->Shape() == CORE::FE::CellType::tri6)
         {
           if (element->IsSlave())
           {
@@ -327,7 +329,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D serendipity case (8noded quadrilateral elements)
-        if (element->Shape() == DRT::Element::quad8)
+        if (element->Shape() == CORE::FE::CellType::quad8)
         {
           if (element->IsSlave())
           {
@@ -462,7 +464,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D biquadratic case (9noded quadrilateral elements)
-        if (element->Shape() == DRT::Element::quad9)
+        if (element->Shape() == CORE::FE::CellType::quad9)
         {
           if (element->IsSlave())
           {
@@ -7146,3 +7148,5 @@ void CONTACT::CoInterface::WriteNodalCoordinatesToFile(
     Comm().Barrier();
   }
 }
+
+BACI_NAMESPACE_CLOSE

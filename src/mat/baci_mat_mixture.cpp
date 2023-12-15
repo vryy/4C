@@ -14,6 +14,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 // constructor of the parameters
 MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), constituents_(0)
@@ -50,7 +52,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Mixture::CreateMaterial()
 MAT::MixtureType MAT::MixtureType::instance_;
 
 // Create a material instance from packed data
-DRT::ParObject* MAT::MixtureType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MixtureType::Create(const std::vector<char>& data)
 {
   auto* mix_elhy = new MAT::Mixture();
   mix_elhy->Unpack(data);
@@ -91,9 +93,9 @@ MAT::Mixture::Mixture(MAT::PAR::Mixture* params)
 }
 
 // Pack data
-void MAT::Mixture::Pack(DRT::PackBuffer& data) const
+void MAT::Mixture::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -141,10 +143,8 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
   setup_ = false;
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -173,7 +173,7 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
 
     // Extract is isPreEvaluated
     std::vector<int> isPreEvaluatedInt(0);
-    DRT::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
     isPreEvaluated_.resize(isPreEvaluatedInt.size());
     for (unsigned i = 0; i < isPreEvaluatedInt.size(); ++i)
     {
@@ -298,24 +298,25 @@ void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 
-void MAT::Mixture::RegisterVtkOutputDataNames(
+void MAT::Mixture::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  mixture_rule_->RegisterVtkOutputDataNames(names_and_size);
+  mixture_rule_->RegisterOutputDataNames(names_and_size);
   for (const auto& constituent : *constituents_)
   {
-    constituent->RegisterVtkOutputDataNames(names_and_size);
+    constituent->RegisterOutputDataNames(names_and_size);
   }
 }
 
-bool MAT::Mixture::EvaluateVtkOutputData(
+bool MAT::Mixture::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
-  bool out = mixture_rule_->EvaluateVtkOutputData(name, data);
+  bool out = mixture_rule_->EvaluateOutputData(name, data);
   for (const auto& constituent : *constituents_)
   {
-    out = out || constituent->EvaluateVtkOutputData(name, data);
+    out = out || constituent->EvaluateOutputData(name, data);
   }
 
   return out;
 }
+BACI_NAMESPACE_CLOSE

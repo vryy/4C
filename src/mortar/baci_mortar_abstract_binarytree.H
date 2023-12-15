@@ -11,6 +11,8 @@
 
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   /*!
@@ -30,7 +32,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~AbstractBinaryTreeNode(){};
+    virtual ~AbstractBinaryTreeNode() = default;
 
     //! @name Evaluation methods
 
@@ -71,7 +73,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~AbstractBinaryTree(){};
+    virtual ~AbstractBinaryTree() = default;
 
     //! @name Query methods
 
@@ -88,5 +90,7 @@ namespace MORTAR
     virtual void Init() = 0;
   };  // class AbstractBinaryTree
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_ABSTRACT_BINARYTREE_H

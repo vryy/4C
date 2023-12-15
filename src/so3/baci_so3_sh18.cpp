@@ -10,13 +10,15 @@
 
 #include "baci_so3_sh18.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_sh18Type DRT::ELEMENTS::So_sh18Type::instance_;
 
@@ -26,7 +28,7 @@ namespace
   const std::string name = DRT::ELEMENTS::So_sh18Type::Instance().Name();
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_sh18Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_sh18Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_sh18(-1, -1);
   object->Unpack(data);
@@ -121,9 +123,9 @@ DRT::Element* DRT::ELEMENTS::So_sh18::Clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_sh18::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -156,10 +158,9 @@ void DRT::ELEMENTS::So_sh18::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_sh18::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -186,11 +187,6 @@ void DRT::ELEMENTS::So_sh18::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            seitz 11/14 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh18::~So_sh18() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                             seitz 11/14 |
@@ -201,3 +197,5 @@ void DRT::ELEMENTS::So_sh18::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -27,6 +27,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_timestepping_mstep.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace CONTACT
 {
@@ -67,7 +69,7 @@ namespace THR
    * \author bborn
    * \date 06/08
    */
-  class TimInt : public ::ADAPTER::Thermo
+  class TimInt : public ADAPTER::Thermo
   {
    public:
     //! @name Life
@@ -90,9 +92,6 @@ namespace THR
 
     //! Copy constructor
     TimInt(const TimInt& old) { ; }
-
-    //! Destructor
-    virtual ~TimInt() { DetachEnergyFile(); }
 
     //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
@@ -121,19 +120,19 @@ namespace THR
     );
 
     //! prepare thermal contact
-    void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> strategy)
+    void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> strategy) override
     {
       contact_strategy_nitsche_ = strategy;
     }
 
     //! prepare time step
-    virtual void PrepareTimeStep() = 0;
+    void PrepareTimeStep() override = 0;
 
     //! Do time integration of single step
     virtual void IntegrateStep() = 0;
 
     /// tests if there are more time steps to do
-    virtual bool NotFinished() const
+    bool NotFinished() const override
     {
       return timen_ <= timemax_ + 1.0e-8 * (*dt_)[0] and stepn_ <= stepmax_;
     }
@@ -143,15 +142,15 @@ namespace THR
     //! Do the nonlinear solve, i.e. (multiple) corrector,
     //! for the time step. All boundary conditions have
     //! been set.
-    virtual INPAR::THR::ConvergenceStatus Solve() = 0;
+    INPAR::THR::ConvergenceStatus Solve() override = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    virtual void Evaluate() = 0;
+    void Evaluate() override = 0;
 
     //! Update configuration after time step
     //!
@@ -170,17 +169,17 @@ namespace THR
     void UpdateStepTime();
 
     //! update at time step end
-    virtual void Update() = 0;
+    void Update() override = 0;
 
     //! update Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
+    void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
 
     //! Reset configuration after time step
     //!
     //! Thus the last converged state is copied back on the predictor
     //! for current time step. This applies only to elemet-wise
     //! quantities
-    virtual void ResetStep();
+    void ResetStep() override;
 
     //! set the initial thermal field
     void SetInitialField(const INPAR::THR::InitialField,  //!< type of initial field
@@ -193,7 +192,7 @@ namespace THR
     //@{
 
     //! print summary after step
-    virtual void PrintStep() = 0;
+    void PrintStep() override = 0;
 
     //! Output to file
     //! This routine always prints the last converged state, i.e.
@@ -203,7 +202,7 @@ namespace THR
     void OutputStep(bool forced_writerestart);
 
     //! output
-    virtual void Output(bool forced_writerestart = false) { OutputStep(forced_writerestart); }
+    void Output(bool forced_writerestart = false) override { OutputStep(forced_writerestart); }
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -266,10 +265,10 @@ namespace THR
     //! In partitioned solution schemes, it is better to keep the current
     //! solution instead of evaluating the initial guess (as the predictor)
     //! does.
-    virtual void PreparePartitionStep() = 0;
+    void PreparePartitionStep() override = 0;
 
     //! thermal result test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
     //@}
 
@@ -339,9 +338,8 @@ namespace THR
     //@{
 
     //! Set external loads (heat flux) due to tfsi interface
-    virtual void SetForceInterface(
-        Teuchos::RCP<Epetra_Vector> ithermoload  //!< thermal interface load
-    );
+    void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload  //!< thermal interface load
+        ) override;
 
     //@}
 
@@ -376,17 +374,17 @@ namespace THR
     //@{
 
     //! Access dicretisation
-    Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+    Teuchos::RCP<DRT::Discretization> Discretization() override { return discret_; }
 
     //! non-overlapping DOF map for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
       return Teuchos::rcp(new Epetra_Map(*dofrowmap));
     }
 
     //! non-overlapping DOF map
-    Teuchos::RCP<const Epetra_Map> DofRowMap()
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
       return Teuchos::rcp(new Epetra_Map(*dofrowmap));
@@ -396,17 +394,17 @@ namespace THR
     Teuchos::RCP<CORE::LINALG::Solver> Solver() { return solver_; }
 
     //! get the linear solver object used for this field
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return solver_; }
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; }
 
     //! Access output object
-    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return output_; }
+    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override { return output_; }
 
     //! prepare output (do nothing)
-    virtual void PrepareOutput() { ; }
+    void PrepareOutput() override { ; }
 
     //! Read restart values
     void ReadRestart(const int step  //!< restart step
-    );
+        ) override;
 
     //! Read and set restart state
     void ReadRestartState();
@@ -418,19 +416,19 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> Temp() { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessTempn() { return (*temp_)(0); }
+    Teuchos::RCP<Epetra_Vector> WriteAccessTempn() override { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Tempn() { return (*temp_)(0); }
+    Teuchos::RCP<const Epetra_Vector> Tempn() override { return (*temp_)(0); }
 
     //! initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override = 0;
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessTempnp() { return tempn_; }
+    Teuchos::RCP<Epetra_Vector> WriteAccessTempnp() override { return tempn_; }
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Tempnp() { return tempn_; }
+    Teuchos::RCP<const Epetra_Vector> Tempnp() override { return tempn_; }
 
     //! Return temperature rates \f$R_{n}\f$
     Teuchos::RCP<Epetra_Vector> Rate() { return (*rate_)(0); }
@@ -445,44 +443,44 @@ namespace THR
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
     //! right-hand side alias the dynamic thermal residual
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+    Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
 
     //! Return tangent, i.e. thermal residual differentiated by temperatures
     //! (SystemMatrix()/stiff_ in STR)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() { return tang_; }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override { return tang_; }
 
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return tang_->DomainMap(); }
 
     //! Return domain map
-    const Epetra_Map& DomainMap() { return tang_->DomainMap(); }
+    const Epetra_Map& DomainMap() override { return tang_->DomainMap(); }
 
     //! Return current time \f$t_{n}\f$
-    virtual double TimeOld() const { return (*time_)[0]; }
+    double TimeOld() const override { return (*time_)[0]; }
 
     //! Return target time \f$t_{n+1}\f$
-    virtual double Time() const { return timen_; }
+    double Time() const override { return timen_; }
 
     //! Get upper limit of time range of interest
-    virtual double GetTimeEnd() const { return timemax_; }
+    double GetTimeEnd() const override { return timemax_; }
 
     //! Get time step size \f$\Delta t_n\f$
-    virtual double Dt() const { return (*dt_)[0]; }
+    double Dt() const override { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    virtual void SetDt(double timestepsize) { (*dt_)[0] = timestepsize; }
+    void SetDt(double timestepsize) override { (*dt_)[0] = timestepsize; }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
-    virtual void SetTimen(const double time) { timen_ = time; }
+    void SetTimen(const double time) override { timen_ = time; }
 
     //! Return current step number $n$
-    virtual int StepOld() const { return step_; }
+    int StepOld() const override { return step_; }
 
     //! Return current step number $n+1$
-    virtual int Step() const { return stepn_; }
+    int Step() const override { return stepn_; }
 
     //! Get number of time steps
-    virtual int NumStep() const { return stepmax_; }
+    int NumStep() const override { return stepmax_; }
 
     //! Update number of time steps (in adaptivity)
     virtual void SetNumStep(const int newNumStep) { stepmax_ = newNumStep; }
@@ -491,13 +489,13 @@ namespace THR
     virtual inline const Epetra_Comm& Comm() const { return discret_->Comm(); }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
+
+    //! Return MapExtractor for Dirichlet boundary conditions
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return dbcmaps_;
     }
-
-    //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
     //! Return thermal contact manager
     Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> NitscheContactStrategy()
@@ -533,8 +531,6 @@ namespace THR
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     bool printlogo_;                                 //!< true: enjoy your cuppa
     int printscreen_;                                //!< print infos to standard out every n steps
-    FILE* errfile_;                                  //!< error file handle
-    bool printerrfile_;                              //!< print infos to error file #errfile_
     bool printiter_;         //!< print intermediate iterations during solution
     int writerestartevery_;  //!< write restart every given step;
                              //!< if 0, restart is not written
@@ -616,4 +612,6 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_TIMINT_H

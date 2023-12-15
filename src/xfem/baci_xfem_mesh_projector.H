@@ -12,6 +12,7 @@
 #ifndef BACI_XFEM_MESH_PROJECTOR_H
 #define BACI_XFEM_MESH_PROJECTOR_H
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_fixedsizematrix.H"
 
@@ -19,6 +20,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -68,7 +71,7 @@ namespace XFEM
 
    private:
     /// determine the search radius for the search tree
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FindSearchRadius();
 
     //! build a search tree for elements of source discretization
@@ -81,7 +84,7 @@ namespace XFEM
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     //! compute position of target node w.r.t. source element and interpolate when covered by it
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     bool CheckPositionAndProject(const DRT::Element* src_ele,
         const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec);
 
@@ -91,14 +94,15 @@ namespace XFEM
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     /// receive a block in the round robin communication pattern
-    void ReceiveBlock(std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request);
+    void ReceiveBlock(
+        std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// send a block in the round robin communication pattern
-    void SendBlock(std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request);
+    void SendBlock(std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// pack values in the round robin communication pattern
     void PackValues(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
-        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolatedvecs,
+        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
         std::vector<char>& sblock);
 
@@ -125,5 +129,7 @@ namespace XFEM
   };
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_MESH_PROJECTOR_H

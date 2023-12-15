@@ -10,8 +10,7 @@
 
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_lib_discret.H"  // for time curve in body force
-#include "baci_lib_function_of_time.H"
+#include "baci_lib_discret.H"        // for time curve in body force
 #include "baci_lib_globalproblem.H"  // consistency check of formulation and material
 #include "baci_lib_utils.H"
 #include "baci_mat_elchmat.H"
@@ -23,12 +22,15 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_utils_elch.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -235,7 +237,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
 /*----------------------------------------------------------------------------------------*
  | calculate error of numerical solution with respect to analytical solution   fang 10/16 |
  *----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalErrorComparedToAnalytSolution(
     const DRT::Element* ele,                 //!< element
     Teuchos::ParameterList& params,          //!< parameter list
@@ -250,7 +252,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalErrorComparedToAnaly
 /*----------------------------------------------------------------------*
   |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
     const DRT::Element* ele, const enum INPAR::ELCH::EquPot equpot,
     CORE::LINALG::SerialDenseVector& sigma_domint, bool effCond, bool specresist)
@@ -318,7 +320,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
 /*----------------------------------------------------------------------*
  | process an electrode boundary kinetics point condition    fang 08/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKineticsPoint(
     DRT::Element* ele,                                ///< current element
     Teuchos::ParameterList& params,                   ///< parameter list
@@ -408,7 +410,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   if (functnum >= 0)
   {
     const double functfac =
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time);
+        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(
+            time);
 
     // adjust potential at metal side accordingly
     pot0 *= functfac;
@@ -468,7 +471,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
 /*----------------------------------------------------------------------*
  | evaluate an electrode boundary kinetics point condition   fang 08/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
     const DRT::Element* ele,                                   ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
@@ -556,7 +559,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
 /*----------------------------------------------------------------------*
  | evaluate status information on point electrode            fang 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatusPoint(
     const DRT::Element* ele,                                   ///< current element
     CORE::LINALG::SerialDenseVector& scalars,                  ///< scalars to be integrated
@@ -662,7 +665,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
 /*----------------------------------------------------------------------------------------*
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     CORE::LINALG::SerialDenseVector& subgrdiff)
@@ -841,27 +844,29 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::quad4, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::hex8, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tet10, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::pyramid5, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

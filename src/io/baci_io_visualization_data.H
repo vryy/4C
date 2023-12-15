@@ -19,6 +19,7 @@
 #include <variant>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -28,6 +29,10 @@ namespace IO
   //! Since the output data can come in different types, we use this variant type which allows us
   //! to put all data vectors in a single map
   using visualization_vector_type_variant = std::variant<std::vector<int>, std::vector<double>>;
+
+  //! The polyhedral cell type requires special treatment. This cell has the vtk cell type 42. We
+  //! define this variable here to be used in BACI when referring to that cell type.
+  static const int polyhedron_cell_type = 42;
 
   namespace INTERNAL
   {
@@ -816,5 +821,7 @@ namespace IO
 
 }  // namespace IO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

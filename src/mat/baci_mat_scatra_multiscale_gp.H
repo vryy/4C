@@ -17,6 +17,8 @@ transport problems
 // forward declarations
 class Epetra_Vector;
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   class TimIntOneStepTheta;
@@ -96,7 +98,7 @@ namespace MAT
     void NewResultFile();
 
     //! create path of new result file
-    const std::string NewResultFilePath(const std::string& newprefix);
+    std::string NewResultFilePath(const std::string& newprefix);
 
     //! macro-scale Gauss point ID
     const int gp_id_;
@@ -151,4 +153,6 @@ namespace MAT
     const bool is_ale_;
   };  // class MAT::ScatraMultiScaleGP
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

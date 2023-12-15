@@ -10,8 +10,8 @@
 #ifndef BACI_CONTACT_NITSCHE_UTILS_H
 #define BACI_CONTACT_NITSCHE_UTILS_H
 
+#include "baci_contact_utils.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_lib_utils_matrix_vector_enums.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
@@ -23,19 +23,26 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   class MortarElementNitscheContainer
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MortarElementNitscheContainer() = default;
+
     MortarElementNitscheContainer() = default;
 
     virtual void Clear() = 0;
 
-    virtual void AssembleRHS(MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row,
+    virtual void AssembleRHS(MORTAR::MortarElement* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) = 0;
 
-    virtual void AssembleMatrix(MORTAR::MortarElement* mele, DRT::UTILS::MatBlockType block,
+    virtual void AssembleMatrix(MORTAR::MortarElement* mele, CONTACT::MatBlockType block,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) = 0;
 
     virtual double* Rhs(int dof) = 0;
@@ -66,7 +73,7 @@ namespace MORTAR
     virtual double* Kde(int col) = 0;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheDataTsi
   {
    public:
@@ -79,10 +86,8 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
-    static const int num_parent_thermo_dof =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
+    static const int num_parent_thermo_dof = CORE::FE::num_nodes<parent_distype>;
 
     CORE::LINALG::Matrix<num_parent_thermo_dof, 1> rhs_t_;
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_thermo_dof, 1>> k_tt_;
@@ -90,7 +95,7 @@ namespace MORTAR
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_dt_;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheDataPoro
   {
    public:
@@ -103,11 +108,9 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
     static const int num_parent_pf_dof =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        (CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1);
+        CORE::FE::num_nodes<parent_distype> * (CORE::FE::dim<parent_distype> + 1);
 
     CORE::LINALG::Matrix<num_parent_pf_dof, 1> rhs_p_;
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_pf_dof, 1>> k_pp_;
@@ -115,7 +118,7 @@ namespace MORTAR
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_dp_;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheDataSsi
   {
    public:
@@ -128,10 +131,8 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
-    static const int num_parent_scatra_dof =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
+    static const int num_parent_scatra_dof = CORE::FE::num_nodes<parent_distype>;
 
     CORE::LINALG::Matrix<num_parent_scatra_dof, 1> rhs_s_;
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_scatra_dof, 1>> k_ss_;
@@ -139,7 +140,7 @@ namespace MORTAR
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_ds_;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheDataSsiElch
   {
    public:
@@ -152,10 +153,8 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
-    static const int num_parent_elch_dof =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement * 2;
+        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
+    static const int num_parent_elch_dof = CORE::FE::num_nodes<parent_distype> * 2;
 
     CORE::LINALG::Matrix<num_parent_elch_dof, 1> rhs_e_;
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_elch_dof, 1>> k_ee_;
@@ -163,7 +162,7 @@ namespace MORTAR
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_de_;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheData : public MortarElementNitscheContainer
   {
    public:
@@ -194,26 +193,21 @@ namespace MORTAR
     double* Ked(int col, int dof) override { return &ssi_elch_data_.k_ed_[col](dof); }
     double* Kde(int col) override { return ssi_elch_data_.k_de_[col].A(); }
 
-    void AssembleRHS(MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row,
+    void AssembleRHS(MORTAR::MortarElement* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) override;
 
-    void AssembleMatrix(MORTAR::MortarElement* mele, DRT::UTILS::MatBlockType block,
+    void AssembleMatrix(MORTAR::MortarElement* mele, CONTACT::MatBlockType block,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     template <int num_dof_per_node>
     void AssembleRHS(MORTAR::MortarElement* mele,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-                num_dof_per_node,
-            1>& rhs,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
         std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc);
 
     template <int num_dof_per_node>
     void AssembleMatrix(MORTAR::MortarElement* mele,
-        const std::unordered_map<int, CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                                               parent_distype>::numNodePerElement *
-                                                               num_dof_per_node,
-                                          1>>& k,
+        const std::unordered_map<int,
+            CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
         std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc);
 
 
@@ -228,15 +222,10 @@ namespace MORTAR
     }
 
    private:
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-            CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim,
-        1>
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>, 1>
         rhs_;
     std::unordered_map<int,
-        CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-                CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim,
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>,
             1>>
         k_;
     MORTAR::MortarElementNitscheDataTsi<parent_distype> tsi_data_;
@@ -246,5 +235,7 @@ namespace MORTAR
   };
 
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_NITSCHE_UTILS_H

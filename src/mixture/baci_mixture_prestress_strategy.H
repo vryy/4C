@@ -23,11 +23,18 @@
 #include <memory>
 #include <utility>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class Material;
 }
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -38,11 +45,6 @@ namespace MAT
     class Material;
   }
 }  // namespace MAT
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 
 // forward declarations
 namespace MAT
@@ -118,7 +120,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    virtual void Pack(DRT::PackBuffer& data) const {};
+    virtual void Pack(CORE::COMM::PackBuffer& data) const {};
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -173,5 +175,7 @@ namespace MIXTURE
         CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_PRESTRESS_STRATEGY_H

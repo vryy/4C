@@ -33,6 +33,7 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 03/13 |
@@ -72,7 +73,7 @@ MAT::ThermoPlasticHyperElastType MAT::ThermoPlasticHyperElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 03/13 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ThermoPlasticHyperElastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ThermoPlasticHyperElastType::Create(const std::vector<char>& data)
 {
   MAT::ThermoPlasticHyperElast* thrplhyper = new MAT::ThermoPlasticHyperElast();
   thrplhyper->Unpack(data);
@@ -98,9 +99,9 @@ MAT::ThermoPlasticHyperElast::ThermoPlasticHyperElast(MAT::PAR::ThermoPlasticHyp
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 03/13 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticHyperElast::Pack(DRT::PackBuffer& data) const
+void MAT::ThermoPlasticHyperElast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -156,10 +157,8 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -1416,3 +1415,5 @@ void MAT::ThermoPlasticHyperElast::FDCheck(
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

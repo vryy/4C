@@ -17,6 +17,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW
@@ -36,14 +38,11 @@ namespace CONTACT
       /// construct
       Bundle();
 
-      /// destructor
-      ~Bundle() = default;
-
       /** \brief insert new container holding contact constitutive law parameter and ID
        * \param[in] id ID od the contact constitutive law in the input file
        * \law[in] container holding the law parameter read from the input file
        */
-      void Insert(int id, Teuchos::RCP<Container> law);
+      void Insert(int id, Teuchos::RCP<Container> mat);
 
       /** \brief check if a contact constitutive law exists for provided ID
        *
@@ -79,5 +78,7 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_BUNDLE_H

@@ -19,15 +19,17 @@
 #include "baci_art_net_artery_ele_action.H"
 #include "baci_art_net_artery_resulttest.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <stdio.h>
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -43,8 +45,8 @@
 
 ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, FILE* errfile, IO::DiscretizationWriter& output)
-    : TimInt(actdis, linsolvernumber, probparams, artparams, errfile, output)
+    const Teuchos::ParameterList& artparams, IO::DiscretizationWriter& output)
+    : TimInt(actdis, linsolvernumber, probparams, artparams, output)
 {
   //  exit(1);
 
@@ -480,12 +482,6 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
   scatraO2np_->Update(1.0, *scatra_bcval_, 1.0);
 }
 
-
-/*----------------------------------------------------------------------*
- | build system matrix and rhs                              ismail 06/09|
- *----------------------------------------------------------------------*/
-void ART::ArtNetExplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> qael) {}
-
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                                      |
@@ -790,10 +786,6 @@ void ART::ArtNetExplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
 }
 
 
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                                 ismail 01/09|
- *----------------------------------------------------------------------*/
-ART::ArtNetExplicitTimeInt::~ArtNetExplicitTimeInt() { return; }
 
 /*----------------------------------------------------------------------*
  | Calculate the post processing values (public)            ismail 04/10|
@@ -865,3 +857,5 @@ Teuchos::RCP<DRT::ResultTest> ART::ArtNetExplicitTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new ART::ArteryResultTest(*(this)));
 }
+
+BACI_NAMESPACE_CLOSE

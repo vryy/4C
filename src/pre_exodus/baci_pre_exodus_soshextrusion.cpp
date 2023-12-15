@@ -18,7 +18,6 @@ Here everything related with solid-shell body extrusion
 #include "baci_pre_exodus_validate.H"
 
 
-
 /* Method to extrude a surface to become a volumetric body */
 EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers,
     int seedid, int gmsh, int concat2loose, int diveblocks, const std::string cline,
@@ -840,7 +839,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     std::set<int> free_nodes = FreeFaceNodes(free_edge_nodes, node_pair);
     std::ostringstream nodesetname;
     nodesetname << "ext_free_bnd" << highestns;
-    ;
     EXODUS::NodeSet newnodeset(free_nodes, nodesetname.str(), nodesetname.str());
     newnodesets.insert(std::pair<int, EXODUS::NodeSet>(highestns, newnodeset));
     highestns++;
@@ -1326,8 +1324,7 @@ std::vector<double> EXODUS::ExtrudeNodeCoords(const std::vector<double> basecoor
   return newcoords;
 }
 
-const std::map<int, std::set<int>> EXODUS::NodeToEleConn(
-    const std::map<int, std::vector<int>> ele_conn)
+std::map<int, std::set<int>> EXODUS::NodeToEleConn(const std::map<int, std::vector<int>> ele_conn)
 {
   std::map<int, std::set<int>> node_conn;
   std::map<int, std::vector<int>>::const_iterator i_ele;
@@ -1348,7 +1345,7 @@ const std::map<int, std::set<int>> EXODUS::NodeToEleConn(
   return node_conn;
 }
 
-const std::map<int, std::vector<int>> EXODUS::EleNeighbors(
+std::map<int, std::vector<int>> EXODUS::EleNeighbors(
     const std::map<int, std::vector<int>> ele_conn, const std::map<int, std::set<int>>& node_conn)
 {
   std::map<int, std::vector<int>> eleneighbors;
@@ -1409,7 +1406,7 @@ const std::map<int, std::vector<int>> EXODUS::EleNeighbors(
   return eleneighbors;
 }
 
-const std::set<int> EXODUS::FreeEdgeNodes(const std::map<int, std::vector<int>>& ele_conn,
+std::set<int> EXODUS::FreeEdgeNodes(const std::map<int, std::vector<int>>& ele_conn,
     const std::map<int, std::vector<int>>& ele_nbrs)
 {
   std::set<int> freenodes;
@@ -1443,7 +1440,7 @@ const std::set<int> EXODUS::FreeEdgeNodes(const std::map<int, std::vector<int>>&
   return freenodes;
 }
 
-const std::set<int> EXODUS::FindExtrudedNodes(const std::set<int>& freedgenodes,
+std::set<int> EXODUS::FindExtrudedNodes(const std::set<int>& freedgenodes,
     const std::map<int, std::vector<int>>& nodepair, const std::set<int>& ns)
 {
   std::set<int> extr_nodes;
@@ -1511,59 +1508,18 @@ std::vector<double> EXODUS::NodeToAvgNormal(const int node, const std::vector<in
 }
 
 std::vector<double> EXODUS::AverageNormal(
-    const std::vector<double> n, const std::vector<std::vector<double>> nbr_ns)
+    const std::vector<double> n, const std::vector<std::vector<double>> nbr_normals)
 {
   // if node has no neighbor avgnormal is normal
-  if (nbr_ns.size() == 0) return n;
+  if (nbr_normals.size() == 0) return n;
 
   // else do averaging
   std::vector<double> avgn = n;
   std::vector<std::vector<double>>::const_iterator i_nbr;
 
-  //  // define lower bound for (nearly) parallel normals
-  //  const double para = 1.0e-12;
-  //
-  //  for(i_nbr=nbr_ns.begin(); i_nbr < nbr_ns.end(); ++i_nbr){
-  //    // cross-product with next neighbor normal
-  //    std::vector<double> cross(3);
-  //    std::vector<double> nbr_n = *i_nbr;
-  //    cross[0] =    avgn[1]*nbr_n[2] - avgn[2]*nbr_n[1];
-  //    cross[1] = - (avgn[0]*nbr_n[2] - avgn[2]*nbr_n[0]);
-  //    cross[2] =    avgn[0]*nbr_n[1] - avgn[1]*nbr_n[0];
-  //    double crosslength = cross[0]*cross[0] + cross[1]*cross[1] + cross[2]*cross[2];
-  //
-  //    if (crosslength<para){
-  //    // if almost parallel do the easy way: average = mean
-  //      avgn[0] = 0.5 * (avgn[0] + nbr_n[0]);
-  //      avgn[1] = 0.5 * (avgn[1] + nbr_n[1]);
-  //      avgn[2] = 0.5 * (avgn[2] + nbr_n[2]);
-  //      avgn[0] += nbr_n[0];
-  //      avgn[1] += nbr_n[1];
-  //      avgn[2] += nbr_n[2];
-  //
-  //    } else {
-  //    // do the Bischoff-Way:
-  //      // left length
-  //      double leftl = avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2];
-  //      // right length
-  //      double rightl = nbr_n[0]*nbr_n[0] + nbr_n[1]*nbr_n[1] + nbr_n[2]*nbr_n[2];
-  //      // mean
-  //      avgn[0] = 0.5 * (avgn[0] + nbr_n[0]);
-  //      avgn[1] = 0.5 * (avgn[1] + nbr_n[1]);
-  //      avgn[2] = 0.5 * (avgn[2] + nbr_n[2]);
-  //      // mean length
-  //      double avgl = avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2];
-  //      // scale by mean of left and right normal
-  //      avgn[0] = avgn[0] * 0.5*(leftl+rightl)/avgl;
-  //      avgn[1] = avgn[1] * 0.5*(leftl+rightl)/avgl;
-  //      avgn[2] = avgn[2] * 0.5*(leftl+rightl)/avgl;
-  //    }
-  //  } // average with next neighbor
-
-
   // new version: order-independent of normals, but without "parallel-check"
   double meanlength = avgn[0] * avgn[0] + avgn[1] * avgn[1] + avgn[2] * avgn[2];
-  for (i_nbr = nbr_ns.begin(); i_nbr < nbr_ns.end(); ++i_nbr)
+  for (i_nbr = nbr_normals.begin(); i_nbr < nbr_normals.end(); ++i_nbr)
   {
     std::vector<double> nbr_n = *i_nbr;
 
@@ -1576,12 +1532,12 @@ std::vector<double> EXODUS::AverageNormal(
   }
 
   // a^m = 1/n * sum a^i
-  avgn[0] = avgn[0] / nbr_ns.size();
-  avgn[1] = avgn[1] / nbr_ns.size();
-  avgn[2] = avgn[2] / nbr_ns.size();
+  avgn[0] = avgn[0] / nbr_normals.size();
+  avgn[1] = avgn[1] / nbr_normals.size();
+  avgn[2] = avgn[2] / nbr_normals.size();
 
   // meanlength = 1/n * sum a^i
-  meanlength = meanlength / nbr_ns.size();
+  meanlength = meanlength / nbr_normals.size();
 
   // |a^m|
   double am_length = avgn[0] * avgn[0] + avgn[1] * avgn[1] + avgn[2] * avgn[2];

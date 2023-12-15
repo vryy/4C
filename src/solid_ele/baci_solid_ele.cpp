@@ -7,9 +7,9 @@
 
 #include "baci_solid_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
@@ -21,6 +21,9 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 
 #include <memory>
+
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;
 
@@ -85,6 +88,12 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddOptionalNamedDoubleVector("FIBER3", 3)
                              .Build();
 
+  defsgeneral["NURBS27"] = INPUT::LineDefinition::Builder()
+                               .AddIntVector("NURBS27", 27)
+                               .AddNamedInt("MAT")
+                               .AddNamedString("KINEM")
+                               .Build();
+
   defsgeneral["TET4"] = INPUT::LineDefinition::Builder()
                             .AddIntVector("TET4", 4)
                             .AddNamedInt("MAT")
@@ -140,7 +149,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLID") return Create(id, owner);
   return Teuchos::null;
@@ -151,7 +160,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(const int id, const 
   return Teuchos::rcp(new DRT::ELEMENTS::Solid(id, owner));
 }
 
-DRT::ParObject* DRT::ELEMENTS::SolidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SolidType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Solid(-1, -1);
   object->Unpack(data);
@@ -188,97 +197,32 @@ DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new Solid(*this); }
 
 int DRT::ELEMENTS::Solid::NumLine() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementLines(celltype_);
 }
 
 int DRT::ELEMENTS::Solid::NumSurface() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(celltype_);
 }
 
 int DRT::ELEMENTS::Solid::NumVolume() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementVolumes(celltype_);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumLine() > 1)  // 1D boundary element and 2D/3D parent element
-  {
-    return DRT::UTILS::ElementBoundaryFactory<StructuralLine, Solid>(DRT::UTILS::buildLines, this);
-  }
-  else if (NumLine() == 1)  // 1D boundary element and 1D parent element -> body load
-                            // (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> lines(1);
-    lines[0] = Teuchos::rcp(this, false);
-    return lines;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Lines();
-  }
+  return CORE::COMM::GetElementLines<StructuralLine, Solid>(*this);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumSurface() > 1)
-  {  // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, Solid>(
-        DRT::UTILS::buildSurfaces, this);
-  }
-  else if (NumSurface() == 1)  // 2D boundary element and 2D parent element -> body load
-                               // (calculated in evaluate)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else  // 1D elements
-  {
-    dserror("Surfaces() does not exist for 1D-element ");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementSurfaces<StructuralSurface, Solid>(*this);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Volumes()
+void DRT::ELEMENTS::Solid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  if (NumVolume() == 1)  // 3D boundary element and a 3D parent element -> body load
-                         // (calculated in evaluate)
-  {
-    std::vector<Teuchos::RCP<Element>> volumes(1);
-    volumes[0] = Teuchos::rcp(this, false);
-    return volumes;
-  }
-  else
-  {
-    dserror("Volumes() does not exist for 1D/2D-elements");
-    return DRT::Element::Volumes();
-  }
-}
-
-void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   AddtoPack(data, UniqueParObjectId());
@@ -286,13 +230,13 @@ void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
   // add base class Element
   DRT::Element::Pack(data);
 
-  AddtoPack(data, (int)distype_);
+  AddtoPack(data, (int)celltype_);
 
-  AddtoPack(data, (int)kintype_);
+  AddtoPack(data, (int)solid_ele_property_.kintype);
 
-  AddtoPack(data, eletech_);
+  AddtoPack(data, solid_ele_property_.eletech);
 
-  AddtoPack(data, eastype_);
+  AddtoPack(data, solid_ele_property_.eastype);
 
   data.AddtoPack(material_post_setup_);
 
@@ -310,15 +254,20 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   DRT::Element::Unpack(basedata);
 
-  distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
+  celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
-  kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
+  solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
-  DRT::ParObject::ExtractfromPack(position, data, eletech_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
 
-  eastype_ = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
+  solid_ele_property_.eastype = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
 
-  DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  if (Shape() == CORE::FE::CellType::nurbs27)
+  {
+    SetNurbsElement() = true;
+  }
+
+  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid interface
   solid_calc_variant_ =
@@ -342,10 +291,10 @@ void DRT::ELEMENTS::Solid::SetParamsInterfacePtr(const Teuchos::ParameterList& p
 }
 
 bool DRT::ELEMENTS::Solid::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& celltype, DRT::INPUT::LineDefinition* linedef)
 {
-  // set discretization type
-  distype_ = DRT::StringToDistype(distype);
+  // set cell type
+  celltype_ = CORE::FE::StringToCellType(celltype);
 
   // read number of material model
   SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
@@ -355,9 +304,10 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 
   if (linedef->HaveNamed("EAS"))
   {
-    if (Shape() == DRT::Element::hex8)
+    if (Shape() == CORE::FE::CellType::hex8)
     {
-      STR::UTILS::READELEMENT::ReadAndSetEAS(linedef, eastype_, eletech_);
+      STR::UTILS::READELEMENT::ReadAndSetEAS(
+          linedef, solid_ele_property_.eastype, solid_ele_property_.eletech);
     }
     else
       dserror("no EAS allowed for this element shape");
@@ -365,12 +315,17 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 
   if (linedef->HaveNamed("FBAR"))
   {
-    eletech_.insert(INPAR::STR::EleTech::fbar);
+    solid_ele_property_.eletech.insert(INPAR::STR::EleTech::fbar);
   }
 
   if (linedef->HaveNamed("MULF"))
   {
-    eletech_.insert(INPAR::STR::EleTech::ps_mulf);
+    solid_ele_property_.eletech.insert(INPAR::STR::EleTech::ps_mulf);
+  }
+
+  if (Shape() == CORE::FE::CellType::nurbs27)
+  {
+    SetNurbsElement() = true;
   }
 
   solid_calc_variant_ =
@@ -398,3 +353,5 @@ bool DRT::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>&
 
   return SolidMaterial()->VisData(name, data, Id());
 }
+
+BACI_NAMESPACE_CLOSE

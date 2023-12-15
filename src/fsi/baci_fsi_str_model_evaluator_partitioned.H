@@ -15,6 +15,8 @@
 
 #include "baci_structure_new_model_evaluator_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Structure;
@@ -30,8 +32,6 @@ namespace STR
       //! constructor
       PartitionedFSI();
 
-      //! destructor
-      virtual ~PartitionedFSI() = default;
 
       //! get pointer to force vector at time level n+1 (full structural map).
       //! interface part is inserted in ADAPTER::FSIStructureWrapper.
@@ -41,7 +41,7 @@ namespace STR
       };
 
       //! setup class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
       //! @name Functions which are derived from the base generic class
       //! @{
@@ -50,7 +50,7 @@ namespace STR
       INPAR::STR::ModelType Type() const override { return INPAR::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
-      virtual void Reset(const Epetra_Vector& x) { return; };
+      void Reset(const Epetra_Vector& x) override { return; };
 
       //! [derived]
       bool EvaluateForce() override { return true; };
@@ -68,18 +68,18 @@ namespace STR
       void PostEvaluate() override { return; };
 
       //! derived
-      virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
+      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
-      virtual bool AssembleJacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+      bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override
       {
         return true;
       };
 
       //! [derived]
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
       {
         return;
       };
@@ -88,7 +88,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! derived
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -98,14 +98,14 @@ namespace STR
       };
 
       //! recover condensed Lagrange multipliers
-      virtual void RunPostComputeX(
+      void RunPostComputeX(
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
       {
         return;
       };
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override { return; };
 
       //! [derived]
       void UpdateStepState(const double& timefac_n) override;
@@ -114,16 +114,16 @@ namespace STR
       void UpdateStepElement() override { return; };
 
       //! [derived]
-      virtual void DetermineStressStrain() { return; };
+      void DetermineStressStrain() override { return; };
 
       //! [derived]
-      virtual void DetermineEnergy() { return; };
+      void DetermineEnergy() override { return; };
 
       //! [derived]
-      virtual void DetermineOptionalQuantity() override { return; };
+      void DetermineOptionalQuantity() override { return; };
 
       //! [derived]
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const { return; };
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! derived
       void ResetStepState() override { return; };
@@ -171,5 +171,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_STR_MODEL_EVALUATOR_PARTITIONED_H

@@ -20,6 +20,8 @@ relate the contact gap to the contact pressure based on micro interactions
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* forward declarations */
 namespace CONTACT
@@ -66,8 +68,7 @@ namespace CONTACT
        * params[in] contactconstitutivelawdata "dumb" container containing the
        * contactconstitutivelaw data from the input file
        */
-      Parameter(
-          const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);
+      Parameter(const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> coconstlawdata);
 
       /// destructor
       virtual ~Parameter() = default;
@@ -104,8 +105,6 @@ namespace CONTACT
           const std::string name                           ///< name of contact constitutivelaw
       );
 
-      /// Destructor
-      virtual ~Container() = default;
 
       //@}
 
@@ -155,4 +154,6 @@ namespace CONTACT
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_H

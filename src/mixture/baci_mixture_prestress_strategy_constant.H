@@ -17,6 +17,8 @@
 
 #include <NOX_LAPACK.H>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   // forward declaration
@@ -69,5 +71,7 @@ namespace MIXTURE
     const PAR::ConstantPrestressStrategy* params_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H

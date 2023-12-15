@@ -14,6 +14,8 @@
 #include "baci_mat_material.H"
 #include "baci_so3_hex18.H"
 
+BACI_NAMESPACE_OPEN
+
 const int num_eas = 9;
 
 namespace DRT
@@ -33,7 +35,7 @@ namespace DRT
 
       static So_sh18Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -108,7 +110,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -118,11 +120,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_sh18() override;
 
       //@}
 
@@ -239,7 +236,7 @@ namespace DRT
       void Integrate_dsg_shear_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r);
       void Integrate_dsg_shear_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s);
       void Integrate_dsg_membrane_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
-      void Integrate_dsg_membrane_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
+      void Integrate_dsg_membrane_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_s);
       void Integrate_dsg_membrane_rs(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_rs);
       void Integrate_dsg_transverse_t(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_transverse_t);
 
@@ -276,5 +273,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_SH18_H

@@ -36,13 +36,15 @@
 #include "baci_mat_superelastic_sma.H"
 
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
-using VoigtMapping = UTILS::VOIGT::IndexMappings;
+BACI_NAMESPACE_OPEN
+
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 
 /*----------------------------------------------------------------------*
@@ -137,7 +139,7 @@ MAT::SuperElasticSMAType MAT::SuperElasticSMAType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::SuperElasticSMAType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::SuperElasticSMAType::Create(const std::vector<char>& data)
 {
   MAT::SuperElasticSMA* superelast = new MAT::SuperElasticSMA();
   superelast->Unpack(data);
@@ -160,9 +162,9 @@ MAT::SuperElasticSMA::SuperElasticSMA(MAT::PAR::SuperElasticSMA* params) : param
 /*----------------------------------------------------------------------*
  | pack (public)                                          hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::Pack(DRT::PackBuffer& data) const
+void MAT::SuperElasticSMA::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
 
@@ -209,10 +211,8 @@ void MAT::SuperElasticSMA::Unpack(const std::vector<char>& data)
   isinit_ = true;
   strainenergy_ = 0.0;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -1228,3 +1228,5 @@ void MAT::SuperElasticSMA::Pullback4thTensorVoigt(const double jacobian,
 }  // pullback4thTensorVoigt()
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

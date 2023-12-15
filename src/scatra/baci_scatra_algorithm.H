@@ -14,6 +14,8 @@
 
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /// Basic algorithm for the transport of passive scalars in the fluid velocity field
@@ -33,14 +35,10 @@ namespace SCATRA
         const Teuchos::ParameterList& solverparams  ///< solver parameter list
     );
 
-    /// virtual destructor to support polymorph destruction
-    ~ScaTraAlgorithm() override = default;
 
     void Setup() override;
 
-    void Init(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& scatradyn,
-        const Teuchos::ParameterList& solverparams, const std::string& disname = "scatra",
-        const bool isale = false) override;
+    void Init() override;
 
     /// outer level time loop
     void TimeLoop() override;
@@ -86,7 +84,7 @@ namespace SCATRA
     void OuterIterationConvection();
 
     /// take current results for converged and save for next time step
-    void Update(const int num = 0);
+    void Update() override;
 
     /// take current results for converged and save for next time step
     void UpdateConvection();
@@ -120,5 +118,7 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ALGORITHM_H

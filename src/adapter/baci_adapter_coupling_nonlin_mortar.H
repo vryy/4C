@@ -24,6 +24,8 @@
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |
  *---------------------------------------------------------------------*/
@@ -50,17 +52,13 @@ namespace ADAPTER
   class CouplingNonLinMortar : public CORE::ADAPTER::CouplingMortar
   {
    public:
-    /*!
-    \brief Empty constructor
-
-    */
-    CouplingNonLinMortar();
-
-    /*!
-    \brief Virtual destructor
-
-    */
-    virtual ~CouplingNonLinMortar(){};
+    /**
+     * Construct nonlinear coupling with basic parameters. The remaining information is passed in
+     * Setup().
+     */
+    CouplingNonLinMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
+        Teuchos::ParameterList contact_dynamic_params,
+        CORE::FE::ShapeFunctionType shape_function_type);
 
     /*!
     \brief initialize routine
@@ -119,7 +117,7 @@ namespace ADAPTER
     };
 
     // create projection operator Dinv*M
-    void CreateP();
+    void CreateP() override;
 
     virtual Teuchos::RCP<Epetra_Vector> Gap()
     {
@@ -196,7 +194,7 @@ namespace ADAPTER
     const bool& IsSetup() const { return issetup_; };
 
     /// check init and setup call
-    void CheckSetup() const
+    void CheckSetup() const override
     {
       if (!IsSetup()) dserror("ERROR: Call Setup() first!");
     }
@@ -228,5 +226,7 @@ namespace ADAPTER
     Teuchos::RCP<CONTACT::CoInterface> interface_;  ///< interface
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_COUPLING_NONLIN_MORTAR_H

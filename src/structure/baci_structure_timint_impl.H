@@ -20,6 +20,8 @@
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -61,9 +63,9 @@ namespace STR
    * \date 06/08
    */
   class TimIntImpl : public TimInt,
-                     public NOX::Epetra::Interface::Required,
-                     public NOX::Epetra::Interface::Jacobian,
-                     public NOX::Epetra::Interface::Preconditioner
+                     public ::NOX::Epetra::Interface::Required,
+                     public ::NOX::Epetra::Interface::Jacobian,
+                     public ::NOX::Epetra::Interface::Preconditioner
   {
    public:
     //! @name Construction
@@ -79,9 +81,6 @@ namespace STR
         Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
         Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
-
-    //! Destructor
-    virtual ~TimIntImpl() { ; }
 
     /*! \brief Initialize this object
 
@@ -104,9 +103,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
+    void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
+        const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+        Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -126,19 +125,19 @@ namespace STR
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    void Setup() override;
 
 
     //! Resize \p TimIntMStep<T> multi-step quantities
-    virtual void ResizeMStep() = 0;
+    void ResizeMStep() override = 0;
 
     //! return time integration factor
-    virtual double TimIntParam() const = 0;
+    double TimIntParam() const override = 0;
 
     //@}
 
     //! Do time integration of single step
-    int IntegrateStep();
+    int IntegrateStep() override;
 
     //! Create Edges of for discrete shell elements
     void InitializeEdgeElements();
@@ -155,7 +154,7 @@ namespace STR
     //! In partitioned solution schemes, it is better to keep the current
     //! solution instead of evaluating the initial guess (as the predictor)
     //! does.
-    void PreparePartitionStep();
+    void PreparePartitionStep() override;
 
     //! Check if line search is applied in combination with elements
     //! that perform a local condensation (e.g. EAS)
@@ -315,18 +314,10 @@ namespace STR
         const Teuchos::RCP<Epetra_Vector> disn,              //!< evaluation displacements
         Teuchos::RCP<Epetra_Vector>& fint,                   //!< forces are added onto
         Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,   //!< stiffness is added onto
-        Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
+        Teuchos::ParameterList
+            pwindk  //!< parameter list containing scale factors for matrix entries
     );
 
-    //! Evaluate _certain_ surface stresses and stiffness
-    //!
-    //! The Evaluation happens internal-force-like.
-    void ApplyForceStiffSurfstress(const double time,      //!< evaluation time
-        const double dt,                                   //!< time step size
-        const Teuchos::RCP<Epetra_Vector> disn,            //!< displacement state at n+1
-        Teuchos::RCP<Epetra_Vector>& fint,                 //!< internal force
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff  //! stiffness
-    );
 
     //! Evaluate forces and stiffness due to contact / meshtying
     void ApplyForceStiffContactMeshtying(
@@ -548,21 +539,22 @@ namespace STR
                                            //!< i.e. total displacements
         Epetra_Vector& RHS,                //!< to be filled with the \f$F\f$ values that correspond
                                            //!< to the input solution vector \f$x\f$.
-        const NOX::Epetra::Interface::Required::FillType flag  //!< enumerated
-                                                               //!< type (see NOX::Epetra::FillType)
-                                                               //!< that tells a users interface why
-                                                               //!< computeF() was called. NOX has
-                                                               //!< the ability to generate
-                                                               //!< Jacobians based on numerical
-                                                               //!< differencing using calls to
-                                                               //!< computeF(). In this case,
-                                                               //!< the user may want to compute
-                                                               //!< an inexact
-                                                               //!< (and hopefully cheaper) \f$F\f$
-                                                               //!< since it
-                                                               //!< is only used in the Jacobian (or
-                                                               //!< preconditioner).
-    );
+        const ::NOX::Epetra::Interface::Required::FillType
+            flag  //!< enumerated
+                  //!< type (see ::NOX::Epetra::FillType)
+                  //!< that tells a users interface why
+                  //!< computeF() was called. NOX has
+                  //!< the ability to generate
+                  //!< Jacobians based on numerical
+                  //!< differencing using calls to
+                  //!< computeF(). In this case,
+                  //!< the user may want to compute
+                  //!< an inexact
+                  //!< (and hopefully cheaper) \f$F\f$
+                  //!< since it
+                  //!< is only used in the Jacobian (or
+                  //!< preconditioner).
+        ) override;
 
     //! Compute effective dynamic stiffness matrix
     bool computeJacobian(const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
@@ -570,8 +562,8 @@ namespace STR
         Epetra_Operator& Jac                      //!< a reference to the Jacobian operator
                                                   //!< \f$\frac{\partial F}{\partial x}\f$
                                                   //!< that the user supplied in the
-                                                  //!< NOX::Epetra::Group constructor.
-    );
+                                                  //!< ::NOX::Epetra::Group constructor.
+        ) override;
 
     /*! \brief Compute preconditioner
      *
@@ -590,7 +582,7 @@ namespace STR
                              //!< solution vector x.
         Teuchos::ParameterList* precParams  //!< a pointer to a parameter list
                                             //!< that can be used by the preconditioner.
-    );
+        ) override;
 
     //! Setup for solution with NOX
     void NoxSetup();
@@ -600,8 +592,8 @@ namespace STR
     );
 
     //! Create status test for non-linear solution with NOX
-    Teuchos::RCP<NOX::StatusTest::Combo> NoxCreateStatusTest(
-        Teuchos::RCP<NOX::Abstract::Group> grp  //!< NOX group
+    Teuchos::RCP<::NOX::StatusTest::Combo> NoxCreateStatusTest(
+        Teuchos::RCP<::NOX::Abstract::Group> grp  //!< NOX group
     );
 
     //! Create solver parameters for  non-linear solution with NOX
@@ -613,10 +605,10 @@ namespace STR
     ) const;
 
     //! Create the linear system that is passed into NOX
-    Teuchos::RCP<NOX::Epetra::LinearSystem> NoxCreateLinearSystem(
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> NoxCreateLinearSystem(
         Teuchos::ParameterList& nlParams,  ///< parameter list
-        NOX::Epetra::Vector& noxSoln,      ///< solution vector to operate on
-        Teuchos::RCP<NOX::Utils> utils     ///< printing utilities
+        ::NOX::Epetra::Vector& noxSoln,    ///< solution vector to operate on
+        Teuchos::RCP<::NOX::Utils> utils   ///< printing utilities
     );
 
     //! Do non-linear solve with NOX
@@ -624,7 +616,7 @@ namespace STR
 
     //! check for success of nonlinear solve otherwise return error code
     int NoxErrorCheck(
-        NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver);
+        ::NOX::StatusTest::StatusType status, Teuchos::RCP<::NOX::Solver::Generic> solver);
     //@}
 
     //! @name Updates
@@ -673,13 +665,10 @@ namespace STR
     //! Thus the 'last' converged state is lost and a reset
     //! of the time step becomes impossible.
     //! We are ready and keen awaiting the next time step.
-    virtual void UpdateStepState() = 0;
+    void UpdateStepState() override = 0;
 
     //! Update Element
-    virtual void UpdateStepElement() = 0;
-
-    //! Update step for surface stress
-    void UpdateStepSurfstress();
+    void UpdateStepElement() override = 0;
 
     //! Update step for constraints
     void UpdateStepConstraint();
@@ -700,56 +689,56 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    virtual enum INPAR::STR::DynamicType MethodName() const = 0;
+    enum INPAR::STR::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all implicit (mark their name)
-    bool MethodImplicit() { return true; }
+    bool MethodImplicit() override { return true; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual int MethodSteps() const = 0;
+    int MethodSteps() const override = 0;
 
     //! Give local order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracyDis() const = 0;
+    int MethodOrderOfAccuracyDis() const override = 0;
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const = 0;
+    int MethodOrderOfAccuracyVel() const override = 0;
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis() const = 0;
+    double MethodLinErrCoeffDis() const override = 0;
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() const = 0;
+    double MethodLinErrCoeffVel() const override = 0;
 
     //! Return bool indicating if constraints are defined
-    bool HaveConstraint();
+    bool HaveConstraint() override;
 
     //! Return bool indicating if Cardiovascular0D bcs are defined
     bool HaveCardiovascular0D();
 
     //! Return bool indicating if spring dashpot BCs are defined
-    bool HaveSpringDashpot();
+    bool HaveSpringDashpot() override;
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    const Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() { return conman_; }
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override { return conman_; }
 
     //! Return Teuchos::rcp to Cardiovascular0DManager cardvasc0dman_
-    const Teuchos::RCP<::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
       return cardvasc0dman_;
     }
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    const Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager()
+    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       return springman_;
     }
 
     //! Get type of thickness scaling for thin shell structures
-    INPAR::STR::STC_Scale GetSTCAlgo() { return stcscale_; }
+    INPAR::STR::STC_Scale GetSTCAlgo() override { return stcscale_; }
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
     {
       if (!stccompl_) ComputeSTCMatrix();
       stccompl_ = true;
@@ -758,15 +747,15 @@ namespace STR
 
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void UpdateIterIncrConstr(
+    void UpdateIterIncrConstr(
         Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
-    );
+        ) override;
 
     //! Update iteration
     //! Add residual increment to pressures stored in Cardiovascular0D manager
-    virtual void UpdateIterIncrCardiovascular0D(
-        Teuchos::RCP<Epetra_Vector> presincr  ///< pressure increment
-    );
+    void UpdateIterIncrCardiovascular0D(
+        Teuchos::RCP<Epetra_Vector> cv0ddofincr  ///< pressure increment
+        ) override;
 
     //@}
 
@@ -775,14 +764,14 @@ namespace STR
 
     //! switch structure field to block matrix in fsi simulations
     void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps);
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
     virtual void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params) = 0;
 
     //! Linear structure solve with just an interface load
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
+    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override;
 
     //! check, if according to divercont flag time step size can be increased
     void CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status);
@@ -806,10 +795,10 @@ namespace STR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
+    Teuchos::RCP<Epetra_Vector> Fext() override = 0;
 
     //! Return external force \f$F_{ext,n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
+    Teuchos::RCP<Epetra_Vector> FextNew() override = 0;
 
     /*! \brief Return reaction forces
      *
@@ -821,20 +810,20 @@ namespace STR
      *  components. The reaction force resultant is not affected by this
      *  operation.
      */
-    Teuchos::RCP<Epetra_Vector> Freact() { return freact_; }
+    Teuchos::RCP<Epetra_Vector> Freact() override { return freact_; }
 
     //! Read and set external forces from file
-    virtual void ReadRestartForce() = 0;
+    void ReadRestartForce() override = 0;
 
     //! Write internal and external forces for restart
-    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override = 0;
 
     //! FORMERLY: Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     //! Called from the previous adapters as InitialGuess()
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() { return disi_; }
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return disi_; }
 
     //! Prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! Update state incrementally for coupled problems with monolithic approach
     void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
@@ -844,7 +833,7 @@ namespace STR
     }
 
     //! Evaluate routine for coupled problems with monolithic approach
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override
     {
       UpdateIterIncrementally(disiterinc);
 
@@ -857,7 +846,7 @@ namespace STR
     }
 
     //! Update routine for coupled problems with monolithic approach
-    virtual void Update()
+    void Update() override
     {
       PreUpdate();
       UpdateStepState();
@@ -868,7 +857,7 @@ namespace STR
     }
 
     //! Update routine for coupled problems with monolithic approach with time adaptivity
-    virtual void Update(const double endtime)
+    void Update(const double endtime) override
     {
       PreUpdate();
       UpdateStepState();
@@ -887,7 +876,7 @@ namespace STR
 
     //! Output results to binary file on disk
     void Output(const bool forced_writerestart = false  ///< [in] Force writing of restart data
-    );
+        ) override;
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     void SetDisResidual(
@@ -898,7 +887,7 @@ namespace STR
     }
 
     //! Return the rhs-vector (negative sign for Newton is already included.)
-    Teuchos::RCP<const Epetra_Vector> RHS() { return fres_; }
+    Teuchos::RCP<const Epetra_Vector> RHS() override { return fres_; }
 
     //@}
 
@@ -928,7 +917,7 @@ namespace STR
     void PrintNewtonConv();
 
     //! print summary after step
-    void PrintStep();
+    void PrintStep() override;
 
     //! The text for summary print, see #PrintStep
     void PrintStepText(FILE* ofile  //!< output file handle
@@ -1036,10 +1025,11 @@ namespace STR
 
     //! @name NOX variables
     //@{
-    Teuchos::RCP<NOX::StatusTest::Combo> noxstatustest_;  //!< NOX status test for convergence check
+    Teuchos::RCP<::NOX::StatusTest::Combo>
+        noxstatustest_;  //!< NOX status test for convergence check
     Teuchos::RCP<Teuchos::ParameterList>
-        noxparams_;                      //!< NOX parameter list to configure the NOX solver
-    Teuchos::RCP<NOX::Utils> noxutils_;  //!< NOX utils for printing
+        noxparams_;                        //!< NOX parameter list to configure the NOX solver
+    Teuchos::RCP<::NOX::Utils> noxutils_;  //!< NOX utils for printing
     //@}
 
     //! @name Krylov projection variables
@@ -1067,4 +1057,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_IMPL_H

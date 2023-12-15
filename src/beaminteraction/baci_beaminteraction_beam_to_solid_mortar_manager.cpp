@@ -25,12 +25,14 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
-    const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
     const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
     int start_value_lambda_gid)
     : is_setup_(false),
@@ -667,3 +669,5 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyIn
 
   return global_kappa_inv;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -32,8 +32,6 @@ PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
 ITERNORM                        L2
@@ -57,8 +55,6 @@ INT_STRATEGY                    Standard
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
 INITFUNCNO                      1

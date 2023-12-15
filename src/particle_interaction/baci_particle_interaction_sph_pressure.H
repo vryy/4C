@@ -17,6 +17,8 @@
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -42,9 +44,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHPressure();
-
-    //! destructor
-    ~SPHPressure() = default;
 
     //! init pressure handler
     void Init();
@@ -81,4 +80,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

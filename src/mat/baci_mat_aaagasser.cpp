@@ -25,6 +25,8 @@ CABLUM 1.98e-3
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -50,7 +52,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAAgasser::CreateMaterial()
 MAT::AAAgasserType MAT::AAAgasserType::instance_;
 
 
-DRT::ParObject* MAT::AAAgasserType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAAgasserType::Create(const std::vector<char>& data)
 {
   MAT::AAAgasser* aaa = new MAT::AAAgasser();
   aaa->Unpack(data);
@@ -72,9 +74,9 @@ MAT::AAAgasser::AAAgasser(MAT::PAR::AAAgasser* params) : params_(params) {}
 /*----------------------------------------------------------------------*
  |  Pack                                           (public)             |
  *----------------------------------------------------------------------*/
-void MAT::AAAgasser::Pack(DRT::PackBuffer& data) const
+void MAT::AAAgasser::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -93,10 +95,8 @@ void MAT::AAAgasser::Pack(DRT::PackBuffer& data) const
 void MAT::AAAgasser::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -282,3 +282,5 @@ void MAT::AAAgasser::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

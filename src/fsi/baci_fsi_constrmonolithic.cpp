@@ -31,6 +31,8 @@
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -144,21 +146,21 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   //-----------------------------------------------------------------------------
   // Increment lagrange multiplier
   //-----------------------------------------------------------------------------
-  if (x != Teuchos::null)
+  if (step_increment != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> lagrincr = Extractor().ExtractVector(x, 3);
+    Teuchos::RCP<Epetra_Vector> lagrincr = Extractor().ExtractVector(step_increment, 3);
     conman_->UpdateTotLagrMult(lagrincr);
   }
 
   //-----------------------------------------------------------------------------
   // evaluation of all fields; constraints are evaluated by strucuture
   //-----------------------------------------------------------------------------
-  FSI::Monolithic::Evaluate(x);
+  FSI::Monolithic::Evaluate(step_increment);
 }
 
 
@@ -303,10 +305,11 @@ void FSI::ConstrMonolithic::UnscaleSolution(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::CreateLinearSystem(
-    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils)
+Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::CreateLinearSystem(
+    Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
+    Teuchos::RCP<::NOX::Utils> utils)
 {
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
+  Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys;
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
@@ -321,15 +324,15 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::CreateLinearSyste
   else
     dserror("Unknown nonlinear method");
 
-  NOX::Epetra::Interface::Jacobian* iJac = this;
-  NOX::Epetra::Interface::Preconditioner* iPrec = this;
+  ::NOX::Epetra::Interface::Jacobian* iJac = this;
+  ::NOX::Epetra::Interface::Preconditioner* iPrec = this;
   const Teuchos::RCP<Epetra_Operator> J = systemmatrix_;
   const Teuchos::RCP<Epetra_Operator> M = systemmatrix_;
 
   switch (linearsolverstrategy_)
   {
     case INPAR::FSI::PreconditionedKrylov:
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, *lsParams,
+      linSys = Teuchos::rcp(new ::NOX::Epetra::LinearSystemAztecOO(printParams, *lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
     default:
@@ -343,18 +346,19 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::CreateLinearSyste
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
-    Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp)
+Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
+    Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  Teuchos::RCP<::NOX::StatusTest::Combo> combo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> converged =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
 
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
-      Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+  Teuchos::RCP<::NOX::StatusTest::MaxIters> maxiters =
+      Teuchos::rcp(new ::NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+  Teuchos::RCP<::NOX::StatusTest::FiniteValue> fv =
+      Teuchos::rcp(new ::NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
@@ -365,12 +369,12 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
 
   // setup tests for structural displacements
 
-  Teuchos::RCP<NOX::StatusTest::Combo> structcombo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> structcombo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp = Teuchos::rcp(new NOX::FSI::PartialNormF(
       "displacement", Extractor(), 0, nlParams.get<double>("Norm abs disp"),
-      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate =
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("displacement update", Extractor(), 0,
           nlParams.get<double>("Norm abs disp"), NOX::FSI::PartialNormUpdate::Scaled));
@@ -388,14 +392,14 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
   //  interface.push_back(Teuchos::null);
   //  CORE::LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
   //
-  //  Teuchos::RCP<NOX::StatusTest::Combo> interfacecombo =
-  //    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  //  Teuchos::RCP<::NOX::StatusTest::Combo> interfacecombo =
+  //    Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
   //
   //  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest =
   //    Teuchos::rcp(new NOX::FSI::PartialNormF("interface",
   //                                            interfaceextract,0,
   //                                            nlParams.get("Norm abs vel", 1.0e-6),
-  //                                            NOX::Abstract::Vector::TwoNorm,
+  //                                            ::NOX::Abstract::Vector::TwoNorm,
   //                                            NOX::FSI::PartialNormF::Scaled));
   //  Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate =
   //    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("interface update",
@@ -416,12 +420,12 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
   fluidvel.push_back(Teuchos::null);
   CORE::LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(), fluidvel);
 
-  Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> fluidvelcombo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel = Teuchos::rcp(new NOX::FSI::PartialNormF(
       "velocity", fluidvelextract, 0, nlParams.get<double>("Norm abs vel"),
-      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate =
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update", fluidvelextract, 0,
           nlParams.get<double>("Norm abs vel"), NOX::FSI::PartialNormUpdate::Scaled));
@@ -439,12 +443,12 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
   fluidpress.push_back(Teuchos::null);
   CORE::LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(), fluidpress);
 
-  Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> fluidpresscombo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress = Teuchos::rcp(new NOX::FSI::PartialNormF(
       "pressure", fluidpressextract, 0, nlParams.get<double>("Norm abs pres"),
-      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate =
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update", fluidpressextract, 0,
           nlParams.get<double>("Norm abs pres"), NOX::FSI::PartialNormUpdate::Scaled));
@@ -460,12 +464,12 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
   volconstr.push_back(Teuchos::null);
   CORE::LINALG::MultiMapExtractor volconstrextract(*DofRowMap(), volconstr);
 
-  Teuchos::RCP<NOX::StatusTest::Combo> volconstrcombo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> volconstrcombo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::FSI::PartialNormF> VolConstr = Teuchos::rcp(new NOX::FSI::PartialNormF(
       "constraints", volconstrextract, 0, nlParams.get<double>("Norm abs vol constr"),
-      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> VolConstrUpdate =
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("constraints update", volconstrextract, 0,
           nlParams.get<double>("Norm abs vol constr"), NOX::FSI::PartialNormUpdate::Scaled));
@@ -537,8 +541,7 @@ void FSI::ConstrMonolithic::CreateSystemMatrix(bool structuresplit)
       systemmatrix_ = Teuchos::rcp(new ConstrOverlappingBlockMatrix(Extractor(), *StructureField(),
           *FluidField(), *AleField(), structuresplit,
           DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
-          spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0],
-          DRT::Problem::Instance()->ErrorFile()->Handle()));
+          spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0]));
 
       break;
     default:
@@ -546,3 +549,5 @@ void FSI::ConstrMonolithic::CreateSystemMatrix(bool structuresplit)
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

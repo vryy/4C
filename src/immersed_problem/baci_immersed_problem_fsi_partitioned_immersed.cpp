@@ -13,6 +13,8 @@
 #include "baci_fsi_debugwriter.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 FSI::PartitionedImmersed::PartitionedImmersed(const Epetra_Comm& comm) : Partitioned(comm)
 {
@@ -48,3 +50,5 @@ void FSI::PartitionedImmersed::ExtractPreviousInterfaceSolution()
   // not necessary in immersed fsi.
   // overrides version in fsi_paritioned with "do nothing".
 }
+
+BACI_NAMESPACE_CLOSE

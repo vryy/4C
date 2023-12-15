@@ -13,6 +13,8 @@
 #include "baci_inpar_ssi.H"
 #include "baci_ssi_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SSI
 {
   //! base class to deal with partioned 2WC SSI. Mainly it is the same as for thermo-structure
@@ -23,8 +25,6 @@ namespace SSI
     //! constructor
     SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WC() override = default;
 
     /*! \brief Initialize this object
 
@@ -141,8 +141,6 @@ namespace SSI
     SSIPart2WCSolidToScatraRelax(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WCSolidToScatraRelax() override = default;
 
     /*!
     \brief Setup this object
@@ -181,8 +179,6 @@ namespace SSI
     SSIPart2WCSolidToScatraRelaxAitken(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WCSolidToScatraRelaxAitken() override = default;
 
     /*!
     \brief Setup all class internal objects and members
@@ -222,8 +218,6 @@ namespace SSI
     SSIPart2WCScatraToSolidRelax(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WCScatraToSolidRelax() override = default;
 
     /*!
     \brief Setup this object
@@ -262,8 +256,6 @@ namespace SSI
     SSIPart2WCScatraToSolidRelaxAitken(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WCScatraToSolidRelaxAitken() override = default;
 
     /*!
     \brief Setup all class internal objects and members
@@ -295,5 +287,7 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> scaincnpold_;
   };
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_PARTITIONED_2WC_H

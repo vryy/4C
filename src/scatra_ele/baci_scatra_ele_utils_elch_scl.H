@@ -14,6 +14,8 @@
 #include "baci_scatra_ele_parameter_elch.H"
 #include "baci_scatra_ele_utils_elch_diffcond.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -24,7 +26,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchScl;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchScl : public ScaTraEleUtilsElchDiffCond<distype>
     {
       //! abbreviations
@@ -67,4 +69,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

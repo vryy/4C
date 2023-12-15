@@ -12,13 +12,15 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_H
 #define BACI_MIXTURE_CONSTITUENT_H
 
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_pack_buffer.H"
+#include "baci_comm_pack_buffer.H"
+#include "baci_io_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_parameter.H"
 
 #include <memory>
 #include <unordered_map>
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration
 namespace MAT
@@ -94,7 +96,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    virtual void PackConstituent(DRT::PackBuffer& data) const;
+    virtual void PackConstituent(CORE::COMM::PackBuffer& data) const;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -271,27 +273,25 @@ namespace MIXTURE
     /// Returns the refenrence mass density. Needs to be implemented by the deriving class.
 
     /*!
-     * \brief Register names of the internal data that should be saved during runtime vtk output
+     * \brief Register names of the internal data that should be saved during runtime output
      *
      * \param name_and_size [out] : unordered map of names of the data with the respective vector
      * size
      */
-    virtual void RegisterVtkOutputDataNames(
-        std::unordered_map<std::string, int>& names_and_size) const
+    virtual void RegisterOutputDataNames(std::unordered_map<std::string, int>& names_and_size) const
     {
       // do nothing for simple constituents
     }
 
     /*!
-     * \brief Evaluate internal data for every Gauss point saved for output during runtime vtk
-     * output
+     * \brief Evaluate internal data for every Gauss point saved for output during runtime output
      *
      * \param name [in] : Name of the data to export
      * \param data [out] : NUMGPxNUMDATA Matrix holding the data
      *
      * \return true if data is set by the material, otherwise false
      */
-    virtual bool EvaluateVtkOutputData(
+    virtual bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
     {
       return false;
@@ -325,5 +325,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_H

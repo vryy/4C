@@ -14,6 +14,8 @@
 
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -27,19 +29,20 @@ namespace DRT
       FluidBoundaryFactory() { return; };
 
       //! dtor
-      virtual ~FluidBoundaryFactory() { return; };
+      virtual ~FluidBoundaryFactory() = default;
 
       //! ProvideImpl
-      static FluidBoundaryInterface* ProvideImpl(
-          DRT::Element::DiscretizationType distype, std::string problem);
+      static FluidBoundaryInterface* ProvideImpl(CORE::FE::CellType distype, std::string problem);
 
      private:
       //! define FluidEleBoundaryCalc instances dependent on problemtype
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static FluidBoundaryInterface* DefineProblemType(std::string problem);
     };
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

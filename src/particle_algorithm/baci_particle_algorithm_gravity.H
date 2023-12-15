@@ -18,6 +18,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
@@ -39,9 +41,6 @@ namespace PARTICLEALGORITHM
      * \param[in] params particle simulation parameter list
      */
     explicit GravityHandler(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~GravityHandler() = default;
 
     /*!
      * \brief init gravity handler
@@ -85,4 +84,6 @@ namespace PARTICLEALGORITHM
 }  // namespace PARTICLEALGORITHM
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

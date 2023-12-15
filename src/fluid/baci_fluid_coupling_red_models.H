@@ -23,6 +23,8 @@ problem
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -50,12 +52,12 @@ namespace FLD
       */
       Fluid_couplingWrapperBase(Teuchos::RCP<DRT::Discretization> dis_3D,
           Teuchos::RCP<DRT::Discretization> dis_redD, IO::DiscretizationWriter& output,
-          double dt_3d, double dt_rm);
+          double dt_3d, double dt_redD);
 
       /*!
       \brief Destructor
       */
-      virtual ~Fluid_couplingWrapperBase() = 0;
+      virtual ~Fluid_couplingWrapperBase() = default;
 
       /*!
       \brief Wrapper for Fluid_couplingWrapper::FlowRateCalculation
@@ -156,18 +158,16 @@ namespace FLD
       {
       }
 
-      void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params)
+      void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) override
       {
         reduced_D_time_integ_->Integrate(true, params);
       }
 
-      void SaveState() { reduced_D_time_integ_->SaveState(); }
+      void SaveState() override { reduced_D_time_integ_->SaveState(); }
 
-      void LoadState() { reduced_D_time_integ_->LoadState(); }
+      void LoadState() override { reduced_D_time_integ_->LoadState(); }
 
-      void TimeUpdate() { reduced_D_time_integ_->TimeUpdate(); }
-
-      ~Fluid_couplingWrapper(){};
+      void TimeUpdate() override { reduced_D_time_integ_->TimeUpdate(); }
 
      private:
       //! Reduced-D artery network time integration
@@ -190,7 +190,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      Fluid_couplingBc(Teuchos::RCP<DRT::Discretization> dis3D,
+      Fluid_couplingBc(Teuchos::RCP<DRT::Discretization> dis_3D,
           Teuchos::RCP<DRT::Discretization> dis_reD, IO::DiscretizationWriter& output, double dt_3d,
           double dt_rm, int condid, int numcond, int numcond2);
 
@@ -202,7 +202,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~Fluid_couplingBc() {}
+      virtual ~Fluid_couplingBc() = default;
 
      protected:
       /*!
@@ -262,7 +262,7 @@ namespace FLD
       /*!
       \brief calculate area at outflow boundary
       */
-      double Area(double& density, double& viscosity, int numcond);
+      double Area(double& density, double& viscosity, int condid);
 
 
 
@@ -314,5 +314,7 @@ namespace FLD
 
   }  // namespace UTILS
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_COUPLING_RED_MODELS_H

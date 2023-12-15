@@ -15,7 +15,10 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_xfem.H"
+#include "baci_mat_material.H"
 #include "baci_utils_singleton_owner.H"
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -28,7 +31,6 @@ namespace DRT
   class Condition;
   class Discretization;
   class DiscretizationFaces;
-
 
   namespace ELEMENTS
   {
@@ -51,8 +53,7 @@ namespace DRT
       FluidIntFaceImplInterface() {}
 
       /// Empty destructor
-      virtual ~FluidIntFaceImplInterface() {}
-
+      virtual ~FluidIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element
@@ -112,7 +113,7 @@ namespace DRT
       \author schott
       \date 04/12
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidIntFaceImpl : public FluidIntFaceImplInterface
     {
      public:
@@ -125,7 +126,7 @@ namespace DRT
 
 
       //! Assemble internal faces integrals using data from both parent elements
-      virtual void AssembleInternalFacesUsingNeighborData(
+      void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element
           Teuchos::RCP<MAT::Material>& material,   ///< material associated with the faces
           std::vector<int>& nds_master,            ///< nodal dofset w.r.t. master element
@@ -135,11 +136,10 @@ namespace DRT
           DRT::DiscretizationFaces& discretization,               ///< faces discretization
           Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
-      );
+          ) override;
 
       //! Evaluate internal faces
-      virtual int EvaluateInternalFaces(
-          DRT::ELEMENTS::FluidIntFace* intface,   ///< internal face element
+      int EvaluateInternalFaces(DRT::ELEMENTS::FluidIntFace* intface,  ///< internal face element
           Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,         ///< parameter list
           DRT::Discretization& discretization,    ///< discretization
@@ -153,7 +153,7 @@ namespace DRT
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
           std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
           std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
-      );
+          ) override;
 
 
      private:
@@ -167,5 +167,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

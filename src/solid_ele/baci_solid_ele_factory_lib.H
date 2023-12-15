@@ -8,9 +8,12 @@
 #ifndef BACI_SOLID_ELE_FACTORY_LIB_H
 #define BACI_SOLID_ELE_FACTORY_LIB_H
 
-#include "baci_lib_element.H"
+#include "baci_discretization_fem_general_cell_type_traits.H"
 
+#include <memory>
 #include <variant>
+
+BACI_NAMESPACE_OPEN
 
 namespace STR::ELEMENTS
 {
@@ -61,7 +64,7 @@ namespace DRT::ELEMENTS
     struct CreateVariant;
 
     template <typename... Ts>
-    struct CreateVariant<BaseTypeList<Ts...>>
+    struct CreateVariant<CORE::FE::BaseTypeList<Ts...>>
     {
       using type = std::variant<VariantItem<Ts>...>;
     };
@@ -77,5 +80,7 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_ELE_FACTORY_LIB_H

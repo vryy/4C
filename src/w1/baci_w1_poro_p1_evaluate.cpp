@@ -10,14 +10,16 @@
 /*---------------------------------------------------------------------------*/
 
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_function.H"
 #include "baci_w1_poro_p1.H"
 #include "baci_w1_poro_p1_eletypes.H"
 
-template <DRT::Element::DiscretizationType distype>
+BACI_NAMESPACE_OPEN
+
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearization(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
@@ -33,7 +35,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearization(
   dphi_dus.PutScalar(0.0);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearizationOD(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
@@ -47,7 +49,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearizationOD(
     porosity = shapfct.Dot(*myporosity);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Wall1_PoroP1<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -190,7 +192,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::Evaluate(Teuchos::ParameterList& param
   return 0;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Wall1_PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -377,14 +379,14 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& par
   return 0;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::InitElement()
 {
   // initialize base element
   Base::InitElement();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::NonlinearStiffnessPoroelast(std::vector<int>& lm,
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,
@@ -404,7 +406,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::NonlinearStiffnessPoroelast(std::vect
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -492,7 +494,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::NonlinearStiffnessPoroelast(std::vect
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
@@ -686,7 +688,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLi
   /* =========================================================================*/
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::CouplingPoroelast(
     std::vector<int>& lm,                                      // location matrix
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,  // current displacements
@@ -712,7 +714,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::CouplingPoroelast(
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -754,7 +756,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::CouplingPoroelast(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
@@ -874,7 +876,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(Teuchos::Parameter
   /* =========================================================================*/
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -894,7 +896,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -956,7 +958,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, i);
         }
 
@@ -973,6 +975,8 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
   return 0;
 }
 
-template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

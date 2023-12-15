@@ -18,6 +18,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void dyn_ale_drt()
@@ -30,9 +32,9 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // ask ALE::AleBaseAlgorithm for the ale time integrator
   // -------------------------------------------------------------------
-  Teuchos::RCP<::ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ::ADAPTER::AleBaseAlgorithm(DRT::Problem::Instance()->AleDynamicParams(), actdis));
-  Teuchos::RCP<::ADAPTER::Ale> aletimint = ale->AleField();
+  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
+      new ADAPTER::AleBaseAlgorithm(DRT::Problem::Instance()->AleDynamicParams(), actdis));
+  Teuchos::RCP<ADAPTER::Ale> aletimint = ale->AleField();
 
   // -------------------------------------------------------------------
   // read the restart information, set vectors and variables if necessary
@@ -55,3 +57,5 @@ void dyn_ale_drt()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

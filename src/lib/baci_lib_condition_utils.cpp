@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -619,3 +619,5 @@ bool DRT::UTILS::HaveSameNodes(const DRT::Condition* const condition1,
   // when we get here everything is fine
   return matching_conditions;
 }
+
+BACI_NAMESPACE_CLOSE

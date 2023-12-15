@@ -13,6 +13,7 @@
 #include "baci_xfem_xfluid_timeInt_base.H"
 
 #include "baci_bele_bele3.H"
+#include "baci_comm_exporter.H"
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_elementhandle.H"
 #include "baci_cut_intersection.H"
@@ -25,11 +26,11 @@
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
 
 // #define DEBUG_TIMINT_STD
 
@@ -393,21 +394,21 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersection(
 {
   switch (sh->Shape())
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return callSideEdgeIntersectionT<DRT::Element::tri3>(sh, sid, x1, x2);
+      return callSideEdgeIntersectionT<CORE::FE::CellType::tri3>(sh, sid, x1, x2);
     }
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return callSideEdgeIntersectionT<DRT::Element::quad4>(sh, sid, x1, x2);
+      return callSideEdgeIntersectionT<CORE::FE::CellType::quad4>(sh, sid, x1, x2);
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return callSideEdgeIntersectionT<DRT::Element::quad8>(sh, sid, x1, x2);
+      return callSideEdgeIntersectionT<CORE::FE::CellType::quad8>(sh, sid, x1, x2);
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return callSideEdgeIntersectionT<DRT::Element::quad9>(sh, sid, x1, x2);
+      return callSideEdgeIntersectionT<CORE::FE::CellType::quad9>(sh, sid, x1, x2);
     }
     default:
     {
@@ -422,7 +423,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersection(
 /*------------------------------------------------------------------------------------------------*
  * check if edge between x1 and x2 cuts the side (templated)                         schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType sidetype>
+template <CORE::FE::CellType sidetype>
 bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
     CORE::GEO::CUT::SideHandle* sh,  /// side handle
     int sid,                         /// side id
@@ -431,7 +432,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
 ) const
 {
   const int nsd = 3;
-  const int numNodesSurface = CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement;
+  const int numNodesSurface = CORE::FE::num_nodes<sidetype>;
 
   CORE::LINALG::Matrix<nsd, 2> xyze_lineElement(true);
 
@@ -450,7 +451,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
 
 
   Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> intersect =
-      CORE::GEO::CUT::IntersectionBase::Create(DRT::Element::line2, sidetype);
+      CORE::GEO::CUT::IntersectionBase::Create(CORE::FE::CellType::line2, sidetype);
   Teuchos::RCP<CORE::GEO::CUT::Options> options =
       Teuchos::rcp(new CORE::GEO::CUT::Options());  // Create cut options for intersection
                                                     // (specify to use double prec.)
@@ -519,7 +520,7 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(const DRT::Element* ele,  /// po
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
     CORE::LINALG::SerialDenseMatrix& nodecoords,  /// node coordinates of element
-    DRT::Element::DiscretizationType DISTYPE,     /// discretization type
+    CORE::FE::CellType DISTYPE,                   /// discretization type
     CORE::LINALG::Matrix<3, 1>& x,                /// global coordinates of point
     CORE::LINALG::Matrix<3, 1>& xi,               /// determined local coordinates w.r.t ele
     bool& pointInDomain                           /// lies point in element ?
@@ -527,14 +528,14 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
 {
   switch (DISTYPE)
   {
-    case DRT::Element::hex8:
-      XToXiCoords<DRT::Element::hex8>(nodecoords, x, xi, pointInDomain);
+    case CORE::FE::CellType::hex8:
+      XToXiCoords<CORE::FE::CellType::hex8>(nodecoords, x, xi, pointInDomain);
       break;
-    case DRT::Element::hex20:
-      XToXiCoords<DRT::Element::hex20>(nodecoords, x, xi, pointInDomain);
+    case CORE::FE::CellType::hex20:
+      XToXiCoords<CORE::FE::CellType::hex20>(nodecoords, x, xi, pointInDomain);
       break;
-    case DRT::Element::tet4:
-      XToXiCoords<DRT::Element::tet4>(nodecoords, x, xi, pointInDomain);
+    case CORE::FE::CellType::tet4:
+      XToXiCoords<CORE::FE::CellType::tet4>(nodecoords, x, xi, pointInDomain);
       break;
     default:
       dserror("add your 3D distype and the according transformation!");
@@ -546,7 +547,7 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
 
 
 //! compute local element coordinates and check whether the according point is inside the element
-template <DRT::Element::DiscretizationType DISTYPE>
+template <CORE::FE::CellType DISTYPE>
 void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
     CORE::LINALG::SerialDenseMatrix& xyz,  /// node coordinates of element
     CORE::LINALG::Matrix<3, 1>& x,         /// global coordinates of point
@@ -554,10 +555,9 @@ void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
     bool& pointInCell                      /// lies point in element?
 ) const
 {
-  const int nsd = 3;  // dimension
-  const int numnode =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;  // number of nodes of
-                                                                             // element
+  const int nsd = 3;                                 // dimension
+  const int numnode = CORE::FE::num_nodes<DISTYPE>;  // number of nodes of
+                                                     // element
 
   CORE::LINALG::Matrix<nsd, numnode> xyze(xyz);
 
@@ -571,7 +571,7 @@ void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
 
 
 //! data at an arbitrary point lying in an element
-template <const int numnode, DRT::Element::DiscretizationType DISTYPE>
+template <const int numnode, CORE::FE::CellType DISTYPE>
 void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// pointer to element
     CORE::LINALG::Matrix<3, 1>& xi,              /// local coordinates of point w.r.t element
     CORE::LINALG::Matrix<3, 3>& xji,             /// inverse of jacobian
@@ -644,15 +644,15 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
 
 
 // explicit instantiations of this function...
-template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<8, DRT::Element::hex8>(DRT::Element*,
-    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<8, 1>&,
-    CORE::LINALG::Matrix<3, 8>&, bool) const;
-template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<20, DRT::Element::hex20>(DRT::Element*,
-    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<20, 1>&,
-    CORE::LINALG::Matrix<3, 20>&, bool) const;
-template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<4, DRT::Element::tet4>(DRT::Element*,
-    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<4, 1>&,
-    CORE::LINALG::Matrix<3, 4>&, bool) const;
+template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<8, CORE::FE::CellType::hex8>(
+    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::LINALG::Matrix<8, 1>&, CORE::LINALG::Matrix<3, 8>&, bool) const;
+template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<20, CORE::FE::CellType::hex20>(
+    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::LINALG::Matrix<20, 1>&, CORE::LINALG::Matrix<3, 20>&, bool) const;
+template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<4, CORE::FE::CellType::tet4>(
+    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::LINALG::Matrix<4, 1>&, CORE::LINALG::Matrix<3, 4>&, bool) const;
 
 
 
@@ -775,7 +775,7 @@ void XFEM::XFLUID_TIMEINT_BASE::clearState(TimeIntData::state state  /// state o
  * basic function sending data to dest and receiving data from source                schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::sendData(
-    DRT::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
+    CORE::COMM::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
 {
   std::vector<int> lengthSend(1, 0);
   lengthSend[0] = dataSend().size();
@@ -787,7 +787,7 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
 #endif
 
   // exporter for sending
-  DRT::Exporter exporter(discret_->Comm());
+  CORE::COMM::Exporter exporter(discret_->Comm());
 
   // send length of the data to be received ...
   MPI_Request req_length_data;
@@ -821,12 +821,12 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
  * packing a node for parallel communication only with the basic nodal data                       *
  * without an underlying discretization fitting to the node's new prozessor          schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_TIMEINT_BASE::packNode(DRT::PackBuffer& dataSend, DRT::Node& node) const
+void XFEM::XFLUID_TIMEINT_BASE::packNode(CORE::COMM::PackBuffer& dataSend, DRT::Node& node) const
 {
   const int nsd = 3;
-  DRT::ParObject::AddtoPack(dataSend, node.Id());
-  DRT::ParObject::AddtoPack(dataSend, CORE::LINALG::Matrix<nsd, 1>(node.X()));
-  DRT::ParObject::AddtoPack(dataSend, node.Owner());
+  CORE::COMM::ParObject::AddtoPack(dataSend, node.Id());
+  CORE::COMM::ParObject::AddtoPack(dataSend, CORE::LINALG::Matrix<nsd, 1>(node.X().data()));
+  CORE::COMM::ParObject::AddtoPack(dataSend, node.Owner());
 }  // end packNode
 
 
@@ -843,9 +843,9 @@ void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
   CORE::LINALG::Matrix<nsd, 1> coords;  // coordinates
   int owner;                            // processor
 
-  DRT::ParObject::ExtractfromPack(posinData, dataRecv, id);
-  DRT::ParObject::ExtractfromPack(posinData, dataRecv, coords);
-  DRT::ParObject::ExtractfromPack(posinData, dataRecv, owner);
+  CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, id);
+  CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, coords);
+  CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, owner);
 
   if (owner == myrank_)  // real node with all data
   {
@@ -853,7 +853,7 @@ void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
   }
   else  // just id, coords and owner
   {
-    double coordinates[nsd];
+    std::vector<double> coordinates(nsd, 0.0);
     for (int dim = 0; dim < nsd; dim++) coordinates[dim] = coords(dim);
 
     DRT::Node newNode(id, coordinates, owner);
@@ -1078,16 +1078,16 @@ void XFEM::XFLUID_STD::getGPValues(DRT::Element* ele,  ///< pointer to element
 {
   switch (ele->Shape())
   {
-    case DRT::Element::hex8:
-      getGPValuesT<DRT::Element::hex8>(
+    case CORE::FE::CellType::hex8:
+      getGPValuesT<CORE::FE::CellType::hex8>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
-    case DRT::Element::hex20:
-      getGPValuesT<DRT::Element::hex20>(
+    case CORE::FE::CellType::hex20:
+      getGPValuesT<CORE::FE::CellType::hex20>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
-    case DRT::Element::tet4:
-      getGPValuesT<DRT::Element::tet4>(
+    case CORE::FE::CellType::tet4:
+      getGPValuesT<CORE::FE::CellType::tet4>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
     default:
@@ -1100,7 +1100,7 @@ void XFEM::XFLUID_STD::getGPValues(DRT::Element* ele,  ///< pointer to element
 
 
 //! interpolate velocity and derivatives for a point in an element
-template <DRT::Element::DiscretizationType DISTYPE>
+template <CORE::FE::CellType DISTYPE>
 void XFEM::XFLUID_STD::getGPValuesT(DRT::Element* ele,  ///< pointer to element
     CORE::LINALG::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
     std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
@@ -1118,9 +1118,8 @@ void XFEM::XFLUID_STD::getGPValuesT(DRT::Element* ele,  ///< pointer to element
   const int nsd = 3;  // dimension
 
   const int numdofpernode = nsd + 1;
-  const int numnode =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;  // number of element
-                                                                             // nodes
+  const int numnode = CORE::FE::num_nodes<DISTYPE>;  // number of element
+                                                     // nodes
 
   //-------------------------------------------------------
   // initialization
@@ -1237,7 +1236,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
 
   const int nsd = 3;
   CORE::LINALG::Matrix<nsd, 1> newNodeCoords(
-      data.node_.X());  // coords of endpoint of Lagrangian characteristics
+      data.node_.X().data());  // coords of endpoint of Lagrangian characteristics
   for (int i = 0; i < nsd; ++i) newNodeCoords(i) += data.dispnp_(i);
 
   // determine the smallest distance of node at t^(n+1) to the current side elements
@@ -1455,7 +1454,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
     CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
     {
-      const double* x = nodes[i]->X();
+      const double* x = nodes[i]->X().data();
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
@@ -1569,7 +1568,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
       CORE::LINALG::SerialDenseMatrix side_xyze_1(3, numnodes_1);
       for (int i = 0; i < numnodes_1; ++i)
       {
-        const double* x = nodes_1[i]->X();
+        const double* x = nodes_1[i]->X().data();
         std::copy(x, x + 3, &side_xyze_1(0, i));
       }
 
@@ -1590,7 +1589,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
         side_xyze_2.shape(3, numnodes_2);
         for (int i = 0; i < numnodes_2; ++i)
         {
-          const double* x = nodes_2[i]->X();
+          const double* x = nodes_2[i]->X().data();
           std::copy(x, x + 3, &side_xyze_2(0, i));
         }
         side_2->LocationVector(*boundarydis_, cutla_2, false);
@@ -1642,7 +1641,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
       CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
       for (int i = 0; i < numnodes; ++i)
       {
-        const double* x = nodes[i]->X();
+        const double* x = nodes[i]->X().data();
         std::copy(x, x + 3, &side_xyze(0, i));
       }
 
@@ -1659,7 +1658,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
     // its point geometry
     CORE::LINALG::SerialDenseMatrix point_xyze(3, 1);
 
-    const double* x = node->X();
+    const double* x = node->X().data();
     std::copy(x, x + 3, &point_xyze(0, 0));
 
     std::vector<int> lm = boundarydis_->Dof(0, node);
@@ -2041,30 +2040,30 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to
   {
     switch (side->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case CORE::FE::CellType::tri3:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri3, 3>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<CORE::FE::CellType::tri3, 3>(normal, side_xyze, lm,
+        //        proj_x_n, xi_side); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case CORE::FE::CellType::tri6:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri6, 3>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<CORE::FE::CellType::tri6, 3>(normal, side_xyze, lm,
+        //        proj_x_n, xi_side); break;
         //      }
-      case DRT::Element::quad4:
+      case CORE::FE::CellType::quad4:
       {
-        getNormalSide_tn<DRT::Element::quad4, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
+        getNormalSide_tn<CORE::FE::CellType::quad4, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
         break;
       }
-      case DRT::Element::quad8:
+      case CORE::FE::CellType::quad8:
       {
-        getNormalSide_tn<DRT::Element::quad8, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
+        getNormalSide_tn<CORE::FE::CellType::quad8, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
         break;
       }
-        //      case DRT::Element::quad9:
+        //      case CORE::FE::CellType::quad9:
         //      {
-        //        getNormalSide_tn<DRT::Element::quad9, 3>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<CORE::FE::CellType::quad9, 3>(normal, side_xyze,
+        //        lm, proj_x_n, xi_side); break;
         //      }
       default:
         dserror("unsupported side shape %d", side->Shape());
@@ -2075,30 +2074,30 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to
   {
     switch (side->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case CORE::FE::CellType::tri3:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri3, 4>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<CORE::FE::CellType::tri3, 4>(normal, side_xyze, lm,
+        //        proj_x_n, xi_side); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case CORE::FE::CellType::tri6:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri6, 4>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<CORE::FE::CellType::tri6, 4>(normal, side_xyze, lm,
+        //        proj_x_n, xi_side); break;
         //      }
-      case DRT::Element::quad4:
+      case CORE::FE::CellType::quad4:
       {
-        getNormalSide_tn<DRT::Element::quad4, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
+        getNormalSide_tn<CORE::FE::CellType::quad4, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
         break;
       }
-      case DRT::Element::quad8:
+      case CORE::FE::CellType::quad8:
       {
-        getNormalSide_tn<DRT::Element::quad8, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
+        getNormalSide_tn<CORE::FE::CellType::quad8, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
         break;
       }
-        //      case DRT::Element::quad9:
+        //      case CORE::FE::CellType::quad9:
         //      {
-        //        getNormalSide_tn<DRT::Element::quad9, 4>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<CORE::FE::CellType::quad9, 4>(normal, side_xyze,
+        //        lm, proj_x_n, xi_side); break;
         //      }
       default:
         dserror("unsupported side shape %d", side->Shape());
@@ -2107,7 +2106,7 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to
   }
 }
 
-template <DRT::Element::DiscretizationType side_distype, const int numdof>
+template <CORE::FE::CellType side_distype, const int numdof>
 void XFEM::XFLUID_STD::getNormalSide_tn(
     CORE::LINALG::Matrix<3, 1>& normal,          ///< normal vector w.r.t side
     CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
@@ -2116,7 +2115,7 @@ void XFEM::XFLUID_STD::getNormalSide_tn(
     CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
 )
 {
-  const int side_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
+  const int side_nen_ = CORE::FE::num_nodes<side_distype>;
 
   // add displacements
   addeidisp<side_distype, numdof>(side_xyze, *boundarydis_, "idispn", lm);
@@ -2183,7 +2182,7 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
   CORE::LINALG::SerialDenseMatrix line_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X();
+    const double* x = nodes[i]->X().data();
     std::copy(x, x + 3, &line_xyze(0, i));
   }
 
@@ -2198,9 +2197,9 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
   {
     switch (line->Shape())
     {
-      case DRT::Element::line2:
+      case CORE::FE::CellType::line2:
       {
-        get_projxn_Line<DRT::Element::line2, 3>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
+        get_projxn_Line<CORE::FE::CellType::line2, 3>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
         break;
       }
       default:
@@ -2212,9 +2211,9 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
   {
     switch (line->Shape())
     {
-      case DRT::Element::line2:
+      case CORE::FE::CellType::line2:
       {
-        get_projxn_Line<DRT::Element::line2, 4>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
+        get_projxn_Line<CORE::FE::CellType::line2, 4>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
         break;
       }
       default:
@@ -2225,7 +2224,7 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
 }
 
 
-template <DRT::Element::DiscretizationType line_distype, const int numdof>
+template <CORE::FE::CellType line_distype, const int numdof>
 void XFEM::XFLUID_STD::get_projxn_Line(
     CORE::LINALG::SerialDenseMatrix& line_xyze,  ///< line's node coordinates
     const std::vector<int>& lm,                  ///< local map
@@ -2233,7 +2232,7 @@ void XFEM::XFLUID_STD::get_projxn_Line(
     double& xi_line  ///< local coordinates of projected point w.r.t line
 )
 {
-  const int line_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
+  const int line_nen_ = CORE::FE::num_nodes<line_distype>;
 
   // add displacements
   addeidisp<line_distype, numdof>(line_xyze, *boundarydis_, "idispn", lm);
@@ -2263,7 +2262,7 @@ void XFEM::XFLUID_STD::get_projxn_Line(
 /*--------------------------------------------------------------------------------
  * add side's or line's interface displacements and set current node coordinates
  *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, const int numdof>
+template <CORE::FE::CellType distype, const int numdof>
 void XFEM::XFLUID_STD::addeidisp(
     CORE::LINALG::SerialDenseMatrix& xyze,  ///< node coordinates of side or line
     const DRT::Discretization& cutdis,      ///< cut discretization
@@ -2271,7 +2270,7 @@ void XFEM::XFLUID_STD::addeidisp(
     const std::vector<int>& lm              ///< local map
 )
 {
-  const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int nen = CORE::FE::num_nodes<distype>;
 
   CORE::LINALG::Matrix<3, nen> eidisp(true);
 
@@ -2335,7 +2334,7 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X();
+    const double* x = nodes[i]->X().data();
     std::copy(x, x + 3, &side_xyze(0, i));
   }
 
@@ -2350,31 +2349,31 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   {
     switch (side->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case CORE::FE::CellType::tri3:
         //      {
-        //        on_side = ProjectOnSide<DRT::Element::tri3,3>(side_xyze,
+        //        on_side = ProjectOnSide<CORE::FE::CellType::tri3,3>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case CORE::FE::CellType::tri6:
         //      {
-        //        on_side = ProjectOnSide<DRT::Element::tri6,3>(side_xyze,
+        //        on_side = ProjectOnSide<CORE::FE::CellType::tri6,3>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side); break;
         //      }
-      case DRT::Element::quad4:
+      case CORE::FE::CellType::quad4:
       {
-        on_side = ProjectOnSide<DRT::Element::quad4, 3>(
+        on_side = ProjectOnSide<CORE::FE::CellType::quad4, 3>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
-      case DRT::Element::quad8:
+      case CORE::FE::CellType::quad8:
       {
-        on_side = ProjectOnSide<DRT::Element::quad8, 3>(
+        on_side = ProjectOnSide<CORE::FE::CellType::quad8, 3>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
-      case DRT::Element::quad9:
+      case CORE::FE::CellType::quad9:
       {
-        on_side = ProjectOnSide<DRT::Element::quad9, 3>(
+        on_side = ProjectOnSide<CORE::FE::CellType::quad9, 3>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
@@ -2387,31 +2386,32 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   {
     switch (side->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case CORE::FE::CellType::tri3:
         //      {
-        //        on_side = ProjectOnSide<DRT::Element::tri3,4>(side_xyze,
+        //        on_side = ProjectOnSide<CORE::FE::CellType::tri3,4>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case CORE::FE::CellType::tri6:
         //      {
-        //        on_side = ProjectOnSide<DRT::Element::tri6,4>(side_xyze,
+        //        on_side = ProjectOnSide<CORE::FE::CellType::tri6,4>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist); break;
         //      }
-      case DRT::Element::quad4:
+      case CORE::FE::CellType::quad4:
       {
-        on_side = ProjectOnSide<DRT::Element::quad4, 4>(
+        on_side = ProjectOnSide<CORE::FE::CellType::quad4, 4>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
-      case DRT::Element::quad8:
+      case CORE::FE::CellType::quad8:
       {
-        on_side = ProjectOnSide<DRT::Element::quad8, 4>(
+        on_side = ProjectOnSide<CORE::FE::CellType::quad8, 4>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
-        //      case DRT::Element::quad9:
+        //      case CORE::FE::CellType::quad9:
         //      {
-        //        //      on_side = ProjectOnSide<DRT::Element::quad9,4>(side_xyze,
+        //        //      on_side =
+        //        ProjectOnSide<CORE::FE::CellType::quad9,4>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist); break;
         //      }
       default:
@@ -2500,7 +2500,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   CORE::LINALG::SerialDenseMatrix line_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X();
+    const double* x = nodes[i]->X().data();
     std::copy(x, x + 3, &line_xyze(0, i));
   }
 
@@ -2515,9 +2515,9 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   {
     switch (line->Shape())
     {
-      case DRT::Element::line2:
+      case CORE::FE::CellType::line2:
       {
-        on_line = ProjectOnLine<DRT::Element::line2, 3>(
+        on_line = ProjectOnLine<CORE::FE::CellType::line2, 3>(
             line_xyze, cutla[0].lm_, state, newNodeCoords, x_line, xi_line, curr_dist);
         break;
       }
@@ -2530,15 +2530,15 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   {
     switch (line->Shape())
     {
-      case DRT::Element::line2:
+      case CORE::FE::CellType::line2:
       {
-        on_line = ProjectOnLine<DRT::Element::line2, 4>(
+        on_line = ProjectOnLine<CORE::FE::CellType::line2, 4>(
             line_xyze, cutla[0].lm_, state, newNodeCoords, x_line, xi_line, curr_dist);
         break;
       }
-      case DRT::Element::line3:
+      case CORE::FE::CellType::line3:
       {
-        on_line = ProjectOnLine<DRT::Element::line3, 4>(
+        on_line = ProjectOnLine<CORE::FE::CellType::line3, 4>(
             line_xyze, cutla[0].lm_, state, newNodeCoords, x_line, xi_line, curr_dist);
         break;
       }
@@ -2666,7 +2666,7 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(DRT::Node* node,  ///< pointer to node
   // its point geometry
   CORE::LINALG::SerialDenseMatrix point_xyze(3, 1);
 
-  const double* x = node->X();
+  const double* x = node->X().data();
   std::copy(x, x + 3, &point_xyze(0, 0));
 
   std::vector<int> lm = boundarydis_->Dof(0, node);
@@ -2707,7 +2707,7 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(DRT::Node* node,  ///< pointer to node
 /*--------------------------------------------------------------------------------*
  * project point from in normal direction onto corresponding side    schott 07/12 *
  *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType side_distype, const int numdof>
+template <CORE::FE::CellType side_distype, const int numdof>
 bool XFEM::XFLUID_STD::ProjectOnSide(
     CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
     const std::vector<int>& lm,                  ///< local map
@@ -2718,7 +2718,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
     double& dist                           ///< distance from point to its projection
 )
 {
-  const int side_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
+  const int side_nen_ = CORE::FE::num_nodes<side_distype>;
 
   // add displacements
   addeidisp<side_distype, numdof>(side_xyze, *boundarydis_, state, lm);
@@ -2756,13 +2756,13 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
 
   CORE::LINALG::Matrix<3, 1> sol(true);  // sol carries xi_1, xi_2, d (distance)
 
-  if (side_distype == DRT::Element::tri3 or side_distype == DRT::Element::tri6)
+  if (side_distype == CORE::FE::CellType::tri3 or side_distype == CORE::FE::CellType::tri6)
   {
     sol(0) = 0.333333333333333;
     sol(1) = 0.333333333333333;
   }
-  else if (side_distype == DRT::Element::quad4 or side_distype == DRT::Element::quad8 or
-           side_distype == DRT::Element::quad9)
+  else if (side_distype == CORE::FE::CellType::quad4 or side_distype == CORE::FE::CellType::quad8 or
+           side_distype == CORE::FE::CellType::quad9)
   {
     sol(0) = 0.0;
     sol(1) = 0.0;
@@ -2969,7 +2969,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
 /*--------------------------------------------------------------------------------*
  * project point in normal direction onto corresponding line         schott 07/12 *
  *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType line_distype, const int numdof>
+template <CORE::FE::CellType line_distype, const int numdof>
 bool XFEM::XFLUID_STD::ProjectOnLine(
     CORE::LINALG::SerialDenseMatrix& line_xyze,  ///< line's node coordinates
     const std::vector<int>& lm,                  ///< local map
@@ -2983,7 +2983,7 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
 {
   bool on_line = false;
 
-  const int line_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
+  const int line_nen_ = CORE::FE::num_nodes<line_distype>;
 
   // add displacements
   addeidisp<line_distype, numdof>(line_xyze, *boundarydis_, state, lm);
@@ -3103,39 +3103,39 @@ void XFEM::XFLUID_STD::ProjectOnPoint(
 /*--------------------------------------------------------------------------------*
  * check if local coordinates are within limits                      schott 07/12 *
  *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType elementtype>
+template <CORE::FE::CellType elementtype>
 bool XFEM::XFLUID_STD::WithinLimits(CORE::LINALG::Matrix<3, 1>& xsi_, const double TOL)
 {
   switch (elementtype)
   {
-    case DRT::Element::line2:
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
       return (xsi_(0) >= -1 - TOL and xsi_(0) <= 1 + TOL);
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
       return (xsi_(0) >= -TOL and xsi_(1) >= -TOL and xsi_(0) <= 1 + TOL and xsi_(1) <= 1 + TOL and
               (xsi_(0) + xsi_(1)) <= 1 + TOL);
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
       return (xsi_(0) >= -1 - TOL and xsi_(1) >= -1 - TOL and xsi_(0) <= 1 + TOL and
               xsi_(1) <= 1 + TOL);
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
       return (xsi_(0) >= -1 - TOL and xsi_(1) >= -1 - TOL and xsi_(2) >= -1 - TOL and
               xsi_(0) <= 1 + TOL and xsi_(1) <= 1 + TOL and xsi_(2) <= 1 + TOL);
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
       return (xsi_(0) >= -TOL and xsi_(1) >= -TOL and xsi_(2) >= -TOL and
               xsi_(0) + xsi_(1) + xsi_(2) <= 1 + TOL);
-    case DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       return (xsi_(0) >= -1 - TOL and xsi_(1) >= -1 - TOL and xsi_(2) >= -TOL and
               xsi_(0) <= 1 + TOL and xsi_(1) <= 1 + TOL and
               (fabs(xsi_(0)) > fabs(xsi_(1)) ? (xsi_(2) + fabs(xsi_(0)) <= 1 + TOL)
                                              : (xsi_(2) + fabs(xsi_(1)) <= 1 + TOL)));
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
       return (xsi_(0) >= -TOL and xsi_(1) >= -TOL and xsi_(2) >= -1 - TOL and xsi_(2) <= 1 + TOL and
               xsi_(0) + xsi_(1) <= 1 + TOL);
     default:
@@ -3215,23 +3215,23 @@ void XFEM::XFLUID_STD::exportStartData()
   int source = myrank_ - 1;
   if (myrank_ == 0) source = numproc_ - 1;
 
-  DRT::PackBuffer dataSend;  // data to be sent
+  CORE::COMM::PackBuffer dataSend;  // data to be sent
 
   // packing the data
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
        data++)
   {
     packNode(dataSend, data->node_);
-    DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-    DRT::ParObject::AddtoPack(dataSend, data->vel_);
-    DRT::ParObject::AddtoPack(dataSend, data->velDeriv_);
-    DRT::ParObject::AddtoPack(dataSend, data->presDeriv_);
-    DRT::ParObject::AddtoPack(dataSend, data->dispnp_);
-    DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-    DRT::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-    DRT::ParObject::AddtoPack(dataSend, data->counter_);
-    DRT::ParObject::AddtoPack(dataSend, data->dMin_);
-    DRT::ParObject::AddtoPack(dataSend, (int)data->type_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->searchedProcs_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->counter_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->dMin_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
   }
 
   dataSend.StartPacking();
@@ -3240,16 +3240,16 @@ void XFEM::XFLUID_STD::exportStartData()
        data++)
   {
     packNode(dataSend, data->node_);
-    DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-    DRT::ParObject::AddtoPack(dataSend, data->vel_);
-    DRT::ParObject::AddtoPack(dataSend, data->velDeriv_);
-    DRT::ParObject::AddtoPack(dataSend, data->presDeriv_);
-    DRT::ParObject::AddtoPack(dataSend, data->dispnp_);
-    DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-    DRT::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-    DRT::ParObject::AddtoPack(dataSend, data->counter_);
-    DRT::ParObject::AddtoPack(dataSend, data->dMin_);
-    DRT::ParObject::AddtoPack(dataSend, (int)data->type_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->searchedProcs_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->counter_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->dMin_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
   }
 
   std::vector<char> dataRecv;
@@ -3264,8 +3264,8 @@ void XFEM::XFLUID_STD::exportStartData()
   // unpack received data
   while (posinData < dataRecv.size())
   {
-    std::array<double, nsd> coords = {0.0};
-    DRT::Node node(0, coords.data(), 0);  // initialize node
+    std::vector<double> coords(nsd, 0.0);
+    DRT::Node node(0, coords, 0);  // initialize node
     int nds_np = -1;
     CORE::LINALG::Matrix<nsd, 1> vel;                      // velocity at point x
     std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;  // derivation of velocity at point x
@@ -3278,16 +3278,16 @@ void XFEM::XFLUID_STD::exportStartData()
     int newtype;                                           // type of the data
 
     unpackNode(posinData, dataRecv, node);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, vel);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, counter);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, dMin);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, vel);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, counter);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dMin);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
     timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, startpoint,
         searchedProcs, counter, dMin, (TimeIntData::type)newtype));
@@ -3345,18 +3345,18 @@ void XFEM::XFLUID_STD::exportFinalData()
     else if (source >= numproc_)
       source -= numproc_;
 
-    DRT::PackBuffer dataSend;
+    CORE::COMM::PackBuffer dataSend;
 
     // pack data to be sent
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
-      DRT::ParObject::AddtoPack(dataSend, data->node_.Id());
-      DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-      DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-      DRT::ParObject::AddtoPack(dataSend, data->velValues_);
-      DRT::ParObject::AddtoPack(dataSend, data->presValues_);
-      DRT::ParObject::AddtoPack(dataSend, data->type_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->node_.Id());
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->velValues_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->presValues_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->type_);
     }
 
     dataSend.StartPacking();
@@ -3364,12 +3364,12 @@ void XFEM::XFLUID_STD::exportFinalData()
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
-      DRT::ParObject::AddtoPack(dataSend, data->node_.Id());
-      DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-      DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-      DRT::ParObject::AddtoPack(dataSend, data->velValues_);
-      DRT::ParObject::AddtoPack(dataSend, data->presValues_);
-      DRT::ParObject::AddtoPack(dataSend, data->type_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->node_.Id());
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->velValues_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->presValues_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->type_);
     }
 
     // clear the no more needed data
@@ -3391,12 +3391,12 @@ void XFEM::XFLUID_STD::exportFinalData()
       std::vector<double> presValues;                       // pressure values
       int newtype;                                          // type of the data
 
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, gid);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, velValues);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, presValues);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, gid);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velValues);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, presValues);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
       CORE::LINALG::Matrix<3, 1> nodedispnp(true);
       if (dispnp_ != Teuchos::null)  // is alefluid
@@ -3421,3 +3421,5 @@ void XFEM::XFLUID_STD::exportFinalData()
     discret_->Comm().Barrier();
   }  // end loop over processors
 }  // end exportfinalData
+
+BACI_NAMESPACE_CLOSE

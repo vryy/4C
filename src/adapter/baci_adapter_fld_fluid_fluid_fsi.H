@@ -19,6 +19,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Condition;
@@ -56,25 +58,25 @@ namespace ADAPTER
         bool isale, bool dirichletcond);
 
     /// initialize and prepare maps
-    void Init();
+    void Init() override;
 
     /// prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// save results of current time step, do XFEM cut and refresh the
     /// merged fluid map extractor
-    void Update();
+    void Update() override;
 
     /// solve for pure fluid-fluid-ale problem
-    void Solve();
+    void Solve() override;
 
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override
     {
       dserror("Do not call RexationSolve for XFFSI.");
       return Teuchos::null;
     }
 
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override
     {
       dserror("Do not call ExtractInterfaceForces for XFFSI.");
       return Teuchos::null;
@@ -84,32 +86,32 @@ namespace ADAPTER
     //@{
 
     // get merged xfluid-fluid dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
     {
       return mergedfluidinterface_;
     }
 
-    Teuchos::RCP<const Epetra_Vector> GridVel();
+    Teuchos::RCP<const Epetra_Vector> GridVel() override;
     Teuchos::RCP<Epetra_Vector> WriteAccessGridVel();
 
-    Teuchos::RCP<const Epetra_Vector> Dispnp();
+    Teuchos::RCP<const Epetra_Vector> Dispnp() override;
     Teuchos::RCP<Epetra_Vector> WriteAccessDispnp();
-    Teuchos::RCP<const Epetra_Vector> Dispn();
+    Teuchos::RCP<const Epetra_Vector> Dispn() override;
 
     /// get the velocity row map of the embedded fluid
-    Teuchos::RCP<const Epetra_Map> VelocityRowMap();
+    Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
 
     /// get block system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     // access to embedded discretization
-    const Teuchos::RCP<DRT::Discretization>& Discretization();
+    const Teuchos::RCP<DRT::Discretization>& Discretization() override;
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
-    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() { return output_; }
+    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override { return output_; }
 
     /// get map extractor for background/embedded fluid
     Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& XFluidFluidMapExtractor();
@@ -117,23 +119,23 @@ namespace ADAPTER
     //@}
 
     /// Apply initial mesh displacement
-    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp)
+    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
     {
       dserror("Not implemented, yet!");
     }
 
     // apply ALE-mesh displacements to embedded fluid
-    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
+    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
 
     /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in
     /// the DOF-maps
     void Evaluate(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
-    );
+        ) override;
 
     /// request fluid system matrix & shapederivatives as blockmatrices when called with true
     /// (indicated monolithic XFFSI with fluidsplit)
-    void UseBlockMatrix(bool split_fluidsysmat = false);
+    void UseBlockMatrix(bool split_fluidsysmat = false) override;
 
     /// determine, whether the ALE-mesh should be relaxed at current time step
     bool IsAleRelaxationStep(int step) const;
@@ -144,12 +146,12 @@ namespace ADAPTER
       return monolithic_approach_;
     }
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() override;
 
    private:
     /// setup of map extractor to distinguish between FSI DOF-map and
     /// merged inner embedded fluid and background fluid DOF-map
-    void SetupInterface(const int nds_master = 0);
+    void SetupInterface(const int nds_master = 0) override;
 
     /// prepare underlying extended shape derivatives matrix, that is based
     /// on the merged fluid dof-map (with background fluid dof set to zero),
@@ -174,5 +176,7 @@ namespace ADAPTER
     int relaxing_ale_every_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

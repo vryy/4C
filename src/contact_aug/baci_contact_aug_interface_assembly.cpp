@@ -19,6 +19,8 @@ sparse matrices and parallel distributed vectors
 
 #include <Epetra_Export.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* inter)
@@ -670,3 +672,5 @@ template class CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrateg
     CONTACT::AUG::INTERFACE::IncompleteAssemblePolicy>;
 template class CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
     CONTACT::AUG::INTERFACE::CompleteAssemblePolicy>;
+
+BACI_NAMESPACE_CLOSE

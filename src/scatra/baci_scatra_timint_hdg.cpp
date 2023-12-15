@@ -25,6 +25,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
@@ -272,7 +274,7 @@ void SCATRA::TimIntHDG::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  * Update
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::Update(const int num)
+void SCATRA::TimIntHDG::Update()
 {
   SCATRA::TimIntGenAlpha::Update();
 
@@ -373,11 +375,10 @@ void SCATRA::TimIntHDG::OutputState()
 }  // OutputState
 
 /*----------------------------------------------------------------------*
- | output of solution vector to binio for restart         hoermann 09/15|
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::OutputRestart() const
+void SCATRA::TimIntHDG::WriteRestart() const
 {
-  SCATRA::TimIntGenAlpha::OutputRestart();
+  SCATRA::TimIntGenAlpha::WriteRestart();
   output_->WriteVector("intphinp", intphinp_);
   output_->WriteVector("phinp_trace", phinp_);
   output_->WriteVector("intphin", intphin_);
@@ -1436,3 +1437,5 @@ Teuchos::RCP<DRT::ResultTest> SCATRA::TimIntHDG::CreateScaTraFieldTest()
 {
   return Teuchos::rcp(new SCATRA::HDGResultTest(Teuchos::rcp(this, false)));
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@
 
 #include "baci_w1_poro.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -26,19 +28,20 @@ namespace DRT
     class WallQuad4PoroScatraType : public DRT::ELEMENTS::WallQuad4PoroType
     {
      public:
-      std::string Name() const { return "WallQuad4PoroScatraType"; }
+      std::string Name() const override { return "WallQuad4PoroScatraType"; }
 
       static WallQuad4PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static WallQuad4PoroScatraType instance_;
@@ -50,19 +53,20 @@ namespace DRT
     class WallQuad9PoroScatraType : public DRT::ELEMENTS::WallQuad9PoroType
     {
      public:
-      std::string Name() const { return "WallQuad9PoroScatraType"; }
+      std::string Name() const override { return "WallQuad9PoroScatraType"; }
 
       static WallQuad9PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static WallQuad9PoroScatraType instance_;
@@ -74,19 +78,20 @@ namespace DRT
     class WallNurbs4PoroScatraType : public DRT::ELEMENTS::WallNurbs4PoroType
     {
      public:
-      std::string Name() const { return "WallNurbs4PoroScatraType"; }
+      std::string Name() const override { return "WallNurbs4PoroScatraType"; }
 
       static WallNurbs4PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static WallNurbs4PoroScatraType instance_;
@@ -98,19 +103,20 @@ namespace DRT
     class WallNurbs9PoroScatraType : public DRT::ELEMENTS::WallNurbs9PoroType
     {
      public:
-      std::string Name() const { return "WallNurbs9PoroScatraType"; }
+      std::string Name() const override { return "WallNurbs9PoroScatraType"; }
 
       static WallNurbs9PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static WallNurbs9PoroScatraType instance_;
@@ -122,19 +128,20 @@ namespace DRT
     class WallTri3PoroScatraType : public DRT::ELEMENTS::WallTri3PoroType
     {
      public:
-      std::string Name() const { return "WallTri3PoroScatraType"; }
+      std::string Name() const override { return "WallTri3PoroScatraType"; }
 
       static WallTri3PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static WallTri3PoroScatraType instance_;
@@ -142,5 +149,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_PORO_SCATRA_ELETYPES_H

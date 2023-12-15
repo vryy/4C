@@ -9,16 +9,18 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_globalproblem_enums.H"
 #include "baci_nurbs_discret.H"
 #include "baci_rebalance.H"
 
 #include <Epetra_FECrsGraph.h>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | broadcast all discretizations from group 0 to all other groups using
@@ -31,7 +33,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
   // group to which discretizations are sent
   int tgroup = -1;
 
-  Teuchos::RCP<COMM_UTILS::Communicators> group = problem.GetCommunicators();
+  Teuchos::RCP<CORE::COMM::Communicators> group = problem.GetCommunicators();
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
 
@@ -59,7 +61,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
   {
     Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
     std::string name;
-    ShapeFunctionType distype;
+    CORE::FE::ShapeFunctionType distype;
     std::vector<char> data;
     if (gcomm->MyPID() == bcaster)
     {
@@ -69,7 +71,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
       distype = problem.SpatialApproximationType();
       cont.Add("disname", name);
       cont.Add("distype", (int)distype);
-      DRT::PackBuffer buffer;
+      CORE::COMM::PackBuffer buffer;
       cont.Pack(buffer);
       buffer.StartPacking();
       cont.Pack(buffer);
@@ -83,7 +85,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
       if (gcomm->MyPID() == bcaster) snummyelements = 1;
       Epetra_Map source(-1, snummyelements, &myelements, 0, *gcomm);
       Epetra_Map target(-1, rnummyelements, &myelements, 0, *gcomm);
-      DRT::Exporter exporter(source, target, *gcomm);
+      CORE::COMM::Exporter exporter(source, target, *gcomm);
       std::map<int, std::vector<char>> smap;
       if (gcomm->MyPID() == bcaster) smap[0] = data;
       exporter.Export<char>(smap);
@@ -96,7 +98,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
     cont.Unpack(singledata);
     const std::string* rname = cont.Get<std::string>("disname");
     name = *rname;
-    distype = (ShapeFunctionType)cont.GetInt("distype");
+    distype = (CORE::FE::ShapeFunctionType)cont.GetInt("distype");
     // allocate or get the discretization
     if (group->GroupId() == bgroup)
     {
@@ -106,7 +108,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, lcomm));
           break;
@@ -177,8 +179,8 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
  | distribute a discretization from one group to one other    gee 03/12 |
  *----------------------------------------------------------------------*/
 void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
-    Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-    ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
+    Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+    CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
 
@@ -206,7 +208,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
   Teuchos::RCP<DRT::Discretization> commondis;
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
       dserror("For Nurbs this method needs additional features!");
@@ -278,7 +280,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     myelements.resize(nummyelements);
     for (int i = 0; i < nummyelements; ++i) myelements[i] = i;
     Epetra_Map rmap(-1, nummyelements, myelements.data(), 0, *icomm);
-    DRT::Exporter exporter(smap, rmap, *icomm);
+    CORE::COMM::Exporter exporter(smap, rmap, *icomm);
     exporter.Export<char>(condmap);
     exporter.Export<DRT::Container>(condnamemap);
   }
@@ -462,8 +464,8 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
-    Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-    ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
+    Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+    CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
 
@@ -489,7 +491,7 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
   Teuchos::RCP<DRT::Discretization> commondis;
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
       dserror("For Nurbs this method needs additional features!");
@@ -562,7 +564,7 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
     myelements.resize(nummyelements);
     for (int i = 0; i < nummyelements; ++i) myelements[i] = i;
     Epetra_Map rmap(-1, nummyelements, myelements.data(), 0, *icomm);
-    DRT::Exporter exporter(smap, rmap, *icomm);
+    CORE::COMM::Exporter exporter(smap, rmap, *icomm);
     exporter.Export<char>(condmap);
     exporter.Export<DRT::Container>(condnamemap);
   }
@@ -700,3 +702,5 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
   icomm->Barrier();
   return;
 }
+
+BACI_NAMESPACE_CLOSE

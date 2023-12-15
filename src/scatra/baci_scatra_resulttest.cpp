@@ -10,11 +10,13 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_resulttest.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -472,3 +474,5 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
   return result;
 }  // SCATRA::ScaTraResultTest::ResultSpecial
+
+BACI_NAMESPACE_CLOSE

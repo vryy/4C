@@ -14,11 +14,15 @@
 
 /*----------------------------------------------------------------------------*/
 /*header inclusions */
+#include "baci_discretization_fem_general_shape_function_type.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <map>
 #include <string>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -26,8 +30,6 @@ namespace DRT
 {
   class Element;
 }  // namespace DRT
-
-enum class ShapeFunctionType;
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -40,14 +42,14 @@ namespace ELEMAG
            of scatra from a given elemag discretization
 
     */
-    template <ShapeFunctionType sft>
+    template <CORE::FE::ShapeFunctionType sft>
     class ScatraCloneStrategy
     {
      public:
       /// constructor
       explicit ScatraCloneStrategy() {}
       /// destructor
-      virtual ~ScatraCloneStrategy() {}
+      virtual ~ScatraCloneStrategy() = default;
 
      protected:
       /// determine element type string and whether element is copied or not
@@ -77,5 +79,7 @@ namespace ELEMAG
     };  // class ScatraCloneStrategy
   }     // namespace UTILS
 }  // namespace ELEMAG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_UTILS_CLONESTRATEGY_H

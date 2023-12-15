@@ -11,8 +11,10 @@
 #include "baci_contact_aug_lagrange_strategy.H"
 
 #include "baci_contact_aug_lagrange_interface.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_utils_epetra_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -63,3 +65,5 @@ void CONTACT::AUG::LAGRANGE::Strategy::EvalStrContactRHS()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

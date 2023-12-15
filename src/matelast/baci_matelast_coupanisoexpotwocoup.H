@@ -14,6 +14,8 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ELASTIC
@@ -86,7 +88,7 @@ namespace MAT
        *
        * \param data data array to pack to
        */
-      void PackAnisotropy(DRT::PackBuffer& data) const override;
+      void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
 
       /*!
        * \brief Unpack data from the pack from parallel distribution and restart
@@ -173,7 +175,7 @@ namespace MAT
 
       /// @name Methods for Packing and Unpacking
       ///@{
-      void PackSummand(DRT::PackBuffer& data) const override;
+      void PackSummand(CORE::COMM::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -223,5 +225,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_COUPANISOEXPOTWOCOUP_H

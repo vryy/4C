@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_DEFINES_H
 #define BACI_CONTACT_DEFINES_H
 
+BACI_NAMESPACE_OPEN
+
 /************************************************************************/
 /* Contact algorithm options                                            */
 /************************************************************************/
@@ -65,5 +67,7 @@
 //#define MASTERNODESINCONTACT           /* flag for printing master nodes in contact -
 // CONTACTFORCEOUTPUT also has to be switched on*/ #define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag
 // for printing all nodes and xspatial in current configuration - only works for 1 processor*/
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_DEFINES_H

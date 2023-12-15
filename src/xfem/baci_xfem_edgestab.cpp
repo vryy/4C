@@ -30,6 +30,8 @@ continuous interior penalty) scheme
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  prepares edge based stabilization and ghost penaly in case of XFEM  |
  |  and calls evaluate routine                             schott 03/12 |
@@ -162,8 +164,10 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   else if (p_master_handle != nullptr and p_slave_handle != nullptr)
   {
     // linear elements
-    if (p_master->Shape() == DRT::Element::hex8 or p_master->Shape() == DRT::Element::tet4 or
-        p_master->Shape() == DRT::Element::wedge6 or p_master->Shape() == DRT::Element::pyramid5)
+    if (p_master->Shape() == CORE::FE::CellType::hex8 or
+        p_master->Shape() == CORE::FE::CellType::tet4 or
+        p_master->Shape() == CORE::FE::CellType::wedge6 or
+        p_master->Shape() == CORE::FE::CellType::pyramid5)
     {
       CORE::GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
 
@@ -312,8 +316,10 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
       }  // loop facets
     }    // if linear elements
-    else if (p_master->Shape() == DRT::Element::hex20 or p_master->Shape() == DRT::Element::hex27 or
-             p_master->Shape() == DRT::Element::tet10 or p_master->Shape() == DRT::Element::wedge15)
+    else if (p_master->Shape() == CORE::FE::CellType::hex20 or
+             p_master->Shape() == CORE::FE::CellType::hex27 or
+             p_master->Shape() == CORE::FE::CellType::tet10 or
+             p_master->Shape() == CORE::FE::CellType::wedge15)
     {
       CORE::GEO::CUT::SideHandle* side =
           GetFace(faceele, wizard);  // the side of the quadratic element
@@ -459,10 +465,14 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
            (p_master_handle == nullptr and p_slave_handle != nullptr))
   {
     // linear elements
-    if (p_master->Shape() == DRT::Element::hex8 or p_master->Shape() == DRT::Element::tet4 or
-        p_master->Shape() == DRT::Element::wedge6 or p_master->Shape() == DRT::Element::pyramid5 or
-        p_master->Shape() == DRT::Element::hex20 or p_master->Shape() == DRT::Element::hex27 or
-        p_master->Shape() == DRT::Element::tet10 or p_master->Shape() == DRT::Element::wedge15)
+    if (p_master->Shape() == CORE::FE::CellType::hex8 or
+        p_master->Shape() == CORE::FE::CellType::tet4 or
+        p_master->Shape() == CORE::FE::CellType::wedge6 or
+        p_master->Shape() == CORE::FE::CellType::pyramid5 or
+        p_master->Shape() == CORE::FE::CellType::hex20 or
+        p_master->Shape() == CORE::FE::CellType::hex27 or
+        p_master->Shape() == CORE::FE::CellType::tet10 or
+        p_master->Shape() == CORE::FE::CellType::wedge15)
     {
       CORE::GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
 
@@ -470,8 +480,10 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       std::vector<CORE::GEO::CUT::Facet*> facets;
       side->Facets(facets);
 
-      if (p_master->Shape() == DRT::Element::hex8 or p_master->Shape() == DRT::Element::tet4 or
-          p_master->Shape() == DRT::Element::wedge6 or p_master->Shape() == DRT::Element::pyramid5)
+      if (p_master->Shape() == CORE::FE::CellType::hex8 or
+          p_master->Shape() == CORE::FE::CellType::tet4 or
+          p_master->Shape() == CORE::FE::CellType::wedge6 or
+          p_master->Shape() == CORE::FE::CellType::pyramid5)
       {
         if (facets.size() != 1) dserror("there has to be 1 facet equal to the side");
       }
@@ -770,3 +782,5 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabBoundaryGP(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

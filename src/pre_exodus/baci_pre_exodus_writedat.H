@@ -43,7 +43,7 @@ namespace EXODUS
       const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
 
   //! return set of nodes in bc_entity
-  const std::set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
+  std::set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
 
   //! Nodes into datfile
   void WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat);
@@ -55,7 +55,7 @@ namespace EXODUS
 
   //! Elements from eblock
   void DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte,
-      int& struele, std::ostream& dat,
+      int& startele, std::ostream& dat,
       const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo,
       const int eb_id);
 
@@ -63,15 +63,15 @@ namespace EXODUS
   {
     switch (def.gtype)
     {
-      case DRT::Condition::Volume:
+      case BACI::DRT::Condition::Volume:
         return "DVOL  ";
-      case DRT::Condition::Surface:
+      case BACI::DRT::Condition::Surface:
         return "DSURF ";
-      case DRT::Condition::Line:
+      case BACI::DRT::Condition::Line:
         return "DLINE ";
-      case DRT::Condition::Point:
+      case BACI::DRT::Condition::Point:
         return "DPOINT";
-      case DRT::Condition::NoGeom:
+      case BACI::DRT::Condition::NoGeom:
         return "";
       default:
         dserror("Unknown Condition GeometryType");

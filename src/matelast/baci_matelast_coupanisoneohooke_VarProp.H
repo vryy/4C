@@ -12,6 +12,8 @@ with space-time varying coefficients
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ELASTIC
@@ -91,7 +93,7 @@ namespace MAT
       ///@name Packing and Unpacking
       //@{
 
-      void PackSummand(DRT::PackBuffer& data) const override;
+      void PackSummand(CORE::COMM::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -162,5 +164,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_COUPANISONEOHOOKE_VARPROP_H

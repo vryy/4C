@@ -19,16 +19,19 @@
 #include <NOX_Solver_Generic.H>
 #include <NOX_Utils.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::StatusTest::NormF::NormF(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
-    const std::vector<NOX::StatusTest::NormF::ToleranceType>& toltype,
-    const std::vector<double>& tolerance, const std::vector<NOX::Abstract::Vector::NormType>& ntype,
-    const std::vector<NOX::StatusTest::NormF::ScaleType>& stype, const NOX::Utils* u)
+    const std::vector<::NOX::StatusTest::NormF::ToleranceType>& toltype,
+    const std::vector<double>& tolerance,
+    const std::vector<::NOX::Abstract::Vector::NormType>& ntype,
+    const std::vector<::NOX::StatusTest::NormF::ScaleType>& stype, const ::NOX::Utils* u)
     : nChecks_(checkList.size()),
       checkList_(checkList),
-      gStatus_(NOX::StatusTest::Unevaluated),
-      status_(std::vector<NOX::StatusTest::StatusType>(nChecks_, gStatus_)),
+      gStatus_(::NOX::StatusTest::Unevaluated),
+      status_(std::vector<::NOX::StatusTest::StatusType>(nChecks_, gStatus_)),
       normType_(ntype),
       scaleType_(stype),
       toleranceType_(toltype),
@@ -43,7 +46,7 @@ NOX::NLN::StatusTest::NormF::NormF(const std::vector<NOX::NLN::StatusTest::Quant
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::StatusTest::NormF::relativeSetup(
-    Teuchos::RCP<const NOX::Abstract::Group>& initialGuess)
+    Teuchos::RCP<const ::NOX::Abstract::Group>& initialGuess)
 {
   initialTolerance_ = ComputeNorm(initialGuess);
 
@@ -57,9 +60,9 @@ void NOX::NLN::StatusTest::NormF::relativeSetup(
 
   for (std::size_t i = 0; i < nChecks_; ++i)
   {
-    if (toleranceType_[i] == NOX::StatusTest::NormF::Relative)
+    if (toleranceType_[i] == ::NOX::StatusTest::NormF::Relative)
       trueTolerance_[i] = specifiedTolerance_[i] * (*initialTolerance_)[i];
-    else if (toleranceType_[i] == NOX::StatusTest::NormF::Absolute)
+    else if (toleranceType_[i] == ::NOX::StatusTest::NormF::Absolute)
       trueTolerance_[i] = specifiedTolerance_[i];
   }
 
@@ -69,7 +72,7 @@ void NOX::NLN::StatusTest::NormF::relativeSetup(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::ComputeNorm(
-    Teuchos::RCP<const NOX::Abstract::Group>& grp)
+    Teuchos::RCP<const ::NOX::Abstract::Group>& grp)
 {
   if (!grp->isF()) return Teuchos::null;
 
@@ -78,7 +81,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::ComputeNorm
       Teuchos::rcp_dynamic_cast<const NOX::NLN::Group>(grp);
   if (nlnGrp.is_null())
   {
-    utils_.err() << "NOX::StatusTest::NormF::ComputeNorm - NOX::NLN::Group cast failed!"
+    utils_.err() << "::NOX::StatusTest::NormF::ComputeNorm - NOX::NLN::Group cast failed!"
                  << std::endl;
     throw "NOX Error";
   }
@@ -91,33 +94,35 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::ComputeNorm
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormF::checkStatus(
-    const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType)
+::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormF::checkStatus(
+    const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
   if (problem.getNumIterations() == 0)
   {
-    Teuchos::RCP<const NOX::Abstract::Group> grp = Teuchos::rcpFromRef(problem.getSolutionGroup());
+    Teuchos::RCP<const ::NOX::Abstract::Group> grp =
+        Teuchos::rcpFromRef(problem.getSolutionGroup());
     relativeSetup(grp);
   }
 
-  if (checkType == NOX::StatusTest::None)
+  if (checkType == ::NOX::StatusTest::None)
   {
     normF_ = Teuchos::rcp(new std::vector<double>(nChecks_, 0.0));
-    status_.assign(status_.size(), NOX::StatusTest::Unevaluated);
-    gStatus_ = NOX::StatusTest::Unevaluated;
+    status_.assign(status_.size(), ::NOX::StatusTest::Unevaluated);
+    gStatus_ = ::NOX::StatusTest::Unevaluated;
   }
   else
   {
-    Teuchos::RCP<const NOX::Abstract::Group> grp = Teuchos::rcpFromRef(problem.getSolutionGroup());
+    Teuchos::RCP<const ::NOX::Abstract::Group> grp =
+        Teuchos::rcpFromRef(problem.getSolutionGroup());
     normF_ = ComputeNorm(grp);
 
-    gStatus_ = NOX::StatusTest::Converged;
+    gStatus_ = ::NOX::StatusTest::Converged;
     for (std::size_t i = 0; i < normF_->size(); ++i)
     {
       status_[i] = ((not normF_.is_null()) && ((*normF_)[i] < trueTolerance_[i]))
-                       ? NOX::StatusTest::Converged
-                       : NOX::StatusTest::Unconverged;
-      if (status_[i] == NOX::StatusTest::Unconverged) gStatus_ = NOX::StatusTest::Unconverged;
+                       ? ::NOX::StatusTest::Converged
+                       : ::NOX::StatusTest::Unconverged;
+      if (status_[i] == ::NOX::StatusTest::Unconverged) gStatus_ = ::NOX::StatusTest::Unconverged;
     }
   }
 
@@ -194,7 +199,7 @@ bool NOX::NLN::StatusTest::NormF::IsQuantity(const NOX::NLN::StatusTest::Quantit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormF::getStatus() const { return gStatus_; }
+::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormF::getStatus() const { return gStatus_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -208,31 +213,31 @@ std::ostream& NOX::NLN::StatusTest::NormF::print(std::ostream& stream, int inden
     stream << indent_string;
     stream << status_[i];
     stream << QuantityType2String(checkList_[i]) << "-";
-    stream << "F-Norm = " << NOX::Utils::sciformat((*normF_)[i], 3);
-    stream << " < " << NOX::Utils::sciformat(trueTolerance_[i], 3);
+    stream << "F-Norm = " << ::NOX::Utils::sciformat((*normF_)[i], 3);
+    stream << " < " << ::NOX::Utils::sciformat(trueTolerance_[i], 3);
     stream << std::endl;
 
     stream << indent_string;
     stream << std::setw(13) << " ";
     stream << "(";
 
-    if (scaleType_[i] == NOX::StatusTest::NormF::Scaled)
+    if (scaleType_[i] == ::NOX::StatusTest::NormF::Scaled)
       stream << "Scaled";
     else
       stream << "Unscaled";
 
     stream << " ";
 
-    if (normType_[i] == NOX::Abstract::Vector::TwoNorm)
+    if (normType_[i] == ::NOX::Abstract::Vector::TwoNorm)
       stream << "2-Norm";
-    else if (normType_[i] == NOX::Abstract::Vector::OneNorm)
+    else if (normType_[i] == ::NOX::Abstract::Vector::OneNorm)
       stream << "1-Norm";
-    else if (normType_[i] == NOX::Abstract::Vector::MaxNorm)
+    else if (normType_[i] == ::NOX::Abstract::Vector::MaxNorm)
       stream << "Max-Norm";
 
     stream << ", ";
 
-    if (toleranceType_[i] == NOX::StatusTest::NormF::Absolute)
+    if (toleranceType_[i] == ::NOX::StatusTest::NormF::Absolute)
       stream << "Absolute";
     else
       stream << "Relative";
@@ -243,3 +248,5 @@ std::ostream& NOX::NLN::StatusTest::NormF::print(std::ostream& stream, int inden
   }
   return stream;
 }
+
+BACI_NAMESPACE_CLOSE

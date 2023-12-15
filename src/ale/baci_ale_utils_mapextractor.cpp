@@ -15,6 +15,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overlapping)
@@ -94,3 +96,5 @@ void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
       Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FluidFluidCoupling", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
+
+BACI_NAMESPACE_CLOSE

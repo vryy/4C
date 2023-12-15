@@ -14,16 +14,19 @@ subsides
 #include "baci_cut_mesh.H"
 #include "baci_cut_position.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& nodes)
+CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(
+    Mesh& mesh, int sid, const std::vector<int>& node_ids)
 {
   subsides_.reserve(4);
 
   nodes_.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
-    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
+    Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
   }
 
@@ -31,30 +34,31 @@ CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(Mesh& mesh, int sid, const std::v
 
   std::vector<int> nids(3);
 
-  nids[0] = nodes[0];
-  nids[1] = nodes[3];
-  nids[2] = nodes[5];
+  nids[0] = node_ids[0];
+  nids[1] = node_ids[3];
+  nids[2] = node_ids[5];
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-  nids[0] = nodes[3];
-  nids[1] = nodes[1];
-  nids[2] = nodes[4];
+  nids[0] = node_ids[3];
+  nids[1] = node_ids[1];
+  nids[2] = node_ids[4];
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-  nids[0] = nodes[3];
-  nids[1] = nodes[4];
-  nids[2] = nodes[5];
+  nids[0] = node_ids[3];
+  nids[1] = node_ids[4];
+  nids[2] = node_ids[5];
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-  nids[0] = nodes[5];
-  nids[1] = nodes[4];
-  nids[2] = nodes[2];
+  nids[0] = node_ids[5];
+  nids[1] = node_ids[4];
+  nids[2] = node_ids[2];
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& nodes)
+CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(
+    Mesh& mesh, int sid, const std::vector<int>& node_ids)
 {
   subsides_.reserve(4);
 
@@ -62,7 +66,7 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std:
   nodes_.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
-    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
+    Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
     n->Coordinates(&xyze(0, i));
   }
@@ -72,35 +76,35 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std:
   // create middle node
 
   CORE::LINALG::Matrix<4, 1> funct;
-  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::quad4);
+  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad4);
 
   CORE::LINALG::Matrix<3, 1> xyz;
   xyz.Multiply(xyze, funct);
 
   plain_int_set node_nids;
-  node_nids.insert(nodes.begin(), nodes.end());
+  node_nids.insert(node_ids.begin(), node_ids.end());
   Node* middle = mesh.GetNode(node_nids, xyz.A());
   int middle_id = middle->Id();
 
   std::vector<int> nids(3);
 
-  nids[0] = nodes[0];
-  nids[1] = nodes[1];
+  nids[0] = node_ids[0];
+  nids[1] = node_ids[1];
   nids[2] = middle_id;
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-  nids[0] = nodes[1];
-  nids[1] = nodes[2];
+  nids[0] = node_ids[1];
+  nids[1] = node_ids[2];
   nids[2] = middle_id;
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-  nids[0] = nodes[2];
-  nids[1] = nodes[3];
+  nids[0] = node_ids[2];
+  nids[1] = node_ids[3];
   nids[2] = middle_id;
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-  nids[0] = nodes[3];
-  nids[1] = nodes[0];
+  nids[0] = node_ids[3];
+  nids[1] = node_ids[0];
   nids[2] = middle_id;
   subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 }
@@ -108,7 +112,7 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std:
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
-    Mesh& mesh, int sid, const std::vector<int>& nodes, bool iscutside)
+    Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside)
 {
   if (iscutside)
   {
@@ -116,39 +120,39 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     nodes_.reserve(8);
     for (int i = 0; i < 8; ++i)
     {
-      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
+      Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
     const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
     std::vector<int> nids(3);
-    nids[0] = nodes[7];
-    nids[1] = nodes[0];
-    nids[2] = nodes[4];
+    nids[0] = node_ids[7];
+    nids[1] = node_ids[0];
+    nids[2] = node_ids[4];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[4];
-    nids[1] = nodes[1];
-    nids[2] = nodes[5];
+    nids[0] = node_ids[4];
+    nids[1] = node_ids[1];
+    nids[2] = node_ids[5];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[5];
-    nids[1] = nodes[2];
-    nids[2] = nodes[6];
+    nids[0] = node_ids[5];
+    nids[1] = node_ids[2];
+    nids[2] = node_ids[6];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[6];
-    nids[1] = nodes[3];
-    nids[2] = nodes[7];
+    nids[0] = node_ids[6];
+    nids[1] = node_ids[3];
+    nids[2] = node_ids[7];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[4];
-    nids[1] = nodes[5];
-    nids[2] = nodes[6];
+    nids[0] = node_ids[4];
+    nids[1] = node_ids[5];
+    nids[2] = node_ids[6];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[6];
-    nids[1] = nodes[7];
-    nids[2] = nodes[4];
+    nids[0] = node_ids[6];
+    nids[1] = node_ids[7];
+    nids[2] = node_ids[4];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
   }
   else
@@ -159,7 +163,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     nodes_.reserve(8);
     for (int i = 0; i < 8; ++i)
     {
-      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
+      Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
       n->Coordinates(&xyze(0, i));
     }
@@ -169,40 +173,40 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     // create middle node
 
     CORE::LINALG::Matrix<8, 1> funct;
-    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::quad8);
+    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad8);
 
     CORE::LINALG::Matrix<3, 1> xyz;
     xyz.Multiply(xyze, funct);
 
     plain_int_set node_nids;
-    std::copy(nodes.begin(), nodes.end(), std::inserter(node_nids, node_nids.begin()));
+    std::copy(node_ids.begin(), node_ids.end(), std::inserter(node_nids, node_nids.begin()));
     Node* middle = mesh.GetNode(node_nids, xyz.A());
     int middle_id = middle->Id();
 
     std::vector<int> nids(4);
 
-    nids[0] = nodes[0];
-    nids[1] = nodes[4];
+    nids[0] = node_ids[0];
+    nids[1] = node_ids[4];
     nids[2] = middle_id;
-    nids[3] = nodes[7];
+    nids[3] = node_ids[7];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[4];
-    nids[1] = nodes[1];
-    nids[2] = nodes[5];
+    nids[0] = node_ids[4];
+    nids[1] = node_ids[1];
+    nids[2] = node_ids[5];
     nids[3] = middle_id;
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
     nids[0] = middle_id;
-    nids[1] = nodes[5];
-    nids[2] = nodes[2];
-    nids[3] = nodes[6];
+    nids[1] = node_ids[5];
+    nids[2] = node_ids[2];
+    nids[3] = node_ids[6];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[7];
+    nids[0] = node_ids[7];
     nids[1] = middle_id;
-    nids[2] = nodes[6];
-    nids[3] = nodes[3];
+    nids[2] = node_ids[6];
+    nids[3] = node_ids[3];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
   }
 }
@@ -210,7 +214,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
-    Mesh& mesh, int sid, const std::vector<int>& nodes, bool iscutside)
+    Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside)
 {
   if (iscutside)
   {
@@ -218,42 +222,42 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
     nodes_.reserve(9);
     for (int i = 0; i < 9; ++i)
     {
-      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
+      Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
     const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
     std::vector<int> nids(3);
-    nids[0] = nodes[7];
-    nids[1] = nodes[0];
-    nids[2] = nodes[4];
+    nids[0] = node_ids[7];
+    nids[1] = node_ids[0];
+    nids[2] = node_ids[4];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-    nids[0] = nodes[4];
-    nids[1] = nodes[8];
-    nids[2] = nodes[7];
+    nids[0] = node_ids[4];
+    nids[1] = node_ids[8];
+    nids[2] = node_ids[7];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-    nids[0] = nodes[4];
-    nids[1] = nodes[1];
-    nids[2] = nodes[5];
+    nids[0] = node_ids[4];
+    nids[1] = node_ids[1];
+    nids[2] = node_ids[5];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-    nids[0] = nodes[5];
-    nids[1] = nodes[8];
-    nids[2] = nodes[4];
+    nids[0] = node_ids[5];
+    nids[1] = node_ids[8];
+    nids[2] = node_ids[4];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-    nids[0] = nodes[5];
-    nids[1] = nodes[2];
-    nids[2] = nodes[6];
+    nids[0] = node_ids[5];
+    nids[1] = node_ids[2];
+    nids[2] = node_ids[6];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-    nids[0] = nodes[6];
-    nids[1] = nodes[8];
-    nids[2] = nodes[5];
+    nids[0] = node_ids[6];
+    nids[1] = node_ids[8];
+    nids[2] = node_ids[5];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-    nids[0] = nodes[6];
-    nids[1] = nodes[3];
-    nids[2] = nodes[7];
+    nids[0] = node_ids[6];
+    nids[1] = node_ids[3];
+    nids[2] = node_ids[7];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
-    nids[0] = nodes[7];
-    nids[1] = nodes[8];
-    nids[2] = nodes[6];
+    nids[0] = node_ids[7];
+    nids[1] = node_ids[8];
+    nids[2] = node_ids[6];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
   }
   else
@@ -263,7 +267,7 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
     nodes_.reserve(9);
     for (int i = 0; i < 9; ++i)
     {
-      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
+      Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
 
@@ -271,28 +275,28 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
 
     std::vector<int> nids(4);
 
-    nids[0] = nodes[0];
-    nids[1] = nodes[4];
-    nids[2] = nodes[8];
-    nids[3] = nodes[7];
+    nids[0] = node_ids[0];
+    nids[1] = node_ids[4];
+    nids[2] = node_ids[8];
+    nids[3] = node_ids[7];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[4];
-    nids[1] = nodes[1];
-    nids[2] = nodes[5];
-    nids[3] = nodes[8];
+    nids[0] = node_ids[4];
+    nids[1] = node_ids[1];
+    nids[2] = node_ids[5];
+    nids[3] = node_ids[8];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[8];
-    nids[1] = nodes[5];
-    nids[2] = nodes[2];
-    nids[3] = nodes[6];
+    nids[0] = node_ids[8];
+    nids[1] = node_ids[5];
+    nids[2] = node_ids[2];
+    nids[3] = node_ids[6];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
 
-    nids[0] = nodes[7];
-    nids[1] = nodes[8];
-    nids[2] = nodes[6];
-    nids[3] = nodes[3];
+    nids[0] = node_ids[7];
+    nids[1] = node_ids[8];
+    nids[2] = node_ids[6];
+    nids[3] = node_ids[3];
     subsides_.push_back(mesh.GetSide(sid, nids, top_data));
   }
 }
@@ -310,7 +314,8 @@ void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::tri6>(xyze, xyz);
+  Teuchos::RCP<Position> pos =
+      PositionFactory::BuildPosition<3, CORE::FE::CellType::tri6>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -331,7 +336,8 @@ void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad4>(xyze, xyz);
+  Teuchos::RCP<Position> pos =
+      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad4>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -352,7 +358,8 @@ void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad8>(xyze, xyz);
+  Teuchos::RCP<Position> pos =
+      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad8>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -373,10 +380,13 @@ void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad9>(xyze, xyz);
+  Teuchos::RCP<Position> pos =
+      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad9>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
   }
   pos->LocalCoordinates(rst);
 }
+
+BACI_NAMESPACE_CLOSE

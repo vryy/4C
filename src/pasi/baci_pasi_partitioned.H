@@ -20,6 +20,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -205,7 +207,7 @@ namespace PASI
     };
 
     //! structural field
-    Teuchos::RCP<::ADAPTER::PASIStructureWrapper> structurefield_;
+    Teuchos::RCP<ADAPTER::PASIStructureWrapper> structurefield_;
 
     //! particle algorithm
     Teuchos::RCP<PARTICLEALGORITHM::ParticleAlgorithm> particlealgorithm_;
@@ -263,4 +265,6 @@ namespace PASI
 }  // namespace PASI
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -12,11 +12,13 @@
 
 #include "baci_mat_myocard_tentusscher.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  variables                                                ljag 09/13 |
@@ -732,3 +734,5 @@ void Myocard_TenTusscher::Update(const double phi, const double dt)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

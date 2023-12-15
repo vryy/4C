@@ -12,6 +12,8 @@
 
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -24,9 +26,6 @@ namespace MAT
       explicit FluidPoroRelPermeabilityLaw(
           Teuchos::RCP<MAT::PAR::Material> matdata, bool constrelpermeability)
           : Parameter(matdata), constrelpermeability_(constrelpermeability){};
-
-      /// destructor
-      virtual ~FluidPoroRelPermeabilityLaw() { ; }
 
       // get relative permeability
       virtual double GetRelPermeability(const double saturation) const = 0;
@@ -51,17 +50,17 @@ namespace MAT
       /// standard constructor
       explicit FluidPoroRelPermeabilityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~FluidPoroRelPermeabilityLawConstant() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get permeability
-      double GetRelPermeability(const double saturation) const { return relpermeability_; };
+      double GetRelPermeability(const double saturation) const override
+      {
+        return relpermeability_;
+      };
 
       // get derivative of relative permeability with respect to the saturation of this phase
-      virtual double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const
+      double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const override
       {
         return 0.0;
       };
@@ -84,14 +83,11 @@ namespace MAT
       /// standard constructor
       explicit FluidPoroRelPermeabilityLawExponent(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~FluidPoroRelPermeabilityLawExponent() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get permeability
-      double GetRelPermeability(const double saturation) const
+      double GetRelPermeability(const double saturation) const override
       {
         if (saturation > minsat_)
           return std::pow(saturation, exp_);
@@ -100,7 +96,7 @@ namespace MAT
       };
 
       // get derivative of relative permeability with respect to the saturation of this phase
-      double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const
+      double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const override
       {
         if (saturation > minsat_)
           return exp_ * std::pow(saturation, (exp_ - 1.0));
@@ -124,5 +120,7 @@ namespace MAT
 }  // namespace MAT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_FLUIDPORO_RELPERMEABILITY_LAW_H

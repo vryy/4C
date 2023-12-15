@@ -13,12 +13,14 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_nurbs_discret.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -29,7 +31,7 @@
    of a separate solver!
 */
 /*----------------------------------------------------------------------*/
-void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* outfile,
+void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis,
     const Teuchos::ParameterList& solverparams, const int startfuncno,
     Teuchos::RCP<Epetra_Vector> initialvals)
 {
@@ -50,7 +52,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* o
   p.set("AZTOL", newtol);
 
   Teuchos::RCP<CORE::LINALG::Solver> lssolver =
-      Teuchos::rcp(new CORE::LINALG::Solver(p, dis.Comm(), outfile));
+      Teuchos::rcp(new CORE::LINALG::Solver(p, dis.Comm()));
   dis.ComputeNullSpaceIfNecessary(lssolver->Params());
 
   // get the processor ID from the communicator
@@ -179,17 +181,17 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
       {
         int spacedim = -1;
 
-        const DRT::Element::DiscretizationType distype = actele->Shape();
+        const CORE::FE::CellType distype = actele->Shape();
         switch (distype)
         {
-          case DRT::Element::nurbs4:
-          case DRT::Element::nurbs9:
+          case CORE::FE::CellType::nurbs4:
+          case CORE::FE::CellType::nurbs9:
           {
             spacedim = 2;
             break;
           }
-          case DRT::Element::nurbs8:
-          case DRT::Element::nurbs27:
+          case CORE::FE::CellType::nurbs8:
+          case CORE::FE::CellType::nurbs27:
           {
             spacedim = 3;
             break;
@@ -210,7 +212,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
         DRT::Node** nodes = actele->Nodes();
         for (int inode = 0; inode < iel; inode++)
         {
-          const double* x = nodes[inode]->X();
+          const auto& x = nodes[inode]->X();
           for (int dim = 0; dim < spacedim; ++dim)
           {
             xyze(dim, inode) = x[dim];
@@ -338,7 +340,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 // important: position has to have always three components!!
                 initialval(rr) =
                     DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                         .Evaluate(position.values(), 0.0, rr);
               }
 
@@ -467,7 +469,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 // important: position has to have always three components!!
                 initialval(rr) =
                     DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                         .Evaluate(position.values(), 0.0, rr);
               }
 
@@ -551,3 +553,5 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@ within isothermal electrodes
 #include "baci_scatra_ele_calc_elch.H"
 #include "baci_scatra_ele_utils_elch_electrode.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -22,12 +24,11 @@ namespace DRT
     class ScaTraEleDiffManagerElchElectrode;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchElectrode;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchElectrode;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcElchElectrode : public ScaTraEleCalcElch<distype, probdim>
     {
      public:
@@ -38,13 +39,13 @@ namespace DRT
 
 
       //! evaluate action
-      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       //! protected constructor for singletons
@@ -63,11 +64,10 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate contributions to element matrix and residual (inside loop over all scalars)
-      virtual void CalcMatAndRhs(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate+
-          const int k,                            //!< index of current scalar
-          const double fac,                       //!< domain-integration factor
+      void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                 //!< element rhs to calculate+
+          const int k,                                           //!< index of current scalar
+          const double fac,                                      //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double taufac,  //!< tau times domain-integration factor
@@ -78,37 +78,36 @@ namespace DRT
           CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
-      );
+          ) override;
 
       //! calculate contributions to element matrix and residual (outside loop over all scalars)
-      virtual void CalcMatAndRhsOutsideScalarLoop(
+      void CalcMatAndRhsOutsideScalarLoop(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
           const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
-      );
+          ) override;
 
       //! compute additional flux terms across Dirichlet boundaries
-      virtual void CorrectionForFluxAcrossDC(
-          DRT::Discretization& discretization,    //!< discretization
-          const std::vector<int>& lm,             //!< location vector
+      void CorrectionForFluxAcrossDC(DRT::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,                                      //!< location vector
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
-      ){};
+          ) override{};
 
       /*========================================================================*/
       //! @name material and related and related functions
       /*========================================================================*/
 
       //! get material parameters
-      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                          //!< density at t_(n)
-          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-          double& visc,                 //!< fluid viscosity
-          const int iquad = -1          //!< id of current gauss point (default = -1)
-      );
+      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                  //!< density at t_(n)
+          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< id of current gauss point (default = -1)
+          ) override;
 
       /*========================================================================*/
       //! @name methods for evaluation of individual terms
@@ -128,7 +127,7 @@ namespace DRT
           const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivatives of Jacobian determinant det(dx/ds) w.r.t. structural
                         //!< displacements
-      );
+          ) override;
 
       //! CalcMat: linearization of diffusion coefficient in diffusion term
       void CalcMatDiffCoeffLin(
@@ -187,8 +186,8 @@ namespace DRT
 
       //! validity check with respect to input parameters, degrees of freedom, number of scalars
       //! etc.
-      virtual void CheckElchElementParameter(DRT::Element* ele  //!< current element
-      );
+      void CheckElchElementParameter(DRT::Element* ele  //!< current element
+          ) override;
 
       //! get conductivity
       void GetConductivity(const enum INPAR::ELCH::EquPot
@@ -197,7 +196,7 @@ namespace DRT
           std::vector<double>&
               sigma,    //!< conductivity or a single ion + overall electrolyte solution
           bool effCond  //!< flag if effective conductivity should be calculated
-      );
+          ) override;
 
       //! calculate electrode state of charge and C rate
       virtual void CalculateElectrodeSOCAndCRate(
@@ -224,13 +223,13 @@ namespace DRT
           ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
-      virtual void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
-          Teuchos::ParameterList& params,                                     //!< parameter list
+      void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
+          Teuchos::ParameterList& params,                             //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
-      );
+          ) override;
 
       //! set internal variables for electrodes
-      virtual void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! get diffusion manager for electrodes
       Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> DiffManager()
@@ -262,12 +261,7 @@ namespace DRT
             tempderivdiff_(numscal, std::vector<double>(numscal, 0.0)),
             cond_(0.0),
             concderivcond_(numscal, 0.0),
-            tempderivcond_(numscal, 0.0)
-      {
-      }
-
-      ~ScaTraEleDiffManagerElchElectrode() override = default;
-      ;
+            tempderivcond_(numscal, 0.0){};
 
       /*========================================================================*/
       //! @name access methods
@@ -396,8 +390,6 @@ namespace DRT
       {
       }
 
-      //! destructor
-      ~ScaTraEleInternalVariableManagerElchElectrode() override = default;
 
       //! compute and set internal electrode-specific variables
       void SetInternalVariablesElchElectrode(
@@ -449,4 +441,6 @@ namespace DRT
     };  // class ScaTraEleInternalVariableManagerElchElectrode
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

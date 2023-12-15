@@ -21,6 +21,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -91,7 +93,7 @@ namespace ADAPTER
   {
    public:
     /// virtual destructor to get polymorph destruction
-    virtual ~Fluid();
+    virtual ~Fluid() = default;
 
     /// initialize time integration
     virtual void Init() = 0;
@@ -310,7 +312,7 @@ namespace ADAPTER
     virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() = 0;
 
     /// access to map extractor for velocity and pressure
-    virtual const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() = 0;
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
@@ -564,5 +566,7 @@ namespace ADAPTER
     virtual INPAR::FLUID::PhysicalType PhysicalType() const = 0;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::LinearDensityViscosity::LinearDensityViscosity(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -39,7 +41,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::LinearDensityViscosity::CreateMaterial()
 MAT::LinearDensityViscosityType MAT::LinearDensityViscosityType::instance_;
 
 
-DRT::ParObject* MAT::LinearDensityViscosityType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::LinearDensityViscosityType::Create(const std::vector<char>& data)
 {
   MAT::LinearDensityViscosity* fluid = new MAT::LinearDensityViscosity();
   fluid->Unpack(data);
@@ -62,9 +64,9 @@ MAT::LinearDensityViscosity::LinearDensityViscosity(MAT::PAR::LinearDensityVisco
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::LinearDensityViscosity::Pack(DRT::PackBuffer& data) const
+void MAT::LinearDensityViscosity::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -83,10 +85,8 @@ void MAT::LinearDensityViscosity::Pack(DRT::PackBuffer& data) const
 void MAT::LinearDensityViscosity::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -127,3 +127,5 @@ double MAT::LinearDensityViscosity::ComputeViscosity(const double press) const
 
   return viscosity;
 }
+
+BACI_NAMESPACE_CLOSE

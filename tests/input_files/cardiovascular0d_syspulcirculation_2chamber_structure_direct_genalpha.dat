@@ -65,8 +65,6 @@ V_at_r_u                        4000.0
 V_ar_pul_u                      84900.0
 V_ven_pul_u                     93000.0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       Yes
-ADAPTCONV_BETTER                0.1
 DAMPING                         Rayleigh
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha

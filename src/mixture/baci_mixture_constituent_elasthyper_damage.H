@@ -15,6 +15,8 @@
 #include "baci_mixture_constituent_elasthyperbase.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class Anisotropy;
@@ -82,7 +84,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    void PackConstituent(DRT::PackBuffer& data) const override;
+    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -149,7 +151,7 @@ namespace MIXTURE
      * \param eleGID Global element id
      */
     void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
 
@@ -162,5 +164,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H

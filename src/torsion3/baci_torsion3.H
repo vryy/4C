@@ -19,6 +19,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration ...
 namespace STR
 {
@@ -35,25 +37,26 @@ namespace DRT
     class Torsion3Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Torsion3Type"; }
+      std::string Name() const override { return "Torsion3Type"; }
 
       static Torsion3Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static Torsion3Type instance_;
@@ -87,10 +90,7 @@ namespace DRT
       */
       Torsion3(const Torsion3& old);
 
-      /*!
-      \brief Destructor
-      */
-      virtual ~Torsion3();
+
 
       /*!
       \brief Deep copy this instance of Torsion3 and return pointer to the copy
@@ -99,12 +99,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      virtual DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
      \brief Get shape type of element
      */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
 
       /*!
@@ -113,7 +113,10 @@ namespace DRT
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H
       */
-      virtual int UniqueParObjectId() const { return Torsion3Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override
+      {
+        return Torsion3Type::Instance().UniqueParObjectId();
+      }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -121,7 +124,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -129,28 +132,28 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      virtual DRT::ElementType& ElementType() const { return Torsion3Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return Torsion3Type::Instance(); }
 
       //@}
 
       /*!
       \brief Return number of lines to this element
       */
-      virtual int NumLine() const { return 1; }
+      int NumLine() const override { return 1; }
 
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
 
       /*!
       \brief Get number of degrees of freedom of a single node
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -163,12 +166,12 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom per element not including nodal degrees of freedom
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      virtual void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
 
       //@}
@@ -185,7 +188,7 @@ namespace DRT
 
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
 
       //@}
@@ -220,10 +223,11 @@ namespace DRT
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -244,10 +248,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -257,19 +260,19 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
       /*! \brief returns true if the parameter interface is defined and initialized, otherwise false
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual inline bool IsParamsInterface() const { return (not interface_ptr_.is_null()); }
+      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
       /*! \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
 
      protected:
       /** \brief get access to the interface
@@ -341,5 +344,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // TORSION3_H

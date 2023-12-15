@@ -13,10 +13,12 @@
 
 #include "baci_inpar_beampotential.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace BEAMINTERACTION
 {
-  class BeamToBeamPotentialRuntimeVtkParams;
+  class BeamToBeamPotentialRuntimeOutputParams;
 
   /*!
    *  */
@@ -27,7 +29,7 @@ namespace BEAMINTERACTION
     BeamPotentialParams();
 
     //! destructor
-    virtual ~BeamPotentialParams(){};
+    virtual ~BeamPotentialParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();
@@ -113,19 +115,19 @@ namespace BEAMINTERACTION
       return choice_master_slave_;
     }
 
-    //! whether to write vtk output for beam contact
-    inline bool VtkRuntimeOutput() const
+    //! whether to write visualization output for beam contact
+    inline bool RuntimeOutput() const
     {
       ThrowErrorIfNotInitAndSetup();
-      return vtk_output_;
+      return visualization_output_;
     }
 
-    //! get the data container for parameters regarding vtk output
-    inline Teuchos::RCP<const BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams>
-    GetBeamPotentialVtkParams() const
+    //! get the data container for parameters regarding visualization output
+    inline Teuchos::RCP<const BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
+    GetBeamPotentialVisualizationOutputParams() const
     {
       ThrowErrorIfNotInitAndSetup();
-      return params_runtime_vtk_BTB_potential_;
+      return params_runtime_visualization_output_BTB_potential_;
     }
 
    private:
@@ -167,14 +169,17 @@ namespace BEAMINTERACTION
     //! rule how to assign the role of master and slave to beam elements (if applicable)
     enum INPAR::BEAMPOTENTIAL::MasterSlaveChoice choice_master_slave_;
 
-    //! whether to write vtk output at runtime
-    bool vtk_output_;
+    //! whether to write visualization output at runtime
+    bool visualization_output_;
 
-    //! data container for input parameters related to VTK output of beam contact at runtime
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams>
-        params_runtime_vtk_BTB_potential_;
+    //! data container for input parameters related to visualization output of beam contact at
+    //! runtime
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
+        params_runtime_visualization_output_BTB_potential_;
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

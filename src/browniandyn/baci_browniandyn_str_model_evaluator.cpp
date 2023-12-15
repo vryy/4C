@@ -29,6 +29,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -791,3 +793,5 @@ void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
 rand_data_.seedvariable ) ); DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0);
 
 }*/
+
+BACI_NAMESPACE_CLOSE

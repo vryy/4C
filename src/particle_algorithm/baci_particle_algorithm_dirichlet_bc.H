@@ -18,6 +18,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -47,9 +49,6 @@ namespace PARTICLEALGORITHM
      * \param[in] params particle simulation parameter list
      */
     explicit DirichletBoundaryConditionHandler(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~DirichletBoundaryConditionHandler() = default;
 
     /*!
      * \brief init dirichlet boundary condition handler
@@ -128,4 +127,6 @@ namespace PARTICLEALGORITHM
 }  // namespace PARTICLEALGORITHM
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

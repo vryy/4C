@@ -11,6 +11,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -32,8 +34,18 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
       &list);
 
   // Number of search points for segmentation.
-  DRT::INPUT::IntParameter(
-      "GEOMETRY_PAIR_SEARCH_POINTS", 6, "Number of search points for segmentation", &list);
+  DRT::INPUT::IntParameter("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6,
+      "Number of search points for segmentation", &list);
+
+  // What to do if not all Gauss points of a segment project valid
+  Teuchos::setStringToIntegralParameter<NotAllGaussPointsProjectValidAction>(
+      "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "fail",
+      "What to do if not all Gauss points of a segment project valid",
+      Teuchos::tuple<std::string>("fail", "warning", "proceed"),
+      Teuchos::tuple<NotAllGaussPointsProjectValidAction>(NotAllGaussPointsProjectValidAction::fail,
+          NotAllGaussPointsProjectValidAction::warning,
+          NotAllGaussPointsProjectValidAction::proceed),
+      &list);
 
   // Number of integration points on the line.
   DRT::INPUT::IntParameter(
@@ -103,3 +115,5 @@ CORE::DRT::UTILS::GaussRule1D INPAR::GEOMETRYPAIR::IntToGaussRule1D(const int n_
     }
   }
 };
+
+BACI_NAMESPACE_CLOSE

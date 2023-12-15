@@ -15,10 +15,13 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_s2i.H"
 #include "baci_inpar_scatra.H"
+#include "baci_lib_element.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace ADAPTER
@@ -113,7 +116,7 @@ namespace SCATRA
         const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
-    const Teuchos::RCP<const CORE::ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
+    Teuchos::RCP<const CORE::ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
 
     //! return flag for meshtying method
     const INPAR::S2I::CouplingType& CouplingType() const { return couplingtype_; }
@@ -175,7 +178,7 @@ namespace SCATRA
     }
 
     //! return interface map extractor
-    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       return interfacemaps_;
     }
@@ -198,13 +201,13 @@ namespace SCATRA
     std::map<const int, DRT::Condition* const>& MasterConditions() { return master_conditions_; }
 
     //! return vector of Lagrange multiplier dofs
-    const Teuchos::RCP<const Epetra_Vector> LM() const { return lm_; };
+    Teuchos::RCP<const Epetra_Vector> LM() const { return lm_; };
 
     //! return constraint residual vector associated with Lagrange multiplier dofs
-    const Teuchos::RCP<const Epetra_Vector> LMResidual() const { return lmresidual_; };
+    Teuchos::RCP<const Epetra_Vector> LMResidual() const { return lmresidual_; };
 
     //! return constraint increment vector associated with Lagrange multiplier dofs
-    const Teuchos::RCP<const Epetra_Vector> LMIncrement() const { return lmincrement_; };
+    Teuchos::RCP<const Epetra_Vector> LMIncrement() const { return lmincrement_; };
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& MasterMatrix() const { return imastermatrix_; };
@@ -218,8 +221,7 @@ namespace SCATRA
     //! output solution for post-processing
     void Output() const override;
 
-    //! output restart information
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     //! return mortar projector P
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& P() const { return P_; };
@@ -780,7 +782,7 @@ namespace SCATRA
   };
 
 
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarCellCalc : public MortarCellInterface
   {
    public:
@@ -844,18 +846,16 @@ namespace SCATRA
 
    protected:
     //! number of slave element nodes
-    static const int nen_slave_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+    static const int nen_slave_ = CORE::FE::num_nodes<distypeS>;
 
     //! number of master element nodes
-    static const int nen_master_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nen_master_ = CORE::FE::num_nodes<distypeM>;
 
     //! spatial dimensionality of slave elements
-    static const int nsd_slave_ = CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim;
+    static const int nsd_slave_ = CORE::FE::dim<distypeS>;
 
     //! spatial dimensionality of master elements
-    static const int nsd_master_ = CORE::DRT::UTILS::DisTypeToDim<distypeM>::dim;
+    static const int nsd_master_ = CORE::FE::dim<distypeM>;
 
     //! protected constructor for singletons
     MortarCellCalc(const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
@@ -1036,7 +1036,7 @@ namespace SCATRA
    private:
     //! provide instance of mortar cell evaluation class of particular slave-side and master-side
     //! discretization types
-    template <DRT::Element::DiscretizationType distypeS>
+    template <CORE::FE::CellType distypeS>
     static MortarCellInterface* MortarCellCalc(
         const INPAR::SCATRA::ImplType&
             impltype,  //!< physical implementation type of mortar integration cell
@@ -1049,7 +1049,7 @@ namespace SCATRA
     );
 
     //! provide specific instance of mortar cell evaluation class
-    template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+    template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
     static MortarCellInterface* MortarCellCalc(
         const INPAR::SCATRA::ImplType&
             impltype,  //!< physical implementation type of mortar integration cell
@@ -1282,4 +1282,6 @@ namespace SCATRA
     const int nds_cols_;
   };  // class MortarCellAssembleStrategy
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

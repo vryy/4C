@@ -12,13 +12,14 @@
 
 #include "baci_scatra_ele_boundary_calc_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchNP : public ScaTraEleBoundaryCalcElch<distype, probdim>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
@@ -47,13 +48,13 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
-          const double scalar);
+          const double scalar) override;
 
       //! evaluate an electrode kinetics boundary condition
       void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
@@ -72,13 +73,15 @@ namespace DRT
           const double frt,                   ///< factor F/RT
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
-      );
+          ) override;
 
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
           const int k                                                       //! species number
-      ) const;
+      ) const override;
     };  // class ScaTraEleBoundaryCalcElchNP
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

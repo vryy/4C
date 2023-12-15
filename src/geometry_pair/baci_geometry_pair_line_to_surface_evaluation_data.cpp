@@ -9,10 +9,10 @@
 
 #include "baci_geometry_pair_line_to_surface_evaluation_data.H"
 
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_geometry_pair_element_faces.H"
 #include "baci_geometry_pair_utility_classes.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -64,3 +64,5 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::SetState(
   for (const auto& [id, face_element] : face_elements_)
     if (face_element->IsPartOfPair()) face_element->SetState(displacement_col_np, face_elements_);
 }
+
+BACI_NAMESPACE_CLOSE

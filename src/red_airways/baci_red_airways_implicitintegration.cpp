@@ -13,7 +13,6 @@
 
 #include "baci_io_control.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
@@ -27,8 +26,11 @@
 #include "baci_red_airways_evaluation_data.h"
 #include "baci_red_airways_resulttest.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <stdio.h>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 01/10|
@@ -387,21 +389,19 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
         // getParams and setParams
         DRT::ELEMENTS::RedAirway* ele =
             dynamic_cast<DRT::ELEMENTS::RedAirway*>(discret_->gElement(GID));
+        const auto airway_params = ele->GetAirwayParams();
         // check if airway is collapsible
-        double airwayColl = 0.0;
-        ele->getParams("AirwayColl", airwayColl);
+        const double airwayColl = airway_params.airway_coll;
         if (airwayColl == 1)
         {
-          double val;
-          ele->getParams("Open_Init", val);
+          const double val = airway_params.open_init;
 
           // adjust airway states
           (*x_np_)[j] = val;
           (*x_n_)[j] = val;
           //(*open_)[j] = val;
         }
-        double val;
-        ele->getParams("Open_Init", val);
+        const double val = airway_params.open_init;
         (*open_)[j] = val;
       }
     }
@@ -508,14 +508,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
         {
           // dynamic cast to aciunus element, since Elements base class does not have the functions
           // getParams and setParams
-          DRT::ELEMENTS::RedAcinus* acini_ele =
-              dynamic_cast<DRT::ELEMENTS::RedAcinus*>(discret_->gElement(GID));
+          auto* acini_ele = dynamic_cast<DRT::ELEMENTS::RedAcinus*>(discret_->gElement(GID));
+          const auto acinus_params = acini_ele->GetAcinusParams();
           // get original value for aciuns volume (entered in dat file)
-          double val;
-          acini_ele->getParams("AcinusVolume_Init", val);
+          double val = acinus_params.volume_init;
           // calculate new value for aciuns volume with alpha and set in element parameters
           val = val / alpha;
-          acini_ele->setParams("AcinusVolume", val);
+          acini_ele->UpdateRelaxedVolume(val);
 
           // adjust acini volumes in the vectors used in this function
           if (not DRT::Problem::Instance()->Restart())
@@ -1554,12 +1553,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
 
 
 /*----------------------------------------------------------------------*
- | build system matrix and rhs                              ismail 01/10|
- *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> qael) {}
-
-
-/*----------------------------------------------------------------------*
  | Current solution becomes most recent solution of next timestep       |
  |                                                                      |
  |  pnm_  =  pn_                                                        |
@@ -2413,11 +2406,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 }  // EvalResidual
 
 
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                                 ismail 01/10|
- *----------------------------------------------------------------------*/
-AIRWAY::RedAirwayImplicitTimeInt::~RedAirwayImplicitTimeInt() { return; }
-
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -2532,3 +2520,5 @@ bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(
   // return all is fine
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

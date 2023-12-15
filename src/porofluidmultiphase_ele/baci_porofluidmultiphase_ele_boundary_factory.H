@@ -13,6 +13,8 @@
 
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -27,7 +29,7 @@ namespace DRT
       PoroFluidMultiPhaseBoundaryFactory() { return; };
 
       //! dtor
-      virtual ~PoroFluidMultiPhaseBoundaryFactory() { return; };
+      virtual ~PoroFluidMultiPhaseBoundaryFactory() = default;
 
       //! ProvideImpl
       static PoroFluidMultiPhaseEleInterface* ProvideImpl(
@@ -35,12 +37,14 @@ namespace DRT
 
      private:
       //! return instance of element evaluation class depending on implementation type
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static PoroFluidMultiPhaseEleInterface* DefineProblemType(
           const int numdofpernode, const std::string& disname);
     };  // class PoroFluidMultiPhaseBoundaryFactory
   }     // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_ELE_BOUNDARY_FACTORY_H

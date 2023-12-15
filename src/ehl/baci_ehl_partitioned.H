@@ -13,6 +13,8 @@
 
 #include "baci_ehl_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace EHL
 {
   class Partitioned : public Base
@@ -24,18 +26,15 @@ namespace EHL
         const std::string struct_disname,
         const std::string lubrication_disname);  // Problem builder
 
-    /// virtual destructor
-    virtual ~Partitioned(){};
-
     /// setup of single fields (if needed)
-    void SetupSystem(){};
+    void SetupSystem() override{};
 
     /// time loop of coupled problem
-    virtual void Timeloop();
+    void Timeloop() override;
 
    protected:
     /// prepare time step of single fields
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! perform iteration loop between fields
     void OuterLoop();
@@ -63,5 +62,7 @@ namespace EHL
     double ittol_;
   };
 }  // namespace EHL
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // EHL_PARTITIONED_H

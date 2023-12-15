@@ -20,6 +20,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* forward declarations */
 namespace MAT
@@ -63,8 +65,7 @@ namespace MAT
       );
 
       /// destructor
-      virtual ~Parameter() { ; }
-
+      virtual ~Parameter() = default;
       /// (unique) material ID
       int Id() const { return id_; }
 
@@ -145,4 +146,6 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_PAR_PARAMETER_H

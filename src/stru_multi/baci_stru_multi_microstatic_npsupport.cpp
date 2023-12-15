@@ -12,15 +12,17 @@ analysis for supporting processors
 
 #include "baci_stru_multi_microstatic_npsupport.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
 #include "baci_lib_container.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_mat_micromaterial.H"
 
 #include <hdf5.h>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -82,7 +84,7 @@ void STRUMULTI::np_support_drt()
         Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 0, &tag, 0, *subcomm));
         Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
         // create an exporter object that will figure out the communication pattern
-        DRT::Exporter exporter(*oldmap, *newmap, *subcomm);
+        CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
         std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
         exporter.Export<DRT::Container>(condnamemap);
 
@@ -134,7 +136,7 @@ void STRUMULTI::np_support_drt()
         Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 0, &tag, 0, *subcomm));
         Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
         // create an exporter object that will figure out the communication pattern
-        DRT::Exporter exporter(*oldmap, *newmap, *subcomm);
+        CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
         std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
         exporter.Export<DRT::Container>(condnamemap);
 
@@ -176,3 +178,5 @@ void STRUMULTI::np_support_drt()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

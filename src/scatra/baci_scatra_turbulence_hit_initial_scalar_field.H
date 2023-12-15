@@ -19,6 +19,8 @@ transport
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -38,9 +40,6 @@ namespace SCATRA
     //! constructor
     HomIsoTurbInitialScalarField(
         ScaTraTimIntImpl& timeint, const INPAR::SCATRA::InitialField initfield);
-
-    //! destructor
-    ~HomIsoTurbInitialScalarField() { return; };
 
     //! calculate initial field
     void CalculateInitialField();
@@ -78,5 +77,7 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

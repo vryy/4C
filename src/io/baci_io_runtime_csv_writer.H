@@ -16,6 +16,8 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   class RuntimeCsvWriterImpl;
@@ -55,5 +57,7 @@ namespace IO
     std::unique_ptr<RuntimeCsvWriterImpl> implementation_;
   };
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

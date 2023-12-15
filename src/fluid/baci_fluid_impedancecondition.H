@@ -17,6 +17,7 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -53,7 +54,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~FluidImpedanceWrapper(){};
+      virtual ~FluidImpedanceWrapper() = default;
 
       /*!
         \brief Wrapper for FluidImpedacnceBc::UseBlockMatrix
@@ -125,7 +126,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~FluidImpedanceBc() {}
+      virtual ~FluidImpedanceBc() = default;
 
      protected:
       /*!
@@ -168,7 +169,7 @@ namespace FLD
       /*!
       \brief calculate area at outflow boundary
       */
-      double Area(const int numcond);
+      double Area(const int condid);
 
       /*!
       \brief return relative error of last cycle
@@ -224,5 +225,7 @@ namespace FLD
 
   }  // namespace UTILS
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_IMPEDANCECONDITION_H

@@ -15,6 +15,8 @@ generation
 
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class FluidDiscretExtractor
@@ -33,10 +35,10 @@ namespace FLD
    \brief Destructor
 
    */
-    virtual ~FluidDiscretExtractor();
+    virtual ~FluidDiscretExtractor() = default;
 
     //! get child discretization
-    const Teuchos::RCP<DRT::Discretization> GetChildDiscretization() { return childdiscret_; }
+    Teuchos::RCP<DRT::Discretization> GetChildDiscretization() { return childdiscret_; }
     //! get node to node coupling in case of periodic boundary conditions (column and row version)
     Teuchos::RCP<std::map<int, std::vector<int>>> GetCoupledColNodesChildDiscretization()
     {
@@ -58,5 +60,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

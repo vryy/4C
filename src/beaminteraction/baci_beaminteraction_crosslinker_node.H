@@ -14,8 +14,10 @@
 #ifndef BACI_BEAMINTERACTION_CROSSLINKER_NODE_H
 #define BACI_BEAMINTERACTION_CROSSLINKER_NODE_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration ...
 namespace MAT
@@ -29,14 +31,14 @@ namespace CROSSLINKING
   /*!
   \brief A class for a crosslinker derived from DRT::Node
   */
-  class CrosslinkerNodeType : public DRT::ParObjectType
+  class CrosslinkerNodeType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "CrosslinkerNodeType"; };
+    std::string Name() const override { return "CrosslinkerNodeType"; };
 
     static CrosslinkerNodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CrosslinkerNodeType instance_;
@@ -67,8 +69,7 @@ namespace CROSSLINKING
      \brief Destructor
 
      */
-    virtual ~CrosslinkerNodeDataContainer() { return; }
-
+    virtual ~CrosslinkerNodeDataContainer() = default;
     /*!
      \brief Pack this class so that it can be communicated
 
@@ -77,7 +78,7 @@ namespace CROSSLINKING
      class exists.
 
      */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -162,7 +163,7 @@ namespace CROSSLINKING
     /*!
      \brief The Discretization is a friend of MortarNode
      */
-    friend class ::DRT::Discretization;
+    friend class BACI::DRT::Discretization;
 
     //@}
 
@@ -176,7 +177,7 @@ namespace CROSSLINKING
     \param owner  (in): Owner of this node.
 
     */
-    CrosslinkerNode(int id, const double* coords, const int owner);
+    CrosslinkerNode(int id, const std::vector<double>& coords, const int owner);
 
     /*!
     \brief Copy Constructor
@@ -190,13 +191,9 @@ namespace CROSSLINKING
      \brief Deep copy the derived class and return pointer to it
 
      */
-    virtual CROSSLINKING::CrosslinkerNode* Clone() const;
+    CROSSLINKING::CrosslinkerNode* Clone() const override;
 
-    /*!
-    \brief Destructor
 
-    */
-    virtual ~CrosslinkerNode() { return; }
 
     /*!
      \brief Return unique ParObject id
@@ -205,7 +202,7 @@ namespace CROSSLINKING
      top of lib/parobject.H.
 
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return CrosslinkerNodeType::Instance().UniqueParObjectId();
     }
@@ -216,7 +213,7 @@ namespace CROSSLINKING
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -224,7 +221,7 @@ namespace CROSSLINKING
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -233,7 +230,7 @@ namespace CROSSLINKING
     /*!
      \brief Print this MortarNode
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
 
     /*!
@@ -297,6 +294,8 @@ namespace CROSSLINKING
 }  // namespace CROSSLINKING
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& cnode);
+std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node);
 
-#endif  // BEAMINTERACTION_CROSSLINKER_NODE_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_BEAMINTERACTION_CROSSLINKER_NODE_H

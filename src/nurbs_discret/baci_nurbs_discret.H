@@ -17,6 +17,8 @@
 #include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret_knotvector.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -48,12 +50,6 @@ namespace DRT
       \param comm (in): An epetra comm object associated with this discretization
       */
       NurbsDiscretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
-
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~NurbsDiscretization() = default;
 
       /*!
       \brief Set a knot vector
@@ -173,8 +169,6 @@ namespace DRT
       /// constructor
       DbcNurbs() = default;
 
-      /// destructor
-      virtual ~DbcNurbs() = default;
 
      protected:
       /** \brief Evaluate the NURBS DBCs
@@ -224,7 +218,7 @@ namespace DRT
       \param elerhs       element right hand side to be filled
 
       */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<DRT::Element> ele,
           const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
@@ -245,7 +239,7 @@ namespace DRT
       \param elerhs       element right hand side to be filled
 
       */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT::Element> ele,
           const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
@@ -255,5 +249,7 @@ namespace DRT
     };  // class DbcNurbs
   }     // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // NURBS_DISCRET_H

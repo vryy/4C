@@ -1,5 +1,5 @@
 # temporarily disable our own finders for module lookup
-list(REMOVE_ITEM CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+list(REMOVE_ITEM CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.10.0")
   set(HDF5_PREFER_PARALLEL true)
@@ -34,4 +34,4 @@ if(HDF5_FOUND)
 endif()
 
 # re-enable our own finders
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)

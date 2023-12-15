@@ -12,6 +12,8 @@
 #include "baci_contact_interface.H"
 #include "baci_inpar_contact.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CONTACT
 {
@@ -25,14 +27,6 @@ namespace CONTACT
     CoTSIInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact);
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~CoTSIInterface() {}
-
-
 
     enum LinDM_X_mode
     {
@@ -158,5 +152,7 @@ namespace CONTACT
 
 
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_TSI_INTERFACE_H

@@ -26,6 +26,8 @@
 #include <MLAPI_Workspace.h>
 #include <stdio.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
@@ -438,9 +440,8 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
     if (ML_solver == -1)
       dserror("If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
 
-    Teuchos::RCP<CORE::LINALG::Solver> solver =
-        Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(ML_solver),
-            discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+        DRT::Problem::Instance()->SolverParams(ML_solver), discret_->Comm()));
 
     if (solver == Teuchos::null)
       dserror("The solver WSS_ML_AGR_SOLVER in the FLUID DYNMAICS section is not a valid solver!");
@@ -695,7 +696,8 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
       for (std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end();
            ++actnode)
       {
-        const CORE::LINALG::Matrix<3, 1> x((*actnode)->X(), false);  // pointer to nodal coordinates
+        const CORE::LINALG::Matrix<3, 1> x(
+            (*actnode)->X().data(), false);  // pointer to nodal coordinates
         const Epetra_BlockMap& rowdofmap = trueresidual->Map();
         const std::vector<int> dof = dis->Dof(*actnode);
 
@@ -1145,3 +1147,5 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
   return projected_velgrad;
 }
+
+BACI_NAMESPACE_CLOSE

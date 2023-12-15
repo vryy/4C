@@ -17,6 +17,8 @@
 #include "baci_inpar_fluid.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -27,38 +29,35 @@ namespace DRT
       \author laspina
       \date 08/19
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcHDGWeakComp : public FluidEleInterface
     {
      public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
       //! mixed variable dimension according to Voigt notation
       static const unsigned int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
 
       ///! number of faces on element
-      static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
 
-      virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints)
+      int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) override
       {
         dserror("Not implemented!");
         return 1;
       }
 
-      virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
+      int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
-          const CORE::GEO::CUT::plain_volumecell_set& cells)
+          const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
         dserror("Not implemented!");
         return 1;
@@ -69,11 +68,12 @@ namespace DRT
       /*!
         Interface function for supporting methods of the element
        */
-      virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
         \brief calculate dissipation of various terms (evaluation of turbulence models)
@@ -94,10 +94,10 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
-      virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec,
-          const CORE::DRT::UTILS::GaussIntegration&)
+          const CORE::DRT::UTILS::GaussIntegration&) override
       {
         return ComputeError(ele, params, mat, discretization, lm, elevec);
       }
@@ -128,25 +128,25 @@ namespace DRT
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false) override;
 
-      virtual int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
+      int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -158,14 +158,14 @@ namespace DRT
               bintpoints,                                     ///< boundary integration points
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
           Teuchos::ParameterList& params                      ///< parameter list
-      )
+          ) override
       {
         dserror("Not implemented!");
         return 1;
       }
 
       /// Evaluate the XFEM cut element
-      virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -173,14 +173,14 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
-          const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false)
+          const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override
       {
         dserror("Not implemented!");
         return 1;
       }
 
 
-      virtual void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+      void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -202,13 +202,13 @@ namespace DRT
               elevec1_epetra,                      ///< local element vector of intersected element
           CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
           const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
-      )
+          ) override
       {
         dserror("Not implemented!");
         return;
       }
 
-      virtual void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+      void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,        ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -227,28 +227,26 @@ namespace DRT
               side_coupling,                       ///< side coupling matrices
           CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
-      )
+          ) override
       {
         dserror("Not implemented!");
         return;
       }
 
-      virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints)
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) override
       {
         dserror("Not implemented!");
         return;
       }
 
-      virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
-          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra)
+      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override
       {
         dserror("Not implemented!");
         return;
       }
-
-      virtual ~FluidEleCalcHDGWeakComp() {}
 
       /// Singleton access method
       static FluidEleCalcHDGWeakComp<distype>* Instance(
@@ -278,12 +276,12 @@ namespace DRT
 
         /// compute material matrix
         void ComputeMaterialMatrix(const Teuchos::RCP<MAT::Material>& mat,
-            const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseMatrix& D_L,
-            CORE::LINALG::SerialDenseMatrix& D_w);
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseMatrix& DL,
+            CORE::LINALG::SerialDenseMatrix& Dw);
 
         /// compute interior residual
         void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
-            const std::vector<double>& valnp, const std::vector<double>& valn,
+            const std::vector<double>& valnp, const std::vector<double>& accel,
             const std::vector<double>& alevel);
 
         /// compute face residual
@@ -442,7 +440,7 @@ namespace DRT
 
       /// evaluate density and momentum
       void EvaluateDensityMomentum(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
-          const double t, double& r, CORE::LINALG::Matrix<nsd_, 1>& u) const;
+          const double t, double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const;
 
       /// local data object
       Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
@@ -461,5 +459,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

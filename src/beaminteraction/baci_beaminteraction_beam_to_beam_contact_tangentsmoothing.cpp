@@ -11,7 +11,10 @@
 #include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_lib_element.H"
 #include "baci_lib_node.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -148,8 +151,7 @@ double BEAMINTERACTION::B3TANGENTSMOOTHING::GetEleLength(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::SerialDenseMatrix BEAMINTERACTION::B3TANGENTSMOOTHING::GetNodalDerivatives(
-    const int node, const int nnode, const double length,
-    const DRT::Element::DiscretizationType distype)
+    const int node, const int nnode, const double length, const CORE::FE::CellType distype)
 {
   CORE::LINALG::SerialDenseMatrix deriv1(1, nnode);
 
@@ -167,3 +169,5 @@ CORE::LINALG::SerialDenseMatrix BEAMINTERACTION::B3TANGENTSMOOTHING::GetNodalDer
 
   return deriv1;
 }
+
+BACI_NAMESPACE_CLOSE

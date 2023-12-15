@@ -11,9 +11,11 @@
 #define BACI_BEAMCONTACT_BEAM3CONTACTINTERFACE_H
 
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
+
+BACI_NAMESPACE_OPEN
 
 
 namespace CONTACT
@@ -46,8 +48,7 @@ namespace CONTACT
     /*!
     \brief Destructor
     */
-    virtual ~Beam3contactinterface() {}
-
+    virtual ~Beam3contactinterface() = default;
     //@}
 
     //! @name Access methods
@@ -128,11 +129,11 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    virtual const std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() = 0;
+    virtual std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() = 0;
 
-    virtual const std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() = 0;
+    virtual std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() = 0;
 
-    virtual const CORE::LINALG::SerialDenseVector GetNormal() = 0;
+    virtual CORE::LINALG::SerialDenseVector GetNormal() = 0;
 
     virtual CORE::LINALG::Matrix<3, 1, TYPE>* GetNormalOld() = 0;
 
@@ -214,5 +215,7 @@ namespace CONTACT
 
   };  // class Beam3contactinterface
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BEAMCONTACT_BEAM3CONTACTINTERFACE_H

@@ -20,6 +20,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                                |
  *---------------------------------------------------------------------*/
@@ -44,16 +46,12 @@ namespace ADAPTER
     //! @name Construction / Destruction
     //@{
     /*!
-    \brief Empty constructor
-
+    \brief Constructor.
     */
-    CouplingEhlMortar();
+    CouplingEhlMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
+        Teuchos::ParameterList contact_dynamic_params,
+        CORE::FE::ShapeFunctionType shape_function_type);
 
-    /*!
-    \brief Virtual destructor
-
-    */
-    virtual ~CouplingEhlMortar(){};
     //@}
 
 
@@ -63,20 +61,20 @@ namespace ADAPTER
     \brief Read Mortar Condition
 
     */
-    virtual void ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
+    void ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
         std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements);
+        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements) override;
 
     /*!
     \brief initialize routine
 
     */
-    virtual void Setup(Teuchos::RCP<DRT::Discretization> masterdis,
+    void Setup(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
-        const std::string& couplingcond);
+        const std::string& couplingcond) override;
 
     /// perform interface integration
     virtual void Integrate(Teuchos::RCP<const Epetra_Vector> disp, const double dt);
@@ -145,32 +143,32 @@ namespace ADAPTER
    private:
     //! @name Unwanted parent functions
     //@{
-    virtual Teuchos::RCP<Epetra_Vector> Gap()
+    Teuchos::RCP<Epetra_Vector> Gap() override
     {
       dserror("stop");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> NMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> NMatrix() override
     {
       dserror("stop");
       return Teuchos::null;
     }
-    virtual void Evaluate() { dserror("stop"); }
-    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idisp) { dserror("stop"); }
-    virtual void EvaluateWithMeshRelocation(
+    void Evaluate() override { dserror("stop"); }
+    void Evaluate(Teuchos::RCP<Epetra_Vector> idisp) override { dserror("stop"); }
+    void EvaluateWithMeshRelocation(
         Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
         Teuchos::RCP<DRT::Discretization> aledis,    ///< ALE discretization
         Teuchos::RCP<Epetra_Vector>& idisp,          ///< ALE displacements
         const Epetra_Comm& comm,                     ///< communicator
         bool slavewithale                            ///< flag defining if slave is ALE
-    )
+        ) override
     {
       dserror("stop");
     }
 
-    virtual void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>&
+    void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>&
             intcells  //!< vector of mortar integration cells
-    )
+        ) override
     {
       dserror("stop");
     }
@@ -234,5 +232,7 @@ namespace ADAPTER
     double regularization_compliance_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_COUPLING_EHL_MORTAR_H

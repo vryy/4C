@@ -17,12 +17,13 @@
 
 #include <Teuchos_RCP.hpp>
 
-
 // Forward declarations.
 class Epetra_Map;
 class Epetra_MultiVector;
 class Epetra_Vector;
 class Epetra_FEVector;
+
+BACI_NAMESPACE_OPEN
 
 namespace FBI
 {
@@ -180,7 +181,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
      * the Lagrange GID. on the ranks where they are used.
-     * @param disp (in) Global displacement vector.
+     * @param vel (in) Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
     Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> vel) const;
@@ -296,5 +297,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

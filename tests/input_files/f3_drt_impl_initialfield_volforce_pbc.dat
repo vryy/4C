@@ -39,8 +39,6 @@ TIMESTEP                        0.1
 ALPHA_M                         0.833333333333330
 ALPHA_F                         0.666666666666660
 GAMMA                           0.666666666666667
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                1.0
 SIMPLER                         no
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-9

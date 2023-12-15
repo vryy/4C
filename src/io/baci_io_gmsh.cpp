@@ -11,7 +11,6 @@
 
 #include "baci_io_gmsh.H"
 
-#include "baci_discretization_geometry_intersection_service.H"
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
@@ -20,6 +19,8 @@
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"  // CORE::LINALG::Export
+
+BACI_NAMESPACE_OPEN
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -36,7 +37,7 @@ void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
@@ -86,7 +87,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
@@ -160,7 +161,7 @@ void IO::GMSH::ScalarElementFieldToGmsh(const Teuchos::RCP<DRT::Discretization> 
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
@@ -207,7 +208,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
@@ -272,7 +273,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
@@ -333,7 +334,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
@@ -393,7 +394,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
@@ -484,7 +485,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = ele->NumNode();
     const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
@@ -532,7 +533,7 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discret->lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     const int numnode = ele->NumNode();
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
@@ -605,7 +606,7 @@ void IO::GMSH::elementAtInitialPositionToStream(
 {
   const DRT::Node* const* nodes = ele->Nodes();
 
-  const DRT::Element::DiscretizationType distype = ele->Shape();
+  const CORE::FE::CellType distype = ele->Shape();
   const int numnode = distypeToGmshNumNode(distype);
 
   s.setf(std::ios::scientific, std::ios::floatfield);
@@ -615,7 +616,7 @@ void IO::GMSH::elementAtInitialPositionToStream(
   for (int i = 0; i < numnode; ++i)
   {
     const DRT::Node* node = nodes[i];
-    const double* x = node->X();
+    const auto& x = node->X();
     s << x[0] << ",";
     s << x[1] << ",";
     s << x[2];
@@ -762,3 +763,5 @@ std::string IO::GMSH::GetFileName(const std::string& filename_base,
 
   return filename.str();
 }
+
+BACI_NAMESPACE_CLOSE

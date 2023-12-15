@@ -13,6 +13,8 @@ material in terms of the first Cauchy-Green invariant
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ELASTIC
@@ -94,7 +96,7 @@ namespace MAT
           CORE::LINALG::Matrix<3, 1>&
               dPmodI,  ///< first derivative with respect to modified invariants
           CORE::LINALG::Matrix<6, 1>&
-              ddmodPII,  ///< second derivative with respect to modified invariants
+              ddPmodII,  ///< second derivative with respect to modified invariants
           const CORE::LINALG::Matrix<3, 1>&
               modinv,  ///< modified invariants of right Cauchy-Green tensor
           int gp,      ///< Gauss point
@@ -121,5 +123,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_ISO1POW_H

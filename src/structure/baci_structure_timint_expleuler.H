@@ -12,6 +12,8 @@
 /* headers */
 #include "baci_structure_timint_expl.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
@@ -40,9 +42,6 @@ namespace STR
         Teuchos::RCP<IO::DiscretizationWriter> output          //!< the output
     );
 
-    //! Empty constructor
-    TimIntExplEuler() : TimIntExpl() { ; }
-
     //! Copy constructor
     TimIntExplEuler(const TimIntExplEuler& old) : TimIntExpl(old) { ; }
 
@@ -67,9 +66,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
+    void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
+        const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+        Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -89,10 +88,7 @@ namespace STR
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
-
-    //! Destructor
-    virtual ~TimIntExplEuler() { ; };
+    void Setup() override;
 
     //@}
 
@@ -100,19 +96,19 @@ namespace STR
     //@{
 
     //! Resize \p TimIntMStep<T> multi-step quantities
-    virtual void ResizeMStep();
+    void ResizeMStep() override;
 
     //! Do time integration of single step
-    virtual int IntegrateStep();
+    int IntegrateStep() override;
 
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awaiting the next time step.
-    void UpdateStepState();
+    void UpdateStepState() override;
 
     //! Update Element
-    void UpdateStepElement();
+    void UpdateStepElement() override;
 
     //@}
 
@@ -120,17 +116,17 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum INPAR::STR::DynamicType MethodName() const { return INPAR::STR::dyna_expleuler; }
+    enum INPAR::STR::DynamicType MethodName() const override { return INPAR::STR::dyna_expleuler; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual int MethodSteps() const { return 1; }
+    int MethodSteps() const override { return 1; }
 
     //! Give local order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracyDis() const { return 1; }
+    int MethodOrderOfAccuracyDis() const override { return 1; }
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const { return 1; }
+    int MethodOrderOfAccuracyVel() const override { return 1; }
 
     /*! \brief Return linear error coefficient of displacements
      *
@@ -139,7 +135,7 @@ namespace STR
      *  e \approx \frac{1}{2}\Delta t_n^2 \ddot{d_n} + HOT(\Delta t_n^3)
      *  \f]
      */
-    virtual double MethodLinErrCoeffDis() const { return 0.5; }
+    double MethodLinErrCoeffDis() const override { return 0.5; }
 
     /*! \brief Return linear error coefficient of velocities
      *
@@ -148,7 +144,7 @@ namespace STR
      *  e \approx \frac{1}{2}\Delta t_n^2 \dddot{d_n} + HOT(\Delta t_n^3)
      *  \f]
      */
-    virtual double MethodLinErrCoeffVel() const { return 0.5; }
+    double MethodLinErrCoeffVel() const override { return 0.5; }
 
     //@}
 
@@ -156,20 +152,20 @@ namespace STR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> Fext() override { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew()
+    Teuchos::RCP<Epetra_Vector> FextNew() override
     {
       dserror("FextNew() not available in AB2");
       return Teuchos::null;
     }
 
     //! Read and set restart for forces
-    void ReadRestartForce();
+    void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -199,4 +195,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_EXPLEULER_H

@@ -20,6 +20,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace IO
 {
@@ -67,11 +69,6 @@ namespace UTILS
         CORE::LINALG::Solver& solver,       ///< Solver to solve linear subproblem in iteration
         Teuchos::RCP<UTILS::MOR> mor        ///< model order reduction
     );
-    /*!
-        \brief Destructor
-
-     */
-    ~Cardiovascular0DManager() { return; };
 
     /*!
       \brief Assemble cardiovascular0d stiffness and rhs contributions to full coupled problem
@@ -277,9 +274,9 @@ namespace UTILS
 
 
     int Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Epetra_Vector> dispinc,            ///< displacement increment to compute
-        const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
-        const double k_ptc                              ///< for 3D-0D PTC
+        Teuchos::RCP<Epetra_Vector> dispinc,          ///< displacement increment to compute
+        const Teuchos::RCP<Epetra_Vector> rhsstruct,  ///< standard right hand side
+        const double k_ptc                            ///< for 3D-0D PTC
     );
 
     Teuchos::RCP<Cardiovascular0D> GetCardvasc0D4ElementWindkessel()
@@ -412,4 +409,6 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
+BACI_NAMESPACE_CLOSE
+
 #endif  // CARDIOVASCULAR0D_MANAGER_H

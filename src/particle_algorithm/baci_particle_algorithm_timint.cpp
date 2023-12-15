@@ -10,6 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_timint.H"
 
+#include "baci_inpar_parameterlist_utils.H"
 #include "baci_io.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_algorithm_dirichlet_bc.H"
@@ -21,6 +22,8 @@
 #include "baci_particle_rigidbody_interface.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -471,3 +474,5 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
   if (dirichletboundarycondition_)
     dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, false, true, false);
 }
+
+BACI_NAMESPACE_CLOSE

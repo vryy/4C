@@ -13,10 +13,13 @@
 
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace BEAMINTERACTION
 {
@@ -52,8 +55,8 @@ namespace BEAMINTERACTION
     double GetEleLength(const CORE::LINALG::SerialDenseMatrix& elepos, const int nright);
 
     //! \brief Get the nodal derivative matrix
-    CORE::LINALG::SerialDenseMatrix GetNodalDerivatives(const int node, const int nnode,
-        double length, const DRT::Element::DiscretizationType distype);
+    CORE::LINALG::SerialDenseMatrix GetNodalDerivatives(
+        const int node, const int nnode, double length, const CORE::FE::CellType distype);
 
     //! \brief Get the nodal tangent matrix
     template <int numnodes>
@@ -81,7 +84,7 @@ namespace BEAMINTERACTION
         for (int j = 0; j < numnode1; j++) ele1pos(i, j) = ele1pos_linalg(3 * j + i);
 
       const double length_ele1 = GetEleLength(ele1pos, n_right1);
-      const DRT::Element::DiscretizationType distype1 = ele1->Shape();
+      const CORE::FE::CellType distype1 = ele1->Shape();
 
       // contribution of element
       for (int node = 1; node < numnode1 + 1; node++)
@@ -98,8 +101,7 @@ namespace BEAMINTERACTION
       // contribution of left neighbor of element
       if (neighbors1->GetLeftNeighbor() != nullptr)
       {
-        const DRT::Element::DiscretizationType distype_ele1l =
-            neighbors1->GetLeftNeighbor()->Shape();
+        const CORE::FE::CellType distype_ele1l = neighbors1->GetLeftNeighbor()->Shape();
         const int numnode_ele1l = neighbors1->GetLeftNeighbor()->NumNode();
         const int node_ele1l = neighbors1->GetLeftConNode() + 1;
 
@@ -133,8 +135,7 @@ namespace BEAMINTERACTION
       // contribution of right neighbor of element
       if (neighbors1->GetRightNeighbor() != nullptr)
       {
-        const DRT::Element::DiscretizationType distype_ele1r =
-            neighbors1->GetRightNeighbor()->Shape();
+        const CORE::FE::CellType distype_ele1r = neighbors1->GetRightNeighbor()->Shape();
         const int numnode_ele1r = neighbors1->GetRightNeighbor()->NumNode();
         const int node_ele1r = neighbors1->GetRightConNode() + 1;
 
@@ -192,5 +193,7 @@ namespace BEAMINTERACTION
 
   }  // namespace B3TANGENTSMOOTHING
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H

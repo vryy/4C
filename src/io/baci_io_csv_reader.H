@@ -11,6 +11,8 @@
 #include <sstream>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   /*!
@@ -32,5 +34,7 @@ namespace IO
   std::vector<std::vector<double>> ReadCsv(int number_of_columns, std::istream& csv_stream);
 
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

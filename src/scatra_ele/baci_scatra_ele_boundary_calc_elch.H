@@ -12,18 +12,19 @@
 
 #include "baci_scatra_ele_boundary_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     // forward declarations
     class ScaTraEleParameterElch;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElch;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElch : public ScaTraEleBoundaryCalc<distype, probdim>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
@@ -37,8 +38,6 @@ namespace DRT
       //! singleton access method
       // not needed, since class is purely virtual
 
-      //! destructor
-      virtual ~ScaTraEleBoundaryCalcElch() { return; };
 
 
      protected:
@@ -47,7 +46,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      virtual int EvaluateAction(DRT::FaceElement* ele,     //!< boundary element
+      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           SCATRA::BoundaryAction action,                    //!< action
@@ -57,7 +56,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! evaluate an electrode kinetics boundary condition
       virtual void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
@@ -136,4 +135,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcElch
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

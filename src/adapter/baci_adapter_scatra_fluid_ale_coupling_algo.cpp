@@ -17,6 +17,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const Epetra_Comm& comm,
@@ -36,20 +38,12 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const 
 /*----------------------------------------------------------------------*
 | Setup                                                     rauch 08/16 |
 *----------------------------------------------------------------------*/
-void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
+void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init()
 {
   // call Init() in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
 
   ale_ = Teuchos::rcp_dynamic_cast<AleFluidWrapper>(AleBaseAlgorithm::AleField(), true);
-
-  return;
 }
 
 
@@ -90,10 +84,6 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup()
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ADAPTER::ScaTraFluidAleCouplingAlgorithm::~ScaTraFluidAleCouplingAlgorithm() {}
 
 
 /*----------------------------------------------------------------------*/
@@ -172,3 +162,5 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidToAle
 {
   return icoupfa_->MasterToSlave(iv);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -11,6 +11,8 @@
 
 #include "baci_utils_local_newton.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   TEST(CoreUtilsLocalNewtonTest, NewtonScalar)
@@ -125,3 +127,4 @@ namespace
     EXPECT_NEAR(x.value_, -0.271887376775884, 1e-8);
   }
 }  // namespace
+BACI_NAMESPACE_CLOSE

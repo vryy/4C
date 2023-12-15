@@ -10,6 +10,7 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H
 #define BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H
 
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_bio.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -21,32 +22,36 @@
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
-
 // define Fad object for evaluation
 typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declaration
 class Epetra_MultiVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
   class Discretization;
-
-  namespace UTILS
-  {
-    class FunctionOfAnything;
-  }  // namespace UTILS
 }  // namespace DRT
 namespace MAT
 {
   class MatList;
   class Cnst_1d_art;
 }  // namespace MAT
-namespace CORE::LINALG
+namespace CORE
 {
-  class SerialDenseVector;
-  class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+  namespace LINALG
+  {
+    class SerialDenseVector;
+    class SerialDenseMatrix;
+  }  // namespace LINALG
+  namespace UTILS
+  {
+    class FunctionOfAnything;
+  }
+}  // namespace CORE
 namespace POROMULTIPHASESCATRA
 {
   class PoroMultiPhaseScatraArteryCouplingPairBase
@@ -148,16 +153,12 @@ namespace POROMULTIPHASESCATRA
   };
 
   //! the coupling pair
-  template <DRT::Element::DiscretizationType distypeArt,
-      DRT::Element::DiscretizationType distypeCont, int dim>
+  template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim>
   class PoroMultiPhaseScatraArteryCouplingPair : public PoroMultiPhaseScatraArteryCouplingPairBase
   {
    public:
     //! constructor
     PoroMultiPhaseScatraArteryCouplingPair();
-
-    //! destructor
-    virtual ~PoroMultiPhaseScatraArteryCouplingPair(){};
 
     //! Init
     void Init(std::vector<DRT::Element const*> elements,
@@ -241,13 +242,11 @@ namespace POROMULTIPHASESCATRA
    private:
     // static variables
     //! number of nodes of 1D artery element
-    static const unsigned numnodesart_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeArt>::numNodePerElement;
+    static const unsigned numnodesart_ = CORE::FE::num_nodes<distypeArt>;
     //! number of nodes of 2D/3D continuous element
-    static const unsigned numnodescont_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeCont>::numNodePerElement;
+    static const unsigned numnodescont_ = CORE::FE::num_nodes<distypeCont>;
     //! number of nodes of spatial dimensions
-    static const unsigned numdim_ = CORE::DRT::UTILS::DisTypeToDim<distypeCont>::dim;
+    static const unsigned numdim_ = CORE::FE::dim<distypeCont>;
 
     //! set time factor needed for evaluation of right hand side (function coupling) terms
     void SetTimeFacRhs(const double& arterydensity, Teuchos::RCP<MAT::MatList> contscatramat,
@@ -414,7 +413,7 @@ namespace POROMULTIPHASESCATRA
 
     //! evaluate function and its derivative
 
-    void EvaluateFunctionAndDeriv(const DRT::UTILS::FunctionOfAnything& funct,
+    void EvaluateFunctionAndDeriv(const CORE::UTILS::FunctionOfAnything& funct,
         const double& artpressnpAtGP, const std::vector<double>& artscalarnpAtGP,
         const std::vector<double>& scalarnpAtGP, double& functval, std::vector<double>& artderivs,
         std::vector<double>& contderivs);
@@ -470,12 +469,12 @@ namespace POROMULTIPHASESCATRA
         CORE::LINALG::SerialDenseMatrix& M_ele, CORE::LINALG::SerialDenseVector& Kappa_ele);
 
     //! fill the function vector
-    void FillFunctionVector(std::vector<const DRT::UTILS::FunctionOfAnything*>& my_funct_vec,
+    void FillFunctionVector(std::vector<const CORE::UTILS::FunctionOfAnything*>& my_funct_vec,
         const std::vector<int>& funct_vec, const std::vector<int>& scale_vec);
 
 
     //! initialize a function
-    void InitializeFunction(const DRT::UTILS::FunctionOfAnything& funct);
+    void InitializeFunction(const CORE::UTILS::FunctionOfAnything& funct);
 
     //! initialize names used in functions
     void InitializeFunctionNames();
@@ -667,10 +666,10 @@ namespace POROMULTIPHASESCATRA
     //! scale vector
     std::vector<std::vector<int>> scale_vec_;
     //! function vector
-    std::vector<std::vector<const DRT::UTILS::FunctionOfAnything*>> funct_vec_;
+    std::vector<std::vector<const CORE::UTILS::FunctionOfAnything*>> funct_vec_;
 
     //! diameter function
-    const DRT::UTILS::FunctionOfAnything* artdiam_funct_;
+    const CORE::UTILS::FunctionOfAnything* artdiam_funct_;
 
     //! string name used for scalars in function parser
     std::vector<std::string> scalarnames_;
@@ -726,5 +725,7 @@ namespace POROMULTIPHASESCATRA
 
 }  // namespace POROMULTIPHASESCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H

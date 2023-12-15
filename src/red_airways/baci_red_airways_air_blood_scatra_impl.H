@@ -18,6 +18,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_red_airways_elementbase.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -36,8 +38,7 @@ namespace DRT
       /// Empty constructor
       RedAirBloodScatraImplInterface() {}
       /// Empty destructor
-      virtual ~RedAirBloodScatraImplInterface() {}
-      /// Evaluate the element
+      virtual ~RedAirBloodScatraImplInterface() = default;  /// Evaluate the element
       virtual int Evaluate(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -70,7 +71,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material> material) = 0;
 
       /// Internal implementation class for acinus element
-      static RedAirBloodScatraImplInterface* Impl(DRT::ELEMENTS::RedAirBloodScatra* elem);
+      static RedAirBloodScatraImplInterface* Impl(DRT::ELEMENTS::RedAirBloodScatra* red_acinus);
     };
 
 
@@ -86,7 +87,7 @@ namespace DRT
       \date 01/09
     */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class RedAirBloodScatraImpl : public RedAirBloodScatraImplInterface
     {
      public:
@@ -94,20 +95,21 @@ namespace DRT
       explicit RedAirBloodScatraImpl();
 
       //! number of nodes
-      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::FE::num_nodes<distype>;
 
 
       /// Evaluate
       /*!
         The evaluate function for the general acinus case.
        */
-      virtual int Evaluate(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
+      int Evaluate(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material> mat) override;
 
       /*!
         \brief calculate element matrix and rhs
@@ -127,12 +129,13 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
           CORE::LINALG::SerialDenseMatrix& estif, CORE::LINALG::SerialDenseVector& eforce,
           Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, double time,
-          double dt);
+          double dt){};
 
 
-      virtual void EvaluateTerminalBC(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
+      void EvaluateTerminalBC(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
           DRT::Discretization& disctretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          Teuchos::RCP<MAT::Material> mat) override{};
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -148,34 +151,35 @@ namespace DRT
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      virtual void Initial(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
+      void Initial(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<const MAT::Material> material);
+          Teuchos::RCP<const MAT::Material> material) override;
 
       /*!
        \Essential functions to compute the results of essentail matrices
       */
-      virtual void CalcFlowRates(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
+      void CalcFlowRates(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen_strain_np,
           CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat);
+          Teuchos::RCP<MAT::Material> mat) override{};
 
       /*!
        \Essential functions to evaluate the coupled results
       */
-      virtual void GetCoupledValues(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
+      void GetCoupledValues(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material);
+          Teuchos::RCP<MAT::Material> material) override;
 
-      virtual void SolveBloodAirTransport(RedAirBloodScatra* ele,
-          CORE::LINALG::SerialDenseVector& dscatra, CORE::LINALG::SerialDenseVector& dvO2,
-          CORE::LINALG::SerialDenseVector& scatraAcinus, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material);
+      void SolveBloodAirTransport(RedAirBloodScatra* ele, CORE::LINALG::SerialDenseVector& dscatra,
+          CORE::LINALG::SerialDenseVector& dvO2, CORE::LINALG::SerialDenseVector& scatra_acinus,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<MAT::Material> material) override;
 
      private:
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // RED_AIRWAYS_AIR_BLOOD_SCATRA_IMPL_H

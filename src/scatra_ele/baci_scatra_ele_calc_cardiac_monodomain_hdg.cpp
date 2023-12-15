@@ -25,10 +25,12 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::ScaTraEleCalcHDGCardiacMonodomain(const int numdofpernode, const int numscal,
     const std::string& disname)
@@ -42,7 +44,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 /*----------------------------------------------------------------------*
  | singleton access method                               hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname, bool create)
@@ -77,7 +79,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  |  prepare material parameter                           hoermann 11/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterialsAll(
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
@@ -110,9 +112,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 
     shapes->Evaluate(*ele);
 
-    std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>
-        shapefcns(shapes->nqpoints_);
+    std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>> shapefcns(shapes->nqpoints_);
 
     for (std::size_t q = 0; q < shapes->nqpoints_; ++q)
     {
@@ -147,14 +147,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 /*----------------------------------------------------------------------*
  |  prepare material parameter                           hoermann 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterials(
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
-  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+  if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
     PrepareMaterialsTet(ele, material, k, difftensor);
   else
     PrepareMaterialsAll(ele, material, k, difftensor);
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 /*----------------------------------------------------------------------*
  |  prepare material parameter                           hoermann 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterialsTet(
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
@@ -193,19 +193,17 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   {
     actmat->ResetDiffusionTensor();
 
-    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-        intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
+    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+        SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
     const std::size_t numgp = intpoints.IP().nquad;
 
-    std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>
-        shapefcns(numgp);
+    std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>> shapefcns(numgp);
 
     CORE::LINALG::Matrix<probdim, 1> gp_coord(true);
     for (std::size_t q = 0; q < numgp; ++q)
     {
       // gaussian points coordinates
-      for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+      for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
         gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
       CORE::DRT::UTILS::shape_function<distype>(gp_coord, shapefcns[q]);
@@ -238,7 +236,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materials(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -257,7 +255,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materia
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                      hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyocard(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -287,15 +285,15 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 
   int nqpoints;
 
-  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+  if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
   {
     int deg = 0;
     if (this->shapes_->degree_ == 1)
       deg = 4 * this->shapes_->degree_;
     else
       deg = 3 * this->shapes_->degree_;
-    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-        intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
+    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+        SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
     nqpoints = intpoints.IP().nquad;
 
     if (nqpoints != actmat->GetNumberOfGP())
@@ -317,7 +315,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 
         gp_mat_alpha_[q] = intpoints.IP().qwgt[q];
         // gaussian points coordinates
-        for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+        for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
           mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
         polySpace_->Evaluate(mat_gp_coord, values_mat_gp_all_[q]);
@@ -355,7 +353,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 
         gp_mat_alpha_[q] = quadrature_->Weight(q);
         // gaussian points coordinates
-        for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+        for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
           mat_gp_coord(idim) = quadrature_->Point(q)[idim];
 
         polySpace_->Evaluate(mat_gp_coord, values_mat_gp_all_[q]);
@@ -411,7 +409,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 /*----------------------------------------------------------------------*
  |  Material Time Update                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpdateMaterial(
     const DRT::Element* ele  //!< the element we are dealing with
 )
@@ -460,7 +458,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
 /*----------------------------------------------------------------------*
  |  Get Material Internal State for Restart              hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMaterialInternalState(
     const DRT::Element* ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, DRT::Discretization& discretization)
@@ -501,7 +499,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMate
 /*----------------------------------------------------------------------*
  |  Set Material Internal State after Restart            hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMaterialInternalState(
     const DRT::Element* ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, DRT::Discretization& discretization)
@@ -538,12 +536,12 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMate
 /*----------------------------------------------------------------------*
  |  Project Material Field                               hoermann 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialField(
     const DRT::Element* ele  //!< the element we are dealing with
 )
 {
-  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+  if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
     return ProjectMaterialFieldTet(ele);
   else
     return ProjectMaterialFieldAll(ele);
@@ -553,7 +551,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 /*----------------------------------------------------------------------*
  |  Project Material Field                               hoermann 12/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialFieldAll(
     const DRT::Element* ele  //!< the element we are dealing with
 )
@@ -650,7 +648,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 /*----------------------------------------------------------------------*
  |  Project Material Field for Tet                       hoermann 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialFieldTet(
     const DRT::Element* ele  //!< the element we are dealing with
 )
@@ -680,10 +678,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   else
     degold = 3 * hdgele->DegreeOld();
 
-  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      intpoints_old(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(degold));
-  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
+  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints_old(
+      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(degold));
+  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
 
 
   std::vector<CORE::LINALG::SerialDenseVector> shape_gp_old(intpoints_old.IP().nquad);
@@ -697,7 +695,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     shape_gp_old[q].size(polySpace->Size());
 
     // gaussian points coordinates
-    for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+    for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
       mat_gp_coord(idim) = intpoints_old.IP().qxg[q][idim];
     polySpace->Evaluate(mat_gp_coord, shape_gp_old[q]);
   }
@@ -707,7 +705,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     shape_gp[q].size(polySpace->Size());
 
     // gaussian points coordinates
-    for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+    for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
       mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
     polySpace->Evaluate(mat_gp_coord, shape_gp[q]);
   }
@@ -780,26 +778,37 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
 // template classes
 // 1D elements
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::line2,1>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::line2,2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::line2,3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::line3,1>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::line2,1>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::line2,2>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::line2,3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::line3,1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::tri3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::tri3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::quad4, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::hex8, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::tet10, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::pyramid5, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

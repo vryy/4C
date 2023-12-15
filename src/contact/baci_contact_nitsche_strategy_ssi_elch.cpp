@@ -9,14 +9,17 @@
 
 #include "baci_contact_nitsche_strategy_ssi_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 void CONTACT::CoNitscheStrategySsiElch::Integrate(const CONTACT::ParamsInterface& cparams)
 {
   CONTACT::CoNitscheStrategy::Integrate(cparams);
 
-  fs_ = CreateRhsBlockPtr(DRT::UTILS::VecBlockType::elch);
-  kss_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::elch_elch);
-  ksd_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::elch_displ);
-  kds_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_elch);
+  fs_ = CreateRhsBlockPtr(CONTACT::VecBlockType::elch);
+  kss_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::elch_elch);
+  ksd_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::elch_displ);
+  kds_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_elch);
 }
+BACI_NAMESPACE_CLOSE

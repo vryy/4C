@@ -16,6 +16,11 @@ transform matrixes, vectors, ...
 
 #define COUP_MANAGER_DEBUG_OUT
 
+#ifndef BACI_FSI_XFEM_COUPLING_COMM_MANAGER_H
+#define BACI_FSI_XFEM_COUPLING_COMM_MANAGER_H
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -37,10 +42,6 @@ namespace CORE::ADAPTER
   class Coupling;
   class CouplingConverter;
 }  // namespace CORE::ADAPTER
-
-#ifndef BACI_FSI_XFEM_COUPLING_COMM_MANAGER_H
-#define BACI_FSI_XFEM_COUPLING_COMM_MANAGER_H
-
 
 namespace XFEM
 {
@@ -79,7 +80,7 @@ namespace XFEM
         int enddim = 3);
 
     //! virtual destructor to support polymorph destruction
-    virtual ~Coupling_Comm_Manager();
+    virtual ~Coupling_Comm_Manager() = default;
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
     //! RCP<const Epetra_Vector> vecA
@@ -149,5 +150,7 @@ namespace XFEM
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> fullextractor_;
   };
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

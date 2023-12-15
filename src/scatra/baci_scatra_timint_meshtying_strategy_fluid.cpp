@@ -14,6 +14,8 @@
 #include "baci_linalg_sparseoperator.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
@@ -153,3 +155,5 @@ void SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy()
 
   return;
 }  // SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy
+
+BACI_NAMESPACE_CLOSE

@@ -29,9 +29,11 @@ namespace
    * \brief Fill a discretization with the geometry for the unit test.
    */
   template <typename face_element_type>
-  void XtestSurfacePatchQuad4(const Teuchos::RCP<DRT::Discretization>& discret,
-      std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements_map)
+  void XtestSurfacePatchQuad4(const Teuchos::RCP<BACI::DRT::Discretization>& discret,
+      std::unordered_map<int, Teuchos::RCP<BACI::GEOMETRYPAIR::FaceElement>>& face_elements_map)
   {
+    using namespace BACI;
+
     // The order here is the following: First all x-values, then y-values and then z-values.
     std::vector<double> points = {1, 0.914608710081328, 0.613445400072412, 0.666666666666667, 1,
         0.914988288005194, 0.608832472629939, 0.666666666666667, 0.915722552019025,
@@ -92,7 +94,7 @@ namespace
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           coordinates[i_dim] = points[i_node + n_nodes_problem * i_dim];
 
-        new_node = Teuchos::rcp(new DRT::Node(i_node, coordinates.data(), 0));
+        new_node = Teuchos::rcp(new DRT::Node(i_node, coordinates, 0));
         discret->AddNode(new_node);
       }
     }

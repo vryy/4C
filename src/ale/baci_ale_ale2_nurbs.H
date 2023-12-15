@@ -16,6 +16,8 @@
 /* header inclusions */
 #include "baci_ale_ale2.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -25,19 +27,20 @@ namespace DRT
       class Ale2_NurbsType : public Ale2Type
       {
        public:
-        std::string Name() const { return "Ale2_NurbsType"; }
+        std::string Name() const override { return "Ale2_NurbsType"; }
 
         static Ale2_NurbsType& Instance();
 
-        virtual DRT::ParObject* Create(const std::vector<char>& data);
+        CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-        virtual Teuchos::RCP<DRT::Element> Create(
-            const std::string eletype, const std::string eledistype, const int id, const int owner);
+        Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+            const int id, const int owner) override;
 
-        virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+        Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-        virtual void SetupElementDefinition(
+        void SetupElementDefinition(
             std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+            override
         {
           // do nothing. Definition inserted by normal wall element.
         }
@@ -66,11 +69,6 @@ namespace DRT
         */
         Ale2Nurbs(const Ale2Nurbs& old);
 
-        /*!
-        \brief Destructor
-
-        */
-        virtual ~Ale2Nurbs();
 
 
         /*!
@@ -81,16 +79,16 @@ namespace DRT
 
         \return my parobject id
         */
-        virtual int UniqueParObjectId() const
+        int UniqueParObjectId() const override
         {
           return Ale2_NurbsType::Instance().UniqueParObjectId();
         }
 
 
         /// Print this element
-        void Print(std::ostream& os) const;
+        void Print(std::ostream& os) const override;
 
-        virtual DRT::ElementType& ElementType() const { return Ale2_NurbsType::Instance(); }
+        DRT::ElementType& ElementType() const override { return Ale2_NurbsType::Instance(); }
 
         /*!
         \brief Get shape type of element
@@ -98,13 +96,13 @@ namespace DRT
         \return nurbs4 or nurbs9
 
         */
-        virtual DiscretizationType Shape() const;
+        CORE::FE::CellType Shape() const override;
 
 
         /*!
         \brief Return number of lines of this element.
         */
-        virtual int NumLine() const
+        int NumLine() const override
         {
           if (NumNode() == 9 || NumNode() == 4)
           {
@@ -125,5 +123,7 @@ namespace DRT
   }    // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_ALE2_NURBS_H

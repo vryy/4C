@@ -16,6 +16,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | define static class member                                 sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
@@ -41,7 +43,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialSPHBoundary::CreateMateria
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-DRT::ParObject* MAT::ParticleMaterialSPHBoundaryType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ParticleMaterialSPHBoundaryType::Create(const std::vector<char>& data)
 {
   MAT::ParticleMaterialSPHBoundary* particlematsphboundary = new MAT::ParticleMaterialSPHBoundary();
   particlematsphboundary->Unpack(data);
@@ -69,9 +71,9 @@ MAT::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialSPHBoundary::Pack(DRT::PackBuffer& data) const
+void MAT::ParticleMaterialSPHBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -91,10 +93,7 @@ void MAT::ParticleMaterialSPHBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -116,3 +115,5 @@ void MAT::ParticleMaterialSPHBoundary::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

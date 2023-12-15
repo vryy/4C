@@ -17,6 +17,8 @@
 #include "baci_fluid_ele_boundary_parent_calc.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
@@ -41,7 +43,6 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
     case FLD::ba_calc_node_normal:
     case FLD::calc_node_curvature:
     case FLD::calc_surface_tension:
-    case FLD::conservative_outflow_bc:
     case FLD::calc_Neumann_inflow:
     case FLD::calc_pressure_bou_int:
     case FLD::center_of_mass_calc:
@@ -154,3 +155,5 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, Loc
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

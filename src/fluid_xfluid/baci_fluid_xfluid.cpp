@@ -12,6 +12,7 @@ interface
 
 #include "baci_fluid_xfluid.H"
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_elementhandle.H"
 #include "baci_cut_sidehandle.H"
@@ -30,15 +31,13 @@ interface
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_xfem.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_dofset_transparent_independent.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_krylov_projector.H"
 #include "baci_linalg_sparsematrix.H"
@@ -47,6 +46,7 @@ interface
 #include "baci_mat_list.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function.H"
 #include "baci_xfem_condition_manager.H"
 #include "baci_xfem_discretization_utils.H"
 #include "baci_xfem_edgestab.H"
@@ -57,6 +57,7 @@ interface
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor for basic XFluid class                     schott 03/12 |
@@ -2645,16 +2646,6 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
         }
         printf(")\n");
         printf("+------------+-------------+-------------+-------------+-------------+\n");
-
-        FILE* errfile = params_->get<FILE*>("err file", nullptr);
-        if (errfile != nullptr)
-        {
-          fprintf(errfile,
-              "fluid solve:   %3d/%3d   vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
-              "pinc=%10.3E\n",
-              itnum, itemax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-              incprenorm_L2_ / prenorm_L2_);
-        }
       }
     }
     else  // if not yet converged
@@ -2683,16 +2674,6 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
       printf("+---------------------------------------------------------------+\n");
       printf("|            >>>>>> not converged in itemax steps!              |\n");
       printf("+---------------------------------------------------------------+\n");
-
-      FILE* errfile = params_->get<FILE*>("err file", nullptr);
-      if (errfile != nullptr)
-      {
-        fprintf(errfile,
-            "fluid unconverged solve:   %3d/%3d   vres=%10.3E  pres=%10.3E  "
-            "vinc=%10.3E  pinc=%10.3E\n",
-            itnum, itemax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-            incprenorm_L2_ / prenorm_L2_);
-      }
     }
   }
 
@@ -4118,18 +4099,18 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
 
   // ---------------------------------------------- setup solver
 
-  Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
+  Teuchos::ParameterList solverparams;
 
   // use iterative solver
-  solverparams->set("solver", "belos");
-  Teuchos::ParameterList& solverlist = solverparams->sublist("Belos Parameters");
+  solverparams.set("solver", "belos");
+  Teuchos::ParameterList& solverlist = solverparams.sublist("Belos Parameters");
   solverlist.set("Solver Type", "GMRES");
   solverlist.set<double>("Convergence Tolerance", 1.0e-12);
   solverlist.set<int>("reuse", 0);
-  solverparams->sublist("IFPACK Parameters");
+  solverparams.sublist("IFPACK Parameters");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver_gp = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver_gp =
+      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret_->Comm(), false));
 
   // ---------------------------------------------- new matrix and vectors
 
@@ -4457,8 +4438,8 @@ void FLD::XFluid::SetInitialFlowField(
           int gid = nodedofset[dof];
 
           double initialval = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), time_, dof % 4);
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  .Evaluate(lnode->X().data(), time_, dof % 4);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
         }
       }
@@ -5476,3 +5457,5 @@ void FLD::XFluid::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> 
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -24,6 +24,8 @@ namespace Teuchos
   class ParameterList;
 }  // namespace Teuchos
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace TIMINT
@@ -425,11 +427,11 @@ namespace ADAPTER
     Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override = 0;
 
     /// access the desired model evaluator (read-only)
-    [[nodiscard]] virtual const ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
+    [[nodiscard]] virtual const BACI::STR::MODELEVALUATOR::Generic& ModelEvaluator(
         INPAR::STR::ModelType mtype) const = 0;
 
     /// access the desired model evaluator (read and write)
-    ::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override = 0;
+    BACI::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override = 0;
 
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization() override = 0;
@@ -438,7 +440,7 @@ namespace ADAPTER
     bool HaveConstraint() override = 0;
 
     /// get constraint manager defined in the structure
-    const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override = 0;
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
     INPAR::STR::STC_Scale GetSTCAlgo() override = 0;
@@ -447,7 +449,7 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override = 0;
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override = 0;
 
     /// create result test for encapsulated structure algorithm
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override = 0;
@@ -474,7 +476,7 @@ namespace ADAPTER
     }
 
     /// get SpringDashpot manager defined in the structure
-    const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       dserror("This function seems to be unused!");
       return Teuchos::null;
@@ -554,7 +556,7 @@ namespace ADAPTER
      *
      *  \date 11/16 */
     void RegisterModelEvaluator(
-        const std::string name, Teuchos::RCP<::STR::MODELEVALUATOR::Generic> me);
+        const std::string name, Teuchos::RCP<BACI::STR::MODELEVALUATOR::Generic> me);
 
     /// structural field solver
     Teuchos::RCP<Structure> StructureField() { return str_wrapper_; }
@@ -624,27 +626,28 @@ namespace ADAPTER
 
     /// Set different time integrator specific parameters in the different parameter lists
     virtual void SetParams(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
-        Teuchos::ParameterList& timeadaptivity);
+        Teuchos::ParameterList& time_adaptivity_params);
 
     /// Create, initialize and setup the global state data container
-    virtual void SetGlobalState(Teuchos::RCP<::STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-        const Teuchos::RCP<const ::STR::TIMINT::BaseDataSDyn>& datasdyn_ptr);
+    virtual void SetGlobalState(
+        Teuchos::RCP<BACI::STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
+        const Teuchos::RCP<const BACI::STR::TIMINT::BaseDataSDyn>& datasdyn_ptr);
 
     /// Create, initialize and setup the time integration strategy object
-    virtual void SetTimeIntegrationStrategy(Teuchos::RCP<::STR::TIMINT::Base>& ti_strategy,
-        const Teuchos::RCP<::STR::TIMINT::BaseDataIO>& dataio,
-        const Teuchos::RCP<::STR::TIMINT::BaseDataSDyn>& datasdyn,
-        const Teuchos::RCP<::STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
+    virtual void SetTimeIntegrationStrategy(Teuchos::RCP<BACI::STR::TIMINT::Base>& ti_strategy,
+        const Teuchos::RCP<BACI::STR::TIMINT::BaseDataIO>& dataio,
+        const Teuchos::RCP<BACI::STR::TIMINT::BaseDataSDyn>& datasdyn,
+        const Teuchos::RCP<BACI::STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
         const int& restart);
 
     /// set the final structure time integrator object
     virtual void SetStructureWrapper(const Teuchos::ParameterList& ioflags,
         const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
-        const Teuchos::ParameterList& timeadaptivity,
-        Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
+        const Teuchos::ParameterList& time_adaptivity_params,
+        Teuchos::RCP<BACI::STR::TIMINT::Base> ti_strategy);
 
     /// create the time integrator wrapper
-    void CreateWrapper(Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
+    void CreateWrapper(Teuchos::RCP<BACI::STR::TIMINT::Base> ti_strategy);
 
    protected:
     /// structural field solver
@@ -666,5 +669,7 @@ namespace ADAPTER
     bool issetup_;
   };  // class StructureBaseAlgorithmNew
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_STR_STRUCTURE_NEW_H

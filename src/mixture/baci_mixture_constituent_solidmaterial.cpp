@@ -18,6 +18,8 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_SolidMaterial::MixtureConstituent_SolidMaterial(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -62,7 +64,7 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_SolidMaterial::MaterialType
   return INPAR::MAT::mix_solid_material;
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::PackConstituent(DRT::PackBuffer& data) const
+void MIXTURE::MixtureConstituent_SolidMaterial::PackConstituent(CORE::COMM::PackBuffer& data) const
 {
   // pack constituent data
   MixtureConstituent::PackConstituent(data);
@@ -70,7 +72,7 @@ void MIXTURE::MixtureConstituent_SolidMaterial::PackConstituent(DRT::PackBuffer&
   // add the matid of the Mixture_SolidMaterial
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  DRT::ParObject::AddtoPack(data, matid);
+  CORE::COMM::ParObject::AddtoPack(data, matid);
 
   // pack data of the solid material
   material_->Pack(data);
@@ -88,7 +90,7 @@ void MIXTURE::MixtureConstituent_SolidMaterial::UnpackConstituent(
 
   // extract the matid of the Mixture_SolidMaterial
   int matid;
-  DRT::ParObject::ExtractfromPack(position, data, matid);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, matid);
 
   // recover the params_ of the Mixture_SolidMaterial
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
@@ -120,7 +122,7 @@ void MIXTURE::MixtureConstituent_SolidMaterial::UnpackConstituent(
     // solid material packed: 1. the data size, 2. the packed data of size sm
     // ExtractFromPack extracts a sub_vec of size sm from data and updates the position vector
     std::vector<char> sub_vec;
-    DRT::ParObject::ExtractfromPack(position, data, sub_vec);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, sub_vec);
     material_->Unpack(sub_vec);
   }
 }
@@ -148,14 +150,15 @@ void MIXTURE::MixtureConstituent_SolidMaterial::Evaluate(const CORE::LINALG::Mat
   material_->Evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::RegisterVtkOutputDataNames(
+void MIXTURE::MixtureConstituent_SolidMaterial::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  material_->RegisterVtkOutputDataNames(names_and_size);
+  material_->RegisterOutputDataNames(names_and_size);
 }
 
-bool MIXTURE::MixtureConstituent_SolidMaterial::EvaluateVtkOutputData(
+bool MIXTURE::MixtureConstituent_SolidMaterial::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
-  return material_->EvaluateVtkOutputData(name, data);
+  return material_->EvaluateOutputData(name, data);
 }
+BACI_NAMESPACE_CLOSE

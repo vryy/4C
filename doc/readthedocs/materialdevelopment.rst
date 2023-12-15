@@ -1,7 +1,7 @@
 .. _`materialdevelopment`:
 
 Development of material models
-===================================
+-------------------------------
 
 For the definition of a material model, one has to put information at a number of places.
 A detailed description of the methods, attributes, files, and directories where new code is needed, is given in the following.
@@ -14,7 +14,7 @@ The material model shall get a generic name ``myNewMaterial`` here.
    but some methods may be different. There might be separate sections for the different material classes in the future.
 
 Input reader for the material model
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The main input read is located in ``src/inpar/inpar_validmaterials.cpp``.
 Here, the input for the material including all mandatory and optional parameters, is defined. 
@@ -22,7 +22,7 @@ Parameters that do not appear here, are not recognized.
 A description and default values (for optional parameters) can (and should!) be defined here as well.
 
 Definition of the material model as an enumeration item
--------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The main purpose of the file ``src/inpar/inpar_material.H`` is to provide the Enum list ``MaterialType`` of all material laws existing in BACI within the namespace ``INPAT::MAT``.
 Thus, for each new material model, one has to add a new item in the enum list.
@@ -35,15 +35,14 @@ For the example mentioned above the enum item would be
 The material models are in general in alphabetical order, so, please, put the  new material model to the correct place.
 
 Definition of the classes needed for the new material
--------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A new file needs to be created: ``/src/mat/mat_<matname>.cpp`` (here: ``mat_mynewmaterial.cpp``, again all lowercase),
 including the corresponding header file.
 
 All material related classes are defined in this directory, within the namespace ``MAT``.
 
-Definition of a material parameter class
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Definition of a material parameter class**
 
 Define the class for Material Parameters in the namespace ``MAT::PAR`` as 
 
@@ -56,14 +55,13 @@ Here we need the methods
 -	Constructor ``MyNewMaterial(Teuchos::RCP<MAT::PAR::Material> matdata)``
 -	``Teuchos::RCP<MAT::Material> CreateMaterial()``
 
-Definition of the material type class
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Definition of the material type class**
 
 Here the material type class is generated within the namespace ``MAT`` as 
 
 ::
 
-  class MyNewMaterialType : public DRT::ParObjectType
+  class MyNewMaterialType : public CORE::COMM::ParObjectType
 
 This class is just to define the material itself, together with its respective parameter set.
 
@@ -78,7 +76,7 @@ and a few public methods:
 
 ::
 
-   DRT::ParObject* MAT::MyNewMaterialType::Create(const std::vector<char>& data)
+   CORE::COMM::ParObject* MAT::MyNewMaterialType::Create(const std::vector<char>& data)
    {
      MAT::MyNewMaterial* mymaterial = new MAT::MyNewMaterial();
      mymaterial->Unpack(data);
@@ -89,8 +87,7 @@ and a few public methods:
    static MyNewMaterialType& Instance() { return instance_; };
 
 
-Definition of the material class
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Definition of the material class**
 
 The main work happens in the material class in the ``MAT`` namespace, which is derived from the parent class.
 This can be the class ``Material``, which is independent from the underlying physics,
@@ -140,7 +137,7 @@ and which have already a virtual representation in the parent class, e.g., here 
 -	VisData()   // For the data of these variables (optional; only if extra variables are to be visualized)
 
 Selection of the material model
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The selection of the material model happens in the file ``mat/mat_material.cpp``.
 Based on the enum ``INPAR::MAT::MaterialType``, a switch creates the material and provides the parameters.
@@ -157,14 +154,14 @@ Each case within the switch condition has a very similar layout, so for our mate
     }
 
 Unit test of the material model
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One should also write a unit test for the new material routine.
 The respective source file should be located in ``/unittests/mat/unit_mynewmaterial.cpp``.
 This file must also be included in the ``/unittests/mat/CMakeLists.txt`` file.
 
 Remark on the dimensionality of the material model
----------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 All (solid) materials are defined for 3D elements. A reduction of the matrices is not used.
 Instead, additional assumptions of the restrictions for plane strain and plane stress are used for the respective 2D elements.

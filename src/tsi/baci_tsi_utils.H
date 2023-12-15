@@ -15,6 +15,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -36,7 +38,7 @@ namespace TSI
       //! constructor
       explicit ThermoStructureCloneStrategy() {}
       //! destructor
-      virtual ~ThermoStructureCloneStrategy() {}
+      virtual ~ThermoStructureCloneStrategy() = default;
 
      protected:
       //! determine element type std::string and whether element is copied or not
@@ -87,18 +89,15 @@ namespace TSI
       //! constructor
       TSIMaterialStrategy(){};
 
-      //! destructor
-      virtual ~TSIMaterialStrategy(){};
-
       //! assignment of thermo material to structure material
-      virtual void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          DRT::Element* ele1, const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
-          Teuchos::RCP<DRT::Discretization> dis2);
+      void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+          const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
+          Teuchos::RCP<DRT::Discretization> dis2) override;
 
       //! assignment of structure material to thermo material
-      virtual void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          DRT::Element* ele2, const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
-          Teuchos::RCP<DRT::Discretization> dis2);
+      void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+          const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
+          Teuchos::RCP<DRT::Discretization> dis2) override;
     };
 
   }  // namespace UTILS
@@ -110,4 +109,6 @@ namespace TSI
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // TSI_UTILS_H

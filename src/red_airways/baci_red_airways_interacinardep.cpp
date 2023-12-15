@@ -9,10 +9,12 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_red_airways_elementbase.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 using namespace CORE::DRT::UTILS;
 
@@ -26,7 +28,7 @@ DRT::ELEMENTS::RedInterAcinarDepType& DRT::ELEMENTS::RedInterAcinarDepType::Inst
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::RedInterAcinarDep* object = new DRT::ELEMENTS::RedInterAcinarDep(-1, -1);
   object->Unpack(data);
@@ -111,19 +113,18 @@ DRT::Element* DRT::ELEMENTS::RedInterAcinarDep::Clone() const
  |                                                             (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::RedInterAcinarDep::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::RedInterAcinarDep::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-  return dis_none;
 }
 
 
@@ -131,9 +132,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::RedInterAcinarDep::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::RedInterAcinarDep::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -165,11 +166,9 @@ void DRT::ELEMENTS::RedInterAcinarDep::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::RedInterAcinarDep::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
 
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -198,11 +197,6 @@ void DRT::ELEMENTS::RedInterAcinarDep::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           ismail 01/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedInterAcinarDep::~RedInterAcinarDep() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -272,29 +266,9 @@ void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, int& var)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedInterAcinarDep::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
+  dsassert(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 
-  // so we have to allocate new line elements:
-  if (NumLine() > 1)  // 1D boundary element and 2D/3D parent element
-  {
-    dserror("RED_AIRWAY element must have one and only one line");
-    exit(1);
-  }
-  else if (NumLine() ==
-           1)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> lines(1);
-    lines[0] = Teuchos::rcp(this, false);
-    return lines;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
-  }
+  return {Teuchos::rcpFromRef(*this)};
 }
+
+BACI_NAMESPACE_CLOSE

@@ -10,9 +10,9 @@
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_base.H"
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_geometry_pair_element_faces.H"
@@ -20,6 +20,8 @@
 #include "baci_geometry_pair_factory.H"
 #include "baci_geometry_pair_line_to_surface.H"
 #include "baci_geometry_pair_scalar_types.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /**
@@ -68,7 +70,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase>
+    surface>::GetPairVisualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
                                        visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -76,9 +78,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
   base_class::GetPairVisualization(visualization_writer, visualization_params);
 
   // Add segmentation and integration point data.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_segmentation =
-          visualization_writer->GetVisualizationWriter("btssc-segmentation");
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
+      visualization_writer->GetVisualizationWriter("btssc-segmentation");
   if (visualization_segmentation != Teuchos::null)
   {
     std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>> points;
@@ -88,7 +89,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
     AddVisualizationIntegrationPoints(visualization_segmentation, points, visualization_params);
   }
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->GetVisualizationWriter("btssc-integration-points");
   if (visualization_integration_points != Teuchos::null)
@@ -108,7 +109,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::
     AddVisualizationIntegrationPoints(
-        const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
+        const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
             visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const
@@ -124,8 +125,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
   std::vector<double>& projection_direction =
       visualization_data.GetPointData<double>("projection_direction");
 
-  const Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>(
+  const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
+      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btssc-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
   std::vector<double>* pair_beam_id = nullptr;
@@ -169,15 +170,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>&
-        geometry_evaluation_data_ptr)
+    surface>::CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  // Call the method of the base class.
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
-
-  // Set up the geometry pair, it will be initialized in the Init call of the base class.
   this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<double, beam, surface>(
-      geometry_evaluation_data_ptr);
+      element1, element2, geometry_evaluation_data_ptr);
 }
 
 /**
@@ -287,7 +284,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::GetPairGID(
-    const ::DRT::Discretization& discret) const
+    const BACI::DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
   CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
@@ -347,3 +344,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceMeshtyingPairBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-------------------------------------------------------------------------------*
  | Main control routine for poro fluid multiphase problems           vuong 08/16 |
  *-------------------------------------------------------------------------------*/
@@ -123,9 +125,8 @@ void porofluidmultiphase_dyn(int restart)
           porodyn, "TIMEINTEGR");
 
   // build poro fluid time integrator
-  Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo =
-      POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(timintscheme, actdis, linsolvernumber, porodyn,
-          porodyn, DRT::Problem::Instance()->ErrorFile()->Handle(), output);
+  Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo = POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
+      timintscheme, actdis, linsolvernumber, porodyn, porodyn, output);
 
   // initialize
   algo->Init(false,       // eulerian formulation
@@ -156,3 +157,5 @@ void porofluidmultiphase_dyn(int restart)
   return;
 
 }  // poromultiphase_dyn
+
+BACI_NAMESPACE_CLOSE

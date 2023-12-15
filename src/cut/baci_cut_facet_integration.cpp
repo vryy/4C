@@ -23,6 +23,7 @@ equations
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------------*
       compute the equation of the plane Ax+By+Cz=D with the local coordinates of corner points
@@ -174,14 +175,14 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
 #ifdef LOCAL
     switch (elem1_->Shape())
     {
-      case ::DRT::Element::hex8:
+      case CORE::FE::CellType::hex8:
       {
-        elecen = CORE::DRT::UTILS::getLocalCenterPosition<3>(::DRT::Element::hex8);
+        elecen = CORE::DRT::UTILS::getLocalCenterPosition<3>(CORE::FE::CellType::hex8);
         break;
       }
-      case ::DRT::Element::tet4:
+      case CORE::FE::CellType::tet4:
       {
-        elecen = CORE::DRT::UTILS::getLocalCenterPosition<3>(::DRT::Element::tet4);
+        elecen = CORE::DRT::UTILS::getLocalCenterPosition<3>(CORE::FE::CellType::tet4);
         break;
       }
       default:
@@ -608,23 +609,23 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
 
       switch (bcell->Shape())
       {
-        case ::DRT::Element::tri3:
+        case CORE::FE::CellType::tri3:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<::DRT::Element::tri3>(
+          bcell->TransformLocalCoords<CORE::FE::CellType::tri3>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<::DRT::Element::tri3>(eta, x_gp_loc, normal, drs);
+          bcell->Transform<CORE::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
-        case ::DRT::Element::quad4:
+        case CORE::FE::CellType::quad4:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<::DRT::Element::quad4>(
+          bcell->TransformLocalCoords<CORE::FE::CellType::quad4>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<::DRT::Element::quad4>(eta, x_gp_loc, normal, drs);
+          bcell->Transform<CORE::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
@@ -1067,29 +1068,29 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
 
       switch (bcell->Shape())
       {
-        case ::DRT::Element::tri3:
+        case CORE::FE::CellType::tri3:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<::DRT::Element::tri3>(
+          bcell->TransformLocalCoords<CORE::FE::CellType::tri3>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<::DRT::Element::tri3>(eta, x_gp_loc, normal, drs);
+          bcell->Transform<CORE::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
-        case ::DRT::Element::quad4:
+        case CORE::FE::CellType::quad4:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<::DRT::Element::quad4>(
+          bcell->TransformLocalCoords<CORE::FE::CellType::quad4>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<::DRT::Element::quad4>(eta, x_gp_loc, normal, drs);
+          bcell->Transform<CORE::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
         default:
           dserror("unsupported integration cell type ( cell type = %s )",
-              ::DRT::DistypeToString(bcell->Shape()).c_str());
+              CORE::FE::CellTypeToString(bcell->Shape()).c_str());
           exit(EXIT_FAILURE);
       }
       double wei = iquad.Weight() * drs * normalX;
@@ -1247,3 +1248,5 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenc
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

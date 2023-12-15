@@ -159,10 +159,12 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
 /*----------------------------------------------------------------------*
  | headers                                                  			|
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | class definitions                                           			|
@@ -181,8 +183,6 @@ namespace MAT
       //! standard constructor
       CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      virtual ~CrystalPlasticity() = default;
 
       //! create material instance
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
@@ -271,14 +271,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
 
-  class CrystalPlasticityType : public DRT::ParObjectType
+  class CrystalPlasticityType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "CrystalPlasticityType"; }
+    std::string Name() const override { return "CrystalPlasticityType"; }
 
     static CrystalPlasticityType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CrystalPlasticityType instance_;
@@ -313,7 +313,7 @@ namespace MAT
     }
 
     //! Pack this class so it can be communicated
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     //! Unpack data from a char vector into this class
     void Unpack(const std::vector<char>& data) override;
@@ -393,49 +393,51 @@ namespace MAT
 
     //! transform Miller Bravais index notation of hexagonal lattices to Miller index notation
     void MillerBravaisToMiller(const std::vector<CORE::LINALG::Matrix<4, 1>>&
-                                   NorHex,  //!< [IN] vector of slip/twinning plane normals
-                                            //!< in Miller-Bravais index notation
+                                   plane_normal_hex,  //!< [IN] vector of slip/twinning plane
+                                                      //!< normals in Miller-Bravais index notation
         const std::vector<CORE::LINALG::Matrix<4,
-            1>>& DirHex,  //!< [IN] vector of slip/twinning directions in Miller-Bravais index
-                          //!< notation
+            1>>& direction_hex,  //!< [IN] vector of slip/twinning directions in Miller-Bravais
+                                 //!< index notation
         std::vector<CORE::LINALG::Matrix<3, 1>>&
-            Nor,  //!< [OUT] vector of slip/twinning plane normals in Miller index notation
+            plane_normal,  //!< [OUT] vector of slip/twinning plane normals in Miller index notation
         std::vector<CORE::LINALG::Matrix<3, 1>>&
             Dir  //!< [OUT] vector of slip/twinning directions in Miller index notation
     );
 
     //! check if two vectors are parallel by checking the angle between them
-    bool CheckParallel(const CORE::LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
-        const CORE::LINALG::Matrix<3, 1>& Vec_2                  //!< [IN] vector 2
+    bool CheckParallel(const CORE::LINALG::Matrix<3, 1>& vector_1,  //!< [IN] vector 1
+        const CORE::LINALG::Matrix<3, 1>& vector_2                  //!< [IN] vector 2
     );
     //! check if two vectors are orthogonal by checking the angle between them
-    bool CheckOrthogonal(const CORE::LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
-        const CORE::LINALG::Matrix<3, 1>& Vec_2                    //!< [IN] vector 2
+    bool CheckOrthogonal(const CORE::LINALG::Matrix<3, 1>& vector_1,  //!< [IN] vector 1
+        const CORE::LINALG::Matrix<3, 1>& vector_2                    //!< [IN] vector 2
     );
     //! local Newton-Raphson iteration
     //! this method identifies the plastic shears gamma_res and defect densities def_dens_res
     //! as well as the stress PK2_res for a given deformation gradient F
-    void NewtonRaphson(CORE::LINALG::Matrix<3, 3>& F,  //!< [IN] deformation gradient
-        std::vector<double>& gamma_res,                //!< [OUT] result vector of plastic shears
+    void NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_grad,  //!< [IN] deformation gradient
+        std::vector<double>& gamma_res,  //!< [OUT] result vector of plastic shears
         std::vector<double>&
-            def_dens_res,  //!< [OUT] result vector of defect densities (dislocation densities and
-                           //!< twinned volume fractions)
-        CORE::LINALG::Matrix<3, 3>& PK2_res,  //!< [OUT] 2nd Piola-Kirchhoff stress
-        CORE::LINALG::Matrix<3, 3>& FP_res    //!< [OUT] plastic deformation gradient
+            defect_densites_result,  //!< [OUT] result vector of defect densities (dislocation
+                                     //!< densities and twinned volume fractions)
+        CORE::LINALG::Matrix<3, 3>& second_pk_stress_result,  //!< [OUT] 2nd Piola-Kirchhoff stress
+        CORE::LINALG::Matrix<3, 3>&
+            plastic_deform_grad_result  //!< [OUT] plastic deformation gradient
     );
 
     //! Evaluates the flow rule for a given total deformation gradient F,
     //! and a given vector of plastic shears gamma_trial and
     //! sets up the respective residuals residuals_trial, the 2nd Piola-Kirchhoff stress PK2_trial
     //! and trial defect densities def_dens_trial
-    void SetupFlowRule(CORE::LINALG::Matrix<3, 3> F,  //!< [IN] deformation gradient
-        std::vector<double> gamma_trial,              //!< [OUT] trial vector of plastic shears
-        CORE::LINALG::Matrix<3, 3>& FP_trial,         //!< [OUT] plastic deformation gradient
+    void SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_grad,  //!< [IN] deformation gradient
+        std::vector<double> gamma_trial,  //!< [OUT] trial vector of plastic shears
+        CORE::LINALG::Matrix<3, 3>&
+            plastic_deform_grad_trial,  //!< [OUT] plastic deformation gradient
         std::vector<double>&
-            def_dens_trial,  //!< [OUT] trial vector of defect densities (dislocation densities and
-                             //!< twinned volume fractions)
-        CORE::LINALG::Matrix<3, 3>& PK2_trial,  //!< [OUT] 2nd Piola-Kirchhoff stress
-        std::vector<double>& residuals_trial    //!< [OUT] vector of slip residuals
+            defect_densities_trial,  //!< [OUT] trial vector of defect densities (dislocation
+                                     //!< densities and twinned volume fractions)
+        CORE::LINALG::Matrix<3, 3>& second_pk_stress_trial,  //!< [OUT] 2nd Piola-Kirchhoff stress
+        std::vector<double>& residuals_trial                 //!< [OUT] vector of slip residuals
     );
 
     //! Return whether or not the material requires the deformation gradient for its evaluation
@@ -637,5 +639,7 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_CRYSTAL_PLASTICITY_H

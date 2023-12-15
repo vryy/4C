@@ -30,6 +30,7 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparsematrix.H"
@@ -44,6 +45,8 @@
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
@@ -2008,14 +2011,12 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
     merge_fsi_blockmatrix_ = true;
 
-    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-    if (solvertype == INPAR::SOLVER::SolverType::umfpack)
-      solverparams->set("solver", "umfpack");
-    else if (solvertype == INPAR::SOLVER::SolverType::superlu)
-      solverparams->set("solver", "superlu");
+    Teuchos::ParameterList solverparams;
+    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>("SOLVER",
+        Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(xfsisolverparams, "SOLVER"),
+        solverparams);
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
 
     return;
   }
@@ -2096,7 +2097,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Comm()));
 
       // use solver blocks for structure and fluid
       const Teuchos::ParameterList& ssolverparams =
@@ -2151,7 +2152,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     {
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Comm()));
 
       // use solver blocks for structure and fluid
       const Teuchos::ParameterList& ssolverparams =
@@ -2681,3 +2682,5 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

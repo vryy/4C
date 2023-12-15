@@ -9,16 +9,18 @@
 #include "baci_ssi_str_model_evaluator_base.H"
 
 #include "baci_adapter_str_ssiwrapper.H"
+#include "baci_comm_exporter.H"
 #include "baci_coupling_adapter.H"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_io.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
 #include <Epetra_IntVector.h>
 #include <Epetra_Vector.h>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -41,14 +43,15 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
     const auto stresses_ele = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
     // extract stresses
-    DRT::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
+    CORE::COMM::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
 
     // store stresses
     (*stresses)[Discret().ElementRowMap()->GID(i)] = stresses_ele;
   }
 
   // export map to column format
-  DRT::Exporter exporter(*Discret().ElementRowMap(), *Discret().ElementColMap(), Discret().Comm());
+  CORE::COMM::Exporter exporter(
+      *Discret().ElementRowMap(), *Discret().ElementColMap(), Discret().Comm());
   exporter.Export(*stresses);
 
   // prepare nodal stress vectors
@@ -58,7 +61,7 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
       [&](DRT::Element& ele)
       {
         CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-            ele, *stresses->at(ele.Id()), nodal_stresses_source);
+            ele, *stresses->at(ele.Id()), Discret(), nodal_stresses_source);
       });
 
   const auto* nodegids = Discret().NodeRowMap();
@@ -105,3 +108,4 @@ void STR::MODELEVALUATOR::BaseSSI::Setup()
   // set flag
   issetup_ = true;
 }
+BACI_NAMESPACE_CLOSE

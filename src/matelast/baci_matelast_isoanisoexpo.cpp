@@ -8,11 +8,13 @@
 
 #include "baci_matelast_isoanisoexpo.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoAnisoExpo::IsoAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -31,7 +33,7 @@ MAT::ELASTIC::IsoAnisoExpo::IsoAnisoExpo(MAT::ELASTIC::PAR::IsoAnisoExpo* params
 {
 }
 
-void MAT::ELASTIC::IsoAnisoExpo::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::IsoAnisoExpo::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
@@ -194,3 +196,4 @@ void MAT::ELASTIC::IsoAnisoExpo::SetFiberVecs(const double newgamma,
 
   params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
 }
+BACI_NAMESPACE_CLOSE

@@ -11,9 +11,9 @@
 #ifndef BACI_LIB_DISCRET_H
 #define BACI_LIB_DISCRET_H
 
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_lib_dofset_interface.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_node.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_std_cxx20_ranges.H"
@@ -28,17 +28,23 @@
 
 #include <vector>
 
-
 // forward declarations
 namespace Teuchos
 {
   class ParameterList;
+
+  template <class T>
+  class RCP;
 }  // namespace Teuchos
 
-namespace COMM_UTILS
+class PostProblem;
+
+BACI_NAMESPACE_OPEN
+
+namespace CORE::COMM
 {
   class Communicators;
-}  // namespace COMM_UTILS
+}  // namespace CORE::COMM
 
 namespace CORE::LINALG
 {
@@ -46,8 +52,6 @@ namespace CORE::LINALG
   class MapExtractor;
   class SerialDenseVector;
 }  // namespace CORE::LINALG
-
-class PostProblem;
 
 namespace IO
 {
@@ -140,7 +144,30 @@ namespace DRT
     */
     Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm);
 
+    /**
+     * Virtual destructor.
+     */
     virtual ~Discretization() = default;
+
+    /**
+     * The Discretization is a heavy object that should not be copied (accidentally).
+     */
+    Discretization(const DRT::Discretization&) = delete;
+
+    /**
+     * The Discretization is a heavy object that should not be copied (accidentally).
+     */
+    Discretization operator=(const Discretization&) = delete;
+
+    /**
+     * Moving a Discretization is not supported.
+     */
+    Discretization(DRT::Discretization&&) = delete;
+
+    /**
+     * Moving a Discretization is not supported.
+     */
+    Discretization operator=(Discretization&&) = delete;
 
     //! @name Query methods
 
@@ -1225,7 +1252,7 @@ namespace DRT
     // Naming "SetupGhosting" is misleading, implementation duplicates functionality that
     // can be build using some of the other methods
     // mwgee 4/12
-    friend class ::PostProblem;
+    friend class PostProblem;
 
    public:
     //-----------------------------------------------------------------------------------
@@ -2009,10 +2036,6 @@ namespace DRT
     virtual int AssignDegreesOfFreedom(int start);
 
    private:
-    // don't want = operator and copy constructor
-    Discretization operator=(const Discretization& old) = delete;
-    Discretization(const DRT::Discretization& old) = delete;
-
     /*!
     \brief Build noderowmap_ (Filled()==true NOT prerequisite)
 
@@ -2173,7 +2196,7 @@ namespace DRT
      *  \date 09/07    */
     virtual void AssignGlobalIDs(const Epetra_Comm& comm,
         const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<DRT::Element>>& finalelements);
+        std::map<int, Teuchos::RCP<DRT::Element>>& finalgeometry);
 
 
     //! Name of this discretization
@@ -2250,16 +2273,16 @@ namespace DRT
 
   //! distribute a discretization from one group to one other
   void NPDuplicateDiscretization(const int sgroup, const int rgroup,
-      Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-      ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
+      Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+      CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
 
   //! distribute a discretization from one group to one other
   //! if the groups have the same size. In this special case it is desirable
   //! that the parallel distribution is the same for all groups. Hence,
   //! a different braodcasting scheme is used
   void NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
-      Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-      ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
+      Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+      CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
 
 }  // namespace DRT
 
@@ -2268,5 +2291,7 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis);
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_H

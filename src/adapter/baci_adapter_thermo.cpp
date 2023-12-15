@@ -25,11 +25,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-
-/*----------------------------------------------------------------------*
- |                                                          bborn 08/09 |
- *----------------------------------------------------------------------*/
-ADAPTER::Thermo::~Thermo() {}
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -41,10 +37,6 @@ ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
   SetupThermo(prbdyn, actdis);
 }
 
-/*----------------------------------------------------------------------*
- |                                                          bborn 08/09 |
- *----------------------------------------------------------------------*/
-ADAPTER::ThermoBaseAlgorithm::~ThermoBaseAlgorithm() {}
 
 
 /*----------------------------------------------------------------------*
@@ -107,7 +99,6 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
-  xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
@@ -134,9 +125,8 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
 
   // create a linear solver
   Teuchos::RCP<Teuchos::ParameterList> solveparams = Teuchos::rcp(new Teuchos::ParameterList());
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-          actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // create marching time integrator
@@ -214,3 +204,5 @@ void ADAPTER::Thermo::Integrate()
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -144,3 +146,5 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   // ---- wait for completion of receive operations ----
   MPI_Waitall(numrecvfromprocs, recvrequest.data(), MPI_STATUSES_IGNORE);
 }
+
+BACI_NAMESPACE_CLOSE

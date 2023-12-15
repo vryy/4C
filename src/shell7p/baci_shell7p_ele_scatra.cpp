@@ -6,20 +6,21 @@
 
 #include "baci_shell7p_ele_scatra.H"
 
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_shell7p_ele_factory.H"
 #include "baci_shell7p_ele_interface_serializable.H"
 #include "baci_shell7p_line.H"
 #include "baci_shell7p_utils.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
   template <typename Interface>
-  void TryPackInterface(const Interface& interface, DRT::PackBuffer& data)
+  void TryPackInterface(const Interface& interface, CORE::COMM::PackBuffer& data)
   {
     std::shared_ptr<DRT::ELEMENTS::SHELL::Serializable> serializable_interface =
         std::dynamic_pointer_cast<DRT::ELEMENTS::SHELL::Serializable>(interface);
@@ -43,7 +44,7 @@ DRT::ELEMENTS::Shell7pScatraType DRT::ELEMENTS::Shell7pScatraType::instance_;
 
 DRT::ELEMENTS::Shell7pScatraType& DRT::ELEMENTS::Shell7pScatraType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Shell7pScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Shell7pScatraType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Shell7pScatra(-1, -1);
   object->Unpack(data);
@@ -207,7 +208,7 @@ DRT::ELEMENTS::Shell7pScatra::Shell7pScatra(const DRT::ELEMENTS::Shell7pScatra& 
 }
 
 
-DRT::ELEMENTS::Shell7pScatra& ::DRT::ELEMENTS::Shell7pScatra::operator=(
+DRT::ELEMENTS::Shell7pScatra& DRT::ELEMENTS::Shell7pScatra::operator=(
     const DRT::ELEMENTS::Shell7pScatra& other)
 {
   if (this == &other) return *this;
@@ -230,9 +231,9 @@ DRT::Element* DRT::ELEMENTS::Shell7pScatra::Clone() const
   return newelement;
 }
 
-void DRT::ELEMENTS::Shell7pScatra::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Shell7pScatra::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -260,17 +261,15 @@ void DRT::ELEMENTS::Shell7pScatra::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Shell7pScatra::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   // discretization type
-  distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   // element technology
   ExtractfromPack(position, data, eletech_);
   // thickness in reference frame
@@ -278,9 +277,10 @@ void DRT::ELEMENTS::Shell7pScatra::Unpack(const std::vector<char>& data)
   // nodal director
   ExtractfromPack(position, data, nodal_directors_);
   // Setup flag for material post setup
-  DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
   // extract impltype
-  impltype_ = static_cast<INPAR::SCATRA::ImplType>(DRT::ParObject::ExtractInt(position, data));
+  impltype_ =
+      static_cast<INPAR::SCATRA::ImplType>(CORE::COMM::ParObject::ExtractInt(position, data));
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(*this, eletech_);
 
@@ -331,21 +331,19 @@ bool DRT::ELEMENTS::Shell7pScatra::VisData(const std::string& name, std::vector<
 void DRT::ELEMENTS::Shell7pScatra::Print(std::ostream& os) const
 {
   os << "Shell7pScatra ";
-  os << " Discretization type: " << DRT::DistypeToString(distype_).c_str();
+  os << " Discretization type: " << CORE::FE::CellTypeToString(distype_).c_str();
   Element::Print(os);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Shell7pLine, Shell7pScatra>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Shell7pLine, Shell7pScatra>(
+      CORE::COMM::buildLines, *this);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 int DRT::ELEMENTS::Shell7pScatra::NumLine() const
@@ -363,7 +361,7 @@ bool DRT::ELEMENTS::Shell7pScatra::ReadElement(
   STR::ELEMENTS::ShellData shell_data = {};
 
   // set discretization type
-  distype_ = DRT::StringToDistype(distype);
+  distype_ = CORE::FE::StringToCellType(distype);
 
   // set thickness in reference frame
   linedef->ExtractDouble("THICK", thickness_);
@@ -424,3 +422,5 @@ bool DRT::ELEMENTS::Shell7pScatra::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

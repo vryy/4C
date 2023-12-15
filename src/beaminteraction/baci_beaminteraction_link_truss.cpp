@@ -12,7 +12,7 @@
 #include "baci_beaminteraction_link_truss.H"
 
 #include "baci_beaminteraction_link.H"
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_truss3.H"
@@ -20,13 +20,15 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 BEAMINTERACTION::BeamLinkTrussType BEAMINTERACTION::BeamLinkTrussType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::ParObject* BEAMINTERACTION::BeamLinkTrussType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* BEAMINTERACTION::BeamLinkTrussType::Create(const std::vector<char>& data)
 {
   BEAMINTERACTION::BeamLinkTruss* my_truss_linker = new BEAMINTERACTION::BeamLinkTruss();
   my_truss_linker->Unpack(data);
@@ -125,11 +127,11 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkTruss::Pack(CORE::COMM::PackBuffer& data) const
 {
   CheckInitSetup();
 
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -149,10 +151,9 @@ void BEAMINTERACTION::BeamLinkTruss::Pack(DRT::PackBuffer& data) const
 void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -163,7 +164,7 @@ void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataele);
   if (dataele.size() > 0)
   {
-    DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
+    CORE::COMM::ParObject* object = CORE::COMM::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Truss3* linkele = dynamic_cast<DRT::ELEMENTS::Truss3*>(object);
     if (linkele == nullptr) dserror("failed to unpack Truss3 object within BeamLinkTruss");
     linkele_ = Teuchos::rcp(linkele);
@@ -344,3 +345,5 @@ double BEAMINTERACTION::BeamLinkTruss::GetInternalEnergy() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double BEAMINTERACTION::BeamLinkTruss::GetKineticEnergy() const { return 0.0; }
+
+BACI_NAMESPACE_CLOSE

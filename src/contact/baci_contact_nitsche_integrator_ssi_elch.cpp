@@ -20,6 +20,8 @@ electrochemistry
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_so3_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 template <int dim>
 struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
 {
@@ -33,8 +35,8 @@ struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegratorNitscheSsiElch::CoIntegratorNitscheSsiElch(Teuchos::ParameterList& params,
-    DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
+CONTACT::CoIntegratorNitscheSsiElch::CoIntegratorNitscheSsiElch(
+    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : CoIntegratorNitscheSsi(params, eletype, comm)
 {
   if (std::abs(theta_) > 1.0e-16) dserror("SSI Elch Contact just implemented Adjoint free ...");
@@ -199,16 +201,16 @@ double CONTACT::CoIntegratorNitscheSsiElch::CalculateDetFOfParentElement(
   static CORE::LINALG::Matrix<dim, dim> defgrd;
   switch (electrode_ele->ParentElement()->Shape())
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::hex8, dim>(defgrd,
+      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::hex8, dim>(defgrd,
           electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
 
       break;
     }
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::tet4, dim>(defgrd,
+      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet4, dim>(defgrd,
           electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
 
       break;
@@ -233,15 +235,15 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
   auto* electrode_ele = electrode_quantities.element;
   switch (electrode_ele->Shape())
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      CalculateSpatialDerivativeOfDetF<DRT::Element::quad4, dim>(
+      CalculateSpatialDerivativeOfDetF<CORE::FE::CellType::quad4, dim>(
           detF, electrode_quantities, d_detF_dd);
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      CalculateSpatialDerivativeOfDetF<DRT::Element::tri3, dim>(
+      CalculateSpatialDerivativeOfDetF<CORE::FE::CellType::tri3, dim>(
           detF, electrode_quantities, d_detF_dd);
       break;
     }
@@ -255,15 +257,15 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int dim>
+template <CORE::FE::CellType distype, int dim>
 void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
     const ElementDataBundle<dim>& electrode_quantities,
     CORE::GEN::pairedvector<int, double>& d_detF_dd)
 {
   auto electrode_ele = electrode_quantities.element;
 
-  const int num_ele_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  const int ele_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const int num_ele_nodes = CORE::FE::num_nodes<distype>;
+  const int ele_dim = CORE::FE::dim<distype>;
 
   dsassert(num_ele_nodes == electrode_ele->NumNode(),
       "Number of nodes is not matching discretization type");
@@ -393,11 +395,6 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
         const double expterm2 = std::exp(-alphac * frt * eta);
         const double expterm = expterm1 - expterm2;
 
-        // safety check
-        if (std::abs(expterm) > 1.0e5)
-          dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-              expterm);
-
         // calculate Butler-Volmer mass flux density
         const double j = j0 * expterm;
 
@@ -408,11 +405,10 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
         double dj_dc_electrode(0.0), dj_dc_electrolyte(0.0), dj_dpot_electrode(0.0),
             dj_dpot_electrolyte(0.0);
         // calculate flux linearizations
-        DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-            CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, d_epd_dc, alphaa,
-                alphac, dummyresistance, expterm1, expterm2, kr, faraday, electrolyte_conc,
-                electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte, dj_dpot_electrode,
-                dj_dpot_electrolyte);
+        DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, d_epd_dc,
+            alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday, electrolyte_conc,
+            electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte, dj_dpot_electrode,
+            dj_dpot_electrolyte);
 
         // derivative of flux w.r.t. OCP is the same value as w.r.t. electrolyte potential
         const double dj_depd = dj_dpot_electrolyte;
@@ -703,3 +699,4 @@ void CONTACT::CoIntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantitie
     electrode_quantitites.d_xi_dd = &d_master_xi_dd;
   }
 }
+BACI_NAMESPACE_CLOSE

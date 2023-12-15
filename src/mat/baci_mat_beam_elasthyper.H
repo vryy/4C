@@ -11,14 +11,16 @@ function)
 #ifndef BACI_MAT_BEAM_ELASTHYPER_H
 #define BACI_MAT_BEAM_ELASTHYPER_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_beam_templated_material_generic.H"
 
 #include <Teuchos_RCP.hpp>
 
 #include <typeinfo>
+
+BACI_NAMESPACE_OPEN
 
 
 // forward declaration
@@ -37,14 +39,14 @@ namespace MAT
 
   /// singleton for constitutive law of a beam formulation (hyperelastic stored energy function)
   template <typename T>
-  class BeamElastHyperMaterialType : public DRT::ParObjectType
+  class BeamElastHyperMaterialType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return typeid(this).name(); }
+    std::string Name() const override { return typeid(this).name(); }
 
     static BeamElastHyperMaterialType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamElastHyperMaterialType instance_;
@@ -94,7 +96,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -218,7 +220,7 @@ namespace MAT
      *         any kinds of beam interactions (contact, potentials, viscous drag forces ...)
      *
      */
-    double GetInteractionRadius() const;
+    double GetInteractionRadius() const override;
 
     void GetStiffnessMatrixOfMoments(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
         const CORE::LINALG::Matrix<3, 3, T>& C_M, const int gp) override;
@@ -241,5 +243,7 @@ namespace MAT
     MAT::PAR::BeamElastHyperMaterialParameterGeneric* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

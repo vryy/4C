@@ -24,6 +24,8 @@ attached parenchyma balloon
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace CORE::LINALG
@@ -74,7 +76,7 @@ namespace ADAPTER
     Teuchos::RCP<const CORE::LINALG::MapExtractor> FSIInterface() { return fsiinterface_; }
 
     /// Get map of volume coupling dofs
-    const Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
+    Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
 
    private:
     /// conditions that define the lung volume constraints
@@ -95,4 +97,6 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+BACI_NAMESPACE_CLOSE
+
 #endif

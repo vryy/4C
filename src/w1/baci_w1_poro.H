@@ -16,6 +16,8 @@
 #include "baci_w1.H"
 #include "baci_w1_poro_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class StructPoro;
@@ -33,7 +35,7 @@ namespace DRT
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Wall1_Poro : public Wall1
     {
      public:
@@ -59,8 +61,7 @@ namespace DRT
       //!@}
 
       //! number of element nodes (
-      static const int numnod_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of strains per node
       static const int numstr_ = 3;
@@ -95,15 +96,15 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case CORE::FE::CellType::tri3:
             return DRT::ELEMENTS::WallTri3PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::quad4:
+          case CORE::FE::CellType::quad4:
             return DRT::ELEMENTS::WallQuad4PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::quad9:
+          case CORE::FE::CellType::quad9:
             return DRT::ELEMENTS::WallQuad9PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::nurbs4:
+          case CORE::FE::CellType::nurbs4:
             return DRT::ELEMENTS::WallNurbs4PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::nurbs9:
+          case CORE::FE::CellType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroType::Instance().UniqueParObjectId();
           default:
             dserror("unknown element type");
@@ -118,7 +119,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -145,15 +146,15 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case CORE::FE::CellType::tri3:
             return DRT::ELEMENTS::WallTri3PoroType::Instance();
-          case DRT::Element::quad4:
+          case CORE::FE::CellType::quad4:
             return DRT::ELEMENTS::WallQuad4PoroType::Instance();
-          case DRT::Element::quad9:
+          case CORE::FE::CellType::quad9:
             return DRT::ELEMENTS::WallQuad9PoroType::Instance();
-          case DRT::Element::nurbs4:
+          case CORE::FE::CellType::nurbs4:
             return DRT::ELEMENTS::WallNurbs4PoroType::Instance();
-          case DRT::Element::nurbs9:
+          case CORE::FE::CellType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroType::Instance();
           default:
             dserror("unknown element type");
@@ -387,7 +388,7 @@ namespace DRT
           const CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,
           const CORE::LINALG::Matrix<numnod_, 1>& epreaf,
           const CORE::LINALG::Matrix<numnod_, 1>* porosity_dof,
-          CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& stiffmatrix);
+          CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
 
       //! Gauss Point Loop evaluating stiffness and force
       void GaussPointLoopPressureBased(Teuchos::ParameterList& params,
@@ -623,9 +624,6 @@ namespace DRT
       //! Gauss integration rule
       CORE::DRT::UTILS::GaussIntegration intpoints_;
 
-      //! flag indicating higher order element
-      bool ishigherorder_;
-
       //! flag indicating initialization of element
       bool init_;
 
@@ -655,5 +653,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_PORO_H

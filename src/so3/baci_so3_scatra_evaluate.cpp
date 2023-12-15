@@ -14,9 +14,11 @@
 #include "baci_so3_scatra.H"
 #include "baci_structure_new_enum_lists.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -30,8 +32,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
     if (discretization.HasState(1, "scalarfield"))  // if concentrations were set
     {
-      if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
-              distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+      if (not(distype == CORE::FE::CellType::hex8 or distype == CORE::FE::CellType::hex27 or
+              distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10))
       {
         dserror(
             "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
@@ -110,8 +112,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
     {
       if (discretization.HasState(2, "tempfield"))
       {
-        if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
-                distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+        if (not(distype == CORE::FE::CellType::hex8 or distype == CORE::FE::CellType::hex27 or
+                distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10))
         {
           dserror(
               "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
@@ -174,7 +176,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -233,7 +235,7 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp_nodal_values,
     const std::vector<double>& scalar_nodal_values, const CORE::LINALG::Matrix<3, 1>& n,
@@ -266,7 +268,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
  | evaluate only the mechanical-scatra stiffness term     schmidt 10/17 |
  | for monolithic SSI, contribution to k_dS (private)                   |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::LocationArray& la,
     std::vector<double>& disp,                         // current displacement
     CORE::LINALG::SerialDenseMatrix& stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
@@ -278,7 +280,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -393,7 +395,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
 /*----------------------------------------------------------------------*
  | calculate the nonlinear B-operator (private)           schmidt 10/17 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::CalculateBop(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,  //!< (o): nonlinear B-operator
     const CORE::LINALG::Matrix<numdim_, numdim_>* defgrad,  //!< (i): deformation gradient
@@ -465,7 +467,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::CalculateBop(
 /*----------------------------------------------------------------------*
  | initialize element (private)                            schmidt 10/17|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::InitElement()
 {
   // resize gauss point coordinates, inverse of the jacobian and determinant of the jacobian
@@ -513,9 +515,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::InitElement()
 }
 
 
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>;
+
+BACI_NAMESPACE_CLOSE

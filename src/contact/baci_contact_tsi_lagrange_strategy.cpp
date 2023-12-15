@@ -29,6 +29,8 @@
 
 #include <Epetra_SerialComm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                             seitz 08/15|
  *----------------------------------------------------------------------*/
@@ -966,7 +968,6 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> di
         ->AssembleDM_linDiss(nullptr, nullptr, nullptr, &m_LinDissContactLM, 1.);
   m_LinDissContactLM.Complete(*gactivedofs_, *gmdofrowmap_);
   Teuchos::RCP<Epetra_Vector> z_act = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-  ;
   CORE::LINALG::Export(*z_, *z_act);
   tmp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   if (m_LinDissContactLM.Multiply(false, *z_act, *tmp) != 0) dserror("multiply went wrong");
@@ -1043,3 +1044,5 @@ void CONTACT::CoTSILagrangeStrategy::DoReadRestart(IO::DiscretizationReader& rea
   CORE::LINALG::Export(*ftcn_, *tmp);
   ftcn_ = tmp;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -21,6 +21,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace ADAPTER
@@ -59,8 +61,6 @@ namespace FSI
     /// create using a Epetra_Comm
     explicit Algorithm(const Epetra_Comm& comm);
 
-    /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
 
     /// setup this object
     virtual void Setup();
@@ -72,22 +72,22 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FluidMovingBoundary>& MBFluidField() { return fluid_; }
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
    protected:
     //! @name Time loop building blocks
 
     /// start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     /// calculate stresses, strains, energies
     virtual void PrepareOutput(bool force_prepare);
 
     /// write output
-    virtual void Output();
+    void Output() override;
 
     //@}
 
@@ -106,10 +106,10 @@ namespace FSI
 
    protected:
     /// underlying structure of the FSI problem
-    Teuchos::RCP<::ADAPTER::FSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<::ADAPTER::FluidMovingBoundary> fluid_;
+    Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid_;
 
     /// RCP pointer to the base algorithm of the structure
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr_;
@@ -122,5 +122,7 @@ namespace FSI
     Teuchos::RCP<CORE::ADAPTER::Coupling> coupsf_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

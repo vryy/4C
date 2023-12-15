@@ -15,13 +15,13 @@ functions for the traction.
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
-
 // Forward declarations.
 namespace
 {
   class BeamToSolidVolumeMeshtyingPairMortarTest;
 }
 
+BACI_NAMESPACE_OPEN
 
 namespace BEAMINTERACTION
 {
@@ -53,15 +53,11 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingPairMortar();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidVolumeMeshtyingPairMortar(){};
 
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    void EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -75,13 +71,14 @@ namespace BEAMINTERACTION
     inline bool IsAssemblyDirect() const override { return false; };
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This will
-     * add mortar specific data to the output.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
+     * This will add mortar specific data to the output.
      * @param visualization_writer (out) Object that manages all visualization related data for beam
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
    protected:
@@ -109,5 +106,7 @@ namespace BEAMINTERACTION
     unsigned int n_mortar_rot_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

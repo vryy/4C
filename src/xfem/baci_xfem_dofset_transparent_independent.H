@@ -13,6 +13,8 @@
 
 #include "baci_lib_dofset_transparent_independent.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -45,18 +47,17 @@ namespace XFEM
     explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
         bool parallel, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
-    /*!
-      \brief Destructor
-     */
-    virtual ~XFEMTransparentIndependentDofSet() { return; }
+
 
    protected:
-    virtual int NumDofPerNode(const DRT::Node& node) const;
+    int NumDofPerNode(const DRT::Node& node) const override;
 
 
    private:
     Teuchos::RCP<CORE::GEO::CutWizard> wizard_;
   };
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

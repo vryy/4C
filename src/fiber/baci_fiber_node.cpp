@@ -12,12 +12,14 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 DRT::FIBER::FiberNodeType DRT::FIBER::FiberNodeType::instance_;
 
 
-DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
 {
-  std::array<double, 3> dummy_coords = {999., 999., 999.};
+  std::vector<double> dummy_coords(3, 999.0);
   std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
   std::vector<std::array<double, 3>> fibers;
   std::map<FIBER::AngleType, double> angles;
@@ -27,11 +29,11 @@ DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
   return object;
 }
 
-DRT::FIBER::FiberNode::FiberNode(int id, std::array<double, 3> coords,
+DRT::FIBER::FiberNode::FiberNode(int id, const std::vector<double>& coords,
     std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
     std::vector<std::array<double, 3>> fibers, std::map<FIBER::AngleType, double> angles,
     const int owner)
-    : DRT::Node(id, coords.data(), owner),
+    : DRT::Node(id, coords, owner),
       coordinateSystemDirections_(std::move(coordinateSystemDirections)),
       fibers_(std::move(fibers)),
       angles_(std::move(angles))
@@ -54,9 +56,9 @@ DRT::FIBER::FiberNode* DRT::FIBER::FiberNode::Clone() const
   Pack and Unpack are used to communicate this fiber node
 
 */
-void DRT::FIBER::FiberNode::Pack(DRT::PackBuffer& data) const
+void DRT::FIBER::FiberNode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -66,9 +68,9 @@ void DRT::FIBER::FiberNode::Pack(DRT::PackBuffer& data) const
   DRT::Node::Pack(data);
 
   // Add fiber data
-  DRT::ParObject::AddtoPack(data, fibers_);
-  DRT::ParObject::AddtoPack(data, coordinateSystemDirections_);
-  DRT::ParObject::AddtoPack(data, angles_);
+  CORE::COMM::ParObject::AddtoPack(data, fibers_);
+  CORE::COMM::ParObject::AddtoPack(data, coordinateSystemDirections_);
+  CORE::COMM::ParObject::AddtoPack(data, angles_);
 }
 
 /*
@@ -79,19 +81,18 @@ void DRT::FIBER::FiberNode::Pack(DRT::PackBuffer& data) const
 void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   DRT::Node::Unpack(basedata);
 
   // extract fiber data
-  DRT::ParObject::ExtractfromPack(position, data, fibers_);
-  DRT::ParObject::ExtractfromPack(position, data, coordinateSystemDirections_);
-  DRT::ParObject::ExtractfromPack(position, data, angles_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, fibers_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, coordinateSystemDirections_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, angles_);
 }
 
 /*
@@ -103,3 +104,5 @@ void DRT::FIBER::FiberNode::Print(std::ostream& os) const
   DRT::Node::Print(os);
   os << "(" << fibers_.size() << " fibers, " << angles_.size() << " angles)";
 }
+
+BACI_NAMESPACE_CLOSE

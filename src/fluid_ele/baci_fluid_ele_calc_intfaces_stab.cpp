@@ -26,14 +26,15 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gder2.H"
 #include "baci_inpar_fluid.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_list.H"
 #include "baci_mat_newtonianfluid.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
@@ -53,19 +54,19 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   switch (surfele->Shape())
   {
     // 3D:
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::tet4 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::tet4)
+      if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::tet4 &&
+          surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        return FluidInternalSurfaceStab<DRT::Element::tri3, DRT::Element::tet4,
-            DRT::Element::tet4>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4,
+            CORE::FE::CellType::tet4>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::wedge6 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::wedge6)
+      else if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::wedge6 &&
+               surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::wedge6)
       {
-        return FluidInternalSurfaceStab<DRT::Element::tri3, DRT::Element::wedge6,
-            DRT::Element::wedge6>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::tri3, CORE::FE::CellType::wedge6,
+            CORE::FE::CellType::wedge6>::Instance();
       }
       else
       {
@@ -76,19 +77,19 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
     }
     // 3D:
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::tet10 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::tet10)
+      if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::tet10 &&
+          surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::tet10)
       {
-        return FluidInternalSurfaceStab<DRT::Element::tri6, DRT::Element::tet10,
-            DRT::Element::tet10>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::tri6, CORE::FE::CellType::tet10,
+            CORE::FE::CellType::tet10>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::wedge15 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::wedge15)
+      else if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::wedge15 &&
+               surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::wedge15)
       {
-        return FluidInternalSurfaceStab<DRT::Element::tri6, DRT::Element::wedge15,
-            DRT::Element::wedge15>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::tri6, CORE::FE::CellType::wedge15,
+            CORE::FE::CellType::wedge15>::Instance();
       }
       else
       {
@@ -99,19 +100,19 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::hex8 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::hex8)
+      if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::hex8 &&
+          surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad4, DRT::Element::hex8,
-            DRT::Element::hex8>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8,
+            CORE::FE::CellType::hex8>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::wedge6 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::wedge6)
+      else if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::wedge6 &&
+               surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::wedge6)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad4, DRT::Element::wedge6,
-            DRT::Element::wedge6>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::quad4, CORE::FE::CellType::wedge6,
+            CORE::FE::CellType::wedge6>::Instance();
       }
       else
       {
@@ -122,19 +123,19 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
     }
     // 3D:
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::hex20 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::hex20)
+      if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::hex20 &&
+          surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::hex20)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad8, DRT::Element::hex20,
-            DRT::Element::hex20>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20,
+            CORE::FE::CellType::hex20>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::wedge15 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::wedge15)
+      else if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::wedge15 &&
+               surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::wedge15)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad8, DRT::Element::wedge15,
-            DRT::Element::wedge15>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::quad8, CORE::FE::CellType::wedge15,
+            CORE::FE::CellType::wedge15>::Instance();
       }
       else
       {
@@ -144,13 +145,13 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::hex27 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::hex27)
+      if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::hex27 &&
+          surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::hex27)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad9, DRT::Element::hex27,
-            DRT::Element::hex27>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27,
+            CORE::FE::CellType::hex27>::Instance();
       }
       else
       {
@@ -159,19 +160,19 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
     }
     // 2D:
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::quad4 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::quad4)
+      if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::quad4 &&
+          surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line2, DRT::Element::quad4,
-            DRT::Element::quad4>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::line2, CORE::FE::CellType::quad4,
+            CORE::FE::CellType::quad4>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::tri3 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::tri3)
+      else if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::tri3 &&
+               surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::tri3)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line2, DRT::Element::tri3,
-            DRT::Element::tri3>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::line2, CORE::FE::CellType::tri3,
+            CORE::FE::CellType::tri3>::Instance();
       }
       else
       {
@@ -181,25 +182,25 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       break;
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::quad8 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::quad8)
+      if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::quad8 &&
+          surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::quad8)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line3, DRT::Element::quad8,
-            DRT::Element::quad8>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::line3, CORE::FE::CellType::quad8,
+            CORE::FE::CellType::quad8>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::quad9 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::quad9)
+      else if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::quad9 &&
+               surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::quad9)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line3, DRT::Element::quad9,
-            DRT::Element::quad9>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::line3, CORE::FE::CellType::quad9,
+            CORE::FE::CellType::quad9>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::tri6 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::tri6)
+      else if (surfele->ParentMasterElement()->Shape() == CORE::FE::CellType::tri6 &&
+               surfele->ParentSlaveElement()->Shape() == CORE::FE::CellType::tri6)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line3, DRT::Element::tri6,
-            DRT::Element::tri6>::Instance();
+        return FluidInternalSurfaceStab<CORE::FE::CellType::line3, CORE::FE::CellType::tri6,
+            CORE::FE::CellType::tri6>::Instance();
       }
       else
       {
@@ -218,8 +219,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   return nullptr;
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>*
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instance(
     CORE::UTILS::SingletonAction action)
@@ -248,8 +248,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instance(
 //-----------------------------------------------------------------
 //                          constructor
 //-----------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInternalSurfaceStab()
     : FluidIntFaceStab(),
       elematrix_mm_(true),  ///< element matrix master-master block
@@ -356,7 +355,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
     s_connectivity_ = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
 
     // just for 3D
-    if (pdistype != DRT::Element::wedge6 and pdistype != DRT::Element::wedge15)
+    if (pdistype != CORE::FE::CellType::wedge6 and pdistype != CORE::FE::CellType::wedge15)
       connectivity_line_surf_ = CORE::DRT::UTILS::getEleNodeNumbering_lines_surfaces(pdistype);
   }
   else if (nsd_ == 2)
@@ -374,8 +373,10 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
 
   // is the face a higher order face with higher order neighboring elements?
   ishigherorder_ =
-      ((nsd_ == 3 and (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4)) or
-          (nsd_ == 2 and (pdistype != DRT::Element::tri3 or ndistype != DRT::Element::tri3)));
+      ((nsd_ == 3 and
+           (pdistype != CORE::FE::CellType::tet4 or ndistype != CORE::FE::CellType::tet4)) or
+          (nsd_ == 2 and
+              (pdistype != CORE::FE::CellType::tri3 or ndistype != CORE::FE::CellType::tri3)));
 
   return;
 }
@@ -384,10 +385,9 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
 //-----------------------------------------------------------------
 //  get the required degree to integrate face stabilizations terms
 //-----------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Degree(
-    const DRT::Element::DiscretizationType parent_ele_distype)
+    const CORE::FE::CellType parent_ele_distype)
 {
   int degree = 0;
 
@@ -416,49 +416,49 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Degree
   // switch over parent element
   switch (parent_ele_distype)
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
       degree = 2;
       break;
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
       degree = 4;
       break;
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
       degree = 4;
       break;
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
       degree = 0;
       break;
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
       degree = 4;
       break;
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       degree = 2;
       break;
-    case DRT::Element::hex20:
+    case CORE::FE::CellType::hex20:
       degree = 4;
       break;
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       degree = 4;
       break;
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
       degree = 0;
       break;
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
       degree = 2;
       break;
-    case DRT::Element::wedge6:
+    case CORE::FE::CellType::wedge6:
       degree = 2;
       break;
-    case DRT::Element::wedge15:
+    case CORE::FE::CellType::wedge15:
       degree = 4;
       break;
-    case DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       degree = 2;
       break;
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
       degree = 0;
       break;
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
       degree = 2;
       break;
     default:
@@ -473,8 +473,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Degree
 //-----------------------------------------------------------------
 //    evaluate implementation for internal surface stabilization
 //-----------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::EvaluateEdgeBasedStabilization(DRT::ELEMENTS::FluidIntFace*
                                                   intface,  ///< internal face element
@@ -852,21 +851,23 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     // parent element
     for (int jnode = 0; jnode < piel; ++jnode)
     {
-      const double* jx = pele->Nodes()[jnode]->X();
+      const double* jx = pele->Nodes()[jnode]->X().data();
       for (int idim = 0; idim < nsd_; ++idim)
-        peconvvelaf_(idim, jnode) = DRT::Problem::Instance()
-                                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                                        .Evaluate(jx, time, idim);
+        peconvvelaf_(idim, jnode) =
+            DRT::Problem::Instance()
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                .Evaluate(jx, time, idim);
     }
 
     // neighbor element
     for (int jnode = 0; jnode < niel; ++jnode)
     {
-      const double* jx = nele->Nodes()[jnode]->X();
+      const double* jx = nele->Nodes()[jnode]->X().data();
       for (int idim = 0; idim < nsd_; ++idim)
-        neconvvelaf_(idim, jnode) = DRT::Problem::Instance()
-                                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                                        .Evaluate(jx, time, idim);
+        neconvvelaf_(idim, jnode) =
+            DRT::Problem::Instance()
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                .Evaluate(jx, time, idim);
     }
 
     if (pele->IsAle()) dserror("is ALE for Oseen really reasonable");
@@ -926,23 +927,23 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     {
       switch (distype)
       {
-        case DRT::Element::line2:
-        case DRT::Element::line3:
+        case CORE::FE::CellType::line2:
+        case CORE::FE::CellType::line3:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
               CORE::DRT::UTILS::eleNodeNumbering_line3_nodes_reference[i][isd];
           break;
         }
-        case DRT::Element::tri3:
-        case DRT::Element::tri6:
+        case CORE::FE::CellType::tri3:
+        case CORE::FE::CellType::tri6:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
               CORE::DRT::UTILS::eleNodeNumbering_tri6_nodes_reference[i][isd];
           break;
         }
-        case DRT::Element::quad4:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
+        case CORE::FE::CellType::quad4:
+        case CORE::FE::CellType::quad8:
+        case CORE::FE::CellType::quad9:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
               CORE::DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][isd];
@@ -1022,8 +1023,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
         "order derivatives?");
   }
   else if (ishigherorder_ and
-           ((pdistype == DRT::Element::hex8 and ndistype == DRT::Element::hex8) or
-               (pdistype == DRT::Element::quad4 and ndistype == DRT::Element::quad4)))
+           ((pdistype == CORE::FE::CellType::hex8 and ndistype == CORE::FE::CellType::hex8) or
+               (pdistype == CORE::FE::CellType::quad4 and ndistype == CORE::FE::CellType::quad4)))
   {
     // allow only gradient-based ghost-penalties for hex8 or quad4 elements
   }
@@ -1245,8 +1246,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 //------------------------------------------------------------------------------------------------
 //   reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
 //------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ReassembleMATBlock(
     const int row_block,                         ///< row block
     const int col_block,                         ///< column block
@@ -1320,8 +1320,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Reass
 //-------------------------------------------------------------------------------------------------
 //   reassemble rhs block from master/slave rhs to patch-node block for field (row)
 //-------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ReassembleRHSBlock(
     const int row_block,                                          ///< row block
     CORE::LINALG::SerialDenseVector& rhs_block,                   ///< rhs block
@@ -1355,8 +1354,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Reass
 //-----------------------------------------------------------------
 //            get data for parent elements and surface element
 //-----------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetElementData(
     FluidIntFace* surfele,                  ///< surface FluidIntFace element
     Fluid* master_ele,                      ///< master parent element
@@ -1599,8 +1597,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
  | evaluate shape functions and derivatives at integr. point            |
  |                                                          schott 02/13|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::EvalShapeFuncAndDerivsAtIntPoint(const double wquad,  ///< Gaussian weight
     const CORE::LINALG::Matrix<facensd_, 1>&
@@ -1616,7 +1613,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: EvalShapeFuncAndDerivsAtIntPoint");
 
-  if (!(distype == DRT::Element::nurbs9))
+  if (!(distype == CORE::FE::CellType::nurbs9))
   {
     // ------------------------------------------------
     // shape function derivs of boundary element at gausspoint
@@ -1641,7 +1638,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
-  if (!(pdistype == DRT::Element::nurbs27))
+  if (!(pdistype == CORE::FE::CellType::nurbs27))
   {
     CORE::DRT::UTILS::shape_function<pdistype>(p_xi_gp, pfunct_);
     CORE::DRT::UTILS::shape_function_deriv1<pdistype>(p_xi_gp, pderiv_);
@@ -1651,7 +1648,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
-  if (!(ndistype == DRT::Element::nurbs27))
+  if (!(ndistype == CORE::FE::CellType::nurbs27))
   {
     CORE::DRT::UTILS::shape_function<ndistype>(n_xi_gp, nfunct_);
     CORE::DRT::UTILS::shape_function_deriv1<ndistype>(n_xi_gp, nderiv_);
@@ -1774,8 +1771,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
  | evaluate velocity and pressure and derivatives at integr. point      |
  |                                                          schott 02/13|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
     EvalVelPresAndDerivsAtIntPoint(bool use2ndderiv,  ///< flag to use 2nd order derivatives
         bool isAle                                    ///< flag, whether we are on an ALE-fluid
@@ -2001,8 +1997,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
  | evaluate shape functions and derivatives at integr. point            |
  |                                                          schott 04/12|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::EvalShapeFuncAndDerivsAtIntPoint(CORE::DRT::UTILS::GaussIntegration::iterator&
                                                     iquad,  ///< actual integration point
@@ -2024,7 +2019,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     xsi_(idim) = gpcoord[idim];
   }
 
-  if (!(distype == DRT::Element::nurbs9))
+  if (!(distype == CORE::FE::CellType::nurbs9))
   {
     // ------------------------------------------------
     // shape function derivs of boundary element at gausspoint
@@ -2070,7 +2065,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
-  if (!(pdistype == DRT::Element::nurbs27))
+  if (!(pdistype == CORE::FE::CellType::nurbs27))
   {
     CORE::DRT::UTILS::shape_function<pdistype>(pqxg, pfunct_);
     CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pqxg, pderiv_);
@@ -2080,7 +2075,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
-  if (!(ndistype == DRT::Element::nurbs27))
+  if (!(ndistype == CORE::FE::CellType::nurbs27))
   {
     CORE::DRT::UTILS::shape_function<ndistype>(nqxg, nfunct_);
     CORE::DRT::UTILS::shape_function_deriv1<ndistype>(nqxg, nderiv_);
@@ -2203,8 +2198,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 /*---------------------------------------------------------------------------*
  |  set the (relative) convective velocity at integration point schott 11/14 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::SetConvectiveVelint(
     DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara, const bool isale)
 {
@@ -2252,8 +2246,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::SetCo
 
 
 
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GhostPenalty2ndNormal(
     const double& tau_timefacfac_u_2nd, const double& tau_timefacfac_p_2nd)
 {
@@ -2457,8 +2450,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Ghost
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GhostPenalty2ndFull(
     const double& tau_timefacfac_u_2nd, const double& tau_timefacfac_p_2nd)
 {
@@ -2555,8 +2547,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Ghost
 
 
 
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressureEOS(
     const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
     const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
@@ -2634,8 +2625,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::press
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_streamline_EOS(
     const CORE::LINALG::Matrix<nsd_, nsd_>& vderxyaf_diff_scaled)
 {
@@ -2757,8 +2747,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_s
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_EOS(
     const double& tau_timefacfac_div,  ///< (time factor div) x (integration factor)
     const double& tau_timefacfac_rhs   ///< (time factor rhs) x (integration factor)
@@ -2849,8 +2838,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_E
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressureKrylov2Dz(
     const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
     const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
@@ -2931,8 +2919,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::press
 //------------------------------------------------------------------------------------------------
 // compute h_k w.r.t master and slave element                                         schott 04/12
 //------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_patch_hk(
     Fluid* master,                         ///< master fluid element
     Fluid* slave,                          ///< slave fluid element
@@ -2975,8 +2962,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compu
 //------------------------------------------------------------------------------------------------
 // compute h_k based on the largest diameter of the element's faces(3D), lines(2D) element  schott
 //------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_patch_hk_surf_with_max_diameter(Fluid* master,  ///< master fluid element
     Fluid* slave,                                                      ///< slave fluid element
@@ -3126,8 +3112,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 // elements)
 //                                                                                         schott
 //------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_patch_hk_diameter_to_opp_surf(Fluid* master,  ///< master fluid element
     Fluid* slave,                                                    ///< slave fluid element
@@ -3310,8 +3295,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 // compute h_e based on the diameter of the intface surface(3D) and the length of the
 // interface line(2D)                                                                      schott
 //------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_surf_diameter(
     DRT::ELEMENTS::FluidIntFace* intface  ///< intface element
 )
@@ -3383,8 +3367,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::com
 // compute h_k based on distance of quadrilateral element to opposite surface/edge
 // just for quadrilateral/hexahedral elements                                               schott
 //------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_patch_hk_dist_to_opp_surf(Fluid* master,  ///< master fluid element
     Fluid* slave,                                                ///< slave fluid element
@@ -3468,8 +3451,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 //------------------------------------------------------------------------------------------------
 // compute h_k based on the maximal diameter of the master and slave element               schott
 //------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_patch_hk_ele_diameter(
     Fluid* master,  ///< master fluid element
@@ -3606,8 +3588,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
 //------------------------------------------------------------------------------------------------
 // computation of edge-oriented/ghost-penalty stabilization parameter                 schott 12/02
 //------------------------------------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-    DRT::Element::DiscretizationType ndistype>
+template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::ComputeStabilizationParams(const bool is_ghost_penalty_reconstruct,
     const bool use2ndderiv, const INPAR::FLUID::EOS_TauType tautype, const bool EOS_conv_stream,
@@ -3755,8 +3736,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       if (nsd_ == 3)
       {
         // 3D pure tetrahedral element combinations
-        if ((pdistype == DRT::Element::tet4 and ndistype == DRT::Element::tet4) or
-            (pdistype == DRT::Element::tet10 and ndistype == DRT::Element::tet10))
+        if ((pdistype == CORE::FE::CellType::tet4 and ndistype == CORE::FE::CellType::tet4) or
+            (pdistype == CORE::FE::CellType::tet10 and ndistype == CORE::FE::CellType::tet10))
         {
           gamma_p = 0.01;
         }
@@ -3767,8 +3748,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       else if (nsd_ == 2)
       {
         // 2D triangular elements combinations
-        if ((pdistype == DRT::Element::tri3 and ndistype == DRT::Element::tri3) or
-            (pdistype == DRT::Element::tri6 and ndistype == DRT::Element::tri6))
+        if ((pdistype == CORE::FE::CellType::tri3 and ndistype == CORE::FE::CellType::tri3) or
+            (pdistype == CORE::FE::CellType::tri6 and ndistype == CORE::FE::CellType::tri6))
         {
           gamma_p = 0.1;
         }
@@ -3823,8 +3804,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       if (nsd_ == 3)
       {
         // 3D pure tetrahedral element combinations
-        if ((pdistype == DRT::Element::tet4 and ndistype == DRT::Element::tet4) or
-            (pdistype == DRT::Element::tet10 and ndistype == DRT::Element::tet10))
+        if ((pdistype == CORE::FE::CellType::tet4 and ndistype == CORE::FE::CellType::tet4) or
+            (pdistype == CORE::FE::CellType::tet10 and ndistype == CORE::FE::CellType::tet10))
         {
           gamma_p = 0.01;
         }
@@ -3835,8 +3816,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       else if (nsd_ == 2)
       {
         // 2D triangular elements combinations
-        if ((pdistype == DRT::Element::tri3 and ndistype == DRT::Element::tri3) or
-            (pdistype == DRT::Element::tri6 and ndistype == DRT::Element::tri6))
+        if ((pdistype == CORE::FE::CellType::tri3 and ndistype == CORE::FE::CellType::tri3) or
+            (pdistype == CORE::FE::CellType::tri6 and ndistype == CORE::FE::CellType::tri6))
         {
           gamma_p = 0.1;
         }
@@ -3892,8 +3873,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       if (nsd_ == 3)
       {
         // 3D pure tetrahedral element combinations
-        if ((pdistype == DRT::Element::tet4 and ndistype == DRT::Element::tet4) or
-            (pdistype == DRT::Element::tet10 and ndistype == DRT::Element::tet10))
+        if ((pdistype == CORE::FE::CellType::tet4 and ndistype == CORE::FE::CellType::tet4) or
+            (pdistype == CORE::FE::CellType::tet10 and ndistype == CORE::FE::CellType::tet10))
         {
           gamma_p = 0.01;
         }
@@ -3904,8 +3885,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       else if (nsd_ == 2)
       {
         // 2D triangular elements combinations
-        if ((pdistype == DRT::Element::tri3 and ndistype == DRT::Element::tri3) or
-            (pdistype == DRT::Element::tri6 and ndistype == DRT::Element::tri6))
+        if ((pdistype == CORE::FE::CellType::tri3 and ndistype == CORE::FE::CellType::tri3) or
+            (pdistype == CORE::FE::CellType::tri6 and ndistype == CORE::FE::CellType::tri6))
         {
           gamma_p = 0.1;
         }
@@ -4276,3 +4257,5 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 // forward declaration
@@ -43,7 +45,7 @@ namespace BEAMINTERACTION
     SphereBeamLinkingParams();
 
     //! destructor
-    virtual ~SphereBeamLinkingParams(){};
+    virtual ~SphereBeamLinkingParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init(STR::TIMINT::BaseDataGlobalState const& gstate);
@@ -177,5 +179,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -46,7 +48,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FerEchPV::CreateMaterial()
 MAT::FerEchPVType MAT::FerEchPVType::instance_;
 
 
-DRT::ParObject* MAT::FerEchPVType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FerEchPVType::Create(const std::vector<char>& data)
 {
   MAT::FerEchPV* ferech_pv = new MAT::FerEchPV();
   ferech_pv->Unpack(data);
@@ -66,9 +68,9 @@ MAT::FerEchPV::FerEchPV(MAT::PAR::FerEchPV* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::FerEchPV::Pack(DRT::PackBuffer& data) const
+void MAT::FerEchPV::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -86,10 +88,8 @@ void MAT::FerEchPV::Pack(DRT::PackBuffer& data) const
 void MAT::FerEchPV::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -218,3 +218,5 @@ double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
 
   return reacoeff;
 }
+
+BACI_NAMESPACE_CLOSE

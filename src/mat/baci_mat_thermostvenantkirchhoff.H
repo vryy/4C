@@ -20,10 +20,12 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 02/10 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 #include "baci_mat_thermomechanical.H"
+
+BACI_NAMESPACE_OPEN
 
 
 namespace MAT
@@ -41,9 +43,6 @@ namespace MAT
      public:
       //! standard constructor
       explicit ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      //! destructor
-      ~ThermoStVenantKirchhoff() override { ; }
 
       //! @name material parameters
       //@{
@@ -73,14 +72,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ThermoStVenantKirchhoffType : public DRT::ParObjectType
+  class ThermoStVenantKirchhoffType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "ThermoStVenantKirchhoffType"; }
 
     static ThermoStVenantKirchhoffType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ThermoStVenantKirchhoffType instance_;
@@ -125,7 +124,7 @@ namespace MAT
       unique parobject id delivered by UniqueParObjectId() which will then
       identify the exact class on the receiving processor.
     */
-    void Pack(DRT::PackBuffer& data  //!< (i/o): char vector to store class information
+    void Pack(CORE::COMM::PackBuffer& data  //!< (i/o): char vector to store class information
     ) const override;
 
     /*!
@@ -277,4 +276,6 @@ namespace MAT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_THERMOSTVENANTKIRCHHOFF_H

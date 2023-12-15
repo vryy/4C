@@ -16,6 +16,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// krylov subspace linear solvers (belos) with right-side preconditioning
@@ -24,7 +26,7 @@ namespace CORE::LINEAR_SOLVER
   {
    public:
     //! Constructor
-    BelosSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
+    BelosSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params);
 
     /*! \brief Setup the solver object
      *
@@ -35,8 +37,8 @@ namespace CORE::LINEAR_SOLVER
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-        const bool refactor, const bool reset,
+    void Setup(Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x,
+        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
@@ -50,5 +52,7 @@ namespace CORE::LINEAR_SOLVER
     int numiters_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

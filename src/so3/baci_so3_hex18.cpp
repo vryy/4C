@@ -8,23 +8,26 @@
 
 #include "baci_so3_hex18.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_function.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
+#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_hex18Type DRT::ELEMENTS::So_hex18Type::instance_;
 
 DRT::ELEMENTS::So_hex18Type& DRT::ELEMENTS::So_hex18Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex18Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex18Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_hex18(-1, -1);
   object->Unpack(data);
@@ -128,9 +131,9 @@ DRT::Element* DRT::ELEMENTS::So_hex18::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex18::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_hex18::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -156,10 +159,9 @@ void DRT::ELEMENTS::So_hex18::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_hex18::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -189,32 +191,14 @@ void DRT::ELEMENTS::So_hex18::Print(std::ostream& os) const
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)               seitz 11/14 |
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex18::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
 /*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                          seitz 11/14 |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex18::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -222,15 +206,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex18::Surfaces()
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex18::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -474,7 +451,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
             iostress, iostrain);
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -482,7 +459,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -546,7 +523,14 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return StrParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOH18)
@@ -573,7 +557,7 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -583,9 +567,9 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     // shape function and derivatives
     CORE::LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
-    CORE::DRT::UTILS::shape_function<DRT::Element::hex18>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex18>(xsi_[gp], shapefunct);
     CORE::LINALG::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex18>(xsi_[gp], deriv);
 
     // compute the Jacobian matrix
     CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac;
@@ -620,7 +604,7 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -659,7 +643,7 @@ int DRT::ELEMENTS::So_hex18::InitJacobianMapping()
     detJ_[gp] = 0.;
 
     CORE::LINALG::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex18>(xsi_[gp], deriv);
 
     invJ_[gp].Multiply(deriv, xrefe);
     detJ_[gp] = invJ_[gp].Invert();
@@ -692,7 +676,7 @@ void DRT::ELEMENTS::So_hex18::nlnstiffmass(std::vector<int>& lm,    ///< locatio
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -717,8 +701,8 @@ void DRT::ELEMENTS::So_hex18::nlnstiffmass(std::vector<int>& lm,    ///< locatio
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::DRT::UTILS::shape_function<hex18>(xsi_[gp], shapefunct);
-    CORE::DRT::UTILS::shape_function_deriv1<hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex18>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex18>(xsi_[gp], deriv);
 
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
@@ -969,3 +953,5 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::So_hex18::NodeParamCoord(const int nod
 
   return coord;
 }
+
+BACI_NAMESPACE_CLOSE

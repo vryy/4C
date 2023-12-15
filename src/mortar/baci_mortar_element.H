@@ -17,6 +17,8 @@
 #include "baci_mortar_node.H"
 #include "baci_utils_pairedvector.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -37,19 +39,19 @@ namespace MORTAR
   class MortarElementType : public DRT::ElementType
   {
    public:
-    std::string Name() const { return "MortarElementType"; }
+    std::string Name() const override { return "MortarElementType"; }
 
     static MortarElementType& Instance();
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-    virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+    Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-    virtual void NodalBlockInformation(
-        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+    void NodalBlockInformation(
+        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+    CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+        DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
     static MortarElementType instance_;
@@ -78,8 +80,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~MortarEleDataContainer() { return; }
-
+    virtual ~MortarEleDataContainer() = default;
     /*!
     \brief Pack this class so that it can be communicated
 
@@ -88,7 +89,7 @@ namespace MORTAR
     class exists.
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -373,8 +374,8 @@ namespace MORTAR
     \param isslave (in): flag indicating whether element is slave or master side
     \param isnurbs (in): flag indicating whether element is nurbs element or not
     */
-    MortarElement(int id, int owner, const DRT::Element::DiscretizationType& shape,
-        const int numnode, const int* nodeids, const bool isslave, bool isnurbs = false);
+    MortarElement(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+        const int* nodeids, const bool isslave, bool isnurbs = false);
 
     /*!
     \brief Copy Constructor
@@ -384,17 +385,13 @@ namespace MORTAR
     */
     MortarElement(const MORTAR::MortarElement& old);
 
-    /*!
-    \brief Destructor
 
-    */
-    virtual ~MortarElement() { return; }
 
     /*!
     \brief Deep copy the derived class and return pointer to it
 
     */
-    virtual DRT::Element* Clone() const;
+    DRT::Element* Clone() const override;
 
     /*!
     \brief Return unique ParObject id
@@ -403,7 +400,7 @@ namespace MORTAR
     top of parobject.H
 
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return MortarElementType::Instance().UniqueParObjectId();
     }
@@ -414,7 +411,7 @@ namespace MORTAR
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -422,9 +419,9 @@ namespace MORTAR
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
-    virtual DRT::ElementType& ElementType() const { return MortarElementType::Instance(); }
+    DRT::ElementType& ElementType() const override { return MortarElementType::Instance(); }
 
     //@}
 
@@ -434,25 +431,25 @@ namespace MORTAR
     \brief Get shape type of element
 
     */
-    virtual DiscretizationType Shape() const { return shape_; }
+    CORE::FE::CellType Shape() const override { return shape_; }
 
     /*!
     \brief Return number of lines to this element
 
     */
-    virtual int NumLine() const { return 0; }
+    int NumLine() const override { return 0; }
 
     /*!
     \brief Return number of surfaces to this element
 
     */
-    virtual int NumSurface() const { return 0; }
+    int NumSurface() const override { return 0; }
 
     /*!
     \brief Get vector of Teuchos::RCPs to the lines of this element
 
     */
-    virtual std::vector<Teuchos::RCP<DRT::Element>> Lines()
+    std::vector<Teuchos::RCP<DRT::Element>> Lines() override
     {
       std::vector<Teuchos::RCP<DRT::Element>> lines(0);
       return lines;
@@ -462,7 +459,7 @@ namespace MORTAR
     \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
     */
-    virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces()
+    std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override
     {
       std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
       return surfaces;
@@ -475,7 +472,7 @@ namespace MORTAR
     not with standard Node objects!
 
     */
-    virtual int NumDofPerNode(const DRT::Node& node) const;
+    int NumDofPerNode(const DRT::Node& node) const override;
 
     /*!
     \brief Get number of degrees of freedom per element
@@ -484,13 +481,13 @@ namespace MORTAR
     independent of the nodes.
 
     */
-    virtual int NumDofPerElement() const { return 0; }
+    int NumDofPerElement() const override { return 0; }
 
     /*!
     \brief Print this element
 
     */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /*!
     \brief Return slave (true) or master status
@@ -527,20 +524,20 @@ namespace MORTAR
       bool isquad = false;
       switch (Shape())
       {
-        case DRT::Element::line2:
-        case DRT::Element::nurbs2:
-        case DRT::Element::tri3:
-        case DRT::Element::quad4:
+        case CORE::FE::CellType::line2:
+        case CORE::FE::CellType::nurbs2:
+        case CORE::FE::CellType::tri3:
+        case CORE::FE::CellType::quad4:
         {
           // do nothing
           break;
         }
-        case DRT::Element::line3:
-        case DRT::Element::nurbs3:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
-        case DRT::Element::nurbs9:
-        case DRT::Element::tri6:
+        case CORE::FE::CellType::line3:
+        case CORE::FE::CellType::nurbs3:
+        case CORE::FE::CellType::quad8:
+        case CORE::FE::CellType::quad9:
+        case CORE::FE::CellType::nurbs9:
+        case CORE::FE::CellType::tri6:
         {
           isquad = true;
           break;
@@ -559,21 +556,21 @@ namespace MORTAR
     {
       switch (Shape())
       {
-        case DRT::Element::line2:
-        case DRT::Element::nurbs2:
-        case DRT::Element::line3:
-        case DRT::Element::nurbs3:
+        case CORE::FE::CellType::line2:
+        case CORE::FE::CellType::nurbs2:
+        case CORE::FE::CellType::line3:
+        case CORE::FE::CellType::nurbs3:
         {
           // this is a 2-D problem
           return 2;
           break;
         }
-        case DRT::Element::tri3:
-        case DRT::Element::quad4:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
-        case DRT::Element::nurbs9:
-        case DRT::Element::tri6:
+        case CORE::FE::CellType::tri3:
+        case CORE::FE::CellType::quad4:
+        case CORE::FE::CellType::quad8:
+        case CORE::FE::CellType::quad9:
+        case CORE::FE::CellType::nurbs9:
+        case CORE::FE::CellType::tri6:
         {
           // this is a 3-D problem
           return 3;
@@ -636,10 +633,11 @@ namespace MORTAR
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
         CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+        CORE::LINALG::SerialDenseVector& elevec2,
+        CORE::LINALG::SerialDenseVector& elevec3) override;
 
     /*!
     \brief Evaluate a Neumann boundary condition dummy
@@ -660,9 +658,9 @@ namespace MORTAR
 
     \return 0 if successful, negative otherwise
     */
-    virtual int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr)
+        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
     {
       return 0;
     }
@@ -880,7 +878,7 @@ namespace MORTAR
     \brief Evaluate 2nd derivative of shape functions
     */
     virtual bool Evaluate2ndDerivShape(
-        const double* xi, CORE::LINALG::SerialDenseMatrix& val, const int& valdim);
+        const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim);
 
     template <unsigned elenumnode>
     inline bool Evaluate2ndDerivShape(
@@ -1034,9 +1032,9 @@ namespace MORTAR
     //@}
 
    protected:
-    DRT::Element::DiscretizationType shape_;  // shape of this element
-    bool isslave_;                            // indicating slave or master side
-    bool attached_;                           // bool whether an element contributes to M
+    CORE::FE::CellType shape_;  // shape of this element
+    bool isslave_;              // indicating slave or master side
+    bool attached_;             // bool whether an element contributes to M
 
     Teuchos::RCP<MORTAR::MortarEleDataContainer> modata_;  // additional information
 
@@ -1080,14 +1078,13 @@ namespace MORTAR
     \brief Standard constructor
 
     */
-    ElementIntegrator(DRT::Element::DiscretizationType eletype);
+    ElementIntegrator(CORE::FE::CellType eletype);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~ElementIntegrator() {}
-
+    virtual ~ElementIntegrator() = default;
     //! @name Access methods
 
     /*!
@@ -1124,5 +1121,7 @@ namespace MORTAR
 
 // << operator
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarElement& ele);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_ELEMENT_H

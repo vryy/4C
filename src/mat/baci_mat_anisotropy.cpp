@@ -10,11 +10,13 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mat_anisotropy.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_fiber_nodal_fiber_holder.H"
-#include "baci_lib_parobject.H"
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_anisotropy_utils.H"
 #include "baci_mat_service.H"
+
+BACI_NAMESPACE_OPEN
 
 MAT::Anisotropy::Anisotropy()
     : element_fibers_initialized_(false),
@@ -27,22 +29,22 @@ MAT::Anisotropy::Anisotropy()
   // empty
 }
 
-void MAT::Anisotropy::PackAnisotropy(DRT::PackBuffer& data) const
+void MAT::Anisotropy::PackAnisotropy(CORE::COMM::PackBuffer& data) const
 {
-  DRT::ParObject::AddtoPack(data, numgp_);
-  DRT::ParObject::AddtoPack(data, static_cast<int>(element_fibers_initialized_));
-  DRT::ParObject::AddtoPack(data, static_cast<int>(gp_fibers_initialized_));
-  DRT::ParObject::AddtoPack(data, elementFibers_);
+  CORE::COMM::ParObject::AddtoPack(data, numgp_);
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(element_fibers_initialized_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(gp_fibers_initialized_));
+  CORE::COMM::ParObject::AddtoPack(data, elementFibers_);
   PackFiberVector<CORE::LINALG::Matrix<3, 1>>(data, gpFibers_);
 
   if (elementCylinderCoordinateSystemManager_)
   {
-    DRT::ParObject::AddtoPack(data, static_cast<int>(true));
+    CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(true));
     elementCylinderCoordinateSystemManager_->Pack(data);
   }
   else
   {
-    DRT::ParObject::AddtoPack(data, static_cast<int>(false));
+    CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(false));
   }
 
   for (const auto& gpCylinderCoordinateSystemManager : gpCylinderCoordinateSystemManagers_)
@@ -54,13 +56,14 @@ void MAT::Anisotropy::PackAnisotropy(DRT::PackBuffer& data) const
 void MAT::Anisotropy::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  DRT::ParObject::ExtractfromPack(position, data, numgp_);
-  element_fibers_initialized_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
-  gp_fibers_initialized_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
-  DRT::ParObject::ExtractfromPack(position, data, elementFibers_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, numgp_);
+  element_fibers_initialized_ =
+      static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
+  gp_fibers_initialized_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, elementFibers_);
   UnpackFiberVector<CORE::LINALG::Matrix<3, 1>>(position, data, gpFibers_);
 
-  if (static_cast<bool>(DRT::ParObject::ExtractInt(position, data)))
+  if (static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data)))
   {
     elementCylinderCoordinateSystemManager_ = CylinderCoordinateSystemManager();
     elementCylinderCoordinateSystemManager_->Unpack(data, position);
@@ -295,3 +298,4 @@ bool MAT::Anisotropy::HasGPCylinderCoordinateSystem() const
 {
   return !gpCylinderCoordinateSystemManagers_.empty();
 }
+BACI_NAMESPACE_CLOSE

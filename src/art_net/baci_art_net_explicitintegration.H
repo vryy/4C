@@ -21,9 +21,9 @@
 #include "baci_art_net_timint.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparsematrix.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
@@ -32,6 +32,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 namespace ART
 {
@@ -50,33 +52,28 @@ namespace ART
     */
     ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        FILE* errfile, IO::DiscretizationWriter& output);
+        IO::DiscretizationWriter& output);
 
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~ArtNetExplicitTimeInt();
 
     /*!
     \brief Initialization
 
     */
     void Init(const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname);
+        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
 
     /*!
     \brief solve linearised artery and bifurcation
 
     */
-    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
 
-    void SolveScatra();
+    void SolveScatra() override;
 
     /*!
       \brief build linear system matrix and rhs
@@ -84,41 +81,41 @@ namespace ART
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel){};
 
     /*!
     \brief Update the solution after convergence of the linear
            iteration. Current solution becomes old solution of next
            timestep.
     */
-    void TimeUpdate();
+    void TimeUpdate() override;
 
     /*!
     \brief Initialize the saving state vectors
     */
-    void InitSaveState();
+    void InitSaveState() override;
 
     /*!
     \brief Save the current vectors into the saving state vectors
     */
-    void SaveState();
+    void SaveState() override;
 
     /*!
     \brief Load the currently saved state vectors into the currently used vectors
     */
-    void LoadState();
+    void LoadState() override;
 
     /*!
     \brief update configuration and output to file/screen
 
     */
-    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     /*!
     \brief Test results
 
     */
-    void TestResults();
+    void TestResults() override;
 
     /*!
     \brief calculate values that could be used for postprocessing
@@ -128,13 +125,13 @@ namespace ART
 
 
     void CalcScatraFromScatraFW(
-        Teuchos::RCP<Epetra_Vector> scatra, Teuchos::RCP<Epetra_Vector> scatran_fb);
+        Teuchos::RCP<Epetra_Vector> scatra, Teuchos::RCP<Epetra_Vector> scatra_fb);
 
     /*!
     \brief read restart data
 
     */
-    void ReadRestart(int step, bool CoupledTo3D = false);
+    void ReadRestart(int step, bool CoupledTo3D = false) override;
 
     //! @name access methods for composite algorithms
 
@@ -150,7 +147,7 @@ namespace ART
     // Teuchos::RCP<Epetra_Vector> Presn()  { return presn_; }
 
     /// provide access to the Dirichlet map
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
@@ -285,5 +282,7 @@ namespace ART
 
 }  // namespace ART
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_EXPLICITINTEGRATION_H

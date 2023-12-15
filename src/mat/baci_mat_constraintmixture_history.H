@@ -12,19 +12,21 @@
 #ifndef BACI_MAT_CONSTRAINTMIXTURE_HISTORY_H
 #define BACI_MAT_CONSTRAINTMIXTURE_HISTORY_H
 
-#include "baci_lib_parobject.H"
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobject.H"
+#include "baci_comm_parobjectfactory.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
-  class ConstraintMixtureHistoryType : public DRT::ParObjectType
+  class ConstraintMixtureHistoryType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ConstraintMixtureHistoryType"; }
+    std::string Name() const override { return "ConstraintMixtureHistoryType"; }
 
     static ConstraintMixtureHistoryType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ConstraintMixtureHistoryType instance_;
@@ -32,23 +34,21 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for history of constraint mixture material
-  class ConstraintMixtureHistory : public DRT::ParObject
+  class ConstraintMixtureHistory : public CORE::COMM::ParObject
   {
     friend class ConstraintMixture;
 
    public:
     /// construct empty history object
     ConstraintMixtureHistory() { ; }
-    /// destruct history object
-    virtual ~ConstraintMixtureHistory() { ; }
 
     //! @name Packing and Unpacking
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ConstraintMixtureHistoryType::Instance().UniqueParObjectId();
     }
-    virtual void Pack(DRT::PackBuffer& data) const;
-    virtual void Unpack(const std::vector<char>& data);
+    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Unpack(const std::vector<char>& data) override;
     //@}
 
     /// Setup
@@ -122,5 +122,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_CONSTRAINTMIXTURE_HISTORY_H

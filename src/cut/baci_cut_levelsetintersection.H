@@ -12,6 +12,8 @@
 
 #include "baci_cut_parentintersection.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace LINALG
 {
@@ -61,7 +63,7 @@ namespace CORE::GEO
        *
        *  \author winter
        *  \date 08/14  */
-      void Cut_Mesh(bool screenoutput = false);
+      void Cut_Mesh(bool screenoutput = false) override;
 
       /*! \brief Performs all the level set cut operations including find positions
        *  and triangulation. (Used for the test cases)
@@ -86,9 +88,8 @@ namespace CORE::GEO
        * Which implies that the level set function of the element has values which
        * are positive and negative. */
       CORE::GEO::CUT::ElementHandle* AddElement(int eid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
-          const double* lsv, const bool lsv_only_plus_domain = false,
-          const bool& check_lsv = false);
+          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, const double* lsv,
+          const bool lsv_only_plus_domain = false, const bool& check_lsv = false);
 
       //! @}
 
@@ -114,5 +115,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

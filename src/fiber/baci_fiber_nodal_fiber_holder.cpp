@@ -11,8 +11,10 @@
 
 #include "baci_fiber_nodal_fiber_holder.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_fiber_node.H"
-#include "baci_lib_parobject.H"
+
+BACI_NAMESPACE_OPEN
 
 void DRT::FIBER::NodalFiberHolder::SetCoordinateSystemDirection(
     DRT::FIBER::CoordinateSystemDirection type,
@@ -77,3 +79,5 @@ bool DRT::FIBER::NodalFiberHolder::ContainsCoordinateSystemDirection(
 {
   return coordinateSystemDirections_.find(type) != coordinateSystemDirections_.end();
 }
+
+BACI_NAMESPACE_CLOSE

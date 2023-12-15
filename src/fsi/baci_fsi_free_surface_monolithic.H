@@ -28,6 +28,8 @@
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -64,20 +66,20 @@ namespace FSI
       : public CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>
   {
    public:
-    BlockPreconditioningMatrixFS(const CORE::LINALG::MultiMapExtractor& maps,
-        ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFluidWrapper& ale, int symmetric, double omega = 1.0,
-        int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
+    BlockPreconditioningMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::Fluid& fluid,
+        ADAPTER::AleFluidWrapper& ale, int symmetric, double omega = 1.0, int iterations = 1,
+        double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
 
     /** \name Mathematical functions */
     //@{
 
     /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     //@}
 
     /// setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
    protected:
     /// (symmetric) Gauss-Seidel block preconditioner
@@ -134,30 +136,30 @@ namespace FSI
   {
    public:
     /// construction
-    OverlappingBlockMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::Fluid& fluid,
-        ::ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
+    OverlappingBlockMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::Fluid& fluid,
+        ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
         int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
 
     /** \name Attribute access functions */
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     //@}
 
     /// setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
 
-    ::ADAPTER::Fluid& fluid_;
-    ::ADAPTER::AleFluidWrapper& ale_;
+    ADAPTER::Fluid& fluid_;
+    ADAPTER::AleFluidWrapper& ale_;
   };
 
 
@@ -170,17 +172,15 @@ namespace FSI
     \author --
     \date --
    */
-  class MonolithicBaseFS : public ::ADAPTER::AlgorithmBase
+  class MonolithicBaseFS : public ADAPTER::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
     explicit MonolithicBaseFS(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    /// virtual destructor to support polymorph destruction
-    virtual ~MonolithicBaseFS();
 
     /// read restart data
-    void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /// access to Fluid field
     const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
@@ -192,13 +192,13 @@ namespace FSI
     //! @name Time loop building blocks
 
     /// start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     /// write output
-    virtual void Output();
+    void Output() override;
 
     //@}
 
@@ -219,10 +219,10 @@ namespace FSI
     Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
 
     /// underlying fluid of the FS problem
-    Teuchos::RCP<::ADAPTER::Fluid> fluid_;
+    Teuchos::RCP<ADAPTER::Fluid> fluid_;
 
     /// underlying ale of the FS problem
-    Teuchos::RCP<::ADAPTER::AleFluidWrapper> ale_;
+    Teuchos::RCP<ADAPTER::AleFluidWrapper> ale_;
   };
 
 
@@ -235,43 +235,43 @@ namespace FSI
     \date --
    */
   class MonolithicMainFS : public MonolithicBaseFS,
-                           public NOX::Epetra::Interface::Required,
-                           public NOX::Epetra::Interface::Jacobian,
-                           public NOX::Epetra::Interface::Preconditioner,
-                           public NOX::Direction::UserDefinedFactory
+                           public ::NOX::Epetra::Interface::Required,
+                           public ::NOX::Epetra::Interface::Jacobian,
+                           public ::NOX::Epetra::Interface::Preconditioner,
+                           public ::NOX::Direction::UserDefinedFactory
   {
    public:
     explicit MonolithicMainFS(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// outer level FSI time loop
-    void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! @name NOX methods
 
     /// compute FSI residual
-    bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
+    bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
     /// compute FSI block matrix
-    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
     /// preconditioner
-    bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
+    bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
+        Teuchos::ParameterList* precParams = nullptr) override;
 
     //@}
 
     /// create my own direction object
     /*!
       MonolithicMainFS is a (inherits from)
-      NOX::Direction::UserDefinedFactory. This is an implementation
+      ::NOX::Direction::UserDefinedFactory. This is an implementation
       detail. This way we can construct a specialized direction object at a
       place where we know about the status tests. This is the whole point
       here. Our specialized direction is of the type NOX::FSI::Newton, the
       normal Newton direction enhanced with adaptive tolerance control for the
       internal linear (iterative) solver.
      */
-    virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(
-        const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const;
+    Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
+        const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
 
     //! @name Apply current field state to system
 
@@ -285,7 +285,7 @@ namespace FSI
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
+        Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
     );
 
     /// Extract initial guess from fields
@@ -299,13 +299,13 @@ namespace FSI
 
    protected:
     /// setup solver for global block system
-    virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
-        Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln,
-        Teuchos::RCP<NOX::Utils> utils) = 0;
+    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
+        Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
+        Teuchos::RCP<::NOX::Utils> utils) = 0;
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
+    virtual Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) = 0;
 
     /// extract the two field vectors from a given composed vector
     /*!
@@ -322,7 +322,7 @@ namespace FSI
     //! @name Access methods for subclasses
 
     /// output utility
-    Teuchos::RCP<NOX::Utils> Utils() const { return utils_; }
+    Teuchos::RCP<::NOX::Utils> Utils() const { return utils_; }
 
     /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
@@ -357,7 +357,7 @@ namespace FSI
     CORE::LINALG::MultiMapExtractor blockrowdofmap_;
 
     /// output utilities
-    Teuchos::RCP<NOX::Utils> utils_;
+    Teuchos::RCP<::NOX::Utils> utils_;
 
     /// flags passed to NOX
     Teuchos::ParameterList noxparameterlist_;
@@ -384,18 +384,18 @@ namespace FSI
     //! @name NOX methods
 
     /// compute FSI block matrix
-    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
     /// preconditioner
-    bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
+    bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
+        Teuchos::ParameterList* precParams = nullptr) override;
 
     //@}
 
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix() { SetupSystemMatrix(*SystemMatrix()); }
+    void SetupSystemMatrix() override { SetupSystemMatrix(*SystemMatrix()); }
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
@@ -406,10 +406,10 @@ namespace FSI
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(), b); }
+    void ScaleSystem(Epetra_Vector& b) override { ScaleSystem(*SystemMatrix(), b); }
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b)
+    void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) override
     {
       UnscaleSolution(*SystemMatrix(), x, b);
     }
@@ -429,7 +429,7 @@ namespace FSI
 
    protected:
     /// start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
    private:
     /*! \brief Counter of iterations to reuse the block matrix preconditioner
@@ -460,34 +460,37 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall = false);
+    void SetupRHS(Epetra_Vector& f, bool firstcall = false) override;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
+    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     //@}
 
     /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override;
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override
+    {
+      return systemmatrix_;
+    }
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+    void UnscaleSolution(
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
    protected:
     /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
-        NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils);
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp);
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /// extract the two field vectors from a given composed vector
     /*!
@@ -498,8 +501,8 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& fx, Teuchos::RCP<const Epetra_Vector>& ax);
+    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& fx, Teuchos::RCP<const Epetra_Vector>& ax) override;
 
 
    private:
@@ -541,28 +544,30 @@ namespace NOX
   namespace FSI
   {
     /// Special NOX group that always sets Jacobian and RHS at the same time.
-    class GroupFS : public NOX::Epetra::Group
+    class GroupFS : public ::NOX::Epetra::Group
     {
      public:
-      GroupFS(::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
-          const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
+      GroupFS(BACI::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
+          const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys);
 
       /// fetch the known Jacobian and RHS from the field solvers
       void CaptureSystemState();
 
-      virtual NOX::Abstract::Group::ReturnType computeF();
+      ::NOX::Abstract::Group::ReturnType computeF() override;
 
-      virtual NOX::Abstract::Group::ReturnType computeJacobian();
+      ::NOX::Abstract::Group::ReturnType computeJacobian() override;
 
-      NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
+      ::NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p) override;
 
      private:
-      ::FSI::MonolithicMainFS& mfsi_;
+      BACI::FSI::MonolithicMainFS& mfsi_;
     };
   }  // namespace FSI
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

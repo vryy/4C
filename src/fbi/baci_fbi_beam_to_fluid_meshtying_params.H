@@ -14,6 +14,8 @@
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR
 {
   namespace FBI
@@ -41,10 +43,6 @@ namespace FBI
      */
     BeamToFluidMeshtyingParams();
 
-    /**
-     * \brief empty Destructor
-     */
-    ~BeamToFluidMeshtyingParams() override = default;
 
     /**
      * \brief Initialize with the stuff coming from input file
@@ -120,10 +118,11 @@ namespace FBI
     inline CORE::DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
 
     /**
-     * \brief Returns a pointer to the vtk output parameters.
-     * @return Pointer to vtk output parameters.
+     * \brief Returns a pointer to the visualization output parameters.
+     * @return Pointer to visualization output parameters.
      */
-    const Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> GetVtkOuputParamsPtr() const
+    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> GetVisualizationOuputParamsPtr()
+        const
     {
       return output_params_;
     }
@@ -167,7 +166,7 @@ namespace FBI
      */
     bool calcfluidweakdirichletforce_;
 
-    /// VTK output params. For now I see no reason to overload this
+    /// Visualization output params. For now I see no reason to overload this
     Teuchos::RCP<FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_;
 
     //! Shape function for the mortar Lagrange-multiplicators
@@ -175,5 +174,7 @@ namespace FBI
   };
 
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

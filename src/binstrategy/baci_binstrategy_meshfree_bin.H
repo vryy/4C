@@ -13,6 +13,8 @@
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace MESHFREE
@@ -61,13 +63,6 @@ namespace DRT
 
       /*------------------------------------------------------------------------*/
       /*!
-       * \brief Destructor
-       *///                                                  (public) ghamm 11/12
-      /*------------------------------------------------------------------------*/
-      virtual ~MeshfreeBin();
-
-      /*------------------------------------------------------------------------*/
-      /*!
        * \brief Deep copy the derived class and return pointer to it
        *
        * This method is sort of a copy constructor for a class derived from
@@ -76,7 +71,7 @@ namespace DRT
        *
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      virtual DRT::Element* Clone() const = 0;
+      DRT::Element* Clone() const override = 0;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -86,7 +81,7 @@ namespace DRT
        * top of parobject.H
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      virtual int UniqueParObjectId() const = 0;
+      int UniqueParObjectId() const override = 0;
 
       /*========================================================================*/
       //! @name Query methods
@@ -156,5 +151,7 @@ namespace DRT
 
   }  // namespace MESHFREE
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BINSTRATEGY_MESHFREE_BIN_H

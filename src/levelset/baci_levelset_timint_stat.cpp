@@ -11,6 +11,8 @@
 
 #include "baci_levelset_timint_stat.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
@@ -28,11 +30,6 @@ SCATRA::LevelSetTimIntStationary::LevelSetTimIntStationary(Teuchos::RCP<DRT::Dis
   return;
 }
 
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                              rasthofer 09/13 |
-*-----------------------------------------------------------------------*/
-SCATRA::LevelSetTimIntStationary::~LevelSetTimIntStationary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -81,3 +78,5 @@ void SCATRA::LevelSetTimIntStationary::Setup()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -22,9 +24,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit LubricationLaw(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      virtual ~LubricationLaw() { ; }
 
       /// compute current viscosity and save it
       virtual void ComputeViscosity(
@@ -49,24 +48,20 @@ namespace MAT
       /// standard constructor
       explicit LubricationLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~LubricationLawConstant() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// compute current viscosity and save it
-      virtual void ComputeViscosity(
-          const double& press,  ///< (i) lubrication pressure at gauss point
-          double& viscosity     ///< (o) viscosity at gauss point
-      );
+      void ComputeViscosity(const double& press,  ///< (i) lubrication pressure at gauss point
+          double& viscosity                       ///< (o) viscosity at gauss point
+          ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives
-      virtual void ConstitutiveDerivatives(
+      void ConstitutiveDerivatives(
           const double& press,      ///< (i) lubrication pressure at gauss point
           const double& viscosity,  ///< (i) viscosity at gauss point
           double& dviscosity_dp     ///< (o) derivative of potential w.r.t. pressure
-      );
+          ) override;
 
 
       /// constant viscosity
@@ -82,25 +77,21 @@ namespace MAT
       /// standard constructor
       explicit LubricationLawBarus(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~LubricationLawBarus() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
 
       /// compute current viscosity and save it
-      virtual void ComputeViscosity(
-          const double& press,  ///< (i) lubrication pressure at gauss point
-          double& viscosity     ///< (o) viscosity at gauss point
-      );
+      void ComputeViscosity(const double& press,  ///< (i) lubrication pressure at gauss point
+          double& viscosity                       ///< (o) viscosity at gauss point
+          ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives
-      virtual void ConstitutiveDerivatives(
+      void ConstitutiveDerivatives(
           const double& press,      ///< (i) lubrication pressure at gauss point
           const double& viscosity,  ///< (i) viscosity at gauss point
           double& dviscosity_dp     ///< (o) derivative of potential w.r.t. pressure
-      );
+          ) override;
 
 
 
@@ -119,25 +110,21 @@ namespace MAT
       /// standard constructor
       explicit LubricationLawRoeland(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~LubricationLawRoeland() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
 
       /// compute current viscosity and save it
-      virtual void ComputeViscosity(
-          const double& press,  ///< (i) lubrication pressure at gauss point
-          double& viscosity     ///< (o) viscosity at gauss point
-      );
+      void ComputeViscosity(const double& press,  ///< (i) lubrication pressure at gauss point
+          double& viscosity                       ///< (o) viscosity at gauss point
+          ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives
-      virtual void ConstitutiveDerivatives(
+      void ConstitutiveDerivatives(
           const double& press,      ///< (i) lubrication pressure at gauss point
           const double& viscosity,  ///< (i) viscosity at gauss point
           double& dviscosity_dp     ///< (o) derivative of potential w.r.t. pressure
-      );
+          ) override;
 
 
 
@@ -160,5 +147,7 @@ namespace MAT
   }  // namespace PAR
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_LUBRICATION_LAW_H

@@ -17,6 +17,8 @@
 #include "baci_cut_volumecell.H"
 #include "baci_discretization_geometry_element_volume.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -24,14 +26,14 @@ bool CORE::GEO::CUT::IntegrationCell::Contains(CORE::LINALG::Matrix<3, 1>& x)
 {
   switch (this->Shape())
   {
-    case ::DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
     {
       // find element local position of gauss point
-      return Contains<3, ::DRT::Element::tet4>(x);
+      return Contains<3, CORE::FE::CellType::tet4>(x);
     }
-    case ::DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      return Contains<3, ::DRT::Element::hex8>(x);
+      return Contains<3, CORE::FE::CellType::hex8>(x);
     }
     default:
     {
@@ -45,10 +47,10 @@ bool CORE::GEO::CUT::IntegrationCell::Contains(CORE::LINALG::Matrix<3, 1>& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType celltype>
+template <unsigned probdim, CORE::FE::CellType celltype>
 bool CORE::GEO::CUT::IntegrationCell::Contains(CORE::LINALG::Matrix<probdim, 1>& x)
 {
-  const int ncn = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celltype>::numNodePerElement;
+  const int ncn = CORE::FE::num_nodes<celltype>;
 
   CORE::LINALG::Matrix<probdim, ncn> coords(xyz_);
 
@@ -71,13 +73,11 @@ void CORE::GEO::CUT::IntegrationCell::DumpGmsh(std::ofstream& file, int* value)
 double CORE::GEO::CUT::IntegrationCell::Volume() const
 {
   return CORE::GEO::ElementVolume(Shape(), xyz_);
-  ;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Line2IntegrationCell::CubatureDegree(
-    ::DRT::Element::DiscretizationType elementshape) const
+int CORE::GEO::CUT::Line2IntegrationCell::CubatureDegree(CORE::FE::CellType elementshape) const
 {
   // not 100% sure what this value really means, but 4 seems more than sufficient.
   return 4;
@@ -85,42 +85,39 @@ int CORE::GEO::CUT::Line2IntegrationCell::CubatureDegree(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Tri3IntegrationCell::CubatureDegree(
-    ::DRT::Element::DiscretizationType elementshape) const
+int CORE::GEO::CUT::Tri3IntegrationCell::CubatureDegree(CORE::FE::CellType elementshape) const
 {
   return 4;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Quad4IntegrationCell::CubatureDegree(
-    ::DRT::Element::DiscretizationType elementshape) const
+int CORE::GEO::CUT::Quad4IntegrationCell::CubatureDegree(CORE::FE::CellType elementshape) const
 {
   return 4;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Hex8IntegrationCell::CubatureDegree(
-    ::DRT::Element::DiscretizationType elementshape) const
+int CORE::GEO::CUT::Hex8IntegrationCell::CubatureDegree(CORE::FE::CellType elementshape) const
 {
   switch (elementshape)
   {
-    case ::DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       return 6;
-    case ::DRT::Element::hex20:
+    case CORE::FE::CellType::hex20:
       return 15;
-    case ::DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       return 15;
-    case ::DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
       return 6;
-    case ::DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
       return 6;
-    case ::DRT::Element::wedge6:
+    case CORE::FE::CellType::wedge6:
       return 6;
-    case ::DRT::Element::wedge15:
+    case CORE::FE::CellType::wedge15:
       return 14;
-    case ::DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       return 6;
     default:
       dserror("no rule defined for this element type");
@@ -130,26 +127,25 @@ int CORE::GEO::CUT::Hex8IntegrationCell::CubatureDegree(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Tet4IntegrationCell::CubatureDegree(
-    ::DRT::Element::DiscretizationType elementshape) const
+int CORE::GEO::CUT::Tet4IntegrationCell::CubatureDegree(CORE::FE::CellType elementshape) const
 {
   switch (elementshape)
   {
-    case ::DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       return 6;
-    case ::DRT::Element::hex20:
+    case CORE::FE::CellType::hex20:
       return 15;
-    case ::DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       return 15;
-    case ::DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
       return 6;
-    case ::DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
       return 7;
-    case ::DRT::Element::wedge6:
+    case CORE::FE::CellType::wedge6:
       return 6;
-    case ::DRT::Element::wedge15:
+    case CORE::FE::CellType::wedge15:
       return 14;
-    case ::DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       return 6;
     default:
       dserror("no rule defined for this element type");
@@ -159,16 +155,14 @@ int CORE::GEO::CUT::Tet4IntegrationCell::CubatureDegree(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Wedge6IntegrationCell::CubatureDegree(
-    ::DRT::Element::DiscretizationType elementshape) const
+int CORE::GEO::CUT::Wedge6IntegrationCell::CubatureDegree(CORE::FE::CellType elementshape) const
 {
   return 4;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Pyramid5IntegrationCell::CubatureDegree(
-    ::DRT::Element::DiscretizationType elementshape) const
+int CORE::GEO::CUT::Pyramid5IntegrationCell::CubatureDegree(CORE::FE::CellType elementshape) const
 {
   return 4;
 }
@@ -179,7 +173,7 @@ void CORE::GEO::CUT::IntegrationCell::Print(std::ostream& stream) const
 {
   stream << "--- integration cell ( address: " << std::setw(10) << this << " )\n";
   stream << "pos = " << Point::PointPosition2String(Position()) << " "
-         << "shape = " << ::DRT::DistypeToString(Shape()) << " "
+         << "shape = " << CORE::FE::CellTypeToString(Shape()) << " "
          << "volume = " << Volume() << "\n";
   for (unsigned i = 0; i < points_.size(); ++i)
   {
@@ -187,3 +181,5 @@ void CORE::GEO::CUT::IntegrationCell::Print(std::ostream& stream) const
     stream << "\n";
   }
 }
+
+BACI_NAMESPACE_CLOSE

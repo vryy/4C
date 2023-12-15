@@ -16,6 +16,8 @@
 #include "baci_cut_utils.H"
 #include "baci_inpar_cut.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -42,9 +44,9 @@ namespace CORE::GEO
     {
      public:
       /// \brief create an element with the given type
-      static Teuchos::RCP<CORE::GEO::CUT::Element> Create(
-          const ::DRT::Element::DiscretizationType& elementtype, const int& eid,
-          const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
+      static Teuchos::RCP<CORE::GEO::CUT::Element> Create(const CORE::FE::CellType& elementtype,
+          const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
+          const bool& active);
 
       /// create an element with the given shards-key (coming from trilinos library)
       static Teuchos::RCP<CORE::GEO::CUT::Element> Create(const unsigned& shardskey, const int& eid,
@@ -55,13 +57,12 @@ namespace CORE::GEO
           int eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active);
 
       //! destructor
-      virtual ~Element() {}
-
+      virtual ~Element() = default;
       /*! \brief Returns the ID of the element */
       int Id() const { return eid_; }
 
       /*! \brief Returns the shape of the element */
-      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
+      virtual CORE::FE::CellType Shape() const = 0;
 
       //! element dimension
       virtual unsigned Dim() const = 0;
@@ -377,7 +378,7 @@ namespace CORE::GEO
       /*!
       \brief Get total number of Gaussinan points generated over all the volumecells of this element
        */
-      int NumGaussPoints(::DRT::Element::DiscretizationType shape);
+      int NumGaussPoints(CORE::FE::CellType shape);
 
       void DebugDump();
 
@@ -407,11 +408,11 @@ namespace CORE::GEO
       If set shadow = true, then the mapping is done w.r to the parent Quad element from which this
       shadow element is derived
        */
-      template <int probdim, ::DRT::Element::DiscretizationType distype>
+      template <int probdim, CORE::FE::CellType distype>
       double ScalarFromLocalToGlobal(double scalar, std::string transformType, bool shadow = false)
       {
-        const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-        const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        const int nen = CORE::FE::num_nodes<distype>;
+        const int dim = CORE::FE::dim<distype>;
         CORE::LINALG::Matrix<probdim, nen> xyze;
         CORE::LINALG::Matrix<probdim, 1> xei;
         xei = 0.1;  // the determinant of the Jacobian is independent of the considered point (true
@@ -489,12 +490,12 @@ namespace CORE::GEO
       /*!
       \brief Set the discretization type of parent quad element
        */
-      void setQuadShape(::DRT::Element::DiscretizationType dis) { quadshape_ = dis; }
+      void setQuadShape(CORE::FE::CellType dis) { quadshape_ = dis; }
 
       /*!
       \brief Get shape of parent Quad element from which this shadow element is derived
        */
-      ::DRT::Element::DiscretizationType getQuadShape() { return quadshape_; }
+      CORE::FE::CellType getQuadShape() { return quadshape_; }
 
       /*!
       \brief calculate the local coordinates of "xyz" with respect to the parent Quad element from
@@ -583,9 +584,9 @@ namespace CORE::GEO
      private:
       /*! \brief Returns true if there is at least one cut point between the background
        *  element side and the cut side ("other") */
-      bool FindCutPoints(Mesh& mesh, Side& side, Side& other);
+      bool FindCutPoints(Mesh& mesh, Side& side, Side& cut_side);
 
-      bool FindCutLines(Mesh& mesh, Side& side, Side& other);
+      bool FindCutLines(Mesh& mesh, Side& side, Side& cut_side);
 
       /// element Id of the linear element (sub-element for quadratic elements)
       int eid_;
@@ -622,7 +623,7 @@ namespace CORE::GEO
       bool isShadow_;
 
       /// Discretization shape of the parent quad element
-      ::DRT::Element::DiscretizationType quadshape_;
+      CORE::FE::CellType quadshape_;
 
       /// the bounding volume of the element
       Teuchos::RCP<BoundingBox> boundingvolume_;
@@ -636,10 +637,9 @@ namespace CORE::GEO
     /*! \brief Implementation of the concrete cut element
      *
      *  \author hiermeier */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType elementtype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim>
+    template <unsigned probdim, CORE::FE::CellType elementtype,
+        unsigned numNodesElement = CORE::FE::num_nodes<elementtype>,
+        unsigned dim = CORE::FE::dim<elementtype>>
     class ConcreteElement : public Element
     {
      public:
@@ -650,22 +650,19 @@ namespace CORE::GEO
       {
       }
 
-      //! destructor
-      virtual ~ConcreteElement(){};
-
       //! return element shape
-      virtual ::DRT::Element::DiscretizationType Shape() const { return elementtype; }
+      CORE::FE::CellType Shape() const override { return elementtype; }
 
       //! get problem dimension
-      virtual unsigned ProbDim() const { return probdim; }
+      unsigned ProbDim() const override { return probdim; }
 
       //! get element dimension
-      virtual unsigned Dim() const { return dim; }
+      unsigned Dim() const override { return dim; }
 
       //! get the number of nodes
-      virtual unsigned NumNodes() const { return numNodesElement; }
+      unsigned NumNodes() const override { return numNodesElement; }
 
-      bool PointInside(Point* p);
+      bool PointInside(Point* p) override;
 
       void Coordinates(CORE::LINALG::Matrix<probdim, numNodesElement>& xyze) const
       {
@@ -673,7 +670,7 @@ namespace CORE::GEO
       }
 
       /*! \brief Get the coordinates of all the nodes of this linear shadow element */
-      virtual void Coordinates(double* xyze) const
+      void Coordinates(double* xyze) const override
       {
         double* x = xyze;
         for (std::vector<Node*>::const_iterator i = Nodes().begin(); i != Nodes().end(); ++i)
@@ -685,7 +682,7 @@ namespace CORE::GEO
       }
 
       /*! \brief Get the coordinates of all node of parent Quad element */
-      virtual void CoordinatesQuad(double* xyze)
+      void CoordinatesQuad(double* xyze) override
       {
         double* x = xyze;
         for (std::vector<Node*>::const_iterator i = QuadCorners().begin(); i != QuadCorners().end();
@@ -918,7 +915,7 @@ namespace CORE::GEO
 
      protected:
       //! derived
-      virtual bool LocalCoordinates(const double* xyz, double* rst)
+      bool LocalCoordinates(const double* xyz, double* rst) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);            // create view
@@ -926,7 +923,7 @@ namespace CORE::GEO
       }
 
       //! derived
-      virtual void GlobalCoordinates(const double* rst, double* xyz)
+      void GlobalCoordinates(const double* rst, double* xyz) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);    // create view
@@ -934,55 +931,55 @@ namespace CORE::GEO
       }
 
       //! derived
-      virtual void ElementCenter(double* midpoint)
+      void ElementCenter(double* midpoint) override
       {
         CORE::LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
         ElementCenter(midpoint_mat);
       }
 
       //! derived
-      virtual double Scalar(const std::vector<double>& ns, const double* rst)
+      double Scalar(const std::vector<double>& ns, const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return Scalar(ns, rst_mat);
       }
 
       //! derived
-      virtual double GetLevelSetValue(const double* xyz)
+      double GetLevelSetValue(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetValue(xyz_mat);
       }
 
-      virtual double GetLevelSetValueAtLocalCoords(const double* rst)
+      double GetLevelSetValueAtLocalCoords(const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetValueAtLocalCoords(rst_mat);
       }
 
       //! derived
-      virtual std::vector<double> GetLevelSetGradient(const double* xyz)
+      std::vector<double> GetLevelSetGradient(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetGradient(xyz_mat);
       }
 
       //! derived
-      virtual std::vector<double> GetLevelSetGradientAtLocalCoords(const double* rst)
+      std::vector<double> GetLevelSetGradientAtLocalCoords(const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetGradientAtLocalCoords(rst_mat);
       }
 
       //! derived
-      virtual std::vector<double> GetLevelSetGradientInLocalCoords(const double* xyz)
+      std::vector<double> GetLevelSetGradientInLocalCoords(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetGradientInLocalCoords(xyz_mat);
       }
 
       //! derived
-      virtual std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(const double* rst)
+      std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetGradientAtLocalCoordsInLocalCoords(rst_mat);
@@ -996,17 +993,17 @@ namespace CORE::GEO
       /// constructor
       ElementFactory(){};
 
-      Teuchos::RCP<Element> CreateElement(::DRT::Element::DiscretizationType elementtype, int eid,
+      Teuchos::RCP<Element> CreateElement(CORE::FE::CellType elementtype, int eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active) const;
 
      private:
-      template <::DRT::Element::DiscretizationType elementtype>
+      template <CORE::FE::CellType elementtype>
       Element* CreateConcreteElement(int eid, const std::vector<Side*>& sides,
           const std::vector<Node*>& nodes, bool active, int probdim) const
       {
         Element* e = nullptr;
         // sanity check
-        if (probdim < CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim)
+        if (probdim < CORE::FE::dim<elementtype>)
           dserror("Problem dimension is smaller than the element dimension!");
 
         switch (probdim)
@@ -1031,5 +1028,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -14,6 +14,9 @@
 #include "baci_beamcontact_beam3contactnew.H"
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_inpar_beamcontact.H"
+#include "baci_lib_element.H"
+
+BACI_NAMESPACE_OPEN
 
 Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl(
     const int numnodes, const int numnodalvalues, const DRT::Discretization& pdiscret,
@@ -156,3 +159,5 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
   }
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

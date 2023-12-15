@@ -13,9 +13,22 @@
 #include "baci_fsi_str_model_evaluator_partitioned.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
+
+BACI_NAMESPACE_OPEN
+
+namespace
+{
+  bool PrestressIsActive(const double currentTime)
+  {
+    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+    const double pstime =
+        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+    return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -81,7 +94,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     {
       // d(n)
       // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-      if (UTILS::PRESTRESS::IsActive(Time()))
+      if (PrestressIsActive(Time()))
       {
         idis = Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
       }
@@ -98,7 +111,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     case 3:
     {
       // d(n)+dt*v(n)
-      if (UTILS::PRESTRESS::IsActive(Time()))
+      if (PrestressIsActive(Time()))
         dserror("only constant interface predictor useful for prestressing");
 
       double dt = Dt();
@@ -112,7 +125,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     case 4:
     {
       // d(n)+dt*v(n)+0.5*dt^2*a(n)
-      if (UTILS::PRESTRESS::IsActive(Time()))
+      if (PrestressIsActive(Time()))
         dserror("only constant interface predictor useful for prestressing");
 
       double dt = Dt();
@@ -145,7 +158,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn(
       "Full map of map extractor and Dispn() do not match.");
 
   // prestressing business
-  if (UTILS::PRESTRESS::IsActive(Time()))
+  if (PrestressIsActive(Time()))
   {
     return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
   }
@@ -164,7 +177,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
       "Full map of map extractor and Dispnp() do not match.");
 
   // prestressing business
-  if (UTILS::PRESTRESS::IsActive(Time()))
+  if (PrestressIsActive(Time()))
   {
     if (Discretization()->Comm().MyPID() == 0)
       std::cout << "Applying no displacements to the fluid since we do prestressing" << std::endl;
@@ -212,3 +225,5 @@ Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> ADAPTER::FSIStructureWrapper::
 {
   return fsi_model_evaluator_;
 };
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@
 #include "baci_scatra_timint_elch.H"
 #include "baci_scatra_timint_meshtying_strategy_fluid.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /*!
@@ -35,11 +37,9 @@ namespace SCATRA
     //! constructor
     explicit MeshtyingStrategyFluidElch(SCATRA::ScaTraTimIntElch* elchtimint);
 
-    //! destructor
-    virtual ~MeshtyingStrategyFluidElch() { return; };
 
     //! initialize meshtying objects
-    void InitMeshtying();
+    void InitMeshtying() override;
 
     //! setup meshtying objects
     void SetupMeshtying() override;
@@ -55,7 +55,9 @@ namespace SCATRA
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
   };  // class MeshtyingStrategyFluidElch
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_H

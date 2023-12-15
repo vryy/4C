@@ -16,6 +16,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class CoElement;
@@ -60,9 +62,6 @@ namespace CONTACT
           INPAR::CONTACT::friction_none)
         dserror("CoNitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
     }
-
-    ~CoNitscheStrategyFpi() override = default;
-
     //! Set Contact State and update search tree and normals
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
@@ -85,4 +84,6 @@ namespace CONTACT
     INPAR::CONTACT::NitscheWeighting weighting_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_STRATEGY_FPI_H

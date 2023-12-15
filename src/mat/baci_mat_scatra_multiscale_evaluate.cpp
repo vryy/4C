@@ -25,6 +25,8 @@ the file filter_commmon/filter_evaluation.cpp needs to be adapted accordingly.
 #include "baci_mat_scatra_multiscale.H"
 #include "baci_mat_scatra_multiscale_gp.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScale::Initialize(const int ele_id, const int gp_id, const bool is_ale)
@@ -129,3 +131,5 @@ void MAT::ScatraMultiScale::SetTimeStepping(
 {
   matgp_.at(gp_id)->SetTimeStepping(dt, time, step);
 }
+
+BACI_NAMESPACE_CLOSE

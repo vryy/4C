@@ -16,13 +16,15 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 bool BEAMINTERACTION::GEO::PointToCurveProjection(CORE::LINALG::Matrix<3, 1, T> const& r_slave,
     T& xi_master, double const& xi_master_initial_guess,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& master_centerline_dof_values,
-    const DRT::Element::DiscretizationType& master_distype, double master_ele_ref_length)
+    const CORE::FE::CellType& master_distype, double master_ele_ref_length)
 {
   // vectors for shape functions values and their derivatives
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i(true);
@@ -665,39 +667,39 @@ void BEAMINTERACTION::GEO::CalcEnclosedAngle(T& angle, T& cosine_angle,
 // explicit template instantiations
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<2, 1, double>(
     CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const CORE::LINALG::Matrix<6, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    const CORE::LINALG::Matrix<6, 1, double>&, const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<3, 1, double>(
     CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const CORE::LINALG::Matrix<9, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    const CORE::LINALG::Matrix<9, 1, double>&, const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<4, 1, double>(
     CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const CORE::LINALG::Matrix<12, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    const CORE::LINALG::Matrix<12, 1, double>&, const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<5, 1, double>(
     CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const CORE::LINALG::Matrix<15, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    const CORE::LINALG::Matrix<15, 1, double>&, const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<2, 2, double>(
     CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const CORE::LINALG::Matrix<12, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    const CORE::LINALG::Matrix<12, 1, double>&, const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<2, 1, Sacado::Fad::DFad<double>>(
     CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const CORE::LINALG::Matrix<6, 1, Sacado::Fad::DFad<double>>&,
-    const DRT::Element::DiscretizationType&, double);
+    const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<3, 1, Sacado::Fad::DFad<double>>(
     CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const CORE::LINALG::Matrix<9, 1, Sacado::Fad::DFad<double>>&,
-    const DRT::Element::DiscretizationType&, double);
+    const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<4, 1, Sacado::Fad::DFad<double>>(
     CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
-    const DRT::Element::DiscretizationType&, double);
+    const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<5, 1, Sacado::Fad::DFad<double>>(
     CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const CORE::LINALG::Matrix<15, 1, Sacado::Fad::DFad<double>>&,
-    const DRT::Element::DiscretizationType&, double);
+    const CORE::FE::CellType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<2, 2, Sacado::Fad::DFad<double>>(
     CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
-    const DRT::Element::DiscretizationType&, double);
+    const CORE::FE::CellType&, double);
 
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
     1, double>(CORE::LINALG::Matrix<1, 6, double>&, CORE::LINALG::Matrix<1, 6, double>&,
@@ -831,3 +833,5 @@ template void BEAMINTERACTION::GEO::CalcEnclosedAngle<Sacado::Fad::DFad<double>>
     Sacado::Fad::DFad<double>&, Sacado::Fad::DFad<double>&,
     const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
+
+BACI_NAMESPACE_CLOSE

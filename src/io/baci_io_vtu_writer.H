@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 /*
  \brief class for VTU output generation
@@ -29,9 +30,6 @@ class VtuWriter : public VtkWriterBase
  public:
   //! constructor
   VtuWriter();
-
-  //! destructor
-  virtual ~VtuWriter() {}
 
   //! write the geometry defining this unstructured grid
   void WriteGeometryUnstructuredGrid(const std::vector<double>& point_coordinates,
@@ -52,22 +50,24 @@ class VtuWriter : public VtkWriterBase
 
  protected:
   //! Return the opening xml tag for this writer type
-  virtual const std::string& WriterOpeningTag() const;
+  const std::string& WriterOpeningTag() const override;
 
   //! Return the parallel opening xml tag for this writer type
-  virtual const std::string& WriterPOpeningTag() const;
+  const std::string& WriterPOpeningTag() const override;
 
   //! Return a vector of parallel piece tags for each file
-  virtual const std::vector<std::string>& WriterPPieceTags() const;
+  const std::vector<std::string>& WriterPPieceTags() const override;
 
   //! Return the parallel file suffix including the dot for this file type
-  virtual const std::string& WriterPSuffix() const;
+  const std::string& WriterPSuffix() const override;
 
   //! Return the string of this writer type
-  virtual const std::string& WriterString() const;
+  const std::string& WriterString() const override;
 
   //! Return the file suffix including the dot for this file type
-  virtual const std::string& WriterSuffix() const;
+  const std::string& WriterSuffix() const override;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

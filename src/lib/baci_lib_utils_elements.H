@@ -14,6 +14,8 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace UTILS
@@ -25,13 +27,12 @@ namespace DRT
      *  \return minimal value.
      *
      *  \author hiermeier \date 09/18 */
-    template <DRT::Element::DiscretizationType type, unsigned numnode, unsigned numdim>
+    template <CORE::FE::CellType type, unsigned numnode, unsigned numdim>
     double GetMinimalJacDeterminantAtNodes(const CORE::LINALG::Matrix<numdim, numnode>& xcurr)
     {
       // check input
-      static_assert(numnode == CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement,
-          "Wrong matrix dimension.");
-      static_assert(numdim == CORE::DRT::UTILS::DisTypeToDim<type>::dim, "Wrong matrix dimension.");
+      static_assert(numnode == CORE::FE::num_nodes<type>, "Wrong matrix dimension.");
+      static_assert(numdim == CORE::FE::dim<type>, "Wrong matrix dimension.");
 
       CORE::LINALG::Matrix<numdim, numnode> deriv_at_c(false);
       CORE::LINALG::Matrix<numdim, numdim> jac_at_c(false);
@@ -57,5 +58,7 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_ELEMENTS_H

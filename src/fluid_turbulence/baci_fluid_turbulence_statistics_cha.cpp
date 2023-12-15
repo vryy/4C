@@ -11,6 +11,7 @@
 
 #include "baci_fluid_turbulence_statistics_cha.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_utils.H"
 #include "baci_fluid_xwall.H"
@@ -21,6 +22,8 @@
 #include "baci_mat_scatra_mat.H"
 #include "baci_mat_sutherland.H"
 #include "baci_scatra_ele_action.H"
+
+BACI_NAMESPACE_OPEN
 
 #define NODETOL 1e-9
 // turn on if problems with mean values in planes occur
@@ -306,22 +309,22 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       std::vector<char> rblock;
 
       // create an exporter for point to point comunication
-      DRT::Exporter exporter(discret_->Comm());
+      CORE::COMM::Exporter exporter(discret_->Comm());
 
       for (int np = 0; np < numprocs; ++np)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
 
         for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
              plane != availablecoords.end(); ++plane)
         {
-          DRT::ParObject::AddtoPack(data, *plane);
+          CORE::COMM::ParObject::AddtoPack(data, *plane);
         }
         data.StartPacking();
         for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
              plane != availablecoords.end(); ++plane)
         {
-          DRT::ParObject::AddtoPack(data, *plane);
+          CORE::COMM::ParObject::AddtoPack(data, *plane);
         }
         swap(sblock, data());
 
@@ -363,7 +366,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
           while (index < rblock.size())
           {
             double onecoord;
-            DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
             availablecoords.insert(onecoord);
           }
         }
@@ -482,8 +485,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
       switch (actele->Shape())
       {
-        case DRT::Element::nurbs8:
-        case DRT::Element::nurbs27:
+        case CORE::FE::CellType::nurbs8:
+        case CORE::FE::CellType::nurbs27:
         {
           // element local point position
           CORE::LINALG::SerialDenseVector uv(3);
@@ -1345,15 +1348,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   return;
 }  // TurbulenceStatisticsCha::TurbulenceStatisticsCha
 
-/*----------------------------------------------------------------------*
 
-                           Destructor
-
- -----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCha::~TurbulenceStatisticsCha()
-{
-  return;
-}  // TurbulenceStatisticsCha::~TurbulenceStatisticsCha()
 
 /*----------------------------------------------------------------------*
 
@@ -2915,7 +2910,6 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
 
   Teuchos::RCP<std::vector<double>> global_incr_Dphi_sum;
   global_incr_Dphi_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
-  ;
 
   Teuchos::RCP<std::vector<double>> global_incr_Csgs_phi_sum;
   global_incr_Csgs_phi_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
@@ -5883,3 +5877,5 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

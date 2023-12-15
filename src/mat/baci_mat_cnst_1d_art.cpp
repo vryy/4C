@@ -17,6 +17,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*/
@@ -65,7 +67,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Cnst_1d_art::CreateMaterial()
 MAT::Cnst_1d_artType MAT::Cnst_1d_artType::instance_;
 
 
-DRT::ParObject* MAT::Cnst_1d_artType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Cnst_1d_artType::Create(const std::vector<char>& data)
 {
   MAT::Cnst_1d_art* cnst_art = new MAT::Cnst_1d_art();
   cnst_art->Unpack(data);
@@ -91,9 +93,9 @@ MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Cnst_1d_art::Pack(DRT::PackBuffer& data) const
+void MAT::Cnst_1d_art::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -115,10 +117,8 @@ void MAT::Cnst_1d_art::Pack(DRT::PackBuffer& data) const
 void MAT::Cnst_1d_art::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -217,3 +217,5 @@ double MAT::Cnst_1d_art::CalculateBloodViscosity(const double diam, const double
 
   return visc;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_base.H"
 #include "baci_geometry_pair_scalar_types.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -41,20 +43,18 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingPairGaussPoint();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidSurfaceMeshtyingPairGaussPoint(){};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix (derived).
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

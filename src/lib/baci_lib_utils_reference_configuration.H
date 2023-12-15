@@ -13,8 +13,11 @@
 #define BACI_LIB_UTILS_REFERENCE_CONFIGURATION_H
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_lib_element.H"
 #include "baci_lib_node.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -30,17 +33,13 @@ namespace DRT
      * space position xi
      *
      *  \author cschmidt \date 11/18 */
-    template <int probdim, DRT::Element::DiscretizationType distype>
+    template <int probdim, CORE::FE::CellType distype>
     static void LocalToGlobalPositionAtXiRefConfig(const DRT::Element* element,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
+        const CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xi,
         CORE::LINALG::Matrix<probdim, 1>& coord)
     {
-      static CORE::LINALG::Matrix<
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
-          funct(true);
-      static CORE::LINALG::Matrix<probdim,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-          nodecoords(true);
+      static CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1> funct(true);
+      static CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>> nodecoords(true);
 
       CORE::DRT::UTILS::shape_function<distype>(xi, funct);
 
@@ -53,10 +52,11 @@ namespace DRT
       }
       if (probdim != nodedim)
       {
-        dserror("Problem dimension and dimension of nodes does not match!");
+        dserror(
+            "Problem dimension: %i and dimension of nodes: %i does not match!", probdim, nodedim);
       }
 
-      for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+      for (int i = 0; i < CORE::FE::num_nodes<distype>; ++i)
       {
         for (int j = 0; j < nodedim; ++j)
         {
@@ -65,8 +65,6 @@ namespace DRT
       }
 
       coord.Multiply(1.0, nodecoords, funct, 0.0);
-
-      return;
     }
 
     /**
@@ -79,18 +77,14 @@ namespace DRT
      * position xi
      *
      *  \author cschmidt \date 11/18 */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static void ComputeUnitNormalAtXiRefConfig(const DRT::Element* element,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
+        const CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xi,
         CORE::LINALG::Matrix<3, 1>& normal)
     {
-      static CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToDim<distype>::dim> gxieta(true);
-      static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-          deriv(true);
-      static CORE::LINALG::Matrix<3,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-          nodecoords(true);
+      static CORE::LINALG::Matrix<3, CORE::FE::dim<distype>> gxieta(true);
+      static CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>> deriv(true);
+      static CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> nodecoords(true);
 
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, deriv);
 
@@ -106,7 +100,7 @@ namespace DRT
         dserror("ERROR: Only implemented for 3D cases so far!");
       }
 
-      for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+      for (int i = 0; i < CORE::FE::num_nodes<distype>; ++i)
       {
         for (int j = 0; j < nodedim; ++j)
         {
@@ -129,10 +123,10 @@ namespace DRT
       normal.CrossProduct(gxi, geta);
       const double normnormal = normal.Norm2();
       normal.Scale(1.0 / normnormal);
-
-      return;
     }
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // LIB_UTILS_REFERENCE_CONFIGURATION_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_LIB_UTILS_REFERENCE_CONFIGURATION_H

@@ -8,9 +8,11 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_w1.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -19,7 +21,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
     const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // set discretization type
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   linedef->ExtractDouble("THICK", thickness_);
   if (thickness_ <= 0) dserror("WALL element thickness needs to be < 0");
@@ -157,9 +159,9 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
 
   switch (Shape())
   {
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
@@ -173,8 +175,8 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
         dserror("Unknown number of Gauss points for quad element");
       break;
     }
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs9:
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
@@ -200,8 +202,8 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
         dserror("Unknown number of Gauss points for nurbs element");
       break;
     }
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       if ((ngp[0] == 1) && (ngp[1] == 0))
       {
@@ -225,3 +227,5 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
   }
   return rule;
 }
+
+BACI_NAMESPACE_CLOSE

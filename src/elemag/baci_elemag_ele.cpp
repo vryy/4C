@@ -11,14 +11,16 @@
 
 #include "baci_elemag_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_elemag_ele_boundary_calc.H"
 #include "baci_elemag_ele_intfaces_calc.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
+
+BACI_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::ElemagType DRT::ELEMENTS::ElemagType::instance_;
@@ -35,7 +37,7 @@ DRT::ELEMENTS::ElemagBoundaryType& DRT::ELEMENTS::ElemagBoundaryType::Instance()
 DRT::ELEMENTS::ElemagIntFaceType& DRT::ELEMENTS::ElemagIntFaceType::Instance() { return instance_; }
 
 
-DRT::ParObject* DRT::ELEMENTS::ElemagType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ElemagType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Elemag* object = new DRT::ELEMENTS::Elemag(-1, -1);
   object->Unpack(data);
@@ -130,7 +132,7 @@ void DRT::ELEMENTS::ElemagType::SetupElementDefinition(
 DRT::ELEMENTS::Elemag::Elemag(int id, int owner)
     : DRT::Element(id, owner), degree_(1), completepol_(true)
 {
-  distype_ = dis_none;
+  distype_ = CORE::FE::CellType::dis_none;
 }
 
 
@@ -161,9 +163,9 @@ DRT::Element* DRT::ELEMENTS::Elemag::Clone() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Elemag::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Elemag::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -190,10 +192,8 @@ void DRT::ELEMENTS::Elemag::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   int val = 0;
   ExtractfromPack(position, data, val);
   dsassert(val >= 0 && val < 255, "Degree out of range");
@@ -214,11 +214,6 @@ void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                       berardocco 02/18|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Elemag::~Elemag() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -248,7 +243,7 @@ bool DRT::ELEMENTS::Elemag::ReadElement(
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   return true;
 }
@@ -259,31 +254,7 @@ bool DRT::ELEMENTS::Elemag::ReadElement(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumLine() > 1)  // 1D boundary element and 2D/3D parent element
-  {
-    return DRT::UTILS::ElementBoundaryFactory<ElemagBoundary, Elemag>(DRT::UTILS::buildLines, this);
-  }
-  else if (NumLine() ==
-           1)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementLines<ElemagBoundary, Elemag>(*this);
 }
 
 
@@ -292,49 +263,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  if (NumSurface() > 1)  // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<ElemagBoundary, Elemag>(
-        DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() ==
-           1)  // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else  // 1D elements
-  {
-    dserror("Surfaces() does not exist for 1D-element ");
-    return DRT::Element::Surfaces();
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)           berardocco 02/18|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Volumes()
-{
-  if (NumVolume() ==
-      1)  // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
-  {
-    std::vector<Teuchos::RCP<Element>> volumes(1);
-    volumes[0] = Teuchos::rcp(this, false);
-    return volumes;
-  }
-  else  //
-  {
-    dserror("Volumes() does not exist for 1D/2D-elements");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementSurfaces<ElemagBoundary, Elemag>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -348,7 +277,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(DRT::Element
   DRT::ELEMENTS::Elemag* slave_pele = dynamic_cast<DRT::ELEMENTS::Elemag*>(parent_slave);
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1, -1, nnode, nodeids, nodes,
+  return CORE::COMM::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1, -1, nnode, nodeids, nodes,
       this, slave_pele, lsurface_master, lsurface_slave, localtrafomap);
 }
 
@@ -410,7 +339,7 @@ DRT::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
  |                                                             (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ElemagBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
@@ -420,9 +349,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagBoundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ElemagBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -445,17 +374,16 @@ void DRT::ELEMENTS::ElemagBoundary::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
+  // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -463,11 +391,6 @@ void DRT::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                       berardocco 02/18|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagBoundary::~ElemagBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -486,16 +409,7 @@ void DRT::ELEMENTS::ElemagBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   dserror("Lines of ElemagBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }
 
 
@@ -504,16 +418,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   dserror("Surfaces of ElemagBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }
 
 
@@ -629,7 +534,7 @@ DRT::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
  |                                                             (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagIntFace::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ElemagIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
@@ -639,7 +544,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagIntFace::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ElemagIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this ElemagIntFace element does not support communication");
   return;
@@ -655,10 +560,6 @@ void DRT::ELEMENTS::ElemagIntFace::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                      berardocco 02/18 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagIntFace::~ElemagIntFace() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -873,16 +774,7 @@ void DRT::ELEMENTS::ElemagIntFace::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   dserror("Lines of ElemagIntFace not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }
 
 /*----------------------------------------------------------------------*
@@ -890,16 +782,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   dserror("Surfaces of ElemagIntFace not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }
 
 /*----------------------------------------------------------------------*
@@ -933,3 +816,5 @@ int DRT::ELEMENTS::ElemagIntFace::EvaluateNeumann(Teuchos::ParameterList& params
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

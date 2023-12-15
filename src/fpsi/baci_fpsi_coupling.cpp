@@ -35,11 +35,13 @@ Fluid-Poro-Coupling Matrixes!
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FPSI::FPSICoupling::FPSICoupling(Teuchos::RCP<POROELAST::Monolithic> poro,
-    Teuchos::RCP<::ADAPTER::Fluid> fluid, Teuchos::RCP<::ADAPTER::AleFpsiWrapper> ale,
+    Teuchos::RCP<ADAPTER::Fluid> fluid, Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale,
     Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap,
     Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap)
     : poro_(poro),
@@ -746,3 +748,5 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
 | set hydraulic conductivity
 /----------------------------------------------------------------------*/
 void FPSI::FPSICoupling::SetConductivity(double conduct) { conductivity_ = conduct; }
+
+BACI_NAMESPACE_CLOSE

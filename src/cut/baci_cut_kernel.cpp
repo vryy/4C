@@ -23,6 +23,8 @@
 #include <iostream>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 unsigned CORE::GEO::CUT::KERNEL::FindNextCornerPoint(const std::vector<Point*>& points,
@@ -118,7 +120,7 @@ bool CORE::GEO::CUT::KERNEL::IsValidQuad4(const std::vector<Point*>& points)
       points[(i + 2) % 4]->Coordinates(&xyze(0, 2));
       points[(i + 3) % 4]->Coordinates(&xyz(0, 0));
 
-      Teuchos::RCP<Position> pos = Position::Create(xyze, xyz, ::DRT::Element::tri3);
+      Teuchos::RCP<Position> pos = Position::Create(xyze, xyz, CORE::FE::CellType::tri3);
       if (pos->Compute())
       {
         return false;
@@ -906,3 +908,5 @@ std::map<size_t, int>
     CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_distance_;
 
 #endif
+
+BACI_NAMESPACE_CLOSE

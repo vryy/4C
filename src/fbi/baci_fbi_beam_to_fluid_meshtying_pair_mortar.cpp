@@ -9,9 +9,9 @@ functions.
 
 #include "baci_fbi_beam_to_fluid_meshtying_pair_mortar.H"
 
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
-#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
 #include "baci_fbi_beam_to_fluid_mortar_manager.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_line_to_volume.H"
@@ -19,6 +19,8 @@ functions.
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /**
@@ -145,7 +147,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
  */
 template <typename beam, typename fluid, typename mortar>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPairVisualization(
-    Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
@@ -153,9 +155,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
       visualization_writer, visualization_params);
 
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->GetVisualizationWriter("mortar");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->GetVisualizationWriter("mortar-continuous");
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
@@ -225,7 +227,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
     {
       const unsigned int mortar_segments =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "output_params_ptr")
               ->GetMortarLambdaContinuousSegments();
       double xi;
@@ -315,3 +317,5 @@ template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_h
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>;
 template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>;
+
+BACI_NAMESPACE_CLOSE

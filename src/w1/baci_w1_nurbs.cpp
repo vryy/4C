@@ -10,9 +10,11 @@
 
 #include "baci_w1_nurbs.H"
 
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_so3_nullspace.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
 
@@ -21,7 +23,7 @@ DRT::ELEMENTS::NURBS::Wall1NurbsType& DRT::ELEMENTS::NURBS::Wall1NurbsType::Inst
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::NURBS::Wall1Nurbs* object = new DRT::ELEMENTS::NURBS::Wall1Nurbs(-1, -1);
   object->Unpack(data);
@@ -113,11 +115,6 @@ DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(const DRT::ELEMENTS::NURBS::Wall1Nu
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            gammi 02/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Wall1Nurbs::~Wall1Nurbs() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
@@ -145,19 +142,17 @@ void DRT::ELEMENTS::NURBS::Wall1Nurbs::Print(std::ostream& os) const
  |                                                             (public) |
  |                                                          gammi 02/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 {
   switch (NumNode())
   {
     case 4:
-      return nurbs4;
+      return CORE::FE::CellType::nurbs4;
     case 9:
-      return nurbs9;
+      return CORE::FE::CellType::nurbs9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
@@ -165,14 +160,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1>(DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1>(CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -180,7 +168,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
+
+BACI_NAMESPACE_CLOSE

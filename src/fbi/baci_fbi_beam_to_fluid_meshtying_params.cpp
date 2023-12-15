@@ -9,11 +9,13 @@
 
 #include "baci_fbi_beam_to_fluid_meshtying_params.H"
 
-#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_params.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
 #include "baci_inpar_fbi.H"
 #include "baci_inpar_geometry_pair.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -69,7 +71,7 @@ void FBI::BeamToFluidMeshtyingParams::Init()
           .get<int>("GAUSS_POINTS"));
   isinit_ = true;
 
-  // Create and get vtk output parameter
+  // Create and get visualization output parameter
   output_params_ = Teuchos::rcp<FBI::BeamToFluidMeshtyingVtkOutputParams>(
       new FBI::BeamToFluidMeshtyingVtkOutputParams());
   output_params_->Init();
@@ -88,3 +90,5 @@ void FBI::BeamToFluidMeshtyingParams::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

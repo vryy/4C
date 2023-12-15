@@ -13,6 +13,8 @@
 
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*==========================================================================*/
 // forward declarations
@@ -35,19 +37,17 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! virtual destructor
-    virtual ~TimIntCardiacMonodomain() { return; };
 
     //! setup algorithm
-    virtual void Setup();
+    void Setup() override;
 
     //! time update of time-dependent materials
     void ElementMaterialTimeUpdate();
 
-    void OutputState();
+    void OutputState() override;
 
     //! Set ep-specific parameters
-    void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const;
+    void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const override;
 
     //! return pointer to old scatra dofrowmap for coupled problems
     virtual Teuchos::RCP<const Epetra_Map> DofRowMapScatra() { return dofmap_; };
@@ -88,5 +88,7 @@ namespace SCATRA
   };
 
 };  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

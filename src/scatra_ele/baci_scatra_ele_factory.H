@@ -15,6 +15,8 @@
 #include "baci_lib_element.H"
 #include "baci_scatra_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -29,23 +31,23 @@ namespace DRT
       virtual ~ScaTraFactory() = default;
 
       //! ProvideImpl
-      static ScaTraEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
+      static ScaTraEleInterface* ProvideImpl(CORE::FE::CellType distype,
           INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
           const std::string& disname);
 
       //! ProvideImplHDG
-      static ScaTraEleInterface* ProvideImplHDG(DRT::Element::DiscretizationType distype,
+      static ScaTraEleInterface* ProvideImplHDG(CORE::FE::CellType distype,
           INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
           const std::string& disname);
 
      private:
       //! define ScatraEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype, int probdim>
+      template <CORE::FE::CellType distype, int probdim>
       static ScaTraEleInterface* DefineProblemType(INPAR::SCATRA::ImplType problem,
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! define ScatraEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype, int probdim>
+      template <CORE::FE::CellType distype, int probdim>
       static ScaTraEleInterface* DefineProblemTypeHDG(INPAR::SCATRA::ImplType problem,
           const int numdofpernode, const int numscal, const std::string& disname);
 
@@ -54,5 +56,7 @@ namespace DRT
   }  // namespace ELEMENTS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

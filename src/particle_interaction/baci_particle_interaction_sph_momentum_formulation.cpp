@@ -15,6 +15,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -244,3 +246,5 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ModifiedVelocityContribut
   if (acc_i) UTILS::VecAddScale(acc_i, speccoeff_ij, A_ij_e_ij);
   if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji, A_ij_e_ij);
 }
+
+BACI_NAMESPACE_CLOSE

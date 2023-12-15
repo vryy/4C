@@ -14,6 +14,8 @@
 
 #include <functional>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   constexpr double LOCAL_NEWTON_DEFAULT_TOLERANCE = 1e-12;
@@ -202,5 +204,7 @@ namespace CORE::UTILS
   }
 
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -14,6 +14,8 @@
 #include "baci_cut_least_squares.H"
 #include "baci_io_pstream.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------------------------*
   Generate quadrature rule for boundarycells
   Unlike volume integration the facets whose normal-x if zero, cannot be eliminated
@@ -308,7 +310,6 @@ void CORE::GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(
     else  // more than 2 intersections for bcell is unlikely (???). Not tested enough
     {
       int count = 0, numcut = intersections.size();
-      ;
       std::vector<double> x1(numcut);
       for (std::map<double, int>::iterator j = intersections.begin(); j != intersections.end(); j++)
       {
@@ -420,3 +421,5 @@ void CORE::GEO::CUT::BoundarycellIntegration::BcellGaussPointGmsh(
   }
   file.close();
 }
+
+BACI_NAMESPACE_CLOSE

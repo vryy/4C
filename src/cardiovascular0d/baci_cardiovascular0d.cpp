@@ -23,6 +23,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -351,26 +353,26 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       /*----------------------------------------------------------------------*
       |               start loop over integration points                     |
       *----------------------------------------------------------------------*/
-      DRT::Element::DiscretizationType shape = element->Shape();
+      CORE::FE::CellType shape = element->Shape();
       // type of gaussian integration
       switch (shape)
       {
-        case DRT::Element::tri3:
+        case CORE::FE::CellType::tri3:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_3point;
           break;
-        case DRT::Element::tri6:
+        case CORE::FE::CellType::tri6:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_6point;
           break;
-        case DRT::Element::quad4:
+        case CORE::FE::CellType::quad4:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_4point;
           break;
-        case DRT::Element::quad8:
+        case CORE::FE::CellType::quad8:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
-        case DRT::Element::quad9:
+        case CORE::FE::CellType::quad9:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
-        case DRT::Element::nurbs9:
+        case CORE::FE::CellType::nurbs9:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
         default:
@@ -490,3 +492,5 @@ void UTILS::Cardiovascular0D::SetState(const std::string& state,  ///< name of s
 {
   actdisc_->SetState(state, V);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -10,16 +10,17 @@
 
 #include "baci_w1_poro.H"
 
-#include "baci_discretization_fem_general_utils_shapefunctions_service.H"
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_structporo.H"
 #include "baci_poroelast_utils.H"
 
-template <DRT::Element::DiscretizationType distype>
+BACI_NAMESPACE_OPEN
+
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
     : DRT::ELEMENTS::Wall1(id, owner),
       data_(),
@@ -28,7 +29,6 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
       myknots_(numdim_)
 {
   numgpt_ = intpoints_.NumPoints();
-  ishigherorder_ = CORE::DRT::UTILS::secondDerivativesZero<distype>();
 
   invJ_.resize(numgpt_, CORE::LINALG::Matrix<numdim_, numdim_>(true));
   detJ_.resize(numgpt_, 0.0);
@@ -41,7 +41,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
   scatra_coupling_ = false;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<distype>& old)
     : DRT::ELEMENTS::Wall1(old),
       invJ_(old.invJ_),
@@ -49,7 +49,6 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<d
       data_(old.data_),
       xsi_(old.xsi_),
       intpoints_(distype),
-      ishigherorder_(old.ishigherorder_),
       init_(old.init_),
       scatra_coupling_(old.scatra_coupling_),
       weights_(old.weights_),
@@ -60,17 +59,17 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<d
   numgpt_ = intpoints_.NumPoints();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::Element* DRT::ELEMENTS::Wall1_Poro<distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::Wall1_Poro<distype>(*this);
   return newelement;
 }
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
+template <CORE::FE::CellType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -109,14 +108,12 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
   DRT::ELEMENTS::Wall1::Pack(data);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // data_
   std::vector<char> tmp(0);
@@ -167,28 +164,19 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
   init_ = true;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1_Poro>(DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1_Poro>(CORE::COMM::buildLines, *this);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_Poro ";
@@ -197,7 +185,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
   std::cout << data_;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -216,7 +204,7 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(
   return true;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::
     ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
         DRT::INPUT::LineDefinition* linedef)
@@ -229,7 +217,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::
     ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
         DRT::INPUT::LineDefinition* linedef)
@@ -242,7 +230,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials()
 {
   // get structure material
@@ -274,7 +262,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials()
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterialsPressureBased()
 {
   // get structure material
@@ -313,13 +301,13 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterialsPressureBased()
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -328,8 +316,10 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::v
   return SolidMaterial()->VisData(name, data, numgpt_, this->Id());
 }
 
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>;
+template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>;
+
+BACI_NAMESPACE_CLOSE

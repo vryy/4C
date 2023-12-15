@@ -14,13 +14,14 @@
 #include "baci_beamcontact_beam3contactinterface.H"
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
-#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_utils_fad.H"
 
 #include <Sacado.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 namespace CONTACT
@@ -55,50 +56,47 @@ namespace CONTACT
         const std::map<int, int>& dofoffsetmap, DRT::Element* element1, DRT::Element* element2,
         Teuchos::ParameterList& beamcontactparams);
 
-    /*!
-    \brief Destructor
-    */
-    virtual ~Beam3contactnew(){};
+
     //@}
 
     //! @name Access methods
     /*!
     \brief Get problem discretization
     */
-    inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_; };
+    inline const DRT::Discretization& ProblemDiscret() const override { return pdiscret_; };
 
     /*!
     \brief Get beam contact discretization
     */
-    inline const DRT::Discretization& ContactDiscret() const { return cdiscret_; };
+    inline const DRT::Discretization& ContactDiscret() const override { return cdiscret_; };
 
     /*!
     \brief Get offset of dofs between cdiscret and pdiscret
     */
-    inline const std::map<int, int>& DofOffset() const { return dofoffsetmap_; };
+    inline const std::map<int, int>& DofOffset() const override { return dofoffsetmap_; };
 
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element1() { return element1_; };
+    inline const DRT::Element* Element1() override { return element1_; };
 
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element2() { return element2_; };
+    inline const DRT::Element* Element2() override { return element2_; };
 
     /*!
     \brief Get number of contact points on this element pair
     */
-    int GetNumCps() { return 1; };
-    int GetNumGps() { return 0; };
-    int GetNumEps() { return 0; };
+    int GetNumCps() override { return 1; };
+    int GetNumGps() override { return 0; };
+    int GetNumEps() override { return 0; };
 
     /*!
     \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2= end
     point contact) of all contact pairs
     */
-    std::vector<int> GetContactType()
+    std::vector<int> GetContactType() override
     {
       std::vector<int> types(1, 0);
 
@@ -108,7 +106,7 @@ namespace CONTACT
     /*!
     \brief Get gap of this contact pair
     */
-    std::vector<double> GetGap()
+    std::vector<double> GetGap() override
     {
       std::vector<double> gaps(1, CORE::FADUTILS::CastToDouble(gap_));
 
@@ -118,7 +116,7 @@ namespace CONTACT
     /*!
     \brief Get contact force of this contact pair
     */
-    std::vector<double> GetContactForce()
+    std::vector<double> GetContactForce() override
     {
       std::vector<double> forces(1, CORE::FADUTILS::CastToDouble(fp_));
 
@@ -128,7 +126,7 @@ namespace CONTACT
     /*!
     \brief Get contact angle of this contact pair
     */
-    std::vector<double> GetContactAngle()
+    std::vector<double> GetContactAngle() override
     {
       double angle = 0.0;
       double cosangle = CORE::FADUTILS::CastToDouble(tangentproduct_);
@@ -144,7 +142,7 @@ namespace CONTACT
     /*!
     \brief Get closest point of this contact pair
     */
-    std::vector<std::pair<double, double>> GetClosestPoint()
+    std::vector<std::pair<double, double>> GetClosestPoint() override
     {
       std::pair<double, double> cp(0.0, 0.0);
       cp.first = CORE::FADUTILS::CastToDouble(xi1_);
@@ -157,12 +155,12 @@ namespace CONTACT
     /*!
     \brief Return number of individual contact segments on element pair
     */
-    std::pair<int, int> GetNumSegments() { return std::make_pair(1, 1); };
+    std::pair<int, int> GetNumSegments() override { return std::make_pair(1, 1); };
 
     /*!
     \brief Return ids of active segments
     */
-    std::vector<std::pair<int, int>> GetSegmentIds()
+    std::vector<std::pair<int, int>> GetSegmentIds() override
     {
       std::vector<std::pair<int, int>> ids(1, std::make_pair(0, 0));
 
@@ -172,12 +170,12 @@ namespace CONTACT
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    bool GetContactFlag() { return contactflag_; };
+    bool GetContactFlag() override { return contactflag_; };
 
     /*!
     \brief Get coordinates of contact point of element1
     */
-    const std::vector<CORE::LINALG::Matrix<3, 1>> GetX1()
+    std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() override
     {
       std::vector<CORE::LINALG::Matrix<3, 1>> r1(1, CORE::LINALG::Matrix<3, 1>(true));
 
@@ -189,7 +187,7 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element2
     */
-    const std::vector<CORE::LINALG::Matrix<3, 1>> GetX2()
+    std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() override
     {
       std::vector<CORE::LINALG::Matrix<3, 1>> r2(1, CORE::LINALG::Matrix<3, 1>(true));
 
@@ -201,7 +199,7 @@ namespace CONTACT
     /*!
     \brief Get normal vector
     */
-    const CORE::LINALG::SerialDenseVector GetNormal()
+    CORE::LINALG::SerialDenseVector GetNormal() override
     {
       CORE::LINALG::SerialDenseVector normal(3);
 
@@ -220,19 +218,19 @@ namespace CONTACT
     /*!
     \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
     */
-    bool GetShiftStatus() { return shiftnodalvalues_; };
+    bool GetShiftStatus() override { return shiftnodalvalues_; };
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
       the beams centerlines have already crossed or not.
     */
-    bool GetNewGapStatus();
+    bool GetNewGapStatus() override;
     //@}
 
     /*!
       \Get energy of penalty contact.
     */
-    double GetEnergy()
+    double GetEnergy() override
     {
       TYPE energy = 0.5 * pp_ * gap_ * gap_;
       return CORE::FADUTILS::CastToDouble(energy);
@@ -241,17 +239,17 @@ namespace CONTACT
     /*!
       Not needed for beam3contactnew variables
     */
-    double GetUnscaledPerpEnergy() { return 0.0; };
+    double GetUnscaledPerpEnergy() override { return 0.0; };
 
     /*!
       Not needed for beam3contactnew variables
     */
-    double GetUnscaledParallelEnergy() { return 0.0; };
+    double GetUnscaledParallelEnergy() override { return 0.0; };
 
     /*!
     \brief Get normal vector of last time step
     */
-    CORE::LINALG::Matrix<3, 1, TYPE>* GetNormalOld()
+    CORE::LINALG::Matrix<3, 1, TYPE>* GetNormalOld() override
     {
       if (firsttimestep_)
       {
@@ -273,14 +271,14 @@ namespace CONTACT
     /*!
     \brief Check, if it is the first time step the element is in contact
     */
-    bool FirstTimeStep() { return firsttimestep_; };
+    bool FirstTimeStep() override { return firsttimestep_; };
     //@}
 
     /** \brief print this beam contact element pair to screen
      *
      *  \author grill
      *  \date 05/16 */
-    void Print() const {};
+    void Print() const override{};
 
     //! @name Public evaluation methods
     /*!
@@ -288,7 +286,7 @@ namespace CONTACT
     */
     bool Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
-        Teuchos::ParameterList& timeintparams, bool fdcheck = false);
+        Teuchos::ParameterList& timeintparams, bool fdcheck = false) override;
 
     /*!
     \brief Change the sign of the normal vector: This has to be done at the end of a time step when
@@ -296,23 +294,24 @@ namespace CONTACT
     could cross in the next time step when the new gap function definition (ngf_=true) for slender
     beams is applied!
     */
-    void InvertNormal();
+    void InvertNormal() override;
 
     /*!
       \brief Update of class variables at the end of a time step
     */
-    void UpdateClassVariablesStep();
+    void UpdateClassVariablesStep() override;
 
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    void UpdateElePos(
-        CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos);
+    void UpdateElePos(CORE::LINALG::SerialDenseMatrix& newele1pos,
+        CORE::LINALG::SerialDenseMatrix& newele2pos) override;
 
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
     */
-    void UpdateEleSmoothTangents(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
+    void UpdateEleSmoothTangents(
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) override;
 
 
     //@}
@@ -750,5 +749,7 @@ namespace CONTACT
 
   };  // class Beam3contactnew
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BEAMCONTACT_BEAM3CONTACTNEW_H

@@ -16,6 +16,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_ssi_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace ADAPTER
 {
@@ -103,9 +105,6 @@ namespace SSI
   {
    public:
     SSICouplingMatchingVolume() : issetup_(false), isinit_(false){};
-
-    ~SSICouplingMatchingVolume() override = default;
-
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
@@ -175,9 +174,6 @@ namespace SSI
           extractor_(Teuchos::null),
           issetup_(false),
           isinit_(false){};
-
-    ~SSICouplingNonMatchingBoundary() override = default;
-
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
@@ -266,9 +262,6 @@ namespace SSI
    public:
     SSICouplingNonMatchingVolume()
         : volcoupl_structurescatra_(Teuchos::null), issetup_(false), isinit_(false){};
-
-    ~SSICouplingNonMatchingVolume() override = default;
-
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
@@ -303,7 +296,7 @@ namespace SSI
 
    private:
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
 
    private:
     //! flag indicating if class is setup
@@ -344,9 +337,6 @@ namespace SSI
   {
    public:
     SSICouplingMatchingVolumeAndBoundary() : issetup_(false), isinit_(false){};
-
-    ~SSICouplingMatchingVolumeAndBoundary() override = default;
-
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
@@ -412,5 +402,7 @@ namespace SSI
   };
 }  // namespace SSI
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_COUPLING_H

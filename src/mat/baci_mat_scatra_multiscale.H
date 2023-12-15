@@ -14,6 +14,8 @@ problems
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -31,7 +33,7 @@ namespace MAT
       ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! return name of micro-scale input file
-      const std::string MicroInputFileName() const { return microfile_; }
+      std::string MicroInputFileName() const { return microfile_; }
 
       //! return number of micro-scale discretization
       int MicroDisNum() const { return microdisnum_; };
@@ -59,6 +61,11 @@ namespace MAT
   class ScatraMultiScale
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ScatraMultiScale() = default;
+
     //! initialize multi-scale scalar transport material
     //! \param[in] ele_id         macro-scale element ID
     //! \param[in] gp_id          macro-scale Gauss point ID
@@ -124,7 +131,7 @@ namespace MAT
     void ReadRestart(const int gp_id) const;
 
     //! return name of micro-scale input file
-    const std::string MicroInputFileName() const { return Params()->MicroInputFileName(); }
+    std::string MicroInputFileName() const { return Params()->MicroInputFileName(); }
 
     //! return number of micro-scale discretization
     int MicroDisNum() const { return Params()->MicroDisNum(); }
@@ -154,4 +161,6 @@ namespace MAT
     std::map<int, Teuchos::RCP<ScatraMultiScaleGP>> matgp_;
   };  // material wrapper
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

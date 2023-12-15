@@ -19,6 +19,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------------------------------------------------*
   Create integration points on the facets of the volumecell by triangulating the facets
@@ -536,27 +537,27 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
   {
     switch (elem1_->Shape())
     {
-      case ::DRT::Element::hex8:
+      case CORE::FE::CellType::hex8:
       {
-        volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex8>(TotalInteg, "LocalToGlobal");
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex8>(
+            TotalInteg, "LocalToGlobal");
         break;
       }
-      case ::DRT::Element::tet4:
+      case CORE::FE::CellType::tet4:
       {
-        volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::tet4>(TotalInteg, "LocalToGlobal");
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::tet4>(
+            TotalInteg, "LocalToGlobal");
         break;
       }
-      case ::DRT::Element::wedge6:
+      case CORE::FE::CellType::wedge6:
       {
-        volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::wedge6>(TotalInteg, "LocalToGlobal");
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::wedge6>(
+            TotalInteg, "LocalToGlobal");
         break;
       }
-      case ::DRT::Element::pyramid5:
+      case CORE::FE::CellType::pyramid5:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::pyramid5>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::pyramid5>(
             TotalInteg, "LocalToGlobal");
         break;
       }
@@ -569,21 +570,21 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
   {
     switch (elem1_->getQuadShape())
     {
-      case ::DRT::Element::hex20:
+      case CORE::FE::CellType::hex20:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex20>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex20>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
-      case ::DRT::Element::hex27:
+      case CORE::FE::CellType::hex27:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex27>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex27>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
-      case ::DRT::Element::tet10:
+      case CORE::FE::CellType::tet10:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::tet10>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::tet10>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
@@ -653,3 +654,5 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     throw std::runtime_error("Volume is not a number.");
   }
 }
+
+BACI_NAMESPACE_CLOSE

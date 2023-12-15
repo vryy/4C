@@ -13,6 +13,8 @@
 #include "baci_so3_hex8.H"
 #include "baci_so3_tet10.H"
 
+BACI_NAMESPACE_OPEN
+
 void DRT::ELEMENTS::AssembleGaussPointValues(
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
     const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::Element& ele)
@@ -47,12 +49,11 @@ void DRT::ELEMENTS::AssembleNodalElementCount(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
 {
-  const int numNodesPerElement =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int numNodesPerElement = CORE::FE::num_nodes<distype>;
 
   CORE::LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
   CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
@@ -72,13 +73,15 @@ std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
 }
 
 // explicit template instantiations
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex8>(
+template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::hex8>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex27>(
+template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::hex27>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::tet4>(
+template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::tet4>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::tet10>(
+template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::tet10>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::wedge6>(
+template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::wedge6>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
+
+BACI_NAMESPACE_CLOSE

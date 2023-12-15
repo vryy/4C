@@ -21,6 +21,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -57,9 +58,9 @@ namespace UTILS
     */
 
     Cardiovascular0D(Teuchos::RCP<DRT::Discretization>
-                         discr,       ///< Discretization where Cardiovascular0D lives on
-        const std::string& CondName,  ///< Name of condition to create Cardiovascular0D from
-        std::vector<int>& curID       ///< current ID
+                         discr,            ///< Discretization where Cardiovascular0D lives on
+        const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
+        std::vector<int>& curID            ///< current ID
     );
 
     /*!
@@ -76,7 +77,7 @@ namespace UTILS
         \brief Destructor
 
      */
-    virtual ~Cardiovascular0D() { return; };
+    virtual ~Cardiovascular0D() = default;
 
     /*!
      \brief Return if there are Cardiovascular0D functions
@@ -161,5 +162,7 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CARDIOVASCULAR0D_H

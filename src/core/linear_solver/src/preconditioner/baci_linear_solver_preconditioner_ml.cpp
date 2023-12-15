@@ -12,7 +12,6 @@
 
 #include "baci_linear_solver_preconditioner_ml.H"
 
-#include "baci_linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
@@ -23,11 +22,12 @@
 #include <ml_include.h>
 #include <ml_MultiLevelPreconditioner.h>
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MLPreconditioner::MLPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& mllist)
-    : PreconditionerType(outfile), mllist_(mllist)
+CORE::LINEAR_SOLVER::MLPreconditioner::MLPreconditioner(Teuchos::ParameterList& mllist)
+    : mllist_(mllist)
 {
 }
 
@@ -53,18 +53,8 @@ void CORE::LINEAR_SOLVER::MLPreconditioner::Setup(
 
     mllist_.remove("init smoother", false);
 
-    // see whether we use standard ml or our own mlapi operator
-    const bool domlapioperator = mllist_.get<bool>("CORE::LINALG::AMG_Operator", false);
-    if (domlapioperator)
-    {
-      P_ = Teuchos::rcp(new CORE::LINALG::AMG_Operator(Pmatrix_, mllist_, true));
-    }
-    else
-    {
-      P_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_, mllist_, true));
-
-      // for debugging ML
-      // dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
-    }
+    P_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_, mllist_, true));
   }
 }
+
+BACI_NAMESPACE_CLOSE

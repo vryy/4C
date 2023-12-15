@@ -16,6 +16,8 @@
  *---------------------------------------------------------------------------*/
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
@@ -26,9 +28,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHArtificialViscosity();
-
-    //! destructor
-    ~SPHArtificialViscosity() = default;
 
     //! init artificial viscosity handler
     void Init();
@@ -47,4 +46,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

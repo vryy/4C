@@ -13,6 +13,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MORTAR
 {
@@ -30,26 +32,24 @@ namespace CONTACT
       ProjectorBase(){};
 
      private:
-      static ProjectorBase* Get2D(DRT::Element::DiscretizationType ref_type,
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
-
-      template <DRT::Element::DiscretizationType ref_type>
       static ProjectorBase* Get2D(
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+          CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug = false);
 
-      static ProjectorBase* Get3D(DRT::Element::DiscretizationType ref_type,
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+      template <CORE::FE::CellType ref_type>
+      static ProjectorBase* Get2D(CORE::FE::CellType tar_type, const bool debug = false);
 
-      template <DRT::Element::DiscretizationType ref_type>
       static ProjectorBase* Get3D(
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+          CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug = false);
+
+      template <CORE::FE::CellType ref_type>
+      static ProjectorBase* Get3D(CORE::FE::CellType tar_type, const bool debug = false);
 
      public:
       /// access the singleton pointer of the projector object
-      static ProjectorBase* Get(const unsigned probdim, DRT::Element::DiscretizationType ref_type,
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+      static ProjectorBase* Get(const unsigned probdim, CORE::FE::CellType ref_type,
+          CORE::FE::CellType tar_type, const bool debug = false);
 
-      virtual ~ProjectorBase(){};
+      virtual ~ProjectorBase() = default;
 
       /** \brief project a point defined on the reference element onto a target
        *  element
@@ -79,17 +79,15 @@ namespace CONTACT
     };  // class ProjectorBase
 
     /*--------------------------------------------------------------------------*/
-    template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
-        DRT::Element::DiscretizationType tar_type>
+    template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
+        CORE::FE::CellType tar_type>
     class Projector : public ProjectorBase, public DebugPolicy
     {
-      static const unsigned REF_DIM = CORE::DRT::UTILS::DisTypeToDim<ref_type>::dim;
-      static const unsigned REF_NUMNODES =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<ref_type>::numNodePerElement;
+      static const unsigned REF_DIM = CORE::FE::dim<ref_type>;
+      static const unsigned REF_NUMNODES = CORE::FE::num_nodes<ref_type>;
 
-      static const unsigned TAR_DIM = CORE::DRT::UTILS::DisTypeToDim<tar_type>::dim;
-      static const unsigned TAR_NUMNODES =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<tar_type>::numNodePerElement;
+      static const unsigned TAR_DIM = CORE::FE::dim<tar_type>;
+      static const unsigned TAR_NUMNODES = CORE::FE::num_nodes<tar_type>;
 
      public:
       static ProjectorBase* Instance();
@@ -156,8 +154,7 @@ namespace CONTACT
        *  \return FALSE, if the shape function evaluation failed. Otherwise TRUE.
        *
        *  \author  hiermeier \date 07/17 */
-      template <DRT::Element::DiscretizationType type,
-          unsigned numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement>
+      template <CORE::FE::CellType type, unsigned numnodes = CORE::FE::num_nodes<type>>
       bool GetGlobalPosition(MORTAR::MortarElement& ele,
           const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
           CORE::LINALG::Matrix<probdim, 1>& pos) const;
@@ -185,9 +182,6 @@ namespace CONTACT
     class EmptyProjDebugger
     {
      public:
-      EmptyProjDebugger() = default;
-      ~EmptyProjDebugger() = default;
-
       inline void writeVector(std::ostream& os, ...) const {};
       inline void writeMatrix(std::ostream& os, ...) const {};
     };
@@ -197,9 +191,6 @@ namespace CONTACT
     class ProjDebugger
     {
      public:
-      ProjDebugger() = default;
-      ~ProjDebugger() = default;
-
       inline void writeVector(
           std::ostream& os, unsigned dim, double* vals, const std::string& msg) const
       {
@@ -235,5 +226,7 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_PROJECTOR_H

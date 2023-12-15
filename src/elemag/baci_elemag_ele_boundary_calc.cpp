@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -23,49 +25,49 @@ DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInt
 {
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return ElemagBoundaryImpl<DRT::Element::quad4>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return ElemagBoundaryImpl<DRT::Element::quad8>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return ElemagBoundaryImpl<DRT::Element::quad9>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return ElemagBoundaryImpl<DRT::Element::tri3>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::tri3>::Instance();
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return ElemagBoundaryImpl<DRT::Element::tri6>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::tri6>::Instance();
     }
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      return ElemagBoundaryImpl<DRT::Element::line2>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::line2>::Instance();
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      return ElemagBoundaryImpl<DRT::Element::line3>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::line3>::Instance();
     }
-    case DRT::Element::nurbs2:  // 1D nurbs boundary element
+    case CORE::FE::CellType::nurbs2:  // 1D nurbs boundary element
     {
-      return ElemagBoundaryImpl<DRT::Element::nurbs2>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::nurbs2>::Instance();
     }
-    case DRT::Element::nurbs3:  // 1D nurbs boundary element
+    case CORE::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
-      return ElemagBoundaryImpl<DRT::Element::nurbs3>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::nurbs3>::Instance();
     }
-    case DRT::Element::nurbs4:  // 2D nurbs boundary element
+    case CORE::FE::CellType::nurbs4:  // 2D nurbs boundary element
     {
-      return ElemagBoundaryImpl<DRT::Element::nurbs4>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::nurbs4>::Instance();
     }
-    case DRT::Element::nurbs9:  // 2D nurbs boundary element
+    case CORE::FE::CellType::nurbs9:  // 2D nurbs boundary element
     {
-      return ElemagBoundaryImpl<DRT::Element::nurbs9>::Instance();
+      return ElemagBoundaryImpl<CORE::FE::CellType::nurbs9>::Instance();
     }
     default:
       dserror(
@@ -74,7 +76,7 @@ DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInt
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ElemagBoundaryImpl<distype>* DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -91,7 +93,7 @@ DRT::ELEMENTS::ElemagBoundaryImpl<distype>* DRT::ELEMENTS::ElemagBoundaryImpl<di
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
     : xyze_(true),
       funct_(true),
@@ -108,7 +110,7 @@ DRT::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -119,7 +121,7 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::E
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -273,3 +275,5 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
   }
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

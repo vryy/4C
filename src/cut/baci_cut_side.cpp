@@ -21,6 +21,8 @@
 #include <stack>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 // #define DEBUG_PARALLEL_CUT_SURFACE
 
 
@@ -1573,8 +1575,7 @@ void CORE::GEO::CUT::Side::replaceNodes(Node* nod, Node* replwith)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype, unsigned numNodesSide,
-    unsigned dim>
+template <unsigned probdim, CORE::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsCloserSide(
     const CORE::LINALG::Matrix<probdim, 1>& startpoint_xyz, CORE::GEO::CUT::Side* other,
     bool& is_closer)
@@ -1746,8 +1747,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype, unsigned numNodesSide,
-    unsigned dim>
+template <unsigned probdim, CORE::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
 ///  lies point with given coordinates within this side?
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinSide(
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rs, double& dist)
@@ -1771,8 +1771,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype, unsigned numNodesSide,
-    unsigned dim>
+template <unsigned probdim, CORE::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
 ///  lies point with given coordinates within this side?
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::LocalCoordinates(
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<probdim, 1>& rsd,
@@ -1817,8 +1816,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::LocalCo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype, unsigned numNodesSide,
-    unsigned dim>
+template <unsigned probdim, CORE::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
 ///  lies point with given coordinates within this side?
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
     const CORE::LINALG::Matrix<probdim, 1>& p1_xyz, const CORE::LINALG::Matrix<probdim, 1>& p2_xyz,
@@ -1841,9 +1839,10 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
   // allowed to be not within the side and line
   bool checklimits = false;
   // do not use cln here
-  CORE::GEO::CUT::KERNEL::ComputeIntersection<probdim, ::DRT::Element::line2, sidetype, false> ci(
-      xsi, checklimits);
-  // CORE::GEO::CUT::KERNEL::DebugComputeIntersection<probdim,::DRT::Element::line2, sidetype,false>
+  CORE::GEO::CUT::KERNEL::ComputeIntersection<probdim, CORE::FE::CellType::line2, sidetype, false>
+      ci(xsi, checklimits);
+  // CORE::GEO::CUT::KERNEL::DebugComputeIntersection<probdim,CORE::FE::CellType::line2,
+  // sidetype,false>
   //      ci( xsi, checklimits );
 
   // successful line-side intersection
@@ -1860,29 +1859,28 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(
-    ::DRT::Element::DiscretizationType sidetype, int sid, const std::vector<Node*>& nodes,
-    const std::vector<Edge*>& edges) const
+CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(CORE::FE::CellType sidetype, int sid,
+    const std::vector<Node*>& nodes, const std::vector<Edge*>& edges) const
 {
   Side* s = nullptr;
-  const int probdim = ::DRT::Problem::Instance()->NDim();
+  const int probdim = BACI::DRT::Problem::Instance()->NDim();
   switch (sidetype)
   {
-    case ::DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      s = CreateConcreteSide<::DRT::Element::line2>(sid, nodes, edges, probdim);
+      s = CreateConcreteSide<CORE::FE::CellType::line2>(sid, nodes, edges, probdim);
       break;
     }
-    case ::DRT::Element::tri3:
-      s = CreateConcreteSide<::DRT::Element::tri3>(sid, nodes, edges, probdim);
+    case CORE::FE::CellType::tri3:
+      s = CreateConcreteSide<CORE::FE::CellType::tri3>(sid, nodes, edges, probdim);
       break;
-    case ::DRT::Element::quad4:
-      s = CreateConcreteSide<::DRT::Element::quad4>(sid, nodes, edges, probdim);
+    case CORE::FE::CellType::quad4:
+      s = CreateConcreteSide<CORE::FE::CellType::quad4>(sid, nodes, edges, probdim);
       break;
     default:
     {
-      dserror(
-          "Unsupported side type! ( %d | %s )", sidetype, ::DRT::DistypeToString(sidetype).c_str());
+      dserror("Unsupported side type! ( %d | %s )", sidetype,
+          CORE::FE::CellTypeToString(sidetype).c_str());
       break;
     }
   }
@@ -1895,7 +1893,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::CreateLevelSetSide(const int& sid)
 {
   Side* lvs_side_ptr = nullptr;
 
-  const int probdim = ::DRT::Problem::Instance()->NDim();
+  const int probdim = BACI::DRT::Problem::Instance()->NDim();
   switch (probdim)
   {
     case 2:
@@ -1913,9 +1911,8 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::CreateLevelSetSide(const int& sid)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(
-    const ::DRT::Element::DiscretizationType& sidetype, const int& sid,
-    const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
+CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(const CORE::FE::CellType& sidetype,
+    const int& sid, const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
 {
   SideFactory factory;
   return factory.CreateSide(sidetype, sid, nodes, edges);
@@ -1926,11 +1923,13 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(
 CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(const unsigned& shardskey, const int& sid,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
 {
-  return Create(::DRT::ShardsKeyToDisType(shardskey), sid, nodes, edges);
+  return Create(BACI::DRT::ShardsKeyToDisType(shardskey), sid, nodes, edges);
 }
 
 
-template class CORE::GEO::CUT::ConcreteSide<2, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::quad4>;
-template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::tri3>;
+template class CORE::GEO::CUT::ConcreteSide<2, CORE::FE::CellType::line2>;
+template class CORE::GEO::CUT::ConcreteSide<3, CORE::FE::CellType::line2>;
+template class CORE::GEO::CUT::ConcreteSide<3, CORE::FE::CellType::quad4>;
+template class CORE::GEO::CUT::ConcreteSide<3, CORE::FE::CellType::tri3>;
+
+BACI_NAMESPACE_CLOSE

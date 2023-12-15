@@ -11,6 +11,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -35,7 +37,6 @@ MAT::ELASTIC::GeneralizedGenMax::GeneralizedGenMax(MAT::ELASTIC::PAR::Generalize
     Teuchos::RCP<MAT::ELASTIC::Summand> ViscoBranch = MAT::ELASTIC::Summand::Factory(matid);
 
     double nummat = -1.0;
-    ;
     const std::vector<int>* branchmatids = nullptr;
 
     ViscoBranch->ReadMaterialParameters(nummat, branchmatids);
@@ -91,3 +92,5 @@ MAT::ELASTIC::PAR::ViscoPart::ViscoPart(const Teuchos::RCP<MAT::PAR::Material>& 
 MAT::ELASTIC::ViscoPart::ViscoPart(MAT::ELASTIC::PAR::ViscoPart* params) : params_(params) {}
 
 void MAT::ELASTIC::ViscoPart::ReadMaterialParameters(double& tau) { tau = params_->tau_; }
+
+BACI_NAMESPACE_CLOSE

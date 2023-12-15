@@ -18,6 +18,8 @@
 /* header inclusions */
 #include "baci_adapter_ale_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* class definitions */
 namespace ADAPTER
@@ -30,9 +32,6 @@ namespace ADAPTER
 
     //! constructor
     explicit AleFpsiWrapper(Teuchos::RCP<Ale> ale);
-
-    //! Destructor
-    virtual ~AleFpsiWrapper() {}
 
     //! specialized method to apply displacements to fpsi interface
     void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp);
@@ -52,5 +51,7 @@ namespace ADAPTER
 
   };  // class AleFpsiWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_FPSI_H

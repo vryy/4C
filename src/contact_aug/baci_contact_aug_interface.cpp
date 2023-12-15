@@ -14,15 +14,17 @@
 #include "baci_contact_paramsinterface.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_binarytree.H"
 #include "baci_mortar_element.H"
+#include "baci_utils_epetra_exceptions.H"
 
 #include <Epetra_IntVector.h>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -44,7 +46,7 @@ CONTACT::AUG::InterfaceDataContainer::InterfaceDataContainer()
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::Interface::Interface(
     const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr)
-    : ::CONTACT::CoInterface(interfaceData_ptr),
+    : CONTACT::CoInterface(interfaceData_ptr),
       interfaceData_ptr_(interfaceData_ptr),
       interfaceData_(*interfaceData_ptr_)
 {
@@ -122,8 +124,8 @@ void CONTACT::AUG::Interface::Setup()
 
     switch (ele->Shape())
     {
-      case DRT::Element::tri3:
-      case DRT::Element::tri6:
+      case CORE::FE::CellType::tri3:
+      case CORE::FE::CellType::tri6:
         myTriangleOnMaster = 1;
         break;
       default:
@@ -432,7 +434,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
 
   /*--------------------------------------------------------------------------*/
   // (1) Export normals
-  DRT::Exporter& ex = interfaceData_.Exporter();
+  CORE::COMM::Exporter& ex = interfaceData_.Exporter();
   ex.Export(normals);
 
   /*--------------------------------------------------------------------------*/
@@ -488,7 +490,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
   /*--------------------------------------------------------------------------*/
   // (1) Export the 1-st order derivatives
 
-  DRT::Exporter& ex = interfaceData_.Exporter();
+  CORE::COMM::Exporter& ex = interfaceData_.Exporter();
   ex.Export(export_d_normals);
 
   /*--------------------------------------------------------------------------*/
@@ -539,7 +541,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
   /*--------------------------------------------------------------------------*/
   // (1) Export the 2-nd order derivatives
 
-  DRT::Exporter& ex = interfaceData_.Exporter();
+  CORE::COMM::Exporter& ex = interfaceData_.Exporter();
   ex.Export(export_dd_normals);
 
   /*--------------------------------------------------------------------------*/
@@ -1100,15 +1102,13 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
     std::fill(vals.values() + 1, vals.values() + numdof, ct_inv * augA);
 
     // copy dof ids
-    std::copy(cnode->Dofs(), cnode->Dofs() + numdof, rowIds.data());
+    std::copy(cnode->Dofs().data(), cnode->Dofs().data() + numdof, rowIds.data());
 
     // insert owner
     std::fill(rowner.data(), rowner.data() + numdof, cnode->Owner());
 
     CORE::LINALG::Assemble(augInactiveDiagMatrix, vals, rowIds, rowner);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1960,13 +1960,13 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
     const DRT::Node* const* nodes = ele->Nodes();
     switch (ele->Shape())
     {
-      case DRT::Element::line2:
+      case CORE::FE::CellType::line2:
       {
         const CoNode& cnode0 = dynamic_cast<const CoNode&>(*nodes[0]);
         const CoNode& cnode1 = dynamic_cast<const CoNode&>(*nodes[1]);
 
-        const CORE::LINALG::Matrix<3, 1> X0(cnode0.X(), true);
-        CORE::LINALG::Matrix<3, 1> diffX(cnode1.X(), false);
+        const CORE::LINALG::Matrix<3, 1> X0(cnode0.X().data(), true);
+        CORE::LINALG::Matrix<3, 1> diffX(cnode1.X().data(), false);
 
         diffX.Update(-1.0, X0, 1.0);
 
@@ -1978,7 +1978,7 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
         dserror(
             "You have to implement the characteristic element length"
             " calculation for the given element type. (ele-type=%s)",
-            DRT::DistypeToString(ele->Shape()).c_str());
+            CORE::FE::CellTypeToString(ele->Shape()).c_str());
         exit(EXIT_FAILURE);
     }
   }
@@ -2190,3 +2190,5 @@ CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
 template const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(
     const CoNode& cnode) const;
+
+BACI_NAMESPACE_CLOSE

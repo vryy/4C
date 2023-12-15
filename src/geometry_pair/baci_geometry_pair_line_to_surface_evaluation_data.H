@@ -18,14 +18,15 @@
 
 #include <unordered_map>
 
-
 // Forward declarations.
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
+
 namespace GEOMETRYPAIR
 {
   class FaceElement;
 }
-
 
 namespace GEOMETRYPAIR
 {
@@ -39,11 +40,6 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      */
     LineToSurfaceEvaluationData(const Teuchos::ParameterList& input_parameter_list);
-
-    /**
-     * \brief Destructor.
-     */
-    ~LineToSurfaceEvaluationData() {}
 
     /**
      * \brief Reset the evaluation data (derived).
@@ -88,5 +84,7 @@ namespace GEOMETRYPAIR
     INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy_;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

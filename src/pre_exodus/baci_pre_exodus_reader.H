@@ -47,7 +47,7 @@ namespace EXODUS
     Mesh();
 
     //! destructor
-    virtual ~Mesh();
+    virtual ~Mesh() = default;
 
     //! Print mesh info
     void Print(std::ostream& os, bool verbose = false) const;
@@ -122,11 +122,11 @@ namespace EXODUS
 
     //! Transform SideSet into NodeSet
     NodeSet SideSetToNodeSet(
-        const SideSet& sideset, const std::map<int, std::vector<int>>& sideconn) const;
+        const SideSet& sideset, const std::map<int, std::vector<int>>& sidesetconn) const;
 
     //! Get Set of Nodes in SideSet
     std::set<int> GetSideSetNodes(
-        const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sideconn) const;
+        const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sidesetconn) const;
 
     //! Get Node map
     Teuchos::RCP<std::map<int, std::vector<double>>> GetNodes() const { return nodes_; }
@@ -236,7 +236,7 @@ namespace EXODUS
         Teuchos::RCP<std::map<int, std::vector<int>>>& eleconn,  // Element connectivity
         std::string name);
 
-    virtual ~ElementBlock();
+    virtual ~ElementBlock() = default;
 
     ElementBlock::Shape GetShape() const { return distype_; }
 
@@ -268,7 +268,7 @@ namespace EXODUS
    public:
     NodeSet(const std::set<int>& nodeids, const std::string& name, const std::string& propname);
 
-    virtual ~NodeSet();
+    virtual ~NodeSet() = default;
 
     std::set<int> GetNodeSet() const { return nodeids_; };
 
@@ -293,7 +293,7 @@ namespace EXODUS
    public:
     SideSet(const std::map<int, std::vector<int>>& sides, const std::string& name);
 
-    virtual ~SideSet();
+    virtual ~SideSet() = default;
 
     inline int GetNumSides() const { return sides_.size(); }
 
@@ -448,71 +448,71 @@ namespace EXODUS
     return "xxx";
   }
 
-  inline DRT::Element::DiscretizationType PreShapeToDrt(const ElementBlock::Shape shape)
+  inline BACI::CORE::FE::CellType PreShapeToDrt(const ElementBlock::Shape shape)
   {
     switch (shape)
     {
       case ElementBlock::point1:
-        return DRT::Element::point1;
+        return BACI::CORE::FE::CellType::point1;
         break;
       case ElementBlock::quad4:
-        return DRT::Element::quad4;
+        return BACI::CORE::FE::CellType::quad4;
         break;
       case ElementBlock::quad8:
-        return DRT::Element::quad8;
+        return BACI::CORE::FE::CellType::quad8;
         break;
       case ElementBlock::quad9:
-        return DRT::Element::quad9;
+        return BACI::CORE::FE::CellType::quad9;
         break;
       case ElementBlock::shell4:
-        return DRT::Element::quad4;
+        return BACI::CORE::FE::CellType::quad4;
         break;
       case ElementBlock::shell8:
-        return DRT::Element::quad8;
+        return BACI::CORE::FE::CellType::quad8;
         break;
       case ElementBlock::shell9:
-        return DRT::Element::quad9;
+        return BACI::CORE::FE::CellType::quad9;
         break;
       case ElementBlock::tri3:
-        return DRT::Element::tri3;
+        return BACI::CORE::FE::CellType::tri3;
         break;
       case ElementBlock::tri6:
-        return DRT::Element::tri6;
+        return BACI::CORE::FE::CellType::tri6;
         break;
       case ElementBlock::hex8:
-        return DRT::Element::hex8;
+        return BACI::CORE::FE::CellType::hex8;
         break;
       case ElementBlock::hex20:
-        return DRT::Element::hex20;
+        return BACI::CORE::FE::CellType::hex20;
         break;
       case ElementBlock::hex27:
-        return DRT::Element::hex27;
+        return BACI::CORE::FE::CellType::hex27;
         break;
       case ElementBlock::tet4:
-        return DRT::Element::tet4;
+        return BACI::CORE::FE::CellType::tet4;
         break;
       case ElementBlock::tet10:
-        return DRT::Element::tet10;
+        return BACI::CORE::FE::CellType::tet10;
         break;
       case ElementBlock::wedge6:
-        return DRT::Element::wedge6;
+        return BACI::CORE::FE::CellType::wedge6;
         break;
       case ElementBlock::wedge15:
-        return DRT::Element::wedge15;
+        return BACI::CORE::FE::CellType::wedge15;
         break;
       case ElementBlock::pyramid5:
-        return DRT::Element::pyramid5;
+        return BACI::CORE::FE::CellType::pyramid5;
         break;
       case ElementBlock::bar2:
-        return DRT::Element::line2;
+        return BACI::CORE::FE::CellType::line2;
         break;
       case ElementBlock::bar3:
-        return DRT::Element::line3;
+        return BACI::CORE::FE::CellType::line3;
         break;
       default:
         dserror("Unknown ElementBlock::Shape");
     }
-    return DRT::Element::max_distype;
+    return BACI::CORE::FE::CellType::max_distype;
   }
 
   void PrintMap(std::ostream& os, const std::map<int, std::vector<int>> mymap);
@@ -530,8 +530,6 @@ namespace EXODUS
 
   int HexSideNumberExoToBaci(const int exoface);
   int PyrSideNumberExoToBaci(const int exoface);
-
-
 
 }  // namespace EXODUS
 

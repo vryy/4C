@@ -18,6 +18,7 @@
 
 #include <Epetra_IntVector.h>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -86,7 +87,7 @@ namespace DRT
         const std::set<int> condids);
 
     //! destructor
-    virtual ~DofSetDefinedMappingWrapper();
+    ~DofSetDefinedMappingWrapper() override;
 
 
     /*! \brief Assign dof numbers using all elements and nodes of the discretization.
@@ -140,35 +141,35 @@ namespace DRT
 
          The std::set 'couplingids' contains the ids from both, VOL and SURF conditions
          given above. This way, one unique struct dofset for all scatra nodes is created.    */
-    virtual int AssignDegreesOfFreedom(
-        const Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
-    virtual void Reset();
+    void Reset() override;
 
     //! @name Proxy management
     /// Proxies need to know about changes to the DofSet.
 
     /// our original DofSet dies
-    virtual void Disconnect(DofSetInterface* dofset);
+    void Disconnect(DofSetInterface* dofset) override;
 
     //@}
 
     /// Returns true if filled
-    virtual bool Filled() const { return filled_ and sourcedofset_->Filled(); };
+    bool Filled() const override { return filled_ and sourcedofset_->Filled(); };
 
 
     //! @name Access methods
 
     /// Get degree of freedom row map
-    virtual const Epetra_Map* DofRowMap() const { return sourcedofset_->DofRowMap(); };
+    const Epetra_Map* DofRowMap() const override { return sourcedofset_->DofRowMap(); };
 
     /// Get degree of freedom column map
-    virtual const Epetra_Map* DofColMap() const { return sourcedofset_->DofColMap(); };
+    const Epetra_Map* DofColMap() const override { return sourcedofset_->DofColMap(); };
 
     /// Get number of dofs for given node
-    virtual int NumDof(const Node* node  ///< node, for which you want to know the number of dofs
-    ) const
+    int NumDof(const Node* node  ///< node, for which you want to know the number of dofs
+    ) const override
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
       if (sourcenode == nullptr)
@@ -178,18 +179,16 @@ namespace DRT
     }
 
     /// Get number of dofs for given element
-    virtual int NumDof(
-        const Element* element  ///< element, for which you want to know the number of dofs
-    ) const
+    int NumDof(const Element* element  ///< element, for which you want to know the number of dofs
+    ) const override
     {
       // element dofs not yet supported
       return 0;
     }
 
     /// get number of nodal dofs
-    virtual int NumDofPerNode(
-        const Node& node  ///< node, for which you want to know the number of dofs
-    ) const
+    int NumDofPerNode(const Node& node  ///< node, for which you want to know the number of dofs
+    ) const override
     {
       const DRT::Node* sourcenode = GetSourceNode(node.LID());
       if (sourcenode == nullptr)
@@ -199,9 +198,8 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual std::vector<int> Dof(
-        const Node* node  ///< node, for which you want to know the number of dofs
-    ) const
+    std::vector<int> Dof(const Node* node  ///< node, for which you want to know the number of dofs
+    ) const override
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
       if (sourcenode == nullptr)
@@ -211,10 +209,10 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const Node* node,                    ///< node, for which you want the dof positions
+    void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
+        const Node* node,            ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
-    ) const
+    ) const override
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
       if (sourcenode == nullptr)
@@ -224,10 +222,10 @@ namespace DRT
     };
 
     /// Get the gid of all dofs of a element
-    virtual std::vector<int> Dof(const Element* element) const { return std::vector<int>(); }
+    std::vector<int> Dof(const Element* element) const override { return std::vector<int>(); }
 
     /// Get the gid of a dof for given node
-    virtual int Dof(const Node* node, int dof) const
+    int Dof(const Node* node, int dof) const override
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
       if (sourcenode == nullptr)
@@ -237,14 +235,14 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given element
-    virtual int Dof(const Element* element, int dof) const
+    int Dof(const Element* element, int dof) const override
     {
       // element dofs not yet supported
       return 0;
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const Node* node, std::vector<int>& lm) const
+    void Dof(const Node* node, std::vector<int>& lm) const override
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
       if (sourcenode == nullptr)
@@ -254,10 +252,10 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const Node* node,  ///< node, for which you want the dof positions
-        const unsigned startindex,      ///< first index of vector at which will be written to end
-        std::vector<int>& lm  ///< already allocated vector to be filled with dof positions
-    ) const
+    void Dof(const Node* node,      ///< node, for which you want the dof positions
+        const unsigned startindex,  ///< first index of vector at which will be written to end
+        std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
+    ) const override
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
       if (sourcenode == nullptr)
@@ -267,18 +265,18 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a element
-    virtual void Dof(const Element* element, std::vector<int>& lm) const
+    void Dof(const Element* element, std::vector<int>& lm) const override
     {
       // element dofs not yet supported
       return;
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    virtual void Dof(
+    void Dof(
         const Element* element,  ///< element which provides its expected number of DOFs per node
         const Node* node,        ///< node, for which you want the DOF positions
         std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
-    ) const
+    ) const override
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
       if (sourcenode == nullptr)
@@ -288,23 +286,23 @@ namespace DRT
     }
 
     /// Get maximum GID of degree of freedom row map
-    virtual int MaxAllGID() const { return sourcedofset_->MaxAllGID(); };
+    int MaxAllGID() const override { return sourcedofset_->MaxAllGID(); };
 
     /// Get minimum GID of degree of freedom row map
-    virtual int MinAllGID() const { return sourcedofset_->MinAllGID(); };
+    int MinAllGID() const override { return sourcedofset_->MinAllGID(); };
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    virtual int MaxGIDinList(const Epetra_Comm& comm) const
+    int MaxGIDinList(const Epetra_Comm& comm) const override
     {
       return sourcedofset_->MaxGIDinList(comm);
     };
 
     /// are the dof maps already initialized?
-    virtual bool Initialized() const { return sourcedofset_->Initialized(); };
+    bool Initialized() const override { return sourcedofset_->Initialized(); };
 
     /// Get Number of Global Elements of degree of freedom row map
-    virtual int NumGlobalElements() const { return sourcedofset_->NumGlobalElements(); };
+    int NumGlobalElements() const override { return sourcedofset_->NumGlobalElements(); };
 
    private:
     //! get corresponding source node from source discretization
@@ -332,5 +330,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H

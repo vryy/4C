@@ -35,25 +35,15 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm()
+ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& solverparams,
+    const std::string& disname, const bool isale)
     : scatra_(Teuchos::null), issetup_(false), isinit_(false)
 {
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::ScaTraBaseAlgorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
-{
-  SetIsSetup(false);
-
   // setup scalar transport algorithm (overriding some dynamic parameters
   // with values specified in given problem-dependent ParameterList prbdyn)
 
@@ -86,8 +76,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // TODO: TAW use of solverparams???
   // change input parameter to solver number instead of parameter list?
   // -> no default paramter possible any more
-  auto solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, discret->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  auto solver = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret->Comm()));
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -165,9 +154,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // (put here everything that is not available in scatradyn or its sublists)
   // -------------------------------------------------------------------
   auto extraparams = Teuchos::rcp(new Teuchos::ParameterList());
-
-  // ------------------------------pointer to the error file (for output)
-  extraparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale", isale);
@@ -372,8 +358,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
     auto cmonoparams = rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
 
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximationType() ==
-        ShapeFunctionType::shapefunction_hdg)
+    if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
     {
       scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(
           discret, solver, cmonoparams, scatratimeparams, extraparams, output));
@@ -450,8 +435,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   else
   {
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximationType() ==
-        ShapeFunctionType::shapefunction_hdg)
+    if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
     {
       switch (timintscheme)
       {
@@ -514,6 +498,13 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       }  // switch(timintscheme)
     }
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::ScaTraBaseAlgorithm::Init()
+{
+  SetIsSetup(false);
 
   // initialize scatra time integrator
   scatra_->Init();
@@ -606,3 +597,5 @@ void ADAPTER::ScaTraBaseAlgorithm::CheckIsInit() const
 {
   if (not IsInit()) dserror("Init(...) was not called.");
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -50,9 +52,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHHeatLossEvaporation(const Teuchos::ParameterList& params);
-
-    //! virtual destructor
-    ~SPHHeatLossEvaporation() = default;
 
     //! init evaporation induced heat loss handler
     void Init();
@@ -109,4 +108,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

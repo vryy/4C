@@ -48,8 +48,6 @@ Outer Iteration StatusTest = no
 ------------------------------------------------------STRUCT NOX/Status Test
 XML File                        = contact3D_nitsche_hex8_sym_coulomb_new_struc.xml
 ----------------------------------------------------THERMAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      2

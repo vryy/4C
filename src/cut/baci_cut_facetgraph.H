@@ -13,6 +13,8 @@
 
 #include "baci_cut_coloredgraph.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -43,7 +45,7 @@ namespace CORE::GEO
       FacetGraph(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
       /// destructor
-      virtual ~FacetGraph(){};
+      virtual ~FacetGraph() = default;
 
       void Print() const
       {
@@ -89,5 +91,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

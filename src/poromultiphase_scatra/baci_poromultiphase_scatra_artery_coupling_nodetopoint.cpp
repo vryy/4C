@@ -15,6 +15,8 @@
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_poromultiphase_scatra_artery_coupling_pair.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::
@@ -158,3 +160,5 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::OutputCoupli
   Comm().Barrier();
   if (myrank_ == 0) std::cout << "\n";
 }
+
+BACI_NAMESPACE_CLOSE

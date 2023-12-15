@@ -12,6 +12,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class CoNitscheStrategySsi;
@@ -36,6 +38,11 @@ namespace SSI
   class ContactStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ContactStrategyBase() = default;
+
     //! constructor
     explicit ContactStrategyBase(
         Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
@@ -117,4 +124,6 @@ namespace SSI
       Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
       Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, CORE::LINALG::MatrixType matrixtype_scatra);
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSI_MONOLITHIC_CONTACT_STRATEGY_H

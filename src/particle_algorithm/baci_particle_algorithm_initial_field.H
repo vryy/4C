@@ -18,6 +18,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -47,9 +49,6 @@ namespace PARTICLEALGORITHM
      * \param[in] params particle simulation parameter list
      */
     explicit InitialFieldHandler(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~InitialFieldHandler() = default;
 
     /*!
      * \brief init initial field handler
@@ -90,4 +89,6 @@ namespace PARTICLEALGORITHM
 }  // namespace PARTICLEALGORITHM
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

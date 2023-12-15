@@ -23,6 +23,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::LungMonolithicStructureSplit::LungMonolithicStructureSplit(
@@ -548,3 +550,5 @@ void FSI::LungMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const E
 
   ax = a;
 }
+
+BACI_NAMESPACE_CLOSE

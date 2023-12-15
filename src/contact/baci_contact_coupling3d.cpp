@@ -27,6 +27,8 @@
 #include "baci_mortar_defines.H"
 #include "baci_mortar_projector.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
@@ -50,14 +52,14 @@ bool CONTACT::CoCoupling3d::AuxiliaryPlane()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2];
 
-  DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
-  if (dt == MORTAR::MortarElement::tri3 || dt == MORTAR::MortarElement::tri6)
+  CORE::FE::CellType dt = SlaveIntElement().Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
     loccenter[1] = 1.0 / 3.0;
   }
-  else if (dt == MORTAR::MortarElement::quad4 || dt == MORTAR::MortarElement::quad8 ||
-           dt == MORTAR::MortarElement::quad9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -154,8 +156,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInte
     {
       // check for standard shape functions and quadratic LM interpolation
       if (ShapeFcn() == INPAR::MORTAR::shape_standard && lmtype == INPAR::MORTAR::lagmult_quad &&
-          (SlaveElement().Shape() == DRT::Element::quad8 ||
-              SlaveElement().Shape() == DRT::Element::tri6))
+          (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
+              SlaveElement().Shape() == CORE::FE::CellType::tri6))
         dserror(
             "Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for "
             "quad9");
@@ -342,14 +344,14 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
 
-  DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
-  if (dt == MORTAR::MortarElement::tri3 || dt == MORTAR::MortarElement::tri6)
+  CORE::FE::CellType dt = SlaveIntElement().Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     scxi[0] = 1.0 / 3.0;
     scxi[1] = 1.0 / 3.0;
   }
-  else if (dt == MORTAR::MortarElement::quad4 || dt == MORTAR::MortarElement::quad8 ||
-           dt == MORTAR::MortarElement::quad9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     scxi[0] = 0.0;
     scxi[1] = 0.0;
@@ -481,14 +483,14 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
 
-  DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
-  if (dt == MORTAR::MortarElement::tri3 || dt == MORTAR::MortarElement::tri6)
+  CORE::FE::CellType dt = SlaveIntElement().Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     scxi[0] = 1.0 / 3.0;
     scxi[1] = 1.0 / 3.0;
   }
-  else if (dt == MORTAR::MortarElement::quad4 || dt == MORTAR::MortarElement::quad8 ||
-           dt == MORTAR::MortarElement::quad9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     scxi[0] = 0.0;
     scxi[1] = 0.0;
@@ -1353,8 +1355,8 @@ void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling(
     // check for standard shape functions and quadratic LM interpolation
     if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
         LagMultQuad() == INPAR::MORTAR::lagmult_quad &&
-        (SlaveElement().Shape() == DRT::Element::quad8 ||
-            SlaveElement().Shape() == DRT::Element::tri6))
+        (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
+            SlaveElement().Shape() == CORE::FE::CellType::tri6))
       dserror(
           "Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for "
           "quad9");
@@ -1518,7 +1520,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     // but only the element nodes. This usually does the job.
     bool boundary_ele = false;
 
-    DRT::Element::DiscretizationType dt_s = SlaveElement().Shape();
+    CORE::FE::CellType dt_s = SlaveElement().Shape();
 
     double sxi_test[2] = {0.0, 0.0};
     double alpha_test = 0.0;
@@ -1527,7 +1529,8 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     DRT::Node** mynodes_test = SlaveElement().Nodes();
     if (!mynodes_test) dserror("HasProjStatus: Null pointer!");
 
-    if (dt_s == DRT::Element::quad4 || dt_s == DRT::Element::quad8 || dt_s == DRT::Element::nurbs9)
+    if (dt_s == CORE::FE::CellType::quad4 || dt_s == CORE::FE::CellType::quad8 ||
+        dt_s == CORE::FE::CellType::nurbs9)
     {
       for (int s_test = 0; s_test < SlaveElement().NumNode(); ++s_test)
       {
@@ -1580,14 +1583,15 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
               ->ProjectGaussPoint3D(SlaveElement(), sxi_test,
                   Coupling()[bs_test]->MasterIntElement(), mxi_test, alpha_test);
 
-          DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterIntElement().Shape();
-          if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+          CORE::FE::CellType dt = Coupling()[bs_test]->MasterIntElement().Shape();
+          if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+              dt == CORE::FE::CellType::quad9)
           {
             if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
                 mxi_test[1] <= 1.0)
               proj_test = true;
           }
-          else if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+          else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
           {
             if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
                 mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)
@@ -1602,7 +1606,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
       }
     }
 
-    else if (dt_s == DRT::Element::tri3 || dt_s == DRT::Element::tri6)
+    else if (dt_s == CORE::FE::CellType::tri3 || dt_s == CORE::FE::CellType::tri6)
     {
       for (int s_test = 0; s_test < SlaveElement().NumNode(); ++s_test)
       {
@@ -1645,14 +1649,15 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
               ->ProjectGaussPoint3D(SlaveElement(), sxi_test, Coupling()[bs_test]->MasterElement(),
                   mxi_test, alpha_test);
 
-          DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
-          if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+          CORE::FE::CellType dt = Coupling()[bs_test]->MasterElement().Shape();
+          if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+              dt == CORE::FE::CellType::quad9)
           {
             if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
                 mxi_test[1] <= 1.0)
               proj_test = true;
           }
-          else if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+          else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
           {
             if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
                 mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)
@@ -1738,7 +1743,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
       // there's nothing wrong about other shapes, but as long as they are all
       // tri3 we can perform the jacobian calculation ( and its deriv) outside
       // the Gauss point loop
-      if (currcell->Shape() != DRT::Element::tri3)
+      if (currcell->Shape() != CORE::FE::CellType::tri3)
         dserror("only tri3 integration cells at the moment. See comment in the code");
 
       detg = currcell->Jacobian();
@@ -1894,7 +1899,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     // declare and initialize to zero inverse of Matrix M_e
     CORE::LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
-    if (SlaveElement().Shape() == DRT::Element::tri6)
+    if (SlaveElement().Shape() == CORE::FE::CellType::tri6)
     {
       // reduce me to non-zero nodes before inverting
       CORE::LINALG::Matrix<3, 3> melin;
@@ -1908,8 +1913,8 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k) meinv(j, k) = melin(j, k);
     }
-    else if (SlaveElement().Shape() == DRT::Element::quad8 ||
-             SlaveElement().Shape() == DRT::Element::quad9)
+    else if (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
+             SlaveElement().Shape() == CORE::FE::CellType::quad9)
     {
       // reduce me to non-zero nodes before inverting
       CORE::LINALG::Matrix<4, 4> melin;
@@ -1983,3 +1988,5 @@ void CONTACT::CoCoupling3dManager::FindFeasibleMasterElements(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

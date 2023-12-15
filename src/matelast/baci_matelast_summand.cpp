@@ -8,8 +8,8 @@
 
 #include "baci_matelast_summand.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_anisoactivestress_evolution.H"
@@ -55,6 +55,8 @@
 #include "baci_matelast_volpenalty.H"
 #include "baci_matelast_volpow.H"
 #include "baci_matelast_volsussmanbathe.H"
+
+BACI_NAMESPACE_OPEN
 
 Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
 {
@@ -431,7 +433,7 @@ void MAT::ELASTIC::Summand::AddShearMod(bool& haveshearmod, double& shearmod) co
 
 int MAT::ELASTIC::Summand::UniqueParObjectId() const { return -1; }
 
-void MAT::ELASTIC::Summand::Pack(DRT::PackBuffer& data) const { return; }
+void MAT::ELASTIC::Summand::Pack(CORE::COMM::PackBuffer& data) const { return; }
 
 void MAT::ELASTIC::Summand::Unpack(const std::vector<char>& data) { return; };
 
@@ -501,3 +503,4 @@ void MAT::ELASTIC::Summand::EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<
         "function with respect to the anisotropic invariants. You need to implement them.");
   }
 }
+BACI_NAMESPACE_CLOSE

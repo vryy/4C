@@ -34,6 +34,8 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     int node)
     : myrank_(problem.comm()->MyPID())  // get my processor id
 {
+  using namespace BACI;
+
   // determine the owner of the node
   nodeowner_ = false;
 
@@ -72,6 +74,8 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int node)
 {
+  using namespace BACI;
+
   // create my output file
   std::string filename = problem.outname() + ".mon";
   std::ofstream outfile;
@@ -236,6 +240,8 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
     std::string& infieldtype, const std::string strname, const std::string strtype,
     std::vector<std::string> groupnames, int node)
 {
+  using namespace BACI;
+
   // create my output file
   std::ofstream outfile;
   if (nodeowner_)
@@ -378,6 +384,8 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
     std::string& infieldtype, const std::string thrname, const std::string thrtype,
     std::vector<std::string> groupnames, int node)
 {
+  using namespace BACI;
+
   // create my output file
   std::ofstream outfile;
   if (nodeowner_)
@@ -601,7 +609,6 @@ void StructMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void StructMonWriter::FieldError(int node)
 {
-  ;
   dserror("Node %i does not belong to structure field!", node);
 }
 
@@ -858,6 +865,8 @@ void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& probl
 void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, PostResult& result,
     const std::string groupname, const std::string name, const int numdf, const int node) const
 {
+  using namespace BACI;
+
   // get stresses/strains at Gauss points
   const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
@@ -870,7 +879,7 @@ void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, 
       [&](DRT::Element& ele)
       {
         CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-            ele, *data->at(ele.Id()), nodal_stress);
+            ele, *data->at(ele.Id()), *dis, nodal_stress);
       });
 
   if (nodeowner_)
@@ -1513,6 +1522,8 @@ void ThermoMonWriter::WriteThrResults(std::ofstream& outfile, PostProblem& probl
 void ThermoMonWriter::WriteThrResult(std::ofstream& outfile, PostField*& field, PostResult& result,
     const std::string groupname, const std::string name, const int dim, const int node) const
 {
+  using namespace BACI;
+
   // get heatfluxes/temperature gradients at Gauss points
   const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
@@ -1779,6 +1790,8 @@ void PoroMultiElastScatraArteryScatraMonWriter::WriteHeader(std::ofstream& outfi
  */
 int main(int argc, char** argv)
 {
+  using namespace BACI;
+
   // command line processor to deal with arguments
   Teuchos::CommandLineProcessor my_comlinproc;
   my_comlinproc.setDocString(

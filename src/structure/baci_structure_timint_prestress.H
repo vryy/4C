@@ -13,6 +13,8 @@
 /* headers */
 #include "baci_structure_timint_statics.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 
@@ -57,4 +59,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_PRESTRESS_H

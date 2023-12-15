@@ -14,6 +14,8 @@
 #include "baci_fluid_impedancecondition.H"
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidACFSI::FluidACFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
@@ -36,3 +38,5 @@ std::vector<double> ADAPTER::FluidACFSI::GetWindkesselErrors()
 
   return fluidimpl_->ImpedanceBC_()->getWKrelerrors();
 }
+
+BACI_NAMESPACE_CLOSE

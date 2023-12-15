@@ -12,9 +12,11 @@
 #ifndef BACI_LIB_ELEMENTREADER_H
 #define BACI_LIB_ELEMENTREADER_H
 
-#include "baci_lib_inputreader.H"
+#include "baci_io_inputreader.H"
 
 #include <Epetra_Map.h>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -98,8 +100,7 @@ namespace DRT
           std::string sectionname, const std::set<std::string>& elementtypes);
 
       //! Destructor
-      virtual ~ElementReader() { ; }
-
+      virtual ~ElementReader() = default;
       // Return list of unique nodes
       std::set<int> GetUniqueNodes() const { return nodes_; }
 
@@ -190,5 +191,7 @@ namespace DRT
     };
   }  // namespace INPUT
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

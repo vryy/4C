@@ -10,19 +10,21 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_pyramid5.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -271,7 +273,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -279,7 +281,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -287,7 +289,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, plstrain);
           data.StartPacking();
           AddtoPack(data, plstrain);
@@ -666,7 +668,14 @@ int DRT::ELEMENTS::So_pyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return StrParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOP5)
@@ -700,7 +709,7 @@ int DRT::ELEMENTS::So_pyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -741,7 +750,7 @@ int DRT::ELEMENTS::So_pyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -783,12 +792,12 @@ void DRT::ELEMENTS::So_pyramid5::InitJacobianMapping()
     else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 
   return;
 }
@@ -827,7 +836,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1156,7 +1165,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1165,7 +1174,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOP5 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOP5 + 2];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_SOP5 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOP5 + 1];
@@ -1192,7 +1201,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1599,7 +1608,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Pyramid5 Shape fcts at all Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyramid5::sop5_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyramid5::sop5_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts(NUMGPT_SOP5);
   // (r,s,t) gp-locations
@@ -1612,7 +1621,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyrami
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, pyramid5);
+    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::pyramid5);
   }
   return shapefcts;
 }
@@ -1621,7 +1630,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyrami
 /*----------------------------------------------------------------------*
  |  Evaluate Pyramid5 Shape fct derivs at all  Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>>
 DRT::ELEMENTS::So_pyramid5::sop5_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs(NUMGPT_SOP5);
@@ -1635,7 +1644,7 @@ DRT::ELEMENTS::So_pyramid5::sop5_derivs()
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, pyramid5);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::pyramid5);
   }
   return derivs;
 }
@@ -1644,7 +1653,7 @@ DRT::ELEMENTS::So_pyramid5::sop5_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Pyramid5 Weights at all  Gauss Points                       |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_weights()
+std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_weights()
 {
   std::vector<double> weights(NUMGPT_SOP5);
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
@@ -1693,8 +1702,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_shapederiv(
 
       CORE::LINALG::Matrix<NUMNOD_SOP5, 1> funct;
       CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> deriv;
-      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, pyramid5);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, pyramid5);
+      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, CORE::FE::CellType::pyramid5);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::pyramid5);
       for (int inode = 0; inode < NUMNOD_SOP5; ++inode)
       {
         f(inode, igp) = funct(inode);
@@ -1859,3 +1868,5 @@ void DRT::ELEMENTS::So_pyramid5::UpdateJacobianMapping(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

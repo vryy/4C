@@ -15,6 +15,8 @@
 
 #include "baci_mortar_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -47,9 +49,6 @@ namespace CONTACT
   class ParamsInterface : public MORTAR::ParamsInterface
   {
    public:
-    //! destructor
-    virtual ~ParamsInterface(){};
-
     //! get the predictor status
     virtual bool IsPredictor() const = 0;
 
@@ -91,5 +90,7 @@ namespace CONTACT
   };
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_PARAMSINTERFACE_H

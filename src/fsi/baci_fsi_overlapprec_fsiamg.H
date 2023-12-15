@@ -20,6 +20,8 @@
   0.85                     ///< emphasis on strength instead of speed on a 0...1 scale in analysis
 #define FSIAMG_ANALYSIS 0  ///< level 0(off),1,2,3,4 switch on live analysis during actual run
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   class OverlappingBlockMatrixHybridSchwarz;
@@ -42,22 +44,22 @@ namespace FSI
         std::vector<double>& somega, std::vector<int>& siterations, std::vector<double>& fomega,
         std::vector<int>& fiterations, std::vector<double>& aomega, std::vector<int>& aiterations,
         int analyze, INPAR::FSI::LinearBlockSolver strategy, INPAR::FSI::Verbosity verbosity,
-        FILE* err = nullptr, OverlappingBlockMatrixHybridSchwarz* hybridPrec = nullptr);
+        OverlappingBlockMatrixHybridSchwarz* hybridPrec = nullptr);
 
     /** \name Attribute access functions */
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     //@}
 
     /// setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// do list for MLAPI smoother
     void SelectMLAPISmoother(std::string& type, const int level, Teuchos::ParameterList& subp,
@@ -449,5 +451,7 @@ namespace FSI
 
 
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

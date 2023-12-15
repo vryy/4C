@@ -11,7 +11,7 @@
  *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_robinson.H"
 #include "baci_mat_thermoplastichyperelast.H"
 #include "baci_mat_thermoplasticlinelast.H"
@@ -22,10 +22,12 @@
 #include "baci_so3_thermo_fwd.hpp"
 #include "baci_structure_new_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | pre-evaluate the element (public)                         dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -66,7 +68,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 /*----------------------------------------------------------------------*
  | evaluate the element (public)                             dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -145,7 +147,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList
  | evaluate the element (public)                             dano 08/12 |
  | here is the action for the coupling to the thermal field             |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -240,9 +242,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* eleFBAR =
               dynamic_cast<
-                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(this);
+                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(
+                  this);
 
           // default structural element
           if (!eleFBAR)
@@ -334,9 +337,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* eleFBAR =
               dynamic_cast<
-                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(this);
+                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(
+                  this);
 
           // default structural element
           if (!eleFBAR)
@@ -428,9 +432,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* eleFBAR =
               dynamic_cast<
-                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(this);
+                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(
+                  this);
 
           // default structural element
           if (!eleFBAR)
@@ -506,7 +511,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
         // get the temperature dependent stress
         CORE::LINALG::Matrix<numgpt_post, numstr_> couplstress(true);
-        ;
 
         // initialise the vectors
         // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
@@ -537,10 +541,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           {
             // in case we have a finite strain thermoplastic material use hex8fbar element
             // to cirucumvent volumetric locking
-            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-                dynamic_cast<
-                    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
-                    this);
+            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*
+                eleFBAR = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+                    CORE::FE::CellType::hex8>*>(this);
 
 #ifdef TSIASOUTPUT
             std::cout << "thermal stress" << couplstress << std::endl;
@@ -613,7 +616,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
         // pack the data for postprocessing
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           // get the size of stress
           so3_ele::AddtoPack(data, couplstress);
           data.StartPacking();
@@ -666,7 +669,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         CORE::LINALG::Matrix<27, 1> weights;
 
         // get nurbs specific infos
-        if (so3_ele::Shape() == DRT::Element::nurbs27)
+        if (so3_ele::Shape() == CORE::FE::CellType::nurbs27)
         {
           // cast to nurbs discretization
           DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -683,14 +686,14 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
         for (int gp = 0; gp < numgpt_; ++gp)
         {
-          if (so3_ele::Shape() != DRT::Element::nurbs27)
+          if (so3_ele::Shape() != CORE::FE::CellType::nurbs27)
           {
             CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
           }
           // evaluate shape functions NURBS-style
           else
             CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
-                shapefunct, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+                shapefunct, xsi_[gp], myknots, weights, CORE::FE::CellType::nurbs27);
 
           // product of shapefunctions and element temperatures
           CORE::LINALG::Matrix<1, 1> NT(false);
@@ -746,9 +749,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
       {
         // in case we have a finite strain thermoplastic material use hex8fbar element
         // to cirucumvent volumetric locking
-        DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
+        DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* eleFBAR =
             dynamic_cast<
-                DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(this);
+                DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(
+                this);
 
         // default structural element
         if (!eleFBAR)
@@ -793,7 +797,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
  | evaluate only the temperature fraction for the element    dano 05/10 |
  | contribution to r_d (private)                                        |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
     DRT::Element::LocationArray& la,                        // location array
     std::vector<double>& disp,                              // current displacements
@@ -813,7 +817,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -947,7 +951,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
  | evaluate only the mechanical-thermal stiffness term       dano 03/11 |
  | for monolithic TSI, contribution to k_dT (private)                   |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::LocationArray& la,
     std::vector<double>& disp,                                       // current displacement
     std::vector<double>& temp,                                       // current temperatures
@@ -960,7 +964,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1081,7 +1085,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
  | evaluate only the temperature fraction for the element    dano 03/10 |
  | originally by maf 04/07  (private)                                   |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     DRT::Element::LocationArray& la,      // location array
     DRT::Discretization& discretization,  ///< discretisation to extract knot vector
@@ -1104,7 +1108,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1131,7 +1135,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (so3_ele::Shape() == DRT::Element::nurbs27)
+  if (so3_ele::Shape() == CORE::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -1152,7 +1156,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    if (so3_ele::Shape() != DRT::Element::nurbs27)
+    if (so3_ele::Shape() != CORE::FE::CellType::nurbs27)
     {
       CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
@@ -1160,7 +1164,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     // evaluate shape functions NURBS-style
     else
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+          shapefunct, deriv, xsi_[gp], myknots, weights, CORE::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1341,7 +1345,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
  | evaluate only the mechanical-thermal stiffness term       dano 11/12 |
  | for monolithic TSI, contribution to k_dT (private)                   |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::LocationArray& la,
     DRT::Discretization& discretization,  ///< discretisation to extract knot vector
     std::vector<double>& disp,            // current displacement
@@ -1355,7 +1359,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1396,7 +1400,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (so3_ele::Shape() == DRT::Element::nurbs27)
+  if (so3_ele::Shape() == CORE::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -1417,7 +1421,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    if (so3_ele::Shape() != DRT::Element::nurbs27)
+    if (so3_ele::Shape() != CORE::FE::CellType::nurbs27)
     {
       CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
@@ -1425,7 +1429,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
     // evaluate shape functions NURBS-style
     else
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+          shapefunct, deriv, xsi_[gp], myknots, weights, CORE::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1536,7 +1540,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
  | evaluate only the temperature fraction for the element    dano 05/13 |
  | only in case of hex8fbar element AND geo_nln analysis (protected)    |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
     DRT::Element::LocationArray& la,  // location array
     std::vector<double>& disp,        // current displacements
@@ -1551,11 +1555,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
 {
   // in case we have a finite strain thermoplastic material use hex8fbar element
   // to cirucumvent volumetric locking
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-      dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
-          this);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* eleFBAR =
+      dynamic_cast<
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(this);
 
-  if ((distype == DRT::Element::hex8) and (eleFBAR))
+  if ((distype == CORE::FE::CellType::hex8) and (eleFBAR))
   {
     // update element geometry hex8, 3D: (8x3)
     CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
@@ -1566,7 +1570,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < nen_; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       xrefe(i, 0) = x[0];
       xrefe(i, 1) = x[1];
       xrefe(i, 2) = x[2];
@@ -1593,7 +1597,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
     CORE::LINALG::Matrix<nsd_, nen_> N_XYZ_0(false);
     // element coordinate derivatives at centroid
     CORE::LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
 
     // inverse jacobian matrix at centroid
     CORE::LINALG::Matrix<nsd_, nsd_> invJ_0(false);
@@ -1891,7 +1895,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
  | evaluate only the mechanical-thermal stiffness term       dano 05/13 |
  | for monolithic TSI, contribution to k_dT (protected)                 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::LocationArray& la,
     std::vector<double>& disp,                                       // current displacement
     std::vector<double>& temp,                                       // current temperature
@@ -1900,11 +1904,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
 {
   // in case we have a finite strain thermoplastic material use hex8fbar element
   // to cirucumvent volumetric locking
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-      dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
-          this);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* eleFBAR =
+      dynamic_cast<
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(this);
 
-  if ((distype == DRT::Element::hex8) && (eleFBAR))
+  if ((distype == CORE::FE::CellType::hex8) && (eleFBAR))
   {
     // update element geometry (8x3)
     CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
@@ -1913,7 +1917,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < nen_; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       xrefe(i, 0) = x[0];
       xrefe(i, 1) = x[1];
       xrefe(i, 2) = x[2];
@@ -1939,7 +1943,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
     CORE::LINALG::Matrix<nsd_, nen_> N_XYZ_0(false);
     // element coordinate derivatives at centroid
     CORE::LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
 
     // inverse jacobian matrix at centroid
     CORE::LINALG::Matrix<nsd_, nsd_> invJ_0(false);
@@ -2001,7 +2005,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
       CORE::LINALG::Matrix<nsd_, nsd_> Cinv_bar(false);
       Cinv_bar.Invert(cauchygreen_bar);
       CORE::LINALG::Matrix<numstr_, 1> Cinv_barvct(false);
-      ::UTILS::VOIGT::Strains::MatrixToVector(Cinv_bar, Cinv_barvct);
+      CORE::LINALG::VOIGT::Strains::MatrixToVector(Cinv_bar, Cinv_barvct);
 
       // calculate nonlinear B-operator
       CORE::LINALG::Matrix<numstr_, numdofperelement_> bop(false);
@@ -2090,7 +2094,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
 /*----------------------------------------------------------------------*
  | material law with temperature part for So3_thermo         dano 05/10 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Materialize(
     CORE::LINALG::Matrix<numstr_, 1>* couplstress,  // temperature-dependent stress part
     CORE::LINALG::Matrix<numstr_, 1>* ctemp,        // temperature-dependent material tangent
@@ -2158,7 +2162,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Materialize(
 /*----------------------------------------------------------------------*
  | get the constant temperature fraction for couplstress      dano 05/10 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Ctemp(
     CORE::LINALG::Matrix<numstr_, 1>* ctemp, Teuchos::ParameterList& params)
 {
@@ -2205,7 +2209,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Ctemp(
 /*----------------------------------------------------------------------*
  | calculate the nonlinear B-operator                        dano 11/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::CalculateBop(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop, CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
     CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
@@ -2275,7 +2279,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::CalculateBop(
 /*----------------------------------------------------------------------*
  | calculate the nonlinear B-operator in vector notation     dano 11/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::CalculateBopVec(
     CORE::LINALG::Matrix<1, numdofperelement_>& bopvec, CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
     CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ)
@@ -2319,7 +2323,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::CalculateBopVec(
 /*----------------------------------------------------------------------*
  | calculate the linear B-operator                           dano 11/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::CalculateBoplin(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* boplin,
     CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
@@ -2365,7 +2369,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::CalculateBoplin(
 /*----------------------------------------------------------------------*
  | push forward of material to spatial stresses              dano 11/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::PK2toCauchy(
     CORE::LINALG::Matrix<numstr_, 1>* stress, CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
     CORE::LINALG::Matrix<nsd_, nsd_>* cauchystress)
@@ -2395,7 +2399,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::PK2toCauchy(
 /*----------------------------------------------------------------------*
  | push forward of material to spatial stresses              dano 11/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::GLtoEA(CORE::LINALG::Matrix<numstr_, 1>* glstrain,
     CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, CORE::LINALG::Matrix<nsd_, nsd_>* euler_almansi)
 {
@@ -2429,7 +2433,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::GLtoEA(CORE::LINALG::Matrix<nu
  | initialise Jacobian                                       dano 08/12 |
  | is called once in Initialize() in so3_thermo_eletypes.cpp            |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discretization& dis)
 {
   // get the material coordinates
@@ -2456,7 +2460,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (so3_ele::Shape() == DRT::Element::nurbs27)
+  if (so3_ele::Shape() == CORE::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -2481,11 +2485,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
       xsi_[gp](idim) = gpcoord[idim];
     }
     // first derivatives of shape functions (deriv)
-    if (so3_ele::Shape() != DRT::Element::nurbs27)
+    if (so3_ele::Shape() != CORE::FE::CellType::nurbs27)
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
     else
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          funct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+          funct, deriv, xsi_[gp], myknots, weights, CORE::FE::CellType::nurbs27);
 
     // compute Jacobian matrix and determinant
     // actually compute its transpose....
@@ -2517,12 +2521,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
 /*----------------------------------------------------------------------------------*
  | map the GP ordering as defined in Intrepid to the So_hex8 ordering  proell 05/18 |
  *----------------------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::MapMyGpToSoHex8(int myGp)
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
       const std::array<int, NUMGPT_SOH8> hex8_map = {6, 7, 5, 4, 2, 3, 1, 0};
       return hex8_map[myGp];
@@ -2534,3 +2538,5 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::MapMyGpToSoHex8(int myGp)
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

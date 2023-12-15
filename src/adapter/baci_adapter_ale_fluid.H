@@ -18,6 +18,8 @@
 /* header inclusions */
 #include "baci_adapter_ale_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 /* forward declarations */
 namespace ALE
 {
@@ -48,16 +50,13 @@ namespace ADAPTER
     //! constructor
     explicit AleFluidWrapper(Teuchos::RCP<Ale> ale);
 
-    //! Destructor
-    virtual ~AleFluidWrapper() {}
-
     //@}
 
     //! communicate object at the interface
     Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
 
     //! solve
-    int Solve();
+    int Solve() override;
 
     //! apply displacements at the free surface nodes
     void ApplyFreeSurfaceDisplacements(Teuchos::RCP<const Epetra_Vector> fsdisp);
@@ -73,5 +72,7 @@ namespace ADAPTER
 
   };  // class AleFluidWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_FLUID_H

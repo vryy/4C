@@ -13,13 +13,18 @@
 
 #include "baci_io_pstream.H"
 
+#include <Teuchos_ParameterList.hpp>
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   //! Data container for geometric search parameters
   class GeometricSearchParams
   {
    public:
-    GeometricSearchParams();
+    GeometricSearchParams(const Teuchos::ParameterList& geometric_search_params,
+        const Teuchos::ParameterList& io_params);
 
     /*! \brief Returns beam bounding volume scaling factor
      *
@@ -34,6 +39,11 @@ namespace CORE::GEOMETRICSEARCH
      */
     double GetSphereBoundingVolumeScaling() const { return sphere_radius_extension_factor_; }
 
+    /*!
+     * \brief Returns a flag indicating if visualization output should be written or not
+     */
+    bool GetWriteVisualizationFlag() const { return write_visualization_; }
+
     /*! \brief verbosity level of the geometric search algorithm
      */
     IO::verbositylevel verbosity_;
@@ -41,7 +51,10 @@ namespace CORE::GEOMETRICSEARCH
    private:
     double beam_radius_extension_factor_;
     double sphere_radius_extension_factor_;
+    bool write_visualization_;
   };
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif

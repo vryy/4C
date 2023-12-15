@@ -13,6 +13,8 @@
 
 #include "baci_structure_new_model_evaluator_structure.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace STR
 {
@@ -42,9 +44,6 @@ namespace STR
       //! constructor
       StructAle();
 
-      //! destructor
-      virtual ~StructAle(){};
-
       //! get pointer to mat. displ. vector at time level n+1 (full structural map).
       const Teuchos::RCP<Epetra_Vector>& GetMaterialDisplacementNpPtr()
       {
@@ -52,14 +51,14 @@ namespace STR
       };
 
       //! setup class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
      protected:
       //! @name Functions which are derived from the base Structure class
       //! @{
 
       //! pre-operator EvalutaInternal
-      virtual void PreEvaluateInternal();
+      void PreEvaluateInternal() override;
 
       //! @}
 
@@ -73,5 +72,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCT_ALE_STR_MODEL_EVALUATOR_H

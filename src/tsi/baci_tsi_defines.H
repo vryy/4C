@@ -10,6 +10,8 @@
 #ifndef BACI_TSI_DEFINES_H
 #define BACI_TSI_DEFINES_H
 
+BACI_NAMESPACE_OPEN
+
 /************************************************************************/
 /* Debugging options for TSI algorithm                                  */
 /************************************************************************/
@@ -49,5 +51,7 @@
 /************************************************************************/
 //#define TSISLMFDCHECK         /* flag for enabling FDChecks*/
 //#define TSISLMFDCHECKDEBUG    /* prints element matrices in FDcheck to a file "FDCheck_capa.txt"*/
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // TSI_DEFINES_H

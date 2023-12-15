@@ -15,31 +15,7 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 
-// forward declarations
-namespace CORE::ADAPTER
-{
-  class Coupling;
-  class CouplingMortar;
-}  // namespace CORE::ADAPTER
-
 class Epetra_Comm;
-
-namespace CORE::LINALG
-{
-  class BlockSparseMatrixBase;
-  class MatrixColTransform;
-}  // namespace CORE::LINALG
-
-namespace FSI
-{
-  class OverlappingBlockMatrix;
-
-  namespace UTILS
-  {
-    class SlideAleUtils;
-  }  // namespace UTILS
-}  // namespace FSI
-
 namespace NOX
 {
   namespace Epetra
@@ -57,6 +33,31 @@ namespace Teuchos
 {
   class ParameterList;
 }
+
+BACI_NAMESPACE_OPEN
+
+// forward declarations
+namespace CORE::ADAPTER
+{
+  class Coupling;
+  class CouplingMortar;
+}  // namespace CORE::ADAPTER
+
+namespace CORE::LINALG
+{
+  class BlockSparseMatrixBase;
+  class MatrixColTransform;
+}  // namespace CORE::LINALG
+
+namespace FSI
+{
+  class OverlappingBlockMatrix;
+
+  namespace UTILS
+  {
+    class SlideAleUtils;
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace FSI
 {
@@ -78,7 +79,7 @@ namespace FSI
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
 
     /// read restart
     void ReadRestart(int step) final;
@@ -124,15 +125,15 @@ namespace FSI
    protected:
     void CreateSystemMatrix();
 
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) final;
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) final;
 
-    virtual void Update() final;
+    void Update() final;
 
-    virtual void Output() final;
+    void Output() final;
 
     /// Write Lagrange multiplier
-    virtual void OutputLambda() final;
+    void OutputLambda() final;
 
     /*!
     @copydoc FSI::Monolithic::ExtractFieldVectors
@@ -152,7 +153,7 @@ namespace FSI
     #lag_mult_.
     */
     void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
+        Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
         ) override;
 
     void InitialGuess(Teuchos::RCP<Epetra_Vector> initial_guess) final;
@@ -202,7 +203,7 @@ namespace FSI
     virtual void SetLagMult();
 
     //! Set #notsetup_ = true after redistribution
-    virtual void SetNotSetup() { notsetup_ = true; }
+    void SetNotSetup() override { notsetup_ = true; }
 
     /*! block system matrix
      *  System matrix has a 6x6-block structure corresponding to the vector of unknowns
@@ -247,5 +248,7 @@ namespace FSI
 
   };  // class MortarMonolithicFluidSplitSaddlePoint
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_H

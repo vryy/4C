@@ -21,6 +21,8 @@
 #include "baci_rebalance.H"
 #include "baci_rebalance_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> dis,
@@ -78,12 +80,12 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         }
         else
         {
-          const CORE::LINALG::Matrix<3, 1> x(actnode->X());
+          const CORE::LINALG::Matrix<3, 1> x(actnode->X().data());
           pos(0) = x(0);
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, s);
+        IO::GMSH::cellWithScalarToStream(CORE::FE::CellType::point1, actnode->Id(), pos, s);
       }
     }
     else
@@ -103,12 +105,12 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         }
         else
         {
-          const CORE::LINALG::Matrix<3, 1> x(actnode->X());
+          const CORE::LINALG::Matrix<3, 1> x(actnode->X().data());
           pos(0) = x(0);
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, s);
+        IO::GMSH::cellWithScalarToStream(CORE::FE::CellType::point1, actnode->Id(), pos, s);
       }
     }
     s << "};\n";
@@ -585,3 +587,5 @@ Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondit
 //
 //  return target_cond;
 //}
+
+BACI_NAMESPACE_CLOSE

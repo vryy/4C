@@ -15,14 +15,15 @@
 
 #include <ml_MultiLevelPreconditioner.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::BGS2x2_Operator::BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& list1, const Teuchos::ParameterList& list2, int global_iter,
     double global_omega, int block1_iter, double block1_omega, int block2_iter, double block2_omega,
-    bool fliporder, FILE* outfile)
-    : outfile_(outfile),
-      list1_(list1),
+    bool fliporder)
+    : list1_(list1),
       list2_(list2),
       global_iter_(global_iter),
       global_omega_(global_omega),
@@ -70,16 +71,14 @@ CORE::LINALG::BGS2x2_Operator::BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
  *----------------------------------------------------------------------*/
 void CORE::LINALG::BGS2x2_Operator::SetupBlockPreconditioners()
 {
-  Teuchos::RCP<Teuchos::ParameterList> rcplist1 = Teuchos::rcp(&list1_, false);
   Teuchos::RCP<CORE::LINALG::Solver> s1 =
-      Teuchos::rcp(new CORE::LINALG::Solver(rcplist1, A_->Comm(), outfile_));
+      Teuchos::rcp(new CORE::LINALG::Solver(list1_, A_->Comm(), false));
   solver1_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(s1));
   const CORE::LINALG::SparseMatrix& Op11 = A_->Matrix(firstind_, firstind_);
   solver1_->Setup(Op11.EpetraMatrix());
 
-  Teuchos::RCP<Teuchos::ParameterList> rcplist2 = Teuchos::rcp(&list2_, false);
   Teuchos::RCP<CORE::LINALG::Solver> s2 =
-      Teuchos::rcp(new CORE::LINALG::Solver(rcplist2, A_->Comm(), outfile_));
+      Teuchos::rcp(new CORE::LINALG::Solver(list2_, A_->Comm(), false));
   solver2_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(s2));
   const CORE::LINALG::SparseMatrix& Op22 = A_->Matrix(secind_, secind_);
   solver2_->Setup(Op22.EpetraMatrix());
@@ -197,3 +196,5 @@ void CORE::LINALG::BGS2x2_Operator::LocalBlockRichardson(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

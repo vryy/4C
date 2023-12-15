@@ -13,6 +13,8 @@ electric potential as degrees of freedom
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -100,7 +102,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override = 0;
+    void Pack(CORE::COMM::PackBuffer& data) const override = 0;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -241,4 +243,6 @@ namespace MAT
         int functnr, double scalar, const std::vector<double>& functparams) const;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -14,6 +14,8 @@
 
 #include "baci_scatra_algorithm.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ELCH
 {
   /// ELCH algorithm base
@@ -35,19 +37,19 @@ namespace ELCH
         const Teuchos::ParameterList& solverparams  ///< solver parameter list
     );
 
-    /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm() = default;
 
    protected:
     /// provide information about initial field
-    void PrepareTimeLoop();
+    void PrepareTimeLoop() override;
 
     /// print scatra solver type to screen
-    void PrintScaTraSolver();
+    void PrintScaTraSolver() override;
 
     /// convergence check for natural convection solver
-    bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol);
+    bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol) override;
   };
 }  // namespace ELCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELCH_ALGORITHM_H

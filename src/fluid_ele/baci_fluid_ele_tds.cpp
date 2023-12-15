@@ -12,6 +12,8 @@
 
 #include "baci_fluid_ele_tds.H"
 
+BACI_NAMESPACE_OPEN
+
 
 FLD::TDSEleDataType FLD::TDSEleDataType::instance_;
 
@@ -45,9 +47,9 @@ sveln_      (old.sveln_      )
  |  Pack data                                                  (public) |
  |                                                            gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::Pack(DRT::PackBuffer& data) const
+void FLD::TDSEleData::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -74,10 +76,8 @@ void FLD::TDSEleData::Pack(DRT::PackBuffer& data) const
 void FLD::TDSEleData::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // history variables (subgrid-scale velocities, accelerations and pressure)
   {
@@ -106,10 +106,6 @@ void FLD::TDSEleData::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             gjb 12/12 |
- *----------------------------------------------------------------------*/
-FLD::TDSEleData::~TDSEleData() { return; }
 
 /*----------------------------------------------------------------------*
  |  activate time dependent subgrid scales (public)           gjb 12/12 |
@@ -218,3 +214,5 @@ void FLD::TDSEleData::Update(const double dt, const double gamma)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

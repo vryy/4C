@@ -15,10 +15,12 @@ vectors and matrices.
 
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -221,13 +223,13 @@ void DRT::UTILS::LocsysManager::Update(
 
                   // Calculate current position for node
                   std::vector<double> currPos(Dim());
-                  const double* xp = node->X();
+                  const auto& xp = node->X();
 
                   for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
 
                   // Evaluate function with current node position
                   functfac =
-                      (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                      (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
                           .Evaluate(currPos.data(), time, j);
                 }
@@ -235,9 +237,9 @@ void DRT::UTILS::LocsysManager::Update(
                 {
                   // Evaluate function with reference node position
                   functfac =
-                      (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                      (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
-                          .Evaluate(node->X(), time, j);
+                          .Evaluate(node->X().data(), time, j);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;
@@ -683,3 +685,5 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
     locsystoggle_->ReplaceGlobalValues(1, &values, &indices);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@ functions.
 
 #include "baci_fbi_beam_to_fluid_meshtying_pair_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   /**
@@ -40,10 +42,7 @@ namespace BEAMINTERACTION
      */
     BeamToFluidMeshtyingPairMortar();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToFluidMeshtyingPairMortar() override = default;
+
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this meshtying element pair.
@@ -70,7 +69,8 @@ namespace BEAMINTERACTION
      * to fluid pairs
      * @param visualization_params Parameter list
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
    protected:
@@ -79,5 +79,7 @@ namespace BEAMINTERACTION
         CORE::LINALG::Matrix<3, 1, scalar_type> v_beam) const;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

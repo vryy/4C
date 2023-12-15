@@ -23,6 +23,8 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                          wirtz 01/16 |
  *----------------------------------------------------------------------*/
@@ -93,8 +95,6 @@ namespace EHL
         const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
         const std::string struct_disname, const std::string lubrication_disname);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~Monolithic();
 
 
     /*! do the setup for the monolithic system
@@ -111,13 +111,13 @@ namespace EHL
     ReadMesh is called), the dofmaps for the blocks might get invalid.
     */
     //! Setup the monolithic EHL system
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// non-linear solve, i.e. (multiple) corrector
     virtual void Solve();
 
     //! outer level EHL time loop
-    virtual void Timeloop();
+    void Timeloop() override;
 
     //! @name Apply current field state to system
 
@@ -163,9 +163,7 @@ namespace EHL
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void Evaluate(
-        Teuchos::RCP<Epetra_Vector> stepinc  //!< increment between time step n and n+1
-    );
+    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> stepinc);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -212,7 +210,7 @@ namespace EHL
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! calculate stresses, strains, energies
     virtual void PrepareOutput(bool force_prepare);
@@ -268,9 +266,7 @@ namespace EHL
     //! @name Printing and output
     //@{
 
-    bool printiter_;     //!< print intermediate iterations during solution
-    bool printerrfile_;  //!< print infos to error file #errfile_
-    FILE* errfile_;      //!< error file handle
+    bool printiter_;  //!< print intermediate iterations during solution
 
     //@}
 
@@ -378,102 +374,9 @@ namespace EHL
 
   };  // Monolithic
 
-
-  //  class MortarCellInterface
-  //  {
-  //    public:
-  //
-  //    //! evaluate single mortar integration cell of particular slave-side and master-side
-  //    discretization types virtual void Evaluate(
-  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
-  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
-  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
-  //        Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
-  //        Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
-  //        const DRT::Discretization&           idiscret,          //!< interface discretization
-  //        const Teuchos::ParameterList&        params,            //!< parameter list
-  //        DRT::Element&               slaveelement,      //!< slave-side mortar element
-  //        DRT::Element&               masterelement,     //!< master-side mortar element
-  //        MORTAR::IntCell&                     cell,              //!< mortar integration cell
-  //        DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
-  //        DRT::Element::LocationArray&         la_master          //!< master-side location array
-  //        )=0;
-  //
-  //    protected:
-  //
-  //      //! protected constructor for singletons
-  //      MortarCellInterface(){};
-  //
-  //      //! protected destructor for singletons
-  //      virtual ~MortarCellInterface(){return;};
-  //  };
-  //
-  //  template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
-  //  class MortarCellCalc : public MortarCellInterface
-  //  {
-  //    public:
-  //
-  //      //! singleton access method
-  //      static MortarCellCalc<distypeS,distypeM>* Instance(
-  //          bool create = true);
-  //
-  //      //! singleton destruction
-  //      virtual void Done();
-  //
-  //      //! evaluate single mortar integration cell of particular slave-side and master-side
-  //      discretization types virtual void Evaluate(
-  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
-  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
-  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
-  //          Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual
-  //          vector Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side
-  //          residual vector const DRT::Discretization&           idiscret,          //!< interface
-  //          discretization const Teuchos::ParameterList&        params,            //!< parameter
-  //          list DRT::Element&               slaveelement,      //!< slave-side mortar element
-  //          DRT::Element&               masterelement,     //!< master-side mortar element
-  //          MORTAR::IntCell&                     cell,              //!< mortar integration cell
-  //          DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
-  //          DRT::Element::LocationArray&         la_master          //!< master-side location
-  //          array
-  //          );
-  //
-  //    protected:
-  //
-  //      //! protected constructor for singletons
-  //      MortarCellCalc(){};
-  //
-  //  }; // class MortarCellCalc
-  //
-  //  class MortarCellFactory
-  //  {
-  //    public:
-  //
-  //      //! constructor
-  //      MortarCellFactory(){return;};
-  //
-  //      //! destructor
-  //      virtual ~MortarCellFactory(){return;};
-  //
-  //      //! provide instance of mortar cell evaluation class of particular slave-side
-  //      discretization type static MortarCellInterface* MortarCellCalc(
-  //          const DRT::Element&        slaveelement,    //!< slave-side mortar element
-  //          const DRT::Element&        masterelement   //!< master-side mortar element
-  //          );
-  //
-  //    private:
-  //
-  //      //! provide instance of mortar cell evaluation class of particular slave-side and
-  //      master-side discretization types template<DRT::Element::DiscretizationType distypeS>
-  //      static MortarCellInterface* MortarCellCalc(
-  //          const DRT::Element&        masterelement        //!< master-side mortar element
-  //          );
-  //
-  //      //! provide specific instance of mortar cell evaluation class
-  //      template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType
-  //      distypeM> static MortarCellInterface* MortarCellCalc();
-  //
-  //  }; // class MortarCellFactory
 }  // namespace EHL
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // EHL_MONOLITHIC_H

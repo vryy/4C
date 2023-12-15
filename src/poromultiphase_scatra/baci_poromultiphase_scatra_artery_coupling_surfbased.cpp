@@ -16,6 +16,8 @@
 
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTraArtCouplSurfBased(
@@ -244,3 +246,5 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PrintOutCoupli
   std::cout << "<   surface-based formulation                      >" << std::endl;
   PoroMultiPhaseScaTraArtCouplNonConforming::PrintOutCouplingMethod();
 }
+
+BACI_NAMESPACE_CLOSE

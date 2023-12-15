@@ -14,6 +14,8 @@
 #include "baci_mat_so3_material.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/15|
@@ -45,9 +47,9 @@ DRT::ELEMENTS::So_base::So_base(const DRT::ELEMENTS::So_base& old)
  |  Pack data                                                  (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_base::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_base::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -70,10 +72,9 @@ void DRT::ELEMENTS::So_base::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -166,3 +167,5 @@ void DRT::ELEMENTS::So_base::MaterialPostSetup(Teuchos::ParameterList& params)
   SolidMaterial()->PostSetup(params, Id());
   material_post_setup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

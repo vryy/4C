@@ -16,6 +16,8 @@
 #include "baci_inpar_contact.H"
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -179,3 +181,5 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("none", "structure", "thermo", "and", "or"),
       tuple<int>(LS_none, LS_structure, LS_thermo, LS_and, LS_or), &tsidynmono);
 }
+
+BACI_NAMESPACE_CLOSE

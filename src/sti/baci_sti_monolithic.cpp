@@ -28,6 +28,8 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
 #include "baci_sti_monolithic_evaluate_OffDiag.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& stidyn,
@@ -51,8 +53,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       residual_(Teuchos::null),
       dtele_(0.),
       dtsolve_(0.),
-      solver_(Teuchos::rcp(new CORE::LINALG::Solver(
-          solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
+      solver_(Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm))),
       invrowsums_(Teuchos::null),
       icoupscatra_(Teuchos::null),
       icoupthermo_(Teuchos::null),
@@ -1778,3 +1779,5 @@ void STI::Monolithic::AssembleDomainInterfaceOffDiag(
     }
   }
 }  // AssembleDomainInterfaceOD
+
+BACI_NAMESPACE_CLOSE

@@ -10,7 +10,9 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_fluid_ele.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -26,7 +28,7 @@ bool DRT::ELEMENTS::Fluid::ReadElement(
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   std::string na;
   linedef->ExtractString("NA", na);
@@ -41,3 +43,5 @@ bool DRT::ELEMENTS::Fluid::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

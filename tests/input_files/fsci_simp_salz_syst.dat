@@ -72,8 +72,6 @@ MAXITER                         50
 MINITER                         0
 ITERNORM                        L2
 RESTARTEVRY                     1200
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         No
 K_DAMP                          0.5
 LOADLIN                         no

@@ -15,11 +15,13 @@
 #include "baci_cut_volumecell.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create()
 {
-  static const int probdim = ::DRT::Problem::Instance()->NDim();
+  static const int probdim = BACI::DRT::Problem::Instance()->NDim();
   switch (probdim)
   {
     case 2:
@@ -312,3 +314,5 @@ bool CORE::GEO::CUT::ConcreteBoundingBox<probdim>::Within(double norm, const dou
 
 template class CORE::GEO::CUT::ConcreteBoundingBox<2>;
 template class CORE::GEO::CUT::ConcreteBoundingBox<3>;
+
+BACI_NAMESPACE_CLOSE

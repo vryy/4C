@@ -11,6 +11,7 @@
 
 #include "baci_xfem_mesh_projector.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_cut_boundingbox.H"
 #include "baci_cut_position.H"
 #include "baci_discretization_geometry_searchtree.H"
@@ -18,13 +19,14 @@
 #include "baci_io_gmsh.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_xfem_discretization_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,
@@ -47,14 +49,14 @@ XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourc
   // (not the best choice)
   switch (sourcedis_->lRowElement(0)->Shape())
   {
-    case DRT::Element::hex8:
-      FindSearchRadius<DRT::Element::hex8>();
+    case CORE::FE::CellType::hex8:
+      FindSearchRadius<CORE::FE::CellType::hex8>();
       break;
-    case DRT::Element::hex20:
-      FindSearchRadius<DRT::Element::hex20>();
+    case CORE::FE::CellType::hex20:
+      FindSearchRadius<CORE::FE::CellType::hex20>();
       break;
-    case DRT::Element::hex27:
-      FindSearchRadius<DRT::Element::hex27>();
+    case CORE::FE::CellType::hex27:
+      FindSearchRadius<CORE::FE::CellType::hex27>();
       break;
     default:
       searchradius_ = searchradius_fac_;  // avoid a
@@ -85,14 +87,14 @@ void XFEM::MeshProjector::SetSourcePositionVector(Teuchos::RCP<const Epetra_Vect
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void XFEM::MeshProjector::FindSearchRadius()
 {
   DRT::Element* actele = sourcedis_->lRowElement(0);
   const DRT::Node* const* nodes = actele->Nodes();
 
   // problem dimension
-  const unsigned int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const unsigned int dim = CORE::FE::dim<distype>;
 
   // we are looking for the maximum diameter of the source element
   // as an estimate for the search radius
@@ -321,13 +323,12 @@ void XFEM::MeshProjector::ProjectInFullTargetDiscretization(
   Project(projection_nodeToDof, target_statevecs, targetdisp);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
     const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec)
 {
   // number of element's nodes
-  const unsigned int src_numnodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const unsigned int src_numnodes = CORE::FE::num_nodes<distype>;
   // nodal coordinates
   CORE::LINALG::Matrix<3, src_numnodes> src_xyze(true);
 
@@ -425,20 +426,21 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
         // determine values for target fluid node
         switch (pele->Shape())
         {
-          case DRT::Element::hex8:
+          case CORE::FE::CellType::hex8:
             insideelement =
-                CheckPositionAndProject<DRT::Element::hex8>(pele, node_xyz, interpolatedvec);
+                CheckPositionAndProject<CORE::FE::CellType::hex8>(pele, node_xyz, interpolatedvec);
             break;
-          case DRT::Element::hex20:
+          case CORE::FE::CellType::hex20:
             insideelement =
-                CheckPositionAndProject<DRT::Element::hex20>(pele, node_xyz, interpolatedvec);
+                CheckPositionAndProject<CORE::FE::CellType::hex20>(pele, node_xyz, interpolatedvec);
             break;
-          case DRT::Element::hex27:
+          case CORE::FE::CellType::hex27:
             insideelement =
-                CheckPositionAndProject<DRT::Element::hex27>(pele, node_xyz, interpolatedvec);
+                CheckPositionAndProject<CORE::FE::CellType::hex27>(pele, node_xyz, interpolatedvec);
             break;
           default:
-            dserror("Unsupported element shape %s!", DRT::DistypeToString(pele->Shape()).c_str());
+            dserror(
+                "Unsupported element shape %s!", CORE::FE::CellTypeToString(pele->Shape()).c_str());
             break;
         }
 
@@ -475,7 +477,7 @@ void XFEM::MeshProjector::CommunicateNodes(
   std::vector<int> allproc(numproc);
 
   // create an exporter for point to point comunication
-  DRT::Exporter exporter(sourcedis_->Comm());
+  CORE::COMM::Exporter exporter(sourcedis_->Comm());
 
   // necessary variables
   MPI_Request request;
@@ -495,10 +497,10 @@ void XFEM::MeshProjector::CommunicateNodes(
       ReceiveBlock(rblock, exporter, request);
 
       std::vector<char>::size_type position = 0;
-      DRT::ParObject::ExtractfromPack(position, rblock, tar_nodepositions);
-      DRT::ParObject::ExtractfromPack(position, rblock, interpolated_vecs);
-      DRT::ParObject::ExtractfromPack(position, rblock, projection_targetnodes);
-      DRT::ParObject::ExtractfromPack(position, rblock, have_values);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, tar_nodepositions);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, interpolated_vecs);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, projection_targetnodes);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, have_values);
     }
 
     // in the last step, we keep everything on this proc
@@ -519,7 +521,7 @@ void XFEM::MeshProjector::CommunicateNodes(
 }
 
 void XFEM::MeshProjector::ReceiveBlock(
-    std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = sourcedis_->Comm().NumProc();
@@ -552,7 +554,7 @@ void XFEM::MeshProjector::ReceiveBlock(
 }
 
 void XFEM::MeshProjector::SendBlock(
-    std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = sourcedis_->Comm().NumProc();
@@ -582,17 +584,17 @@ void XFEM::MeshProjector::PackValues(std::vector<CORE::LINALG::Matrix<3, 1>>& ta
     std::vector<char>& sblock)
 {
   // Pack info into block to send
-  DRT::PackBuffer data;
-  DRT::ParObject::AddtoPack(data, tar_nodepositions);
-  DRT::ParObject::AddtoPack(data, interpolated_vecs);
-  DRT::ParObject::AddtoPack(data, projection_targetnodes);
-  DRT::ParObject::AddtoPack(data, have_values);
+  CORE::COMM::PackBuffer data;
+  CORE::COMM::ParObject::AddtoPack(data, tar_nodepositions);
+  CORE::COMM::ParObject::AddtoPack(data, interpolated_vecs);
+  CORE::COMM::ParObject::AddtoPack(data, projection_targetnodes);
+  CORE::COMM::ParObject::AddtoPack(data, have_values);
   data.StartPacking();
 
-  DRT::ParObject::AddtoPack(data, tar_nodepositions);
-  DRT::ParObject::AddtoPack(data, interpolated_vecs);
-  DRT::ParObject::AddtoPack(data, projection_targetnodes);
-  DRT::ParObject::AddtoPack(data, have_values);
+  CORE::COMM::ParObject::AddtoPack(data, tar_nodepositions);
+  CORE::COMM::ParObject::AddtoPack(data, interpolated_vecs);
+  CORE::COMM::ParObject::AddtoPack(data, projection_targetnodes);
+  CORE::COMM::ParObject::AddtoPack(data, have_values);
   swap(sblock, data());
 }
 
@@ -616,7 +618,7 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
     for (int i = 0; i < targetdis_->NumMyColNodes(); ++i)
     {
       const DRT::Node* actnode = targetdis_->lColNode(i);
-      CORE::LINALG::Matrix<3, 1> pos(actnode->X(), false);
+      CORE::LINALG::Matrix<3, 1> pos(actnode->X().data(), false);
       if (targetdisp != Teuchos::null)
       {
         // get the current displacement
@@ -641,3 +643,5 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
     gmshfilecontent << "};\n";
   }
 }
+
+BACI_NAMESPACE_CLOSE

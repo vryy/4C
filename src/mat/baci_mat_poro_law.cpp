@@ -11,6 +11,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_poro_density_law.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::PAR::PoroLaw::PoroLaw(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata) {}
 
@@ -302,3 +304,5 @@ double MAT::PAR::PoroLawDensityDependent::InvBulkModulus() const
 {
   return density_law_->InvBulkmodulus();
 }
+
+BACI_NAMESPACE_CLOSE

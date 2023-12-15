@@ -12,13 +12,15 @@
 #include "baci_lib_resulttest.H"
 
 #include "baci_io_control.H"
+#include "baci_io_inputreader.H"
+#include "baci_io_linedefinition.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_inputreader.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_utils_exceptions.H"
 
 #include <utility>
+
+BACI_NAMESPACE_OPEN
 
 
 DRT::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
@@ -83,14 +85,6 @@ int DRT::ResultTest::CompareValues(
 
   // return value (0 if results are correct, 1 if results are not correct)
   int ret = 0;
-
-  // write to error file
-  FILE* err = DRT::Problem::Instance()->ErrorFile()->Handle();
-  if (err != nullptr)
-  {
-    fprintf(err, "actual = %.17e, given = %.17e, diff = %.17e\n", actresult, givenresult,
-        actresult - givenresult);
-  }
 
   // prepare std::string stream 'msghead' containing general information on the current test
   std::stringstream msghead;
@@ -190,11 +184,6 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
   if (numerr > 0)
   {
     dserror("Result check failed with %d errors out of %d tests", numerr, size);
-  }
-  else
-  {
-    FILE* err = DRT::Problem::Instance()->ErrorFile()->Handle();
-    if (err != nullptr) fprintf(err, "===========================================\n");
   }
 
   /* test_count == -1 means we had a special test routine. It's thus
@@ -586,3 +575,5 @@ void PrintResultDescrDatHeader()
 
   lines.Print(std::cout);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,11 +12,13 @@
 
 #include "baci_mat_myocard_fitzhugh_nagumo.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
@@ -194,3 +196,5 @@ void Myocard_Fitzhugh_Nagumo::Update(const double phi, const double dt)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,19 +13,15 @@
 /*---------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_list.H"
-#include "baci_mat_newtonianfluid.H"
 #include "baci_red_airways_airway_impl.H"
 #include "baci_red_airways_elementbase.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-using namespace DRT::UTILS;
-
-
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 01/10|
@@ -222,15 +218,15 @@ int DRT::ELEMENTS::RedAirway::EvaluateDirichlet(Teuchos::ParameterList& params,
  |                                                                      |
  *----------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::RedAirway::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -245,16 +241,15 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::RedAirway::getOptimalGaussrule(
  | Check, whether higher order derivatives for shape functions          |
  | (dxdx, dxdy, ...) are necessary|                                     |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(
-    const DRT::Element::DiscretizationType distype) const
+bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(const CORE::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)
   {
-    case line3:
+    case CORE::FE::CellType::line3:
       hoel = true;
       break;
-    case line2:
+    case CORE::FE::CellType::line2:
       hoel = false;
       break;
     default:
@@ -263,3 +258,5 @@ bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(
   }
   return hoel;
 }
+
+BACI_NAMESPACE_CLOSE

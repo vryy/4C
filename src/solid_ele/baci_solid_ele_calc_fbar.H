@@ -19,6 +19,8 @@
 #include <unordered_map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::MODELEVALUATOR
 {
   class GaussPointDataOutputManager;
@@ -26,17 +28,10 @@ namespace STR::MODELEVALUATOR
 
 namespace DRT
 {
-  namespace UTILS
-  {
-    template <DRT::Element::DiscretizationType>
-    struct DisTypeToNumNodePerEle;
-    template <DRT::Element::DiscretizationType>
-    struct DisTypeToDim;
-  }  // namespace UTILS
 
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType celltype>
     class SolidEleCalcFbar
     {
      public:
@@ -91,9 +86,8 @@ namespace DRT
 
      private:
       /// static values for matrix sizes
-      static constexpr int num_nodes_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static constexpr int num_dim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
+      static constexpr int num_dim_ = CORE::FE::dim<celltype>;
       static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
       static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
@@ -102,5 +96,7 @@ namespace DRT
     };  // class SolidEleCalcFbar
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_CALC_FBAR_H

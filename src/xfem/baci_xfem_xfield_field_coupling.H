@@ -19,6 +19,8 @@
 // due to enum use ...
 #include "baci_xfem_multi_field_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   namespace XFieldField
@@ -52,9 +54,6 @@ namespace XFEM
      public:
       /// constructor
       Coupling();
-
-      /// destructor
-      virtual ~Coupling(){};
 
       /// initialize class member variables
       void Init(const enum MinDofDiscretization& min_dof_dis);
@@ -173,13 +172,13 @@ namespace XFEM
        *
        *  \author  hiermeier
        *  \date 09/16  */
-      virtual void BuildDofMaps(const DRT::Discretization& masterdis,
-          const DRT::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
+      void BuildDofMaps(const DRT::Discretization& masterdis, const DRT::Discretization& slavedis,
+          const Teuchos::RCP<const Epetra_Map>& masternodemap,
           const Teuchos::RCP<const Epetra_Map>& slavenodemap,
           const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
           const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
           const std::vector<int>& masterdofs, const std::vector<int>& slavedofs,
-          const int nds_master = 0, const int nds_slave = 0);
+          const int nds_master = 0, const int nds_slave = 0) override;
 
      private:
       /** \brief store the nodal maps and create the corresponding exporter objects
@@ -240,5 +239,7 @@ namespace XFEM
 }  // namespace XFEM
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFIELD_FIELD_COUPLING_H

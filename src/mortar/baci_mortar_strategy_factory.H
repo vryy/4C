@@ -17,6 +17,8 @@
 class Epetra_Comm;
 class Epetra_Vector;
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -53,6 +55,11 @@ namespace MORTAR
     class Factory
     {
      public:
+      /**
+       * Virtual destructor.
+       */
+      virtual ~Factory() = default;
+
       //! constructor
       Factory();
 
@@ -174,5 +181,7 @@ namespace MORTAR
     };  // namespace STRATEGY
   }     // namespace STRATEGY
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_STRATEGY_FACTORY_H

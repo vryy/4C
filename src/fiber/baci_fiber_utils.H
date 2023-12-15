@@ -10,7 +10,9 @@
 #define BACI_FIBER_UTILS_H
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_inpar_structure.H"
+#include "baci_lib_node.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -32,10 +34,9 @@ namespace DRT
        * \param shapefcts list of shape functions evaluated at the gauss points
        * \param gpFiberHolder output of the projected fibers and angles
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void ProjectFibersToGaussPoints(const DRT::Node* const* nodes,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
           FIBER::NodalFiberHolder& gpFiberHolder);
 
       /*!
@@ -49,13 +50,10 @@ namespace DRT
        * @param shapefcts Shape functions
        * @param quantityProjected Output quantity projected with the shape functions
        */
-      template <DRT::Element::DiscretizationType distype, std::size_t dim>
+      template <CORE::FE::CellType distype, std::size_t dim>
       void ProjectQuantityWithShapeFunctions(
-          const std::array<std::array<double, dim>,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-              quantity,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+          const std::array<std::array<double, dim>, CORE::FE::num_nodes<distype>> quantity,
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
           std::vector<CORE::LINALG::Matrix<dim, 1>>& quantityProjected);
 
       /*!
@@ -67,13 +65,10 @@ namespace DRT
        * @param shapefcts Shape functions
        * @param quantityProjected Output quantity projected with the shape functions
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void ProjectQuantityWithShapeFunctions(
-          const std::array<double,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-              quantity,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+          const std::array<double, CORE::FE::num_nodes<distype>> quantity,
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
           std::vector<double>& quantityProjected);
 
       /*!
@@ -97,10 +92,12 @@ namespace DRT
        * \return true All nodes have fibers
        * \return false At least one one does not have a fiber
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       bool HaveNodalFibers(const DRT::Node* const* nodes);
     }  // namespace UTILS
   }    // namespace FIBER
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

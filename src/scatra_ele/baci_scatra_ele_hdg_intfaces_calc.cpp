@@ -17,6 +17,8 @@ Integrate internal face terms on an internal faces element
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl(
@@ -24,33 +26,33 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImp
 {
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return ScaTraHDGIntFaceImpl<DRT::Element::quad4>::Instance();
+      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return ScaTraHDGIntFaceImpl<DRT::Element::quad8>::Instance();
+      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return ScaTraHDGIntFaceImpl<DRT::Element::quad9>::Instance();
+      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return ScaTraHDGIntFaceImpl<DRT::Element::tri3>::Instance();
+      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::tri3>::Instance();
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return ScaTraHDGIntFaceImpl<DRT::Element::tri6>::Instance();
+      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::tri6>::Instance();
     }
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      return ScaTraHDGIntFaceImpl<DRT::Element::line2>::Instance();
+      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::line2>::Instance();
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      return ScaTraHDGIntFaceImpl<DRT::Element::line3>::Instance();
+      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::line3>::Instance();
     }
     default:
       dserror(
@@ -60,7 +62,7 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImp
   return nullptr;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
 DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
@@ -76,7 +78,7 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(CORE::UTILS::SingletonAct
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
 {
   return;
@@ -85,7 +87,7 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::AssembleInternalFacesUsingNeighborData(
     DRT::ELEMENTS::ScaTraHDGIntFace* intface,               ///< internal face element
     std::vector<int>& nds_master,                           ///< nodal dofset w.r.t. master element
@@ -103,7 +105,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::AssembleInternalFacesUsingNei
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::EvaluateInternalFaces(
     DRT::ELEMENTS::ScaTraHDGIntFace* intface,  ///< internal face element
     Teuchos::ParameterList& params,            ///< parameter list
@@ -120,3 +122,5 @@ int DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::EvaluateInternalFaces(
 {
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

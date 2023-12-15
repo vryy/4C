@@ -21,6 +21,8 @@ additional static parameters required for scalar transport element evaluation.
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -32,9 +34,6 @@ namespace DRT
     class ScaTraEleParameterElchDiffCond : public ScaTraEleParameterBase
     {
      public:
-      //! destructor
-      ~ScaTraEleParameterElchDiffCond() override = default;
-
       //! singleton access method
       static ScaTraEleParameterElchDiffCond* Instance(
           const std::string& disname  //!< name of discretization
@@ -42,7 +41,7 @@ namespace DRT
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+          ) override;
 
       //! return flag for current as solution variable
       bool CurSolVar() const { return cursolvar_; }
@@ -84,4 +83,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -13,6 +13,8 @@
 #include "baci_adapter_str_wrapper.H"
 #include "baci_ssi_str_model_evaluator_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace STR
 {
@@ -39,11 +41,8 @@ namespace ADAPTER
     /// constructor
     explicit SSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
-    /// Destructor
-    virtual ~SSIStructureWrapper() { ; }
-
     /// set pointer to model evaluator
-    void SetModelEvaluatorPtr(Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedSSI> me)
+    void SetModelEvaluatorPtr(Teuchos::RCP<BACI::STR::MODELEVALUATOR::PartitionedSSI> me)
     {
       ssi_model_evaluator_ = me;
       return;
@@ -55,15 +54,17 @@ namespace ADAPTER
     /// If this method is related to the structural field,
     /// a corresponding method in the model evaluator may be
     /// called, if necessary.
-    Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedSSI> ssi_model_evaluator_;
+    Teuchos::RCP<BACI::STR::MODELEVALUATOR::PartitionedSSI> ssi_model_evaluator_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedSSI> SSIModelEvaluator()
+    Teuchos::RCP<BACI::STR::MODELEVALUATOR::PartitionedSSI> SSIModelEvaluator()
     {
       return ssi_model_evaluator_;
     };
 
   };  // class SSIStructureWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_STR_SSIWRAPPER_H

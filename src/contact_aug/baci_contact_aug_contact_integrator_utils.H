@@ -16,6 +16,8 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   class MortarElement;
@@ -52,11 +54,11 @@ namespace CONTACT
     void Deriv1st_NonUnitSlaveNormal(
         const double* xi, MORTAR::MortarElement& sele, Deriv1stVecMap& d_non_unit_normal);
 
-    template <DRT::Element::DiscretizationType slavetype>
+    template <CORE::FE::CellType slavetype>
     void Deriv1st_NonUnitSlaveNormal(
         MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal);
 
-    void Deriv1st_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
+    void Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slavetype,
         const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
         const Deriv1stVecMap& d_non_unit_normal, Deriv1stVecMap& d_unit_normal, const bool reset);
 
@@ -67,11 +69,11 @@ namespace CONTACT
     void Deriv2nd_NonUnitSlaveNormal(
         const double* xi, MORTAR::MortarElement& sele, Deriv2ndVecMap& dd_non_unit_normal);
 
-    template <DRT::Element::DiscretizationType slavetype>
+    template <CORE::FE::CellType slavetype>
     void Deriv2nd_NonUnitSlaveNormal(
         MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal);
 
-    void Deriv2nd_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
+    void Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slavetype,
         const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
         const Deriv1stVecMap& d_non_unit_normal, const Deriv1stVecMap& d_unit_normal,
         const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndVecMap& dd_unit_normal);
@@ -82,7 +84,7 @@ namespace CONTACT
         const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs);
 
     /// evaluate the Levi Civita pseudo tensor
-    double LeviCivitaSymbol(const int i_1, const int i_2, const int i_3);
+    double LeviCivitaSymbol(const int i_1, const int j, const int k);
 
     /** \brief Find a feasible master element in a given set of master elements
      *
@@ -129,8 +131,7 @@ namespace CONTACT
      *  \param tol  (in) : optional (positive) tolerance for the check
      *
      *  \author hiermeier \date 07/17 */
-    bool WithinBounds(
-        const double* mxi, const DRT::Element::DiscretizationType type, const double tol = 0.0);
+    bool WithinBounds(const double* mxi, const CORE::FE::CellType type, const double tol = 0.0);
 
     /*--------------------------------------------------------------------------*/
     /** Container class for the unique projection information
@@ -252,8 +253,6 @@ namespace CONTACT
       ElementNormal()
           : xi_{0.0, 0.0}, unit_n_(true), ele_(nullptr), length_n_inv_(-1.0){/* empty */};
 
-      /// destructor
-      ~ElementNormal(){/* empty */};
 
       /// access the element unit normal components (read-only)
       double operator()(unsigned i) const { return unit_n_(i, 0); }
@@ -277,5 +276,7 @@ namespace CONTACT
   }  // namespace INTEGRATOR
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H

@@ -20,6 +20,8 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -43,7 +45,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ViscoNeoHooke::CreateMaterial()
 MAT::ViscoNeoHookeType MAT::ViscoNeoHookeType::instance_;
 
 
-DRT::ParObject* MAT::ViscoNeoHookeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ViscoNeoHookeType::Create(const std::vector<char>& data)
 {
   MAT::ViscoNeoHooke* visco = new MAT::ViscoNeoHooke();
   visco->Unpack(data);
@@ -73,9 +75,9 @@ MAT::ViscoNeoHooke::ViscoNeoHooke(MAT::PAR::ViscoNeoHooke* params) : params_(par
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoNeoHooke::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -114,10 +116,8 @@ void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -395,3 +395,5 @@ void MAT::ViscoNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

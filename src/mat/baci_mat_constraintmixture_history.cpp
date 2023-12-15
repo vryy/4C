@@ -12,9 +12,11 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;
 
-DRT::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vector<char>& data)
 {
   MAT::ConstraintMixtureHistory* cmhis = new MAT::ConstraintMixtureHistory();
   cmhis->Unpack(data);
@@ -24,9 +26,9 @@ DRT::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vector<char
 /*----------------------------------------------------------------------*
  |  History: Pack                                 (public)         03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Pack(DRT::PackBuffer& data) const
+void MAT::ConstraintMixtureHistory::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -66,10 +68,8 @@ void MAT::ConstraintMixtureHistory::Pack(DRT::PackBuffer& data) const
 void MAT::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // unpack internal variables
   double a;
@@ -335,3 +335,5 @@ void MAT::ConstraintMixtureHistory::GetVarDegrad(int gp, int idfiber, double* va
   else
     dserror("gp out of range in GetVarDegrad");
 }
+
+BACI_NAMESPACE_CLOSE

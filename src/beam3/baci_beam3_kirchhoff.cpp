@@ -16,9 +16,9 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_validparameters.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -28,6 +28,8 @@
 #include "baci_utils_fad.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
@@ -39,7 +41,7 @@ DRT::ELEMENTS::Beam3kType& DRT::ELEMENTS::Beam3kType::Instance() { return instan
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::Beam3kType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Beam3kType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Beam3k* object = new DRT::ELEMENTS::Beam3k(-1, -1);
   object->Unpack(data);
@@ -284,10 +286,7 @@ DRT::Element* DRT::ELEMENTS::Beam3k::Clone() const
   return newelement;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            meier 05/12 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3k::~Beam3k() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              meier 05/12
@@ -298,26 +297,24 @@ void DRT::ELEMENTS::Beam3k::Print(std::ostream& os) const { return; }
  |                                                             (public) |
  |                                                          meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3k::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Beam3k::Shape() const
 {
   int numnodes = NumNode();
   switch (numnodes)
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
       break;
     case 3:
-      return line3;
+      return CORE::FE::CellType::line3;
       break;
     case 4:
-      return line4;
+      return CORE::FE::CellType::line4;
       break;
     default:
       dserror("Only Line2, Line3 and Line4 elements are implemented.");
       break;
   }
-
-  return dis_none;
 }
 
 
@@ -325,9 +322,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3k::Shape() const
  |  Pack data                                                  (public) |
  |                                                           meier 05/12/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Beam3k::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -388,10 +385,9 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -450,9 +446,7 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3k::Lines()
 {
-  std::vector<Teuchos::RCP<Element>> lines(1);
-  lines[0] = Teuchos::rcp(this, false);
-  return lines;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 /*----------------------------------------------------------------------*
@@ -604,7 +598,8 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
       // Get values of shape functions
       N_i_xi.Clear();
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N_i_xi, xi, length_, CORE::FE::CellType::line2);
 
       // Determine storage position for the node colpt
       ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -660,8 +655,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       N_i.Clear();
       CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
       CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N_i_xi, xi, length_, CORE::FE::CellType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.Clear();
@@ -824,8 +820,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       N_i_xi.Clear();
       N_i_xixi.Clear();
       CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N_i_xi, xi, length_, CORE::FE::CellType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
+          N_i_xixi, xi, length_, CORE::FE::CellType::line2);
 
       // Determine storage position for the node colpt
       ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -901,9 +899,11 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
       CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
       CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N_i_xi, xi, length_, CORE::FE::CellType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
+          N_i_xixi, xi, length_, CORE::FE::CellType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.Clear();
@@ -967,7 +967,8 @@ double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
 
   // Matrices to store the the Hermite shape function derivative values
   CORE::LINALG::Matrix<1, 2 * nnode> N_i_xi;
-  CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+      N_i_xi, xi, length_, CORE::FE::CellType::line2);
 
   // jacobi = ds/dxi = ||r'_0||
   CORE::LINALG::Matrix<3, 1> r_xi;
@@ -1127,7 +1128,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   CORE::LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
   AssembleShapefunctionsN(N_i, N);
 
   // this part is associated with the variation of the centerline position
@@ -1207,7 +1208,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
 
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1354,7 +1356,8 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
 
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1422,7 +1425,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   CORE::LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
   AssembleShapefunctionsN(N_i, N);
 
   // this part is associated with the increment of the centerline position
@@ -1509,7 +1512,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
     AssembleShapefunctionsL(L_i, L);
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1903,7 +1907,8 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
     // node=0->xi=-1  node=1->xi=0 node=2->xi=1
     xi = (double)node / (double)(BEAM3K_COLLOCATION_POINTS - 1) * 2.0 - 1.0;
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N_i_xi, xi, length_, CORE::FE::CellType::line2);
     L_i.Clear();
     CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
 
@@ -2760,3 +2765,5 @@ template void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_s_moment<2>(
     const CORE::LINALG::Matrix<3, 1, double>& g_1, const CORE::LINALG::Matrix<3, 1, double>& g_1_s,
     const CORE::LINALG::Matrix<3, 1, double>& r_s, const CORE::LINALG::Matrix<3, 1, double>& r_ss,
     double abs_r_s, const CORE::LINALG::Matrix<3, 1, double>& moment) const;
+
+BACI_NAMESPACE_CLOSE

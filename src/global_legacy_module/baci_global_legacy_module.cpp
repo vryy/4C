@@ -23,7 +23,6 @@
 #include "baci_beaminteraction_link_beam3_reissner_line2_pinjointed.H"
 #include "baci_beaminteraction_link_beam3_reissner_line2_rigidjointed.H"
 #include "baci_beaminteraction_link_truss.H"
-#include "baci_bele_bele2.H"
 #include "baci_bele_bele3.H"
 #include "baci_bele_vele3.H"
 #include "baci_binstrategy_meshfree_multibin.H"
@@ -32,7 +31,6 @@
 #include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
 #include "baci_contact_node.H"
-#include "baci_discsh3.H"
 #include "baci_elemag_diff_ele.H"
 #include "baci_elemag_ele.H"
 #include "baci_fluid_ele.H"
@@ -44,7 +42,6 @@
 #include "baci_fluid_functions.H"
 #include "baci_fluid_xfluid_functions.H"
 #include "baci_fluid_xfluid_functions_combust.H"
-#include "baci_lib_function_library.H"
 #include "baci_lib_immersed_node.H"
 #include "baci_lubrication_ele.H"
 #include "baci_mat_aaa_mixedeffects.H"
@@ -139,7 +136,6 @@
 #include "baci_so3_hex8.H"
 #include "baci_so3_hex8fbar.H"
 #include "baci_so3_hex8p1j1.H"
-#include "baci_so3_nstet.H"
 #include "baci_so3_nstet5.H"
 #include "baci_so3_nurbs27.H"
 #include "baci_so3_plast_ssn_eletypes.H"
@@ -162,12 +158,13 @@
 #include "baci_so3_thermo_eletypes.H"
 #include "baci_so3_weg6.H"
 #include "baci_solid_ele.H"
-#include "baci_solid_ele_poro.H"
+#include "baci_solid_poro_ele.H"
 #include "baci_structure_new_functions.H"
 #include "baci_thermo_element.H"
 #include "baci_torsion3.H"
 #include "baci_truss3.H"
 #include "baci_truss3_scatra.H"
+#include "baci_utils_function_library.H"
 #include "baci_w1.H"
 #include "baci_w1_nurbs.H"
 #include "baci_w1_poro_eletypes.H"
@@ -178,6 +175,8 @@
 
 #include <iostream>
 #include <string>
+
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -195,7 +194,6 @@ namespace
       << DRT::ELEMENTS::Beam3rType::Instance().Name() << " "
       << DRT::ELEMENTS::Beam3ebType::Instance().Name() << " "
       << DRT::ELEMENTS::Beam3kType::Instance().Name() << " "
-      << DRT::ELEMENTS::DiscSh3Type::Instance().Name() << " "
       << DRT::ELEMENTS::RigidsphereType::Instance().Name() << " "
       << DRT::ELEMENTS::Truss3Type::Instance().Name() << " "
       << DRT::ELEMENTS::Truss3ScatraType::Instance().Name() << " "
@@ -236,10 +234,8 @@ namespace
       << DRT::ELEMENTS::NURBS::Ale3_NurbsType::Instance().Name() << " "
       << DRT::ELEMENTS::Ale2Type::Instance().Name() << " "
       << DRT::ELEMENTS::NURBS::Ale2_NurbsType::Instance().Name() << " "
-      << DRT::ELEMENTS::Bele2Type::Instance().Name() << " "
       << DRT::ELEMENTS::Bele3Type::Instance().Name() << " "
       << DRT::ELEMENTS::Vele3Type::Instance().Name() << " "
-      << DRT::ELEMENTS::NStetType::Instance().Name() << " "
       << DRT::ELEMENTS::NStet5Type::Instance().Name() << " "
       << DRT::ELEMENTS::NURBS::So_nurbs27Type::Instance().Name() << " "
       << DRT::ELEMENTS::So_nurbs27PoroType::Instance().Name() << " "
@@ -382,23 +378,25 @@ namespace
       << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " ";
   }
 
-  void AttachFunctionDefinitions(DRT::UTILS::FunctionManager& function_manager)
+  void AttachFunctionDefinitions(CORE::UTILS::FunctionManager& function_manager)
   {
     AddValidBuiltinFunctions(function_manager);
     STR::AddValidStructureFunctions(function_manager);
     FLD::AddValidFluidFunctions(function_manager);
-    AddValidCombustFunctions(function_manager);
-    AddValidXfluidFunctions(function_manager);
+    DRT::UTILS::AddValidCombustFunctions(function_manager);
+    DRT::UTILS::AddValidXfluidFunctions(function_manager);
     AddValidLibraryFunctions(function_manager);
     POROMULTIPHASESCATRA::AddValidPoroFunctions(function_manager);
   }
 
 }  // namespace
 
-BACI::ModuleCallbacks BACI::GlobalLegacyModuleCallbacks()
+ModuleCallbacks GlobalLegacyModuleCallbacks()
 {
-  BACI::ModuleCallbacks callbacks;
+  ModuleCallbacks callbacks;
   callbacks.RegisterParObjectTypes = RegisterParObjectTypes;
   callbacks.AttachFunctionDefinitions = AttachFunctionDefinitions;
   return callbacks;
 }
+
+BACI_NAMESPACE_CLOSE

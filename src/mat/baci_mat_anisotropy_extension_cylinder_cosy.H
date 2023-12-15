@@ -17,8 +17,10 @@ materials with @MAT::Anisotropy
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -46,9 +48,6 @@ namespace MAT
   {
    public:
     CylinderCoordinateSystemAnisotropyExtension();
-
-    ~CylinderCoordinateSystemAnisotropyExtension() override = default;
-
     ///@name Packing and Unpacking
     /// @{
 
@@ -57,7 +56,7 @@ namespace MAT
      *
      * \param data
      */
-    void PackAnisotropy(DRT::PackBuffer& data) const override;
+    void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
@@ -87,7 +86,7 @@ namespace MAT
      */
     const CylinderCoordinateSystemProvider& GetCylinderCoordinateSystem(int gp) const;
 
-    const Teuchos::RCP<MAT::CoordinateSystemProvider> GetCoordinateSystemProvider(int gp) const;
+    Teuchos::RCP<MAT::CoordinateSystemProvider> GetCoordinateSystemProvider(int gp) const;
 
    private:
     /*!
@@ -107,4 +106,6 @@ namespace MAT
     CosyLocation cosyLocation_;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H

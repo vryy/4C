@@ -9,6 +9,7 @@
 
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  B = alpha*A + beta*B                                                |
@@ -27,35 +28,37 @@ void CORE::LINALG::Update(double alpha, const CORE::LINALG::SerialDenseMatrix& A
  | recursive computation of determinant of a  matrix using Sarrus rule  |
  | (uses long double to boost accuracy). Do not use for n > 4.          |
  *----------------------------------------------------------------------*/
-long double CORE::LINALG::Det_long(const CORE::LINALG::SerialDenseMatrix& A)
+long double CORE::LINALG::Det_long(const CORE::LINALG::SerialDenseMatrix& matrix)
 {
-  if (A.numCols() == 1)
+  if (matrix.numCols() == 1)
   {
-    return A(0, 0);
+    return matrix(0, 0);
   }
-  else if (A.numCols() == 2)
+  else if (matrix.numCols() == 2)
   {
     long double out_det;
-    out_det = ((long double)(A(0, 0)) * (long double)(A(1, 1))) -
-              ((long double)(A(0, 1)) * (long double)(A(1, 0)));
+    out_det = ((long double)(matrix(0, 0)) * (long double)(matrix(1, 1))) -
+              ((long double)(matrix(0, 1)) * (long double)(matrix(1, 0)));
     return out_det;
   }
-  else if (A.numCols() > 2)
+  else if (matrix.numCols() > 2)
   {
     long double out_det = 0;
     int sign = 1;
-    for (int i_col = 0; i_col < A.numCols(); i_col++)
+    for (int i_col = 0; i_col < matrix.numCols(); i_col++)
     {
-      SerialDenseMatrix temp_matrix(A.numCols() - 1, A.numCols() - 1);
+      SerialDenseMatrix temp_matrix(matrix.numCols() - 1, matrix.numCols() - 1);
       for (int c_col = 0; c_col < i_col; c_col++)
       {
-        for (int row = 1; row < A.numCols(); row++) temp_matrix(row - 1, c_col) = A(row, c_col);
+        for (int row = 1; row < matrix.numCols(); row++)
+          temp_matrix(row - 1, c_col) = matrix(row, c_col);
       }
-      for (int c_col = i_col + 1; c_col < A.numCols(); c_col++)
+      for (int c_col = i_col + 1; c_col < matrix.numCols(); c_col++)
       {
-        for (int row = 1; row < A.numCols(); row++) temp_matrix(row - 1, c_col - 1) = A(row, c_col);
+        for (int row = 1; row < matrix.numCols(); row++)
+          temp_matrix(row - 1, c_col - 1) = matrix(row, c_col);
       }
-      out_det = out_det + ((long double)(sign) * (long double)(A(0, i_col)) *
+      out_det = out_det + ((long double)(sign) * (long double)(matrix(0, i_col)) *
                               (long double)(Det_long(temp_matrix)));
       sign *= -1;
     }
@@ -98,3 +101,5 @@ void CORE::LINALG::copy(const double* vec, CORE::LINALG::SerialDenseMatrix::Base
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

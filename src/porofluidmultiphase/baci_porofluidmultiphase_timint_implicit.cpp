@@ -15,7 +15,6 @@
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_assemblestrategy.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -28,8 +27,11 @@
 #include "baci_porofluidmultiphase_meshtying_strategy_std.H"
 #include "baci_porofluidmultiphase_resulttest.H"
 #include "baci_porofluidmultiphase_utils.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*==========================================================================*/
 // Constructors and destructors and related methods
@@ -40,7 +42,7 @@
  *----------------------------------------------------------------------*/
 POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& poroparams, FILE* errfile,
+    const Teuchos::ParameterList& poroparams,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     :  // call constructor for "nontrivial" objects
       solver_(Teuchos::null),
@@ -48,7 +50,6 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       params_(probparams),
       poroparams_(poroparams),
       myrank_(actdis->Comm().MyPID()),
-      errfile_(errfile),
       nsd_(DRT::Problem::Instance()->NDim()),
       isale_(false),
       skipinitder_(DRT::INPUT::IntegralValue<int>(poroparams_, "SKIPINITDER")),
@@ -294,16 +295,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // create a solver
   // -------------------------------------------------------------------
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm(), errfile_));
+      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
   strategy_->InitializeLinearSolver(solver_);
 
   return;
 }  // TimIntImpl::Init()
 
-/*----------------------------------------------------------------------*
- | Destructor dtor                                 (public) vuong 08/16 |
- *----------------------------------------------------------------------*/
-POROFLUIDMULTIPHASE::TimIntImpl::~TimIntImpl() { return; }
 
 
 /*========================================================================*/
@@ -907,9 +904,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
                 dirichlet_dofs.push_back(gid);
               }
               const double dbc_value = DRT::Problem::Instance()
-                                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                                starting_dbc_funct_[dof_idx] - 1)
-                                           .Evaluate(current_node->X(), time_, 0);
+                                           .Evaluate(current_node->X().data(), time_, 0);
               phinp_->ReplaceGlobalValue(gid, 0, dbc_value);
             }
           }
@@ -1145,12 +1142,6 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
       // print finish line of convergence table to screen
       PrintConvergenceFinishLine();
 
-      // write info to error file
-      if (myrank_ == 0)
-        if (errfile_ != nullptr)
-          fprintf(errfile_, "solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
-              itemax, ittolinc_, maxres, maxrelinc);
-
       return true;
     }
   }
@@ -1184,25 +1175,11 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
           std::cout << "+---------------------------------------------------------------+"
                     << std::endl
                     << std::endl;
-
-          if (errfile_ != nullptr)
-          {
-            fprintf(errfile_,
-                "divergent solve continued:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  "
-                "pinc=%10.3E\n",
-                itnum, itemax, ittolinc_, maxres, maxrelinc);
-          }
         }
         break;
       }
       case INPAR::POROFLUIDMULTIPHASE::divcont_stop:
       {
-        if (errfile_ != nullptr)
-        {
-          fprintf(errfile_,
-              "divergent solve stoped:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n",
-              itnum, itemax, ittolinc_, maxres, maxrelinc);
-        }
         dserror("Porofluid multiphase solver not converged in itemax steps!");
         break;
       }
@@ -1269,7 +1246,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPressuresAndSaturations()
 
     // initialize counter vector (will store how many times the node has been evaluated)
     Teuchos::RCP<Epetra_Vector> counter = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
-    ;
 
     // call loop over elements
     discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
@@ -1314,7 +1290,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructSolidPressures()
   // initialize counter vector (will store how many times the node has been evaluated)
   Teuchos::RCP<Epetra_Vector> counter =
       CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
-  ;
 
   // create strategy for assembly of solid pressure
   DRT::AssembleStrategy strategysolidpressure(
@@ -1392,7 +1367,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPorosity()
   // initialize counter vector (will store how many times the node has been evaluated)
   Teuchos::RCP<Epetra_Vector> counter =
       CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
-  ;
 
   // create strategy for assembly of porosity
   DRT::AssembleStrategy strategyporosity(
@@ -1925,8 +1899,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), time_, k);
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  .Evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }
@@ -2288,3 +2262,5 @@ Teuchos::RCP<ADAPTER::ArtNet> POROFLUIDMULTIPHASE::TimIntImpl::ArtNetTimInt()
 {
   return strategy_->ArtNetTimInt();
 }
+
+BACI_NAMESPACE_CLOSE

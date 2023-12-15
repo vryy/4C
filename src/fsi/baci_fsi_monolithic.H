@@ -21,6 +21,8 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -102,11 +104,9 @@ namespace FSI
     /// create using a Epetra_Comm
     explicit MonolithicBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    /// virtual destructor to support polymorph destruction
-    virtual ~MonolithicBase();
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     //! create time integrator for structure field
     virtual void CreateStructureTimeIntegrator(
@@ -124,16 +124,16 @@ namespace FSI
     //! @name Time loop building blocks
 
     /// prepare time step for the whole fsi problem (including sub problems)
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// take current results for converged and save for next time step
-    virtual void Update() = 0;
+    void Update() override = 0;
 
     /// calculate stresses, strains, energies
     virtual void PrepareOutput(bool force_prepare);
 
     /// write output
-    virtual void Output();
+    void Output() override;
 
     /// Write Lagrange multiplier
     virtual void OutputLambda()
@@ -169,13 +169,13 @@ namespace FSI
     virtual void PrepareTimeStepFields();
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP<::ADAPTER::FSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<::ADAPTER::FluidFSI> fluid_;
+    Teuchos::RCP<ADAPTER::FluidFSI> fluid_;
 
     /// underlying ale of the FSI problem
-    Teuchos::RCP<::ADAPTER::AleFsiWrapper> ale_;
+    Teuchos::RCP<ADAPTER::AleFsiWrapper> ale_;
 
     //! @name Transfer helpers
 
@@ -272,10 +272,10 @@ namespace FSI
    */
   class Monolithic : public MonolithicBase,
                      public MonolithicInterface,
-                     public NOX::Epetra::Interface::Required,
-                     public NOX::Epetra::Interface::Jacobian,
-                     public NOX::Epetra::Interface::Preconditioner,
-                     public NOX::Direction::UserDefinedFactory
+                     public ::NOX::Epetra::Interface::Required,
+                     public ::NOX::Epetra::Interface::Jacobian,
+                     public ::NOX::Epetra::Interface::Preconditioner,
+                     public ::NOX::Direction::UserDefinedFactory
   {
     friend class FSI::UTILS::MonolithicDebugWriter;
 
@@ -305,15 +305,15 @@ namespace FSI
     void PrepareTimeloop();
 
     //! outer level FSI time loop
-    void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! do new time step
     //!
     //! return error code that indicates whether the nonlinear solver converged or not
-    virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    virtual void TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //@}
 
@@ -325,43 +325,43 @@ namespace FSI
     //! @name NOX methods
 
     /// compute FSI residual
-    bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
+    bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
     /// compute FSI block matrix
-    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
     /// preconditioner
-    bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
+    bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
+        Teuchos::ParameterList* precParams = nullptr) override;
 
     /// request NOX convergence from outside (needed for coupled problems)
-    NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
+    ::NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
 
     //@}
 
     /// create my own direction object
     /*!
       Monolithic is a (inherits from)
-      NOX::Direction::UserDefinedFactory. This is an implementation
+      ::NOX::Direction::UserDefinedFactory. This is an implementation
       detail. This way we can construct a specialized direction object at a
       place where we know about the status tests. This is the whole point
       here. Our specialized direction is of the type NOX::FSI::Newton, the
       normal Newton direction enhanced with adaptive tolerance control for the
       internal linear (iterative) solver.
      */
-    virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(
-        const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const;
+    Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
+        const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
+        Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
     );
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(Epetra_Vector& b) {}
+    void ScaleSystem(Epetra_Vector& b) override {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
+    void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) override {}
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
     virtual Teuchos::RCP<Epetra_Vector> GetLambda()
@@ -409,7 +409,7 @@ namespace FSI
 
    protected:
     //! Prepare preconditioner for new time step
-    virtual void PrepareTimeStepPreconditioner() = 0;
+    void PrepareTimeStepPreconditioner() override = 0;
 
     //! @name Apply current field state to system
 
@@ -424,23 +424,23 @@ namespace FSI
      *  \sa SetupRHSLambda()
      *  \sa SetupRHSFirstiter()
      */
-    virtual void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
+    void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
         bool firstcall = false  ///< indicates whether this is the first nonlinear iteration or not
-    );
+        ) override;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix() = 0;
+    void SetupSystemMatrix() override = 0;
 
     //@}
 
     /// setup solver for global block system
-    virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
-        Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln,
-        Teuchos::RCP<NOX::Utils> utils) = 0;
+    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
+        Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
+        Teuchos::RCP<::NOX::Utils> utils) = 0;
 
     //! setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
+    virtual Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) = 0;
 
     /*! \brief Extract the three field vectors from a given composed vector
      *
@@ -504,7 +504,7 @@ namespace FSI
     //! @name Access methods for subclasses
 
     /// output utility
-    Teuchos::RCP<NOX::Utils> Utils() const { return utils_; }
+    Teuchos::RCP<::NOX::Utils> Utils() const { return utils_; }
 
     /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
@@ -719,7 +719,7 @@ namespace FSI
     //@{
 
     //! FSI time loop with constant time step size
-    void TimeloopConstDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    void TimeloopConstDt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     /*! \brief FSI time loop with adaptive time step size
      *
@@ -739,7 +739,7 @@ namespace FSI
      * Finite Elements in Analysis and Design, 141:55-69, 2018,
      * https://doi.org/10.1016/j.finel.2017.12.002
      */
-    void TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    void TimeloopAdaDt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //@}
 
@@ -948,7 +948,7 @@ namespace FSI
     //@{
 
     /// output utilities
-    Teuchos::RCP<NOX::Utils> utils_;
+    Teuchos::RCP<::NOX::Utils> utils_;
 
     /// flags passed to NOX
     Teuchos::ParameterList noxparameterlist_;
@@ -958,7 +958,7 @@ namespace FSI
     std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF>> statustests_;
 
     /// status of NOX convergence check
-    NOX::StatusTest::StatusType noxstatus_;
+    ::NOX::StatusTest::StatusType noxstatus_;
 
     //@}
 
@@ -993,18 +993,18 @@ namespace FSI
     //@{
 
     /// compute FSI block matrix (not for standard FSI)
-    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
     /// preconditioner
-    bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
+    bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
+        Teuchos::ParameterList* precParams = nullptr) override;
 
     //@}
 
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix() { SetupSystemMatrix(*SystemMatrix()); }
+    void SetupSystemMatrix() override { SetupSystemMatrix(*SystemMatrix()); }
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
@@ -1019,10 +1019,10 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(), b); }
+    void ScaleSystem(Epetra_Vector& b) override { ScaleSystem(*SystemMatrix(), b); }
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b)
+    void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) override
     {
       UnscaleSolution(*SystemMatrix(), x, b);
     }
@@ -1065,9 +1065,9 @@ namespace FSI
      *  This implementation only works for matching grids at the interface
      *  but produces better results than RedistributeDomainDecomposition.
      */
-    virtual void RedistributeMonolithicGraph(const FSI_COUPLING coupling,  ///< coupling algorithm
-        const Epetra_Comm& comm                                            ///< communicator
-    );
+    void RedistributeMonolithicGraph(const FSI_COUPLING coupling,  ///< coupling algorithm
+        const Epetra_Comm& comm                                    ///< communicator
+        ) override;
 
     /*! \brief Redistribute domain decomposition
      *
@@ -1076,13 +1076,13 @@ namespace FSI
      *  distribution to find a matching node-to-node mapping. Then, we call
      *  the partitioner for the fluid or/and structure field.
      */
-    virtual void RedistributeDomainDecomposition(
+    void RedistributeDomainDecomposition(
         const INPAR::FSI::Redistribute domain,  ///< redistribute structure or fluid
         const FSI_COUPLING coupling,            ///< coupling algorithm
         const double inputWeight1,              ///< weight for graph
         const double inputWeight2,              ///< weight for graph
         const Epetra_Comm& comm,                ///< communicator
-        int unbalance);
+        int unbalance) override;
 
     /*! \brief Find future / desired owner for each node at the interface
      *
@@ -1244,22 +1244,22 @@ namespace FSI
      *  cases where the setup of the preconditioner is very expensive, though
      *  results in a very good preconditioner, that can be reused very often.
      */
-    virtual void PrepareTimeStepPreconditioner();
+    void PrepareTimeStepPreconditioner() override;
 
     /// create the composed system matrix
     void CreateSystemMatrix(
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system
-    virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
         Teuchos::ParameterList& nlParams,  ///< parameter list
-        NOX::Epetra::Vector& noxSoln,      ///< solution vector in NOX format
-        Teuchos::RCP<NOX::Utils> utils     ///< NOX utils
-    );
+        ::NOX::Epetra::Vector& noxSoln,    ///< solution vector in NOX format
+        Teuchos::RCP<::NOX::Utils> utils   ///< NOX utils
+        ) override;
 
-    virtual void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+    void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
-        const bool slave_vectors_contain_interface_dofs){};
+        const bool slave_vectors_contain_interface_dofs) override{};
 
     /// debug writer to be used inside preconditioner
     Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;
@@ -1280,13 +1280,13 @@ namespace FSI
     //@{
 
     /// setup RHS contributions based on single field residuals
-    virtual void SetupRHSResidual(Epetra_Vector& f) = 0;
+    void SetupRHSResidual(Epetra_Vector& f) override = 0;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    virtual void SetupRHSLambda(Epetra_Vector& f) = 0;
+    void SetupRHSLambda(Epetra_Vector& f) override = 0;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
+    void SetupRHSFirstiter(Epetra_Vector& f) override = 0;
 
     //@}
 
@@ -1295,5 +1295,7 @@ namespace FSI
   };
 }  // namespace FSI
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

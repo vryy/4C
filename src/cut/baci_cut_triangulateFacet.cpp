@@ -19,6 +19,8 @@
 
 #include <math.h>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------------------*
               Split the facet into appropriate number of tri and quad Sudhakar 04/12 Work well
 for both convex and concave facets
@@ -170,7 +172,6 @@ void CORE::GEO::CUT::TriangulateFacet::SplitConvex_1ptConcave_Facet(std::vector<
   }
 
   bool triDone = false, convex = true;
-  ;
   int firstPt = 0, secondPt = 0, thirdPt = 0, lastPt = 1, endPt = num - 1;
   if (ptConcavity.size() == 1)
   {
@@ -485,7 +486,7 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::FindSecondBestEar(
 
       CORE::LINALG::Matrix<3, 1> point_cord(ptlist_[reflInd]);
       Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-          CORE::GEO::CUT::Position::Create(tri_coord, point_cord, ::DRT::Element::tri3);
+          CORE::GEO::CUT::Position::Create(tri_coord, point_cord, CORE::FE::CellType::tri3);
       // precice computation if it is inside
       bool is_inside = pos->Compute(0.0);
       if (is_inside)
@@ -579,7 +580,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
 
   // to fix cases, with vertexes on one line and no possiblity of triangulation
   std::vector<Point*> last_added_ear;
-  int last_added_ear_head;
+  int last_added_ear_head = -1;
 
   while (true)
   {
@@ -1024,8 +1025,8 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
         int reflexmaincyclepointid = *i;
         CORE::LINALG::Matrix<3, 1> reflexmaincyclepoint =
             localmaincyclepoints[reflexmaincyclepointid];
-        Teuchos::RCP<Position> pos =
-            CORE::GEO::CUT::Position::Create(triangle, reflexmaincyclepoint, ::DRT::Element::tri3);
+        Teuchos::RCP<Position> pos = CORE::GEO::CUT::Position::Create(
+            triangle, reflexmaincyclepoint, CORE::FE::CellType::tri3);
         bool within = pos->IsGivenPointWithinElement();
         if (within)
         {
@@ -1152,3 +1153,5 @@ bool CORE::GEO::CUT::TriangulateFacet::Hasequal_ptlist_inlist(
     return true;
   }
 }
+
+BACI_NAMESPACE_CLOSE

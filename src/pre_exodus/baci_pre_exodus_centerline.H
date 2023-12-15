@@ -45,8 +45,7 @@ namespace EXODUS
     Centerline(std::string, std::vector<double> coordcorr);
     Centerline(
         const EXODUS::NodeSet& ns, const Teuchos::RCP<std::map<int, std::vector<double>>> nodes);
-    // dtor
-    ~Centerline();
+
     // returns points_
     Teuchos::RCP<std::map<int, std::vector<double>>> GetPoints() const { return points_; };
     // returns diam_

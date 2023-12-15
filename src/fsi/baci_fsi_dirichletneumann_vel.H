@@ -15,6 +15,8 @@
 
 #include "baci_fsi_dirichletneumann.H"
 
+BACI_NAMESPACE_OPEN
+
 // Forward declarations
 
 namespace ADAPTER
@@ -59,7 +61,7 @@ namespace FSI
      *
      *  \param[in] interface Our interface to NOX
      */
-    void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface) override;
+    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface) override;
 
     /** \brief Here we decide which type of coupling we are going to use
      *
@@ -128,8 +130,10 @@ namespace FSI
      */
     Teuchos::RCP<ADAPTER::FBIConstraintenforcer> constraint_manager_;
 
-    Teuchos::RCP<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter> vtk_output_writer_;
+    Teuchos::RCP<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter> visualization_output_writer_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

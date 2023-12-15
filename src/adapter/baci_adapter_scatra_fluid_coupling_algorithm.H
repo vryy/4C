@@ -20,6 +20,8 @@
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_inpar_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class MortarVolCoupl;
@@ -48,27 +50,18 @@ namespace ADAPTER
         const std::string scatra_disname,  ///< scatra discretization name
         const Teuchos::ParameterList& solverparams);
 
-    /// virtual destructor to support polymorph destruction
-    virtual ~ScaTraFluidCouplingAlgorithm(){};
-
     /// setup this class
-    virtual void Setup();
+    void Setup() override;
 
     /// init this class
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
-        const Teuchos::ParameterList&
-            scatradyn,  ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-        const std::string& disname = "scatra",       ///< name of scalar transport discretization
-        const bool isale = false                     ///< ALE flag
-    );
+    void Init() override;
 
     /// outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
 
     /// read restart data
-    virtual void ReadRestart(int step  ///< step number where the calculation is continued
-    );
+    void ReadRestart(int step  ///< step number where the calculation is continued
+        ) override;
 
    protected:
     /// perform algorithm specific initialization stuff
@@ -78,11 +71,11 @@ namespace ADAPTER
     virtual const Teuchos::ParameterList& AlgoParameters() { return params_; }
 
     /// interpolate fluid quantity to a scatra one (e.g. via volmortar)
-    const Teuchos::RCP<const Epetra_Vector> FluidToScatra(
+    Teuchos::RCP<const Epetra_Vector> FluidToScatra(
         const Teuchos::RCP<const Epetra_Vector> fluidvector) const;
 
     /// interpolate scatra quantity to a fluid one (e.g. via volmortar)
-    const Teuchos::RCP<const Epetra_Vector> ScatraToFluid(
+    Teuchos::RCP<const Epetra_Vector> ScatraToFluid(
         const Teuchos::RCP<const Epetra_Vector> scatravector) const;
 
    private:
@@ -136,5 +129,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_H

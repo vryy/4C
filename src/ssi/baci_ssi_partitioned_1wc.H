@@ -12,6 +12,8 @@
 
 #include "baci_ssi_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SSI
 {
   class SSIPart1WC : public SSIPart
@@ -20,8 +22,6 @@ namespace SSI
     //! constructor
     SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart1WC() override = default;
 
     /*!
     \brief Setup this object
@@ -64,8 +64,6 @@ namespace SSI
     SSIPart1WCSolidToScatra(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart1WCSolidToScatra() override = default;
 
     /*!
     \brief Setup this object
@@ -98,8 +96,6 @@ namespace SSI
     SSIPart1WCScatraToSolid(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart1WCScatraToSolid() override = default;
 
     /*!
     \brief Setup this object
@@ -129,5 +125,7 @@ namespace SSI
   };
 
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_PARTITIONED_1WC_H

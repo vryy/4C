@@ -17,7 +17,13 @@ mapping
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
-#include "baci_lib_element.H"
+#include "baci_discretization_fem_general_cell_type_traits.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
+
+#include <optional>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::DRT::UTILS
 {
@@ -28,10 +34,10 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_hex16_surfaces_q6[4][6] = {
       {0, 1, 4, 8, 9, 12}, {1, 2, 5, 9, 10, 13}, {2, 3, 6, 10, 11, 14}, {3, 0, 7, 11, 8, 15}};
 
-  //! 8 Lines of a Hex16 element with 3 nodes per line
+  //! 8 lines of a Hex16 element with 3 nodes per line
   const int eleNodeNumbering_hex16_lines_quad[8][3] = {{0, 1, 4}, {1, 2, 5}, {2, 3, 6}, {0, 3, 7},
       {8, 9, 12}, {9, 10, 13}, {10, 11, 14}, {8, 11, 15}};
-  //! 4 Lines in a Hex16 element with 2 nodes per line
+  //! 4 lines in a Hex16 element with 2 nodes per line
   const int eleNodeNumbering_hex16_lines_lin[4][2] = {{0, 8}, {1, 9}, {2, 10}, {3, 11}};
 
   //! 2 surfaces on a Hex18 element with 9 nodes per surface
@@ -41,10 +47,10 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_hex18_surfaces_q6[4][6] = {
       {0, 1, 4, 9, 10, 13}, {1, 2, 5, 10, 11, 14}, {2, 3, 6, 11, 12, 15}, {3, 0, 7, 12, 9, 16}};
 
-  //! 8 Lines of a Hex18 element with 3 nodes per line
+  //! 8 lines of a Hex18 element with 3 nodes per line
   const int eleNodeNumbering_hex18_lines_quad[8][3] = {{0, 1, 4}, {1, 2, 5}, {2, 3, 6}, {0, 3, 7},
       {9, 10, 13}, {10, 11, 14}, {11, 12, 15}, {9, 12, 16}};
-  //! 4 Lines in a Hex18 element with 2 nodes per line
+  //! 4 lines in a Hex18 element with 2 nodes per line
   const int eleNodeNumbering_hex18_lines_lin[4][2] = {{0, 9}, {1, 10}, {2, 11}, {3, 12}};
 
   //! 6 Surfaces of a Hex27 element with 9 nodes per surface
@@ -53,7 +59,7 @@ namespace CORE::DRT::UTILS
       {2, 3, 7, 6, 10, 15, 18, 14, 23}, {0, 4, 7, 3, 12, 19, 15, 11, 24},
       {4, 5, 6, 7, 16, 17, 18, 19, 25}};
 
-  //! 12 Lines of a Hex27 element with 3 nodes per line
+  //! 12 lines of a Hex27 element with 3 nodes per line
   const int eleNodeNumbering_hex27_lines[12][3] = {{0, 1, 8}, {1, 2, 9}, {2, 3, 10}, {0, 3, 11},
       {0, 4, 12}, {1, 5, 13}, {2, 6, 14}, {3, 7, 15}, {4, 5, 16}, {5, 6, 17}, {6, 7, 18},
       {4, 7, 19}};
@@ -62,15 +68,15 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_tet10_surfaces[4][6] = {
       {0, 1, 3, 4, 8, 7}, {1, 2, 3, 5, 9, 8}, {0, 3, 2, 7, 9, 6}, {0, 2, 1, 6, 5, 4}};
 
-  //! 6 Lines of a Tet10 element with 3 nodes per line
+  //! 6 lines of a Tet10 element with 3 nodes per line
   const int eleNodeNumbering_tet10_lines[6][3] = {
       {0, 1, 4}, {1, 2, 5}, {0, 2, 6}, {0, 3, 7}, {1, 3, 8}, {2, 3, 9}};
 
-  //! Triangular surfaces of wedge18 with 6 nodes per surface
+  //! 2 triangular surfaces of wedge18 with 6 nodes per surface
   const int eleNodeNumbering_wedge18_trisurfaces[2][6] = {
       {2, 1, 0, 7, 6, 8}, {5, 3, 4, 14, 12, 13}};
 
-  //! Rectangular surfaces of wedge18 with 9 nodes per surface
+  //! 3 rectangular surfaces of wedge18 with 9 nodes per surface
   const int eleNodeNumbering_wedge18_quadsurfaces[3][9] = {{0, 1, 4, 3, 6, 10, 12, 9, 15},
       {1, 2, 5, 4, 7, 11, 13, 10, 16}, {2, 0, 3, 5, 8, 9, 14, 11, 17}};
 
@@ -78,10 +84,10 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_wedge18_lines[9][3] = {{0, 1, 6}, {1, 2, 7}, {2, 0, 8}, {3, 4, 12},
       {4, 5, 13}, {5, 3, 14}, {0, 3, 9}, {1, 4, 10}, {2, 5, 11}};
 
-  //! Rectangular surface of pyramid5
+  //! 1 rectangular surface of pyramid5
   const int eleNodeNumbering_pyramid5_quadsurfaces[1][4] = {{0, 3, 2, 1}};
 
-  //! Triangular surfaces of pyramid5
+  //! 4 triangular surfaces of pyramid5
   const int eleNodeNumbering_pyramid5_trisurfaces[4][3] = {
       {0, 1, 4}, {1, 2, 4}, {2, 3, 4}, {0, 4, 3}};
 
@@ -89,13 +95,11 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_pyramid5_lines[8][2] = {
       {0, 1}, {1, 2}, {2, 3}, {3, 0}, {0, 4}, {1, 4}, {2, 4}, {3, 4}};
 
-
-  //! 4 Lines of a Quad9 element with 3 nodes per line
+  //! 4 lines of a Quad9 element with 3 nodes per line
   const int eleNodeNumbering_quad9_lines[4][3] = {{0, 1, 4}, {1, 2, 5}, {2, 3, 6}, {3, 0, 7}};
 
-  //! 4 Lines of a nurbs4 element with 2 control points per line
+  //! 4 lines of a nurbs4 element with 2 control points per line
   //! we apply the nurbs specific cartesian numbering
-  //!
   //! \verbatim
   //!
   //!          2   (2)   3
@@ -112,9 +116,8 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_nurbs4_lines[4][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}};
 
 
-  //! 4 Lines of a nurbs9 element with 3 control points per line
-  //! we apply the nurbs specific cartesian numbering.
-  //!
+  //! 4 lines of a nurbs9 element with 3 control points per line
+  //! we apply the nurbs specific cartesian numbering
   //! \verbatim
   //!
   //!            (2) -->
@@ -130,53 +133,28 @@ namespace CORE::DRT::UTILS
   //!            (0) -->
   //!
   //! \endverbatim
-
   const int eleNodeNumbering_nurbs9_lines[4][3] = {{0, 1, 2}, {2, 5, 8}, {6, 7, 8}, {0, 3, 6}};
 
-  //! 3 Lines of a Tri6 element with 3 nodes per line
+  //! 3 lines of a Tri6 element with 3 nodes per line
   const int eleNodeNumbering_tri6_lines[3][3] = {{0, 1, 3}, {1, 2, 4}, {2, 0, 5}};
 
   //! for each of the 12 lines, tell me the 2 neighbouring faces
   const int eleNodeNumbering_hex27_lines_surfaces[12][2] = {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {1, 4},
       {1, 2}, {2, 3}, {3, 4}, {1, 5}, {2, 5}, {3, 5}, {4, 5}};
 
-
   //! for each of the 6 lines, tell me the 2 neighbouring faces
   const int eleNodeNumbering_tet10_lines_surfaces[6][2] = {
       {0, 3}, {1, 3}, {2, 3}, {2, 0}, {0, 1}, {1, 2}};
-
-
-  //! for each of the 8 corner nodes, tell me the 3 neighbouring faces
-  const int eleNodeNumbering_hex27_nodes_surfaces[8][3] = {
-      {0, 1, 4}, {0, 1, 2}, {0, 2, 3}, {0, 3, 4}, {1, 4, 5}, {1, 2, 5}, {2, 3, 5}, {3, 4, 5}};
-
-
-  //! for each of the 8 corner nodes, tell me the 3 neighbouring lines
-  const int eleNodeNumbering_hex27_nodes_lines[8][3] = {
-      {0, 3, 4}, {0, 1, 5}, {1, 2, 6}, {2, 3, 7}, {4, 8, 11}, {5, 8, 9}, {6, 9, 10}, {7, 10, 11}};
-
-
-  //! for each of the 4 corner nodes, tell me the 3 neighbouring faces
-  const int eleNodeNumbering_tet10_nodes_surfaces[4][3] = {
-      {0, 2, 3}, {0, 1, 3}, {1, 2, 3}, {0, 1, 2}};
-
 
   //! for each of the 4 corner nodes, tell me the 3 neighbouring lines
   const int eleNodeNumbering_tet10_nodes_lines[4][3] = {{0, 2, 3}, {0, 1, 4}, {1, 2, 5}, {3, 4, 5}};
 
   //! for each node the reference coordinates are stored for quad9
   const double eleNodeNumbering_quad9_nodes_reference[9][2] = {{-1.0, -1.0}, {1.0, -1.0},
-      {1.0, 1.0}, {-1.0, 1.0},
+      {1.0, 1.0}, {-1.0, 1.0}, {0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0}, {-1.0, 0.0}, {0.0, 0.0}};
 
-      {0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0}, {-1.0, 0.0},
-
-      {0.0, 0.0}};
-
-
-  //! 6 Surfaces of a nurbs8 element with 4 control points per
-  //! surface we apply the nurbs specific cartesian numbering,
-  //! only interpolated surfaces are valid!
-  //!
+  //! 6 surfaces of a nurbs8 element with 4 control points per surface
+  //! we apply the nurbs specific cartesian numbering, only interpolated surfaces are valid!
   //! \verbatim
   //!                         v
   //!                        /
@@ -209,8 +187,7 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_nurbs8_surfaces[6][4] = {
       {0, 1, 2, 3}, {4, 5, 6, 7}, {0, 1, 4, 5}, {2, 3, 6, 7}, {0, 2, 4, 6}, {1, 3, 5, 7}};
 
-
-  //! 6 Surfaces of a nurbs27 element with 9 control points per surface
+  //! 6 surfaces of a nurbs27 element with 9 control points per surface
   //! we apply the nurbs specific cartesian numbering, only interpolated surfaces are valid!
   //!
   //! \verbatim
@@ -247,7 +224,7 @@ namespace CORE::DRT::UTILS
       {6, 7, 8, 15, 16, 17, 24, 25, 26}, {2, 5, 8, 11, 14, 17, 20, 23, 26},
       {0, 3, 6, 9, 12, 15, 18, 21, 24}};
 
-  //! 12 Lines of a Nurbs27 element with 3 control points per line
+  //! 12 lines of a Nurbs27 element with 3 control points per line
   //!                          v
   //!                         /
   //!                   10   /
@@ -278,345 +255,151 @@ namespace CORE::DRT::UTILS
       {0, 9, 18}, {2, 11, 20}, {8, 17, 26}, {6, 15, 24}, {18, 19, 20}, {20, 23, 26}, {24, 25, 26},
       {18, 21, 24}};
 
-
   //! for each node the reference coordinates are stored for tri6
-  const double eleNodeNumbering_tri6_nodes_reference[6][2] = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0},
-
-      {0.5, 0.0}, {0.5, 0.5}, {0.0, 0.5}};
-
+  const double eleNodeNumbering_tri6_nodes_reference[6][2] = {
+      {0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}, {0.5, 0.0}, {0.5, 0.5}, {0.0, 0.5}};
 
   //! for each node the reference coordinates are stored for hex27
   const double eleNodeNumbering_hex27_nodes_reference[27][3] = {{-1.0, -1.0, -1.0},
-      {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0},
+      {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0},
+      {1.0, 1.0, 1.0}, {-1.0, 1.0, 1.0}, {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0},
+      {-1.0, 0.0, -1.0}, {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, 1.0, 0.0},
+      {0.0, -1.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0}, {-1.0, 0.0, 1.0}, {0.0, 0.0, -1.0},
+      {0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0},
+      {0.0, 0.0, 0.0}};
 
-      {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, 1.0}, {-1.0, 1.0, 1.0},
-
-      {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0}, {-1.0, 0.0, -1.0},
-
-      {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, 1.0, 0.0},
-
-      {0.0, -1.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0}, {-1.0, 0.0, 1.0},
-
-      {0.0, 0.0, -1.0}, {0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0},
-
-      {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}};
-
-  //! for each node the reference coordinates are stored for a tet10
+  //! reference parameter coordinates for a tet10
   const double eleNodeNumbering_tet10_nodes_reference[10][3] = {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
-      {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0},
+      {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.5, 0.0, 0.0}, {0.5, 0.5, 0.0}, {0.0, 0.5, 0.0},
+      {0.0, 0.0, 0.5}, {0.5, 0.0, 0.5}, {0.0, 0.5, 0.5}};
 
-      {0.5, 0.0, 0.0}, {0.5, 0.5, 0.0}, {0.0, 0.5, 0.0}, {0.0, 0.0, 0.5}, {0.5, 0.0, 0.5},
-      {0.0, 0.5, 0.5}};
+  //! reference parameter coordinates for a line3
   const double eleNodeNumbering_line3_nodes_reference[3][1] = {{-1.0}, {1.0}, {0.0}};
 
+  //! reference parameter coordinates for a line4
   const double eleNodeNumbering_line4_nodes_reference[4][1] = {
       {-1.0}, {1.0}, {-1.0 / 3.0}, {1.0 / 3.0}};
-  /*!
- \brief Returns the number of nodes
-        for each discretization type
-
- \return number of nodes of the discretization type
- */
-  int getNumberOfElementNodes(const ::DRT::Element::DiscretizationType& distype);
-
-
-  //! Template Meta Programming version of switch over discretization type
-  template <::DRT::Element::DiscretizationType DISTYPE>
-  struct DisTypeToNumNodePerEle
-  {
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::point1>
-  {
-    static const int numNodePerElement = 1;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::line2>
-  {
-    static const int numNodePerElement = 2;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::line3>
-  {
-    static const int numNodePerElement = 3;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::line4>
-  {
-    static const int numNodePerElement = 4;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs2>
-  {
-    static const int numNodePerElement = 2;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs3>
-  {
-    static const int numNodePerElement = 3;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::quad4>
-  {
-    static const int numNodePerElement = 4;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::quad8>
-  {
-    static const int numNodePerElement = 8;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::quad9>
-  {
-    static const int numNodePerElement = 9;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs4>
-  {
-    static const int numNodePerElement = 4;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs9>
-  {
-    static const int numNodePerElement = 9;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::tri3>
-  {
-    static const int numNodePerElement = 3;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::tri6>
-  {
-    static const int numNodePerElement = 6;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex8>
-  {
-    static const int numNodePerElement = 8;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex16>
-  {
-    static const int numNodePerElement = 16;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex18>
-  {
-    static const int numNodePerElement = 18;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex20>
-  {
-    static const int numNodePerElement = 20;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex27>
-  {
-    static const int numNodePerElement = 27;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs8>
-  {
-    static const int numNodePerElement = 8;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs27>
-  {
-    static const int numNodePerElement = 27;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::tet4>
-  {
-    static const int numNodePerElement = 4;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::tet10>
-  {
-    static const int numNodePerElement = 10;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::wedge6>
-  {
-    static const int numNodePerElement = 6;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::wedge15>
-  {
-    static const int numNodePerElement = 15;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::pyramid5>
-  {
-    static const int numNodePerElement = 5;
-  };
-
 
   /*!
-  \brief Returns the number of corner nodes
-         for each discretization type
-
-  \return number of corner nodes of the discretization type
-  */
-  int getNumberOfElementCornerNodes(const ::DRT::Element::DiscretizationType& distype);
-
-  /*!
-  \brief  Returns the number of corner nodes
-          for each face element of a given element discretization type
-
-  \return   number of corner nodes for each face element of a given element
-             of the discretization type
+   * @brief Returns the number of nodes for the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of nodes
    */
-  std::vector<int> getNumberOfFaceElementCornerNodes(
-      const ::DRT::Element::DiscretizationType& distype);
+  int getNumberOfElementNodes(const CORE::FE::CellType& distype);
 
   /*!
-  \brief  Returns the number of internal nodes
-          for each face element of a given element discretization type
-
-  \return   number of internal nodes for each face element of a given element
-             of the discretization type
+   * @brief Returns the number of corner nodes for an element of the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of corner nodes
    */
-  std::vector<int> getNumberOfFaceElementInternalNodes(
-      const ::DRT::Element::DiscretizationType& distype);
+  int getNumberOfElementCornerNodes(const CORE::FE::CellType& distype);
 
   /*!
-\brief  Returns the number of corner nodes
-        for each surface element of a given volume discretization type
-
-\return   number of corner nodes for each surface element of a given volume
-           of the discretization type
- */
-  std::vector<int> getNumberOfSurfaceElementCornerNodes(
-      const ::DRT::Element::DiscretizationType& distype);
-
-  /*!
- \brief Returns the number of lines
-        for each discretization type
+   * @brief Returns the number of corner nodes for each face element for an element of the given
+   * discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of corner nodes for each face element
    */
-  int getNumberOfElementLines(const ::DRT::Element::DiscretizationType& distype);
+  std::vector<int> getNumberOfFaceElementCornerNodes(const CORE::FE::CellType& distype);
 
   /*!
- \brief Returns the number of surfaces
-        for each discretization type
+   * @brief Returns the number of internal nodes for each face element for an element of the given
+   * discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of internal nodes for each face element
    */
-  int getNumberOfElementSurfaces(const ::DRT::Element::DiscretizationType& distype);
+  std::vector<int> getNumberOfFaceElementInternalNodes(const CORE::FE::CellType& distype);
 
   /*!
- \brief Returns the number of Volumes
-        for each discretization type
+   * @brief Returns the number of lines for the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of lines
    */
-  int getNumberOfElementVolumes(const ::DRT::Element::DiscretizationType& distype);
+  int getNumberOfElementLines(const CORE::FE::CellType& distype);
 
   /*!
- \brief Returns the number of faces
-        for each discretization type (as opposed to Lines/Surfaces, this is always dim-1)
+   * @brief Returns the number of surface for the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of surfaces
    */
-  int getNumberOfElementFaces(const ::DRT::Element::DiscretizationType& distype);
+  int getNumberOfElementSurfaces(const CORE::FE::CellType& distype);
 
   /*!
-  \brief Returns the shape type of a face of a given element
+   * @brief Returns the number of volumes for the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of volumes
    */
-  ::DRT::Element::DiscretizationType getEleFaceShapeType(
-      const ::DRT::Element::DiscretizationType& distype,  ///< discretization type
-      const unsigned int face = 0                         ///< which face?
-  );
+  int getNumberOfElementVolumes(const CORE::FE::CellType& distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all nodes for every face
-         (surface in 3D, line in 2D) for each discretization type
-
-  \return map with all nodes for each face
+   * @brief Returns the number of faces for the given discretization type (as opposed to
+   * lines/surfaces, this is always dim-1)
+   *
+   * @param[in] distype discretization type
+   * @return number of faces
    */
-  std::vector<std::vector<int>> getEleNodeNumberingFaces(
-      const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-  );
+  int getNumberOfElementFaces(const CORE::FE::CellType& distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all nodes for every surface
-         for each discretization type
+   * @brief Returns the shape type of a face of a given element
 
-  \return map with all nodes for each surface
+   * @param[in] distype discretization type
+   * @param[in] face face index
+   * @return discretization type of the element face
    */
-  std::vector<std::vector<int>> getEleNodeNumberingSurfaces(
-      const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-  );
+  CORE::FE::CellType getEleFaceShapeType(
+      const CORE::FE::CellType& distype, const unsigned int face = 0);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all nodes for every line
-         for each discretization type
-
-  \return map with all nodes for each line
+   * @brief Fills a vector<std::vector<int>> with all nodes for every face (surface in 3D, line in
+   * 2D)
+   *
+   * @param[in] distype discretization type
+   * @return map with all nodes for each face
    */
-  std::vector<std::vector<int>> getEleNodeNumberingLines(
-      const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-  );
+  std::vector<std::vector<int>> getEleNodeNumberingFaces(const CORE::FE::CellType& distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all surfaces for every line
-         for each discretization type
+   * @brief Fills a vector<std::vector<int>> with all nodes for every surface
+   *
+   * @param[in] distype discretization type
+   * @return map with all nodes for each surface
+   */
+  std::vector<std::vector<int>> getEleNodeNumberingSurfaces(const CORE::FE::CellType& distype);
 
-  \return map with surfaces adjacent to each line
-  */
+  /*!
+   * @brief Fills a vector<std::vector<int>> with all nodes for every line
+   *
+   * @param[in] distype discretization type
+   * @return map with all nodes for each line
+   */
+  std::vector<std::vector<int>> getEleNodeNumberingLines(const CORE::FE::CellType& distype);
+
+  /*!
+   * @brief Fills a vector<std::vector<int>> with all surfaces for every line
+   *
+   * @param[in] distype discretization type
+   * @return map with surfaces adjacent to each line
+   */
   std::vector<std::vector<int>> getEleNodeNumbering_lines_surfaces(
-      const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-  );
+      const CORE::FE::CellType& distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all lines for every node
-         for each discretization type
-
-  \return map with all lines adjacent to each node
-  */
-  std::vector<std::vector<int>> getEleNodeNumbering_nodes_lines(
-      const ::DRT::Element::DiscretizationType distype);
-
-  /*!
-  \brief Fills a vector< std::vector<int> > with all surfaces for every node
-         for each discretization type
-
-  \return map with all surfaces adjacent to each node
-  */
-  std::vector<std::vector<int>> getEleNodeNumbering_nodes_surfaces(
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-  /*!
-  \brief Fills a CORE::LINALG::SerialDenseMatrix with parameter space coordinates for each node
-         for each discretization type
-
-  \return map of parameter space coordinates for all nodes
-  */
-  CORE::LINALG::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-  /*!
-  \brief Returns a vector with the surface ID s a point in 3d reference coordinates
-  \      is lying on for each discretization type
-  */
-  std::vector<int> getSurfaces(
-      const CORE::LINALG::Matrix<3, 1>& rst,            ///< point in reference coordinates
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-
-  /*!
-   \brief Returns a vector with the line ID s a point in 3d reference coordinates
-   \      is lying on for each discretization type
+   * @brief Fills a CORE::LINALG::SerialDenseMatrix with parameter space coordinates for each node
+   * of the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return map of parameter space coordinates for all nodes
    */
-  std::vector<int> getLines(
-      const CORE::LINALG::Matrix<3, 1>& rst,            ///< point in reference coordinates
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-  /*!
-  \brief Returns the node ID s a point in 3d reference coordinates
-  \      is lying on for each discretization type
-  */
-  int getNode(const CORE::LINALG::Matrix<3, 1>& rst,    ///< point in reference coordinates
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
+  CORE::LINALG::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
+      const CORE::FE::CellType distype);
 
   /*!
    * @brief Returns the coordinates in parameter space for a given node id and discretization type
@@ -628,982 +411,673 @@ namespace CORE::DRT::UTILS
    */
   template <int probdim = 3>
   CORE::LINALG::Matrix<probdim, 1> GetNodeCoordinates(
-      const int nodeId, const ::DRT::Element::DiscretizationType distype);
+      const int nodeId, const CORE::FE::CellType distype);
 
   /*!
-  \brief Returns a with coordinates in reference system of the cutter element
-  \      according to the line Id for each discretization type
-  */
-  CORE::LINALG::Matrix<3, 1> getLineCoordinates(const int lineId,  ///< line ID
-      const double lineCoord,                                      ///< line coordinate
-      const ::DRT::Element::DiscretizationType distype             ///< discretization type
-  );
+   * @brief Computes the indices of the element corner nodes lying adjacent to a specified higher
+   * order (edge) node index for each discretization type
+   *
+   * @param[out] index1  index of corner node
+   * @param[out] index2  index of corner node
+   * @param[in] hoindex  index of edge node
+   * @param[in] distype  discretization type
+   */
+  void getCornerNodeIndices(
+      int& index1, int& index2, const int& hoindex, const CORE::FE::CellType distype);
 
   /*!
-  \brief    Returns the index of a  higher order node lying
-            between two given corner nodes of an edge of an higher order element
-            for each discretization type
-
-  */
-  int getHigherOrderIndex(const int index1,             ///< index of corner node
-      const int index2,                                 ///< index of corner node
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
+   * @brief Returns the dimension of an element based on its discretization type
+   *
+   * @param[in] distype  discretization type
+   */
+  int getDimension(const CORE::FE::CellType distype);
 
   /*!
-  \brief    Returns the indices of the element corner nodes lying
-            adjacent to a specified higher order (edge) node index
-            for each discretization type
-
-  */
-  void getCornerNodeIndices(int& index1,                ///< index of corner node
-      int& index2,                                      ///< index of corner node
-      const int& hoindex,                               ///< index of edge node
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-  /*!
-  \brief    Returns the dimension of an element based on its discretization-type
-
-  */
-  int getDimension(
-      const ::DRT::Element::DiscretizationType distype  ///< element-discretization type
-  );
-
-  //  /*!
-  //  \brief    Returns the Shards::Key based on its discretization-type
-  //            Template version
-  //  */
-  //  template<::DRT::Element::DiscretizationType DISTYPE>
-  //  struct DisTypeToShardsKey {};
-  //  template<> struct DisTypeToShardsKey<::DRT::Element::point1>   { static const unsigned
-  //  shardsKey = shards::Particle::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::line2>    { static const unsigned shardsKey =
-  //  shards::Line<2>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::line3>    {
-  //  static const unsigned shardsKey = shards::Line<3>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::quad4>    { static const unsigned shardsKey =
-  //  shards::Quadrilateral<4>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::quad8>
-  //  { static const unsigned shardsKey = shards::Quadrilateral<8>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::quad9>    { static const unsigned shardsKey =
-  //  shards::Quadrilateral<9>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::tri3>
-  //  { static const unsigned shardsKey = shards::Triangle<3>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::tri6>     { static const unsigned shardsKey =
-  //  shards::Triangle<6>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::hex8>     {
-  //  static const unsigned shardsKey = shards::Hexahedron<8>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::hex20>    { static const unsigned shardsKey =
-  //  shards::Hexahedron<20>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::hex27> {
-  //  static const unsigned shardsKey = shards::Hexahedron<27>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::tet4>     { static const unsigned shardsKey =
-  //  shards::Tetrahedron<4>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::tet10> {
-  //  static const unsigned shardsKey = shards::Tetrahedron<10>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::wedge6>   { static const unsigned shardsKey =
-  //  shards::Wedge<6>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::wedge15>  {
-  //  static const unsigned shardsKey = shards::Wedge<15>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::pyramid5> { static const unsigned shardsKey =
-  //  shards::Pyramid<5>::key; };
-  //
-  //  /*!
-  //  \brief    Returns the discretization-type based on its Shards::Key
-  //            Template version
-  //  */
-  //  template<unsigned SHARDSKEY>
-  //  struct ShardsKeyToDisType {};
-  //  template<> struct ShardsKeyToDisType<shards::Particle::key>         { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::point1; }; template<> struct
-  //  ShardsKeyToDisType<shards::Line<2>::key>          { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::line2; }; template<> struct
-  //  ShardsKeyToDisType<shards::Line<3>::key>          { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::line3; }; template<> struct
-  //  ShardsKeyToDisType<shards::Quadrilateral<4>::key> { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::quad4; }; template<> struct
-  //  ShardsKeyToDisType<shards::Quadrilateral<8>::key> { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::quad8; }; template<> struct
-  //  ShardsKeyToDisType<shards::Quadrilateral<9>::key> { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::quad9; }; template<> struct
-  //  ShardsKeyToDisType<shards::Triangle<3>::key>      { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::tri3; }; template<> struct
-  //  ShardsKeyToDisType<shards::Triangle<6>::key>      { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::tri6; }; template<> struct
-  //  ShardsKeyToDisType<shards::Hexahedron<8>::key>    { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::hex8; }; template<> struct
-  //  ShardsKeyToDisType<shards::Hexahedron<20>::key>   { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::hex20; }; template<> struct
-  //  ShardsKeyToDisType<shards::Hexahedron<27>::key>   { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::hex27; }; template<> struct
-  //  ShardsKeyToDisType<shards::Tetrahedron<4>::key>   { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::tet4; }; template<> struct
-  //  ShardsKeyToDisType<shards::Tetrahedron<10>::key>  { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::tet10; }; template<> struct
-  //  ShardsKeyToDisType<shards::Wedge<6>::key>         { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::wedge6; }; template<> struct
-  //  ShardsKeyToDisType<shards::Wedge<15>::key>        { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::wedge15; }; template<> struct
-  //  ShardsKeyToDisType<shards::Pyramid<5>::key>       { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::pyramid5; };
-
-  /*!
-  \brief    Returns the dimension of an element based on its discretization-type
-            Template version
-  */
-  template <::DRT::Element::DiscretizationType DISTYPE>
-  struct DisTypeToDim
-  {
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::point1>
-  {
-    static const int dim = 0;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::line2>
-  {
-    static const int dim = 1;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::line3>
-  {
-    static const int dim = 1;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::line4>
-  {
-    static const int dim = 1;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::nurbs2>
-  {
-    static const int dim = 1;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::nurbs3>
-  {
-    static const int dim = 1;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::quad4>
-  {
-    static const int dim = 2;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::quad6>
-  {
-    static const int dim = 2;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::quad8>
-  {
-    static const int dim = 2;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::quad9>
-  {
-    static const int dim = 2;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::nurbs4>
-  {
-    static const int dim = 2;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::nurbs9>
-  {
-    static const int dim = 2;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::tri3>
-  {
-    static const int dim = 2;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::tri6>
-  {
-    static const int dim = 2;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::hex8>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::hex16>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::hex18>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::hex20>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::hex27>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::tet4>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::tet10>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::wedge6>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::wedge15>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::pyramid5>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::nurbs8>
-  {
-    static const int dim = 3;
-  };
-  template <>
-  struct DisTypeToDim<::DRT::Element::nurbs27>
-  {
-    static const int dim = 3;
-  };
-
-  /*!
-  \brief    Returns the degree of an element based on its discretization-type
-            Template version
-  */
-  template <::DRT::Element::DiscretizationType DISTYPE>
+   * @brief Returns the degree of an element based on its discretization type
+   *
+   * @tparam DISTYPE discretization type
+   */
+  template <CORE::FE::CellType DISTYPE>
   struct DisTypeToDegree
   {
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::point1>
+  struct DisTypeToDegree<CORE::FE::CellType::point1>
   {
     static const int degree = 0;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::line2>
+  struct DisTypeToDegree<CORE::FE::CellType::line2>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::line3>
+  struct DisTypeToDegree<CORE::FE::CellType::line3>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs2>
+  struct DisTypeToDegree<CORE::FE::CellType::line4>
+  {
+    static const int degree = 3;
+  };
+  template <>
+  struct DisTypeToDegree<CORE::FE::CellType::line5>
+  {
+    static const int degree = 4;
+  };
+  template <>
+  struct DisTypeToDegree<CORE::FE::CellType::line6>
+  {
+    static const int degree = 5;
+  };
+  template <>
+  struct DisTypeToDegree<CORE::FE::CellType::nurbs2>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs3>
+  struct DisTypeToDegree<CORE::FE::CellType::nurbs3>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::quad4>
+  struct DisTypeToDegree<CORE::FE::CellType::quad4>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::quad6>
+  struct DisTypeToDegree<CORE::FE::CellType::quad8>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::quad8>
+  struct DisTypeToDegree<CORE::FE::CellType::quad9>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::quad9>
-  {
-    static const int degree = 2;
-  };
-  template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs4>
+  struct DisTypeToDegree<CORE::FE::CellType::nurbs4>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs9>
+  struct DisTypeToDegree<CORE::FE::CellType::nurbs9>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::tri3>
+  struct DisTypeToDegree<CORE::FE::CellType::tri3>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::tri6>
+  struct DisTypeToDegree<CORE::FE::CellType::tri6>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::hex8>
+  struct DisTypeToDegree<CORE::FE::CellType::hex8>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::hex20>
+  struct DisTypeToDegree<CORE::FE::CellType::hex20>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::hex27>
+  struct DisTypeToDegree<CORE::FE::CellType::hex27>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::tet4>
+  struct DisTypeToDegree<CORE::FE::CellType::tet4>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::tet10>
+  struct DisTypeToDegree<CORE::FE::CellType::tet10>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::wedge6>
+  struct DisTypeToDegree<CORE::FE::CellType::wedge6>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::wedge15>
+  struct DisTypeToDegree<CORE::FE::CellType::wedge15>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::pyramid5>
+  struct DisTypeToDegree<CORE::FE::CellType::pyramid5>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs8>
+  struct DisTypeToDegree<CORE::FE::CellType::nurbs8>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs27>
+  struct DisTypeToDegree<CORE::FE::CellType::nurbs27>
   {
     static const int degree = 2;
   };
 
   /*!
-  \brief    Returns the number of independent components for 2nd derivatives per
-  discretization-type Template version
-
-            Number of components necessary to store second derivatives:
-            in general:
-              (n*(n+1))/2 components for nsd=n;
-            in practice:
-              1 component  for nsd=1:  (N,xx)
-              3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
-              6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-  */
-  template <::DRT::Element::DiscretizationType DISTYPE>
+   * @brief Returns the number of independent components for 2nd derivatives per discretization type
+   * @tparam DISTYPE discretization type
+   *
+   * Number of components necessary to store second derivatives:
+   *  in general: (n*(n+1))/2 components for nsd=n;
+   *  in practice:
+   *   1 component  for nsd=1:  (N,xx)
+   *   3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+   *   6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+   */
+  template <CORE::FE::CellType DISTYPE>
   struct DisTypeToNumDeriv2
   {
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::point1>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::point1>
   {
     static const int numderiv2 = 0;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::line2>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::line2>
   {
     static const int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::line3>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::line3>
   {
     static const int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs2>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs2>
   {
     static const int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs3>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs3>
   {
     static const int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::quad4>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::quad4>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::quad6>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::quad6>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::quad8>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::quad8>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::quad9>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::quad9>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs4>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs4>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs9>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs9>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::tri3>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::tri3>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::tri6>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::tri6>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex8>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex8>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex16>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex16>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex18>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex18>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex20>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex20>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex27>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex27>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::tet4>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::tet4>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::tet10>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::tet10>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::wedge6>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::wedge6>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::wedge15>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::wedge15>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::pyramid5>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::pyramid5>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs8>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs8>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs27>
+  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs27>
   {
     static const int numderiv2 = 6;
   };
 
 
   /*!
-  \brief    Returns the shape of face elements of a given element at compile time
-  (invalid for wedge and pyramid as it depends on the face number)
-  */
-  template <::DRT::Element::DiscretizationType DISTYPE>
+   * @brief Returns the shape of face elements of a given element at compile time (invalid for wedge
+   * and pyramid as it depends on the face number)
+   *
+   * @tparam DISTYPE discretization type
+   */
+  template <CORE::FE::CellType DISTYPE>
   struct DisTypeToFaceShapeType
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::max_distype;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::max_distype;
   };
-  // template<> struct DisTypeToFaceShapeType<::DRT::Element::point1>   {}; // invalid
+  // template<> struct DisTypeToFaceShapeType<CORE::FE::CellType::point1>   {}; //
+  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::line2>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::line2>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::point1;
-  };
-  template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::line3>
-  {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::point1;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs2>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::line3>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::point1;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs3>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs2>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::point1;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::quad4>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs3>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line2;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::quad6>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::quad4>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line3;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::line2;
+  };
+  template <>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::quad6>
+  {
+    static const CORE::FE::CellType shape = CORE::FE::CellType::line3;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::quad8>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::quad8>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line3;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::quad9>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::quad9>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line3;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs4>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs4>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::nurbs2;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::nurbs2;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs9>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs9>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::nurbs3;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::nurbs3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::tri3>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::tri3>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line2;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::line2;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::tri6>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::tri6>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line3;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex8>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex8>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad4;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::quad4;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex16>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex16>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad8;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::quad8;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex18>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex18>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad9;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::quad9;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex20>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex20>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad8;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::quad8;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex27>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex27>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad9;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::quad9;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs8>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs8>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::nurbs4;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::nurbs4;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs27>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs27>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::nurbs9;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::nurbs9;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::tet4>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::tet4>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri3;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::tri3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::tet10>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::tet10>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri6;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::tri6;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::wedge6>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::wedge6>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri3;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::tri3;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::wedge15>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::wedge15>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri6;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::tri6;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::pyramid5>
+  struct DisTypeToFaceShapeType<CORE::FE::CellType::pyramid5>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri3;
+    static const CORE::FE::CellType shape = CORE::FE::CellType::tri3;
   };  // invalid
-
-
-
-  /*!
-  \brief    Returns the shape of face elements of a given element
-  (invalid for wedge and pyramid as it depends on the face number)
-  */
-  template <::DRT::Element::DiscretizationType DISTYPE>
-  struct DisTypeToNumFaces
-  {
-    static const int numFaces = 0;
-  };
-  // template<> struct DisTypeToNumFaces<::DRT::Element::point1>   {}; // invalid
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::line2>
-  {
-    static const int numFaces = 2;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::line3>
-  {
-    static const int numFaces = 2;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs2>
-  {
-    static const int numFaces = 2;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs3>
-  {
-    static const int numFaces = 2;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::quad4>
-  {
-    static const int numFaces = 4;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::quad6>
-  {
-    static const int numFaces = 4;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::quad8>
-  {
-    static const int numFaces = 4;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::quad9>
-  {
-    static const int numFaces = 4;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs4>
-  {
-    static const int numFaces = 4;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs9>
-  {
-    static const int numFaces = 4;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::tri3>
-  {
-    static const int numFaces = 3;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::tri6>
-  {
-    static const int numFaces = 3;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex8>
-  {
-    static const int numFaces = 6;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex16>
-  {
-    static const int numFaces = 6;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex18>
-  {
-    static const int numFaces = 6;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex20>
-  {
-    static const int numFaces = 6;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex27>
-  {
-    static const int numFaces = 6;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs8>
-  {
-    static const int numFaces = 6;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs27>
-  {
-    static const int numFaces = 6;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::tet4>
-  {
-    static const int numFaces = 4;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::tet10>
-  {
-    static const int numFaces = 4;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::wedge6>
-  {
-    static const int numFaces = 5;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::wedge15>
-  {
-    static const int numFaces = 5;
-  };
-  template <>
-  struct DisTypeToNumFaces<::DRT::Element::pyramid5>
-  {
-    static const int numFaces = 5;
-  };
 
 
   /*!
-  \brief    Returns the number of nodes on face elements
-  (invalid for wedge and pyramid as it depends on the face number)
-  */
-  template <::DRT::Element::DiscretizationType DISTYPE>
+   * @brief Returns the number of nodes on face elements (invalid for wedge and pyramid as it
+   * depends on the face number)
+   *
+   * @tparam DISTYPE discretization type
+   */
+  template <CORE::FE::CellType DISTYPE>
   struct DisTypeToNumNodePerFace
   {
-    static const int numNodePerFace =
-        DisTypeToNumNodePerEle<DisTypeToFaceShapeType<DISTYPE>::shape>::numNodePerElement;
+    static const int numNodePerFace = CORE::FE::num_nodes<DisTypeToFaceShapeType<DISTYPE>::shape>;
   };
 
 
   /*!
-    \brief    Returns the order of an element edges based on its discretization-type
-              Template version
+   * @brief Returns the order of an element edges based on its discretization type
+   *
+   * @tparam DISTYPE discretization type
    */
-  template <::DRT::Element::DiscretizationType DISTYPE>
+  template <CORE::FE::CellType DISTYPE>
   struct DisTypeToEdgeOrder
   {
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::point1>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::point1>
   {
     static const int order = 0;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::line2>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::line2>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::line3>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::line3>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::nurbs2>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::line4>
+  {
+    static const int order = 3;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::line5>
+  {
+    static const int order = 4;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::line6>
+  {
+    static const int order = 5;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs2>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::nurbs3>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs3>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::quad4>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::quad4>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::quad8>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::quad8>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::quad9>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::quad9>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::nurbs4>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs4>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::nurbs9>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs9>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::tri3>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::tri3>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::tri6>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::tri6>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::hex8>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::hex8>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::hex20>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::hex20>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::hex27>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::hex27>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::tet4>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs8>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::tet10>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs27>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::pyramid5>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::tet4>
   {
     static const int order = 1;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::tet10>
+  {
+    static const int order = 2;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::pyramid5>
+  {
+    static const int order = 1;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::wedge6>
+  {
+    static const int order = 1;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::wedge15>
+  {
+    static const int order = 2;
   };
 
 
   /*!
-    \brief    returns the order of the element-edges
+   * @brief returns the order of the element-edges
+   *
+   * @param[in]  distype  shape of the element
+   * @param[in, opt] default_order if the distype is not known, throw an error
+   *                               or return the value for default_order
    */
-  int getOrder(const ::DRT::Element::DiscretizationType distype  ///< element-discretization type
-  );
+  int getOrder(const CORE::FE::CellType distype, std::optional<int> default_order = std::nullopt);
 
   /*!
-    \brief    returns the order of the element
+   * @brief returns the order of the element
+   *
+   * @param[in]  distype  shape of the element
+   * @param[in, opt] default_degree if the distype is not known, throw an error
+   *                                or return the value for default_degree
    */
-  int getDegree(const ::DRT::Element::DiscretizationType distype  ///< element-discretization type
-  );
+  int getDegree(const CORE::FE::CellType distype, std::optional<int> default_degree = std::nullopt);
 
   /*!
-    \brief    returns local node number in the parent element
-              from a given face number and local node number in the face element
+   * @brief Returns local node number in the parent element from a given face number and local node
+   * number in the face element
    */
-  int getParentNodeNumberFromFaceNodeNumber(const ::DRT::Element::DiscretizationType parent_distype,
-      const int faceId, const int faceNodeId);
+  int getParentNodeNumberFromFaceNodeNumber(
+      const CORE::FE::CellType parent_distype, const int faceId, const int faceNodeId);
 
   /*!
-   * \brief Get the geometric center of the element in local coordinates
+   * @brief Get the geometric center of the element in local coordinates
    *
    * @param[in]  dim  dimension of the element space (e.g. dim=2 for quad4)
+   * @param[in]  distype  shape of the element
    * @param[out] pos  local center position
    */
   template <unsigned dim>
   CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(
-      const ::DRT::Element::DiscretizationType distype,  ///< shape of the element
-      CORE::LINALG::Matrix<dim, 1>& pos                  ///< center position
-  )
+      const CORE::FE::CellType distype, CORE::LINALG::Matrix<dim, 1>& pos)
   {
     switch (distype)
     {
-      case ::DRT::Element::line2:
-      case ::DRT::Element::line3:
-      case ::DRT::Element::nurbs2:
-      case ::DRT::Element::nurbs3:
+      case CORE::FE::CellType::line2:
+      case CORE::FE::CellType::line3:
+      case CORE::FE::CellType::nurbs2:
+      case CORE::FE::CellType::nurbs3:
       {
         pos = 0.0;
         break;
       }
-      case ::DRT::Element::quad4:
-      case ::DRT::Element::quad6:
-      case ::DRT::Element::quad8:
-      case ::DRT::Element::quad9:
-      case ::DRT::Element::nurbs4:
-      case ::DRT::Element::nurbs9:
+      case CORE::FE::CellType::quad4:
+      case CORE::FE::CellType::quad6:
+      case CORE::FE::CellType::quad8:
+      case CORE::FE::CellType::quad9:
+      case CORE::FE::CellType::nurbs4:
+      case CORE::FE::CellType::nurbs9:
       {
         pos = 0.0;
         break;
       }
-      case ::DRT::Element::tri3:
-      case ::DRT::Element::tri6:
+      case CORE::FE::CellType::tri3:
+      case CORE::FE::CellType::tri6:
       {
         pos = 1.0 / 3.0;
         break;
       }
-      case ::DRT::Element::hex8:
-      case ::DRT::Element::hex16:
-      case ::DRT::Element::hex18:
-      case ::DRT::Element::hex20:
-      case ::DRT::Element::hex27:
+      case CORE::FE::CellType::hex8:
+      case CORE::FE::CellType::hex16:
+      case CORE::FE::CellType::hex18:
+      case CORE::FE::CellType::hex20:
+      case CORE::FE::CellType::hex27:
       {
         pos = 0.0;
         break;
       }
-      case ::DRT::Element::tet4:
-      case ::DRT::Element::tet10:
+      case CORE::FE::CellType::tet4:
+      case CORE::FE::CellType::tet10:
       {
         pos = 1.0 / 4.0;
         break;
       }
-      case ::DRT::Element::wedge6:
-      case ::DRT::Element::wedge15:
+      case CORE::FE::CellType::wedge6:
+      case CORE::FE::CellType::wedge15:
       {
         pos = 1.0 / 3.0;
         pos(2, 0) = 0;
         break;
       }
-      case ::DRT::Element::pyramid5:
+      case CORE::FE::CellType::pyramid5:
       {
         pos = 0.0;
         pos(2, 0) = 0.25;
@@ -1611,8 +1085,8 @@ namespace CORE::DRT::UTILS
       }
       default:
       {
-        dserror(
-            "discretization type %s not yet implemented", ::DRT::DistypeToString(distype).c_str());
+        dserror("discretization type %s not yet implemented",
+            CORE::FE::CellTypeToString(distype).c_str());
         exit(EXIT_FAILURE);
       }
     }
@@ -1620,16 +1094,14 @@ namespace CORE::DRT::UTILS
   }
 
   /*!
-   * \brief Returns the geometric center of the element in local coordinates
+   * @brief Returns the geometric center of the element in local coordinates
    *
-   * @param[in] dim  dimension of the element space (e.g. dim=2 for quad4)
-   *
-   * \return local center position.
+   * @tparam dim  dimension of the element space (e.g. dim=2 for quad4)
+   * @param[in] distype  discretization type
+   * @return local center position.
    */
   template <unsigned dim>
-  inline CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(
-      const ::DRT::Element::DiscretizationType distype  ///< shape of the element
-  )
+  inline CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(const CORE::FE::CellType distype)
   {
     CORE::LINALG::Matrix<dim, 1> pos(false);
     getLocalCenterPosition(distype, pos);
@@ -1637,39 +1109,16 @@ namespace CORE::DRT::UTILS
   }
 
   /*!
-   *  returns the element size in local coordinates
+   * @brief Returns the shape of a given boundary element (is used in various element classes for
+   * implementing the Shape() method of boundary elements)
+   *
+   * @param[in] nen number of nodes of the boundary element
+   * @param[in] parentshape shape of parent element
    */
-  double getSizeInLocalCoordinates(const ::DRT::Element::DiscretizationType distype);
-
-  /*!
-   *  returns the shape of a given boundary element (is used in various element classes
-   *  for implementing the Shape() method of boundary elements)
-   */
-  ::DRT::Element::DiscretizationType getShapeOfBoundaryElement(
-      const int nen,  ///< number of nodes of the boundary element
-      const ::DRT::Element::DiscretizationType parentshape  ///< shape of parent element
-  );
-
-  /*!
-   * returns the power of a number as a compile time constant
-   */
-  template <int a, int N>
-  struct FixedPower
-  {
-    static const int value = a * FixedPower<a, N - 1>::value;
-  };
-
-  /*!
-   * Base case for fixed power: A number raised to power 0 is 1.
-   */
-  template <int a>
-  struct FixedPower<a, 0>
-  {
-    static const int value = 1;
-  };
+  CORE::FE::CellType getShapeOfBoundaryElement(const int nen, const CORE::FE::CellType parentshape);
 
   /// a trait to identify NURBS discretization types
-  template <::DRT::Element::DiscretizationType type>
+  template <CORE::FE::CellType type>
   struct is_nurbs_dis_type
   {
     static const bool value = false;
@@ -1677,39 +1126,41 @@ namespace CORE::DRT::UTILS
 
   /// supported/known NURBS types
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs2>
+  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs2>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs3>
+  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs3>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs4>
+  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs4>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs9>
+  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs9>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs8>
+  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs8>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs27>
+  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs27>
   {
     static const bool value = true;
   };
 
   /// return TRUE if the given dis_type is a NURBS type
-  bool IsNurbsDisType(const ::DRT::Element::DiscretizationType dis_type);
+  bool IsNurbsDisType(const CORE::FE::CellType dis_type);
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H

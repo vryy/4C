@@ -21,6 +21,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -54,24 +55,19 @@ namespace DRT
     */
     IndependentDofSet(const IndependentDofSet& old);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~IndependentDofSet();
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new IndependentDofSet(*this)); }
+    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }
 
     /// Add Dof Set to list #static_dofsets_
-    virtual void AddDofSettoList();
+    void AddDofSettoList() override;
 
    protected:
     /// get first number to be used as Dof GID in AssignDegreesOfFreedom
-    virtual int GetFirstGIDNumberToBeUsed(const Discretization& dis) const;
+    int GetFirstGIDNumberToBeUsed(const Discretization& dis) const override;
 
     /// get minimal node GID to be used in AssignDegreesOfFreedom
-    virtual int GetMinimalNodeGIDIfRelevant(const Discretization& dis) const;
+    int GetMinimalNodeGIDIfRelevant(const Discretization& dis) const override;
 
     bool ignoreminnodegid_;  //< bool whether minnodegid is taken from the discretization or ignored
 
@@ -79,5 +75,7 @@ namespace DRT
   };
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_INDEPENDENT_H

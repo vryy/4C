@@ -18,6 +18,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -47,16 +49,13 @@ namespace CONTACT
     class ParallelDistributionController;
 
     /*--------------------------------------------------------------------------*/
-    class DataContainer : public ::CONTACT::AbstractStratDataContainer
+    class DataContainer : public CONTACT::AbstractStratDataContainer
     {
      public:
       //! @name Constructors and destructors and related methods
       //! @{
       //! Standard constructor
       DataContainer();
-
-      //! Destructor
-      virtual ~DataContainer() { return; }
 
       //! initialize optional sub-data container
       void InitSubDataContainer(const INPAR::CONTACT::SolvingStrategy strat_type);
@@ -684,9 +683,6 @@ namespace CONTACT
       /// gradient error container
       struct GradError
       {
-        GradError() = default;
-        ~GradError() = default;
-
         /// total error
         double total_ = 0.0;
 
@@ -714,7 +710,7 @@ namespace CONTACT
      *
      *  \author hiermeier
      *  \date 04/15*/
-    class Strategy : public ::CONTACT::CoAbstractStrategy
+    class Strategy : public CONTACT::CoAbstractStrategy
     {
       /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
        *  strategies and needs access to all methods. */
@@ -729,9 +725,6 @@ namespace CONTACT
           const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
           const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
-
-      //! Destructor
-      virtual ~Strategy(){};
 
       /// derived
       INPAR::CONTACT::SolvingStrategy Type() const override
@@ -823,7 +816,7 @@ namespace CONTACT
 
       //! derived
       Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-          const enum DRT::UTILS::VecBlockType& bt) const override;
+          const enum CONTACT::VecBlockType& bt) const override;
 
       //! Return the condensed right hand side vector (currently unsupported!)
       Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
@@ -835,7 +828,7 @@ namespace CONTACT
 
       //! Return the desired matrix block pointer
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-          const enum DRT::UTILS::MatBlockType& bt,
+          const enum CONTACT::MatBlockType& bt,
           const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       //! Return the condensed matrix block pointer (currently unsupported!)
@@ -1434,7 +1427,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 06/17 */
     Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractMatrix(const CORE::LINALG::SparseMatrix& source,
-        const Epetra_Map& target_row_map, const Epetra_Map& target_col_map);
+        const Epetra_Map& target_range_map, const Epetra_Map& target_domain_map);
 
     /*--------------------------------------------------------------------------*/
     /*! \brief Scale the vector entries of the target vector with the entries of
@@ -1475,5 +1468,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_STRATEGY_H

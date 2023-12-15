@@ -10,7 +10,7 @@
 #ifndef BACI_CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H
 #define BACI_CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H
 
-#include "baci_lib_linecomponent.H"
+#include "baci_io_linecomponent.H"
 
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
@@ -19,6 +19,8 @@
 #include <list>
 #include <string>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -76,7 +78,7 @@ namespace CONTACT
        *
        * \param[in] c new component needed as parameter for the contact constitutive law
        */
-      void AddComponent(Teuchos::RCP<::INPUT::LineComponent> c);
+      void AddComponent(Teuchos::RCP<INPUT::LineComponent> c);
 
       /** \brief read all materials from my input file section
        *
@@ -85,7 +87,7 @@ namespace CONTACT
        * \params[inout] mmap map mapping IDs to parameters of the contact constitutive model
        */
       void Read(const DRT::Problem& problem, DRT::INPUT::DatFileReader& reader,
-          Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> mmap);
+          Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle);
 
       /// print my DAT file section and possible contact constitutive laws
       std::ostream& Print(std::ostream& stream,  ///< the output stream
@@ -101,7 +103,7 @@ namespace CONTACT
       std::string Description() const { return description_; }
 
       /// get contact constitutive law inputline
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> Inputline() const { return inputline_; }
+      std::vector<Teuchos::RCP<INPUT::LineComponent>> Inputline() const { return inputline_; }
 
      private:
       /// name of ontact constitutive law
@@ -111,7 +113,7 @@ namespace CONTACT
       /// type of ontact constitutive law to be build
       INPAR::CONTACT::ConstitutiveLawType coconstlawtype_;
       /// the list of valid components
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> inputline_;
+      std::vector<Teuchos::RCP<INPUT::LineComponent>> inputline_;
     };
 
 
@@ -119,7 +121,7 @@ namespace CONTACT
      * \brief This is a floating point number component within a contact constitutive law definition
      *
      */
-    class RealContactConstitutiveLawComponent : public ::INPUT::LineComponent
+    class RealContactConstitutiveLawComponent : public INPUT::LineComponent
     {
      public:
       /**
@@ -167,57 +169,6 @@ namespace CONTACT
       double defaultvalue_;
     };
 
-
-
-    /** Add a separator followed by a single real value
-     *
-     * The name on the input line becomes the name used to put the value into the contact
-     * constitutive law container container
-     *
-     * \params[inout] def contact constitutive law definition to which the double should be added
-     * \param[in] name name of the double parameter
-     * \param[in] description of the parameter
-     * \param[in] defaultvalue default value to be used when parameter is optional and not given
-     * \param[in] optional true if parameter is optional
-     *
-     */
-    inline void AddNamedReal(Teuchos::RCP<LawDefinition> def, const std::string name,
-        const std::string description, const double defaultvalue = 0.0, const bool optional = false)
-    {
-      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
-      def->AddComponent(
-          Teuchos::rcp(new RealContactConstitutiveLawComponent(name, defaultvalue, optional)));
-    }
-
-    /** Add a separator
-     *
-     * The name on the input line becomes the name used to put the value into the contact
-     * constitutive law container container
-     *
-     * \params[inout] def contact constitutive law definition to which the double should be added
-     * \param[in] name name of the double parameter
-     * \param[in] description of the parameter
-     * \param[in] optional true if parameter is optional
-     *
-     */
-    inline void AddNamedSeparator(Teuchos::RCP<LawDefinition> def, const std::string name,
-        const std::string description, const bool optional = false)
-    {
-      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
-    }
-
-    inline void AddNamedString(
-        const Teuchos::RCP<LawDefinition> def,  ///< a condition definition to which named string is
-        const std::string& name,                ///< name of string to add
-        const std::string& description,         ///< description about value
-        const std::string& defaultvalue,        ///< default string
-        const bool optional = false             ///< optional parameter if true
-    )
-    {
-      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
-      def->AddComponent(Teuchos::rcp(new ::INPUT::StringComponent(name, defaultvalue, optional)));
-    }
-
     /** Add contact constitutive law definition to list of defined definitions
      *
      * \params[inout] list list of defined contact constitutive law definitions
@@ -230,5 +181,7 @@ namespace CONTACT
 
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H

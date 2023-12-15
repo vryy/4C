@@ -9,6 +9,8 @@
 
 #include "baci_lib_immersed_node.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ImmersedNodeType DRT::ImmersedNodeType::instance_;
 
@@ -16,9 +18,9 @@ DRT::ImmersedNodeType DRT::ImmersedNodeType::instance_;
 /*----------------------------------------------------------------------*
  |  kind of ctor (public)                                   rauch 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ImmersedNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ImmersedNodeType::Create(const std::vector<char>& data)
 {
-  double dummycoord[6] = {999., 999., 999., 999., 999., 999.};
+  std::vector<double> dummycoord(3, 999.0);
   DRT::Node* object = new DRT::ImmersedNode(-1, dummycoord, -1);
   object->Unpack(data);
   return object;
@@ -28,7 +30,7 @@ DRT::ParObject* DRT::ImmersedNodeType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           rauch 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ImmersedNode::ImmersedNode(int id, const double* coords, const int owner)
+DRT::ImmersedNode::ImmersedNode(const int id, const std::vector<double>& coords, const int owner)
     : DRT::Node(id, coords, owner),
       ismatched_(false),
       IsBoundaryImmersed_(false),
@@ -49,10 +51,6 @@ DRT::ImmersedNode::ImmersedNode(const DRT::ImmersedNode& old)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           rauch 11/14 |
- *----------------------------------------------------------------------*/
-DRT::ImmersedNode::~ImmersedNode() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -100,9 +98,9 @@ void DRT::ImmersedNode::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ImmersedNode::Pack(DRT::PackBuffer& data) const
+void DRT::ImmersedNode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -129,11 +127,7 @@ void DRT::ImmersedNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror("wrong instance type data type %d != ObjId %d ", type, UniqueParObjectId());
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class DRT::Node
   std::vector<char> basedata(0);
@@ -176,3 +170,5 @@ bool DRT::ImmersedNode::VisData(const std::string& name, std::vector<double>& da
   }
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

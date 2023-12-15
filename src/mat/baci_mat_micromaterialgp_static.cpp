@@ -21,9 +21,10 @@ class for handling of micro-macro transitions
 #include "baci_so3_hex8.H"
 #include "baci_so3_shw6.H"
 #include "baci_stru_multi_microstatic.H"
-#include "baci_surfstress_manager.H"
 
 #include <filesystem>
+
+BACI_NAMESPACE_OPEN
 
 
 std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic>> MAT::MicroMaterialGP::microstaticmap_;
@@ -80,12 +81,6 @@ MAT::MicroMaterialGP::MicroMaterialGP(
   std::string newfilename;
   NewResultFile(eleowner, newfilename);
 
-  // Initialize SurfStressManager for handling surface stress conditions due to interfacial
-  // phenomena Note that this has to be done _after_ finding the output file name! Note also that we
-  // are using the macroscale parameterlist here because the SurfStressManager needs to know alphaf
-  // here
-  surf_stress_man_ = Teuchos::rcp(new UTILS::SurfStressManager(microdis, sdyn_micro, newfilename));
-
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
   if (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn_micro, "NLNSOL") ==
@@ -111,8 +106,7 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 void MAT::MicroMaterialGP::ReadRestart()
 {
   step_ = DRT::Problem::Instance()->Restart();
-  microstaticmap_[microdisnum_]->ReadRestart(
-      step_, dis_, lastalpha_, surf_stress_man_, restartname_);
+  microstaticmap_[microdisnum_]->ReadRestart(step_, dis_, lastalpha_, restartname_);
 
   *oldalpha_ = *lastalpha_;
 
@@ -198,7 +192,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   return;
 }
 
-const std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix)
+std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix)
 {
   std::string newfilename;
 
@@ -287,8 +281,8 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(CORE::LINALG::Matrix<3, 3>* de
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_,
-      oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
+      oldKaainv_, oldKda_);
 
   // set current time, time step size and step number
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
@@ -319,11 +313,6 @@ void MAT::MicroMaterialGP::Update()
 
   dis_->Update(1.0, *disn_, 0.0);
 
-  if (surf_stress_man_->HaveSurfStress())
-  {
-    surf_stress_man_->Update();
-  }
-
   DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
   const Epetra_Map* elemap = microdis->ElementRowMap();
@@ -345,8 +334,8 @@ void MAT::MicroMaterialGP::PrepareOutput()
   strain_ = Teuchos::rcp(new std::vector<char>());
   plstrain_ = Teuchos::rcp(new std::vector<char>());
 
-  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_,
-      oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
+      oldKaainv_, oldKda_);
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
   microstatic->PrepareOutput();
 }
@@ -358,8 +347,8 @@ void MAT::MicroMaterialGP::Output()
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_,
-      oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
+      oldKaainv_, oldKda_);
   microstatic->Output(micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore
@@ -367,3 +356,5 @@ void MAT::MicroMaterialGP::Output()
   strain_ = Teuchos::null;
   plstrain_ = Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

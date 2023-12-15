@@ -92,8 +92,6 @@ NEUMANNINFLOW                   Yes
 LINEAR_SOLVER                   -1
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-07
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-07
 EXPLPREDICT                     no
 ITEMAX                          10
@@ -110,8 +108,6 @@ SUGRVEL                         no
 NUMSTEP                         3000
 TIMESTEP                        0.001
 MAXTIME                         3
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
@@ -179,8 +175,6 @@ GRIDVEL                         BE
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
 SIMPLER                         no
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No

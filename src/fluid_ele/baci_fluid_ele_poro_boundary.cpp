@@ -12,6 +12,8 @@
 
 #include "baci_fluid_ele_poro.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::FluidPoroBoundaryType DRT::ELEMENTS::FluidPoroBoundaryType::instance_;
 
 DRT::ELEMENTS::FluidPoroBoundaryType& DRT::ELEMENTS::FluidPoroBoundaryType::Instance()
@@ -47,3 +49,5 @@ void DRT::ELEMENTS::FluidPoroBoundary::Print(std::ostream& os) const
   os << "FluidPoroBoundary ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

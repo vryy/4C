@@ -15,6 +15,8 @@
 #include "baci_solver_nonlin_nox_constraint_interface_required.H"
 #include "baci_solver_nonlin_nox_linearsystem.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace MORTAR
 {
@@ -33,40 +35,37 @@ namespace NOX
         //! Standard constructor with full functionality.
         LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
             const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
             const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
-            const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+            const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
             const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
             const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
-            const NOX::Epetra::Vector& cloneVector,
-            const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
+            const ::NOX::Epetra::Vector& cloneVector,
+            const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
         //! Constructor without scaling object
         LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
             const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
             const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
-            const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+            const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
             const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
             const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
-            const NOX::Epetra::Vector& cloneVector);
-
-        //! Destructor.
-        virtual ~LinearSystem(){};
+            const ::NOX::Epetra::Vector& cloneVector);
 
         //! Sets the options of the underlying solver
-        virtual void SetSolverOptions(Teuchos::ParameterList& p,
+        void SetSolverOptions(Teuchos::ParameterList& p,
             Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
-            const NOX::NLN::SolutionType& solverType);
+            const NOX::NLN::SolutionType& solverType) override;
 
         //! Returns a pointer to linear solver, which has to be used
-        virtual NOX::NLN::SolutionType GetActiveLinSolver(
+        NOX::NLN::SolutionType GetActiveLinSolver(
             const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-            Teuchos::RCP<CORE::LINALG::Solver>& currSolver);
+            Teuchos::RCP<CORE::LINALG::Solver>& currSolver) override;
 
        private:
         //! throws an error message
@@ -84,5 +83,7 @@ namespace NOX
   }       // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_NOX_NLN_MESHTYING_LINEARSYSTEM_H

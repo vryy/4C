@@ -10,12 +10,14 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_engine_unique_global_id.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_lib_parobject.H"
 #include "baci_particle_engine_communication_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -47,10 +49,10 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::WriteRestart(
   {
     Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
 
-    DRT::PackBuffer data;
-    DRT::ParObject::AddtoPack(data, reusableglobalids_);
+    CORE::COMM::PackBuffer data;
+    CORE::COMM::ParObject::AddtoPack(data, reusableglobalids_);
     data.StartPacking();
-    DRT::ParObject::AddtoPack(data, reusableglobalids_);
+    CORE::COMM::ParObject::AddtoPack(data, reusableglobalids_);
 
     buffer->insert(buffer->end(), data().begin(), data().end());
 
@@ -74,7 +76,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::ReadRestart(
 
     while (position < buffer->size())
     {
-      DRT::ParObject::ExtractfromPack(position, *buffer, reusableglobalids_);
+      CORE::COMM::ParObject::ExtractfromPack(position, *buffer, reusableglobalids_);
     }
 
     if (position != buffer->size())
@@ -128,10 +130,10 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
   if (myrank_ != masterrank_)
   {
     // pack data for sending
-    DRT::PackBuffer data;
-    DRT::ParObject::AddtoPack(data, reusableglobalids_);
+    CORE::COMM::PackBuffer data;
+    CORE::COMM::ParObject::AddtoPack(data, reusableglobalids_);
     data.StartPacking();
-    DRT::ParObject::AddtoPack(data, reusableglobalids_);
+    CORE::COMM::ParObject::AddtoPack(data, reusableglobalids_);
 
     // clear reusable global ids
     reusableglobalids_.clear();
@@ -172,7 +174,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
 
       while (position < rmsg.size())
       {
-        DRT::ParObject::ExtractfromPack(position, rmsg, receivedreusableglobalids);
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, receivedreusableglobalids);
 
         reusableglobalids_.insert(reusableglobalids_.end(), receivedreusableglobalids.begin(),
             receivedreusableglobalids.end());
@@ -291,10 +293,10 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
       if (tobesendglobalids[torank].empty()) continue;
 
       // pack data for sending
-      DRT::PackBuffer data;
-      DRT::ParObject::AddtoPack(data, tobesendglobalids[torank]);
+      CORE::COMM::PackBuffer data;
+      CORE::COMM::ParObject::AddtoPack(data, tobesendglobalids[torank]);
       data.StartPacking();
-      DRT::ParObject::AddtoPack(data, tobesendglobalids[torank]);
+      CORE::COMM::ParObject::AddtoPack(data, tobesendglobalids[torank]);
 
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
     }
@@ -325,7 +327,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
 
       while (position < rmsg.size())
       {
-        DRT::ParObject::ExtractfromPack(position, rmsg, requesteduniqueglobalids);
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, requesteduniqueglobalids);
       }
 
       if (position != rmsg.size())
@@ -333,3 +335,5 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

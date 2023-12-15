@@ -17,7 +17,9 @@
 #include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 
-template <DRT::Element::DiscretizationType distype>
+BACI_NAMESPACE_OPEN
+
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcLoma<distype>* DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -34,7 +36,7 @@ DRT::ELEMENTS::FluidEleCalcLoma<distype>* DRT::ELEMENTS::FluidEleCalcLoma<distyp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
     : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
@@ -46,7 +48,7 @@ DRT::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -67,7 +69,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
 /*----------------------------------------------------------------------*
  * evaluation of off-diagonal matrix block for monolithic loma solver (2)
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -206,7 +208,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
 /*----------------------------------------------------------------------*
  * evaluation of off-diagonal matrix block for monolithic loma solver (3)
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
@@ -267,7 +269,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(Teuchos::ParameterList&
  |  calculate element matrix for off-diagonal matrix block              |
  |  for monolithic low-Mach-number solver                      vg 10/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
@@ -603,18 +605,20 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
 
 
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::wedge15>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::nurbs9>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

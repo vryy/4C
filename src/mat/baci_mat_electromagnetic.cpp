@@ -19,6 +19,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElectromagneticMat::ElectromagneticMat(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -44,7 +46,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ElectromagneticMat::CreateMaterial()
 MAT::ElectromagneticMatType MAT::ElectromagneticMatType::instance_;
 
 
-DRT::ParObject *MAT::ElectromagneticMatType::Create(const std::vector<char> &data)
+CORE::COMM::ParObject *MAT::ElectromagneticMatType::Create(const std::vector<char> &data)
 {
   MAT::ElectromagneticMat *soundprop = new MAT::ElectromagneticMat();
   soundprop->Unpack(data);
@@ -66,9 +68,9 @@ MAT::ElectromagneticMat::ElectromagneticMat(MAT::PAR::ElectromagneticMat *params
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::ElectromagneticMat::Pack(DRT::PackBuffer &data) const
+void MAT::ElectromagneticMat::Pack(CORE::COMM::PackBuffer &data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -87,10 +89,8 @@ void MAT::ElectromagneticMat::Pack(DRT::PackBuffer &data) const
 void MAT::ElectromagneticMat::Unpack(const std::vector<char> &data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -111,3 +111,5 @@ void MAT::ElectromagneticMat::Unpack(const std::vector<char> &data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

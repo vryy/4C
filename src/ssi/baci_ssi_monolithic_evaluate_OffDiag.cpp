@@ -12,6 +12,7 @@
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_lib_assemblestrategy.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_matrixtransform.H"
@@ -24,6 +25,8 @@
 #include "baci_ssi_utils.H"
 #include "baci_structure_new_enum_lists.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
@@ -32,7 +35,7 @@ SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
     : block_map_structure_(std::move(block_map_structure)),
       full_map_structure_(std::move(full_map_structure)),
       meshtying_strategy_s2i_(std::move(meshtying_strategy_s2i)),
@@ -51,7 +54,7 @@ SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupl
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
     : ScatraStructureOffDiagCoupling(std::move(block_map_structure), std::move(full_map_structure),
           std::move(ssi_structure_meshtying), std::move(meshtying_strategy_s2i), std::move(scatra),
           std::move(structure)),
@@ -715,7 +718,7 @@ SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
     : ScatraStructureOffDiagCoupling(std::move(block_map_structure), std::move(full_map_structure),
           std::move(ssi_structure_meshtying), std::move(meshtying_strategy_s2i), std::move(scatra),
           std::move(structure)),
@@ -753,3 +756,5 @@ void SSI::ScatraStructureOffDiagCouplingSSTI::EvaluateOffDiagBlockStructureScatr
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

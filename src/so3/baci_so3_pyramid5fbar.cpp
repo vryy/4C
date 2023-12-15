@@ -10,13 +10,15 @@
 
 #include "baci_so3_pyramid5fbar.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_pyramid5fbarType DRT::ELEMENTS::So_pyramid5fbarType::instance_;
 
@@ -26,7 +28,7 @@ DRT::ELEMENTS::So_pyramid5fbarType& DRT::ELEMENTS::So_pyramid5fbarType::Instance
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_pyramid5fbar(-1, -1);
   object->Unpack(data);
@@ -66,7 +68,6 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullS
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
-  ;
 }
 
 void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
@@ -103,7 +104,7 @@ DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
         DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5 + 1));
   return;
 }
@@ -132,9 +133,9 @@ DRT::Element* DRT::ELEMENTS::So_pyramid5fbar::Clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_pyramid5fbar::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -153,10 +154,9 @@ void DRT::ELEMENTS::So_pyramid5fbar::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_pyramid5fbar::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class So_pyramid5 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -167,10 +167,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            seitz 03/15 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5fbar::~So_pyramid5fbar() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              seitz 03/15 |
@@ -183,3 +180,5 @@ void DRT::ELEMENTS::So_pyramid5fbar::Print(std::ostream& os) const
   std::cout << data_;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

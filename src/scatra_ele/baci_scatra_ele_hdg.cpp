@@ -9,14 +9,14 @@
 
 #include "baci_scatra_ele_hdg.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_polynomial.H"
 #include "baci_inpar_scatra.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_list.H"
 #include "baci_mat_myocard.H"
 #include "baci_scatra_ele_action.H"
@@ -24,6 +24,8 @@
 #include "baci_scatra_ele_hdg_boundary_calc.H"
 #include "baci_scatra_ele_hdg_intfaces_calc.H"
 #include "baci_scatra_ele_interface.H"
+
+BACI_NAMESPACE_OPEN
 
 
 // initialize static variable
@@ -48,7 +50,7 @@ DRT::ELEMENTS::ScaTraHDGIntFaceType& DRT::ELEMENTS::ScaTraHDGIntFaceType::Instan
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::ScaTraHDGType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ScaTraHDGType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::ScaTraHDG* object = new DRT::ELEMENTS::ScaTraHDG(-1, -1);
   object->Unpack(data);
@@ -188,18 +190,11 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDG::Clone() const
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                         hoermann 09/15|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDG::~ScaTraHDG() {}
-
-
-
-/*----------------------------------------------------------------------*
  |  Pack data (public)                                   hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDG::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -225,10 +220,8 @@ void DRT::ELEMENTS::ScaTraHDG::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -251,7 +244,7 @@ void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  PackMaterial data (public)                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::PackMaterial(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDG::PackMaterial(CORE::COMM::PackBuffer& data) const
 {
   // add material
   if (Material() != Teuchos::null)
@@ -297,7 +290,7 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
       deg = 4 * degree_old_;
     else
       deg = 3 * degree_old_;
-    if (this->Shape() == DRT::Element::tet4 or this->Shape() == DRT::Element::tet10)
+    if (this->Shape() == CORE::FE::CellType::tet4 or this->Shape() == CORE::FE::CellType::tet10)
     {
       switch (deg)
       {
@@ -377,32 +370,7 @@ bool DRT::ELEMENTS::ScaTraHDG::ReadElement(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumLine() > 1)  // 1D boundary element and 2D/3D parent element
-  {
-    return DRT::UTILS::ElementBoundaryFactory<ScaTraHDGBoundary, ScaTraHDG>(
-        DRT::UTILS::buildLines, this);
-  }
-  else if (NumLine() ==
-           1)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementLines<ScaTraHDGBoundary, ScaTraHDG>(*this);
 }
 
 
@@ -411,50 +379,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumSurface() > 1)  // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<ScaTraHDGBoundary, ScaTraHDG>(
-        DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() ==
-           1)  // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else  // 1D elements
-  {
-    dserror("Surfaces() does not exist for 1D-element ");
-    return DRT::Element::Surfaces();
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)             hoermann 09/15|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Volumes()
-{
-  if (NumVolume() ==
-      1)  // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
-  {
-    std::vector<Teuchos::RCP<Element>> volumes(1);
-    volumes[0] = Teuchos::rcp(this, false);
-    return volumes;
-  }
-  else  //
-  {
-    dserror("Volumes() does not exist for 1D/2D-elements");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementSurfaces<ScaTraHDGBoundary>(*this);
 }
 
 
@@ -476,7 +401,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDG::CreateFaceElement(
 
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<ScaTraHDGIntFace, ScaTraHDG>(
+  return CORE::COMM::ElementIntFaceFactory<ScaTraHDGIntFace, ScaTraHDG>(
       -1,               //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
@@ -641,7 +566,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
  |                                                             (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
@@ -651,9 +576,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDGBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -676,17 +601,16 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
+  // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -694,11 +618,6 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                         hoermann 09/15|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGBoundary::~ScaTraHDGBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -717,16 +636,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   dserror("Lines of ScaTraHDGBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }
 
 
@@ -735,16 +645,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Lines(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   dserror("Surfaces of ScaTraHDGBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }
 
 
@@ -878,7 +779,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
  |                                                             (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
@@ -888,7 +789,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGIntFace::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDGIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this ScaTraHDGIntFace element does not support communication");
   return;
@@ -904,10 +805,6 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                        hoermann 09/15 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGIntFace::~ScaTraHDGIntFace() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -1122,16 +1019,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   dserror("Lines of ScaTraHDGIntFace not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }
 
 /*----------------------------------------------------------------------*
@@ -1139,16 +1027,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   dserror("Surfaces of ScaTraHDGIntFace not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }
 
 /*----------------------------------------------------------------------*
@@ -1182,3 +1061,5 @@ int DRT::ELEMENTS::ScaTraHDGIntFace::EvaluateNeumann(Teuchos::ParameterList& par
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

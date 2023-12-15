@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -156,7 +158,7 @@ namespace DRT
     }
 
     //! Map action type enum to std::string
-    static inline const std::string ActionType2String(const enum ActionType& type)
+    static inline std::string ActionType2String(const enum ActionType& type)
     {
       switch (type)
       {
@@ -267,7 +269,7 @@ namespace DRT
     {
      public:
       //! destructor
-      virtual ~ParamsInterface(){};
+      virtual ~ParamsInterface() = default;
 
       //! @name Access general control parameters
       //! @{
@@ -284,5 +286,7 @@ namespace DRT
   }     // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_ELEMENTS_PARAMSINTERFACE_H

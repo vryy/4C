@@ -12,6 +12,8 @@
 #include "baci_lib_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -38,3 +40,5 @@ int DRT::ELEMENTS::Vele3Surface::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

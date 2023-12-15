@@ -12,6 +12,8 @@
 /* headers */
 #include "baci_structure_timint_impl.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
@@ -74,9 +76,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
+    void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
+        const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+        Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -96,11 +98,11 @@ namespace STR
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    void Setup() override;
 
     //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here
-    void ResizeMStep() { ; }
+    void ResizeMStep() override { ; }
 
     //@}
 
@@ -108,26 +110,26 @@ namespace STR
     //@{
 
     //! Return name
-    enum INPAR::STR::DynamicType MethodName() const { return INPAR::STR::dyna_gemm; }
+    enum INPAR::STR::DynamicType MethodName() const override { return INPAR::STR::dyna_gemm; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual int MethodSteps() const { return 1; }
+    int MethodSteps() const override { return 1; }
 
     //! Give linear order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracyDis() const
+    int MethodOrderOfAccuracyDis() const override
     {
       return (fabs(MethodLinErrCoeffDis2()) < 1e-6) ? 3 : 2;
     }
 
     //! Give linear order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const
+    int MethodOrderOfAccuracyVel() const override
     {
       return (fabs(MethodLinErrCoeffVel1()) < 1e-6) ? 2 : 1;
     }
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis() const
+    double MethodLinErrCoeffDis() const override
     {
       if (MethodOrderOfAccuracyDis() == 2)
         return MethodLinErrCoeffDis2();
@@ -151,7 +153,7 @@ namespace STR
     }
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() const
+    double MethodLinErrCoeffVel() const override
     {
       if (MethodOrderOfAccuracyVel() == 1)
         return MethodLinErrCoeffVel1();
@@ -175,35 +177,35 @@ namespace STR
     }
 
     //! return time integration factor
-    virtual double TimIntParam() const { return alphaf_; }
+    double TimIntParam() const override { return alphaf_; }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements
-    void PredictConstDisConsistVelAcc();
+    void PredictConstDisConsistVelAcc() override;
 
     //! Consistent predictor with constant velocities,
     //! extrapolated displacements and consistent accelerations
     //! \author mayr
-    void PredictConstVelConsistAcc();
+    void PredictConstVelConsistAcc() override;
 
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
     //! \author mayr.mt
-    void PredictConstAcc();
+    void PredictConstAcc() override;
 
     //! Create force residual #fres_ and its stiffness #stiff_
     void EvaluateForceStiffResidual(Teuchos::ParameterList& params) final;
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
-    void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params);
+    void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params) override;
 
     //! Evaluate residual #fres_
-    void EvaluateForceResidual();
+    void EvaluateForceResidual() override;
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
-    double CalcRefNormForce();
+    double CalcRefNormForce() override;
 
     //! Update iteration incrementally
     //!
@@ -219,19 +221,19 @@ namespace STR
     //! displacements #disi_
     //! The Dirichlet BCs are automatically respected, because the
     //! residual displacements #disi_ are blanked at these DOFs.
-    void UpdateIterIteratively();
+    void UpdateIterIteratively() override;
 
     //! Update step
-    void UpdateStepState();
+    void UpdateStepState() override;
 
     //! Update Element
-    void UpdateStepElement();
+    void UpdateStepElement() override;
 
     //! Read and set restart for forces
-    void ReadRestartForce();
+    void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -239,10 +241,10 @@ namespace STR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() { return fext_; }
+    Teuchos::RCP<Epetra_Vector> Fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> FextNew() override { return fextn_; }
 
     //@}
 
@@ -326,4 +328,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_GEMM_H

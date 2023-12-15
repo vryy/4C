@@ -16,6 +16,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -60,25 +62,23 @@ namespace FSI
     //! \brief fsi version of nodal value tests
     //!
     //! Possible position flags are "lambdax", "lambday", "lambdaz"
-    virtual void TestNode(DRT::INPUT::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                                          ///< number of tests with errors
-        int& test_count                                     ///< number of tests performed
-    );
+    void TestNode(DRT::INPUT::LineDefinition& res,  ///< the line definition from input file
+        int& nerr,                                  ///< number of tests with errors
+        int& test_count                             ///< number of tests performed
+        ) override;
 
     //! \brief fsi version of element value tests
-    virtual void TestElement(
-        DRT::INPUT::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                        ///< number of tests with errors
-        int& test_count                   ///< number of tests performed
-    );
+    void TestElement(DRT::INPUT::LineDefinition& res,  ///< the line definition from input file
+        int& nerr,                                     ///< number of tests with errors
+        int& test_count                                ///< number of tests performed
+        ) override;
 
 
     //! \brief fsi version of special tests
-    virtual void TestSpecial(
-        DRT::INPUT::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                        ///< number of tests with errors
-        int& test_count                   ///< number of tests performed
-    );
+    void TestSpecial(DRT::INPUT::LineDefinition& res,  ///< the line definition from input file
+        int& nerr,                                     ///< number of tests with errors
+        int& test_count                                ///< number of tests performed
+        ) override;
 
    private:
     //! slave discretisation
@@ -91,4 +91,6 @@ namespace FSI
     Teuchos::RCP<FSI::Monolithic> fsi_;
   };
 }  // namespace FSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // FSI_RESULTTEST_H

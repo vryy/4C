@@ -9,9 +9,11 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
 
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
 #include "baci_inpar_geometry_pair.H"
 #include "baci_lib_globalproblem.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /**
@@ -78,8 +80,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
 
   // Setup the output parameter object.
   {
-    output_params_ptr_ =
-        Teuchos::rcp<BeamToSolidSurfaceVtkOutputParams>(new BeamToSolidSurfaceVtkOutputParams());
+    output_params_ptr_ = Teuchos::rcp<BeamToSolidSurfaceVisualizationOutputParams>(
+        new BeamToSolidSurfaceVisualizationOutputParams());
     output_params_ptr_->Init();
     output_params_ptr_->Setup();
   }
@@ -90,8 +92,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::GetVtkOuputParamsPtr()
+Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::GetVisualizationOutputParamsPtr()
 {
   return output_params_ptr_;
 };
+
+BACI_NAMESPACE_CLOSE

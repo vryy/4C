@@ -13,6 +13,8 @@
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
@@ -38,7 +40,7 @@ void CORE::LINALG::SymmetricEigenProblem(
  |  eigenvectors of a real symmetric matrix A                  maf 06/07|
  *----------------------------------------------------------------------*/
 void CORE::LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A,
-    CORE::LINALG::SerialDenseVector& L, const char jobz, const bool postproc)
+    CORE::LINALG::SerialDenseVector& L, const bool eval_eigenvectors, const bool postproc)
 {
   if (A.numRows() != A.numCols()) dserror("Matrix is not square");
   if (A.numRows() != L.length()) dserror("Dimension of eigenvalues does not match");
@@ -54,15 +56,16 @@ void CORE::LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A,
     lwork = 1;
   else
   {
-    if (jobz == 'N')
-      lwork = 3 * dim + 1;
-    else if (jobz == 'V')
+    if (eval_eigenvectors)
       lwork = 2 * dim * dim + 6 * dim + 1;
+    else
+      lwork = 3 * dim + 1;
   }
   std::vector<double> work(lwork);
   int info = 0;
 
   Teuchos::LAPACK<int, double> lapack;
+  const char jobz = eval_eigenvectors ? 'V' : 'N';
   lapack.SYEV(jobz, uplo, dim, a, lda, w, work.data(), lwork, &info);
 
   if (!postproc)
@@ -292,3 +295,5 @@ double CORE::LINALG::GeneralizedEigen(
   }
   return maxlambda;
 }
+
+BACI_NAMESPACE_CLOSE

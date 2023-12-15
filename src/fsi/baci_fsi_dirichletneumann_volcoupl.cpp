@@ -35,6 +35,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumannVolCoupl::DirichletNeumannVolCoupl(const Epetra_Comm& comm)
@@ -84,12 +86,12 @@ void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
   std::pair<int, int> dofsets21(0, 0);
 
   // initialize coupling adapter
-  coupsa_->Init(StructureField()->Discretization(),
+  coupsa_->Init(ndim, StructureField()->Discretization(),
       fluidale->AleField()->WriteAccessDiscretization(), &coupleddof12, &coupleddof21, &dofsets12,
       &dofsets21, Teuchos::null, false);
 
   // setup coupling adapter
-  coupsa_->Setup();
+  coupsa_->Setup(DRT::Problem::Instance()->VolmortarParams());
 }
 
 /*----------------------------------------------------------------------*/
@@ -285,10 +287,10 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
       double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
       double lpos[3] = {0.0, 0.0, 0.0};
-      if (aleele->Shape() == DRT::Element::quad4)
-        MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gpos, lpos);
-      else if (aleele->Shape() == DRT::Element::hex8)
-        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gpos, lpos);
+      if (aleele->Shape() == CORE::FE::CellType::quad4)
+        MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::quad4>(*aleele, gpos, lpos);
+      else if (aleele->Shape() == CORE::FE::CellType::hex8)
+        MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::hex8>(*aleele, gpos, lpos);
       else
         dserror("ERROR: element type not implemented!");
 
@@ -305,10 +307,10 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
         double gposFSI[3] = {fluidnodeFSI->X()[0], fluidnodeFSI->X()[1], fluidnodeFSI->X()[2]};
         double lposFSI[3] = {0.0, 0.0, 0.0};
-        if (aleele->Shape() == DRT::Element::quad4)
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gposFSI, lposFSI);
-        else if (aleele->Shape() == DRT::Element::hex8)
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gposFSI, lposFSI);
+        if (aleele->Shape() == CORE::FE::CellType::quad4)
+          MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::quad4>(*aleele, gposFSI, lposFSI);
+        else if (aleele->Shape() == CORE::FE::CellType::hex8)
+          MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::hex8>(*aleele, gposFSI, lposFSI);
         else
           dserror("ERROR: element type not implemented!");
 
@@ -335,7 +337,8 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
       double fac = 0.0;
 
-      if (aleele->Shape() == DRT::Element::quad4 or aleele->Shape() == DRT::Element::hex8)
+      if (aleele->Shape() == CORE::FE::CellType::quad4 or
+          aleele->Shape() == CORE::FE::CellType::hex8)
         fac = 1.0 - 0.5 * dist;
       else
         dserror("ERROR: element type not implemented!");
@@ -511,10 +514,10 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
 
         double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
         double lpos[3] = {0.0, 0.0, 0.0};
-        if (aleele->Shape() == DRT::Element::quad4)
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gpos, lpos);
-        else if (aleele->Shape() == DRT::Element::hex8)
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gpos, lpos);
+        if (aleele->Shape() == CORE::FE::CellType::quad4)
+          MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::quad4>(*aleele, gpos, lpos);
+        else if (aleele->Shape() == CORE::FE::CellType::hex8)
+          MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::hex8>(*aleele, gpos, lpos);
         else
           dserror("ERROR: element type not implemented!");
 
@@ -679,3 +682,5 @@ std::vector<int> FSI::VolCorrector::Search(
 
   return gids;
 }
+
+BACI_NAMESPACE_CLOSE

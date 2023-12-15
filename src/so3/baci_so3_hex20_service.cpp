@@ -8,23 +8,25 @@
 #include "baci_lib_node.H"
 #include "baci_so3_hex20.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
   CORE::LINALG::Matrix<NUMNOD_SOH20, NUMDIM_SOH20> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH20; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOH20, 1> funct;
   // Element midpoint at r=s=t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
@@ -37,3 +39,5 @@ const std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords
   centercoords[2] = midpoint(0, 2);
   return centercoords;
 }
+
+BACI_NAMESPACE_CLOSE

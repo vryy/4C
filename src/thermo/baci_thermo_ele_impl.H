@@ -22,6 +22,8 @@
 #include "baci_thermo_ele_impl_utils.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                            gjb 01/08 |
  *----------------------------------------------------------------------*/
@@ -107,7 +109,7 @@ namespace DRT
     //!  \author dano
     //!  \date 09/09
     //!
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class TemperImpl : public TemperImplInterface
     {
      public:
@@ -119,10 +121,10 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of nodes
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       //! number of dof per node
       static const int numdofpernode_ = 1;
@@ -294,8 +296,8 @@ namespace DRT
       //! build the inverse of C^{-1} and the time derivative C'
       void CalculateCauchyGreens(
           CORE::LINALG::Matrix<6, 1>& Cratevct,          //!< right Cauchy-Green rate vector
-          CORE::LINALG::Matrix<6, 1>& invCvct,           //!< inverse of right Cauchy-Green vector
-          CORE::LINALG::Matrix<nsd_, nsd_>& invC,        //!< inverse right Cauchy-Green tensor
+          CORE::LINALG::Matrix<6, 1>& Cinvvct,           //!< inverse of right Cauchy-Green vector
+          CORE::LINALG::Matrix<nsd_, nsd_>& Cinv,        //!< inverse right Cauchy-Green tensor
           CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,      //!< deformation gradient tensor
           CORE::LINALG::Matrix<nsd_, nsd_>* defgrdrate,  //!< velocity gradient tensor
           CORE::LINALG::Matrix<nsd_, nsd_>* invdefgrd    //!< inverse deformation gradient tensor
@@ -391,7 +393,7 @@ namespace DRT
 
       //! Compute the error compared to an analytical solution from input file
       virtual void ComputeError(DRT::Element* ele,  //!< current element whose terms are calculated
-          CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& evector,  //!< element vectorr
+          CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,  //!< element vectorr
           Teuchos::ParameterList& params  //!< parameter list, containing analytical solution
       );
 
@@ -509,4 +511,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_ELE_IMPL_H

@@ -6,10 +6,8 @@ set(_structure_dependencies
     beamcontact
     beaminteraction
     cardiovascular0d
-    comm
     constraint
     contact
-    discsh3
     inpar
     io
     lib
@@ -20,7 +18,6 @@ set(_structure_dependencies
     so3
     stru_multi
     structure_new
-    surfstress
     timestepping
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_structure_dependencies})

@@ -16,13 +16,15 @@
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_inpar_structure.H"
 #include "baci_inpar_validparameters.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
@@ -34,7 +36,7 @@ DRT::ELEMENTS::Beam3rType& DRT::ELEMENTS::Beam3rType::Instance() { return instan
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::Beam3rType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Beam3rType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Beam3r* object = new DRT::ELEMENTS::Beam3r(-1, -1);
   object->Unpack(data);
@@ -374,10 +376,7 @@ DRT::Element* DRT::ELEMENTS::Beam3r::Clone() const
   return newelement;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 01/08 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3r::~Beam3r() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
@@ -393,38 +392,36 @@ void DRT::ELEMENTS::Beam3r::Print(std::ostream& os) const
  |                                                             (public) |
  |                                                          cyron 01/08 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3r::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Beam3r::Shape() const
 {
   int numnodes = NumNode();
   switch (numnodes)
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
       break;
     case 3:
-      return line3;
+      return CORE::FE::CellType::line3;
       break;
     case 4:
-      return line4;
+      return CORE::FE::CellType::line4;
       break;
     case 5:
-      return line5;
+      return CORE::FE::CellType::line5;
       break;
     default:
       dserror("Only Line2, Line3, Line4 and Line5 elements are implemented.");
       break;
   }
-
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           cyron 01/08/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Beam3r::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -478,10 +475,9 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -561,9 +557,7 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3r::Lines()
 {
-  std::vector<Teuchos::RCP<Element>> lines(1);
-  lines[0] = Teuchos::rcp(this, false);
-  return lines;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 /*----------------------------------------------------------------------*
@@ -572,7 +566,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3r::Lines()
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     const IntegrationPurpose intpurpose) const
 {
-  const DRT::Element::DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
 
   switch (intpurpose)
   {
@@ -582,28 +576,28 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case line2:
+        case CORE::FE::CellType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case line3:
+        case CORE::FE::CellType::line3:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case line4:
+        case CORE::FE::CellType::line4:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case line5:
+        case CORE::FE::CellType::line5:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
@@ -626,28 +620,28 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case line2:
+        case CORE::FE::CellType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case line3:
+        case CORE::FE::CellType::line3:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case line4:
+        case CORE::FE::CellType::line4:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
-        case line5:
+        case CORE::FE::CellType::line5:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
@@ -668,19 +662,19 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case line2:
+        case CORE::FE::CellType::line2:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case line3:
+        case CORE::FE::CellType::line3:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case line4:
+        case CORE::FE::CellType::line4:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
-        case line5:
+        case CORE::FE::CellType::line5:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
@@ -706,22 +700,22 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case line2:
+        case CORE::FE::CellType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case line3:
+        case CORE::FE::CellType::line3:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case line4:
+        case CORE::FE::CellType::line4:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case line5:
+        case CORE::FE::CellType::line5:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
@@ -742,7 +736,6 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
   }
 
   return CORE::DRT::UTILS::GaussRule1D::undefined;
-  ;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -800,7 +793,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
             new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
     // Get DiscretizationType
-    DRT::Element::DiscretizationType distype = Shape();
+    CORE::FE::CellType distype = Shape();
 
     /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
      * the vectors store individual shape functions, NOT an assembled matrix of shape functions) */
@@ -1169,81 +1162,6 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
   }
 
   return;
-}
-
-/*----------------------------------------------------------------------------------*
- |  return current tangent at node                                   mukherjee 10/14|
- *----------------------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
-{
-  // Attention: strictly speaking, this returns the first basis vector of the nodal triad
-  // which is NOT identical to the tangent of the centerline in case of Reissner theory
-
-  // TODO maybe handle calculation and update of class variable Tcurrnode_ elsewhere
-  //      and make this a pure access function, i.e. set const (just like Tref() )
-
-  // TODO
-  //  if (NumNode()>2) dserror("Beam3r::Tcurr() not implemented yet for nnode>2");
-  //  if (centerline_hermite_) dserror("Beam3r::Tcurr() not implemented yet for Hermite
-  //  interpolation of centerline");
-  //
-  //  for (int node=0; node< 2; node++)    // TODO what happens here?
-  //  {
-  //    const int* nodeids=this->NodeIds();
-  //    if (nodeids[this->nodeI_]==NodeID)
-  //    {
-  //      CORE::LINALG::Matrix<3,3>DummyLambda(true);
-  //      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeI_],DummyLambda);
-  //      Tcurrnode_[0].Clear();
-  //      for (int i=0; i<3; i++)
-  //        Tcurrnode_[0](i)= DummyLambda(i,0);
-  //    }
-  //    else if (nodeids[this->nodeJ_]==NodeID)
-  //    {
-  //      CORE::LINALG::Matrix<3,3>DummyLambda(true);
-  //      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeJ_],DummyLambda);
-  //      Tcurrnode_[0].Clear();
-  //
-  //      for (int i=0; i<3; i++)
-  //        Tcurrnode_[0](i)= DummyLambda(i,0);
-  //    }
-  //    else
-  //      for (int i=0; i<3; i++)
-  //        Tcurrnode_[0](i)= 0;
-  //  }
-
-  // Fixme @grill
-  dserror(
-      "Beam3r::Tcurr(): the implementation of this method is highly questionable "
-      "and needs rework!");
-
-  return Tcurrnode_[0];
-}
-
-/*----------------------------------------------------------------------------------*
- |  return reference tangent at first node                            mukherjee 04/15|
- *----------------------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Treffirst() const
-{
-  // TODO @grill
-  if (NumNode() > 2)
-    dserror(
-        "Beam3r::Treffirst() is not intended for nnode>2 since tangent vector varies along "
-        "centerline!");
-  if (centerline_hermite_)
-    dserror(
-        "Beam3r::Treffirst() is not intended for Hermite interpolation of centerline since tangent "
-        "vector varies along centerline!");
-
-  CORE::LINALG::Matrix<3, 1> Tref;
-  double norm = Tref_[0].Norm2();
-
-  if (norm <= 1e-14)
-    dserror("beam3r: cannot normalize tangent vector because its norm is close to zero!");
-
-  Tref.Update(1.0 / norm, Tref_[0]);
-
-  return Tref;
 }
 
 /*--------------------------------------------------------------------------------------------*
@@ -2178,3 +2096,5 @@ template void
 DRT::ELEMENTS::Beam3r::ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads<5, double>(
     const std::vector<CORE::LINALG::Matrix<4, 1, double>>&, const double,
     std::vector<CORE::LINALG::Matrix<3, 3, double>>&) const;
+
+BACI_NAMESPACE_CLOSE

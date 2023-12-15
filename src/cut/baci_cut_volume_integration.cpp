@@ -23,6 +23,7 @@ equations
 #include <cmath>
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
          compute the rhs of the moment fitting equations
@@ -72,33 +73,33 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
   double volGlobal = 0.0;
   switch (elem1_->Shape())
   {
-    case ::DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
       volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex8>(rhs_mom(0), "LocalToGlobal");
+          elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex8>(rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case ::DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
     {
       volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::tet4>(rhs_mom(0), "LocalToGlobal");
+          elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::tet4>(rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case ::DRT::Element::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
-      volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::wedge6>(rhs_mom(0), "LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::wedge6>(
+          rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case ::DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
-      volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::pyramid5>(rhs_mom(0), "LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::pyramid5>(
+          rhs_mom(0), "LocalToGlobal");
       break;
     }
     default:
       dserror("unsupported integration cell type ( cell type = %s )",
-          ::DRT::DistypeToString(elem1_->Shape()).c_str());
+          CORE::FE::CellTypeToString(elem1_->Shape()).c_str());
       exit(EXIT_FAILURE);
   }
   volcell_->SetVolume(volGlobal);
@@ -1206,3 +1207,5 @@ std::string CORE::GEO::CUT::VolumeIntegration::IsPointInside(CORE::LINALG::Matri
   if (rightFacets % 2 == 0) return "outside";
   return "inside";
 }
+
+BACI_NAMESPACE_CLOSE

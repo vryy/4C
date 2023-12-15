@@ -12,6 +12,8 @@
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance(
@@ -143,7 +145,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
       break;
     }
 
-    case DRT::Condition::ConditionType::S2ICouplingGrowth:
+    case DRT::Condition::ConditionType::S2IKineticsGrowth:
     {
       // set parameters to internal members depending on kinetic model
       switch (kineticmodel_)
@@ -348,3 +350,5 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetOnOff(Teuchos::ParameterList&
   if (onoff_ == nullptr) dserror("Cannot get vector 'onoff' from parameter list");
   if (onoff_->size() != 2) dserror("Only two dofs are supported");
 }
+
+BACI_NAMESPACE_CLOSE

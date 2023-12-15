@@ -49,16 +49,13 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
 //! turn defines the dof number ordering of the Discretizations.
 
-
-/*----------------------------------------------------------------------*
- | destructor (public)                                       dano 11/10 |
- *----------------------------------------------------------------------*/
-TSI::Monolithic::~Monolithic() {}
 
 
 /*----------------------------------------------------------------------*
@@ -71,9 +68,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
                           "ADAPTCONV") == 1),
       solveradaptolbetter_(((DRT::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC"))
                                .get<double>("ADAPTCONV_BETTER")),
-      printiter_(true),      // ADD INPUT PARAMETER
-      printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(nullptr),
+      printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP")),
       tsidyn_(DRT::Problem::Instance()->TSIDynamicParams()),
@@ -112,9 +107,6 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   structure_->Setup();
   StructureField()->Discretization()->ClearState(true);
 
-  errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
-  if (errfile_) printerrfile_ = true;
-
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   // initialise internal varible with new velocities V_{n+1} at t_{n+1}
@@ -139,8 +131,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = tsisolverparams;
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        *solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*solverparams, Comm()));
   }  // end BlockMatrixMerge
 
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
@@ -288,8 +279,7 @@ void TSI::Monolithic::CreateLinearSolver()
   }
 
   // prepare linear solvers and preconditioners
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      tsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(tsisolverparams, Comm()));
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(tsisolverparams, "AZPREC");
@@ -915,7 +905,7 @@ void TSI::Monolithic::PTC()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                                dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
+void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
@@ -930,11 +920,11 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   Teuchos::RCP<Epetra_Vector> tx;
 
   // if an increment vector exists
-  if (x != Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
     // extract displacement sx and temperature tx incremental vector of global
     // unknown incremental vector x
-    ExtractFieldVectors(x, sx, tx);
+    ExtractFieldVectors(stepinc, sx, tx);
 
 #ifdef TSIMONOLITHASOUTPUT
     std::cout << "Recent thermal increment DT_n+1^i\n" << *(tx) << std::endl;
@@ -1540,15 +1530,6 @@ void TSI::Monolithic::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  // see you
-  return;
 }  // PrintNewtonIter()
 
 
@@ -1944,7 +1925,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
 
   // add nitsche contact integral
   if (contact_strategy_nitsche_ != Teuchos::null)
-    k_st->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_temp),
+    k_st->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_temp),
         false, 1., 1.);
 
   // TODO 2013-11-11 move scaling to the so3_thermo element
@@ -2095,7 +2076,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
 
   // add nitsche contact integral
   if (contact_strategy_nitsche_ != Teuchos::null)
-    k_ts->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_displ),
+    k_ts->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_displ),
         false, timefac, 1.);
 }  // ApplyThrCouplMatrix()
 
@@ -2998,3 +2979,5 @@ bool TSI::Monolithic::LSadmissible()
       return false;
   }
 }
+
+BACI_NAMESPACE_CLOSE

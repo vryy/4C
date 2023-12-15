@@ -28,6 +28,8 @@
 #include "baci_mortar_defines.H"
 #include "baci_mortar_projector.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor for lts/stl (public)                                farah 07/16|
@@ -261,7 +263,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   // there's nothing wrong about other shapes, but as long as they are all
   // tri3 we can perform the jacobian calculation ( and its deriv) outside
   // the Gauss point loop
-  if (currcell->Shape() != DRT::Element::line2)
+  if (currcell->Shape() != CORE::FE::CellType::line2)
     dserror("only line2 integration cells at the moment. See comment in the code");
 
   detg = currcell->Jacobian();
@@ -1320,7 +1322,7 @@ void CONTACT::LineToSurfaceCoupling3d::CreateIntegrationLines(
 
   // create Integration Line
   IntLine() = Teuchos::rcp(new MORTAR::IntCell(ParentElement().Id(), 2, coords, Auxn(),
-      DRT::Element::line2, linvertex[0], linvertex[1],
+      CORE::FE::CellType::line2, linvertex[0], linvertex[1],
       linvertex[1],  // dummy
       GetDerivAuxn()));
 
@@ -1685,13 +1687,14 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryPlane()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2] = {0.0, 0.0};
 
-  DRT::Element::DiscretizationType dt = SurfaceElement().Shape();
-  if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+  CORE::FE::CellType dt = SurfaceElement().Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
     loccenter[1] = 1.0 / 3.0;
   }
-  else if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -1987,14 +1990,14 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
 
-  DRT::Element::DiscretizationType dt = SurfaceElement().Shape();
-  if (dt == MORTAR::MortarElement::tri3 || dt == MORTAR::MortarElement::tri6)
+  CORE::FE::CellType dt = SurfaceElement().Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     scxi[0] = 1.0 / 3.0;
     scxi[1] = 1.0 / 3.0;
   }
-  else if (dt == MORTAR::MortarElement::quad4 || dt == MORTAR::MortarElement::quad8 ||
-           dt == MORTAR::MortarElement::quad9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     scxi[0] = 0.0;
     scxi[1] = 0.0;
@@ -2182,14 +2185,14 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
 
-  DRT::Element::DiscretizationType dt = SurfaceElement().Shape();
-  if (dt == MORTAR::MortarElement::tri3 || dt == MORTAR::MortarElement::tri6)
+  CORE::FE::CellType dt = SurfaceElement().Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     scxi[0] = 1.0 / 3.0;
     scxi[1] = 1.0 / 3.0;
   }
-  else if (dt == MORTAR::MortarElement::quad4 || dt == MORTAR::MortarElement::quad8 ||
-           dt == MORTAR::MortarElement::quad9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     scxi[0] = 0.0;
     scxi[1] = 0.0;
@@ -3489,3 +3492,5 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   // bye bye
   return angleRad;
 }
+
+BACI_NAMESPACE_CLOSE

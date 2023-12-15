@@ -14,6 +14,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -83,4 +85,6 @@ namespace SSI
   };
 
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif

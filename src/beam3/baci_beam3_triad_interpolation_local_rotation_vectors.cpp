@@ -19,6 +19,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
@@ -51,31 +53,31 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::SetNod
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-DRT::Element::DiscretizationType
-LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetDisType() const
+CORE::FE::CellType LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetDisType()
+    const
 {
   switch (numnodes)
   {
     case 2:
     {
-      return ::DRT::Element::line2;
+      return CORE::FE::CellType::line2;
     }
     case 3:
     {
-      return ::DRT::Element::line3;
+      return CORE::FE::CellType::line3;
     }
     case 4:
     {
-      return ::DRT::Element::line4;
+      return CORE::FE::CellType::line4;
     }
     case 5:
     {
-      return ::DRT::Element::line5;
+      return CORE::FE::CellType::line5;
     }
     default:
     {
       dserror("only 2...5 nodes allowed here! got %d", numnodes);
-      return ::DRT::Element::max_distype;
+      return CORE::FE::CellType::max_distype;
     }
   }
 }
@@ -650,3 +652,5 @@ template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2, Sacado:
 template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, Sacado::Fad::DFad<double>>;
 template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4, Sacado::Fad::DFad<double>>;
 template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5, Sacado::Fad::DFad<double>>;
+
+BACI_NAMESPACE_CLOSE

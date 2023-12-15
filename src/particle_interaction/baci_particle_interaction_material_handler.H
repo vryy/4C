@@ -23,6 +23,8 @@
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
@@ -33,9 +35,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit MaterialHandler(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~MaterialHandler() = default;
 
     //! init particle material handler
     void Init();
@@ -51,10 +50,7 @@ namespace PARTICLEINTERACTION
     }
 
     //! get particle types of stored particle material parameters
-    inline const std::set<PARTICLEENGINE::TypeEnum> GetParticleTypes() const
-    {
-      return storedtypes_;
-    };
+    inline std::set<PARTICLEENGINE::TypeEnum> GetParticleTypes() const { return storedtypes_; };
 
    private:
     //! particle simulation parameter list
@@ -69,4 +65,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

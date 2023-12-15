@@ -19,6 +19,7 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -42,7 +43,7 @@ namespace DRT
       FluidBoundaryInterface(){};
 
       /// Empty destructor
-      virtual ~FluidBoundaryInterface(){};
+      virtual ~FluidBoundaryInterface() = default;
 
       virtual void EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
@@ -58,5 +59,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

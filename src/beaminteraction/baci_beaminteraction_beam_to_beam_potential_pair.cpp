@@ -17,15 +17,17 @@
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_beampotential.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Sacado.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------------------------------*
@@ -241,14 +243,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   if (function_number != -1)
     q1 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     q2 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
 
@@ -271,7 +273,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           "No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
   }
 
-  // prepare data storage for vtk visualization
+  // prepare data storage for visualization
   centerline_coords_GP1_.resize(numgp_perelement);
   centerline_coords_GP2_.resize(numgp_perelement);
   forces_pot_GP1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
@@ -324,7 +326,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
         ComputeCenterlinePosition(r1, N1_i[igp1], ele1pos_);
 
-        // store for vtk visualization
+        // store for visualization
         centerline_coords_GP1_[igp1_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r1);
 
         double jacobifac1 = BeamElement1()->GetJacobiFacAtXi(xi_GP1);
@@ -345,7 +347,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           // compute coord vector
           ComputeCenterlinePosition(r2, N2_i[igp2], ele2pos_);
 
-          // store for vtk visualization
+          // store for visualization
           centerline_coords_GP2_[igp2_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r2);
 
           double jacobifac2 = BeamElement2()->GetJacobiFacAtXi(xi_GP2);
@@ -414,7 +416,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
                 *stiffmat21, *stiffmat22);
           }
 
-          // store for vtk visualization
+          // store for visualization
           forces_pot_GP1_[igp1_total].Update(
               1.0 * prefactor * q1 * q2 * CORE::FADUTILS::CastToDouble(norm_dist_exp1) *
                   jacobifac2 * jacobifactor_segment2 * gausspoints.qwgt[igp2],
@@ -622,14 +624,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   if (function_number != -1)
     q1 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     q2 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
 
@@ -678,7 +680,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
 
-  // prepare data storage for vtk visualization
+  // prepare data storage for visualization
   centerline_coords_GP1_.resize(numgp_perelement);
   centerline_coords_GP2_.resize(numgp_perelement);
   forces_pot_GP1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
@@ -737,7 +739,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         // compute coord vector
         ComputeCenterlinePosition(r1, N1_i[igp1], ele1pos_);
 
-        // store for vtk visualization
+        // store for visualization
         centerline_coords_GP1_[igp1_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r1);
 
         double jacobifac1 = BeamElement1()->GetJacobiFacAtXi(xi_GP1);
@@ -758,7 +760,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           // compute coord vector
           ComputeCenterlinePosition(r2, N2_i[igp2], ele2pos_);
 
-          // store for vtk visualization
+          // store for visualization
           centerline_coords_GP2_[igp2_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r2);
 
           double jacobifac2 = BeamElement2()->GetJacobiFacAtXi(xi_GP2);
@@ -895,7 +897,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                 N2_i[igp2], *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
           }
 
-          // store for vtk visualization
+          // store for visualization
           forces_pot_GP1_[igp1_total].Update(
               1.0 * prefactor * q1 * q2 * CORE::FADUTILS::CastToDouble(gap_exp1) /
                   CORE::FADUTILS::CastToDouble(norm_dist) * jacobifac2 * jacobifactor_segment2 *
@@ -1235,14 +1237,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   if (function_number != -1)
     rho1 *= DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
                 .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     rho2 *= DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
                 .Evaluate(time_);
 
 
@@ -1265,8 +1267,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       break;
   }
 
-  // store for vtk visualization
-  double prefactor_vtk = -1.0 * prefactor * rho1 * rho2;
+  // store for visualization
+  double prefactor_visualization_data = -1.0 * prefactor * rho1 * rho2;
 
   //************************** DEBUG ******************************************
   //  this->Print(std::cout);
@@ -1275,7 +1277,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   //*********************** END DEBUG *****************************************
 
 
-  // prepare data storage for vtk visualization
+  // prepare data storage for visualization
   centerline_coords_GP1_.resize(numgp_total);
   centerline_coords_GP2_.resize(numgp_total);
   forces_pot_GP1_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
@@ -1332,7 +1334,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       t_slave.Update(1.0 / norm_r_xi_slave, r_xi_slave);
 
-      // store for vtk visualization
+      // store for visualization
       centerline_coords_GP1_[igp_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r_slave);
 
       rho1rho2_JacFac_GaussWeight = rho1 * rho2 * jacobifactor_segment *
@@ -1429,7 +1431,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       //                1>(g1_master));
       //*********************** END DEBUG *****************************************
 
-      // store for vtk visualization
+      // store for visualization
       centerline_coords_GP2_[igp_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r_master);
 
       // distance vector between unilateral closest points
@@ -1504,8 +1506,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         if (not EvaluateFullDiskCylinderPotential(interaction_potential_GP, force_pot_slave_GP,
                 force_pot_master_GP, r_slave, r_xi_slave, t_slave, r_master, r_xi_master,
                 r_xixi_master, t_master, alpha, cos_alpha, dist_ul, xi_master_partial_r_slave,
-                xi_master_partial_r_master, xi_master_partial_r_xi_master, prefactor_vtk,
-                forces_pot_GP1_[igp_total], forces_pot_GP2_[igp_total], moments_pot_GP1_[igp_total],
+                xi_master_partial_r_master, xi_master_partial_r_xi_master,
+                prefactor_visualization_data, forces_pot_GP1_[igp_total],
+                forces_pot_GP2_[igp_total], moments_pot_GP1_[igp_total],
                 moments_pot_GP2_[igp_total], rho1rho2_JacFac_GaussWeight, N_i_slave[igp],
                 N_i_xi_slave[igp], N_i_master, N_i_xi_master))
           continue;
@@ -1715,13 +1718,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
 
-        // store for vtk visualization
+        // store for visualization
         forces_pot_GP1_[igp_total].Update(
-            prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_deriv_gap_ul),
+            prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_deriv_gap_ul),
             CORE::FADUTILS::CastToDouble<T, 3, 1>(gap_ul_deriv_r_slave), 1.0);
 
         forces_pot_GP1_[igp_total].Update(
-            prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
+            prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
             CORE::FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_slave), 1.0);
 
 
@@ -1738,15 +1741,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         moment_pot_tmp.Multiply(1.0 / CORE::FADUTILS::CastToDouble(norm_r_xi_slave),
             spin_pseudo_moment_tmp, CORE::FADUTILS::CastToDouble<T, 3, 1>(t_slave));
 
-        moments_pot_GP1_[igp_total].Update(prefactor_vtk, moment_pot_tmp, 1.0);
+        moments_pot_GP1_[igp_total].Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
 
         forces_pot_GP2_[igp_total].Update(
-            prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_deriv_gap_ul),
+            prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_deriv_gap_ul),
             CORE::FADUTILS::CastToDouble<T, 3, 1>(gap_ul_deriv_r_master), 1.0);
 
         forces_pot_GP2_[igp_total].Update(
-            prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
+            prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
             CORE::FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_master), 1.0);
 
 
@@ -1758,7 +1761,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         moment_pot_tmp.Multiply(1.0 / CORE::FADUTILS::CastToDouble(norm_r_xi_master),
             spin_pseudo_moment_tmp, CORE::FADUTILS::CastToDouble<T, 3, 1>(t_master));
 
-        moments_pot_GP2_[igp_total].Update(prefactor_vtk, moment_pot_tmp, 1.0);
+        moments_pot_GP2_[igp_total].Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
 
 
@@ -2630,8 +2633,8 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     CORE::LINALG::Matrix<3, 1, T> const& dist_ul,
     CORE::LINALG::Matrix<1, 3, T> const& xi_master_partial_r_slave,
     CORE::LINALG::Matrix<1, 3, T> const& xi_master_partial_r_master,
-    CORE::LINALG::Matrix<1, 3, T> const& xi_master_partial_r_xi_master, double prefactor_vtk,
-    CORE::LINALG::Matrix<3, 1, double>& vtk_force_pot_slave_GP,
+    CORE::LINALG::Matrix<1, 3, T> const& xi_master_partial_r_xi_master,
+    double prefactor_visualization_data, CORE::LINALG::Matrix<3, 1, double>& vtk_force_pot_slave_GP,
     CORE::LINALG::Matrix<3, 1, double>& vtk_force_pot_master_GP,
     CORE::LINALG::Matrix<3, 1, double>& vtk_moment_pot_slave_GP,
     CORE::LINALG::Matrix<3, 1, double>& vtk_moment_pot_master_GP,
@@ -3177,24 +3180,27 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
 
   // store for vtk visualization
-  vtk_force_pot_slave_GP.Update(prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
+  vtk_force_pot_slave_GP.Update(
+      prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
       CORE::FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.UpdateT(
-      prefactor_vtk *
+      prefactor_visualization_data *
           CORE::FADUTILS::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
       CORE::FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.UpdateT(
-      prefactor_vtk *
+      prefactor_visualization_data *
           CORE::FADUTILS::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
       CORE::FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
-  vtk_force_pot_slave_GP.Update(prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_partial_x),
+  vtk_force_pot_slave_GP.Update(
+      prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_partial_x),
       CORE::FADUTILS::CastToDouble<T, 3, 1>(x_partial_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.UpdateT(
-      prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
+      prefactor_visualization_data *
+          CORE::FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
       CORE::FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
   CORE::LINALG::Matrix<3, 1, double> moment_pot_tmp(true);
@@ -3221,28 +3227,30 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   moment_pot_tmp.Multiply(1.0 / CORE::FADUTILS::CastToDouble(norm_r_xi_slave),
       spin_pseudo_moment_tmp, CORE::FADUTILS::CastToDouble<T, 3, 1>(t1_slave));
 
-  vtk_moment_pot_slave_GP.Update(prefactor_vtk, moment_pot_tmp, 1.0);
+  vtk_moment_pot_slave_GP.Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
 
   vtk_force_pot_master_GP.Update(
-      prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
+      prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
       CORE::FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_master), 1.0);
 
   vtk_force_pot_master_GP.UpdateT(
-      prefactor_vtk *
+      prefactor_visualization_data *
           CORE::FADUTILS::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
       CORE::FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
   vtk_force_pot_master_GP.UpdateT(
-      prefactor_vtk *
+      prefactor_visualization_data *
           CORE::FADUTILS::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
       CORE::FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
-  vtk_force_pot_master_GP.Update(prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_partial_x),
+  vtk_force_pot_master_GP.Update(
+      prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_partial_x),
       CORE::FADUTILS::CastToDouble<T, 3, 1>(x_partial_r_master), 1.0);
 
   vtk_force_pot_master_GP.UpdateT(
-      prefactor_vtk * CORE::FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
+      prefactor_visualization_data *
+          CORE::FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
       CORE::FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
 
@@ -3273,7 +3281,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   moment_pot_tmp.Multiply(1.0 / CORE::FADUTILS::CastToDouble(norm_r_xi_master),
       spin_pseudo_moment_tmp, CORE::FADUTILS::CastToDouble<T, 3, 1>(t1_master));
 
-  vtk_moment_pot_master_GP.Update(prefactor_vtk, moment_pot_tmp, 1.0);
+  vtk_moment_pot_master_GP.Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
 
   // integration factor
@@ -3726,3 +3734,5 @@ template class BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, double>;
 template class BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>;
 template class BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, double>;
 template class BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>;
+
+BACI_NAMESPACE_CLOSE

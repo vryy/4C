@@ -19,6 +19,9 @@
 #include <vector>
 
 class Epetra_Comm;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -98,7 +101,7 @@ namespace XFEM
        *  \author hiermeier
        *  \date 06/16 */
       int SetupXFEMDiscretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<DRT::Discretization> src_dis, Teuchos::RCP<DRT::Discretization> embedded_dis,
+          Teuchos::RCP<DRT::Discretization> src_dis, Teuchos::RCP<DRT::Discretization> target_dis,
           const std::vector<DRT::Condition*>& boundary_conds) const;
 
      private:
@@ -148,5 +151,7 @@ namespace XFEM
   }     // namespace UTILS
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_DISCRETIZATION_UTILS_H

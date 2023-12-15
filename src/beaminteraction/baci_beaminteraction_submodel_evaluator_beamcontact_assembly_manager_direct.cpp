@@ -19,6 +19,8 @@ be directly assembled into the global matrices.
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -36,7 +38,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::EvaluateForceStiff(
-    Teuchos::RCP<::DRT::Discretization> discret,
+    Teuchos::RCP<BACI::DRT::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
 {
@@ -94,3 +96,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::Evalu
     elepairptr->EvaluateAndAssemble(discret, fe_sysvec, fe_sysmat, data_state->GetDisColNp());
   }
 }
+
+BACI_NAMESPACE_CLOSE

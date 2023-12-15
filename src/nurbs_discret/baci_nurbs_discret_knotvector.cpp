@@ -10,11 +10,13 @@
 
 #include "baci_nurbs_discret_knotvector.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::NURBS::KnotvectorObjectType DRT::NURBS::KnotvectorObjectType::instance_;
 
 
-DRT::ParObject* DRT::NURBS::KnotvectorObjectType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::NURBS::KnotvectorObjectType::Create(const std::vector<char>& data)
 {
   return nullptr;
 }
@@ -725,10 +727,10 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
  |  Pack data                                                  (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::Pack(DRT::PackBuffer& data) const
+void DRT::NURBS::Knotvector::Pack(CORE::COMM::PackBuffer& data) const
 {
   // we don't need the PackBuffer for the knotvector (at the moment)
-  // DRT::PackBuffer::SizeMarker sm( data );
+  // CORE::COMM::PackBuffer::SizeMarker sm( data );
   // sm.Insert();
 
   // pack type of this instance of ParObject
@@ -794,10 +796,7 @@ void DRT::NURBS::Knotvector::Unpack(const std::vector<char>& data)
 
   filled_ = false;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract number of patches
   ExtractfromPack(position, data, npatches_);
@@ -1088,3 +1087,5 @@ void DRT::NURBS::Knotvector::Print(std::ostream& os) const
     os << std::endl;
   }
 }
+
+BACI_NAMESPACE_CLOSE

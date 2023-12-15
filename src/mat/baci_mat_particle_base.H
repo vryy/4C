@@ -17,9 +17,11 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 06/2018 |
@@ -33,9 +35,6 @@ namespace MAT
      public:
       //! constructor
       ParticleMaterialBase(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      //! desctructor
-      ~ParticleMaterialBase() override{};
 
       //! @name material parameters
       //@{
@@ -57,4 +56,6 @@ namespace MAT
 }  // namespace MAT
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -22,6 +22,8 @@ namespace Teuchos
   class ParameterList;
 }  // namespace Teuchos
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   class DirichletNeumann;
@@ -39,9 +41,6 @@ namespace FSI
     DirichletNeumannFactory(){};
 
    public:
-    /// destructor
-    ~DirichletNeumannFactory(){};
-
     /**
      *  \brief Creates the appropriate DirichletNeumann algorithm
      *
@@ -57,5 +56,7 @@ namespace FSI
         const Epetra_Comm &comm, const Teuchos::ParameterList &fsidyn);
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

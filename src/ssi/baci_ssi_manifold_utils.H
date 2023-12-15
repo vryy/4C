@@ -22,6 +22,8 @@
 #include <optional>
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::ADAPTER
 {
   class Coupling;
@@ -329,6 +331,11 @@ namespace SSI
   class ManifoldMeshTyingStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ManifoldMeshTyingStrategyBase() = default;
+
     explicit ManifoldMeshTyingStrategyBase(Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
@@ -437,8 +444,8 @@ namespace SSI
     //! tuple.
     std::tuple<Teuchos::RCP<const Epetra_Map>, Teuchos::RCP<const Epetra_Map>>
     IntersectCouplingMapsBlockMap(Teuchos::RCP<const Epetra_Map> block_map,
-        Teuchos::RCP<const Epetra_Map> intersecting_map, Teuchos::RCP<const Epetra_Map> perm_map,
-        const Epetra_Comm& comm);
+        Teuchos::RCP<const Epetra_Map> intersecting_map,
+        Teuchos::RCP<const Epetra_Map> permuted_map, const Epetra_Comm& comm);
 
     //! all interior and master dofs split into blocks
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> condensed_block_dof_map_;
@@ -454,5 +461,7 @@ namespace SSI
       bool is_manifold_meshtying, CORE::LINALG::MatrixType matrixtype_manifold);
 
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_MANIFOLD_UTILS_H

@@ -10,22 +10,13 @@
 
 #include "baci_beaminteraction_beam_to_beam_contact_variables.H"
 
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_pair.H"
-#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_inpar_beamcontact.H"
-#include "baci_inpar_contact.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_structure_timint_impl.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|
@@ -61,3 +52,5 @@ template class BEAMINTERACTION::BeamToBeamContactVariables<3, 1>;
 template class BEAMINTERACTION::BeamToBeamContactVariables<4, 1>;
 template class BEAMINTERACTION::BeamToBeamContactVariables<5, 1>;
 template class BEAMINTERACTION::BeamToBeamContactVariables<2, 2>;
+
+BACI_NAMESPACE_CLOSE

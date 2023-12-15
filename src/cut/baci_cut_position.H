@@ -16,6 +16,8 @@
 #include "baci_cut_element.H"
 #include "baci_cut_kernel.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -106,15 +108,13 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim, unsigned cdim, unsigned rdim_2>
       static Teuchos::RCP<Position> Create(const CORE::LINALG::Matrix<rdim, cdim>& xyze,
-          const CORE::LINALG::Matrix<rdim_2, 1>& xyz,
-          const ::DRT::Element::DiscretizationType& distype,
+          const CORE::LINALG::Matrix<rdim_2, 1>& xyz, const CORE::FE::CellType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /// \brief build variant #3-1 (CORE::LINALG::SerialDenseMatrix)
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const CORE::LINALG::SerialDenseMatrix& xyze,
-          const CORE::LINALG::Matrix<rdim, 1>& xyz,
-          const ::DRT::Element::DiscretizationType& distype,
+          const CORE::LINALG::Matrix<rdim, 1>& xyz, const CORE::FE::CellType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /** \brief build variant #4
@@ -128,7 +128,7 @@ namespace CORE::GEO
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const std::vector<Node*> nodes,
           const CORE::LINALG::Matrix<rdim, 1>& xyz,
-          ::DRT::Element::DiscretizationType distype = ::DRT::Element::dis_none,
+          CORE::FE::CellType distype = CORE::FE::CellType::dis_none,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /// @}
@@ -137,7 +137,7 @@ namespace CORE::GEO
       Position(){/* intentionally left blank */};
 
       /// destructor
-      virtual ~Position(){};
+      virtual ~Position() = default;
 
       virtual unsigned Dim() const = 0;
 
@@ -250,10 +250,9 @@ namespace CORE::GEO
      *
      *  \author hiermeier
      *  \date 08/16 */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+    template <unsigned probdim, CORE::FE::CellType eletype,
+        unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
+        unsigned dim = CORE::FE::dim<eletype>,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class PositionGeneric : public Position
     {
@@ -275,19 +274,16 @@ namespace CORE::GEO
         ConstructBoundingBox();
       }
 
-      /// destructor
-      virtual ~PositionGeneric(){};
-
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
      protected:
       /// return the element dimension
-      virtual unsigned Dim() const { return dim; }
+      unsigned Dim() const override { return dim; }
 
       /// return the problem dimension
-      virtual unsigned ProbDim() const { return probdim; }
+      unsigned ProbDim() const override { return probdim; }
 
-      virtual enum Status Status() const { return pos_status_; }
+      enum Status Status() const override { return pos_status_; }
 
       /*! \brief Return the local coordinates of the given point \c px_
        *
@@ -300,7 +296,7 @@ namespace CORE::GEO
        *  \param rst: local coordinates.
        *
        *  \author hiermeier */
-      virtual void LocalCoordinates(double* rst)
+      void LocalCoordinates(double* rst) override
       {
         if (pos_status_ != position_valid)
         {
@@ -314,13 +310,13 @@ namespace CORE::GEO
         std::copy(xsi_.A(), xsi_.A() + xsi_.M(), rst);
       }
 
-      virtual void Distance(double* distance) const = 0;
+      void Distance(double* distance) const override = 0;
 
-      virtual bool Compute(const double& tol) = 0;
+      bool Compute(const double& tol) override = 0;
 
-      virtual bool IsGivenPointWithinElement() = 0;
+      bool IsGivenPointWithinElement() override = 0;
 
-      const double& NewtonTolerance() const
+      const double& NewtonTolerance() const override
       {
         if (compute_tolerance_ < 0.0) dserror("Call the Compute() routine first!");
         if (compute_tolerance_ > 1.0)
@@ -339,7 +335,7 @@ namespace CORE::GEO
        *  are converted into the corresponding range of the natural coordinate
        *  system of the element. This leads to a  proper initial choice for
        *  the Newton scheme to find the local coordinate system. */
-      virtual void ScaleAndShift()
+      void ScaleAndShift() override
       {
         GetElementScale<probdim>(xyze_, scale_);
 
@@ -399,10 +395,9 @@ namespace CORE::GEO
     /** \brief class for the position computation in the standard/non-embedded case
      *
      *  \author hiermeier \date 08/16 */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+    template <unsigned probdim, CORE::FE::CellType eletype,
+        unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
+        unsigned dim = CORE::FE::dim<eletype>,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class ComputePosition
         : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
@@ -413,13 +408,10 @@ namespace CORE::GEO
           const CORE::LINALG::Matrix<probdim, 1>& xyz)
           : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz){};
 
-      /// destructor
-      virtual ~ComputePosition(){};
-
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
      protected:
-      virtual void Distance(double* distance) const
+      void Distance(double* distance) const override
       {
         dserror("Unsupported for the standard case!");
       }
@@ -430,16 +422,16 @@ namespace CORE::GEO
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
-      virtual bool Compute(const double& Tol, const bool& allow_dist)
+      bool Compute(const double& Tol, const bool& allow_dist) override
       {
         if (allow_dist) dserror("Compute: allow_dist for ComputePosition not possible!");
         return Compute(Tol);
       }
-      virtual bool Compute(const double& Tol);
+      bool Compute(const double& Tol) override;
 
-      virtual bool IsGivenPointWithinElement() { return Position::Compute(); }
+      bool IsGivenPointWithinElement() override { return Position::Compute(); }
 
-      virtual bool WithinLimitsTol(const double& Tol) const
+      bool WithinLimitsTol(const double& Tol) const override
       {
         return KERNEL::WithinLimits<eletype>(this->xsi_, Tol);
       }
@@ -449,10 +441,9 @@ namespace CORE::GEO
     /** \brief class for the position computation in the embedded case
      *
      *  \author hiermeier \date 08/16 */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+    template <unsigned probdim, CORE::FE::CellType eletype,
+        unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
+        unsigned dim = CORE::FE::dim<eletype>,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class ComputeEmbeddedPosition
         : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
@@ -466,9 +457,6 @@ namespace CORE::GEO
         this->xsi_.SetView(xsi_aug_.A());
       };
 
-      /// destructor
-      virtual ~ComputeEmbeddedPosition(){};
-
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
      protected:
@@ -478,13 +466,13 @@ namespace CORE::GEO
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
-      virtual bool Compute(const double& tol) { return Compute(tol, false); }
-      virtual bool Compute(const double& Tol, const bool& allow_dist);
+      bool Compute(const double& tol) override { return Compute(tol, false); }
+      bool Compute(const double& Tol, const bool& allow_dist) override;
 
-      virtual bool IsGivenPointWithinElement();
+      bool IsGivenPointWithinElement() override;
 
       /*! \brief Return the perpendicular distance between given point to the side */
-      virtual double Distance() const
+      double Distance() const override
       {
         if (this->pos_status_ < Position::position_distance_valid)
         {
@@ -505,7 +493,7 @@ namespace CORE::GEO
         }
       }
 
-      virtual void Distance(double* distance) const
+      void Distance(double* distance) const override
       {
         if (this->pos_status_ < Position::position_distance_valid)
         {
@@ -519,7 +507,7 @@ namespace CORE::GEO
         std::copy(xsi_aug_.A() + dim, xsi_aug_.A() + probdim, distance);
       }
 
-      virtual bool WithinLimitsTol(const double& Tol, const bool& allow_dist) const
+      bool WithinLimitsTol(const double& Tol, const bool& allow_dist) const override
       {
         double tol2 = Tol;
         double tol_xyze = this->xyze_.NormInf();
@@ -579,7 +567,7 @@ namespace CORE::GEO
        *  \param distype (in) : element discretization type.
        *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const double* xyze, const double* xyz,
-          const ::DRT::Element::DiscretizationType& distype,
+          const CORE::FE::CellType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
       /** \brief build variant #4
@@ -589,7 +577,7 @@ namespace CORE::GEO
        *  \param distype (in) : element discretization type. (optional)
        *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const std::vector<Node*> nodes, const double* xyz,
-          ::DRT::Element::DiscretizationType distype = ::DRT::Element::dis_none,
+          CORE::FE::CellType distype = CORE::FE::CellType::dis_none,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
       /// \brief specify general floattype for all geometric operations in CORE::GEO::CUT::POSITON
@@ -604,10 +592,8 @@ namespace CORE::GEO
 
      private:
       /// template class for the actual position creation
-      template <bool isembedded, unsigned probdim, unsigned dim,
-          ::DRT::Element::DiscretizationType eletype,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+      template <bool isembedded, unsigned probdim, unsigned dim, CORE::FE::CellType eletype,
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       class PositionCreator
       {
        public:
@@ -623,7 +609,7 @@ namespace CORE::GEO
       ///       If more wrong combinations come up, add them here.            hiermeier 04/17
       /// @{
 
-      template <unsigned dim, ::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <unsigned dim, CORE::FE::CellType eletype, unsigned numNodesElement>
       class PositionCreator<true, dim, dim, eletype, numNodesElement>
       {
        public:
@@ -638,7 +624,7 @@ namespace CORE::GEO
         }
       };
 
-      template <::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <CORE::FE::CellType eletype, unsigned numNodesElement>
       class PositionCreator<true, 1, 2, eletype, numNodesElement>
       {
        public:
@@ -653,7 +639,7 @@ namespace CORE::GEO
         }
       };
 
-      template <::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <CORE::FE::CellType eletype, unsigned numNodesElement>
       class PositionCreator<true, 1, 3, eletype, numNodesElement>
       {
        public:
@@ -668,7 +654,7 @@ namespace CORE::GEO
         }
       };
 
-      template <::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <CORE::FE::CellType eletype, unsigned numNodesElement>
       class PositionCreator<true, 2, 3, eletype, numNodesElement>
       {
        public:
@@ -683,7 +669,7 @@ namespace CORE::GEO
         }
       };
 
-      template <unsigned probdim, unsigned dim, ::DRT::Element::DiscretizationType eletype,
+      template <unsigned probdim, unsigned dim, CORE::FE::CellType eletype,
           unsigned numNodesElement>
       class PositionCreator<false, probdim, dim, eletype, numNodesElement>
       {
@@ -702,7 +688,7 @@ namespace CORE::GEO
       /// @}
 
       /// create an embedded position object ( dim < probdim )
-      template <unsigned probdim, unsigned dim, ::DRT::Element::DiscretizationType eletype,
+      template <unsigned probdim, unsigned dim, CORE::FE::CellType eletype,
           unsigned numNodesElement>
       class PositionCreator<true, probdim, dim, eletype, numNodesElement>
       {
@@ -716,15 +702,13 @@ namespace CORE::GEO
             case INPAR::CUT::floattype_double:
             {
               return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
-                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(
-                  xyze, xyz);
+                  CORE::FE::dim<eletype>, INPAR::CUT::floattype_double>(xyze, xyz);
               break;
             }
             case INPAR::CUT::floattype_cln:
             {
               return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
-                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(
-                  xyze, xyz);
+                  CORE::FE::dim<eletype>, INPAR::CUT::floattype_cln>(xyze, xyz);
               break;
             }
             default:
@@ -735,7 +719,7 @@ namespace CORE::GEO
       };
 
       /// create a standard position object ( probdim == dim )
-      template <unsigned dim, ::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <unsigned dim, CORE::FE::CellType eletype, unsigned numNodesElement>
       class PositionCreator<false, dim, dim, eletype, numNodesElement>
       {
        public:
@@ -747,16 +731,14 @@ namespace CORE::GEO
           {
             case INPAR::CUT::floattype_double:
             {
-              return new ComputePosition<dim, eletype, numNodesElement,
-                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(
-                  xyze, xyz);
+              return new ComputePosition<dim, eletype, numNodesElement, CORE::FE::dim<eletype>,
+                  INPAR::CUT::floattype_double>(xyze, xyz);
               break;
             }
             case INPAR::CUT::floattype_cln:
             {
-              return new ComputePosition<dim, eletype, numNodesElement,
-                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(
-                  xyze, xyz);
+              return new ComputePosition<dim, eletype, numNodesElement, CORE::FE::dim<eletype>,
+                  INPAR::CUT::floattype_cln>(xyze, xyz);
               break;
             }
             default:
@@ -779,10 +761,8 @@ namespace CORE::GEO
        *  \param point   (in) : Given global point
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+      template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
@@ -811,11 +791,11 @@ namespace CORE::GEO
       }
 
       /// concrete create variant #1
-      template <::DRT::Element::DiscretizationType eletype>
+      template <CORE::FE::CellType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        const int dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim;
+        const int dim = CORE::FE::dim<eletype>;
         if (dim > probdim_)
           dserror(
               "The element dimension is larger than the problem dimension! \n"
@@ -849,10 +829,8 @@ namespace CORE::GEO
        *  \param xyz     (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+      template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(const Element& element,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
@@ -881,11 +859,11 @@ namespace CORE::GEO
 
      private:
       /// concrete create variant #2
-      template <::DRT::Element::DiscretizationType eletype>
+      template <CORE::FE::CellType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        const int dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim;
+        const int dim = CORE::FE::dim<eletype>;
         if (dim > probdim_)
           dserror(
               "The element dimension is larger than the problem dimension! \n"
@@ -924,10 +902,8 @@ namespace CORE::GEO
        *  \param xyz     (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+      template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(
           const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
@@ -954,12 +930,11 @@ namespace CORE::GEO
 
      private:
       /// concrete create variant #3
-      template <::DRT::Element::DiscretizationType eletype>
+      template <CORE::FE::CellType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const double* xyze, const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        const unsigned num_nodes_ele =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
+        const unsigned num_nodes_ele = CORE::FE::num_nodes<eletype>;
         switch (probdim_)
         {
           case 2:
@@ -994,10 +969,8 @@ namespace CORE::GEO
        *  \param xyz   (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+      template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(const std::vector<Node*> nodes,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
@@ -1036,7 +1009,7 @@ namespace CORE::GEO
 
      private:
       /// concrete create variant #4
-      template <::DRT::Element::DiscretizationType eletype>
+      template <CORE::FE::CellType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const std::vector<Node*> nodes,
           const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
@@ -1079,5 +1052,7 @@ namespace CORE::GEO
   }  // namespace CUT
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

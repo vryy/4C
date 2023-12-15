@@ -18,6 +18,11 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 
 #include <vector>
 
+class Epetra_Vector;
+class Epetra_FEVector;
+
+BACI_NAMESPACE_OPEN
+
 // Forward declaration
 
 namespace DRT
@@ -40,9 +45,6 @@ namespace GEOMETRYPAIR
 {
   class LineTo3DEvaluationData;
 }
-
-class Epetra_Vector;
-class Epetra_FEVector;
 
 namespace FBI
 {
@@ -112,8 +114,8 @@ namespace ADAPTER
         std::vector<double> beam_centerline_dofvec, std::vector<double> fluid_nodal_dofvec);
 
     // Get function for the meshtying pairs meshtying_pairs_
-    virtual const Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>>
-    GetPairs() const final
+    virtual Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>> GetPairs()
+        const final
     {
       return meshtying_pairs_;
     };
@@ -126,7 +128,7 @@ namespace ADAPTER
 
     /// returns data container geometry_evaluation-data_ holding all geometry related evaluation
     /// data
-    virtual const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> GetGeometryData() const final
+    virtual Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> GetGeometryData() const final
     {
       return geometry_evaluation_data_;
     };
@@ -178,5 +180,7 @@ namespace ADAPTER
     Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> geometry_evaluation_data_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FBI_ADAPTER_CONSTRAINTBRIDGE_H

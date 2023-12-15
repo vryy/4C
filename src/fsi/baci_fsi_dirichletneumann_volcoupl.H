@@ -18,6 +18,8 @@
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_fsi_dirichletneumann_disp.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   class SearchTree;
@@ -42,7 +44,7 @@ namespace FSI
 
    public:
     /// setup this object
-    virtual void Setup();
+    void Setup() override;
 
    protected:
     /// setup
@@ -61,11 +63,11 @@ namespace FSI
      *
      * \returns interface force
      */
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> FluidOp(
         Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) final;
 
 
-    void ExtractPreviousInterfaceSolution();
+    void ExtractPreviousInterfaceSolution() override;
 
     /// structure to ale mapping
     Teuchos::RCP<Epetra_Vector> StuctureToAle(Teuchos::RCP<Epetra_Vector> iv) const;
@@ -95,7 +97,7 @@ namespace FSI
     InterfaceCorrector() : idisp_(Teuchos::null){};
 
     /// destructor
-    virtual ~InterfaceCorrector(){};
+    virtual ~InterfaceCorrector() = default;
 
     virtual void Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale);
 
@@ -123,7 +125,7 @@ namespace FSI
     VolCorrector() : dim_(-1){};
 
     /// destructor
-    virtual ~VolCorrector(){};
+    virtual ~VolCorrector() = default;
 
     virtual void Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> fluidale);
 
@@ -167,5 +169,7 @@ namespace FSI
 
 
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

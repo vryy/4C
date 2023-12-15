@@ -7,9 +7,10 @@
 
 #include "baci_mixture_full_constrained_mixture_fiber.H"
 
-#include "baci_lib_pack_buffer.H"
-#include "baci_lib_parobject.H"
+#include "baci_comm_pack_buffer.H"
+#include "baci_comm_parobject.H"
 #include "baci_mixture_constituent_remodelfiber_material.H"
+#include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_local_integration.H"
@@ -23,8 +24,16 @@
 #include <numeric>
 #include <type_traits>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
+  bool IsNear(const double value1, const double value2, const double epsilon = 1e-15)
+  {
+    if (std::abs(value1 - value2) <= epsilon) return true;
+    return std::abs(value1 - value2) <= epsilon * std::max(std::abs(value1), std::abs(value2));
+  }
+
   template <typename Number>
   static inline Number ComputeAbsoluteErrorWhenSkippingSnapshot(
       std::size_t i, const std::vector<std::tuple<double, Number>>& evaluated_integrand)
@@ -82,7 +91,7 @@ namespace
     Number integration_result = 0;
     for (const auto& interval : history)
     {
-      integration_result += CORE::UTILS::IntegrateSimpsonTrapezoidal(interval,
+      integration_result += CORE::UTILS::IntegrateSimpsonTrapezoidal(interval.timesteps,
           [&](const MIXTURE::MassIncrement<Number>& increment)
           { return std::make_tuple(increment.deposition_time, integrand(increment)); });
     }
@@ -96,22 +105,22 @@ namespace
       const MIXTURE::MassIncrement<Number>& current_increment, Integrand integrand,
       Number history_integration)
   {
-    const size_t size = interval.size();
+    const size_t size = interval.timesteps.size();
     if (size == 0) dserror("The history is empty. I cannot integrate.");
     if (size == 1)
     {
       // can only apply trapezoidal rule
       const auto [integration, derivative] =
           CORE::UTILS::IntegrateTrapezoidalStepAndReturnDerivativeB<std::tuple<double, Number>>(
-              {interval[0].deposition_time, integrand(interval[0])},
+              {interval.timesteps[0].deposition_time, integrand(interval.timesteps[0])},
               {current_increment.deposition_time, integrand(current_increment)});
       return std::make_tuple(integration + history_integration, derivative);
     }
 
     const auto [integration, derivative] =
         CORE::UTILS::IntegrateSimpsonStepBCAndReturnDerivativeC<std::tuple<double, Number>>(
-            {interval[size - 2].deposition_time, integrand(interval[size - 2])},
-            {interval[size - 1].deposition_time, integrand(interval[size - 1])},
+            {interval.timesteps[size - 2].deposition_time, integrand(interval.timesteps[size - 2])},
+            {interval.timesteps[size - 1].deposition_time, integrand(interval.timesteps[size - 1])},
             {current_increment.deposition_time, integrand(current_increment)});
 
     return std::make_tuple(integration + history_integration, derivative);
@@ -156,18 +165,50 @@ namespace
     fiber.current_state_.lambda_f = lambda_f;
     fiber.current_time_ = time;
   }
+
+  template <typename Number>
+  void UpdateBaseDeltaTime(
+      MIXTURE::DepositionHistoryInterval<Number>& deposition_history_inverval, const double dt)
+  {
+    if (deposition_history_inverval.base_dt <= 0)
+    {
+      // timestep is set for the first time
+      deposition_history_inverval.base_dt = dt;
+      return;
+    }
+
+    if (!IsNear(deposition_history_inverval.base_dt, dt))
+    {
+      dserror(
+          "The timestep is not constant within the interval. The interval currently relies on a "
+          "constant timestep of %f. You are stepping with %f (err = %f). You need to extend the "
+          "implementation such that it can also handle adaptive/non equidistant timestepping.",
+          deposition_history_inverval.base_dt, dt,
+          std::abs(deposition_history_inverval.base_dt - dt));
+    }
+  }
+
+  template <typename Number>
+  Number IntegrateBooleStep(const std::array<std::tuple<double, Number>, 5>& data)
+  {
+    const double interval_size = std::get<0>(data[4]) - std::get<0>(data[0]);
+
+    return 1.0 / 90.0 * interval_size *
+           (7 * std::get<1>(data[0]) + 32 * std::get<1>(data[1]) + 12 * std::get<1>(data[2]) +
+               32 * std::get<1>(data[3]) + 7 * std::get<1>(data[4]));
+  }
 }  // namespace
 
 template <typename Number>
 MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
     std::shared_ptr<const MIXTURE::RemodelFiberMaterial<Number>> material,
     MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number> growth_evolution,
-    Number lambda_pre, bool adaptive_history, bool growth_enabled)
+    Number lambda_pre, HistoryAdaptionStrategy adaptive_history_strategy, bool growth_enabled)
     : lambda_pre_(lambda_pre),
       fiber_material_(std::move(material)),
       growth_evolution_(growth_evolution),
       growth_enabled_(growth_enabled),
-      adaptive_history_(adaptive_history),
+      adaptive_history_strategy_(adaptive_history_strategy),
       current_time_(0),
       computed_growth_scalar_(1.0)
 {
@@ -176,13 +217,13 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::Pack(DRT::PackBuffer& data) const
+void MIXTURE::FullConstrainedMixtureFiber<Number>::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
-void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(DRT::PackBuffer& data) const
+void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(CORE::COMM::PackBuffer& data) const
 {
   data.AddtoPack(sig_h_);
   data.AddtoPack(lambda_pre_);
@@ -195,14 +236,17 @@ void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(DRT::PackBuffer& data) c
   data.AddtoPack(history_.size());
   for (const auto& interval : history_)
   {
-    data.AddtoPack(interval.size());
-    for (const auto& item : interval)
+    data.AddtoPack(interval.timesteps.size());
+    for (const auto& item : interval.timesteps)
     {
       data.AddtoPack(item.reference_stretch);
       data.AddtoPack(item.growth_scalar);
       data.AddtoPack(item.growth_scalar_production_rate);
       data.AddtoPack(item.deposition_time);
     }
+
+    data.AddtoPack(interval.base_dt);
+    interval.adaptivity_info.Pack(data);
   }
 
   data.AddtoPack(current_time_);
@@ -224,44 +268,48 @@ template <>
 void MIXTURE::FullConstrainedMixtureFiber<double>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  DRT::ParObject::ExtractfromPack(position, data, sig_h_);
-  DRT::ParObject::ExtractfromPack(position, data, lambda_pre_);
-  DRT::ParObject::ExtractfromPack(position, data, current_state_.lambda_f);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, sig_h_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, lambda_pre_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_state_.lambda_f);
 
-  DRT::ParObject::ExtractfromPack(position, data, reference_time_);
-  DRT::ParObject::ExtractfromPack(position, data, current_time_shift_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, reference_time_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_time_shift_);
 
   std::size_t size_of_history;
-  DRT::ParObject::ExtractfromPack(position, data, size_of_history);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, size_of_history);
   history_.resize(size_of_history);
 
   for (auto& interval : history_)
   {
     std::size_t size_of_interval;
-    DRT::ParObject::ExtractfromPack(position, data, size_of_interval);
-    interval.resize(size_of_interval);
-    for (auto& item : interval)
+    CORE::COMM::ParObject::ExtractfromPack(position, data, size_of_interval);
+    interval.timesteps.resize(size_of_interval);
+    for (auto& item : interval.timesteps)
     {
-      DRT::ParObject::ExtractfromPack(position, data, item.reference_stretch);
-      DRT::ParObject::ExtractfromPack(position, data, item.growth_scalar);
-      DRT::ParObject::ExtractfromPack(position, data, item.growth_scalar_production_rate);
-      DRT::ParObject::ExtractfromPack(position, data, item.deposition_time);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, item.reference_stretch);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, item.growth_scalar);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, item.growth_scalar_production_rate);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, item.deposition_time);
     }
+
+    CORE::COMM::ParObject::ExtractfromPack(position, data, interval.base_dt);
+
+    interval.adaptivity_info.Unpack(position, data);
   }
 
 
-  DRT::ParObject::ExtractfromPack(position, data, current_time_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_time_);
 
 
-  DRT::ParObject::ExtractfromPack(position, data, computed_growth_scalar_);
-  DRT::ParObject::ExtractfromPack(position, data, computed_sigma_);
-  DRT::ParObject::ExtractfromPack(position, data, computed_dgrowth_scalar_dlambda_f_sq_);
-  DRT::ParObject::ExtractfromPack(position, data, computed_dsigma_dlambda_f_sq_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_growth_scalar_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_sigma_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_dgrowth_scalar_dlambda_f_sq_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_dsigma_dlambda_f_sq_);
 }
 
 template <typename Number>
 void MIXTURE::FullConstrainedMixtureFiber<Number>::RecomputeState(
-    const Number lambda_f, const double time)
+    const Number lambda_f, const double time, const double dt)
 {
   ReinitializeState(*this, lambda_f, time);
 
@@ -274,6 +322,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::RecomputeState(
     current_time_shift_ = 0.0;
   }
 
+  if (growth_enabled_ && history_.size() > 0) UpdateBaseDeltaTime(history_.back(), dt);
   ComputeInternalVariables();
 }
 
@@ -284,13 +333,13 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::ComputeHistoryCauchyStress(
   const Number growth_scalar = std::invoke(
       [&]()
       {
-        if (history_.size() > 0) return history_.back().back().growth_scalar;
+        if (history_.size() > 0) return history_.back().timesteps.back().growth_scalar;
         return Number(1.0);
       });
   const double time = std::invoke(
       [&]()
       {
-        if (history_.size() > 0) return history_.back().back().deposition_time;
+        if (history_.size() > 0) return history_.back().timesteps.back().deposition_time;
         return 0.0;
       });
 
@@ -658,7 +707,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
       [&]()
       {
         if (history_.size() == 0) return Number(1.0);
-        return history_.back().back().growth_scalar;
+        return history_.back().timesteps.back().growth_scalar;
       });
 
   // initialize history
@@ -671,18 +720,19 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
 
   if (history_.size() == 0)
   {
-    history_.emplace_back(std::vector<MassIncrement<Number>>({std::move(mass_increment)}));
+    history_.emplace_back();
+    history_.back().timesteps.emplace_back(std::move(mass_increment));
     return;
   }
 
-  const MassIncrement<Number> last_mass_increment = history_.back().back();
-  // check if the history is already
+  const MassIncrement<Number> last_mass_increment = history_.back().timesteps.back();
+  // check if the item is already in the history
   if (IsAlmostEqual(mass_increment, last_mass_increment, 1e-7))
   {
     return;
   }
 
-  if (std::abs(mass_increment.deposition_time - last_mass_increment.deposition_time) > 1e-7)
+  if (!IsNear(mass_increment.deposition_time, last_mass_increment.deposition_time))
   {
     dserror(
         "The history is not empty, but you reinitialized the fiber with a different deposition "
@@ -690,13 +740,14 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
         "maybe forgot to adapt the depositon time of all previous times?");
   }
 
-  if (history_.back().size() == 1)
+  if (history_.back().timesteps.size() == 1)
   {
-    history_.back().back() = mass_increment;
+    history_.back().timesteps.back() = mass_increment;
     return;
   }
 
-  history_.emplace_back(std::vector<MassIncrement<Number>>({mass_increment}));
+  history_.emplace_back();
+  history_.back().timesteps.emplace_back(std::move(mass_increment));
 
 #ifdef DEBUG
   state_is_set_ = false;
@@ -708,7 +759,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::AddTime(const double delta_ti
 {
   for (auto& interval : history_)
   {
-    for (auto& increment : interval)
+    for (auto& increment : interval.timesteps)
     {
       increment.deposition_time += delta_time;
     }
@@ -720,7 +771,7 @@ template <typename Number>
 double MIXTURE::FullConstrainedMixtureFiber<Number>::GetLastTimeInHistory() const
 {
   if (history_.size() == 0) return reference_time_;
-  return history_.back().back().deposition_time;
+  return history_.back().timesteps.back().deposition_time;
 }
 
 template <typename Number>
@@ -729,56 +780,139 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
   if (growth_enabled_)
   {
     dsassert(current_time_shift_ == 0.0, "The time shift should be zero if growth is enabled!");
-    history_.back().emplace_back(
+    history_.back().timesteps.emplace_back(
         EvaluateCurrentMassIncrement(computed_growth_scalar_, computed_sigma_));
 
     // erase depending on some condition
-    if (adaptive_history_)
+    if (adaptive_history_strategy_ != HistoryAdaptionStrategy::none)
     {
-      for (auto& interval : history_)
+      Number tolerance_per_time =
+          adaptive_tolerance_ / (current_time_ - history_[0].timesteps[0].deposition_time);
+      switch (adaptive_history_strategy_)
       {
-        if (interval.size() >= 4)
+        case HistoryAdaptionStrategy::model_equation:
         {
-          std::vector<std::tuple<double, Number>> evaluated_scaled_cauchy_stress_integrand(
-              interval.size());
-          std::transform(interval.begin(), interval.end(),
-              evaluated_scaled_cauchy_stress_integrand.begin(),
-              [&](const MassIncrement<Number>& inc)
-              {
-                return std::make_tuple(inc.deposition_time,
-                    ScaledCauchyStressIntegrand(inc, current_time_, current_state_.lambda_f));
-              });
-
-          std::vector<std::tuple<double, Number>> evaluatd_growth_scalar_integrand(interval.size());
-          std::transform(interval.begin(), interval.end(), evaluatd_growth_scalar_integrand.begin(),
-              [&](const MassIncrement<Number>& inc) {
-                return std::make_tuple(
-                    inc.deposition_time, GrowthScalarIntegrand(inc, current_time_));
-              });
-
-          std::vector<Number> relative_error_sum(interval.size(), 0);
-          relative_error_sum[0] = std::numeric_limits<double>::max();
-          relative_error_sum[interval.size() - 1] = std::numeric_limits<double>::max();
-          relative_error_sum[interval.size() - 2] = std::numeric_limits<double>::max();
-          for (std::size_t i = 1; i < interval.size() - 2; ++i)
+          for (auto& interval : history_)
           {
-            // compute for every point in the history the error of each integral if we skip this
-            // point
-            relative_error_sum[i] = ComputeAbsoluteErrorWhenSkippingSnapshot(
-                                        i, evaluated_scaled_cauchy_stress_integrand) /
-                                    computed_growth_scalar_ / computed_sigma_;
-            relative_error_sum[i] +=
-                ComputeAbsoluteErrorWhenSkippingSnapshot(i, evaluatd_growth_scalar_integrand) /
-                computed_growth_scalar_;
+            if (interval.timesteps.size() >= 4)
+            {
+              const auto [erase_item, adaptivity_info] =
+                  OptimizeHistoryIntegration(interval.adaptivity_info, interval.timesteps.size(),
+                      [&](const std::array<std::optional<unsigned int>, 5>& indices)
+                      {
+                        const double begin_time = interval.adaptivity_info.GetIndexTime(
+                            indices[0].value(), 0.0, interval.base_dt);
+                        const double end_time = interval.adaptivity_info.GetIndexTime(
+                            indices[4].value(), 0.0, interval.base_dt);
+                        return IsModelEquationSimpsonRuleIntegrationBelowTolerance<Number>(
+                            growth_evolution_, current_time_, begin_time, end_time,
+                            tolerance_per_time * (end_time - begin_time));
+                      });
+
+              interval.adaptivity_info = adaptivity_info;
+
+
+              interval.timesteps.erase(
+                  std::remove_if(interval.timesteps.begin(), interval.timesteps.end(),
+                      [&](const MassIncrement<Number>& item)
+                      { return erase_item.at(&item - interval.timesteps.data()); }),
+                  interval.timesteps.end());
+            }
+          }
+          break;
+        }
+        case HistoryAdaptionStrategy::higher_order_integration:
+        {
+          for (auto& interval : history_)
+          {
+            if (interval.timesteps.size() >= 4)
+            {
+              const auto [erase_item, adaptivity_info] = OptimizeHistoryIntegration(
+                  interval.adaptivity_info, interval.timesteps.size(),
+                  [&](const std::array<std::optional<unsigned int>, 5>& indices)
+                  {
+                    // here I need to do a 5th order integration and compare it with 3rd oder
+                    auto ComputeIntegrationError = [&](auto integrand)
+                    {
+                      std::array<std::tuple<double, Number>, 5> values{};
+                      for (std::size_t i = 0; i < 5; ++i)
+                      {
+                        values[i] =
+                            std::make_tuple(interval.timesteps[indices[i].value()].deposition_time,
+                                integrand(interval.timesteps[indices[i].value()]));
+                      }
+
+                      return std::abs(
+                          CORE::UTILS::IntegrateSimpsonStep(values[0], values[2], values[4]) -
+                          IntegrateBooleStep(values));
+                    };
+
+                    auto growth_scalar_integrand = [&](const MassIncrement<Number>& mass_increment)
+                    { return GrowthScalarIntegrand(mass_increment, current_time_); };
+
+                    auto cauchy_stress_integrand = [&](const MassIncrement<Number>& mass_increment)
+                    {
+                      return ScaledCauchyStressIntegrand(
+                          mass_increment, current_time_, current_state_.lambda_f);
+                    };
+
+                    const double begin_time = interval.adaptivity_info.GetIndexTime(
+                        indices[0].value(), 0.0, interval.base_dt);
+                    const double end_time = interval.adaptivity_info.GetIndexTime(
+                        indices[4].value(), 0.0, interval.base_dt);
+                    Number allowed_tolerance = tolerance_per_time * (end_time - begin_time);
+
+                    bool coarsen =
+                        ComputeIntegrationError(growth_scalar_integrand) <= allowed_tolerance &&
+                        ComputeIntegrationError(cauchy_stress_integrand) / sig_h_ <=
+                            allowed_tolerance;
+                    return coarsen;
+                  });
+
+              interval.adaptivity_info = adaptivity_info;
+
+              interval.timesteps.erase(
+                  std::remove_if(interval.timesteps.begin(), interval.timesteps.end(),
+                      [&](const MassIncrement<Number>& item)
+                      { return erase_item.at(&item - interval.timesteps.data()); }),
+                  interval.timesteps.end());
+            }
+          }
+          break;
+        }
+        case HistoryAdaptionStrategy::window:
+        {
+          std::size_t num_total_items = 0;
+          for (auto i = history_.rbegin(); i != history_.rend(); ++i)
+          {
+            auto& interval = *i;
+            std::vector<bool> erase_item(interval.timesteps.size(), false);
+
+            num_total_items += interval.timesteps.size();
+            if (num_total_items > window_size)
+            {
+              std::size_t num_to_delete = num_total_items - window_size;
+              for (std::size_t index = 0;
+                   index < std::min(num_to_delete, interval.timesteps.size()); ++index)
+              {
+                erase_item[index] = true;
+              }
+            }
+
+            interval.timesteps.erase(
+                std::remove_if(interval.timesteps.begin(), interval.timesteps.end(),
+                    [&](const MassIncrement<Number>& item)
+                    { return erase_item.at(&item - interval.timesteps.data()); }),
+                interval.timesteps.end());
           }
 
-          std::vector<bool> erase_item =
-              GetEraseItemsBasedOnRelativeError(relative_error_sum, adaptive_tolerance_);
-          interval.erase(std::remove_if(interval.begin(), interval.end(),
-                             [&](const MassIncrement<Number>& item)
-                             { return erase_item.at(&item - interval.data()); }),
-              interval.end());
+          history_.erase(std::remove_if(history_.begin(), history_.end(),
+                             [](const auto& item) { return item.timesteps.size() <= 1; }),
+              history_.end());
+          break;
         }
+        default:
+          dserror("unknown history adaption strategy");
       }
     }
   }
@@ -815,3 +949,4 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::EvaluateDCurrentFiberPK2Str
 
 template class MIXTURE::FullConstrainedMixtureFiber<double>;
 template class MIXTURE::FullConstrainedMixtureFiber<Sacado::Fad::DFad<double>>;
+BACI_NAMESPACE_CLOSE

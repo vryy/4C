@@ -8,22 +8,23 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_config_compile_settings.H"
-
-#include "baci_comm_utils.H"
+#include "baci_config.H"
+#include "baci_config_mpi.H"
 #include "baci_config_revision.H"
 #include "baci_config_trilinos_version.H"
+
+#include "baci_comm_utils.H"
 #include "baci_global_legacy_module.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_inpar_validcontactconstitutivelaw.H"
 #include "baci_inpar_validmaterials.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_elementdefinition.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_MpiComm.h>
 #include <Kokkos_Core.hpp>
@@ -216,8 +217,10 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard(argc, argv);
 
-  Teuchos::RCP<COMM_UTILS::Communicators> communicators =
-      COMM_UTILS::CreateComm(std::vector<std::string>(argv, argv + argc));
+  using namespace BACI;
+
+  Teuchos::RCP<CORE::COMM::Communicators> communicators =
+      CORE::COMM::CreateComm(std::vector<std::string>(argv, argv + argc));
   DRT::Problem::Instance()->SetCommunicators(communicators);
   Teuchos::RCP<Epetra_Comm> lcomm = communicators->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = communicators->GlobalComm();
@@ -265,7 +268,7 @@ int main(int argc, char *argv[])
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }
 
-  BACI::GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
+  GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {

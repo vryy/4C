@@ -25,7 +25,7 @@
 #include <variant>
 #include <vector>
 
-
+BACI_NAMESPACE_OPEN
 
 namespace LIBB64
 {
@@ -104,8 +104,7 @@ class VtkWriterBase
   VtkWriterBase();
 
   //! destructor
-  virtual ~VtkWriterBase() {}
-
+  virtual ~VtkWriterBase() = default;
   /** \brief initialize object with required input data
    *
    *  \author grill
@@ -121,7 +120,7 @@ class VtkWriterBase
    *  \author grill
    *  \date 03/17 */
   void SetAndCreateVtkWorkingDirectory(const std::string& path_existing_working_directory,
-      const std::string& name_new_vtk_subdirectory);
+      const std::string& name_vtk_subdirectory_to_be_created);
 
   /** \brief reset current simulation time and time step number
    *
@@ -377,5 +376,6 @@ inline std::string ScalarTypeToVtkType<double>()
   return "Float64";
 }
 
+BACI_NAMESPACE_CLOSE
 
 #endif

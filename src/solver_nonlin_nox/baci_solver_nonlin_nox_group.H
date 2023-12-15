@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief %NOX::NLN implementation of a %NOX::Epetra::Group
+\brief %NOX::NLN implementation of a %::NOX::Epetra::Group
        to handle unconstrained problems.
 
 
@@ -27,6 +27,9 @@
 // forward declarations
 class Epetra_BlockMap;
 class Epetra_Map;
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -48,56 +51,54 @@ namespace NOX
       class PrePostOperator;
     }  // namespace GROUP
 
-    class Group : public virtual NOX::Epetra::Group
+    class Group : public virtual ::NOX::Epetra::Group
     {
      public:
       //! Standard Constructor
       Group(Teuchos::ParameterList& printParams,    //!< printing parameters
           Teuchos::ParameterList& grpOptionParams,  //!< group option parameters
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>&
-              i,                         //!< basically the NOXified user interface
-          const NOX::Epetra::Vector& x,  //!< current solution vector
-          const Teuchos::RCP<NOX::Epetra::LinearSystem>&
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>&
+              i,                           //!< basically the NOXified user interface
+          const ::NOX::Epetra::Vector& x,  //!< current solution vector
+          const Teuchos::RCP<::NOX::Epetra::LinearSystem>&
               linSys  //!< linear system, matrix and RHS etc.
       );
 
       /*! \brief Copy constructor. If type is DeepCopy, takes ownership of
         valid shared linear system. */
-      Group(const NOX::NLN::Group& source, NOX::CopyType type = NOX::DeepCopy);
-
-      //! Destructor
-      virtual ~Group(){};
+      Group(const NOX::NLN::Group& source, ::NOX::CopyType type = ::NOX::DeepCopy);
 
       /// assign operator
-      NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source) override;
-      NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;
+      ::NOX::Abstract::Group& operator=(const ::NOX::Abstract::Group& source) override;
+      ::NOX::Abstract::Group& operator=(const ::NOX::Epetra::Group& source) override;
 
-      Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type = DeepCopy) const override;
+      Teuchos::RCP<::NOX::Abstract::Group> clone(
+          ::NOX::CopyType type = ::NOX::DeepCopy) const override;
 
       //! compute/update the current state variables
-      void computeX(const NOX::NLN::Group& grp, const NOX::Epetra::Vector& d, double step);
-      void computeX(
-          const NOX::Abstract::Group& grp, const NOX::Abstract::Vector& d, double step) override;
+      void computeX(const NOX::NLN::Group& grp, const ::NOX::Epetra::Vector& d, double step);
+      void computeX(const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& d,
+          double step) override;
 
-      NOX::Abstract::Group::ReturnType computeF() override;
+      ::NOX::Abstract::Group::ReturnType computeF() override;
 
-      NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& p,
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
+      ::NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& p,
+          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
       /// apply one block of the jacobian to a vector
-      NOX::Abstract::Group::ReturnType applyJacobianBlock(const NOX::Epetra::Vector& input,
-          Teuchos::RCP<NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
+      ::NOX::Abstract::Group::ReturnType applyJacobianBlock(const ::NOX::Epetra::Vector& input,
+          Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
 
       //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at
       //! the same time. This can result in a huge performance gain in some special cases, e.g.
       //! contact problems.
-      virtual NOX::Abstract::Group::ReturnType computeFandJacobian();
+      virtual ::NOX::Abstract::Group::ReturnType computeFandJacobian();
 
       //! ToDo Move this into an extra interface
       //! @{
 
       /// compute element volumes
-      NOX::Abstract::Group::ReturnType computeElementVolumes(
+      ::NOX::Abstract::Group::ReturnType computeElementVolumes(
           Teuchos::RCP<Epetra_Vector>& ele_vols) const;
 
       /*! get the nodal dofs from the elements corresponding to the provided
@@ -106,21 +107,21 @@ namespace NOX
           const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const;
 
       /// compute trial element volumes
-      NOX::Abstract::Group::ReturnType computeTrialElementVolumes(
-          Teuchos::RCP<Epetra_Vector>& ele_vols, const NOX::Abstract::Vector& dir, double step);
+      ::NOX::Abstract::Group::ReturnType computeTrialElementVolumes(
+          Teuchos::RCP<Epetra_Vector>& ele_vols, const ::NOX::Abstract::Vector& dir, double step);
 
       //! @}
 
       /// compute the correction system of equations (e.g. in case of a second order correction
       /// step)
-      NOX::Abstract::Group::ReturnType computeCorrectionSystem(
+      ::NOX::Abstract::Group::ReturnType computeCorrectionSystem(
           const enum NOX::NLN::CorrectionType type);
 
       //! set right hand side
-      NOX::Abstract::Group::ReturnType setF(Teuchos::RCP<NOX::Epetra::Vector> Fptr);
+      ::NOX::Abstract::Group::ReturnType setF(Teuchos::RCP<::NOX::Epetra::Vector> Fptr);
 
       //! set jacobian operator
-      NOX::Abstract::Group::ReturnType setJacobianOperator(
+      ::NOX::Abstract::Group::ReturnType setJacobianOperator(
           const Teuchos::RCP<const Epetra_Operator> jacOperator);
 
       //! set the solution vector to zero
@@ -156,39 +157,39 @@ namespace NOX
 
       //! returns the primary rhs norms
       virtual Teuchos::RCP<const std::vector<double>> GetRHSNorms(
-          const std::vector<NOX::Abstract::Vector::NormType>& type,
+          const std::vector<::NOX::Abstract::Vector::NormType>& type,
           const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
-          Teuchos::RCP<const std::vector<NOX::StatusTest::NormF::ScaleType>> scale =
+          Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale =
               Teuchos::null) const;
 
       //! returns the Root Mean Squares (abbr.: RMS) of the primary solution updates
       virtual Teuchos::RCP<std::vector<double>> GetSolutionUpdateRMS(
-          const NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
+          const ::NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
           const std::vector<double>& rTol,
           const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
           const std::vector<bool>& disable_implicit_weighting) const;
 
-      double GetTrialUpdateNorm(const NOX::Abstract::Vector& dir,
-          const NOX::Abstract::Vector::NormType normtype, const StatusTest::QuantityType quantity,
+      double GetTrialUpdateNorm(const ::NOX::Abstract::Vector& dir,
+          const ::NOX::Abstract::Vector::NormType normtype, const StatusTest::QuantityType quantity,
           const StatusTest::NormUpdate::ScaleType scale = StatusTest::NormUpdate::Unscaled) const;
 
       //! returns the desired norm of the primary solution updates
       virtual Teuchos::RCP<std::vector<double>> GetSolutionUpdateNorms(
-          const NOX::Abstract::Vector& xOld,
-          const std::vector<NOX::Abstract::Vector::NormType>& type,
+          const ::NOX::Abstract::Vector& xOld,
+          const std::vector<::NOX::Abstract::Vector::NormType>& type,
           const std::vector<StatusTest::QuantityType>& chQ,
           Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale =
               Teuchos::null) const;
 
       //! returns the desired norm of the previous solution
       virtual Teuchos::RCP<std::vector<double>> GetPreviousSolutionNorms(
-          const NOX::Abstract::Vector& xOld,
-          const std::vector<NOX::Abstract::Vector::NormType>& type,
+          const ::NOX::Abstract::Vector& xOld,
+          const std::vector<::NOX::Abstract::Vector::NormType>& type,
           const std::vector<StatusTest::QuantityType>& chQ,
           Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const;
 
       //! create a backup state
-      void CreateBackupState(const NOX::Abstract::Vector& dir) const;
+      void CreateBackupState(const ::NOX::Abstract::Vector& dir) const;
 
       //! recover from stored backup state
       void RecoverFromBackupState();
@@ -230,9 +231,9 @@ namespace NOX
       //! @{
       //! adjust the pseudo time step length for the ptc nln solver
       void adjustPseudoTimeStep(double& delta, const double& stepSize,
-          const NOX::Abstract::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+          const ::NOX::Abstract::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver);
       void adjustPseudoTimeStep(double& delta, const double& stepSize,
-          const NOX::Epetra::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+          const ::NOX::Epetra::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
       //! get the lumped mass matrix
       Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
@@ -253,7 +254,7 @@ namespace NOX
       virtual double GetModelValue(const enum MeritFunction::MeritFctName merit_func_type) const;
 
       //! compute contributions to a linear model
-      virtual double GetLinearizedModelTerms(const NOX::Abstract::Vector& dir,
+      virtual double GetLinearizedModelTerms(const ::NOX::Abstract::Vector& dir,
           enum NOX::NLN::MeritFunction::MeritFctName mf_type,
           enum NOX::NLN::MeritFunction::LinOrder linorder,
           enum NOX::NLN::MeritFunction::LinType lintype) const;
@@ -271,11 +272,11 @@ namespace NOX
       void replaceDiagonalOfJacobian(const Epetra_Vector& new_diag, unsigned diag_bid) const;
 
       /// compute the condition number of the Jacobian matrix (serial mode)
-      NOX::Abstract::Group::ReturnType computeSerialJacobianConditionNumber(
+      ::NOX::Abstract::Group::ReturnType computeSerialJacobianConditionNumber(
           const NOX::NLN::LinSystem::ConditionNumber condnum_type, bool printOutput);
 
       /// compute the eigenvalues of the Jacobian matrix (serial mode)
-      NOX::Abstract::Group::ReturnType computeSerialJacobianEigenvalues(bool printOutput);
+      ::NOX::Abstract::Group::ReturnType computeSerialJacobianEigenvalues(bool printOutput);
 
       /// reset is valid Newton member
       inline void resetIsValidNewton() { isValidNewton = false; };
@@ -335,5 +336,7 @@ namespace NOX
   }     // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_GROUP_H

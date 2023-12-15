@@ -17,6 +17,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -34,7 +36,7 @@ namespace DRT
       \date 03/18
     */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ArteryEleCalcPresBased : public ArteryEleCalc<distype>
     {
      private:
@@ -44,9 +46,6 @@ namespace DRT
       ArteryEleCalcPresBased(const int numdofpernode, const std::string& disname);
 
      public:
-      /// virtual destructor
-      virtual ~ArteryEleCalcPresBased(){};
-
       //! Singleton access method
       static ArteryEleCalcPresBased<distype>* Instance(
           const int numdofpernode, const std::string& disname);
@@ -124,5 +123,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_ARTERY_ELE_CALC_PRES_BASED_H

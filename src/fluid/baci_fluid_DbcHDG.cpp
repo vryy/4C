@@ -17,6 +17,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::Discretization& discret,
@@ -260,24 +262,24 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
             Teuchos::RCP<MAT::Material> mat = ele->Material();
 
             // get discretization type
-            const DRT::Element::DiscretizationType distype = ele->Shape();
+            const CORE::FE::CellType distype = ele->Shape();
 
             // evaluate pressure average     //TODO als make it valid for every discretization type
             CORE::LINALG::SerialDenseVector elevec = CORE::LINALG::SerialDenseVector(1);
-            if (distype == DRT::Element::DiscretizationType::quad4)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad4>::Instance()
+            if (distype == CORE::FE::CellType::quad4)
+              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad4>::Instance()
                   ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else if (distype == DRT::Element::DiscretizationType::quad8)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad8>::Instance()
+            else if (distype == CORE::FE::CellType::quad8)
+              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad8>::Instance()
                   ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else if (distype == DRT::Element::DiscretizationType::quad9)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad9>::Instance()
+            else if (distype == CORE::FE::CellType::quad9)
+              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad9>::Instance()
                   ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else if (distype == DRT::Element::DiscretizationType::tri3)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tri3>::Instance()
+            else if (distype == CORE::FE::CellType::tri3)
+              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri3>::Instance()
                   ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else if (distype == DRT::Element::DiscretizationType::tri6)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tri6>::Instance()
+            else if (distype == CORE::FE::CellType::tri6)
+              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri6>::Instance()
                   ->EvaluatePressureAverage(fluidele, params, mat, elevec);
             else
               dserror("Given distype currently not implemented.");
@@ -362,3 +364,5 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

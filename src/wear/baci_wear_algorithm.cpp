@@ -35,6 +35,8 @@
 #include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret_knotvector.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | Constructor                                              farah 11/13 |
@@ -90,11 +92,6 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   CheckInput();
 }
 
-
-/*----------------------------------------------------------------------*
- | Destructor                                               farah 11/13 |
- *----------------------------------------------------------------------*/
-WEAR::Algorithm::~Algorithm() {}
 
 
 /*----------------------------------------------------------------------*
@@ -366,8 +363,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
         if (ftype != INPAR::CONTACT::friction_none)
         {
           Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(new CONTACT::FriNode(node->Id(),
-              node->X(), node->Owner(), structure_->Discretization()->NumDof(0, node),
-              structure_->Discretization()->Dof(0, node), isslave[j],
+              node->X(), node->Owner(), structure_->Discretization()->Dof(0, node), isslave[j],
               isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
@@ -407,8 +403,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
         else
         {
           Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(),
-              node->X(), node->Owner(), structure_->Discretization()->NumDof(0, node),
-              structure_->Discretization()->Dof(0, node), isslave[j],
+              node->X(), node->Owner(), structure_->Discretization()->Dof(0, node), isslave[j],
               isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
@@ -506,3 +501,5 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

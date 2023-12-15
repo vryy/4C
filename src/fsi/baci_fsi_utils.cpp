@@ -46,9 +46,11 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, double alpha,
+void FSI::UTILS::DumpJacobian(::NOX::Epetra::Interface::Required& interface, double alpha,
     double beta, Teuchos::RCP<Epetra_Vector> soln, std::string filename)
 {
   // that's really stupid again
@@ -68,7 +70,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, doubl
   Epetra_Vector Jc(*soln);
 
   // Compute the RHS at the initial solution
-  interface.computeF(*soln, fo, NOX::Epetra::Interface::Required::FD_Res);
+  interface.computeF(*soln, fo, ::NOX::Epetra::Interface::Required::FD_Res);
 
   Epetra_Vector x_perturb = *soln;
 
@@ -96,7 +98,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, doubl
     map.Comm().Broadcast(&idx, 1, broadcastProc);
 
     // Compute the perturbed RHS
-    interface.computeF(x_perturb, fp, NOX::Epetra::Interface::Required::FD_Res);
+    interface.computeF(x_perturb, fp, ::NOX::Epetra::Interface::Required::FD_Res);
 
     // Compute the column k of the Jacobian
     Jc.Update(1.0, fp, -1.0, fo, 0.0);
@@ -177,7 +179,10 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
 {
   structcoupmaster_ = structcoupmaster;
 
-  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(DRT::Problem::Instance()->NDim(),
+      DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   // declare struct objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> structelements;
@@ -354,8 +359,8 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisptotal,
-    Teuchos::RCP<Epetra_Vector> ifluid, CORE::ADAPTER::CouplingMortar& coupsf)
+void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idispstruct,
+    Teuchos::RCP<Epetra_Vector> idispfluid, CORE::ADAPTER::CouplingMortar& coupsf)
 {
   // merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
   idispms_->PutScalar(0.0);
@@ -367,8 +372,8 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisp
   Teuchos::RCP<Epetra_Import> slave_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
 
-  if (idispms_->Import(*idisptotal, *master_importer, Add)) dserror("Import operation failed.");
-  if (idispms_->Import(*ifluid, *slave_importer, Add)) dserror("Import operation failed.");
+  if (idispms_->Import(*idispstruct, *master_importer, Add)) dserror("Import operation failed.");
+  if (idispms_->Import(*idispfluid, *slave_importer, Add)) dserror("Import operation failed.");
 
   // new D,M,Dinv out of disp of struct and fluid side
   coupsf.Evaluate(idispms_);
@@ -593,7 +598,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
 
       // current coord of ale node.
       // Initialize as coordinates of current node, which is extremely important for 2D!
-      CORE::LINALG::Matrix<3, 1> alenodecurr(node->X());
+      CORE::LINALG::Matrix<3, 1> alenodecurr(node->X().data());
 
       // compute ALE position to project from
       if (aletype_ == INPAR::FSI::ALEprojection_curr)
@@ -885,3 +890,5 @@ void FSI::UTILS::SlideAleUtils::ReadRestart(IO::DiscretizationReader& reader)
 {
   reader.ReadVector(iprojhist_, "projhist");
 }
+
+BACI_NAMESPACE_CLOSE

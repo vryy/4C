@@ -15,12 +15,14 @@
 
 #include "baci_nurbs_discret_control_point.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::NURBS::ControlPointType DRT::NURBS::ControlPointType::instance_;
 
 
-DRT::ParObject* DRT::NURBS::ControlPointType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::NURBS::ControlPointType::Create(const std::vector<char>& data)
 {
-  double dummycoord[3] = {999., 999., 999.};
+  std::vector<double> dummycoord(3, 999.0);
   double dummyweight = 999.;
   DRT::NURBS::ControlPoint* object = new DRT::NURBS::ControlPoint(-1, dummycoord, dummyweight, -1);
   object->Unpack(data);
@@ -31,7 +33,7 @@ DRT::ParObject* DRT::NURBS::ControlPointType::Create(const std::vector<char>& da
   Standard ctor
  */
 DRT::NURBS::ControlPoint::ControlPoint(
-    int id, const double* coords, const double weight, const int owner)
+    int id, const std::vector<double>& coords, const double weight, const int owner)
     : DRT::Node(id, coords, owner), w_(weight)
 {
   return;
@@ -60,10 +62,6 @@ DRT::NURBS::ControlPoint* DRT::NURBS::ControlPoint::Clone() const
   return newcp;
 }
 
-/*
-  Destructor
-*/
-DRT::NURBS::ControlPoint::~ControlPoint() { return; }
 
 /*
   Pack this class so it can be communicated
@@ -71,9 +69,9 @@ DRT::NURBS::ControlPoint::~ControlPoint() { return; }
   Pack and Unpack are used to communicate this control point
 
 */
-void DRT::NURBS::ControlPoint::Pack(DRT::PackBuffer& data) const
+void DRT::NURBS::ControlPoint::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -95,10 +93,9 @@ void DRT::NURBS::ControlPoint::Pack(DRT::PackBuffer& data) const
 void DRT::NURBS::ControlPoint::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -120,3 +117,5 @@ void DRT::NURBS::ControlPoint::Print(std::ostream& os) const
   os << w_ << "\n";
   return;
 }
+
+BACI_NAMESPACE_CLOSE

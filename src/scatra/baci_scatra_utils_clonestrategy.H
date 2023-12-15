@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -34,8 +36,7 @@ namespace SCATRA
     /// constructor
     explicit ScatraFluidCloneStrategy() {}
     /// destructor
-    virtual ~ScatraFluidCloneStrategy() {}
-
+    virtual ~ScatraFluidCloneStrategy() = default;
     /// returns conditions names to be copied (source and target name)
     virtual std::map<std::string, std::string> ConditionsToCopy() const;
 
@@ -65,8 +66,7 @@ namespace SCATRA
     /// constructor
     explicit ScatraReactionCloneStrategy() {}
     /// destructor
-    virtual ~ScatraReactionCloneStrategy() {}
-
+    virtual ~ScatraReactionCloneStrategy() = default;
     /// returns conditions names to be copied (source and target name)
     virtual std::map<std::string, std::string> ConditionsToCopy() const;
 
@@ -86,5 +86,7 @@ namespace SCATRA
   };  // class ScatraFluidCloneStrategy
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

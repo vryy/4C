@@ -23,6 +23,8 @@
 #include "baci_scatra_timint_meshtying_strategy_artery.H"
 #include "baci_scatra_timint_poromulti.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
@@ -121,12 +123,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
   // scatra problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, scatraparams,
+      problem->SolverParams(linsolvernumber), scatra_disname, true));
 
   // initialize the base algo.
   // scatra time integrator is constructed and initialized inside.
-  scatra_->Init(
-      globaltimeparams, scatraparams, problem->SolverParams(linsolvernumber), scatra_disname, true);
+  scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   scatra_->ScaTraField()->SetNumberOfDofSetPressure(2);
@@ -236,8 +238,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
   poromulti_->PrepareTimeLoop();
   // initial output for scatra field
   SetPoroSolution();
-  scatra_->ScaTraField()->Output();
-  if (artery_coupl_) scatramsht_->ArtScatraField()->Output();
+  scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
+  if (artery_coupl_) scatramsht_->ArtScatraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*
@@ -251,13 +253,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
   // scatra field
   scatra_->ScaTraField()->Update();
   scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
-  scatra_->ScaTraField()->Output();
+  scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
   // artery scatra field
   if (artery_coupl_)
   {
     scatramsht_->ArtScatraField()->Update();
     scatramsht_->ArtScatraField()->EvaluateErrorComparedToAnalyticalSol();
-    scatramsht_->ArtScatraField()->Output();
+    scatramsht_->ArtScatraField()->CheckAndWriteOutputAndRestart();
   }
   if (Comm().MyPID() == 0)
   {
@@ -462,3 +464,5 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::HandleDivergence() const
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

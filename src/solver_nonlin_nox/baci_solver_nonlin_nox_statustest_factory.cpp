@@ -23,22 +23,24 @@
 #include <NOX_StatusTest_Factory.H>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::StatusTest::Factory::Factory()
-    : noxfactory_(Teuchos::rcp(new const NOX::StatusTest::Factory()))
+    : noxfactory_(Teuchos::rcp(new const ::NOX::StatusTest::Factory()))
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOuterStatusTests(
-    Teuchos::ParameterList& p, const NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic>>* tagged_tests) const
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOuterStatusTests(
+    Teuchos::ParameterList& p, const ::NOX::Utils& u,
+    std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const
 {
-  Teuchos::RCP<NOX::StatusTest::Generic> status_test;
+  Teuchos::RCP<::NOX::StatusTest::Generic> status_test;
 
   std::string test_type = "???";
 
@@ -73,23 +75,23 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOuter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormFTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormFTest(
+    Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   return BuildNormFTest(p, u, false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormFTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u, const bool& relativeNormF) const
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormFTest(
+    Teuchos::ParameterList& p, const ::NOX::Utils& u, const bool& relativeNormF) const
 {
   // initialized to size zero
   std::vector<double> tolerances = std::vector<double>(0);
-  std::vector<NOX::StatusTest::NormF::ToleranceType> toltypes(0);
+  std::vector<::NOX::StatusTest::NormF::ToleranceType> toltypes(0);
   std::vector<QuantityType> quantitytypes(0);
-  std::vector<NOX::Abstract::Vector::NormType> normtypes(0);
-  std::vector<NOX::StatusTest::NormF::ScaleType> scaletypes(0);
+  std::vector<::NOX::Abstract::Vector::NormType> normtypes(0);
+  std::vector<::NOX::StatusTest::NormF::ScaleType> scaletypes(0);
 
   int i = 0;
   std::ostringstream quantity_string;
@@ -121,14 +123,14 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
     // get the tolerance type
     // ------------------------------------------
     if (relativeNormF)
-      toltypes.push_back(NOX::StatusTest::NormF::Relative);
+      toltypes.push_back(::NOX::StatusTest::NormF::Relative);
     else
     {
       std::string tol_type_string = ql->get("Tolerance Type", "Absolute");
       if (tol_type_string == "Absolute")
-        toltypes.push_back(NOX::StatusTest::NormF::Absolute);
+        toltypes.push_back(::NOX::StatusTest::NormF::Absolute);
       else if (tol_type_string == "Relative")
-        toltypes.push_back(NOX::StatusTest::NormF::Relative);
+        toltypes.push_back(::NOX::StatusTest::NormF::Relative);
       else
       {
         std::string msg = "\"Tolerance Type\" must be either \"Absolute\" or \"Relative\"!";
@@ -139,7 +141,7 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
     // ------------------------------------------
     // get the tolerance
     // ------------------------------------------
-    if (toltypes.at(i) == NOX::StatusTest::NormF::Absolute)
+    if (toltypes.at(i) == ::NOX::StatusTest::NormF::Absolute)
       tolerances.push_back(ql->get("Tolerance", 1.0e-8));
     else
       tolerances.push_back(ql->get("Tolerance", 1.0e-5));
@@ -149,11 +151,11 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
     // ------------------------------------------
     std::string norm_type_string = ql->get("Norm Type", "Two Norm");
     if (norm_type_string == "Two Norm")
-      normtypes.push_back(NOX::Abstract::Vector::TwoNorm);
+      normtypes.push_back(::NOX::Abstract::Vector::TwoNorm);
     else if (norm_type_string == "One Norm")
-      normtypes.push_back(NOX::Abstract::Vector::OneNorm);
+      normtypes.push_back(::NOX::Abstract::Vector::OneNorm);
     else if (norm_type_string == "Max Norm")
-      normtypes.push_back(NOX::Abstract::Vector::MaxNorm);
+      normtypes.push_back(::NOX::Abstract::Vector::MaxNorm);
     else
     {
       std::string msg = "\"Norm Type\" must be either \"Two Norm\", \"One Norm\", or \"Max Norm\"!";
@@ -165,9 +167,9 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
     // ------------------------------------------
     std::string scale_type_string = ql->get("Scale Type", "Unscaled");
     if (scale_type_string == "Unscaled")
-      scaletypes.push_back(NOX::StatusTest::NormF::Unscaled);
+      scaletypes.push_back(::NOX::StatusTest::NormF::Unscaled);
     else if (scale_type_string == "Scaled")
-      scaletypes.push_back(NOX::StatusTest::NormF::Scaled);
+      scaletypes.push_back(::NOX::StatusTest::NormF::Scaled);
     else
     {
       std::string msg = "\"Scale Type\" must be either \"Unscaled\" or \"Scaled\"!";
@@ -191,14 +193,14 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormUpdateTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormUpdateTest(
+    Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // initialized to size zero
   std::vector<double> tolerances(0.0);
   std::vector<NOX::NLN::StatusTest::NormUpdate::ToleranceType> toltypes(0);
   std::vector<QuantityType> quantitytypes(0);
-  std::vector<NOX::Abstract::Vector::NormType> normtypes(0);
+  std::vector<::NOX::Abstract::Vector::NormType> normtypes(0);
   std::vector<NOX::NLN::StatusTest::NormUpdate::ScaleType> scaletypes(0);
 
   // ------------------------------------------
@@ -269,11 +271,11 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormU
     // ------------------------------------------
     std::string norm_type_string = ql->get("Norm Type", "Two Norm");
     if (norm_type_string == "Two Norm")
-      normtypes.push_back(NOX::Abstract::Vector::TwoNorm);
+      normtypes.push_back(::NOX::Abstract::Vector::TwoNorm);
     else if (norm_type_string == "One Norm")
-      normtypes.push_back(NOX::Abstract::Vector::OneNorm);
+      normtypes.push_back(::NOX::Abstract::Vector::OneNorm);
     else if (norm_type_string == "Max Norm")
-      normtypes.push_back(NOX::Abstract::Vector::MaxNorm);
+      normtypes.push_back(::NOX::Abstract::Vector::MaxNorm);
     else
     {
       std::string msg = "\"Norm Type\" must be either \"Two Norm\", \"One Norm\", or \"Max Norm\"!";
@@ -312,8 +314,8 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormU
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormWRMSTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormWRMSTest(
+    Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // initialized to size zero
   std::vector<QuantityType> quantitytypes = std::vector<QuantityType>(0);
@@ -421,8 +423,8 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormW
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildActiveSetTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildActiveSetTest(
+    Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // ------------------------------------------
   // get the Quantity Type
@@ -452,16 +454,16 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildActiv
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildComboTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic>>* tagged_tests) const
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildComboTest(
+    Teuchos::ParameterList& p, const ::NOX::Utils& u,
+    std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const
 {
   std::string combo_type_string = Teuchos::get<std::string>(p, "Combo Type");
-  NOX::StatusTest::Combo::ComboType combo_type = NOX::StatusTest::Combo::AND;
+  ::NOX::StatusTest::Combo::ComboType combo_type = ::NOX::StatusTest::Combo::AND;
   if (combo_type_string == "AND")
-    combo_type = NOX::StatusTest::Combo::AND;
+    combo_type = ::NOX::StatusTest::Combo::AND;
   else if (combo_type_string == "OR")
-    combo_type = NOX::StatusTest::Combo::OR;
+    combo_type = ::NOX::StatusTest::Combo::OR;
   else
   {
     throwError("BuildComboTest()", "The \"Combo Type\" must be \"AND\" or \"OR\"!");
@@ -477,7 +479,7 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildCombo
   {
     Teuchos::ParameterList& subtest_list = p.sublist(subtest_name.str(), true);
 
-    Teuchos::RCP<NOX::StatusTest::Generic> subtest =
+    Teuchos::RCP<::NOX::StatusTest::Generic> subtest =
         this->BuildOuterStatusTests(subtest_list, u, tagged_tests);
 
     combo_test->addStatusTest(subtest);
@@ -494,8 +496,8 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildCombo
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::StatusTest::Factory::CheckAndTagTest(const Teuchos::ParameterList& p,
-    const Teuchos::RCP<NOX::StatusTest::Generic>& test,
-    std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic>>* tagged_tests) const
+    const Teuchos::RCP<::NOX::StatusTest::Generic>& test,
+    std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const
 {
   if ((Teuchos::isParameterType<std::string>(p, "Tag")) && (tagged_tests != nullptr))
   {
@@ -519,10 +521,12 @@ void NOX::NLN::StatusTest::Factory::throwError(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::BuildOuterStatusTests(
-    Teuchos::ParameterList& p, const NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic>>* tagged_tests)
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::BuildOuterStatusTests(
+    Teuchos::ParameterList& p, const ::NOX::Utils& u,
+    std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests)
 {
   Factory factory;
   return factory.BuildOuterStatusTests(p, u, tagged_tests);
 }
+
+BACI_NAMESPACE_CLOSE

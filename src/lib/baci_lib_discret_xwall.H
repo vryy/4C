@@ -23,6 +23,8 @@ of dofs per node on a fluid discretization for xwall
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class DiscretizationXWall : public DiscretizationFaces
@@ -36,11 +38,7 @@ namespace DRT
     */
     DiscretizationXWall(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~DiscretizationXWall() override = default;
 
     /*!
     \brief Get the gid of all dofs of a node.
@@ -70,7 +68,7 @@ namespace DRT
       std::vector<int> totaldof;
       dofsets_[nds]->Dof(totaldof, node, nodaldofset);
 
-      if (element == nullptr && element->Shape() == DRT::Element::hex8)
+      if (element == nullptr && element->Shape() == CORE::FE::CellType::hex8)
         dserror("element required for location vector of hex8 element");
 
       int size;
@@ -90,5 +88,7 @@ namespace DRT
 /// << operator
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationXWall& dis);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_XWALL_H

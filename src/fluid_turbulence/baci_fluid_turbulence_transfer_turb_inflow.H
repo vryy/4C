@@ -15,13 +15,13 @@ to)
 
 #ifndef BACI_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H
 #define BACI_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H
+
+#include "baci_comm_exporter.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 #include <Teuchos_RCP.hpp>
 
-/*
-
-*/
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -45,7 +45,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TransferTurbulentInflowCondition();
+    virtual ~TransferTurbulentInflowCondition() = default;
 
     /*!
     \brief Transfer process copying values from master boundary to slave
@@ -73,10 +73,11 @@ namespace FLD
     void GetData(int& id, int& direction, ToggleType& type, const DRT::Condition*);
 
     //! receive a block in the round robin communication pattern
-    void ReceiveBlock(std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request);
+    void ReceiveBlock(
+        std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     //! send a block in the round robin communication pattern
-    void SendBlock(std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request);
+    void SendBlock(std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     //! unpack all master values contained in receive block
     void UnpackLocalMasterValues(std::vector<int>& mymasters,
@@ -84,7 +85,7 @@ namespace FLD
 
     //! pack all master values into a send block
     void PackLocalMasterValues(std::vector<int>& mymasters,
-        std::vector<std::vector<double>>& mymasters_vel, DRT::PackBuffer& sblock);
+        std::vector<std::vector<double>>& mymasters_vel, CORE::COMM::PackBuffer& sblock);
 
     //! for all values avaible on the processor, do the final setting of the value
     virtual void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
@@ -118,11 +119,6 @@ namespace FLD
     TransferTurbulentInflowConditionXW(
         Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~TransferTurbulentInflowConditionXW();
 
     /*!
     \brief Transfer process copying values from master boundary to slave
@@ -134,12 +130,13 @@ namespace FLD
            of the last time step on the master boundary
     */
     void Transfer(const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
-        const double time);
+        const double time) override;
 
    private:
     //! for all values avaible on the processor, do the final setting of the value
     void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
-        std::vector<std::vector<double>>& mymasters_vel, Teuchos::RCP<Epetra_Vector> velnp);
+        std::vector<std::vector<double>>& mymasters_vel,
+        Teuchos::RCP<Epetra_Vector> velnp) override;
   };
 
 
@@ -153,11 +150,6 @@ namespace FLD
     TransferTurbulentInflowConditionNodal(
         Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~TransferTurbulentInflowConditionNodal();
 
     /*!
     \brief Transfer process copying values from master boundary to slave
@@ -169,16 +161,19 @@ namespace FLD
            of the last time step on the master boundary
     */
     void Transfer(const Teuchos::RCP<Epetra_Vector> invec, Teuchos::RCP<Epetra_Vector> outvec,
-        const double time);
+        const double time) override;
 
     bool IsActive() { return active_; }
 
    private:
     //! for all values avaible on the processor, do the final setting of the value
     void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
-        std::vector<std::vector<double>>& mymasters_vec, Teuchos::RCP<Epetra_Vector> outvec);
+        std::vector<std::vector<double>>& mymasters_vec,
+        Teuchos::RCP<Epetra_Vector> outvec) override;
   };
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H

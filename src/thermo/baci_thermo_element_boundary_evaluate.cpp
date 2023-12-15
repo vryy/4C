@@ -13,6 +13,8 @@ Evaluate boundary conditions for thermo problems
  *----------------------------------------------------------------------*/
 #include "baci_thermo_ele_boundary_impl.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | evaluate the element for volume coupling (public)         dano 02/10 |
@@ -50,3 +52,5 @@ int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(Teuchos::ParameterList& param
   return DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->EvaluateNeumann(
       this, params, discretization, condition, lm, elevec1);
 }
+
+BACI_NAMESPACE_CLOSE

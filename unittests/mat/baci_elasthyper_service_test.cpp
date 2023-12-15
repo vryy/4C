@@ -18,6 +18,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class ElastHyperServiceTest : public ::testing::Test
   {
    protected:

@@ -16,60 +16,63 @@
 #include "baci_fluid_ele_boundary_interface.H"
 #include "baci_fluid_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, std::string problem)
+    CORE::FE::CellType distype, std::string problem)
 {
   switch (distype)
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<DRT::Element::quad4>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad4>(problem);
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<DRT::Element::quad8>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad8>(problem);
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<DRT::Element::quad9>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad9>(problem);
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<DRT::Element::tri3>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri3>(problem);
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<DRT::Element::tri6>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri6>(problem);
     }
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      return DefineProblemType<DRT::Element::line2>(problem);
+      return DefineProblemType<CORE::FE::CellType::line2>(problem);
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      return DefineProblemType<DRT::Element::line3>(problem);
+      return DefineProblemType<CORE::FE::CellType::line3>(problem);
     }
-    case DRT::Element::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      return DefineProblemType<DRT::Element::nurbs2>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs2>(problem);
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      return DefineProblemType<DRT::Element::nurbs3>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs3>(problem);
     }
-    case DRT::Element::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      return DefineProblemType<DRT::Element::nurbs4>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs4>(problem);
     }
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      return DefineProblemType<DRT::Element::nurbs9>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs9>(problem);
     }
     default:
-      dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated. Just do it.",
+          CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;
@@ -78,7 +81,7 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemType(
     std::string problem)
 {
@@ -93,3 +96,5 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Defi
 
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

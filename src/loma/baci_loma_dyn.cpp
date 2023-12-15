@@ -26,6 +26,8 @@
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 // entry point for LOMA in DRT
@@ -83,18 +85,18 @@ void loma_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (no fluid discretization)
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+              lomacontrol, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
           new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // now we can call Init() on base algo
-      scatraonly->Init(
-          lomacontrol, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      scatraonly->Init();
 
       // only now we must call Setup() on the scatra time integrator.
       // all objects relying on the parallel distribution are
@@ -167,10 +169,9 @@ void loma_dyn(int restart)
       // add proxy of fluid transport degrees of freedom to scatra discretization
       if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
-
-      loma->Init(lomacontrol, DRT::Problem::Instance()->ScalarTransportDynamicParams(),
-          DRT::Problem::Instance()->SolverParams(linsolvernumber));
       loma->ScaTraField()->SetNumberOfDofSetVelocity(1);
+
+      loma->Init();
 
       loma->Setup();
 
@@ -208,3 +209,5 @@ void loma_dyn(int restart)
   return;
 
 }  // loma_dyn()
+
+BACI_NAMESPACE_CLOSE

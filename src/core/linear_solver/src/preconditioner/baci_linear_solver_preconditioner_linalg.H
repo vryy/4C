@@ -17,6 +17,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -53,7 +55,7 @@ namespace CORE::LINALG
     /// construction from a solver object
     explicit Preconditioner(Teuchos::RCP<Solver> solver);
 
-    virtual ~Preconditioner()
+    ~Preconditioner() override
     {
       // destruction order is important
       solver_ = Teuchos::null;
@@ -67,7 +69,7 @@ namespace CORE::LINALG
      */
     void Setup(Teuchos::RCP<Epetra_Operator> matrix,
         Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null,
-        Teuchos::RCP<::DRT::Discretization> fdis = Teuchos::null,
+        Teuchos::RCP<BACI::DRT::Discretization> fdis = Teuchos::null,
         Teuchos::RCP<Epetra_Map> inodes = Teuchos::null, bool structuresplit = false);
 
     /// Solve system of equations
@@ -95,38 +97,38 @@ namespace CORE::LINALG
     /// @name Attribute set methods
 
     /// If set true, transpose of this operator will be applied.
-    virtual int SetUseTranspose(bool UseTranspose);
+    int SetUseTranspose(bool UseTranspose) override;
 
     /// @name Mathematical functions
 
     /// Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
-    virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Returns the infinity norm of the global matrix.
-    virtual double NormInf() const;
+    double NormInf() const override;
 
     /// @name Attribute access functions
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     /// Returns the current UseTranspose setting.
-    virtual bool UseTranspose() const;
+    bool UseTranspose() const override;
 
     /// Returns true if the this object can provide an approximate Inf-norm, false otherwise.
-    virtual bool HasNormInf() const;
+    bool HasNormInf() const override;
 
     /// Returns a pointer to the Epetra_Comm communicator associated with this operator.
-    virtual const Epetra_Comm& Comm() const;
+    const Epetra_Comm& Comm() const override;
 
     /// Returns the Epetra_Map object associated with the domain of this operator.
-    virtual const Epetra_Map& OperatorDomainMap() const;
+    const Epetra_Map& OperatorDomainMap() const override;
 
     /// Returns the Epetra_Map object associated with the range of this operator.
-    virtual const Epetra_Map& OperatorRangeMap() const;
+    const Epetra_Map& OperatorRangeMap() const override;
 
     ///@}
 
@@ -149,5 +151,7 @@ namespace CORE::LINALG
     int ncall_;
   };
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

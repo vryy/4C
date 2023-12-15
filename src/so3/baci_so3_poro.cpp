@@ -9,15 +9,17 @@
 
 #include "baci_so3_poro.H"
 
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_structporo.H"
 #include "baci_so3_line.H"
 #include "baci_so3_poro_eletypes.H"
 #include "baci_so3_surface.H"
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+BACI_NAMESPACE_OPEN
+
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)
     : so3_ele(id, owner),
       data_(),
@@ -40,7 +42,7 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)
   anisotropic_permeability_nodal_coeffs_.resize(3, std::vector<double>(numnod_, 0.0));
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
     const DRT::ELEMENTS::So3_Poro<so3_ele, distype>& old)
     : so3_ele(old),
@@ -63,17 +65,17 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
   numgpt_ = intpoints_.NumPoints();
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::Element* DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3_Poro<so3_ele, distype>(*this);
   return newelement;
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(DRT::PackBuffer& data) const
+template <class so3_ele, CORE::FE::CellType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -117,14 +119,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(DRT::PackBuffer& data) cons
   so3_ele::Pack(data);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  so3_ele::ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // data_
   std::vector<char> tmp(0);
@@ -177,51 +177,29 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& 
     dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_poro ";
-  os << DRT::DistypeToString(distype).c_str() << " ";
+  os << CORE::FE::CellTypeToString(distype).c_str() << " ";
   Element::Print(os);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -239,7 +217,7 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ReadElement(
   return true;
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
     ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
         DRT::INPUT::LineDefinition* linedef)
@@ -252,7 +230,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
     ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
         DRT::INPUT::LineDefinition* linedef)
@@ -265,33 +243,33 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::VisNames(std::map<std::string, int>& names)
 {
   so3_ele::VisNames(names);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::VisData(
     const std::string& name, std::vector<double>& data)
 {
   return so3_ele::VisData(name, data);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
       return So_tet4PoroType::Instance().UniqueParObjectId();
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
       return So_tet10PoroType::Instance().UniqueParObjectId();
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       return So_hex8PoroType::Instance().UniqueParObjectId();
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       return So_hex27PoroType::Instance().UniqueParObjectId();
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return So_nurbs27PoroType::Instance().UniqueParObjectId();
     default:
       dserror("unknown element type!");
@@ -300,20 +278,20 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::UniqueParObjectId() const
   return -1;
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::ElementType& DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
       return So_tet4PoroType::Instance();
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
       return So_tet10PoroType::Instance();
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       return So_hex8PoroType::Instance();
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       return So_hex27PoroType::Instance();
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return So_nurbs27PoroType::Instance();
     default:
       dserror("unknown element type!");
@@ -322,22 +300,24 @@ DRT::ElementType& DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ElementType() const
   return So_hex8PoroType::Instance();
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 inline DRT::Node** DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Material() const
 {
   return so3_ele::Material();
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 inline int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Id() const
 {
   return so3_ele::Id();
 }
+
+BACI_NAMESPACE_CLOSE
 
 #include "baci_so3_poro_fwd.hpp"

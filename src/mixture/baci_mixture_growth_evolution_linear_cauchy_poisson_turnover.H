@@ -15,6 +15,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   /*!
@@ -56,6 +58,13 @@ namespace MIXTURE
       return std::exp(-delta_time / decay_time_);
     }
 
+    [[nodiscard]] inline double EvaluateSurvivalFunctionIntegration(
+        const double current_time, const double t1, const double t2) const
+    {
+      return decay_time_ * (std::exp(-(current_time - t2) / decay_time_) -
+                               std::exp(-(current_time - t1) / decay_time_));
+    }
+
     /// Gain-Parameter controlling the speed of the growth process
     double k_sig_;
 
@@ -63,5 +72,7 @@ namespace MIXTURE
     double decay_time_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_POISSON_TURNOVER_H

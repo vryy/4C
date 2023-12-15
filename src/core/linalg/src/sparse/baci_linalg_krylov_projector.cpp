@@ -26,6 +26,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /* ====================================================================
     public
    ==================================================================== */
@@ -53,13 +55,6 @@ CORE::LINALG::KrylovProjector::KrylovProjector(
   invwTc_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(nsdim_, nsdim_));
 }  // CORE::LINALG::KrylovProjector::KrylovProjector
 
-/* --------------------------------------------------------------------
-                          Destructor
-   -------------------------------------------------------------------- */
-CORE::LINALG::KrylovProjector::~KrylovProjector()
-{
-  return;
-}  // CORE::LINALG::KrylovProjector::~KrylovProjector
 
 /* --------------------------------------------------------------------
                   Give out Teuchos::RCP to c_ for change
@@ -196,7 +191,7 @@ void CORE::LINALG::KrylovProjector::FillComplete()
 /* --------------------------------------------------------------------
                     Create projector P(^T) (for direct solvers)
    -------------------------------------------------------------------- */
-const CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
+CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
 {
   /*
    *               / T   \ -1   T
@@ -216,7 +211,7 @@ const CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
   return *P_;
 }
 
-const CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetPT()
+CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetPT()
 {
   /*
    *  T             / T   \ -1   T
@@ -593,3 +588,5 @@ CORE::LINALG::KrylovProjector::MultiplyMultiVecterMultiVector(
 
   return mat;
 }
+
+BACI_NAMESPACE_CLOSE

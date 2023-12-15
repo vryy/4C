@@ -23,6 +23,8 @@ class Epetra_MultiVector;
 class Epetra_Operator;
 class Epetra_BlockMap;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SerialDenseMatrix;
@@ -53,9 +55,6 @@ namespace CORE::LINALG
         const Epetra_BlockMap* map      //! map for kernel and weight vectors
     );
 
-    //! destructor
-    ~KrylovProjector();
-
     //! give out Teuchos::RCP to c_ for change
     Teuchos::RCP<Epetra_MultiVector> GetNonConstKernel();
 
@@ -69,10 +68,10 @@ namespace CORE::LINALG
     void FillComplete();
 
     //! give out projector matrix - build it if not yet built (thus not const)
-    const CORE::LINALG::SparseMatrix GetP();
+    CORE::LINALG::SparseMatrix GetP();
 
     //! give out transposed projector matrix - build it if not yet built (thus not const)
-    const CORE::LINALG::SparseMatrix GetPT();
+    CORE::LINALG::SparseMatrix GetPT();
 
     //! wrapper for applying projector to vector for iterative solver
     int ApplyP(Epetra_MultiVector& Y) const;
@@ -236,5 +235,7 @@ namespace CORE::LINALG
   };
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_KRYLOV_PROJECTOR_H

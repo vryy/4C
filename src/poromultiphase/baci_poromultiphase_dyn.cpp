@@ -17,6 +17,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | Main control routine                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -104,3 +106,5 @@ void poromultiphase_dyn(int restart)
   return;
 
 }  // poromultiphase_dyn
+
+BACI_NAMESPACE_CLOSE

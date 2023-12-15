@@ -26,19 +26,26 @@
 #include <utility>
 #include <vector>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
 namespace LINALG
 {
   class SerialDenseMatrix;
 }
-namespace DRT
+namespace DRT::INPUT
 {
-  class PackBuffer;
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
+  class LineDefinition;
+}
 namespace MAT
 {
   class Anisotropy;
@@ -48,10 +55,6 @@ namespace MAT
     class Material;
   }
 }  // namespace MAT
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 namespace MIXTURE
 {
@@ -119,7 +122,7 @@ namespace MIXTURE
 
     virtual ~MixtureRule() = default;
 
-    virtual void PackMixtureRule(DRT::PackBuffer& data) const;
+    virtual void PackMixtureRule(CORE::COMM::PackBuffer& data) const;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -233,27 +236,25 @@ namespace MIXTURE
     }
 
     /*!
-     * \brief Register names of the internal data that should be saved during runtime vtk output
+     * \brief Register names of the internal data that should be saved during runtime output
      *
      * \param name_and_size [out] : unordered map of names of the data with the respective vector
      * size
      */
-    virtual void RegisterVtkOutputDataNames(
-        std::unordered_map<std::string, int>& names_and_size) const
+    virtual void RegisterOutputDataNames(std::unordered_map<std::string, int>& names_and_size) const
     {
       // do nothing for simple mixture rules
     }
 
     /*!
-     * \brief Evaluate internal data for every Gauss point saved for output during runtime vtk
-     * output
+     * \brief Evaluate internal data for every Gauss point saved for output during runtime output
      *
      * \param name [in] : Name of the data to export
      * \param data [out] : NUMGPxNUMDATA Matrix holding the data
      *
      * \return true if data is set by the material, otherwise false
      */
-    virtual bool EvaluateVtkOutputData(
+    virtual bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
     {
       return false;
@@ -290,5 +291,7 @@ namespace MIXTURE
     bool is_setup_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_RULE_H

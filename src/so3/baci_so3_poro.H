@@ -12,6 +12,9 @@
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_inpar_structure.H"
+#include "baci_lib_element.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -33,7 +36,7 @@ namespace DRT
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    template <class so3_ele, CORE::FE::CellType distype>
     class So3_Poro : public so3_ele
     {
       //! @name Friends
@@ -65,11 +68,10 @@ namespace DRT
       //!@}
 
       //! number of element nodes (
-      static const int numnod_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int numdim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numdim_ = CORE::FE::dim<distype>;
 
       //! number of dofs per node
       static const int noddof_ = numdim_;
@@ -118,7 +120,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -139,12 +141,6 @@ namespace DRT
 
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       //! @name Access methods
 
@@ -176,7 +172,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(
+      int Evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
@@ -188,7 +184,7 @@ namespace DRT
               elevec1,  //!< (internal force-)vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
-      );
+          ) override;
 
       virtual void PreEvaluate(
           Teuchos::ParameterList&
@@ -700,5 +696,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_PORO_H

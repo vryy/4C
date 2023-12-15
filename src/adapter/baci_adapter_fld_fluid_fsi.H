@@ -18,6 +18,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Condition;
@@ -59,59 +61,59 @@ namespace ADAPTER
         Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
-    virtual void Init();
+    void Init() override;
 
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override;
 
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override;
 
     /// Velocity-displacement conversion at the fsi interface
-    virtual double TimeScaling() const;
+    double TimeScaling() const override;
 
     /// take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver();
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override;
 
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const { return interface_; }
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override { return interface_; }
 
     /// update slave dofs for multifield simulations with fluid mesh tying
     virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
 
-    virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
+    Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() override;
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
 
     /// Return interface velocity at new time level n+1
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
 
     /// Return interface velocity at old time level n
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln();
+    Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln() override;
 
-    virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
+    void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// Apply initial mesh displacement
-    virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp);
+    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override;
 
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
+    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
 
     /// Update fluid griv velocity via FD approximation
     void UpdateGridv();
 
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc)
+    void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
     {
       dserror("not implemented!");
     };
 
-    virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel);
+    void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel) override;
 
-    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0);
+    void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
 
     //! @name Conversion between displacement and velocity at interface
 
@@ -119,27 +121,27 @@ namespace ADAPTER
     //! DBCs
     //!
     //! All input vectors have to live on the fluid field map.
-    virtual void DisplacementToVelocity(
+    void DisplacementToVelocity(
         Teuchos::RCP<Epetra_Vector> fcx  ///< interface displacement step increment
-    );
+        ) override;
 
     //! Conversion of velocity to displacement at the interface without predictors or inhomogeneous
     //! DBCs
     //!
     //! All input vectors have to live on the fluid field map.
-    virtual void VelocityToDisplacement(
+    void VelocityToDisplacement(
         Teuchos::RCP<Epetra_Vector> fcx  ///< interface velocity step increment at interface
-    );
+        ) override;
 
-    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
+    void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) override;
 
-    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
+    void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) override;
 
     //@}
 
-    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape();
+    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
 
-    virtual void UseBlockMatrix(bool splitmatrix);
+    void UseBlockMatrix(bool splitmatrix) override;
 
     /*! \brief Project the velocity field into a divergence free subspace
      *
@@ -156,10 +158,10 @@ namespace ADAPTER
     void ProjVelToDivZero();
 
     /// reset state vectors
-    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1);
+    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     /// calculate error in comparison to analytical solution
-    virtual void CalculateError();
+    void CalculateError() override;
 
     //! @name Time step size adaptivity in monolithic FSI
     //@{
@@ -172,13 +174,13 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void TimeStepAuxiliar();
+    void TimeStepAuxiliar() override;
 
     /*! \brief Indicate norms of temporal discretization error
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void IndicateErrorNorms(
+    void IndicateErrorNorms(
         double& err,       ///< L2-norm of temporal discretization error based on all DOFs
         double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
         double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
@@ -186,7 +188,7 @@ namespace ADAPTER
         double&
             errinfcond,  ///< L-inf-norm of temporal discretization error based on interface DOFs
         double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
-    );
+        ) override;
 
     /*! \brief Error order for adaptive fluid time integration
      *
@@ -198,7 +200,7 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 04/2015
      */
-    const std::string GetTimAdaMethodName() const;
+    std::string GetTimAdaMethodName() const;
 
     //! Type of adaptivity algorithm
     enum ETimAdaAux
@@ -333,5 +335,7 @@ namespace ADAPTER
     //@}
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

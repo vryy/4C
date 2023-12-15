@@ -10,7 +10,7 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H
 
-#include "baci_lib_exporter.H"
+#include "baci_comm_exporter.H"
 #include "baci_linalg_blocksparsematrix.H"
 
 #include <Epetra_Comm.h>
@@ -20,6 +20,8 @@
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -81,7 +83,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    ::DRT::Exporter exporter(source, target, comm);
+    CORE::COMM::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -156,7 +158,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    ::DRT::Exporter exporter(source, target, comm);
+    CORE::COMM::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -231,7 +233,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    ::DRT::Exporter exporter(source, target, comm);
+    CORE::COMM::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -306,7 +308,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    ::DRT::Exporter exporter(source, target, comm);
+    CORE::COMM::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -384,7 +386,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    ::DRT::Exporter exporter(source, target, comm);
+    CORE::COMM::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -684,5 +686,7 @@ namespace CORE::LINALG
   };
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H

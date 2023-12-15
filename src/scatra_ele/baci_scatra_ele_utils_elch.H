@@ -12,6 +12,9 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_elch.H"
+#include "baci_lib_element.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -21,15 +24,15 @@ namespace DRT
     class ScaTraEleDiffManagerElch;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElch
     {
      protected:
       //! number of element nodes
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
      public:
       //! singleton access method
@@ -112,4 +115,6 @@ namespace DRT
     };  // class ScaTraEleUtilsElch
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

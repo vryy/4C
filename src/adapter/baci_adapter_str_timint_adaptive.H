@@ -17,6 +17,8 @@
 /* headers */
 #include "baci_adapter_str_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations:
 namespace STR
 {
@@ -39,9 +41,6 @@ namespace ADAPTER
    public:
     /// Constructor
     StructureTimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
-
-    /// Destructor
-    virtual ~StructureTimIntAda() { ; }
 
     /// @name Time step helpers
     //@{
@@ -74,4 +73,6 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

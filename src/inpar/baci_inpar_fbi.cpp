@@ -17,6 +17,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -129,3 +131,5 @@ void INPAR::FBI::SetValidConditions(
 
   /*-------------------------------------------------------------------*/
 }
+
+BACI_NAMESPACE_CLOSE

@@ -57,6 +57,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -76,9 +77,6 @@ ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ADAPTER::FluidBaseAlgorithm::~FluidBaseAlgorithm() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -193,9 +191,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
 
       // create solver objects
-      solver =
-          Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
-              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
 
       // add sub block solvers/smoothers to block preconditioners
       switch (azprectype)
@@ -239,9 +236,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
             "CONTACT DYNAMIC to a valid number!");
 
-      solver =
-          Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
-              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
     }
     break;
     case INPAR::FLUID::no_meshtying:  // no meshtying -> use FLUID SOLVER
@@ -255,9 +251,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         dserror(
             "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC "
             "to a valid number!");
-      solver = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
       break;
     }
@@ -618,7 +613,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     fluidtimeparams->set<bool>("ost new", ostnew);
 
-    fluidtimeparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
     bool dirichletcond = true;
     if (probtype == ProblemType::fsi or probtype == ProblemType::fsi_lung or
         probtype == ProblemType::gas_fsi or probtype == ProblemType::ac_fsi or
@@ -666,7 +660,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       {
         // HDG implements all time stepping schemes within gen-alpha
         if (DRT::Problem::Instance()->SpatialApproximationType() ==
-                ShapeFunctionType::shapefunction_hdg &&
+                CORE::FE::ShapeFunctionType::hdg &&
             timeint != INPAR::FLUID::timeint_stationary &&
             DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_dens_mom &&
@@ -674,7 +668,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                 INPAR::FLUID::weakly_compressible_stokes_dens_mom)
           fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
         else if (DRT::Problem::Instance()->SpatialApproximationType() ==
-                     ShapeFunctionType::shapefunction_hdg &&
+                     CORE::FE::ShapeFunctionType::hdg &&
                  (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_dens_mom ||
                      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
@@ -682,7 +676,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           fluid_ = Teuchos::rcp(
               new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
         else if (DRT::Problem::Instance()->SpatialApproximationType() ==
-                     ShapeFunctionType::shapefunction_hdg &&
+                     CORE::FE::ShapeFunctionType::hdg &&
                  timeint == INPAR::FLUID::timeint_stationary)
           fluid_ = Teuchos::rcp(
               new FLD::TimIntStationaryHDG(actdis, solver, fluidtimeparams, output, isale));
@@ -907,7 +901,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       {  //
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (DRT::Problem::Instance()->SpatialApproximationType() ==
-                ShapeFunctionType::shapefunction_hdg &&
+                CORE::FE::ShapeFunctionType::hdg &&
             (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     INPAR::FLUID::weakly_compressible_dens_mom ||
                 DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
@@ -1281,9 +1275,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     dserror(
         "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to "
         "a valid number!");
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-          discret->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), discret->Comm()));
 
   discret->ComputeNullSpaceIfNecessary(solver->Params(), true);
 
@@ -1378,8 +1371,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
       ostnew = false;
     }
     fluidtimeparams->set<bool>("ost new", ostnew);
-
-    fluidtimeparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
@@ -1655,3 +1646,5 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

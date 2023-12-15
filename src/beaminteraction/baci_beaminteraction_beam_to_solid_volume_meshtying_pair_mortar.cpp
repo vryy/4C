@@ -12,9 +12,9 @@ functions for the traction.
 
 #include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
 #include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_line_to_volume.H"
 #include "baci_lib_utils.H"
@@ -23,6 +23,8 @@ functions for the traction.
 #include "baci_linalg_utils_densematrix_inverse.H"
 
 #include <unordered_set>
+
+BACI_NAMESPACE_OPEN
 
 
 /**
@@ -41,7 +43,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -82,22 +84,24 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+                                      visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
       visualization_writer, visualization_params);
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->GetVisualizationWriter("btsvc-mortar");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->GetVisualizationWriter("btsvc-mortar-continuous");
   if (visualization_discret.is_null() and visualization_continuous.is_null()) return;
 
-  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
-          "btsvc-output_params_ptr");
+  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
+      visualization_params
+          .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+              "btsvc-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
 
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
@@ -194,7 +198,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     {
       const unsigned int mortar_segments =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "btsvc-output_params_ptr")
               ->GetMortarLambdaContinuousSegments();
       double xi;
@@ -412,3 +416,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line4>;
   template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line4>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

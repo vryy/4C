@@ -55,17 +55,17 @@ else
   echo "Passed."
 fi
 
-### Module prefixes check ######################################
-echo "Start test for module prefixes and correct include style ..."
-python ./utilities/code_checks/check_file_prefix_and_includes.py src unittests --out wrong_prefix.txt | tee wrong_prefix.txt
+### Check module filename and include style ######################
+echo "Start test for module filenames and correct include style ..."
+python ./utilities/code_checks/check_filenames_and_includes.py src unittests --out wrong_filename_or_include_style.txt | tee wrong_filename_or_include_style.txt
 
-if [ -s wrong_prefix.txt ]
+if [ -s wrong_filename_or_include_style.txt ]
 then
-  echo "Failed. Non-compliant files have been reported in wrong_prefix.txt."
-  cat wrong_prefix.txt
+  echo "Failed. Non-compliant files have been reported in wrong_filename_or_include_style.txt."
+  cat wrong_filename_or_include_style.txt
   exit 1
 else
-  rm wrong_prefix.txt
+  rm wrong_filename_or_include_style.txt
   echo "Passed."
 fi
 

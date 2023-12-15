@@ -13,6 +13,8 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
@@ -30,11 +32,6 @@ FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
   nstep_ = fluiddyn.get<int>("NUMSTEP");
   maxtime_ = fluiddyn.get<double>("MAXTIME");
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FSI::FluidXFEMAlgorithm::~FluidXFEMAlgorithm() {}
 
 
 
@@ -93,3 +90,5 @@ void FSI::FluidXFEMAlgorithm::Update() { MBFluidField()->Update(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Output() { MBFluidField()->Output(); }
+
+BACI_NAMESPACE_CLOSE

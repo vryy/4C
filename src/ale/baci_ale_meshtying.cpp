@@ -29,6 +29,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
@@ -398,7 +400,10 @@ void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>&
 /*-------------------------------------------------------*/
 void ALE::Meshtying::AdapterMortar(std::vector<int> coupleddof)
 {
-  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
+      DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(
@@ -719,3 +724,5 @@ int ALE::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
   }
   return errorcode;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 // to Tesselation).
 #define OUTPUT_GLOBAL_DIVERGENCE_CELLS
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -38,8 +40,6 @@ namespace CORE::GEO
           : volcell_(volcell), elem1_(elem), position_(posi), mesh_(mesh)
       {
       }
-
-      ~DirectDivergence(){};
 
       /*!
       \brief Generate integration points on the facets of the volumecell
@@ -94,5 +94,7 @@ namespace CORE::GEO
     };
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

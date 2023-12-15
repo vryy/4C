@@ -20,10 +20,12 @@
 
 #include <vector>
 
-
 // Forward declarations.
 class Epetra_FEVector;
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -65,7 +67,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Destructor.
        */
-      virtual ~BeamContactAssemblyManager(){};
+      virtual ~BeamContactAssemblyManager() = default;
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
@@ -74,7 +76,7 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      virtual void EvaluateForceStiff(Teuchos::RCP<::DRT::Discretization> discret,
+      virtual void EvaluateForceStiff(Teuchos::RCP<BACI::DRT::Discretization> discret,
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
@@ -87,5 +89,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

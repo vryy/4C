@@ -9,9 +9,12 @@ turbulent flow over a backward-facing step
 
 */
 /*----------------------------------------------------------------------*/
+#include "baci_comm_exporter.H"
 #include "baci_fluid_turbulence_statistics_bfs.H"
 
 #include <fstream>
+
+BACI_NAMESPACE_OPEN
 
 // #define COMBINE_SAMPLES
 
@@ -155,23 +158,23 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    DRT::Exporter exporter(discret_->Comm());
+    CORE::COMM::Exporter exporter(discret_->Comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
            x1line != x1avcoords.end(); ++x1line)
       {
-        DRT::ParObject::AddtoPack(data, *x1line);
+        CORE::COMM::ParObject::AddtoPack(data, *x1line);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
            x1line != x1avcoords.end(); ++x1line)
       {
-        DRT::ParObject::AddtoPack(data, *x1line);
+        CORE::COMM::ParObject::AddtoPack(data, *x1line);
       }
       std::swap(sblock, data());
 
@@ -214,7 +217,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
         while (index < rblock.size())
         {
           double onecoord;
-          DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
           x1avcoords.insert(onecoord);
         }
       }
@@ -223,18 +226,18 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
     // second, communicate coordinates in x2-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
            x2line != x2avcoords.end(); ++x2line)
       {
-        DRT::ParObject::AddtoPack(data, *x2line);
+        CORE::COMM::ParObject::AddtoPack(data, *x2line);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
            x2line != x2avcoords.end(); ++x2line)
       {
-        DRT::ParObject::AddtoPack(data, *x2line);
+        CORE::COMM::ParObject::AddtoPack(data, *x2line);
       }
       std::swap(sblock, data());
 
@@ -277,7 +280,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
         while (index < rblock.size())
         {
           double onecoord;
-          DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
           x2avcoords.insert(onecoord);
         }
       }
@@ -583,14 +586,6 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
 
   return;
 }  // TurbulenceStatisticsBfs::TurbulenceStatisticsBfs
-
-/*----------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsBfs::~TurbulenceStatisticsBfs()
-{
-  return;
-}  // TurbulenceStatisticsBfs::~TurbulenceStatisticsBfs()
 
 
 //----------------------------------------------------------------------
@@ -1970,3 +1965,5 @@ void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(const std::string& geo
     dserror("(%s) geometry for backward facing step", geotype.c_str());
   return;
 }
+
+BACI_NAMESPACE_CLOSE

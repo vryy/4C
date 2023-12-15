@@ -12,6 +12,8 @@
 
 #include "baci_binstrategy_meshfree_multibin.H"
 
+BACI_NAMESPACE_OPEN
+
 /// class MeshfreeMultiBinType
 DRT::MESHFREE::MeshfreeMultiBinType DRT::MESHFREE::MeshfreeMultiBinType::instance_;
 
@@ -20,7 +22,7 @@ DRT::MESHFREE::MeshfreeMultiBinType& DRT::MESHFREE::MeshfreeMultiBinType::Instan
   return instance_;
 }
 
-DRT::ParObject* DRT::MESHFREE::MeshfreeMultiBinType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::MESHFREE::MeshfreeMultiBinType::Create(const std::vector<char>& data)
 {
   DRT::MESHFREE::MeshfreeMultiBin* object = new DRT::MESHFREE::MeshfreeMultiBin(-1, -1);
   object->Unpack(data);
@@ -71,10 +73,7 @@ DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeM
   return;
 }
 
-/*--------------------------------------------------------------------------*
- |  dtor                                               (public) ghamm 04/13 |
- *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeMultiBin::~MeshfreeMultiBin() { return; }
+
 
 /*--------------------------------------------------------------------------*
  |  clone-ctor (public)                                          ghamm 04/13|
@@ -212,9 +211,9 @@ bool DRT::MESHFREE::MeshfreeMultiBin::BuildElePointers(
 /*--------------------------------------------------------------------------*
  | Pack data                                           (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeMultiBin::Pack(DRT::PackBuffer& data) const
+void DRT::MESHFREE::MeshfreeMultiBin::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -234,10 +233,9 @@ void DRT::MESHFREE::MeshfreeMultiBin::Pack(DRT::PackBuffer& data) const
 void DRT::MESHFREE::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class DRT::Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -251,3 +249,5 @@ void DRT::MESHFREE::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

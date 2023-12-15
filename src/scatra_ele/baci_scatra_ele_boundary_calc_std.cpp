@@ -23,9 +23,11 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -44,7 +46,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::ScaTraEleBoundaryCalcStd(
     const int numdofpernode, const int numscal, const std::string& disname)
     : my::ScaTraEleBoundaryCalc(numdofpernode, numscal, disname)
@@ -56,13 +58,15 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::ScaTraEleBoundaryCalc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::nurbs9, 3>;
+
+BACI_NAMESPACE_CLOSE

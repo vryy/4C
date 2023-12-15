@@ -9,27 +9,29 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_function_of_time.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_tensor_transformation.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_tensor_transformation.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_material.H"
-#include "baci_mat_membrane_active_strain.H"
 #include "baci_mat_membrane_elasthyper.H"
 #include "baci_mat_membrane_material_interfaces.H"
 #include "baci_membrane.H"
 #include "baci_membrane_service.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -212,7 +214,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
         // add data to pack
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -220,7 +222,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -252,7 +254,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
         // add data to pack
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, thickness);
           data.StartPacking();
           AddtoPack(data, thickness);
@@ -344,7 +346,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
         // surface deformation gradient in 3 dimensions in local coordinates
-        ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+        BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
         /*===============================================================================*
          | right cauchygreen tensor in local coordinates                                 |
@@ -467,7 +469,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public) fbraeu 06/16 |
  *-----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -504,7 +506,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
     const int functnum = (tmp_funct) ? (*tmp_funct)[i] : -1;
     if (functnum > 0)
       functfacs[i] = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                          .Evaluate(time);
   }
 
@@ -620,7 +622,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                            // current displacements
     CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix,  // element stiffness matrix
@@ -714,7 +716,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
     // surface deformation gradient in 3 dimensions in local coordinates
-    ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+    BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
     /*===============================================================================*
      | right cauchygreen tensor in local coordinates                                 |
@@ -760,7 +762,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
       // update surface deformation gradient in 3 dimensions in local coordinates
-      ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+      BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       // update three dimensional right cauchy-green strain tensor in orthonormal base
       cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
@@ -783,11 +785,11 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
       // Transform stress and elasticity into the local membrane coordinate system
       CORE::LINALG::Matrix<3, 3> pk2M_loc(true);
-      ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
+      BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
       MEMBRANE::LocalPlaneStressToStressLikeVoigt(pk2M_loc, pk2red_loc);
 
       CORE::LINALG::Matrix<6, 6> cmat_loc(true);
-      ::UTILS::TENSOR::InverseFourthTensorRotation(Q_localToGlobal, cmat_glob, cmat_loc);
+      BACI::UTILS::TENSOR::InverseFourthTensorRotation(Q_localToGlobal, cmat_glob, cmat_loc);
       MEMBRANE::LocalFourthTensorPlaneStressToStressLikeVoigt(cmat_loc, cmatred_loc);
     }
     else
@@ -929,7 +931,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
@@ -958,7 +960,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
@@ -998,7 +1000,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // eigenvalue decomposition (from elasthyper.cpp)
         CORE::LINALG::Matrix<noddof_, noddof_> prstr2(true);  // squared principal stretches
@@ -1110,7 +1112,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
-        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_local, pkstress_glob);
+        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_local, pkstress_glob);
 
         (*elestress)(gp, 0) = pkstress_glob(0, 0);
         (*elestress)(gp, 1) = pkstress_glob(1, 1);
@@ -1135,7 +1137,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
-        ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
+        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
 
         CORE::LINALG::Matrix<noddof_, noddof_> cauchy_glob(true);
         mem_PK2toCauchy(pkstress_glob, defgrd_glob, cauchy_glob);
@@ -1163,7 +1165,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                fb 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::VisNames(std::map<std::string, int>& names)
 {
   std::string result_thickness = "thickness";
@@ -1180,7 +1182,7 @@ void DRT::ELEMENTS::Membrane<distype>::VisNames(std::map<std::string, int>& name
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -1205,7 +1207,7 @@ bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vec
 /*----------------------------------------------------------------------*
  |  get reference and current configuration                fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<double>& disp,
     CORE::LINALG::Matrix<numnod_, noddof_>& xrefe, CORE::LINALG::Matrix<numnod_, noddof_>& xcurr)
 {
@@ -1215,7 +1217,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<doubl
 
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1233,7 +1235,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<doubl
  |  introduce an orthonormal base in the undeformed configuration at current Gauss point   fbraeu
  06/16 |
  *------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
     const CORE::LINALG::Matrix<numnod_, noddof_>& xrefe,
     const CORE::LINALG::Matrix<numnod_, noddof_>& xcurr,
@@ -1351,7 +1353,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
 /*-------------------------------------------------------------------------------------------------*
  |  pushforward of 2nd PK stresses to Cauchy stresses at gp                           fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
     const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,
     const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
@@ -1375,7 +1377,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
 /*-------------------------------------------------------------------------------------------------*
  |  pushforward of Green-Lagrange to Euler-Almansi strains at gp                      fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
     const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_global,
     const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
@@ -1401,7 +1403,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
 /*-------------------------------------------------------------------------------------------------*
  |  determine deformation gradient in global coordinates                              fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(
     const CORE::LINALG::Matrix<noddof_, 1>& dXds1, const CORE::LINALG::Matrix<noddof_, 1>& dXds2,
     const CORE::LINALG::Matrix<noddof_, 1>& dxds1, const CORE::LINALG::Matrix<noddof_, 1>& dxds2,
@@ -1437,9 +1439,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(
 /*-------------------------------------------------------------------------------------------------*
  |  determine extrapolation matrix                                                    sfuchs 02/18 |
  *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-    THR::DisTypeToNumGaussPoints<distype>::nquad>
+template <CORE::FE::CellType distype>
+CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, THR::DisTypeToNumGaussPoints<distype>::nquad>
 DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 {
   // extrapolation matrix
@@ -1482,7 +1483,7 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 /*---------------------------------------------------------------------------------------------*
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::Update_element(
     std::vector<double>& disp, Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat)
 {
@@ -1540,7 +1541,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
       // surface deformation gradient in 3 dimensions in global coordinates
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
-      ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+      BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       auto material_local_coordinates =
           Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialLocalCoordinates>(
@@ -1564,7 +1565,9 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
   return;
 }
 
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

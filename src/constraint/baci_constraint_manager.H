@@ -20,6 +20,8 @@ Kloeppel
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace IO
 {
@@ -57,11 +59,9 @@ namespace UTILS
     //! Constructor of constraint manager, allocating the constraints
     ConstrManager();
 
-    //! Destructor
-    ~ConstrManager() { return; };
 
     //! initialize this class
-    void Init(Teuchos::RCP<DRT::Discretization> discr, Teuchos::ParameterList params);
+    void Init(Teuchos::RCP<DRT::Discretization> discr, const Teuchos::ParameterList& params);
 
     /*! \brief Setup all class internal objects and members
 
@@ -363,4 +363,6 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONSTRAINT_MANAGER_H

@@ -20,6 +20,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_control_point.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------
 
                   Standard Constructor (public)
@@ -192,8 +194,8 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
 
       switch (actele->Shape())
       {
-        case DRT::Element::nurbs8:
-        case DRT::Element::nurbs27:
+        case CORE::FE::CellType::nurbs8:
+        case CORE::FE::CellType::nurbs27:
         {
           // element local point position
           CORE::LINALG::SerialDenseVector uv(3);
@@ -461,15 +463,6 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
   return;
 }  // TurbulenceStatisticsCcy::TurbulenceStatisticsCcy
 
-/*----------------------------------------------------------------------*
-
-                           Destructor
-
- -----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCcy::~TurbulenceStatisticsCcy()
-{
-  return;
-}  // TurbulenceStatisticsCcy::~TurbulenceStatisticsCcy()
 
 /*----------------------------------------------------------------------*
 
@@ -736,7 +729,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
     switch (actele->Shape())
     {
-      case DRT::Element::nurbs27:
+      case CORE::FE::CellType::nurbs27:
       {
         CORE::LINALG::Matrix<3, 1> vel;
 
@@ -1539,3 +1532,5 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
 
   return;
 }  // FLD::TurbulenceStatisticsCcy::AddScaTraResults
+
+BACI_NAMESPACE_CLOSE

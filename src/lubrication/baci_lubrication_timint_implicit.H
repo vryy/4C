@@ -21,6 +21,8 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
 /*==========================================================================*/
@@ -88,7 +90,7 @@ namespace LUBRICATION
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
-    virtual ~TimIntImpl();
+    virtual ~TimIntImpl() = default;
 
     //! initialize time integration
     virtual void Init();
@@ -102,7 +104,7 @@ namespace LUBRICATION
     //! set the nodal film height
     void SetHeightFieldPureLub(const int nds);
     //! set the nodal film height
-    void SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> height);
+    void SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> gap);
 
     //! set the time derivative of the height (film thickness) by OST
     void SetHeightDotField(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
@@ -187,10 +189,7 @@ namespace LUBRICATION
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const
-    {
-      return dbcmaps_;
-    }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
 
     //! right-hand side alias the dynamic force residual
     Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
@@ -299,7 +298,7 @@ namespace LUBRICATION
 
     //! check convergence (or divergence) of nonlinear iteration
     bool AbortNonlinIter(const int itnum,  //!< current value of iteration step counter
-        const int itmax,                   //!< maximum number of iteration steps
+        const int itemax,                  //!< maximum number of iteration steps
         const double ittol,                //!< relative tolerance for increments
         const double abstolres,            //!< absolute tolerance for the residual norm
         double& actresidual                //!< return value of the current residual
@@ -367,9 +366,6 @@ namespace LUBRICATION
 
     //! processor id
     int myrank_;
-
-    //! error file handle
-    FILE* errfile_;
 
     /*========================================================================*/
     //! @name flags and enums
@@ -503,5 +499,7 @@ namespace LUBRICATION
   };  // class TimIntImpl
 }  // namespace LUBRICATION
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_TIMINT_IMPLICIT_H

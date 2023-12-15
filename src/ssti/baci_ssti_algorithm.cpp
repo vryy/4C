@@ -25,6 +25,8 @@
 #include "baci_ssti_resulttest.H"
 #include "baci_ssti_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSTI::SSTIAlgorithm::SSTIAlgorithm(
@@ -81,16 +83,21 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
       sstitimeparams, const_cast<Teuchos::ParameterList&>(structparams), structuredis);
 
   // create and initialize scatra problem and thermo problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  scatra_->Init(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
-      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true);
+  scatra_ = Teuchos::rcp(
+      new ADAPTER::ScaTraBaseAlgorithm(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
+          problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true));
+  scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
-  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  thermo_->Init(sstitimeparams, CloneThermoParams(scatraparams, thermoparams),
-      problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true);
+  scatra_->ScaTraField()->SetNumberOfDofSetThermo(2);
+  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(sstitimeparams,
+      CloneThermoParams(scatraparams, thermoparams),
+      problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true));
+  thermo_->Init();
   thermo_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  thermo_->ScaTraField()->SetNumberOfDofSetScaTra(2);
+  thermo_->ScaTraField()->SetNumberOfDofSetThermo(3);
 
   // distribute dofsets among subproblems
   Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
@@ -152,7 +159,7 @@ void SSTI::SSTIAlgorithm::Setup()
 
   // get wrapper and cast it to specific type
   if (structure_ == Teuchos::null)
-    structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
+    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
         struct_adapterbase_ptr_->StructureField());
   if (structure_ == Teuchos::null) dserror("No valid pointer to ADAPTER::SSIStructureWrapper !");
 
@@ -392,14 +399,14 @@ void SSTI::SSTIAlgorithm::AssignMaterialPointers()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ScaTraField() const
+Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ScaTraField() const
 {
   return scatra_->ScaTraField();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ThermoField() const
+Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ThermoField() const
 {
   return thermo_->ScaTraField();
 }
@@ -432,7 +439,6 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
     }
     default:
       dserror("Initial field type for thermo not supported");
-      break;
   }
 
   thermoparams_copy.set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
@@ -463,7 +469,8 @@ Teuchos::RCP<SSTI::SSTIAlgorithm> SSTI::BuildSSTI(INPAR::SSTI::SolutionScheme co
     }
     default:
       dserror("unknown coupling algorithm for SSTI!");
-      break;
   }
   return ssti;
 }
+
+BACI_NAMESPACE_CLOSE

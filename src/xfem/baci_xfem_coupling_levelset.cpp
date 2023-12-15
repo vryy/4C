@@ -23,14 +23,16 @@ bridge between the xfluid class and the cut-library
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_function.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mat_newtonianfluid.H"
+#include "baci_utils_function.H"
 #include "baci_xfem_interface_utils.H"
 #include "baci_xfem_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // TODO: CouplingBase should become abstract class
 
@@ -134,8 +136,8 @@ bool XFEM::LevelSetCoupling::HaveMatchingNodes(
     CORE::LINALG::SerialDenseVector X_A(nsd);
     CORE::LINALG::SerialDenseVector X_B(nsd);
 
-    std::copy(node_A->X(), node_A->X() + nsd, X_A.values());
-    std::copy(node_B->X(), node_B->X() + nsd, X_B.values());
+    std::copy(node_A->X().data(), node_A->X().data() + nsd, X_A.values());
+    std::copy(node_B->X().data(), node_B->X().data() + nsd, X_B.values());
 
     CORE::LINALG::SerialDenseVector diff(X_A);
     diff.scale(-1.0);
@@ -395,11 +397,13 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
     // get value
     if (func_no < 0)
-      value = FunctImplementation(func_no, lnode->X(), time);
+      value = FunctImplementation(func_no, lnode->X().data(), time);
     else if (func_no >= 1)
+    {
       value = DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                  .Evaluate(lnode->X(), time, 0);
+                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  .Evaluate(lnode->X().data(), time, 0);
+    }
     else
       dserror("invalid function no. to set level-set field!");
 
@@ -482,30 +486,25 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)
           ->SetInitialState(0, "pres", modphinp);
 
-      //      Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode=
-      //      DRT::UTILS::ComputeNodalL2Projection(cutter_dis_,modphinp,"pres",3,eleparams,l2_proj_num);
       // Lives on NodeRow-map!!!
       Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
           DRT::UTILS::ComputeNodalL2Projection(cutter_dis_, "pres", 3, eleparams, l2_proj_num);
       if (gradphinp_smoothed_rownode == Teuchos::null)
         dserror("A smoothed grad phi is required, but an empty one is provided!");
 
-      // gradphinp_smoothed_node_ = Teuchos::rcp(new
-      // Epetra_MultiVector(*cutter_dis_->NodeColMap(),3));
-      // CORE::LINALG::Export(*gradphinp_smoothed_rownode,*gradphinp_smoothed_node_);
-
+      // The following bugfix needs to be check carefully
       {
-        // As the object is a MultiVector, this has to be done to keep the structure from before...
-        //  not the nicest way but better than nothing.
-        gradphinp_smoothed_rownode->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
-        Teuchos::rcp((*gradphinp_smoothed_rownode)(0), false)
-            ->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
-        Teuchos::rcp((*gradphinp_smoothed_rownode)(1), false)
-            ->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
-        Teuchos::rcp((*gradphinp_smoothed_rownode)(2), false)
-            ->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
-
-        CORE::LINALG::Export(*gradphinp_smoothed_rownode, *gradphinp_smoothed_node_);
+        // Convert NodeRowMap from ComputeNodalL2Projection to DofRowMap while assuming identical
+        // ordering
+        for (int ivec = 0; ivec < gradphinp_smoothed_rownode->NumVectors(); ivec++)
+        {
+          Epetra_Vector* itemp = (*gradphinp_smoothed_rownode)(ivec);
+          for (int jlength = 0; jlength < itemp->MyLength(); jlength++)
+          {
+            gradphinp_smoothed_node_->ReplaceMyValue(jlength, ivec, itemp->operator[](jlength));
+          }
+        }
+        // Bring DofRowMap to DofColMap layout (Attention: name is node but lives on dof)
         CORE::LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
       }
 
@@ -1508,3 +1507,5 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

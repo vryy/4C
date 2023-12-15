@@ -15,6 +15,8 @@ between the xfluid class and the cut-library
 
 #include "baci_xfem_coupling_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   class CutWizard;
@@ -42,13 +44,10 @@ namespace XFEM
         const std::string& suffix = "",  ///< suffix for cutterdisname
         bool marked_geometry = false);
 
-    //! destructor
-    virtual ~MeshCoupling() { return; }
-
     //! get the coupling element (equal to the side for xfluid-sided, mesh-based coupling)
-    virtual DRT::Element* GetCouplingElement(
+    DRT::Element* GetCouplingElement(
         const int sid  ///< global side element id w.r.t cutter discretization
-    )
+        ) override
     {
       return coupl_dis_->gElement(sid);
     }
@@ -66,7 +65,7 @@ namespace XFEM
     virtual void GetCouplingEleLocationVector(const int sid, std::vector<int>& patchlm);
 
     /// set material pointer for coupling slave side
-    virtual void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat)
+    void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat) override
     {
       mat = Teuchos::null;
     }
@@ -96,16 +95,16 @@ namespace XFEM
 
     virtual void Output(const int step, const double time, const bool write_restart_data);
 
-    virtual void PrepareCutterOutput();
+    void PrepareCutterOutput() override;
 
     virtual void LiftDrag(const int step, const double time) const {};
 
 
     virtual void ReadRestart(const int step){};
 
-    virtual bool HasMovingInterface() { return true; }
+    bool HasMovingInterface() override { return true; }
 
-    bool CutGeometry() { return !mark_geometry_; }
+    bool CutGeometry() override { return !mark_geometry_; }
     virtual bool IsMarkedGeometry() { return mark_geometry_; }
 
     //! do not cut, but only mark part of boundary loaded into cut
@@ -127,7 +126,7 @@ namespace XFEM
     /*!
      Return a (smoothed -- soon)/non-smoothed tangiential projection of the mesh surface.
      */
-    template <DRT::Element::DiscretizationType DISTYPE, class T1, class M3>
+    template <CORE::FE::CellType DISTYPE, class T1, class M3>
     void EvalProjectionMatrix(T1& projection_matrix,  ///< Projection matrix
         M3& normal                                    ///< surface normal of cut element
     )
@@ -162,11 +161,11 @@ namespace XFEM
     virtual void CreateCutterDisFromCondition(std::string suffix);
 
    protected:
-    virtual void SetCutterDiscretization();
+    void SetCutterDiscretization() override;
 
-    virtual void SetConditionsToCopy();
+    void SetConditionsToCopy() override;
 
-    virtual void InitStateVectors();
+    void InitStateVectors() override;
 
     //------------------------------- vectors -----------------------------
     // TODO: these vectors are not required for Neumann and WDBC conditions, derive class
@@ -217,20 +216,17 @@ namespace XFEM
         const std::string& suffix = ""  ///< suffix for cutterdisname
     );
 
-    //! destructor
-    virtual ~MeshVolCoupling() { return; }
-
-    virtual void Init();
+    void Init() override;
 
     //! Initialize Volume Coupling
     void Init_VolCoupling();
 
-    void GetCouplingEleLocationVector(const int sid, std::vector<int>& patchlm);
+    void GetCouplingEleLocationVector(const int sid, std::vector<int>& patchlm) override;
 
     //! get the coupling element for a local coupling side element id
     DRT::Element* GetCouplingElement(
         const int sid  ///< global side element id w.r.t cutter discretization
-    )
+        ) override
     {
       if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
       {
@@ -323,9 +319,6 @@ namespace XFEM
         bool marked_geometry = false  ///< is this a marked geometry mesh boundary
     );
 
-    //! destructor
-    virtual ~MeshCouplingBC() { return; }
-
 
    private:
     void EvaluateInterfaceDisplacement(std::vector<double>& final_values, DRT::Node* node,
@@ -341,7 +334,7 @@ namespace XFEM
         DRT::Condition* cond, const double time, const std::string& function_name);
 
    protected:
-    virtual void DoConditionSpecificSetup();
+    void DoConditionSpecificSetup() override;
 
     virtual void SetInterfaceDisplacement();
 
@@ -350,7 +343,7 @@ namespace XFEM
     virtual void EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec, const std::string& condname,
         const double time, const double dt = 0.0);
 
-    virtual bool HasMovingInterface();
+    bool HasMovingInterface() override;
   };
 
   /*!
@@ -372,44 +365,41 @@ namespace XFEM
         bool marked_geometry = false  ///< is this a marked geometry mesh boundary
     );
 
-    //! destructor
-    virtual ~MeshCouplingWeakDirichlet() { return; }
-
    public:
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond);
+        const DRT::Condition* cond) override;
 
     void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond);
+        const DRT::Condition* cond) override;
 
-    virtual void PrepareSolve();
+    void PrepareSolve() override;
 
    protected:
-    void DoConditionSpecificSetup();
+    void DoConditionSpecificSetup() override;
 
     //! Initializes configurationmap
-    void SetupConfigurationMap();
+    void SetupConfigurationMap() override;
 
     //! Updates configurationmap for specific Gausspoint
-    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< master sided dynamic viscosity
-        double& visc_s,                                      //< slave sided dynamic viscosity
-        double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                              //< master sided dynamic viscosity
+        double& visc_s,                              //< slave sided dynamic viscosity
+        double& density_m,                           //< master sided density
+        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
+        double& full_stab,                           //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
+        const DRT::Condition* cond,                  //< Condition
+        DRT::Element* ele,                           //< Element
+        DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
         CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
-    );
+        ) override;
   };
 
   /*!
@@ -435,51 +425,48 @@ namespace XFEM
     {
     }
 
-    //! destructor
-    virtual ~MeshCouplingNeumann() { return; }
-
    public:
     //! Evaluate Neumann traction 3 components
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond);
+        const DRT::Condition* cond) override;
 
     //! Evaluate Neumann traction 6 components
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond);
+        const DRT::Condition* cond) override;
 
     void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond);
+        const DRT::Condition* cond) override;
 
-    virtual void PrepareSolve();
+    void PrepareSolve() override;
 
    protected:
     //! Do condition specific setup
-    virtual void DoConditionSpecificSetup();
+    void DoConditionSpecificSetup() override;
 
     //! Initializes configurationmap
-    virtual void SetupConfigurationMap();
+    void SetupConfigurationMap() override;
 
     //! Updates configurationmap for specific Gausspoint
-    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< master sided dynamic viscosity
-        double& visc_s,                                      //< slave sided dynamic viscosity
-        double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                              //< master sided dynamic viscosity
+        double& visc_s,                              //< slave sided dynamic viscosity
+        double& density_m,                           //< master sided density
+        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
+        double& full_stab,                           //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
+        const DRT::Condition* cond,                  //< Condition
+        DRT::Element* ele,                           //< Element
+        DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
         CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
-    );
+        ) override;
 
    private:
     //! Flag for inflow stabilization
@@ -506,9 +493,6 @@ namespace XFEM
         bool marked_geometry = false  ///< is this a marked geometry mesh boundary
     );
 
-    //! destructor
-    virtual ~MeshCouplingNavierSlip() { return; }
-
    public:
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, CORE::LINALG::Matrix<3, 3>& proj_matrix,
@@ -522,20 +506,20 @@ namespace XFEM
     /// this function has to be reviewed for usage with OST new.
     void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond);
+        const DRT::Condition* cond) override;
 
     /// get the slip coefficient for this coupling
-    void GetSlipCoefficient(
-        double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void GetSlipCoefficient(double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond) override;
 
-    virtual void PrepareSolve();
+    void PrepareSolve() override;
 
    protected:
-    virtual void SetConditionSpecificParameters();
+    void SetConditionSpecificParameters() override;
 
-    virtual void DoConditionSpecificSetup();
+    void DoConditionSpecificSetup() override;
 
-    virtual void SetInterfaceVelocity();
+    void SetInterfaceVelocity() override;
 
     void GetConditionByRobinId(const std::vector<DRT::Condition*>& mycond, const int coupling_id,
         std::vector<DRT::Condition*>& mynewcond);
@@ -545,26 +529,26 @@ namespace XFEM
         std::map<int, DRT::Condition*>& conditionsmap_robin);
 
     //! Initializes configurationmap
-    virtual void SetupConfigurationMap();
+    void SetupConfigurationMap() override;
 
     //! Updates configurationmap for specific Gausspoint
-    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< master sided dynamic viscosity
-        double& visc_s,                                      //< slave sided dynamic viscosity
-        double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                              //< master sided dynamic viscosity
+        double& visc_s,                              //< slave sided dynamic viscosity
+        double& density_m,                           //< master sided density
+        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
+        double& full_stab,                           //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
+        const DRT::Condition* cond,                  //< Condition
+        DRT::Element* ele,                           //< Element
+        DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
         CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
-    );
+        ) override;
 
    protected:
     // Condition map. Corelating robin_id from Navier Slip condition and
@@ -599,25 +583,22 @@ namespace XFEM
         const int step          ///< time step
     );
 
-    //! destructor
-    virtual ~MeshCouplingFSI() { return; }
-
     // finalize the interface true residual vector
-    virtual void CompleteStateVectors();
+    void CompleteStateVectors() override;
 
-    virtual void ZeroStateVectors_FSI();
+    void ZeroStateVectors_FSI() override;
 
-    virtual void GmshOutput(const std::string& filename_base, const int step,
-        const int gmsh_step_diff, const bool gmsh_debug_out_screen);
+    void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,
+        const bool gmsh_debug_out_screen) override;
 
-    virtual void GmshOutputDiscretization(std::ostream& gmshfilecontent);
+    void GmshOutputDiscretization(std::ostream& gmshfilecontent) override;
 
-    virtual void LiftDrag(const int step, const double time) const;
+    void LiftDrag(const int step, const double time) const override;
 
-    virtual void ReadRestart(const int step);
+    void ReadRestart(const int step) override;
 
-    virtual void GetSlipCoefficient(
-        double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void GetSlipCoefficient(double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond) override;
 
     // interface foces
     Teuchos::RCP<Epetra_Vector> ITrueResidual() { return itrueresidual_; }
@@ -640,13 +621,13 @@ namespace XFEM
         double& e_s);                                   ///< stress tangent slavesided
 
     /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
-    virtual void GetPenaltyScalingSlave(DRT::Element* coup_ele,  ///< xfluid ele
-        double& penscaling_s)                                    ///< penalty scaling slavesided
+    void GetPenaltyScalingSlave(DRT::Element* coup_ele,  ///< xfluid ele
+        double& penscaling_s) override                   ///< penalty scaling slavesided
     {
       GetStressTangentSlave(coup_ele, penscaling_s);
     }
 
-    virtual void Output(const int step, const double time, const bool write_restart_data);
+    void Output(const int step, const double time, const bool write_restart_data) override;
 
     /// Assign communicator to contact to mesh coupling object
     void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm)
@@ -663,7 +644,7 @@ namespace XFEM
     }
 
     /// Prepare solve
-    virtual void PrepareSolve();
+    void PrepareSolve() override;
 
     /// Get the corresponding FSI interface law
     virtual INPAR::XFEM::InterfaceLaw GetInterfaceLaw() { return interfacelaw_; }
@@ -680,35 +661,35 @@ namespace XFEM
    protected:
     //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific
     //! face element via solving a local eigenvalue problem
-    virtual void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
+    void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele) override;
 
-    virtual void InitStateVectors();
+    void InitStateVectors() override;
 
-    virtual bool HasMovingInterface() { return true; }
+    bool HasMovingInterface() override { return true; }
 
-    virtual void SetConditionSpecificParameters();
+    void SetConditionSpecificParameters() override;
 
     //! Initializes configurationmap
-    virtual void SetupConfigurationMap();
+    void SetupConfigurationMap() override;
 
     //! Updates configurationmap for specific Gausspoint
-    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< master sided dynamic viscosity
-        double& visc_s,                                      //< slave sided dynamic viscosity
-        double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                              //< master sided dynamic viscosity
+        double& visc_s,                              //< slave sided dynamic viscosity
+        double& density_m,                           //< master sided density
+        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
+        double& full_stab,                           //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
+        const DRT::Condition* cond,                  //< Condition
+        DRT::Element* ele,                           //< Element
+        DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
         CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
-    );
+        ) override;
 
     //! Updates configurationmap for specific Gausspoint for FSI with contact
     void UpdateConfigurationMap_GP_Contact(double& kappa_m,  //< fluid sided weighting
@@ -776,7 +757,7 @@ namespace XFEM
     );
 
     /// set material pointer for coupling slave side
-    void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat);
+    void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat) override;
 
     /// set the fluid-fluid interface fix to avoid a cut
     void SetInterfaceFixed()
@@ -793,7 +774,7 @@ namespace XFEM
     void RedistributeForErrorCalculation();
 
     //! determine whether interface is fixed
-    bool HasMovingInterface() { return moving_interface_; }
+    bool HasMovingInterface() override { return moving_interface_; }
 
     /// get viscosity of the slave fluid
     void GetViscositySlave(DRT::Element* coup_ele,  ///< xfluid ele
@@ -801,43 +782,43 @@ namespace XFEM
     );
 
     /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
-    virtual void GetPenaltyScalingSlave(DRT::Element* coup_ele,  ///< xfluid ele
-        double& penscaling_s)                                    ///< penalty scaling slavesided
+    void GetPenaltyScalingSlave(DRT::Element* coup_ele,  ///< xfluid ele
+        double& penscaling_s) override                   ///< penalty scaling slavesided
     {
       GetViscositySlave(coup_ele, penscaling_s);
     }
 
 
-    virtual void ReadRestart(const int step);
+    void ReadRestart(const int step) override;
 
-    virtual void Output(const int step, const double time, const bool write_restart_data);
+    void Output(const int step, const double time, const bool write_restart_data) override;
 
    protected:
     //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific
     //! face element via solving a local eigenvalue problem
-    virtual void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
+    void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele) override;
 
     //! Initializes configurationmap
-    virtual void SetupConfigurationMap();
+    void SetupConfigurationMap() override;
 
     //! Updates configurationmap for specific Gausspoint
-    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< master sided dynamic viscosity
-        double& visc_s,                                      //< slave sided dynamic viscosity
-        double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                              //< master sided dynamic viscosity
+        double& visc_s,                              //< slave sided dynamic viscosity
+        double& density_m,                           //< master sided density
+        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
+        double& full_stab,                           //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
+        const DRT::Condition* cond,                  //< Condition
+        DRT::Element* ele,                           //< Element
+        DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
         CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
-    );
+        ) override;
 
    private:
     //! whether the embedded fluid interface is moving
@@ -845,5 +826,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_COUPLING_MESH_H

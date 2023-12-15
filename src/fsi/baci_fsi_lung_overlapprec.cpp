@@ -14,9 +14,12 @@
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_io_control.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_preconditioner_linalg.H"
+
+BACI_NAMESPACE_OPEN
 
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/
@@ -24,9 +27,9 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
     const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
     ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
     double omega, int iterations, double somega, int siterations, double fomega, int fiterations,
-    double aomega, int aiterations, FILE* err)
+    double aomega, int aiterations)
     : OverlappingBlockMatrix(Teuchos::null, maps, structure, fluid, ale, structuresplit, symmetric,
-          omega, iterations, somega, siterations, fomega, fiterations, aomega, aiterations, err)
+          omega, iterations, somega, siterations, fomega, fiterations, aomega, aiterations)
 {
   // determine map of all dofs not related to constraint
 
@@ -47,10 +50,10 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
   prec_ = DRT::INPUT::IntegralValue<INPAR::FSI::PrecConstr>(
       fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
 
-  Teuchos::RCP<Teuchos::ParameterList> constrsolvparams = Teuchos::rcp(new Teuchos::ParameterList);
-  constrsolvparams->set("solver", "umfpack");
-  constraintsolver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      constrsolvparams, maps.Map(0)->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::ParameterList constrsolvparams;
+  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      "SOLVER", INPAR::SOLVER::SolverType::umfpack, constrsolvparams);
+  constraintsolver_ = Teuchos::rcp(new CORE::LINALG::Solver(constrsolvparams, maps.Map(0)->Comm()));
 }
 
 
@@ -406,3 +409,5 @@ const char* FSI::LungOverlappingBlockMatrix::Label() const
 {
   return "FSI::LungOverlappingBlockMatrix";
 }
+
+BACI_NAMESPACE_CLOSE

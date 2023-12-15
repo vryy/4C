@@ -14,6 +14,8 @@
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -59,7 +61,7 @@ namespace BEAMINTERACTION
      *\brief things that need to be done in a separate loop before the actual evaluation loop
      *      over all contact pairs
      */
-    virtual void PreEvaluate() override;
+    void PreEvaluate() override;
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -67,7 +69,7 @@ namespace BEAMINTERACTION
      *
      * Rotational coupling contributions will be added in this method.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
@@ -75,7 +77,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Update state of rotational DoFs of both elements
      */
-    void ResetRotationState(const ::DRT::Discretization& discret,
+    void ResetRotationState(const BACI::DRT::Discretization& discret,
         const Teuchos::RCP<const Epetra_Vector>& ia_discolnp) override;
 
    protected:
@@ -94,5 +96,7 @@ namespace BEAMINTERACTION
     LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

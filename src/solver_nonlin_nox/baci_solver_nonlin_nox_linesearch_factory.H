@@ -29,15 +29,18 @@ namespace NOX
   {
     class Generic;
   }
-}  // namespace NOX
 
-namespace NOX
-{
   class GlobalData;
   namespace StatusTest
   {
     class Generic;
   }
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace INNER
@@ -55,8 +58,6 @@ namespace NOX
         //! Constructor
         Factory();
 
-        //! Destructor
-        ~Factory(){};
 
         /*! \brief Factory to build a line search object.
 
@@ -66,9 +67,9 @@ namespace NOX
             @param params General nln parameterlist.
 
         */
-        Teuchos::RCP<NOX::LineSearch::Generic> BuildLineSearch(
-            const Teuchos::RCP<NOX::GlobalData>& gd,
-            const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
+        Teuchos::RCP<::NOX::LineSearch::Generic> BuildLineSearch(
+            const Teuchos::RCP<::NOX::GlobalData>& gd,
+            const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
             Teuchos::ParameterList& params);
 
@@ -82,14 +83,16 @@ namespace NOX
       \relates NOX::NLNSOL::Constraint::LineSearch::Factory
 
       */
-      Teuchos::RCP<NOX::LineSearch::Generic> BuildLineSearch(
-          const Teuchos::RCP<NOX::GlobalData>& gd,
-          const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
+      Teuchos::RCP<::NOX::LineSearch::Generic> BuildLineSearch(
+          const Teuchos::RCP<::NOX::GlobalData>& gd,
+          const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
           const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
           Teuchos::ParameterList& params);
 
     }  // namespace LineSearch
   }    // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_LINESEARCH_FACTORY_H

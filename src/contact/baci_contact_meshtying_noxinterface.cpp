@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::MtNoxInterface::MtNoxInterface()
@@ -49,10 +51,10 @@ void CONTACT::MtNoxInterface::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::MtNoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
-    NOX::NLN::StatusTest::QuantityType chQ, NOX::Abstract::Vector::NormType type,
+    NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_meshtying) return -1.0;
+  if (checkQuantity != NOX::NLN::StatusTest::quantity_meshtying) return -1.0;
 
   Teuchos::RCP<Epetra_Vector> constrRhs =
       gstate_ptr_->ExtractModelEntries(INPAR::STR::model_meshtying, F);
@@ -60,8 +62,8 @@ double CONTACT::MtNoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
   // no constraint contributions present
   if (constrRhs.is_null()) return 0.0;
 
-  Teuchos::RCP<const NOX::Epetra::Vector> constrRhs_nox =
-      Teuchos::rcp(new NOX::Epetra::Vector(constrRhs, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> constrRhs_nox =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(constrRhs, ::NOX::Epetra::Vector::CreateView));
 
   double constrNorm = -1.0;
   constrNorm = constrRhs_nox->norm(type);
@@ -73,10 +75,10 @@ double CONTACT::MtNoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew,
-    const Epetra_Vector& xOld, double aTol, double rTol, NOX::NLN::StatusTest::QuantityType chQ,
-    bool disable_implicit_weighting) const
+    const Epetra_Vector& xOld, double aTol, double rTol,
+    NOX::NLN::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_meshtying) return -1.0;
+  if (checkQuantity != NOX::NLN::StatusTest::quantity_meshtying) return -1.0;
 
   double rms = -1.0;
 
@@ -87,8 +89,8 @@ double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vect
       gstate_ptr_->ExtractModelEntries(INPAR::STR::model_meshtying, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
-  Teuchos::RCP<const NOX::Epetra::Vector> lagincr_nox_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(lagincr_ptr, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(lagincr_ptr, ::NOX::Epetra::Vector::CreateView));
 
   rms = NOX::NLN::AUX::RootMeanSquareNorm(
       aTol, rTol, lagnew_ptr, lagincr_ptr, disable_implicit_weighting);
@@ -99,10 +101,10 @@ double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vect
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew,
-    const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType chQ,
-    NOX::Abstract::Vector::NormType type, bool isScaled) const
+    const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
+    ::NOX::Abstract::Vector::NormType type, bool isScaled) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_meshtying) return -1.0;
+  if (checkQuantity != NOX::NLN::StatusTest::quantity_meshtying) return -1.0;
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
@@ -111,8 +113,8 @@ double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Ve
       gstate_ptr_->ExtractModelEntries(INPAR::STR::model_meshtying, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
-  Teuchos::RCP<const NOX::Epetra::Vector> lagincr_nox_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(lagincr_ptr, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(lagincr_ptr, ::NOX::Epetra::Vector::CreateView));
 
   double updatenorm = -1.0;
 
@@ -126,17 +128,17 @@ double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Ve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::MtNoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
-    NOX::NLN::StatusTest::QuantityType chQ, NOX::Abstract::Vector::NormType type,
+    NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_meshtying) return -1.0;
+  if (checkQuantity != NOX::NLN::StatusTest::quantity_meshtying) return -1.0;
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagold_ptr =
       gstate_ptr_->ExtractModelEntries(INPAR::STR::model_meshtying, xOld);
 
-  Teuchos::RCP<const NOX::Epetra::Vector> lagold_nox_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(lagold_ptr, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(lagold_ptr, ::NOX::Epetra::Vector::CreateView));
 
   double lagoldnorm = -1.0;
 
@@ -146,3 +148,5 @@ double CONTACT::MtNoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_
 
   return lagoldnorm;
 }
+
+BACI_NAMESPACE_CLOSE

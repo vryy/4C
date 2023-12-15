@@ -21,6 +21,8 @@ extern "C"
 #include <qhull_a.h>
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -1282,3 +1284,5 @@ void CORE::GEO::CUT::TetMesh::GmshWritePosition(
 }
 
 #endif
+
+BACI_NAMESPACE_CLOSE

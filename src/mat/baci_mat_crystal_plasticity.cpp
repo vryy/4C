@@ -14,10 +14,12 @@ See the header file for a detailed description.
 #include "baci_mat_crystal_plasticity.H"
 
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      			|
@@ -172,7 +174,7 @@ MAT::CrystalPlasticityType MAT::CrystalPlasticityType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       			|
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::CrystalPlasticityType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::CrystalPlasticityType::Create(const std::vector<char>& data)
 {
   MAT::CrystalPlasticity* cp = new MAT::CrystalPlasticity();
   cp->Unpack(data);
@@ -192,9 +194,9 @@ MAT::CrystalPlasticity::CrystalPlasticity(MAT::PAR::CrystalPlasticity* params) :
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::Pack(DRT::PackBuffer& data) const
+void MAT::CrystalPlasticity::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -236,10 +238,8 @@ void MAT::CrystalPlasticity::Pack(DRT::PackBuffer& data) const
 void MAT::CrystalPlasticity::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // recover matid and params_
   int matid;
@@ -1849,3 +1849,5 @@ bool MAT::CrystalPlasticity::VisData(
   }
   return true;
 }  // VisData()
+
+BACI_NAMESPACE_CLOSE

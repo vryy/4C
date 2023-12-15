@@ -18,6 +18,8 @@
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_adapter_str_timint_adaptive.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations:
 namespace STR
 {
@@ -58,9 +60,6 @@ namespace ADAPTER
     //! Constructor
     StructureFSITimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
 
-    //! Destructor
-    virtual ~StructureFSITimIntAda() { ; }
-
     //! Do one time step with auxiliary time integration scheme
     virtual void TimeStepAuxiliar();
 
@@ -79,10 +78,10 @@ namespace ADAPTER
     virtual double CalculateDt(const double norm);
 
     //! Get time step size of adaptive structural time integrator
-    virtual double Dt() const;
+    double Dt() const override;
 
     //! Get target time \f$t_{n+1}\f$ of current time step
-    virtual double Time() const;
+    double Time() const override;
 
     //! Set new time step size
     void SetDt(const double dtnew) override;
@@ -121,4 +120,6 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

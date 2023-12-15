@@ -15,6 +15,8 @@
 
 #include "baci_linalg_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -107,5 +109,7 @@ namespace ALE
     };
   }  // namespace UTILS
 }  // namespace ALE
+
+BACI_NAMESPACE_CLOSE
 
 #endif

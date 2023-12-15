@@ -7,11 +7,11 @@
 #define BACI_SO3_TET10_H
 
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_mat_material.H"
 #include "baci_so3_base.H"
@@ -26,6 +26,8 @@
 #define NUMCOORD_SOTET10 4      ///< number of shape function coordinates (ksi1-ksi4)
 #define NUMNOD_SOTET10_FACE 6   ///< number of nodes on a TET10 face (which is a TRI6)
 #define NUMGPT_SOTET10_FACE 3   ///< number of GP    on a TET10 face (which is a TRI6)
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -44,7 +46,7 @@ namespace DRT
 
       static So_tet10Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -113,7 +115,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element
@@ -142,13 +144,6 @@ namespace DRT
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
-
       virtual std::vector<double> ElementCenterRefeCoords();
 
       /*!
@@ -168,7 +163,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -178,11 +173,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_tet10() override;
       //@}
 
       //! @name Acess methods
@@ -419,7 +409,7 @@ namespace DRT
       // along with the rather inconsitent matrix sizes.
 
       //! Evaluate Tet10 Shapefcts at 4 gausspoints to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>> so_tet10_4gp_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>> so_tet10_4gp_shapefcts();
       //! Evaluate Tet10 Derivs at 4 gausspoints to keep them static
       const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>&
       so_tet10_4gp_derivs();
@@ -463,5 +453,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_TET10_H

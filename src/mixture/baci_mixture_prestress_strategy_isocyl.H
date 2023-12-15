@@ -18,6 +18,8 @@
 
 #include <NOX_LAPACK.H>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   // forward declaration
@@ -89,7 +91,7 @@ namespace MIXTURE
      * \return double Fraction of the membrane stress contribution to ensure equilibrium
      */
     double EvaluateMueFrac(MixtureRule& mixtureRule,
-        const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
+        const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const override;
 
@@ -102,5 +104,7 @@ namespace MIXTURE
     const PAR::IsotropicCylinderPrestressStrategy* params_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H

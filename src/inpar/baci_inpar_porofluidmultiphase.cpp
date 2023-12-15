@@ -13,6 +13,8 @@
 #include "baci_inpar_bio.H"
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -56,7 +58,7 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       &porofluidmultiphasedyn);
 
   // convergence criteria adaptivity
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &porofluidmultiphasedyn);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,
@@ -259,3 +261,5 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       "size are additionally deleted (a valid choice of this parameter should lie between 0 and 1)",
       &porofluidmultiphasemshtdyn);
 }
+
+BACI_NAMESPACE_CLOSE

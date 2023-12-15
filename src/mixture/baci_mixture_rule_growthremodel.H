@@ -22,12 +22,19 @@
 #include <unordered_map>
 #include <vector>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace LINALG
 {
   class SerialDenseMatrix;
 }
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -38,10 +45,6 @@ namespace MAT
     class Material;
   }
 }  // namespace MAT
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 namespace MIXTURE
 {
@@ -95,7 +98,7 @@ namespace MIXTURE
     /// Constructor for mixture rule given the input parameters
     explicit GrowthRemodelMixtureRule(MIXTURE::PAR::GrowthRemodelMixtureRule* params);
 
-    void PackMixtureRule(DRT::PackBuffer& data) const override;
+    void PackMixtureRule(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackMixtureRule(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
@@ -120,10 +123,10 @@ namespace MIXTURE
     double GetConstituentInitialReferenceMassDensity(
         const MIXTURE::MixtureConstituent& constituent) const;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
@@ -135,5 +138,7 @@ namespace MIXTURE
     std::unique_ptr<MIXTURE::MixtureGrowthStrategy> growthStrategy_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_RULE_GROWTHREMODEL_H

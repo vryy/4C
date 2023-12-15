@@ -15,18 +15,18 @@
 #include "baci_fluid_ele_calc.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcStd : public FluidEleCalc<distype>
     {
       typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
 
      public:
-      virtual ~FluidEleCalcStd() {}
-
       /// Singleton access method
       static FluidEleCalcStd<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
@@ -37,5 +37,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

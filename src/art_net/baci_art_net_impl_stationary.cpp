@@ -15,7 +15,6 @@
 #include "baci_art_net_artery_resulttest.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -25,8 +24,11 @@
 #include "baci_mat_cnst_1d_art.H"
 #include "baci_scatra_resulttest.H"
 #include "baci_scatra_timint_implicit.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_Vector.h>
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -42,8 +44,8 @@
 
 ART::ArtNetImplStationary::ArtNetImplStationary(Teuchos::RCP<DRT::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, FILE* errfile, IO::DiscretizationWriter& output)
-    : TimInt(actdis, linsolvernumber, probparams, artparams, errfile, output)
+    const Teuchos::ParameterList& artparams, IO::DiscretizationWriter& output)
+    : TimInt(actdis, linsolvernumber, probparams, artparams, output)
 {
   //  exit(1);
 
@@ -135,13 +137,13 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
     if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
         INPAR::SCATRA::velocity_zero)
       dserror("set your velocity field to zero!");
-    // scatra problem
-    scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+    // construct the scatra problem
+    scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
+        DRT::Problem::Instance()->SolverParams(linsolvernumber_), scatra_disname, false));
 
     // initialize the base algo.
-    // scatra time integrator is constructed and initialized inside.
-    scatra_->Init(globaltimeparams, myscatraparams,
-        DRT::Problem::Instance()->SolverParams(linsolvernumber_), scatra_disname, false);
+    // scatra time integrator is initialized inside.
+    scatra_->Init();
 
     // only now we must call Setup() on the scatra time integrator.
     // all objects relying on the parallel distribution are
@@ -151,10 +153,7 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   }
 }
 
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                             kremheller 03/18|
- *----------------------------------------------------------------------*/
-ART::ArtNetImplStationary::~ArtNetImplStationary() { return; }
+
 
 /*----------------------------------------------------------------------*
  | (Linear) Solve.                                                      |
@@ -487,7 +486,7 @@ void ART::ArtNetImplStationary::Output(
     // output of flow
     OutputFlow();
 
-    if (solvescatra_) scatra_->ScaTraField()->Output();
+    if (solvescatra_) scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
   }
 
   return;
@@ -679,8 +678,8 @@ void ART::ArtNetImplStationary::SetInitialField(
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), time_, k);
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  .Evaluate(lnode->X().data(), time_, k);
           int err = pressurenp_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }
@@ -703,5 +702,6 @@ void ART::ArtNetImplStationary::SetInitialField(
       break;
   }  // switch(init)
 
-  return;
 }  // ArtNetImplStationary::SetInitialField
+
+BACI_NAMESPACE_CLOSE

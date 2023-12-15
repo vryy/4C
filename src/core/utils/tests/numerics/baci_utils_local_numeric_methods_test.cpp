@@ -13,6 +13,8 @@
 
 #include "baci_unittest_utils_assertions_test.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   TEST(CoreUtilsTest, Bisection)
@@ -59,3 +61,4 @@ namespace
     EXPECT_NEAR(ddfddx, ref_ddfddx, std::pow(h, 2.0));
   }
 }  // namespace
+BACI_NAMESPACE_CLOSE

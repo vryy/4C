@@ -1522,6 +1522,6 @@ void test_position2d()
       INPAR::CUT::floattype_double);  // use
                                       // double
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::Position::Create(side_xyze, xyz, DRT::Element::tri3);
+      CORE::GEO::CUT::Position::Create(side_xyze, xyz, CORE::FE::CellType::tri3);
   pos->Compute();
 }

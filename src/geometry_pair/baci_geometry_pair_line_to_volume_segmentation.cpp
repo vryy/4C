@@ -15,16 +15,18 @@
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>::Setup()
+GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line,
+    volume>::GeometryPairLineToVolumeSegmentation(const DRT::Element* element1,
+    const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
+    : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
 {
-  // Call Setup on the base class.
-  GeometryPairLineToVolume<scalar_type, line, volume>::Setup();
-
   // Check if a segment tracker exists for this line element. If not a new one is created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::set<LineSegment<double>>>& segment_tracker_map =
@@ -48,9 +50,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
     const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
-  // Check if the element is initialized.
-  this->CheckInitSetup();
-
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DSegmentation<GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>>::Evaluate(
       this, q_line, q_volume, segments);
@@ -72,3 +71,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMET
     GEOMETRYPAIR::t_tet10>;
 template class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_nurbs27>;
+
+BACI_NAMESPACE_CLOSE

@@ -13,11 +13,13 @@
 
 #include "baci_lib_dofset_merged_wrapper.H"
 
+#include "baci_coupling_matchingoctree.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_Export.h>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -79,7 +81,7 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
   DRT::UTILS::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
-  DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+  auto tree = CORE::COUPLING::NodeMatchingOctree();
   tree.Init(*sourcedis_, masternodes, 150);
   tree.Setup();
 
@@ -221,3 +223,5 @@ void DRT::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
   // clear my Teuchos::rcps.
   Reset();
 }
+
+BACI_NAMESPACE_CLOSE

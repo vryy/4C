@@ -17,6 +17,8 @@
 #include <memory>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -38,16 +40,6 @@ namespace PARTICLERIGIDBODY
   class RigidBodyDataState final
   {
    public:
-    /*!
-     * \brief constructor
-     *
-     * \author Sebastian Fuchs \date 08/2020
-     */
-    explicit RigidBodyDataState() = default;
-
-    //! destructor
-    ~RigidBodyDataState() = default;
-
     /*!
      * \brief init rigid body data state container
      *
@@ -192,4 +184,6 @@ namespace PARTICLERIGIDBODY
 }  // namespace PARTICLERIGIDBODY
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

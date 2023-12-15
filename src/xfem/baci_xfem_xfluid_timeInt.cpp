@@ -13,6 +13,7 @@
 
 #include "baci_xfem_xfluid_timeInt.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_cut_boundingbox.H"
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_element.H"
@@ -29,7 +30,6 @@
 #include "baci_lib_condition_selector.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_serialdensevector.H"
@@ -40,6 +40,7 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
 
 // #define DEBUG_TIMINT
 
@@ -1808,38 +1809,38 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
 {
   bool node_within_Space_Time_Side = false;
 
-  DRT::Element::DiscretizationType side_distype = side->Shape();
+  CORE::FE::CellType side_distype = side->Shape();
 
   bool successful_check = false;
 
   switch (side_distype)
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::tri3, DRT::Element::wedge6>(
+      successful_check = WithinSpaceTimeSide<CORE::FE::CellType::tri3, CORE::FE::CellType::wedge6>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad4, DRT::Element::hex8>(
+      successful_check = WithinSpaceTimeSide<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad8, DRT::Element::hex16>(
+      successful_check = WithinSpaceTimeSide<CORE::FE::CellType::quad8, CORE::FE::CellType::hex16>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad9, DRT::Element::hex18>(
+      successful_check = WithinSpaceTimeSide<CORE::FE::CellType::quad9, CORE::FE::CellType::hex18>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
     default:
-      dserror("side-distype %s not handled", DRT::DistypeToString(side_distype).c_str());
+      dserror("side-distype %s not handled", CORE::FE::CellTypeToString(side_distype).c_str());
       break;
   }
 
@@ -1851,8 +1852,8 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
 // -------------------------------------------------------------------
 // check if the node is within the space time side
 // -------------------------------------------------------------------
-template <DRT::Element::DiscretizationType side_distype,
-    DRT::Element::DiscretizationType space_time_distype>
+template <CORE::FE::CellType side_distype,
+    CORE::FE::CellType space_time_distype>
 bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     bool& within_space_time_side,  /// within the space time side
     DRT::Element* side, const int coup_sid,
@@ -1875,11 +1876,9 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   Teuchos::RCP<const Epetra_Vector> idisp_old = cutter_dis->GetState(state_old);
 
 
-  const int numnode_space_time =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement;
+  const int numnode_space_time = CORE::FE::num_nodes<space_time_distype>;
 
-  const int numnode_side =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement / 2;
+  const int numnode_side = CORE::FE::num_nodes<space_time_distype> / 2;
 
   // space time side coordinates
   CORE::LINALG::Matrix<3, numnode_space_time> xyze_st;
@@ -1895,8 +1894,8 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   {
     DRT::Node& node = *nodes[i];
 
-    CORE::LINALG::Matrix<3, 1> x_old(node.X());
-    CORE::LINALG::Matrix<3, 1> x_new(node.X());
+    CORE::LINALG::Matrix<3, 1> x_old(node.X().data());
+    CORE::LINALG::Matrix<3, 1> x_new(node.X().data());
 
     std::vector<int> lm;
     std::vector<double> mydisp_old;
@@ -2040,13 +2039,13 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 // -------------------------------------------------------------------
 // check the volume of the space time side, distorted space-time side ?
 // -------------------------------------------------------------------
-template <DRT::Element::DiscretizationType space_time_distype, const int numnode_space_time>
+template <CORE::FE::CellType space_time_distype, const int numnode_space_time>
 bool XFEM::XFluidTimeInt::CheckSTSideVolume(
     const CORE::LINALG::Matrix<3, numnode_space_time>& xyze_st)
 {
   bool successful = true;
 
-  const int nsd = CORE::DRT::UTILS::DisTypeToDim<space_time_distype>::dim;
+  const int nsd = CORE::FE::dim<space_time_distype>;
 
   // use one-point Gauss rule
   CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints_stab(
@@ -2118,7 +2117,7 @@ void XFEM::XFluidTimeInt::ExportMethods(
        dest = (dest + 1) % numproc_)  // dest is the target processor
   {
     // Initialization of sending
-    DRT::PackBuffer dataSend;  // vector including all data that has to be send to dest proc
+    CORE::COMM::PackBuffer dataSend;  // vector including all data that has to be send to dest proc
 
     // Initialization
     int source = myrank_ - (dest - myrank_);  // source proc (sends (dest-myrank_) far and gets from
@@ -2134,14 +2133,14 @@ void XFEM::XFluidTimeInt::ExportMethods(
     //---------------------------------------------------------------------------------------------------------------
     // send current DofSetData to next proc and receive a new map from previous proc
     {
-      DRT::PackBuffer dataSend;  // data to be sent
+      CORE::COMM::PackBuffer dataSend;  // data to be sent
 
       // packing the data
       for (std::map<int, std::map<int, int>>::iterator node_it = dofset_marker_export_.begin();
            node_it != dofset_marker_export_.end(); node_it++)
       {
-        DRT::ParObject::AddtoPack(dataSend, node_it->first);
-        DRT::ParObject::AddtoPack(dataSend, node_it->second);
+        CORE::COMM::ParObject::AddtoPack(dataSend, node_it->first);
+        CORE::COMM::ParObject::AddtoPack(dataSend, node_it->second);
       }
 
       dataSend.StartPacking();
@@ -2150,8 +2149,8 @@ void XFEM::XFluidTimeInt::ExportMethods(
       for (std::map<int, std::map<int, int>>::iterator node_it = dofset_marker_export_.begin();
            node_it != dofset_marker_export_.end(); node_it++)
       {
-        DRT::ParObject::AddtoPack(dataSend, node_it->first);
-        DRT::ParObject::AddtoPack(dataSend, node_it->second);
+        CORE::COMM::ParObject::AddtoPack(dataSend, node_it->first);
+        CORE::COMM::ParObject::AddtoPack(dataSend, node_it->second);
       }
 
       std::vector<char> dataRecv;
@@ -2168,8 +2167,8 @@ void XFEM::XFluidTimeInt::ExportMethods(
         std::map<int, int> dofset_map;  // dofset map <nds, Method>
 
         // unpack reconstruction method data
-        DRT::ParObject::ExtractfromPack(posinData, dataRecv, nid);
-        DRT::ParObject::ExtractfromPack(posinData, dataRecv, dofset_map);
+        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nid);
+        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dofset_map);
 
         // distribute the received information on this proc if the info is required on this node
 
@@ -2204,7 +2203,7 @@ void XFEM::XFluidTimeInt::ExportMethods(
  * basic function sending data to dest and receiving data from source                schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFluidTimeInt::sendData(
-    DRT::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
+    CORE::COMM::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
 {
   std::vector<int> lengthSend(1, 0);
   lengthSend[0] = dataSend().size();
@@ -2216,7 +2215,7 @@ void XFEM::XFluidTimeInt::sendData(
 #endif
 
   // exporter for sending
-  DRT::Exporter exporter(dis_->Comm());
+  CORE::COMM::Exporter exporter(dis_->Comm());
 
   // send length of the data to be received ...
   MPI_Request req_length_data;
@@ -2266,7 +2265,7 @@ void XFEM::XFluidTimeInt::Output()
     for (int i = 0; i < dis_->NumMyRowNodes(); ++i)
     {
       const DRT::Node* actnode = dis_->lRowNode(i);
-      const CORE::LINALG::Matrix<3, 1> pos(actnode->X());
+      const CORE::LINALG::Matrix<3, 1> pos(actnode->X().data());
 
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>::const_iterator it =
           node_to_reconstr_method_.find(actnode->Id());
@@ -2283,7 +2282,7 @@ void XFEM::XFluidTimeInt::Output()
       for (size_t j = 0; j < nds_methods.size(); j++)
       {
         IO::GMSH::cellWithScalarToStream(
-            DRT::Element::point1, (int)nds_methods[j], pos, gmshfilecontent);
+            CORE::FE::CellType::point1, (int)nds_methods[j], pos, gmshfilecontent);
       }
     }
     gmshfilecontent << "};\n";
@@ -2293,3 +2292,5 @@ void XFEM::XFluidTimeInt::Output()
 
   if (myrank_ == 0) IO::cout << IO::endl;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,13 +16,14 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace INPUT
   {
     class LineDefinition;
   }
-
 
   class Discretization;
 
@@ -31,24 +32,25 @@ namespace DRT
     class FluidHDGWeakCompType : public FluidType
     {
      public:
-      std::string Name() const { return "FluidHDGWeakCompType"; }
+      std::string Name() const override { return "FluidHDGWeakCompType"; }
 
       static FluidHDGWeakCompType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
           const double* x0, int numdf, int dimns);
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static FluidHDGWeakCompType instance_;
@@ -85,13 +87,8 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~FluidHDGWeakComp();
 
       /*!
       \brief Return unique ParObject id
@@ -99,7 +96,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return FluidHDGWeakCompType::Instance().UniqueParObjectId();
       }
@@ -110,20 +107,20 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -132,12 +129,12 @@ namespace DRT
       \brief Get number of degrees of freedom per node, zero for the primary
       and the secondary dof set and equal to the given number for the tertiary dof set
       */
-      virtual int NumDofPerNode(const DRT::Node&) const { return 0; }
+      int NumDofPerNode(const DRT::Node&) const override { return 0; }
 
       /*!
       \brief Returns the number of dofs per node for the ALE displacements
        */
-      int NumDofPerNodeAuxiliary() const
+      int NumDofPerNodeAuxiliary() const override
       {
         return (CORE::DRT::UTILS::getDimension(distype_) + 0);
         // maybe + 1 to mimic the standard fluid dofset with velocity + pressure
@@ -148,7 +145,7 @@ namespace DRT
       \brief Get number of degrees of freedom per face
 
       */
-      virtual int NumDofPerFace(const unsigned face) const
+      int NumDofPerFace(const unsigned face) const override
       {
         return (1 + CORE::DRT::UTILS::getDimension(distype_)) * NumDofPerComponent(face);
       }
@@ -156,7 +153,7 @@ namespace DRT
       /*!
       \brief Get number of dofs per component per face
       */
-      virtual int NumDofPerComponent(const unsigned face) const
+      int NumDofPerComponent(const unsigned face) const override
       {
         return CORE::DRT::UTILS::getBasisSize(
             CORE::DRT::UTILS::getEleFaceShapeType(distype_), this->Degree(), completepol_);
@@ -166,12 +163,12 @@ namespace DRT
       \brief Get number of degrees of freedom per element, zero for the primary dof set
       and equal to the given number for the secondary dof set
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Returns the number of dofs per element for the interior variables
        */
-      int NumDofPerElementAuxiliary() const
+      int NumDofPerElementAuxiliary() const override
       {
         const int nsd_ = CORE::DRT::UTILS::getDimension(distype_);
         const int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
@@ -182,7 +179,7 @@ namespace DRT
       /*!
        \brief Returns the degree of the element
        */
-      int Degree() const { return degree_; }
+      int Degree() const override { return degree_; }
 
       /*!
        \brief Returns the degree of the element
@@ -216,19 +213,20 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //@}
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return FluidHDGWeakCompType::Instance(); }
+      DRT::ElementType& ElementType() const override { return FluidHDGWeakCompType::Instance(); }
 
      private:
       // don't want = operator
@@ -246,5 +244,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

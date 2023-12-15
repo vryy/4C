@@ -14,6 +14,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   /// base class for algorithms
@@ -31,8 +33,7 @@ namespace ADAPTER
     explicit AlgorithmBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// virtual destruction
-    virtual ~AlgorithmBase() {}
-
+    virtual ~AlgorithmBase() = default;
     /// read restart data
     virtual void ReadRestart(int step) = 0;
 
@@ -128,5 +129,7 @@ namespace ADAPTER
     //@}
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

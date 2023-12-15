@@ -15,8 +15,10 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -44,7 +46,7 @@ namespace MAT
      *
      * \param data
      */
-    virtual void PackAnisotropy(DRT::PackBuffer& data) const = 0;
+    virtual void PackAnisotropy(CORE::COMM::PackBuffer& data) const = 0;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
@@ -104,4 +106,6 @@ namespace MAT
     Teuchos::RCP<Anisotropy> anisotropy_;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_ANISOTROPY_EXTENSION_BASE_H

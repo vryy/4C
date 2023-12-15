@@ -23,6 +23,8 @@
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
 #endif
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
@@ -47,40 +49,41 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(const int id)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
-    const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> coconstlawdata)
+    const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata)
 {
-  switch (coconstlawdata->Type())
+  switch (contactconstitutivelawdata->Type())
   {
     case INPAR::CONTACT::ConstitutiveLawType::colaw_cubic:
     {
       CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams(coconstlawdata);
+          new CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams(contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
     }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational:
     {
       CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams(coconstlawdata);
+          new CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams(
+              contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
     }
 
     case INPAR::CONTACT::ConstitutiveLawType::colaw_linear:
     {
       CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams(coconstlawdata);
+          new CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams(contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
     }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_power:
     {
       CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams(coconstlawdata);
+          new CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams(contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
     }
 #ifdef BACI_WITH_MIRCO
     case INPAR::CONTACT::ConstitutiveLawType::colaw_mirco:
     {
       CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams(coconstlawdata);
+          new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams(contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
     }
 #endif
@@ -90,9 +93,11 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
       break;
     }
     default:
-      dserror("unknown type of contact constitutive law %d\n", coconstlawdata->Type());
+      dserror("unknown type of contact constitutive law %d\n", contactconstitutivelawdata->Type());
       break;
   }
 
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

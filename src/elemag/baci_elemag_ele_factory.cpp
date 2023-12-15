@@ -14,80 +14,83 @@
 #include "baci_elemag_ele_calc.H"
 #include "baci_elemag_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  |                                                (public) berardocco 02/18 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, std::string problem)
+    CORE::FE::CellType distype, std::string problem)
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      return DefineProblemType<DRT::Element::hex8>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex8>(problem);
     }
-    case DRT::Element::hex20:
+    case CORE::FE::CellType::hex20:
     {
-      return DefineProblemType<DRT::Element::hex20>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex20>(problem);
     }
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
     {
-      return DefineProblemType<DRT::Element::hex27>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex27>(problem);
     }
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      return DefineProblemType<DRT::Element::tet4>(problem);
+      return DefineProblemType<CORE::FE::CellType::tet4>(problem);
     }
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
     {
-      return DefineProblemType<DRT::Element::tet10>(problem);
+      return DefineProblemType<CORE::FE::CellType::tet10>(problem);
     }
-    case DRT::Element::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
-      return DefineProblemType<DRT::Element::wedge6>(problem);
+      return DefineProblemType<CORE::FE::CellType::wedge6>(problem);
     }
     /* wedge15 cannot be used since no mesh generator exists
-    case DRT::Element::wedge15:
+    case CORE::FE::CellType::wedge15:
     {
-      return DefineProblemType<DRT::Element::wedge15>(problem);
+      return DefineProblemType<CORE::FE::CellType::wedge15>(problem);
     }
     */
-    case DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
-      return DefineProblemType<DRT::Element::pyramid5>(problem);
+      return DefineProblemType<CORE::FE::CellType::pyramid5>(problem);
     }
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<DRT::Element::quad4>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad4>(problem);
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<DRT::Element::quad8>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad8>(problem);
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<DRT::Element::quad9>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad9>(problem);
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<DRT::Element::tri3>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri3>(problem);
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<DRT::Element::tri6>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri6>(problem);
     }
     // Nurbs support
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      return DefineProblemType<DRT::Element::nurbs9>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs9>(problem);
     }
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
-      return DefineProblemType<DRT::Element::nurbs27>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs27>(problem);
     }
     // no 1D elements
     default:
-      dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated. Just do it.",
+          CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;
@@ -96,7 +99,7 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  |                                                (public) berardocco 02/18 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::DefineProblemType(
     std::string problem)
 {
@@ -109,3 +112,5 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::DefineProblemTy
 
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

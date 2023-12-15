@@ -12,6 +12,8 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupLogMixNeoHooke::CoupLogMixNeoHooke(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -86,3 +88,4 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddDerivativesPrincipal(CORE::LINALG::Mat
   ddPII(2) += lambda / (4. * prinv(2)) + mue / (2. * prinv(2) * prinv(2)) -
               lambda * (sq - 1.) / (4. * sq * sq * sq);
 }
+BACI_NAMESPACE_CLOSE

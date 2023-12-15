@@ -12,20 +12,20 @@
 
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcStd : public ScaTraEleCalc<distype, probdim>
     {
      public:
       //! abbreviation
       typedef ScaTraEleCalc<distype, probdim> my;
 
-      //! destructor
-      virtual ~ScaTraEleCalcStd() { return; };
 
       //! singleton access method
       static ScaTraEleCalcStd<distype, probdim>* Instance(
@@ -37,4 +37,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

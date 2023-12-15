@@ -19,6 +19,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -72,7 +73,7 @@ namespace FLD
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
     const Epetra_Map* GetMergedMap();
-    virtual ~Meshtying() { return; };
+    virtual ~Meshtying() = default;
 
     //! Set up mesh-tying framework
     void SetupMeshtying(const std::vector<int>& coupleddof, const bool pcoupled = true);
@@ -349,5 +350,7 @@ namespace FLD
 
   };  // end  class Meshtying
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_MESHTYING_H

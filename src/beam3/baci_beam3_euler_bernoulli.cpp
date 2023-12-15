@@ -11,11 +11,13 @@
 #include "baci_beam3_euler_bernoulli.H"
 
 #include "baci_beaminteraction_periodic_boundingbox.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -27,7 +29,7 @@ DRT::ELEMENTS::Beam3ebType& DRT::ELEMENTS::Beam3ebType::Instance() { return inst
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::Beam3ebType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Beam3ebType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Beam3eb* object = new DRT::ELEMENTS::Beam3eb(-1, -1);
   object->Unpack(data);
@@ -84,11 +86,10 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   constexpr std::size_t spacedim = 3;
 
   // getting coordinates of current node
-  const double* x = node.X();
+  const auto& x = node.X();
 
   // getting pointer at current element
-  const DRT::ELEMENTS::Beam3eb* beam3eb =
-      dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node.Elements()[0]);
+  const auto* beam3eb = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node.Elements()[0]);
   if (!beam3eb) dserror("Cannot cast to Beam3eb");
 
   // Compute tangent vector with unit length from nodal coordinates.
@@ -97,8 +98,8 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   {
     const DRT::Node* firstnode = beam3eb->Nodes()[0];
     const DRT::Node* secondnode = beam3eb->Nodes()[1];
-    const double* xfirst = firstnode->X();
-    const double* xsecond = secondnode->X();
+    const auto& xfirst = firstnode->X();
+    const auto& xsecond = secondnode->X();
 
     for (std::size_t dim = 0; dim < spacedim; ++dim) tangent(dim) = xsecond[dim] - xfirst[dim];
     tangent.Scale(1.0 / tangent.Norm2());
@@ -332,13 +333,13 @@ void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const { return line2; }
+CORE::FE::CellType DRT::ELEMENTS::Beam3eb::Shape() const { return CORE::FE::CellType::line2; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Beam3eb::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -370,10 +371,9 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -404,9 +404,7 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3eb::Lines()
 {
-  std::vector<Teuchos::RCP<Element>> lines(1);
-  lines[0] = Teuchos::rcp(this, false);
-  return lines;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 
@@ -435,7 +433,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
     isinit_ = true;
 
     // Get DiscretizationType
-    DRT::Element::DiscretizationType distype = Shape();
+    CORE::FE::CellType distype = Shape();
 
     // Get integrationpoints for exact integration
     CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
@@ -574,3 +572,5 @@ void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
       "\nBeam3eb::GetTriadAtXi(): by definition, this element can not return "
       "a full triad; think about replacing it by GetTangentAtXi or another solution.");
 }
+
+BACI_NAMESPACE_CLOSE

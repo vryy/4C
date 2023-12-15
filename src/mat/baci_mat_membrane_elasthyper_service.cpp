@@ -13,6 +13,8 @@
 
 #include "baci_mat_elasthyper_service.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   void MembraneElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1>& prinv,
@@ -207,3 +209,4 @@ void MAT::MembraneElastHyperInvariantsPrincipal(
                                            std::pow(rcg33, 2.0) + 2.0 * std::pow(rcg(2), 2.0)));
   prinv(2) = 1.0;  // incompressibility condition
 }
+BACI_NAMESPACE_CLOSE

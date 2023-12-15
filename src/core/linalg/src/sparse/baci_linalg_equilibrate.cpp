@@ -13,6 +13,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 CORE::LINALG::Equilibration::Equilibration(Teuchos::RCP<const Epetra_Map> dofrowmap)
@@ -493,3 +495,5 @@ Teuchos::RCP<CORE::LINALG::Equilibration> CORE::LINALG::BuildEquilibration(Matri
 
   return equilibration;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -21,6 +21,8 @@
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -28,23 +30,28 @@ namespace DRT
   namespace UTILS
   {
     /*!
-     * \brief Add nodal GID on this processor to existing vector of GIDs
+     * \brief Add nodal GID on this processor to existing list of GIDs
      *
      * @param[in] dis                   discretization, that holds nodes with GIDs
      * @param[in] nodegid               nodal GID
-     * @param[out] my_gid_vec           vector with my node GIDs
+     * @param[out] my_gid_vec           vector/set with my node GIDs
      */
     void AddOwnedNodeGID(const Discretization& dis, int nodegid, std::vector<int>& my_gid_vec);
+    void AddOwnedNodeGID(const Discretization& dis, int nodegid, std::set<int>& my_gid_set);
 
     /*!
-     * \brief Add nodal GIDs on this processor to existing vector from vector with global GIDs
+     * \brief Add nodal GIDs on this processor to existing list from list with global GIDs
      *
      * @param[in] dis                   discretization, that holds nodes with GIDs
-     * @param[in] gloabl_node_gid_vec   vector with all node GIDs
-     * @param[out] my_gid_vec           vector with my node GIDs
+     * @param[in] global_node_gid_vec   vector/set with all node GIDs
+     * @param[out] my_gid_vec           vector/set with my node GIDs
      */
-    void AddOwnedNodeGIDVector(const Discretization& dis,
-        const std::vector<int>& global_node_gid_vec, std::vector<int>& my_gid_vec);
+    template <typename T, typename U>
+    void AddOwnedNodeGIDFromList(
+        const Discretization& dis, const T& global_node_gid_vec, U& my_gid_list)
+    {
+      for (const int nodegid : global_node_gid_vec) AddOwnedNodeGID(dis, nodegid, my_gid_list);
+    }
 
     /*!
      * \brief check, whether node with GID is owned by this processor
@@ -54,16 +61,6 @@ namespace DRT
      * @return                          indicates, whether node is owned by this processor
      */
     bool IsNodeGIDOnThisProc(const DRT::Discretization& dis, int node_gid);
-
-    /*!
-     * \brief remove nodal GIDs from vector when they are owned by this processor
-     *
-     * @param[in] dis                   discretization, that holds nodes with gids
-     * @param[in] node_gids_to_remove   vector with node GIDs to remove
-     * @param[in/out] node_gid_vec      vector to remove GIDs from
-     */
-    void RemoveNodeGIDsFromVector(const Discretization& dis,
-        const std::vector<int>& node_gids_to_remove, std::vector<int>& node_gid_vec);
 
     //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
     //! map (key of type @p T and value of type @p U). It is distributed to to all procs.
@@ -190,5 +187,7 @@ std::vector<T> DRT::UTILS::BroadcastVector(const std::vector<T>& vec_in, const E
   }
   return vec_out;
 }
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_GID_VECTOR_H

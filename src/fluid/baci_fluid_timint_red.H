@@ -16,6 +16,8 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class ArtNet;
@@ -49,21 +51,19 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntRedModels();
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief evaluate problem-dependent bounadry consitions: update the 3D-to-reduced_D coupling data
     for dirichlet bc in this context
 
     */
-    virtual void DoProblemSpecificBoundaryConditions();
+    void DoProblemSpecificBoundaryConditions() override;
 
     /*!
     \brief update the 3D-to-reduced_D coupling data in AssembleMatAndRHS
@@ -74,7 +74,7 @@ namespace FLD
     /*!
     \brief read restart data
     */
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /*!
     \brief read restart (some more RedModels-specific data)
@@ -92,50 +92,50 @@ namespace FLD
     \brief Setup meshtying
 
     */
-    virtual void SetupMeshtying();
+    void SetupMeshtying() override;
 
     /*!
     \brief update configuration and output to file/screen
 
     */
-    virtual void Output();
+    void Output() override;
 
     /*!
     \brief Insert Womersley condition
 
     */
-    virtual void InsertVolumetricSurfaceFlowCondVector(
-        Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> res);
+    void InsertVolumetricSurfaceFlowCondVector(
+        Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> res) override;
 
     /// prepare AVM3-based scale separation
-    virtual void AVM3Preparation();
+    void AVM3Preparation() override;
 
     /// prepare time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /*!
     \brief Additional function for RedModels in LinearRelaxationSolve
 
     */
-    virtual void CustomSolve(Teuchos::RCP<Epetra_Vector> relax);
+    void CustomSolve(Teuchos::RCP<Epetra_Vector> relax) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief call elements to calculate system matrix/rhs and assemble
 
     */
-    virtual void AssembleMatAndRHS();
+    void AssembleMatAndRHS() override;
 
     /*!
     \brief apply Dirichlet boundary conditions to system of equations
 
     */
-    virtual void ApplyDirichletToSystem();
+    void ApplyDirichletToSystem() override;
 
 
    protected:
@@ -171,5 +171,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_RED_H

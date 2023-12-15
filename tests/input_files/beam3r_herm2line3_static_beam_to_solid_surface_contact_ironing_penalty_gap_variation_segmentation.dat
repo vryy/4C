@@ -43,7 +43,7 @@ CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10.0
 CONTACT_DISCRETIZATION                gauss_point_to_segment
 CONTACT_TYPE                          gap_variation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 GAUSS_POINTS                          6
 GEOMETRY_PAIR_STRATEGY                segmentation
 PENALTY_LAW                           linear

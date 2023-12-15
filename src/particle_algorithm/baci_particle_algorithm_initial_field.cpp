@@ -10,13 +10,15 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_initial_field.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_algorithm_utils.H"
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_container_bundle.H"
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_interface.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -91,7 +93,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
 
       // get reference to function
       const auto& function =
-          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functid - 1);
+          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functid - 1);
 
       // get pointer to particle states
       const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
@@ -116,3 +118,5 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@
 
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -27,15 +29,14 @@ namespace DRT
       PoroFluidMultiPhaseFactory() { return; }
 
       //! dtor
-      virtual ~PoroFluidMultiPhaseFactory() { return; }
-
+      virtual ~PoroFluidMultiPhaseFactory() = default;
       //! ProvideImpl
-      static PoroFluidMultiPhaseEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
-          const int numdofpernode, const std::string& disname);
+      static PoroFluidMultiPhaseEleInterface* ProvideImpl(
+          CORE::FE::CellType distype, const int numdofpernode, const std::string& disname);
 
      private:
       //! define PoroFluidMultiPhaseEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static PoroFluidMultiPhaseEleInterface* DefineProblemType(
           const int numdofpernode, const std::string& disname);
 
@@ -47,5 +48,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_ELE_FACTORY_H

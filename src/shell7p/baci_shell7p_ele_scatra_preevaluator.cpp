@@ -9,8 +9,11 @@
 #include "baci_shell7p_ele_scatra_preevaluator.H"
 
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_discret.H"
 #include "baci_shell7p_ele_calc_lib.H"
 #include "baci_shell7p_ele_scatra.H"
+
+BACI_NAMESPACE_OPEN
 
 
 void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
@@ -19,16 +22,21 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
 {
   switch (ele.Shape())
   {
-    case DRT::Element::quad4:
-      return PreEvaluateScatra<DRT::Element::quad4>(ele, params, discretization, dof_index_array);
-    case DRT::Element::quad8:
-      return PreEvaluateScatra<DRT::Element::quad8>(ele, params, discretization, dof_index_array);
-    case DRT::Element::quad9:
-      return PreEvaluateScatra<DRT::Element::quad9>(ele, params, discretization, dof_index_array);
-    case DRT::Element::tri3:
-      return PreEvaluateScatra<DRT::Element::tri3>(ele, params, discretization, dof_index_array);
-    case DRT::Element::tri6:
-      return PreEvaluateScatra<DRT::Element::tri6>(ele, params, discretization, dof_index_array);
+    case CORE::FE::CellType::quad4:
+      return PreEvaluateScatra<CORE::FE::CellType::quad4>(
+          ele, params, discretization, dof_index_array);
+    case CORE::FE::CellType::quad8:
+      return PreEvaluateScatra<CORE::FE::CellType::quad8>(
+          ele, params, discretization, dof_index_array);
+    case CORE::FE::CellType::quad9:
+      return PreEvaluateScatra<CORE::FE::CellType::quad9>(
+          ele, params, discretization, dof_index_array);
+    case CORE::FE::CellType::tri3:
+      return PreEvaluateScatra<CORE::FE::CellType::tri3>(
+          ele, params, discretization, dof_index_array);
+    case CORE::FE::CellType::tri6:
+      return PreEvaluateScatra<CORE::FE::CellType::tri6>(
+          ele, params, discretization, dof_index_array);
     default:
       dserror(
           "The discretization type you are trying to pre-evaluate for shell7p scatra is not yet "
@@ -36,7 +44,7 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& dof_index_array)
 {
@@ -115,3 +123,5 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
   auto xrefe = Teuchos::rcp(new std::vector<double>(center));
   params.set<Teuchos::RCP<std::vector<double>>>("position", xrefe);
 }
+
+BACI_NAMESPACE_CLOSE

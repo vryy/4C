@@ -18,6 +18,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 
 namespace UTILS
@@ -53,45 +55,45 @@ namespace FSI
       2.) create combined map
       3.) create block system matrix
     */
-    virtual void SetupSystem() = 0;
+    void SetupSystem() override = 0;
 
     /// some general setup stuff necessary for both fluid and
     /// structure split
     void GeneralSetup();
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
+    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override = 0;
 
     //@}
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
-    );
+    void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
+        ) override;
 
     /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
+    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override = 0;
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+    void UnscaleSolution(
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
     //@}
 
     /// Update everything
-    virtual void Update();
+    void Update() override;
 
     CORE::ADAPTER::Coupling& StructureAleOutflowCoupling() { return *coupsaout_; }
 
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     //! @name Time Adaptivity
     //@{
@@ -102,7 +104,7 @@ namespace FSI
      *  6 available norms are useful. Each of these three norms delivers a new
      *  time step size. Select the minimum of these three as the new time step size.
      */
-    virtual double SelectDtErrorBased() const
+    double SelectDtErrorBased() const override
     {
       dserror("SelectDtErrorBased() not implemented, yet!");
       return 0.0;
@@ -113,7 +115,7 @@ namespace FSI
      *  In case that the local truncation error is small enough, the time step is
      *  accepted.
      */
-    virtual bool SetAccepted() const
+    bool SetAccepted() const override
     {
       dserror("SetAccepted() not implemented, yet!");
       return false;
@@ -131,11 +133,11 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    virtual void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+    void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
-        const INPAR::FSI::Redistribute domain)
+        const INPAR::FSI::Redistribute domain) override
     {
       dserror("Not implemented, yet.");
     }
@@ -144,21 +146,21 @@ namespace FSI
     /// create the composed system matrix
     void CreateSystemMatrix(bool structuresplit);
 
-    virtual void Output();
+    void Output() override;
 
     /// start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// transfer helper
     Teuchos::RCP<Epetra_Vector> StructToAleOutflow(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
-        NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils);
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp);
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /// extract the three field vectors from a given composed vector
     /*!
@@ -170,9 +172,9 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
     */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
-        Teuchos::RCP<const Epetra_Vector>& ax) = 0;
+        Teuchos::RCP<const Epetra_Vector>& ax) override = 0;
 
     /// build block vector from field vectors
     virtual void SetupVector(Epetra_Vector& f,
@@ -223,7 +225,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector>
         IncLagrMultVec_;  ///< nonlinear iteration increment vector of lagrange multipliers
 
-    Teuchos::RCP<::UTILS::ConstraintDofSet>
+    Teuchos::RCP<BACI::UTILS::ConstraintDofSet>
         ConstrDofSet_;                       ///< degrees of freedom of lagrange multipliers
     int OffsetID_;                           ///< smallest constraint boundary condition ID
     int NumConstrID_;                        ///< number of volume constraint boundary conditions
@@ -285,7 +287,7 @@ namespace FSI
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
      */
-    virtual void CreateCombinedDofRowMap() = 0;
+    void CreateCombinedDofRowMap() override = 0;
 
     /*! \brief Setup the Dirichlet map extractor
      *
@@ -294,17 +296,19 @@ namespace FSI
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
      */
-    virtual void SetupDBCMapExtractor() = 0;
+    void SetupDBCMapExtractor() override = 0;
 
     /// setup RHS contributions based on single field residuals
-    virtual void SetupRHSResidual(Epetra_Vector& f) = 0;
+    void SetupRHSResidual(Epetra_Vector& f) override = 0;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    virtual void SetupRHSLambda(Epetra_Vector& f) = 0;
+    void SetupRHSLambda(Epetra_Vector& f) override = 0;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
+    void SetupRHSFirstiter(Epetra_Vector& f) override = 0;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

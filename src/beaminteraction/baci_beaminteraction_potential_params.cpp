@@ -10,10 +10,12 @@
 
 #include "baci_beaminteraction_potential_params.H"
 
-#include "baci_beaminteraction_potential_runtime_vtk_output_params.H"
+#include "baci_beaminteraction_potential_runtime_visualization_output_params.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -31,8 +33,8 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
       num_GPs_(-1),
       useFAD_(false),
       choice_master_slave_(INPAR::BEAMPOTENTIAL::MasterSlaveChoice::choice_master_slave_vague),
-      vtk_output_(false),
-      params_runtime_vtk_BTB_potential_(Teuchos::null)
+      visualization_output_(false),
+      params_runtime_visualization_output_BTB_potential_(Teuchos::null)
 {
   // empty constructor
 }
@@ -160,18 +162,18 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
 
   /****************************************************************************/
   // check for vtk output which is to be handled by an own writer object
-  vtk_output_ = (bool)DRT::INPUT::IntegralValue<int>(
+  visualization_output_ = (bool)DRT::INPUT::IntegralValue<int>(
       beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"), "VTK_OUTPUT_BEAM_POTENTIAL");
 
-  // create and initialize parameter container object for runtime vtk output
-  if (vtk_output_)
+  // create and initialize parameter container object for runtime output
+  if (visualization_output_)
   {
-    params_runtime_vtk_BTB_potential_ =
-        Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams);
+    params_runtime_visualization_output_BTB_potential_ =
+        Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams);
 
-    params_runtime_vtk_BTB_potential_->Init(
+    params_runtime_visualization_output_BTB_potential_->Init(
         beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"));
-    params_runtime_vtk_BTB_potential_->Setup();
+    params_runtime_visualization_output_BTB_potential_->Setup();
   }
 
 
@@ -222,3 +224,5 @@ void BEAMINTERACTION::BeamPotentialParams::ThrowErrorIfNotInit() const
 {
   if (!IsInit()) dserror("Init() has not been called, yet!");
 }
+
+BACI_NAMESPACE_CLOSE

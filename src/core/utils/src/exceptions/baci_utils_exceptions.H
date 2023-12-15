@@ -22,8 +22,8 @@
 
 
 extern "C" [[noreturn]] void cpp_dserror_func(
-    const char* string, ...);  // avoid constructing string from char*
-[[noreturn]] void cpp_dserror_func(const std::string string, ...);
+    const char* text, ...);  // avoid constructing string from char*
+[[noreturn]] void cpp_dserror_func(const std::string text, ...);
 void cpp_dslatest(const std::string file, const int line);
 
 inline void cpp_dsassert_func(const char* file, const int line, const bool test, const char* string)
@@ -83,5 +83,6 @@ void cpp_dslatest(const char* file, const int line);
 #define dserror cpp_dslatest(__FILE__, __LINE__), cpp_dserror_func
 
 #endif
+
 
 #endif

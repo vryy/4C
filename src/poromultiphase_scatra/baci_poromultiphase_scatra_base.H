@@ -19,6 +19,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -56,7 +58,7 @@ namespace POROMULTIPHASESCATRA
         const std::map<int, std::set<int>>* nearbyelepairs) = 0;
 
     //! read restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     //! create result test for subproblems
     void CreateFieldTest();
@@ -77,7 +79,7 @@ namespace POROMULTIPHASESCATRA
     virtual void TimeStep() = 0;
 
     //! time step of coupled problem
-    void PrepareTimeStep() { PrepareTimeStep(false); };
+    void PrepareTimeStep() override { PrepareTimeStep(false); };
 
     //! time step of coupled problem
     void PrepareTimeStep(bool printheader);
@@ -140,5 +142,7 @@ namespace POROMULTIPHASESCATRA
 }  // namespace POROMULTIPHASESCATRA
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_BASE_H

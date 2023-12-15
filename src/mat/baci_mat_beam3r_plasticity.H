@@ -11,14 +11,16 @@ function)
 #ifndef BACI_MAT_BEAM3R_PLASTICITY_H
 #define BACI_MAT_BEAM3R_PLASTICITY_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_beam_elasthyper.H"
 #include "baci_mat_beam_elasthyper_parameter.H"
 #include "baci_mat_material.H"
 
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 // forward declaration
@@ -47,37 +49,37 @@ namespace MAT
       //@{
 
       //! yield stress for forces
-      virtual double GetYieldStressN() const { return yield_stress_n_; }
+      double GetYieldStressN() const override { return yield_stress_n_; }
 
       //! yield stress momentum
-      virtual double GetYieldStressM() const { return yield_stress_m_; }
+      double GetYieldStressM() const override { return yield_stress_m_; }
 
       //! hardening rigidity axial direction
-      virtual double GetHardeningAxialRigidity() const
+      double GetHardeningAxialRigidity() const override
       {
         return isohard_modulus_n_ * GetCrossSectionArea();
       };
 
       //! hardening rigidity shear one direction
-      virtual double GetHardeningShearRigidity2() const
+      double GetHardeningShearRigidity2() const override
       {
         return GetShearModulus() * GetCrossSectionArea() * GetShearCorrectionFactor();
       };
 
       //! hardening rigidity shear other direction
-      virtual double GetHardeningShearRigidity3() const
+      double GetHardeningShearRigidity3() const override
       {
         return GetShearModulus() * GetCrossSectionArea() * GetShearCorrectionFactor();
       };
 
       //! hardening rigidity for momentum
-      virtual double GetHardeningMomentalRigidity() const
+      double GetHardeningMomentalRigidity() const override
       {
         return isohard_modulus_m_ * GetMomentInertia2();
       }
 
       //! consider torsion plasticity
-      virtual bool GetTorsionPlasticity() const { return torsion_plasticity_; }
+      bool GetTorsionPlasticity() const override { return torsion_plasticity_; }
       //@}
 
      private:
@@ -99,16 +101,16 @@ namespace MAT
 
   //! singleton for constitutive law of a beam formulation (hyperelastic stored energy function)
   template <typename T>
-  class BeamElastPlasticMaterialType : public DRT::ParObjectType
+  class BeamElastPlasticMaterialType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return typeid(this).name(); }
+    std::string Name() const override { return typeid(this).name(); }
 
     //! get instance for beam material
     static BeamElastPlasticMaterialType& Instance() { return instance_; };
 
     //! create material object
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamElastPlasticMaterialType instance_;
@@ -155,7 +157,7 @@ namespace MAT
      *
      * @param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class
@@ -333,5 +335,7 @@ namespace MAT
     //@}
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

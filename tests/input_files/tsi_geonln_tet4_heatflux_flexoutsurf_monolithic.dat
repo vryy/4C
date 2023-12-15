@@ -44,8 +44,6 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DYNAMICTYP                      Statics
 ITERNORM                        L2
 LINEAR_SOLVER                   1
@@ -71,8 +69,6 @@ GENAVG                          TrLike
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
 INITFUNCNO                      1

@@ -13,6 +13,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(
@@ -44,7 +46,7 @@ void CORE::GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(int eid,
     const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
-    ::DRT::Element::DiscretizationType distype, const double* lsv, const bool lsv_only_plus_domain,
+    CORE::FE::CellType distype, const double* lsv, const bool lsv_only_plus_domain,
     const bool& check_lsv)
 {
   int numnode = nids.size();
@@ -259,3 +261,5 @@ void CORE::GEO::CUT::LevelSetIntersection::Cut(
   // ######################################################################################
 
 }  // CORE::GEO::CUT::LevelSetIntersection::Cut
+
+BACI_NAMESPACE_CLOSE

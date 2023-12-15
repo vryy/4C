@@ -12,16 +12,18 @@
 #ifndef BACI_RED_AIRWAYS_ELEMENTBASE_H
 #define BACI_RED_AIRWAYS_ELEMENTBASE_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_red_airways_elem_params.h"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -33,38 +35,39 @@ namespace DRT
   {
     // forward declarations
     class RedAirwayImplInterface;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class AirwayImpl;
 
     class RedAirwayType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "RedAirwayType"; }
+      std::string Name() const override { return "RedAirwayType"; }
 
       static RedAirwayType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static RedAirwayType instance_;
@@ -79,7 +82,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line2>;
+      friend class AirwayImpl<CORE::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -106,17 +109,17 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const
+      int NumLine() const override
       {
         if (NumNode() == 2)
           return 1;
@@ -130,17 +133,17 @@ namespace DRT
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      virtual int NumSurface() const { return -1; }
+      int NumSurface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual int NumVolume() const { return -1; }
+      int NumVolume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
 
       /*!
@@ -149,7 +152,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return RedAirwayType::Instance().UniqueParObjectId();
       }
@@ -160,7 +163,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -168,13 +171,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~RedAirway();
 
       //@}
 
@@ -190,7 +188,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -203,14 +201,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual RedAirwayType& ElementType() const { return RedAirwayType::Instance(); }
+      RedAirwayType& ElementType() const override { return RedAirwayType::Instance(); }
 
       //@}
 
@@ -235,7 +233,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names){};
+      void VisNames(std::map<std::string, int>& names) override{};
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -251,7 +249,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -260,7 +258,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -293,7 +291,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -314,10 +313,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -362,11 +360,10 @@ namespace DRT
       //! set qout
       //  void           setqout(double Qout){ qout_ = Qout;}
 
-      //! get element parameters
-      void getParams(std::string name, double& var);
-
-      //! get element parameters
-      void getParams(std::string name, int& var);
+      /*!
+       * \brief Get fixed airway parameters of the RedAirway element
+       */
+      [[nodiscard]] const REDAIRWAYS::AirwayParams& GetAirwayParams() const;
 
      private:
       //! action parameters recognized by airway
@@ -405,13 +402,9 @@ namespace DRT
       //! container containing all kind of airway thisandthat
       DRT::Container data_;
 
+      //! Airway-specific parameters
+      DRT::REDAIRWAYS::AirwayParams airwayParams_;
 
-      // data
-      std::map<std::string, double> elemParams_;
-
-
-      // element tree generation
-      int generation_;
 
       // internal calculation methods
 
@@ -420,14 +413,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -437,32 +429,33 @@ namespace DRT
     class RedAcinusType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "RedAcinusType"; }
+      std::string Name() const override { return "RedAcinusType"; }
 
       static RedAcinusType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static RedAcinusType instance_;
@@ -477,7 +470,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line2>;
+      friend class AirwayImpl<CORE::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -504,17 +497,17 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const
+      int NumLine() const override
       {
         if (NumNode() == 2)
           return 1;
@@ -528,17 +521,17 @@ namespace DRT
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      virtual int NumSurface() const { return -1; }
+      int NumSurface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual int NumVolume() const { return -1; }
+      int NumVolume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Return center coordinates of element
@@ -551,7 +544,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return RedAcinusType::Instance().UniqueParObjectId();
       }
@@ -562,7 +555,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -570,13 +563,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~RedAcinus();
 
       //@}
 
@@ -592,7 +580,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -605,14 +593,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual RedAcinusType& ElementType() const { return RedAcinusType::Instance(); }
+      RedAcinusType& ElementType() const override { return RedAcinusType::Instance(); }
 
       //@}
 
@@ -637,7 +625,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -653,7 +641,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -662,7 +650,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -695,7 +683,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -716,10 +705,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -762,16 +750,18 @@ namespace DRT
       //! set qout
       //  void           setqout(double Qout){ qout_ = Qout;}
 
-      //! set element parameters
-      void setParams(std::string name, double& var);
+      /*!
+       * \brief Update relaxed reference volume of the RedAcinus element.
+       *
+       * Prestressed volume states in the input file may differ from the actual V0 used in many
+       * formulas.
+       */
+      void UpdateRelaxedVolume(double newVol);
 
-      //! get element parameters
-      void getParams(std::string name, double& var);
-
-      //! get element parameters
-      void getParams(std::string name, int& var);
-
-      const std::map<std::string, double> getAllParams() { return elemParams_; }
+      /*!
+       * \brief Get fixed acinus parameters of the RedAcinus element
+       */
+      [[nodiscard]] const REDAIRWAYS::AcinusParams& GetAcinusParams() const;
 
      private:
       //! action parameters recognized by acinus
@@ -806,13 +796,9 @@ namespace DRT
       //! container containing all kind of airway thisandthat
       DRT::Container data_;
 
+      //! Acinus-specific parameters
+      DRT::REDAIRWAYS::AcinusParams acinusParams_;
 
-      // data
-      std::map<std::string, double> elemParams_;
-
-
-      // element tree generation
-      int generation_;
 
       // internal calculation methods
 
@@ -821,14 +807,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -842,32 +827,33 @@ namespace DRT
     class RedInterAcinarDepType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "RedInterAcinarDepType"; }
+      std::string Name() const override { return "RedInterAcinarDepType"; }
 
       static RedInterAcinarDepType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static RedInterAcinarDepType instance_;
@@ -882,7 +868,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line2>;
+      friend class AirwayImpl<CORE::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -909,17 +895,17 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const
+      int NumLine() const override
       {
         if (NumNode() == 2)
           return 1;
@@ -933,17 +919,17 @@ namespace DRT
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      virtual int NumSurface() const { return -1; }
+      int NumSurface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual int NumVolume() const { return -1; }
+      int NumVolume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -951,7 +937,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return RedInterAcinarDepType::Instance().UniqueParObjectId();
       }
@@ -962,7 +948,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -970,13 +956,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~RedInterAcinarDep();
 
       //@}
 
@@ -992,7 +973,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -1005,14 +986,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual RedInterAcinarDepType& ElementType() const
+      RedInterAcinarDepType& ElementType() const override
       {
         return RedInterAcinarDepType::Instance();
       }
@@ -1040,7 +1021,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -1056,7 +1037,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -1065,7 +1046,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -1098,7 +1079,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1119,10 +1101,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1201,14 +1182,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -1222,32 +1202,33 @@ namespace DRT
     class RedAirBloodScatraType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "RedAirBloodScatraType"; }
+      std::string Name() const override { return "RedAirBloodScatraType"; }
 
       static RedAirBloodScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static RedAirBloodScatraType instance_;
@@ -1258,7 +1239,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line2>;
+      friend class AirwayImpl<CORE::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -1285,17 +1266,17 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const
+      int NumLine() const override
       {
         if (NumNode() == 2)
           return 1;
@@ -1309,17 +1290,17 @@ namespace DRT
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      virtual int NumSurface() const { return -1; }
+      int NumSurface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual int NumVolume() const { return -1; }
+      int NumVolume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -1327,7 +1308,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return RedAirBloodScatraType::Instance().UniqueParObjectId();
       }
@@ -1338,7 +1319,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -1346,13 +1327,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~RedAirBloodScatra();
 
       //@}
 
@@ -1368,7 +1344,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -1381,14 +1357,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual RedAirBloodScatraType& ElementType() const
+      RedAirBloodScatraType& ElementType() const override
       {
         return RedAirBloodScatraType::Instance();
       }
@@ -1416,7 +1392,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -1432,7 +1408,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -1441,7 +1417,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -1474,7 +1450,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1495,10 +1472,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1578,14 +1554,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
     };  // class RedAirBloodScatra
@@ -1598,32 +1573,33 @@ namespace DRT
     class RedAirBloodScatraLine3Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "RedAirBloodScatraLine3Type"; }
+      std::string Name() const override { return "RedAirBloodScatraLine3Type"; }
 
       static RedAirBloodScatraLine3Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static RedAirBloodScatraLine3Type instance_;
@@ -1639,7 +1615,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line3>;
+      friend class AirwayImpl<CORE::FE::CellType::line3>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -1666,17 +1642,17 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const
+      int NumLine() const override
       {
         if (NumNode() == 3)
         {
@@ -1692,17 +1668,17 @@ namespace DRT
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      virtual int NumSurface() const { return 1; }
+      int NumSurface() const override { return 1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual int NumVolume() const { return -1; }
+      int NumVolume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -1710,7 +1686,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return RedAirBloodScatraLine3Type::Instance().UniqueParObjectId();
       }
@@ -1721,7 +1697,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -1729,13 +1705,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~RedAirBloodScatraLine3();
 
       //@}
 
@@ -1751,7 +1722,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -1764,14 +1735,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual RedAirBloodScatraLine3Type& ElementType() const
+      RedAirBloodScatraLine3Type& ElementType() const override
       {
         return RedAirBloodScatraLine3Type::Instance();
       }
@@ -1799,7 +1770,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -1815,7 +1786,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -1824,7 +1795,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -1857,7 +1828,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1878,10 +1850,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1961,14 +1932,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
     };  // class RedAirBloodScatraLine3
@@ -1977,5 +1947,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // RED_AIRWAYS_ELEMENTBASE_H

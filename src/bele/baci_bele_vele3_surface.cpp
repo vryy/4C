@@ -9,9 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_bele_vele3.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::Vele3SurfaceType DRT::ELEMENTS::Vele3SurfaceType::instance_;
@@ -55,29 +57,28 @@ DRT::Element* DRT::ELEMENTS::Vele3Surface::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3Surface::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
 {
   switch (NumNode())
   {
     case 3:
-      return tri3;
+      return CORE::FE::CellType::tri3;
     case 4:
-      return quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      return quad9;
+      return CORE::FE::CellType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Surface::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Vele3Surface::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Vele3Surface element does not support communication");
   return;
@@ -95,14 +96,9 @@ void DRT::ELEMENTS::Vele3Surface::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Surface::~Vele3Surface() { return; }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
 {
-  os << "Vele3Surface " << DRT::DistypeToString(Shape());
+  os << "Vele3Surface " << CORE::FE::CellTypeToString(Shape());
   Element::Print(os);
   return;
 }
@@ -113,14 +109,7 @@ void DRT::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Vele3Line, Vele3Surface>(DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Vele3Line, Vele3Surface>(CORE::COMM::buildLines, *this);
 }
 
 
@@ -129,9 +118,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
 {
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 
@@ -140,22 +127,22 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
  |  get optimal gauss rule                                   gammi 04/07|
  *----------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
-    const DRT::Element::DiscretizationType& distype) const
+    const CORE::FE::CellType& distype) const
 {
   CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (distype)
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:
@@ -163,3 +150,5 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
   }
   return rule;
 }
+
+BACI_NAMESPACE_CLOSE

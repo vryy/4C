@@ -16,12 +16,10 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_elements.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
@@ -40,19 +38,23 @@
 #include "baci_so3_hex8.H"
 #include "baci_so3_hex8_determinant_analysis.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_enum_lists.H"
 #include "baci_structure_new_gauss_point_data_output_manager.H"
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_MultiVector.h>
 #include <impl/Kokkos_Traits.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-using VoigtMapping = UTILS::VOIGT::IndexMappings;
+BACI_NAMESPACE_OPEN
+
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -532,7 +534,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -540,7 +541,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
             nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -548,7 +549,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -556,7 +557,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, plstrain);
           data.StartPacking();
           AddtoPack(data, plstrain);
@@ -578,7 +579,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       std::unordered_map<std::string, int> quantities_map{};
 
       // Ask material for the output quantity names and sizes
-      SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
+      SolidMaterial()->RegisterOutputDataNames(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
       StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
@@ -598,7 +599,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
         // Step 1: Collect the data for each Gauss point for the material
         CORE::LINALG::SerialDenseMatrix gp_data(NUMGPT_SOH8, quantity_size, true);
-        bool data_available = SolidMaterial()->EvaluateVtkOutputData(quantity_name, gp_data);
+        bool data_available = SolidMaterial()->EvaluateOutputData(quantity_name, gp_data);
 
         // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
         // point)
@@ -625,11 +626,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                   *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
                       quantity_name);
 
-              static auto gauss_integration =
-                  CORE::DRT::UTILS::IntegrationPoints3D(CORE::DRT::UTILS::NumGaussPointsToGaussRule<
-                      DRT::Element::DiscretizationType::hex8>(NUMGPT_SOH8));
-              CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-                  DRT::Element::DiscretizationType::hex8>(
+              static auto gauss_integration = CORE::DRT::UTILS::IntegrationPoints3D(
+                  CORE::DRT::UTILS::NumGaussPointsToGaussRule<CORE::FE::CellType::hex8>(
+                      NUMGPT_SOH8));
+              CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex8>(
                   *this, gp_data, *global_data, false, gauss_integration);
               DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
               break;
@@ -740,9 +740,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
 
-      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
-      UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(mydisp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
+      UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(Nodes(), xrefe);
+      UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(mydisp, xdisp);
+      UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
       // safety check before the actual evaluation starts
       const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
@@ -790,7 +790,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           CORE::LINALG::Matrix<3, 3> invJdef;
@@ -995,7 +995,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
       // reference geometry (nodal positions)
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;
-      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
+      UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(Nodes(), xrefe);
 
       // deformation gradient = identity tensor (geometrically linear case!)
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
@@ -1156,9 +1156,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>
           xdisp;  // current displacements of element nodes
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current coord. of element
-      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
-      UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(mydispnp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
+      UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(Nodes(), xrefe);
+      UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(mydispnp, xdisp);
+      UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
       // shape functions and derivatives w.r.t. r,s,t
       CORE::LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
@@ -1169,8 +1169,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       xsi(1) = elevec2_epetra(1);
       xsi(2) = elevec2_epetra(2);
       // evaluate shape functions and derivatives at given point w.r.t r,s,t
-      CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
-      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
+      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex8>(xsi, shapefcts);
+      CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(xsi, deriv1);
 
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> myvelocitynp;
       for (int node = 0; node < NUMNOD_SOH8; ++node)
@@ -1366,7 +1366,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -1418,7 +1417,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         (*gpstrainmap)[gid] = gpstrain;
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -1426,7 +1425,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -1434,7 +1433,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, plstrain);
           data.StartPacking();
           AddtoPack(data, plstrain);
@@ -1532,7 +1531,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(Nodes(), xrefe);
   /* ================================================= Loop over Gauss Points */
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
@@ -1569,7 +1568,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -1633,14 +1632,14 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     {
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
     }
   }
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 }
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping with respect to the    farah 06/13|
@@ -1693,7 +1692,7 @@ double DRT::ELEMENTS::So_hex8::soh8_get_min_det_jac_at_corners(
 {
   CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> xcurr_t(false);
   xcurr_t.UpdateT(xcurr);
-  return DRT::UTILS::GetMinimalJacDeterminantAtNodes<DRT::Element::hex8>(xcurr_t);
+  return DRT::UTILS::GetMinimalJacDeterminantAtNodes<CORE::FE::CellType::hex8>(xcurr_t);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1842,7 +1841,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
   /* ============================================================================*/
 
   // check for prestressing
-  if (::UTILS::PRESTRESS::IsAny(pstype_) && eastype_ != soh8_easnone)
+  if (BACI::UTILS::PRESTRESS::IsAny(pstype_) && eastype_ != soh8_easnone)
     dserror("No way you can do mulf or id prestressing with EAS turned on!");
 
   // update element geometry
@@ -1850,9 +1849,9 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);  // current  coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
 
-  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
+  UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(disp, xdisp);
+  UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
   // safety check before the actual evaluation starts
   const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
@@ -2019,7 +2018,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     double detJ = detJ_[gp];
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -2351,7 +2350,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    UTILS::GetTemperatureForStructuralMaterial<hex8>(shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
@@ -2768,7 +2767,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
   /* ============================================================================*/
 
   // check for prestressing or EAS
-  if (::UTILS::PRESTRESS::IsAny(pstype_) || eastype_ != soh8_easnone)
+  if (BACI::UTILS::PRESTRESS::IsAny(pstype_) || eastype_ != soh8_easnone)
     dserror("GEMM for Sohex8 not (yet) compatible with EAS / prestressing!");
 
   // GEMM coefficients
@@ -2782,13 +2781,13 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>
       xdisp_tmp;  // Tensor holding nodal displacements temporary
 
-  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(Nodes(), xrefe);
 
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp_tmp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp_tmp, xcurr);
+  UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(disp, xdisp_tmp);
+  UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::hex8, 3>(xrefe, xdisp_tmp, xcurr);
 
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(dispo, xdisp_tmp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp_tmp, xcurro);
+  UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(dispo, xdisp_tmp);
+  UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::hex8, 3>(xrefe, xdisp_tmp, xcurro);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -3113,8 +3112,7 @@ void DRT::ELEMENTS::So_hex8::soh8_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH8, NUM
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fcts at all 8 Gauss Points             maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::soh8_shapefcts()
-    const
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::soh8_shapefcts() const
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts(NUMGPT_SOH8);
 
@@ -3122,7 +3120,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
     const CORE::LINALG::Matrix<NUMDIM_SOH8, 1> rst_gp(gp_rule_.Point(gp), true);
-    CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(rst_gp, shapefcts[gp]);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex8>(rst_gp, shapefcts[gp]);
   }
 
   return shapefcts;
@@ -3132,8 +3130,8 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fct derivs at all 8 Gauss Points       maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
-DRT::ELEMENTS::So_hex8::soh8_derivs() const
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> DRT::ELEMENTS::So_hex8::soh8_derivs()
+    const
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);
 
@@ -3150,13 +3148,13 @@ void DRT::ELEMENTS::So_hex8::soh8_derivs(
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, const int gp) const
 {
   const CORE::LINALG::Matrix<NUMDIM_SOH8, 1> rst_gp(gp_rule_.Point(gp), true);
-  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(rst_gp, derivs);
+  CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(rst_gp, derivs);
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Weights at all 8 Gauss Points                maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex8::soh8_weights() const
+std::vector<double> DRT::ELEMENTS::So_hex8::soh8_weights() const
 {
   std::vector<double> weights(NUMGPT_SOH8);
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp) weights[gp] = gp_rule_.Weight(gp);
@@ -3265,7 +3263,7 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const std::vector<double>& disp,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;  // current  coord. of element
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp);
+  UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(disp, xdisp);
 
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
@@ -3301,7 +3299,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp);
+  UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(disp, xdisp);
 
   CORE::LINALG::Matrix<3, 3> invJhist;
   CORE::LINALG::Matrix<3, 3> invJ;
@@ -3349,9 +3347,9 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);
 
-    UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
-    UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp);
-    UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
+    UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(Nodes(), xrefe);
+    UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(disp, xdisp);
+    UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
@@ -3379,7 +3377,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
       soh8_derivs(derivs, gp);
 
       // Compute deformation gradient
-      UTILS::ComputeDeformationGradient<DRT::Element::hex8>(
+      UTILS::ComputeDeformationGradient<CORE::FE::CellType::hex8>(
           defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
 
       // call material update if material = m_growthremodel_elasthyper (calculate and update
@@ -3583,7 +3581,7 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
 
     for (int k = 0; k < NUMNOD_SOH8; ++k)
     {
-      const double* x = nodes[k]->X();
+      const auto& x = nodes[k]->X();
       xrefe(k, 0) = x[0];
       xrefe(k, 1) = x[1];
       xrefe(k, 2) = x[2];
@@ -3686,7 +3684,7 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
       // reset xcurr
       for (int k = 0; k < NUMNOD_SOH8; ++k)
       {
-        const double* x = nodes[k]->X();
+        const auto& x = nodes[k]->X();
         xrefe(k, 0) = x[0];
         xrefe(k, 1) = x[1];
         xrefe(k, 2) = x[2];
@@ -3767,7 +3765,7 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int d = 0; d < NUMDIM_SOH8; ++d)
     {
       xrefe(i, d) = x[d];
@@ -3777,7 +3775,7 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   static CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv(true);
   deriv.Clear();
-  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(xi, deriv);
 
   static CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ(true);
   static CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ(true);
@@ -3851,19 +3849,19 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
   static CORE::LINALG::Matrix<9, NUMDIM_SOH8> d_F_dxi(true);
-  static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
-      NUMNOD_SOH8>
+  static CORE::LINALG::Matrix<
+      CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::hex8>::numderiv2, NUMNOD_SOH8>
       deriv2(true);
   d_F_dxi.Clear();
   deriv2.Clear();
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
-    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<CORE::FE::CellType::hex8>(xi, deriv2);
 
     static CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xXF(true);
     static CORE::LINALG::Matrix<NUMDIM_SOH8,
-        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::hex8>::numderiv2>
         xXFsec(true);
     xXF.Update(1.0, xcurr, 0.0);
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
@@ -3894,17 +3892,17 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dxi_mat(
         d2_cauchyndir_dd_dxi->values(), true);
 
-    static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
-        NUMNOD_SOH8>
+    static CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::hex8>::numderiv2, NUMNOD_SOH8>
         deriv2(true);
     deriv2.Clear();
-    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<CORE::FE::CellType::hex8>(xi, deriv2);
 
-    static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
-        NUMDIM_SOH8>
+    static CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::hex8>::numderiv2, NUMDIM_SOH8>
         Xsec(true);
     static CORE::LINALG::Matrix<NUMNOD_SOH8,
-        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::hex8>::numderiv2>
         N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);
@@ -3958,3 +3956,5 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
     *d_cauchyndir_dc = d_cauchyndir_dF.Dot(d_F_dc);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class ParamsInterface;
@@ -50,9 +52,6 @@ namespace CONTACT
      public:
       /// constructor
       ActiveSet(Strategy& strategy) : strategy_(strategy){};
-
-      /// destructor
-      ~ActiveSet() = default;
 
       /** @brief Update the active set status
        *
@@ -116,5 +115,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_ACTIVE_SET_H

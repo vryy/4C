@@ -22,6 +22,8 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -109,7 +111,7 @@ namespace PARTICLEENGINE
      *
      * \return particle container bundle
      */
-    virtual const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const = 0;
+    virtual ParticleContainerBundleShrdPtr GetParticleContainerBundle() const = 0;
 
     /*!
      * \brief get reference to potential particle neighbors
@@ -138,7 +140,7 @@ namespace PARTICLEENGINE
      *
      * \return local index tuple of particle
      */
-    virtual const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;
+    virtual LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;
 
     /*!
      * \brief get bin discretization writer
@@ -147,7 +149,7 @@ namespace PARTICLEENGINE
      *
      * \return bin discretization writer
      */
-    virtual const std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const = 0;
+    virtual std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const = 0;
 
     /*!
      * \brief relate all particles to all processors
@@ -269,4 +271,6 @@ namespace PARTICLEENGINE
 }  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

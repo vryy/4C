@@ -16,6 +16,8 @@
 #include <string>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class So3Material;
@@ -26,17 +28,10 @@ namespace STR::MODELEVALUATOR
 }
 namespace DRT
 {
-  namespace UTILS
-  {
-    template <DRT::Element::DiscretizationType>
-    struct DisTypeToNumNodePerEle;
-    template <DRT::Element::DiscretizationType>
-    struct DisTypeToDim;
-  }  // namespace UTILS
 
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType celltype>
     class SolidEleCalc
     {
      public:
@@ -88,9 +83,8 @@ namespace DRT
 
      private:
       /// static values for matrix sizes
-      static constexpr int num_nodes_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static constexpr int num_dim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
+      static constexpr int num_dim_ = CORE::FE::dim<celltype>;
       static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
       static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
@@ -100,5 +94,7 @@ namespace DRT
     };  // class SolidEleCalc
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_CALC_H

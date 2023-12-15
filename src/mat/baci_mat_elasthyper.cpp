@@ -17,10 +17,12 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "baci_mat_elasthyper.H"
 
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -53,7 +55,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ElastHyper::CreateMaterial()
 MAT::ElastHyperType MAT::ElastHyperType::instance_;
 
 
-DRT::ParObject* MAT::ElastHyperType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ElastHyperType::Create(const std::vector<char>& data)
 {
   auto* elhy = new MAT::ElastHyper();
   elhy->Unpack(data);
@@ -93,9 +95,9 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::ElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -129,10 +131,8 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   potsum_.clear();
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -330,7 +330,7 @@ void MAT::ElastHyper::StrainEnergy(
   modinv.Clear();
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
   InvariantsModified(modinv, prinv);
 
   // loop map of associated potential summands
@@ -526,9 +526,9 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
   const double nddir = n.Dot(dir);
 
   static CORE::LINALG::Matrix<6, 1> bV_strain(true);
-  UTILS::VOIGT::Strains::MatrixToVector(b, bV_strain);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(b, bV_strain);
   static CORE::LINALG::Matrix<3, 1> prinv(true);
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, bV_strain);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, bV_strain);
 
   static CORE::LINALG::Matrix<3, 1> dPI(true);
   static CORE::LINALG::Matrix<6, 1> ddPII(true);
@@ -561,23 +561,23 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
 
   // calculate stuff that is needed for evaluations of derivatives w.r.t. F
   static CORE::LINALG::Matrix<9, 1> FV(true);
-  UTILS::VOIGT::Matrix3x3to9x1(defgrd, FV);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(defgrd, FV);
   static CORE::LINALG::Matrix<3, 3> iF(true);
   iF.Invert(defgrd);
   static CORE::LINALG::Matrix<3, 3> iFT(true);
   iFT.UpdateT(iF);
   static CORE::LINALG::Matrix<9, 1> iFTV(true);
-  UTILS::VOIGT::Matrix3x3to9x1(iFT, iFTV);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(iFT, iFTV);
 
   // calculation of dI_i/dF (derivatives of invariants of b w.r.t. deformation gradient)
   static CORE::LINALG::Matrix<3, 3> bdF(true);
   bdF.Multiply(1.0, b, defgrd, 0.0);
   static CORE::LINALG::Matrix<9, 1> bdFV(true);
-  UTILS::VOIGT::Matrix3x3to9x1(bdF, bdFV);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(bdF, bdFV);
   static CORE::LINALG::Matrix<3, 3> ibdF(true);
   ibdF.Multiply(1.0, ib, defgrd, 0.0);
   static CORE::LINALG::Matrix<9, 1> ibdFV(true);
-  UTILS::VOIGT::Matrix3x3to9x1(ibdF, ibdFV);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(ibdF, ibdFV);
   static CORE::LINALG::Matrix<9, 1> d_I1_dF(true);
   d_I1_dF.Update(2.0, FV, 0.0);
   static CORE::LINALG::Matrix<9, 1> d_I2_dF(true);
@@ -596,7 +596,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
   tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
   d_bdnddir_dF.MultiplyNN(1.0, dir, tempvec1x3, 1.0);
   static CORE::LINALG::Matrix<9, 1> d_bdnddir_dFV(true);
-  UTILS::VOIGT::Matrix3x3to9x1(d_bdnddir_dF, d_bdnddir_dFV);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(d_bdnddir_dF, d_bdnddir_dFV);
 
   // calculate d(b^{-1} \cdot n \cdot t)/dF
   static CORE::LINALG::Matrix<1, 3> dirdibdF(true);
@@ -608,7 +608,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
   d_ibdnddir_dF.MultiplyNN(1.0, ibddir, ndibdF, 1.0);
   d_ibdnddir_dF.Scale(-1.0);
   static CORE::LINALG::Matrix<9, 1> d_ibdnddir_dFV(true);
-  UTILS::VOIGT::Matrix3x3to9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
 
   if (temp != nullptr)
     EvaluateCauchyTempDeriv(prinv, nddir, bdnddir, ibdnddir, temp, d_cauchyndir_dT, iFTV,
@@ -658,7 +658,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_dn)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_dn)(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac * (dir(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
       }
     }
@@ -670,7 +670,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_dn)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_dn)(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac2 * (ibddir(k, 0) * ibdF(z, l) + ib(z, k) * dirdibdF(0, l));
       }
     }
@@ -711,7 +711,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_ddir)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_ddir)(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac * (n(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
       }
     }
@@ -723,7 +723,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_ddir)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_ddir)(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac2 * (ibdn(k, 0) * ibdF(z, l) + ib(z, k) * ndibdF(0, l));
       }
     }
@@ -766,7 +766,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
     static CORE::LINALG::Matrix<3, 3> C(true);
     C.MultiplyTN(1.0, defgrd, defgrd, 0.0);
 
-    using map = UTILS::VOIGT::IndexMappings;
+    using map = CORE::LINALG::VOIGT::IndexMappings;
 
     for (int k = 0; k < 3; ++k)
     {
@@ -987,3 +987,5 @@ Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
   }
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

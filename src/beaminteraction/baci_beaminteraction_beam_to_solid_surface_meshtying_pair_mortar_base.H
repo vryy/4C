@@ -15,6 +15,8 @@
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_base.H"
 #include "baci_geometry_pair_scalar_types.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -40,10 +42,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingPairMortarBase();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidSurfaceMeshtyingPairMortarBase(){};
 
     /**
      * \brief This pair enforces constraints via a mortar-type method, which requires an own
@@ -52,13 +50,14 @@ namespace BEAMINTERACTION
     inline bool IsAssemblyDirect() const override { return false; };
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This will
-     * add mortar specific data to the output.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
+     * This will add mortar specific data to the output.
      * @param visualization_writer (out) Object that manages all visualization related data for beam
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**
@@ -71,5 +70,7 @@ namespace BEAMINTERACTION
     unsigned int n_mortar_rot_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

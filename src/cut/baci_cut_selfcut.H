@@ -12,6 +12,8 @@
 
 #include "baci_cut_point.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::GEO
 {
@@ -62,7 +64,7 @@ namespace CORE::GEO
       void FindCuttingSides();
 
       /// if there are two nodes from cut sides are at the same position, we merge it into one node
-      bool MergeCoincidingNodes(Side* side1, Side* side2);
+      bool MergeCoincidingNodes(Side* keep, Side* replace);
 
       /// opearations to modify the nodal ids of sides and corresponding edges are performed
       void operationsForNodeMerging(
@@ -247,5 +249,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

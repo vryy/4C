@@ -12,6 +12,7 @@
 
 #include "baci_linalg_sparsematrix.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -43,7 +44,6 @@ namespace CORE::LINALG
     BlockSparseMatrixBase(const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps,
         int npr, bool explicitdirichlet = true, bool savegraph = false);
 
-    virtual ~BlockSparseMatrixBase() {}
 
     /// make a copy of me
     virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access) = 0;
@@ -102,7 +102,7 @@ namespace CORE::LINALG
     void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true) override;
 
     /// derived
-    virtual bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
+    bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
         const CORE::LINALG::SparseMatrix* trafo = nullptr) const override;
 
     //@}
@@ -138,7 +138,7 @@ namespace CORE::LINALG
 
     /// total matrix domain map with all blocks (this is needed for
     /// consistency with CORE::LINALG::SparseMatrix)
-    const Epetra_Map& DomainMap() const { return *domainmaps_.FullMap(); }
+    const Epetra_Map& DomainMap() const override { return *domainmaps_.FullMap(); }
 
     /// total matrix row map with all blocks
     /*!
@@ -292,7 +292,7 @@ namespace CORE::LINALG
 
     /** Do not forget to call Complete() after cloning, even if you
      *  use CORE::LINALG::View! */
-    Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access);
+    Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access) override;
 
     /// clone only a part of the block sparse matrix
     /** Do not forget to call Complete() after cloning, even if you
@@ -676,6 +676,6 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(
   }
 }
 
-
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -19,6 +19,8 @@
 #include "baci_mortar_manager_base.H"
 #include "baci_mortar_strategy_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* Constructor */
 STR::TimIntAB2::TimIntAB2(const Teuchos::ParameterList& timeparams,
@@ -300,3 +302,5 @@ void STR::TimIntAB2::ReadRestartForce()
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
 void STR::TimIntAB2::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) { return; }
+
+BACI_NAMESPACE_CLOSE

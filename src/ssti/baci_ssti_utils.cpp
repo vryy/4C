@@ -24,6 +24,8 @@
 
 #include <Epetra_Map.h>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*---------------------------------------------------------------------------------*
@@ -756,3 +758,4 @@ std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::Conditio
 
   return conditions_to_copy;
 }
+BACI_NAMESPACE_CLOSE

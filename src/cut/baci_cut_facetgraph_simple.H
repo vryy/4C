@@ -15,6 +15,8 @@
 
 #include "baci_cut_facetgraph.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -26,10 +28,7 @@ namespace CORE::GEO
       /// constructor
       SimpleFacetGraph_1D(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
-      /// destructor
-      virtual ~SimpleFacetGraph_1D(){};
-
-      virtual void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells);
+      void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 
      private:
       void SortFacets(const Element* element, std::map<double, Facet*>& sorted_facets) const;
@@ -46,14 +45,13 @@ namespace CORE::GEO
       /// constructor
       SimpleFacetGraph_2D(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
-      /// destructor
-      virtual ~SimpleFacetGraph_2D(){};
-
-      virtual void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells);
+      void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 
     };  // class  SimpleFacetGraph_2D
   }     // namespace CUT
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CUT_FACETGRAPH_SIMPLE_H

@@ -18,6 +18,12 @@
 
 #include <Teuchos_RCP.hpp>
 
+class Epetra_Comm;
+class Epetra_Vector;
+class Epetra_MultiVector;
+
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
 namespace CORE::GEO
@@ -27,9 +33,6 @@ namespace CORE::GEO
     class BoundingBox;
   }
 }  // namespace CORE::GEO
-class Epetra_Comm;
-class Epetra_Vector;
-class Epetra_MultiVector;
 
 namespace DRT
 {
@@ -68,8 +71,7 @@ class BeamDiscretizationRuntimeVtuWriter
       IO::VisualizationParameters parameters, const Epetra_Comm& comm);
 
   /// Destructor
-  virtual ~BeamDiscretizationRuntimeVtuWriter() {}
-
+  virtual ~BeamDiscretizationRuntimeVtuWriter() = default;
   /** \brief initialize object with all required data
    *
    *  \author grill
@@ -291,5 +293,7 @@ class BeamDiscretizationRuntimeVtuWriter
   //! number of visual subsegments for the beam polyline visialization.
   unsigned int n_subsegments_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

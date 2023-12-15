@@ -33,6 +33,7 @@ using XFEM
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -997,3 +998,5 @@ bool FSI::FluidFluidMonolithicStructureSplitNoNOX::HasFluidDofMapChanged(
 {
   return !FluidField()->DofRowMap()->SameAs(fluidincrementmap);
 }
+
+BACI_NAMESPACE_CLOSE

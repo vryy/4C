@@ -14,6 +14,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Be careful when adding new member functions of MicroMaterial that
 // relate to MicroMaterialGP (which is NOT in the filter). See also
@@ -41,7 +43,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MicroMaterial::CreateMaterial()
 MAT::MicroMaterialType MAT::MicroMaterialType::instance_;
 
 
-DRT::ParObject* MAT::MicroMaterialType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MicroMaterialType::Create(const std::vector<char>& data)
 {
   MAT::MicroMaterial* micro = new MAT::MicroMaterial();
   micro->Unpack(data);
@@ -60,9 +62,9 @@ MAT::MicroMaterial::MicroMaterial(MAT::PAR::MicroMaterial* params) : params_(par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MicroMaterial::Pack(DRT::PackBuffer& data) const
+void MAT::MicroMaterial::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -80,10 +82,8 @@ void MAT::MicroMaterial::Pack(DRT::PackBuffer& data) const
 void MAT::MicroMaterial::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -104,3 +104,5 @@ void MAT::MicroMaterial::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

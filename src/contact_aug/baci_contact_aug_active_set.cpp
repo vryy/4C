@@ -17,6 +17,8 @@
 #include "baci_io_pstream.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ActiveSet::Update(const CONTACT::ParamsInterface& cparams)
@@ -448,3 +450,5 @@ void CONTACT::AUG::ActiveSet::SanityCheck(
   IO::cout << "current number of active nodes: " << data.GActiveNodeRowMapPtr()->NumGlobalElements()
            << IO::endl;
 }
+
+BACI_NAMESPACE_CLOSE

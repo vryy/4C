@@ -14,38 +14,40 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
 DRT::ELEMENTS::Shell7pFactory::ProvideShell7pCalculationInterface(
     const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech)
 {
   switch (ele.Shape())
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return DefineCalculationInterfaceType<DRT::Element::quad4>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::quad4>(eletech);
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return DefineCalculationInterfaceType<DRT::Element::quad8>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::quad8>(eletech);
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return DefineCalculationInterfaceType<DRT::Element::quad9>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::quad9>(eletech);
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineCalculationInterfaceType<DRT::Element::tri3>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::tri3>(eletech);
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return DefineCalculationInterfaceType<DRT::Element::tri6>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::tri6>(eletech);
     }
     default:
       dserror("unknown distype provided");
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
 DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
     const std::set<INPAR::STR::EleTech>& eletech)
@@ -62,7 +64,8 @@ DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
       {
         case INPAR::STR::EleTech::eas:
         {
-          if constexpr ((distype != DRT::Element::quad4) && (distype != DRT::Element::quad9))
+          if constexpr ((distype != CORE::FE::CellType::quad4) &&
+                        (distype != CORE::FE::CellType::quad9))
           {
             dserror("EAS is only implemented for quad4 and quad9 elements.");
           }
@@ -78,3 +81,5 @@ DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

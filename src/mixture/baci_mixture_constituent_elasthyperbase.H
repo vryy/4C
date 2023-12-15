@@ -18,6 +18,8 @@
 #include "baci_mixture_constituent.H"
 #include "baci_mixture_prestress_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class Anisotropy;
@@ -33,9 +35,6 @@ namespace MIXTURE
     {
      public:
       explicit MixtureConstituent_ElastHyperBase(const Teuchos::RCP<MAT::PAR::Material>& matdata);
-
-      ~MixtureConstituent_ElastHyperBase() override = default;
-
       int GetPrestressingMatId() const { return matid_prestress_strategy_; }
 
       /// @name material parameters
@@ -75,7 +74,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    void PackConstituent(DRT::PackBuffer& data) const override;
+    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -151,10 +150,10 @@ namespace MIXTURE
     void PreEvaluate(
         MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    protected:
@@ -205,5 +204,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_ELASTHYPERBASE_H

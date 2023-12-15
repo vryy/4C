@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration ...
 namespace CORE::LINALG
 {
@@ -54,8 +56,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Destructor
     */
-    virtual ~BeamPotentialPair() {}
-
+    virtual ~BeamPotentialPair() = default;
     //! Initialization
     void Init(const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
         DRT::Element const* element1, DRT::Element const* element2);
@@ -198,5 +199,7 @@ namespace BEAMINTERACTION
     //@}
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

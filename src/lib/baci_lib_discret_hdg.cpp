@@ -11,15 +11,17 @@
 
 #include "baci_lib_discret_hdg.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_dg_element.h"
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -40,7 +42,7 @@ int DRT::DiscretizationHDG::FillComplete(
 
   // get the correct face orientation from the owner. since the elements in general do not allow
   // packing, extract the node ids, communicate them, and change the node ids in the element
-  Exporter nodeexporter(*facerowmap_, *facecolmap_, Comm());
+  CORE::COMM::Exporter nodeexporter(*facerowmap_, *facecolmap_, Comm());
   std::map<int, std::vector<int>> nodeIds, trafoMap;
   for (std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator f = faces_.begin();
        f != faces_.end(); ++f)
@@ -317,7 +319,7 @@ void DRT::DiscretizationHDG::AddElementGhostLayer()
 
   // step 3: do the communication
   {
-    Exporter exporter(*NodeRowMap(), targetmap, Comm());
+    CORE::COMM::Exporter exporter(*NodeRowMap(), targetmap, Comm());
     exporter.Export(nodetoelement);
   }
 
@@ -348,7 +350,7 @@ void DRT::DiscretizationHDG::AddElementGhostLayer()
     for (unsigned int n = 0; n < nodes.size(); ++n) nodes[n] = lRowElement(e)->Nodes()[n]->Id();
   }
   {
-    Exporter exporter(*ElementRowMap(), elecolmap, Comm());
+    CORE::COMM::Exporter exporter(*ElementRowMap(), elecolmap, Comm());
     exporter.Export(elementtonode);
   }
   std::vector<int> newcolnodes;
@@ -674,3 +676,5 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FECrsMatrix.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /// Base class of sparse matrix that provides the simple functions
@@ -104,7 +106,7 @@ namespace CORE::LINALG
     const Epetra_Map& ColMap() const { return sysmat_->ColMap(); }
 
     /// Returns the Epetra_Map object associated with the domain of this matrix operator.
-    const Epetra_Map& DomainMap() const { return sysmat_->DomainMap(); }
+    const Epetra_Map& DomainMap() const override { return sysmat_->DomainMap(); }
 
     /// Returns the Epetra_Map object associated with the range of this matrix operator.
     const Epetra_Map& RangeMap() const { return sysmat_->RangeMap(); }
@@ -133,7 +135,7 @@ namespace CORE::LINALG
     int Multiply(bool TransA, const Epetra_Vector& x, Epetra_Vector& y) const;
 
     /// Returns the result of a Epetra_CrsMatrix multiplied by a Epetra_MultiVector X in Y.
-    int Multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int Multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Scales the Epetra_CrsMatrix on the left with a Epetra_Vector x.
     int LeftScale(const Epetra_Vector& x);
@@ -193,5 +195,7 @@ namespace CORE::LINALG
   };
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

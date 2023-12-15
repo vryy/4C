@@ -20,6 +20,8 @@ builds the bridge between the xfluid class and the cut-library
 
 #include <Epetra_IntVector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 // constructor
 XFEM::ConditionManager::ConditionManager(
@@ -984,11 +986,11 @@ DRT::Element* XFEM::ConditionManager::GetCouplingElement(
   }
   else if (IsLevelSetCoupling(coup_sid))
   {
-    // get the level-set coupling object index for given background element
-    const int lsc_idx = GetLevelSetCouplingIndex(coup_sid);
-
     // coupling of element with the element itself!
     const int coupldis_eid = ele->Id();
+
+    // get the level-set coupling object index for given background element
+    const int lsc_idx = GetLevelSetCouplingIndex(coupldis_eid);
 
     return levelset_coupl_[lsc_idx]->GetCouplingElement(coupldis_eid);
   }
@@ -1073,3 +1075,5 @@ double XFEM::ConditionManager::Get_TraceEstimate_MaxEigenvalue(
 
   return mvolcoupling->Get_EstimateNitscheTraceMaxEigenvalue(mvolcoupling->GetSide(cutterdis_sid));
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 
 #include "baci_fs3i_fps3i_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FS3I
 {
@@ -27,17 +29,14 @@ namespace FS3I
     //! constructor of one-way coupled FPS3I
     PartFPS3I_1WC(const Epetra_Comm& comm);
 
-    //! Destructor of one-way coupled FPS3I
-    virtual ~PartFPS3I_1WC(){};
-
     //! initialize this class
-    virtual void Init();
+    void Init() override;
 
     //! setup this class
-    virtual void Setup();
+    void Setup() override;
 
     /// timeloop of coupled problem
-    virtual void Timeloop();
+    void Timeloop() override;
 
     /// FPSI step
     void DoFPSIStep();
@@ -52,5 +51,7 @@ namespace FS3I
     virtual bool ScatraConvergenceCheck(int itnum);
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

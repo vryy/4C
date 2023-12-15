@@ -13,12 +13,14 @@ transport within electrochemical substances
 
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleSTIElch
     {
      public:
@@ -27,7 +29,7 @@ namespace DRT
 
      protected:
       //! number of element nodes
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! protected constructor for singletons
       ScaTraEleSTIElch(const int numdofpernode, const int numscal, const std::string& disname);
@@ -174,4 +176,6 @@ namespace DRT
     };  // class ScaTraEleInternalVariableManagerSTIElch
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

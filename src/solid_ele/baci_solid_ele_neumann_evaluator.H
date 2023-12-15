@@ -12,6 +12,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -39,8 +41,8 @@ namespace DRT::ELEMENTS
    * function of the element.
    *
    * @note This function determines the shape of the element at runtime and calles the respective
-   * templated version of @p EvaluateNeumann. If you already know the DiscretizationType of the
-   * element at compile-time, you could directly call @EvaluateNeumann.
+   * templated version of @p EvaluateNeumann. If you already know the CORE::FE::CellType
+   * of the element at compile-time, you could directly call @EvaluateNeumann.
    *
    * @param element (in) : The element where we integrate
    * @param discretization (in) : Discretization
@@ -56,7 +58,7 @@ namespace DRT::ELEMENTS
 
   /*!
    * @brief Evaluates a Neumann condition @p condition for the element @p element with the
-   * discretization type known at compile time.
+   * cell type known at compile time.
    *
    * The element force vector is
    *
@@ -73,7 +75,7 @@ namespace DRT::ELEMENTS
    * where \f$n\f$ is the number of nodes of the element and \f$N^i\f$ is the \f$i\f$-th shape
    * function of the element.
    *
-   * @tparam distype Discretization type known at compile time
+   * @tparam celltype Cell type known at compile time
    *
    * @param element (in) : The element where we integrate
    * @param discretization (in) : Discretization
@@ -83,12 +85,14 @@ namespace DRT::ELEMENTS
    * condition
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType celltype>
   void EvaluateNeumann(DRT::Element& element, const DRT::Discretization& discretization,
       DRT::Condition& condition, const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector, double total_time);
 
 }  // namespace DRT::ELEMENTS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_NEUMANN_EVALUATOR_H

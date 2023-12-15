@@ -13,7 +13,6 @@
 
 #include <NOX_Direction_Newton.H>  // base class
 
-// forward declarations...
 namespace NOX
 {
   class Utils;
@@ -26,22 +25,26 @@ namespace NOX
   {
     class Generic;
   }  // namespace Solver
+}  // namespace NOX
 
+BACI_NAMESPACE_OPEN
+
+// forward declarations...
+namespace NOX
+{
   namespace NLN
   {
     namespace Direction
     {
-      class Newton : public NOX::Direction::Newton
+      class Newton : public ::NOX::Direction::Newton
       {
        public:
         //! Constructor
-        Newton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+        Newton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
-        //! Destructor
-        ~Newton() override = default;
 
-        bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-            const NOX::Solver::Generic& solver) override;
+        bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
+            const ::NOX::Solver::Generic& solver) override;
 
        private:
         // throw NOX error
@@ -49,11 +52,13 @@ namespace NOX
 
        private:
         //! NOX_Utils pointer
-        Teuchos::RCP<NOX::Utils> utils_;
+        Teuchos::RCP<::NOX::Utils> utils_;
       };
     }  // namespace Direction
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_DIRECTION_NEWTON_H

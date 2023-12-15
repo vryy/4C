@@ -8,7 +8,7 @@
 #include "baci_mat_viscoplastic_no_yield_surface.H"
 
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
@@ -16,6 +16,8 @@
 #include "baci_utils_fad.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 // struct definition
 struct MAT::PreCalculatedTerms
@@ -60,7 +62,7 @@ MAT::ViscoPlasticNoYieldSurfaceType MAT::ViscoPlasticNoYieldSurfaceType::instanc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ViscoPlasticNoYieldSurfaceType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ViscoPlasticNoYieldSurfaceType::Create(const std::vector<char>& data)
 {
   auto* visco_plastic_no_yield_surface = new MAT::ViscoPlasticNoYieldSurface();
   visco_plastic_no_yield_surface->Unpack(data);
@@ -86,9 +88,9 @@ MAT::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoPlasticNoYieldSurface::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoPlasticNoYieldSurface::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -111,10 +113,8 @@ void MAT::ViscoPlasticNoYieldSurface::Pack(DRT::PackBuffer& data) const
 void MAT::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -254,7 +254,7 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const CORE::LINALG::Matrix<3, 3>*
   current_flowres_isotropic_[gp] = x(1);
 
   // transform stresses to stress-like Voigt notation
-  UTILS::VOIGT::Stresses::MatrixToVector(PK2, *stress);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(PK2, *stress);
 
   auto cmatel = CalculateElasticStiffness(EigenvectorsFe_trial, EigenvaluesFe_trial);
   *cmat = MAT::PullBackFourTensor<3>(current_iFv, cmatel);
@@ -272,7 +272,7 @@ CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateDeviatoric
 
   static CORE::LINALG::Matrix<3, 3> Me_trial_dev;
   // transform deviatoric equivalent stress to matrix notation
-  UTILS::VOIGT::Stresses::VectorToMatrix(Me_trial_dev_Vstress, Me_trial_dev);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(Me_trial_dev_Vstress, Me_trial_dev);
 
   return Me_trial_dev;
 }
@@ -392,7 +392,7 @@ MAT::ViscoPlasticNoYieldSurface::CalculateElasticStiffness(
   for (unsigned a = 0; a < 3; ++a)
   {
     temp.MultiplyNT(EigenVectorsVec.at(a), EigenVectorsVec.at(a));
-    UTILS::VOIGT::Stresses::MatrixToVector(temp, NaNaV);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(temp, NaNaV);
 
     const double Se_a = (2.0 * G * (LogEigenValues(a) - 1.0 / 3.0 * traceLogEigenvalues) +
                             K * traceLogEigenvalues) /
@@ -401,11 +401,11 @@ MAT::ViscoPlasticNoYieldSurface::CalculateElasticStiffness(
     for (unsigned b = 0; b < 3; ++b)
     {
       temp.MultiplyNT(EigenVectorsVec.at(a), EigenVectorsVec.at(b));
-      UTILS::VOIGT::Stresses::MatrixToVector(temp, NaNbV);
+      CORE::LINALG::VOIGT::Stresses::MatrixToVector(temp, NaNbV);
       temp.MultiplyNT(EigenVectorsVec.at(b), EigenVectorsVec.at(a));
-      UTILS::VOIGT::Stresses::MatrixToVector(temp, NbNaV);
+      CORE::LINALG::VOIGT::Stresses::MatrixToVector(temp, NbNaV);
       temp.MultiplyNT(EigenVectorsVec.at(b), EigenVectorsVec.at(b));
-      UTILS::VOIGT::Stresses::MatrixToVector(temp, NbNbV);
+      CORE::LINALG::VOIGT::Stresses::MatrixToVector(temp, NbNbV);
 
       const double Se_b = (2.0 * G * (LogEigenValues(b) - 1.0 / 3.0 * traceLogEigenvalues) +
                               K * traceLogEigenvalues) /
@@ -471,7 +471,7 @@ MAT::ViscoPlasticNoYieldSurface::CalculateLogElasticStrainInStrainLikeVoigtNotat
   Ee_trial.MultiplyNT(tmp3x3, eigen_vectors);
 
   // transform to strain-like Voigt notation of logarithmic elastic strain
-  UTILS::VOIGT::Strains::MatrixToVector(Ee_trial, Ee_trial_Vstrain);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(Ee_trial, Ee_trial_Vstrain);
 
   return Ee_trial_Vstrain;
 }
@@ -714,3 +714,4 @@ void MAT::ViscoPlasticNoYieldSurface::SetupCmat(
   cmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nue);
   cmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nue);
 }
+BACI_NAMESPACE_CLOSE

@@ -12,8 +12,10 @@
 #include "baci_elemag_resulttest.H"
 
 #include "baci_elemag_timeint.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |
@@ -145,3 +147,4 @@ void ELEMAG::ElemagResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
   }
   return;
 }
+BACI_NAMESPACE_CLOSE

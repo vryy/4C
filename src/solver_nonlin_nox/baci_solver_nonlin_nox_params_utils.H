@@ -14,6 +14,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -50,5 +52,7 @@ namespace NOX
     }  // namespace PUTILS
   }    // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_PARAMS_UTILS_H

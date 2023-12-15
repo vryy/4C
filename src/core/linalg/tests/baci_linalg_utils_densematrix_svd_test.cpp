@@ -13,6 +13,8 @@
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_unittest_utils_assertions_test.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   /*
@@ -463,3 +465,5 @@ namespace
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 }  // namespace
+
+BACI_NAMESPACE_CLOSE

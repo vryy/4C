@@ -13,6 +13,8 @@
 #include "baci_linalg_downwindmatrix.H"
 #include "baci_linear_solver_preconditioner_type.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// inf-norm scaling fits the preconditioner framework perfecty
@@ -32,23 +34,14 @@ namespace CORE::LINEAR_SOLVER
 
     void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) override;
 
-    Epetra_Operator* PrecOperator() const override { return preconditioner_->PrecOperator(); }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override
     {
-      return preconditioner_->PrecOperatorRCP();
-    }
-
-    void Print(std::ostream& stream) const override
-    {
-      stream << "InfNorm(";
-      preconditioner_->Print(stream);
-      stream << ")";
+      return preconditioner_->PrecOperator();
     }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "unknown"; }
+    std::string getParameterListName() const override { return "unknown"; }
 
    private:
     Teuchos::RCP<PreconditionerType> preconditioner_;
@@ -73,23 +66,14 @@ namespace CORE::LINEAR_SOLVER
 
     void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) override;
 
-    Epetra_Operator* PrecOperator() const override { return preconditioner_->PrecOperator(); }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override
     {
-      return preconditioner_->PrecOperatorRCP();
-    }
-
-    void Print(std::ostream& stream) const override
-    {
-      stream << "SymDiag(";
-      preconditioner_->Print(stream);
-      stream << ")";
+      return preconditioner_->PrecOperator();
     }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "unknown"; }
+    std::string getParameterListName() const override { return "unknown"; }
 
    private:
     /// embedded preconditioner
@@ -99,5 +83,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Vector> diag_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

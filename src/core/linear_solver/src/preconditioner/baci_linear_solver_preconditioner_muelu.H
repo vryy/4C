@@ -17,6 +17,8 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <Xpetra_MultiVector.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /*! \brief General layout of the MueLu preconditioner working with sparse matrices
@@ -32,7 +34,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuPreconditioner : public PreconditionerType
   {
    public:
-    MueLuPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -54,16 +56,11 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    //! Get the actual operator used for preconditioning
-    Epetra_Operator* PrecOperator() const final { return &*P_; }
-
     //! linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const final { return P_; }
-
-    void Print(std::ostream& stream) const override { stream << "MueLuPreconditioner"; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const final { return P_; }
 
     //! return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const { return "MueLu Parameters"; }
+    std::string getParameterListName() const override { return "MueLu Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -87,7 +84,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuFluidBlockPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuFluidBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuFluidBlockPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -103,10 +100,8 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) const override { stream << "MueLuFlBlockPreconditioner"; }
-
     //! return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu (Fluid) Parameters"; }
+    std::string getParameterListName() const override { return "MueLu (Fluid) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -120,7 +115,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuTsiBlockPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuTsiBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuTsiBlockPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -136,10 +131,8 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) const override { stream << "MueLuTsiBlockPreconditioner"; }
-
     // return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu (TSI) Parameters"; }
+    std::string getParameterListName() const override { return "MueLu (TSI) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -158,7 +151,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuContactSpPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuContactSpPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuContactSpPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -185,10 +178,8 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) const override { stream << "MueLuContactSpPreconditioner"; }
-
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu (Contact) Parameters"; }
+    std::string getParameterListName() const override { return "MueLu (Contact) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -202,7 +193,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuBeamSolidBlockPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuBeamSolidBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuBeamSolidBlockPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -229,10 +220,8 @@ namespace CORE::LINEAR_SOLVER
     void Setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
 
-    void Print(std::ostream& stream) const final { stream << "MueLuBeamSolidBlockPreconditioner"; }
-
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const final { return "MueLu (BeamSolid) Parameters"; }
+    std::string getParameterListName() const final { return "MueLu (BeamSolid) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -246,7 +235,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuFsiBlockPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuFsiBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuFsiBlockPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -262,10 +251,8 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) const override { stream << "MueLuFsiBlockPreconditioner"; }
-
     // return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu (FSI) Parameters"; }
+    std::string getParameterListName() const override { return "MueLu (FSI) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -292,5 +279,7 @@ namespace CORE::LINEAR_SOLVER
 
   }  // namespace MUELU::UTILS
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

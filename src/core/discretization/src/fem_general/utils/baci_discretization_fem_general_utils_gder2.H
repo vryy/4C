@@ -12,6 +12,8 @@
 #include "baci_lib_element.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::DRT::UTILS
 {
@@ -53,20 +55,20 @@ namespace CORE::DRT::UTILS
   *----------------------------------------------------------------------*/
   // for enriched elements (e.g. xwall), NumNode may be larger than the number of element nodes
   // for all other elements, NumNode==numnode
-  template <::DRT::Element::DiscretizationType DISTYPE, int NumNode, int ProbDim>
+  template <CORE::FE::CellType DISTYPE, int NumNode, int ProbDim>
   void gder2(const CORE::LINALG::Matrix<ProbDim, ProbDim>& xjm,
       const CORE::LINALG::Matrix<ProbDim, NumNode>& derxy,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,
-          NumNode>& deriv2,
+      const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
+          deriv2,
       const CORE::LINALG::Matrix<ProbDim, NumNode>& xyze,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
+      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
           derxy2)
   {
     // some numbers already known during compilation
-    const int numnode = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numnode = CORE::FE::num_nodes<DISTYPE>;
     dsassert(numnode <= NumNode, "Expect at least numNodePerElement matrix columns");
     const int nsd = ProbDim;
-    const int numderiv2 = ::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2;
+    const int numderiv2 = CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2;
 
     // compute d^2x/dr^2
     double xder2[numderiv2 * nsd];
@@ -132,21 +134,21 @@ namespace CORE::DRT::UTILS
 
   }  // CORE::DRT::UTILS::gder2
 
-  template <::DRT::Element::DiscretizationType DISTYPE, int NumNode>
-  void gder2(const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-                 ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& xjm,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& derxy,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,
-          NumNode>& deriv2,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& xyze,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
+  template <CORE::FE::CellType DISTYPE, int NumNode>
+  void gder2(const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::dim<DISTYPE>>& xjm,
+      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, NumNode>& derxy,
+      const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
+          deriv2,
+      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, NumNode>& xyze,
+      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
           derxy2)
   {
-    gder2<DISTYPE, NumNode, ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>(
-        xjm, derxy, deriv2, xyze, derxy2);
+    gder2<DISTYPE, NumNode, CORE::FE::dim<DISTYPE>>(xjm, derxy, deriv2, xyze, derxy2);
   }
 
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_GDER2_H

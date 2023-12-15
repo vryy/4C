@@ -10,11 +10,13 @@ species
 /*----------------------------------------------------------------------------*/
 #include "baci_mat_scl.H"
 
-#include "baci_lib_function_of_scalar.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function_of_scalar.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -56,7 +58,7 @@ MAT::SclType MAT::SclType::instance_;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::ParObject* MAT::SclType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::SclType::Create(const std::vector<char>& data)
 {
   auto* scl = new MAT::Scl();
   scl->Unpack(data);
@@ -73,9 +75,9 @@ MAT::Scl::Scl(MAT::PAR::Scl* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Scl::Pack(DRT::PackBuffer& data) const
+void MAT::Scl::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -94,10 +96,7 @@ void MAT::Scl::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -132,7 +131,7 @@ double MAT::Scl::ComputeTransferenceNumber(const double cint) const
   else
   {
     return DRT::Problem::Instance()
-        ->FunctionById<DRT::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
+        ->FunctionById<CORE::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
         .Evaluate(cint);
   }
 }
@@ -148,7 +147,7 @@ double MAT::Scl::ComputeFirstDerivTrans(const double cint) const
   else
   {
     return DRT::Problem::Instance()
-        ->FunctionById<DRT::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
+        ->FunctionById<CORE::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
         .EvaluateDerivative(cint, 1);
   }
 }
@@ -302,3 +301,5 @@ double MAT::Scl::ComputeConcentrationDerivativeOfOnsagerCoefficient(
           conductivityderconc / (1.0 - (concentration - cbulk) * delta_nu));
   return onsagercoeffderconc;
 }
+
+BACI_NAMESPACE_CLOSE

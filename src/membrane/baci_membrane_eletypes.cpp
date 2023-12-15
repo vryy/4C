@@ -10,9 +10,11 @@
 *----------------------------------------------------------------------*/
 #include "baci_membrane_eletypes.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_membrane.H"
 #include "baci_so3_nullspace.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          fbraeu 06/16 |
@@ -21,10 +23,10 @@ DRT::ELEMENTS::Membrane_tri3Type DRT::ELEMENTS::Membrane_tri3Type::instance_;
 
 DRT::ELEMENTS::Membrane_tri3Type& DRT::ELEMENTS::Membrane_tri3Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Membrane_tri3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_tri3Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Membrane<DRT::Element::tri3>* object =
-      new DRT::ELEMENTS::Membrane<DRT::Element::tri3>(-1, -1);
+  DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>* object =
+      new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -35,7 +37,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri3Type::Create(
   if (eletype == "MEMBRANE3" && eledistype == "TRI3")
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::tri3>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -44,7 +46,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri3Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri3Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::tri3>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>(id, owner));
   return ele;
 }
 
@@ -89,10 +91,10 @@ DRT::ELEMENTS::Membrane_tri6Type DRT::ELEMENTS::Membrane_tri6Type::instance_;
 
 DRT::ELEMENTS::Membrane_tri6Type& DRT::ELEMENTS::Membrane_tri6Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Membrane_tri6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_tri6Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Membrane<DRT::Element::tri6>* object =
-      new DRT::ELEMENTS::Membrane<DRT::Element::tri6>(-1, -1);
+  DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>* object =
+      new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -103,7 +105,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri6Type::Create(
   if (eletype == "MEMBRANE6" && eledistype == "TRI6")
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::tri6>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -112,7 +114,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri6Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri6Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::tri6>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>(id, owner));
   return ele;
 }
 
@@ -160,10 +162,10 @@ DRT::ELEMENTS::Membrane_quad4Type& DRT::ELEMENTS::Membrane_quad4Type::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::Membrane_quad4Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_quad4Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Membrane<DRT::Element::quad4>* object =
-      new DRT::ELEMENTS::Membrane<DRT::Element::quad4>(-1, -1);
+  DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>* object =
+      new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -174,7 +176,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad4Type::Create(
   if (eletype == "MEMBRANE4" && eledistype == "QUAD4")
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::quad4>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -183,7 +185,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad4Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad4Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::quad4>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
@@ -231,10 +233,10 @@ DRT::ELEMENTS::Membrane_quad9Type& DRT::ELEMENTS::Membrane_quad9Type::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::Membrane_quad9Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_quad9Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Membrane<DRT::Element::quad9>* object =
-      new DRT::ELEMENTS::Membrane<DRT::Element::quad9>(-1, -1);
+  DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>* object =
+      new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -245,7 +247,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad9Type::Create(
   if (eletype == "MEMBRANE9" && eledistype == "QUAD9")
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::quad9>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -254,7 +256,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad9Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad9Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::quad9>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>(id, owner));
   return ele;
 }
 
@@ -291,3 +293,5 @@ void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition(
                       .AddOptionalNamedDoubleVector("FIBER3", 3)
                       .Build();
 }
+
+BACI_NAMESPACE_CLOSE

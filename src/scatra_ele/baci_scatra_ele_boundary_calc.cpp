@@ -11,7 +11,6 @@
 
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_list.H"
@@ -21,10 +20,13 @@
 #include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
     const int numdofpernode, const int numscal, const std::string& disname)
     : scatraparamstimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname)),
@@ -55,7 +57,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
@@ -83,7 +85,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -110,46 +112,46 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacementValues(
     DRT::FaceElement* ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   switch (ele->ParentElement()->Shape())
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      ExtractDisplacementValues<DRT::Element::hex8>(ele, discretization, la);
+      ExtractDisplacementValues<CORE::FE::CellType::hex8>(ele, discretization, la);
       break;
     }
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
     {
-      ExtractDisplacementValues<DRT::Element::hex27>(ele, discretization, la);
+      ExtractDisplacementValues<CORE::FE::CellType::hex27>(ele, discretization, la);
       break;
     }
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      ExtractDisplacementValues<DRT::Element::tet4>(ele, discretization, la);
+      ExtractDisplacementValues<CORE::FE::CellType::tet4>(ele, discretization, la);
       break;
     }
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      ExtractDisplacementValues<DRT::Element::quad4>(ele, discretization, la);
+      ExtractDisplacementValues<CORE::FE::CellType::quad4>(ele, discretization, la);
       break;
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      ExtractDisplacementValues<DRT::Element::tri6>(ele, discretization, la);
+      ExtractDisplacementValues<CORE::FE::CellType::tri6>(ele, discretization, la);
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      ExtractDisplacementValues<DRT::Element::tri3>(ele, discretization, la);
+      ExtractDisplacementValues<CORE::FE::CellType::tri3>(ele, discretization, la);
       break;
     }
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      ExtractDisplacementValues<DRT::Element::nurbs9>(ele, discretization, la);
+      ExtractDisplacementValues<CORE::FE::CellType::nurbs9>(ele, discretization, la);
       break;
     }
     default:
@@ -160,8 +162,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-template <DRT::Element::DiscretizationType parentdistype>
+template <CORE::FE::CellType distype, int probdim>
+template <CORE::FE::CellType parentdistype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacementValues(
     DRT::FaceElement* ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -194,8 +196,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
     DRT::Element::LocationArray parent_la(discretization.NumDofSets());
     ele->ParentElement()->LocationVector(discretization, parent_la, false);
 
-    const int num_node_parent_ele =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parentdistype>::numNodePerElement;
+    const int num_node_parent_ele = CORE::FE::num_nodes<parentdistype>;
 
     // determine number of the displacement related dofs per node
     const int parent_numdispdofpernode = parent_la[ndsdisp].lm_.size() / num_node_parent_ele;
@@ -229,7 +230,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
@@ -322,11 +323,11 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       switch (distype)
       {
         // 2D:
-        case DRT::Element::line2:
+        case CORE::FE::CellType::line2:
         {
-          if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+          if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
           {
-            WeakDirichlet<DRT::Element::line2, DRT::Element::quad4>(
+            WeakDirichlet<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
           }
           else
@@ -337,11 +338,11 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
         }
 
         // 3D:
-        case DRT::Element::quad4:
+        case CORE::FE::CellType::quad4:
         {
-          if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+          if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
           {
-            WeakDirichlet<DRT::Element::quad4, DRT::Element::hex8>(
+            WeakDirichlet<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
           }
           else
@@ -481,7 +482,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
@@ -533,7 +534,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT:
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, dof);
         }
         else
@@ -553,7 +554,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT:
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
     Teuchos::ParameterList& params, DRT::FaceElement* ele)
 {
@@ -572,7 +573,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
 
     for (int i_node = 0; i_node < 3; ++i_node)
     {
-      const auto* coords = p_ele->Nodes()[i_node]->X();
+      const auto& coords = p_ele->Nodes()[i_node]->X();
       for (int dim = 0; dim < nsd_; ++dim) xyz_parent_ele(dim, i_node) = coords[dim];
     }
 
@@ -603,7 +604,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -728,7 +729,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
     Teuchos::RCP<const MAT::Material> material,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k)
@@ -777,7 +778,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcConvectiveFlux(
     const DRT::FaceElement* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, CORE::LINALG::SerialDenseVector& erhs)
@@ -824,7 +825,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Calc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTransfer(
     const DRT::FaceElement* ele, Teuchos::RCP<const MAT::Material> material,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, CORE::LINALG::SerialDenseMatrix& emat,
@@ -903,7 +904,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTrans
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
     EvaluateSpatialDerivativeOfAreaIntegrationFactor(
         const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
@@ -947,7 +948,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
     CORE::LINALG::Matrix<nsd_, 1>* normalvec)
@@ -972,7 +973,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndI
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
     EvaluateShapeFuncAndDerivativeAtIntPoint(
         const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
@@ -999,7 +1000,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
     const CORE::LINALG::Matrix<3, nen_>& xyze)
 {
@@ -1012,7 +1013,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
     dist2(i) = xyze(i, 2) - xyze(i, 0);
   }
 
-  normal = CORE::GEO::computeCrossProduct(dist1, dist2);
+  normal.CrossProduct(dist1, dist2);
 
   const double length = normal.Norm2();
   if (length < 1.0e-16) dserror("Zero length for element normal");
@@ -1024,7 +1025,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
     const CORE::LINALG::Matrix<2, nen_>& xyze)
 {
@@ -1045,14 +1046,14 @@ CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
     const CORE::LINALG::Matrix<3, nen_>& xyze, const CORE::LINALG::Matrix<3, 3>& nodes_parent_ele)
 {
   if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
 
-  CORE::LINALG::Matrix<3, 1> normal(true), boundary_ele(true), parent_ele_v1(true),
-      parent_ele_v2(true);
+  CORE::LINALG::Matrix<3, 1> normal(true), normal_parent_ele(true), boundary_ele(true),
+      parent_ele_v1(true), parent_ele_v2(true);
 
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -1061,8 +1062,8 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
     parent_ele_v2(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 2);
   }
 
-  const auto normal_parent_ele = CORE::GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
-  normal = CORE::GEO::computeCrossProduct(normal_parent_ele, boundary_ele);
+  normal_parent_ele.CrossProduct(parent_ele_v1, parent_ele_v2);
+  normal.CrossProduct(normal_parent_ele, boundary_ele);
 
   // compute inward vector and check if its scalar product with the normal vector is negative.
   // Otherwise, change the sign of the normal vector
@@ -1102,7 +1103,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -1156,21 +1157,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-template <DRT::Element::DiscretizationType distype_master>
+template <CORE::FE::CellType distype, int probdim>
+template <CORE::FE::CellType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICouplingAtIntegrationPoint(
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
-        emasterphinp,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>& emasterphinp,
     const double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-    const CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-        funct_master,
+    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
     const CORE::LINALG::Matrix<nen_, 1>& test_slave,
-    const CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-        test_master,
+    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& test_master,
     const int numscal,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
     const double timefacfac, const double timefacrhsfac, CORE::LINALG::SerialDenseMatrix& k_ss,
@@ -1183,8 +1178,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
   const std::vector<double>* permeabilities = scatra_parameter_boundary->Permeabilities();
 
   // number of nodes of master-side mortar element
-  const int nen_master =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
+  const int nen_master = CORE::FE::num_nodes<distype_master>;
 
   // loop over scalars
   for (int k = 0; k < numscal; ++k)
@@ -1269,7 +1263,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculatePseudoContactFactor(
     const bool is_pseudo_contact,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavestress_vector,
@@ -1300,7 +1294,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculatePseudoCo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfParentElement(
     const DRT::FaceElement* faceele, const double* faceele_xsi)
 {
@@ -1308,13 +1302,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
   {
     switch (faceele->ParentElement()->Shape())
     {
-      case DRT::Element::hex8:
+      case CORE::FE::CellType::hex8:
       {
-        return CalculateDetFOfParentElement<DRT::Element::hex8>(faceele, faceele_xsi);
+        return CalculateDetFOfParentElement<CORE::FE::CellType::hex8>(faceele, faceele_xsi);
       }
-      case DRT::Element::tet4:
+      case CORE::FE::CellType::tet4:
       {
-        return CalculateDetFOfParentElement<DRT::Element::tet4>(faceele, faceele_xsi);
+        return CalculateDetFOfParentElement<CORE::FE::CellType::tet4>(faceele, faceele_xsi);
       }
       default:
       {
@@ -1329,14 +1323,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-template <DRT::Element::DiscretizationType parentdistype>
+template <CORE::FE::CellType distype, int probdim>
+template <CORE::FE::CellType parentdistype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfParentElement(
     const DRT::FaceElement* faceele, const double* faceele_xi)
 {
-  const int parent_ele_dim = CORE::DRT::UTILS::DisTypeToDim<parentdistype>::dim;
-  const int parent_ele_num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<parentdistype>::numNodePerElement;
+  const int parent_ele_dim = CORE::FE::dim<parentdistype>;
+  const int parent_ele_num_nodes = CORE::FE::num_nodes<parentdistype>;
 
   auto parent_xi =
       CORE::DRT::UTILS::CalculateParentGPFromFaceElementData<parent_ele_dim>(faceele_xi, faceele);
@@ -1346,7 +1339,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
 
   for (auto i = 0; i < parent_ele_num_nodes; ++i)
   {
-    const double* x = faceele->ParentElement()->Nodes()[i]->X();
+    const auto& x = faceele->ParentElement()->Nodes()[i]->X();
     for (auto dim = 0; dim < probdim; ++dim)
     {
       xdisp(i, dim) = eparentdispnp_.at(i * probdim + dim);
@@ -1371,7 +1364,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICouplingOD(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -1498,7 +1491,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -1508,7 +1501,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
     CORE::LINALG::Matrix<nen_, 1>& estate, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, const std::string& statename, const int& nds) const
@@ -1525,7 +1518,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
     std::vector<CORE::LINALG::Matrix<nen_, 1>>& estate, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, const std::string& statename, const int& nds) const
@@ -1541,7 +1534,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcBoundaryIntegral(
     const DRT::FaceElement* ele, CORE::LINALG::SerialDenseVector& scalar)
 {
@@ -1571,7 +1564,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcBoundaryIntegra
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcMatMass(
     const DRT::FaceElement* const element, CORE::LINALG::SerialDenseMatrix& massmatrix)
 {
@@ -1604,7 +1597,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcMatMass(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -1720,7 +1713,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePermeability(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -1857,7 +1850,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatchalsky(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -2027,7 +2020,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WSSinfluence(
     const CORE::LINALG::Matrix<nsd_, nen_>& ewss, const bool wss_onoff,
     const std::vector<double>* coeffs)
@@ -2053,7 +2046,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WSSinfluence(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::IntegrateShapeFunctions(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, const bool addarea)
@@ -2085,8 +2078,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::IntegrateShapeFunct
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-template <DRT::Element::DiscretizationType bdistype, DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype, int probdim>
+template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     Teuchos::RCP<const MAT::Material> material, CORE::LINALG::SerialDenseMatrix& elemat_epetra,
@@ -2120,16 +2113,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   DRT::Element* pele = ele->ParentElement();
 
   // number of spatial dimensions regarding (boundary) element
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of spatial dimensions regarding parent element
-  static const int pnsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int pnsd = CORE::FE::dim<pdistype>;
 
   // number of (boundary) element nodes
-  static const int bnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int bnen = CORE::FE::num_nodes<bdistype>;
 
   // number of parent element nodes
-  static const int pnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int pnen = CORE::FE::num_nodes<pdistype>;
 
   // parent element location array
   DRT::Element::LocationArray pla(discretization.NumDofSets());
@@ -2548,7 +2541,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
       for (int i = 0; i < pnsd; i++) coordgp3D[i] = coordgp(i);
 
       functfac = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                      .Evaluate(coordgp3D.data(), time, 0);
     }
     else
@@ -2801,8 +2794,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-template <DRT::Element::DiscretizationType bdistype, DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype, int probdim>
+template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristicGalerkinBoundary(
     DRT::FaceElement* ele,                           //!< transport element
     Teuchos::ParameterList& params,                  //!< parameter list
@@ -2821,16 +2814,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
   DRT::Element* pele = ele->ParentElement();
 
   // number of spatial dimensions regarding (boundary) element
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of spatial dimensions regarding parent element
-  static const int pnsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int pnsd = CORE::FE::dim<pdistype>;
 
   // number of (boundary) element nodes
-  static const int bnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int bnen = CORE::FE::num_nodes<bdistype>;
 
   // number of parent element nodes
-  static const int pnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int pnen = CORE::FE::num_nodes<pdistype>;
 
   // parent element lm vector
   std::vector<int> plm;
@@ -3089,7 +3082,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNodalSize(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -3117,75 +3110,65 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNodalSize(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // explicit instantiation of template methods
-template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::
-    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::tri3>::
+    EvaluateS2ICouplingAtIntegrationPoint<CORE::FE::CellType::tri3>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
-        const std::vector<CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
+        const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>&,
         const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
-        const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double,
-        const double, CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>&, const int,
+        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
+        CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
-template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::
-    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::tri3>::
+    EvaluateS2ICouplingAtIntegrationPoint<CORE::FE::CellType::quad4>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
-        const std::vector<CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
+        const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>&,
         const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
-        const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double,
-        const double, CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>&, const int,
+        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
+        CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
-template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::
-    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::quad4>::
+    EvaluateS2ICouplingAtIntegrationPoint<CORE::FE::CellType::tri3>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
-        const std::vector<CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
+        const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>&,
         const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
-        const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double,
-        const double, CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>&, const int,
+        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
+        CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
-template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::
-    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::quad4>::
+    EvaluateS2ICouplingAtIntegrationPoint<CORE::FE::CellType::quad4>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
-        const std::vector<CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
+        const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>&,
         const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
-        const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double,
-        const double, CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>&, const int,
+        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
+        CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::nurbs9, 3>;
+
+BACI_NAMESPACE_CLOSE

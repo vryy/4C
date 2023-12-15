@@ -15,6 +15,8 @@
 
 #include "baci_cut_pointgraph.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -37,23 +39,17 @@ namespace CORE::GEO
             // empty
           }
 
-          /// destructor
-          virtual ~Graph(){};
-
           /** \brief Simplified version of the base class implementation
            *
            *  \author hiermeier \date 11/16 */
-          virtual void FindCycles(
-              Element* element, Side* side, Cycle& cycle, Location location, Strategy strategy);
+          void FindCycles(Element* element, Side* side, Cycle& cycle, Location location,
+              Strategy strategy) override;
 
         };  // struct Graph
 
         /// constructor
         SimplePointGraph_1D(
             Mesh& mesh, Element* element, Side* side, Location location, Strategy strategy);
-
-        /// destructor
-        virtual ~SimplePointGraph_1D(){};
 
        protected:
         /** \brief Build the cycle of edge points [derived]
@@ -62,7 +58,7 @@ namespace CORE::GEO
          *  \param cycle       (out): created point cycle
          *
          *  \author hiermeier \date 11/16 */
-        virtual void BuildCycle(const std::vector<Point*>& edge_points, Cycle& cycle) const;
+        void BuildCycle(const std::vector<Point*>& edge_points, Cycle& cycle) const override;
 
         /** \brief Add cut lines to the graph object [derived]
          *
@@ -103,9 +99,6 @@ namespace CORE::GEO
                     // empty
                 };
 
-          /// destructor
-          virtual ~Graph(){};
-
           /** \brief Overloaded version of the base class implementation
            *
            *  The base class implementation is called first. Afterwards
@@ -113,15 +106,15 @@ namespace CORE::GEO
            *  is performed.
            *
            *  \author hiermeier \date 11/16 */
-          virtual void FindCycles(
-              Element* element, Side* side, Cycle& cycle, Location location, Strategy strategy);
+          void FindCycles(Element* element, Side* side, Cycle& cycle, Location location,
+              Strategy strategy) override;
 
           inline const std::vector<Cycle>& SurfaceMainCycles() const
           {
             return surface_main_cycles_;
           }
 
-          virtual bool HasSinglePoints(Location location);
+          bool HasSinglePoints(Location location) override;
 
           void SetCorrectRotationDirection(bool correct_rotation)
           {
@@ -162,9 +155,6 @@ namespace CORE::GEO
         // empty constructor
         SimplePointGraph_2D();
 
-        /// destructor
-        virtual ~SimplePointGraph_2D(){};
-
         void FindLineFacetCycles(const plain_facet_set& line_facets, Element* parent_element);
 
         /** \brief Test and correct the rotation direction of the given cycles such
@@ -196,5 +186,7 @@ namespace CORE::GEO
   }    // namespace CUT
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CUT_POINTGRAPH_SIMPLE_H

@@ -13,6 +13,8 @@ utils_std_cxx20_ranges.H
 
 #include <list>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   template <typename Container>
@@ -65,3 +67,5 @@ namespace
     EXPECT_EQ(container, (TypeParam{2, 4, 6, 8, 10}));
   }
 }  // namespace
+
+BACI_NAMESPACE_CLOSE

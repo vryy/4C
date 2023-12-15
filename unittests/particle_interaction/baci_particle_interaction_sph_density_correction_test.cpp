@@ -11,6 +11,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class SPHDensityCorrectionInteriorTest : public ::testing::Test
   {
    protected:

@@ -13,18 +13,21 @@ Thomas Kloeppel
 
 #include "baci_constraint.H"
 
-#include "baci_lib_function_of_time.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_utils_function_of_time.H"
 
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
-    const std::string& conditionname, int& offsetID, int& maxID)
+    const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname, constrcond_);
@@ -33,15 +36,14 @@ UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
     constrtype_ = GetConstrType(conditionname);
     for (unsigned int i = 0; i < constrcond_.size(); i++)
     {
-      // constrcond_[i]->Print(std::cout);
       int condID = (*(constrcond_[i]->Get<std::vector<int>>("ConditionID")))[0];
       if (condID > maxID)
       {
         maxID = condID;
       }
-      if (condID < offsetID)
+      if (condID < minID)
       {
-        offsetID = condID;
+        minID = condID;
       }
 
       const std::vector<double>* myinittime = constrcond_[i]->Get<std::vector<double>>("activTime");
@@ -262,7 +264,7 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
       double curvefac = 1.0;
       if (curvenum >= 0)
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
                 time);
 
       // global and local ID of this bc in the redundant vectors
@@ -432,6 +434,7 @@ void UTILS::Constraint::InitializeConstraint(
   return;
 }  // end of Initialize Constraint
 
+
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 std::vector<int> UTILS::Constraint::GetActiveCondID()
@@ -445,11 +448,4 @@ std::vector<int> UTILS::Constraint::GetActiveCondID()
   return condID;
 }
 
-/*-----------------------------------------------------------------------*
- *-----------------------------------------------------------------------*/
-void UTILS::Constraint::SetState(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Epetra_Vector> V                           ///< values to set
-)
-{
-  actdisc_->SetState(state, V);
-}
+BACI_NAMESPACE_CLOSE

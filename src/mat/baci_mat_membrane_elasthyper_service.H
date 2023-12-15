@@ -14,6 +14,9 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_matelast_summand.H"
+
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // Forward declaration
@@ -89,5 +92,7 @@ namespace MAT
       const CORE::LINALG::Matrix<3, 1>& rcg, const double& rcg33);
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_MEMBRANE_ELASTHYPER_SERVICE_H

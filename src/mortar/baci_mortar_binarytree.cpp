@@ -14,6 +14,8 @@
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor BinaryTreeNode (public)                              popp 10/08|
@@ -200,7 +202,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       {
         MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
         if (!mrtrnode) dserror("Null pointer!");
-        const double* posnode = mrtrnode->X();
+        const auto& posnode = mrtrnode->X();
 
         // split along chosen area
         // ax+by+cz< or > d = criterion
@@ -799,3 +801,5 @@ void MORTAR::BinaryTree::EvaluateSearch(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

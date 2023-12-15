@@ -30,6 +30,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::FactoryMT::Setup()
@@ -54,7 +56,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // read Problem Type and Problem Dimension from DRT::Problem
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
   int dim = DRT::Problem::Instance()->NDim();
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -240,7 +242,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // NURBS PROBLEM?
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       params.set<bool>("NURBS", true);
       break;
@@ -469,9 +471,8 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         if (!node) dserror("Cannot find node with gid %", gid);
 
         // create MortarNode object
-        Teuchos::RCP<MORTAR::MortarNode> mtnode =
-            Teuchos::rcp(new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                Discret().NumDof(0, node), Discret().Dof(0, node), isslave[j]));
+        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(
+            node->Id(), node->X(), node->Owner(), Discret().Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
         if (nurbs)
@@ -618,3 +619,5 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
   if (comm_ptr->MyPID() == 0) std::cout << "done!" << std::endl;
   return strategy_ptr;
 }
+
+BACI_NAMESPACE_CLOSE

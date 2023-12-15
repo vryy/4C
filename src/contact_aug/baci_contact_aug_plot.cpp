@@ -18,7 +18,6 @@ MATLAB, PGFPlot or other tools.
 #include "baci_io_every_iteration_writer.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_element.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_lib_node.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -26,11 +25,14 @@ MATLAB, PGFPlot or other tools.
 #include "baci_solver_nonlin_nox_constraint_group.H"
 #include "baci_solver_nonlin_nox_solver_linesearchbased.H"
 #include "baci_structure_new_model_evaluator_contact.H"
+#include "baci_utils_epetra_exceptions.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -259,7 +261,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::FindConnectedDofs(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Plot::Direction::Get(
-    const NOX::Solver::Generic& solver) const
+    const ::NOX::Solver::Generic& solver) const
 {
   Teuchos::RCP<Epetra_Vector> dir_ptr = Teuchos::null;
 
@@ -268,10 +270,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Plot::Direction::Get(
     case INPAR::CONTACT::PlotDirection::current_search_direction:
     {
       // compute direction
-      const NOX::Epetra::Vector& curr_x =
-          dynamic_cast<const NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
-      const NOX::Epetra::Vector& old_x =
-          dynamic_cast<const NOX::Epetra::Vector&>(solver.getPreviousSolutionGroup().getX());
+      const ::NOX::Epetra::Vector& curr_x =
+          dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
+      const ::NOX::Epetra::Vector& old_x =
+          dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getPreviousSolutionGroup().getX());
 
       dir_ptr = Teuchos::rcp(new Epetra_Vector(curr_x.getEpetraVector()));
       CATCH_EPETRA_ERROR(dir_ptr->Update(-1.0, old_x.getEpetraVector(), 1.0));
@@ -287,8 +289,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Plot::Direction::Get(
     case INPAR::CONTACT::PlotDirection::zero:
     {
       // compute direction
-      const NOX::Epetra::Vector& curr_x =
-          dynamic_cast<const NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
+      const ::NOX::Epetra::Vector& curr_x =
+          dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
       dir_ptr = Teuchos::rcp(new Epetra_Vector(curr_x.getEpetraVector().Map(), true));
 
       break;
@@ -317,7 +319,7 @@ void CONTACT::AUG::Plot::Create(Teuchos::ParameterList& nox_params,
 
   Teuchos::ParameterList& p_sol_opt = nox_params.sublist("Solver Options");
 
-  Teuchos::RCP<NOX::Observer> prepost_solver_ptr =
+  Teuchos::RCP<::NOX::Observer> prepost_solver_ptr =
       Teuchos::rcp(new NOX::NLN::Solver::PrePostOp::CONTACT::Plot(contact_plot));
 
   NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_solver_ptr);
@@ -612,14 +614,14 @@ void CONTACT::AUG::Plot::LinSpace(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::DoPredictor(const NOX::Solver::Generic& solver)
+void CONTACT::AUG::Plot::DoPredictor(const ::NOX::Solver::Generic& solver)
 {
   if (do_plot_.iter_ == 0) Do(solver);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::Do(const NOX::Solver::Generic& solver)
+void CONTACT::AUG::Plot::Do(const ::NOX::Solver::Generic& solver)
 {
   switch (mode_)
   {
@@ -634,14 +636,14 @@ void CONTACT::AUG::Plot::Do(const NOX::Solver::Generic& solver)
     }
     case INPAR::CONTACT::PlotMode::write_last_iteration_of_step:
     {
-      // The cast becomes necessary since the member function of NOX::Solver::Generic
+      // The cast becomes necessary since the member function of ::NOX::Solver::Generic
       // class misses the const qualifier.
       const NOX::NLN::Solver::LineSearchBased* nln_solver =
           dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&solver);
       if (nln_solver)
       {
-        if ((nln_solver->getStatus() == NOX::StatusTest::Converged or
-                nln_solver->getStatus() == NOX::StatusTest::Failed) and
+        if ((nln_solver->getStatus() == ::NOX::StatusTest::Converged or
+                nln_solver->getStatus() == ::NOX::StatusTest::Failed) and
             *curr_step_np_ == do_plot_.step_)
         {
           Execute(solver);
@@ -662,7 +664,7 @@ void CONTACT::AUG::Plot::Do(const NOX::Solver::Generic& solver)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::Execute(const NOX::Solver::Generic& solver)
+void CONTACT::AUG::Plot::Execute(const ::NOX::Solver::Generic& solver)
 {
   // get the reference group
   const NOX::NLN::CONSTRAINT::Group* ref_grp = GetReferenceGroup(solver);
@@ -774,7 +776,7 @@ void CONTACT::AUG::Plot::ComputeDistancePosition()
 
     if (not node) dserror("Couldn't find the node with GID %d!", gid);
 
-    CORE::LINALG::Matrix<3, 1> distance(node->X(), false);
+    CORE::LINALG::Matrix<3, 1> distance(node->X().data(), false);
     distance.Update(-1.0, ref_pos, 1.0);
 
     const double d_nrm2 = distance.Norm2();
@@ -800,7 +802,7 @@ void CONTACT::AUG::Plot::ComputeAnglePosition()
 
     if (not node) dserror("Couldn't find the node with GID %d!", gid);
 
-    const CORE::LINALG::Matrix<3, 1> ref3(node->X(), true);
+    const CORE::LINALG::Matrix<3, 1> ref3(node->X().data(), true);
     CORE::LINALG::Matrix<3, 1> ref13(ref_points_[0], false);
     ref13.Update(1.0, ref3, -1.0);
 
@@ -1114,7 +1116,7 @@ void CONTACT::AUG::Plot::WriteSurfaceDataToFile() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const NOX::NLN::CONSTRAINT::Group* CONTACT::AUG::Plot::GetReferenceGroup(
-    const NOX::Solver::Generic& solver) const
+    const ::NOX::Solver::Generic& solver) const
 {
   const NOX::NLN::CONSTRAINT::Group* ref_grp = nullptr;
 
@@ -1406,21 +1408,23 @@ void CONTACT::AUG::WriteMatrixToFile(std::ofstream& outputfile, const T& mat, co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Solver::PrePostOp::CONTACT::Plot::Plot(const Teuchos::RCP<::CONTACT::AUG::Plot>& plot_ptr)
+NOX::NLN::Solver::PrePostOp::CONTACT::Plot::Plot(
+    const Teuchos::RCP<BACI::CONTACT::AUG::Plot>& plot_ptr)
     : plot_ptr_(plot_ptr), plot_(*plot_ptr_)
 { /* empty */
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::CONTACT::Plot::runPreIterate(const NOX::Solver::Generic& solver)
+void NOX::NLN::Solver::PrePostOp::CONTACT::Plot::runPreIterate(const ::NOX::Solver::Generic& solver)
 {
   plot_.DoPredictor(solver);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::CONTACT::Plot::runPostIterate(const NOX::Solver::Generic& solver)
+void NOX::NLN::Solver::PrePostOp::CONTACT::Plot::runPostIterate(
+    const ::NOX::Solver::Generic& solver)
 {
   plot_.Do(solver);
 }
@@ -1430,3 +1434,5 @@ template void CONTACT::AUG::WriteMatrixToFile<CORE::LINALG::SerialDenseMatrix>(
 template void CONTACT::AUG::WriteColumnDataToFile<CORE::LINALG::SerialDenseMatrix>(
     std::ofstream& outputfile, const std::vector<const CORE::LINALG::SerialDenseMatrix*>& mat,
     const unsigned precision);
+
+BACI_NAMESPACE_CLOSE

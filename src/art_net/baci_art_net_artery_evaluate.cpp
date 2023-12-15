@@ -10,21 +10,15 @@
 
 #include "baci_art_net_artery.H"
 #include "baci_art_net_artery_ele_action.H"
-#include "baci_art_net_artery_ele_calc_lin_exp.H"
 #include "baci_art_net_artery_ele_factory.H"
-#include "baci_art_net_artery_ele_interface.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_bio.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_cnst_1d_art.H"
-#include "baci_mat_list.H"
 #include "baci_utils_exceptions.H"
 
-
-using namespace DRT::UTILS;
-
+BACI_NAMESPACE_OPEN
 
 
 /*---------------------------------------------------------------------*
@@ -106,15 +100,15 @@ int DRT::ELEMENTS::Artery::EvaluateDirichlet(Teuchos::ParameterList& params,
 
 // get optimal gaussrule for discretization type
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -125,16 +119,15 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::ELEMENTS::Artery::isHigherOrderElement(
-    const DRT::Element::DiscretizationType distype) const
+bool DRT::ELEMENTS::Artery::isHigherOrderElement(const CORE::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)
   {
-    case line3:
+    case CORE::FE::CellType::line3:
       hoel = true;
       break;
-    case line2:
+    case CORE::FE::CellType::line2:
       hoel = false;
       break;
     default:
@@ -142,3 +135,5 @@ bool DRT::ELEMENTS::Artery::isHigherOrderElement(
   }
   return hoel;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -34,12 +34,17 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/14|
  *----------------------------------------------------------------------*/
-ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar()
-    : CORE::ADAPTER::CouplingMortar(),
+ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar(int spatial_dimension,
+    Teuchos::ParameterList mortar_coupling_params, Teuchos::ParameterList contact_dynamic_params,
+    CORE::FE::ShapeFunctionType shape_function_type)
+    : CORE::ADAPTER::CouplingMortar(
+          spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
       issetup_(false),
       comm_(Teuchos::null),
       myrank_(-1),
@@ -207,8 +212,8 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
 
   // is this a nurbs problem?
   bool isnurbs = false;
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
-  if (distype == ShapeFunctionType::shapefunction_nurbs) isnurbs = true;
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  if (distype == CORE::FE::ShapeFunctionType::nurbs) isnurbs = true;
   input.set<bool>("NURBS", isnurbs);
   input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
 
@@ -289,8 +294,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
         ii += 1;
       }
     }
-    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), numcoupleddof, dofids, false, false, false));
+    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+        new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), dofids, false, false, false));
 
     if (isnurbs)
     {
@@ -320,8 +325,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
         ii += 1;
       }
     }
-    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), numcoupleddof, dofids, true, true, false));
+    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+        new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), dofids, true, true, false));
 
     if (isnurbs)
     {
@@ -332,8 +337,6 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
 
     interface->AddCoNode(cnode);
   }
-
-  return;
 }
 
 
@@ -631,10 +634,10 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   input.set<int>("PROBTYPE", INPAR::CONTACT::other);
 
   // is this a nurbs problem?
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       // ***
       dserror("nurbs for fsi mortar not supported!");
@@ -658,9 +661,6 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   Teuchos::RCP<CONTACT::CoInterface> interface =
       CONTACT::CoInterface::Create(0, comm, dim, input, false);
 
-  // number of dofs per node based on the coupling vector coupleddof
-  int dof = 3;
-
   // feeding nodes to the interface including ghosted nodes
   std::map<int, DRT::Node*>::const_iterator nodeiter;
 
@@ -677,7 +677,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     DRT::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), dof, masterdis->Dof(node), false, false, false));
+        node->Id(), node->X(), node->Owner(), masterdis->Dof(node), false, false, false));
 
     interface->AddCoNode(mrtrnode);
   }
@@ -689,7 +689,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     DRT::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), dof, slavedis->Dof(node), true, true, false));
+        node->Id(), node->X(), node->Owner(), slavedis->Dof(node), true, true, false));
 
     interface->AddCoNode(mrtrnode);
   }
@@ -1085,3 +1085,5 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   // bye
   return;
 }
+
+BACI_NAMESPACE_CLOSE

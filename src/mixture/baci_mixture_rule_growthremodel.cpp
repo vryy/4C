@@ -25,8 +25,10 @@
 #include <cmath>
 #include <iosfwd>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -60,7 +62,7 @@ MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
                         ->CreateGrowthStrategy();
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::PackMixtureRule(DRT::PackBuffer& data) const
+void MIXTURE::GrowthRemodelMixtureRule::PackMixtureRule(CORE::COMM::PackBuffer& data) const
 {
   MixtureRule::PackMixtureRule(data);
 
@@ -215,13 +217,13 @@ double MIXTURE::GrowthRemodelMixtureRule::GetConstituentInitialReferenceMassDens
   return 0.0;
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::RegisterVtkOutputDataNames(
+void MIXTURE::GrowthRemodelMixtureRule::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   names_and_size[OUTPUT_CURRENT_REFERENCE_DENSITY] = 1;
 }
 
-bool MIXTURE::GrowthRemodelMixtureRule::EvaluateVtkOutputData(
+bool MIXTURE::GrowthRemodelMixtureRule::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == OUTPUT_CURRENT_REFERENCE_DENSITY)
@@ -234,3 +236,4 @@ bool MIXTURE::GrowthRemodelMixtureRule::EvaluateVtkOutputData(
   }
   return false;
 }
+BACI_NAMESPACE_CLOSE

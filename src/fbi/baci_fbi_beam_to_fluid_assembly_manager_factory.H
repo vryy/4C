@@ -16,6 +16,8 @@ constraint discretization approach
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -73,5 +75,7 @@ namespace BEAMINTERACTION
         Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy);
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

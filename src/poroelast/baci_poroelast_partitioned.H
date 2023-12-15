@@ -14,6 +14,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_poroelast_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROELAST
 {
   //! base class of all monolithic Poroelasticity algorithms
@@ -69,5 +71,7 @@ namespace POROELAST
   };
 
 }  // namespace POROELAST
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_PARTITIONED_H

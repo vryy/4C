@@ -21,6 +21,8 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class So3Material;
@@ -37,12 +39,12 @@ namespace DRT::ELEMENTS
         std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
         override;
 
-    Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+    Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string elecelltype,
         const int id, const int owner) override;
 
     Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     [[nodiscard]] std::string Name() const override { return "SolidType"; }
 
@@ -83,18 +85,15 @@ namespace DRT::ELEMENTS
       return SolidType::Instance().UniqueParObjectId();
     };
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
     [[nodiscard]] DRT::ElementType& ElementType() const override { return SolidType::Instance(); }
 
-    [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
+    [[nodiscard]] CORE::FE::CellType Shape() const override { return celltype_; };
 
-    //! Get kinematic type of element
-    [[nodiscard]] INPAR::STR::KinemType KinematicType() const { return kintype_; }
-
-    void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
+    void SetKinematicType(INPAR::STR::KinemType kintype) { solid_ele_property_.kintype = kintype; }
 
     [[nodiscard]] virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat = 0) const;
 
@@ -108,13 +107,11 @@ namespace DRT::ELEMENTS
 
     std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-    std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
-    bool ReadElement(const std::string& eletype, const std::string& distype,
+    bool ReadElement(const std::string& eletype, const std::string& celltype,
         DRT::INPUT::LineDefinition* linedef) override;
 
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -145,30 +142,27 @@ namespace DRT::ELEMENTS
 
     void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
-    void SetEASType(STR::ELEMENTS::EasType type) { eastype_ = type; }
+    void SetEASType(STR::ELEMENTS::EasType type) { solid_ele_property_.eastype = type; }
 
-    [[nodiscard]] STR::ELEMENTS::EasType GetEASType() const { return eastype_; }
+    [[nodiscard]] STR::ELEMENTS::EasType GetEASType() const { return solid_ele_property_.eastype; }
 
-    [[nodiscard]] INPAR::STR::KinemType GetKinemType() const { return kintype_; }
+    [[nodiscard]] INPAR::STR::KinemType GetKinemType() const { return solid_ele_property_.kintype; }
 
-    [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const { return eletech_; }
+    [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const
+    {
+      return solid_ele_property_.eletech;
+    }
 
     void VisNames(std::map<std::string, int>& names) override;
 
     bool VisData(const std::string& name, std::vector<double>& data) override;
 
    private:
-    //! discretization type
-    DRT::Element::DiscretizationType distype_ = DRT::Element::dis_none;
+    //! cell type
+    CORE::FE::CellType celltype_ = CORE::FE::CellType::dis_none;
 
-    //! kinematic type
-    INPAR::STR::KinemType kintype_ = INPAR::STR::kinem_vague;
-
-    //! element technology
-    std::set<INPAR::STR::EleTech> eletech_;
-
-    //! specify EAS type in case contains enhanced assumed strains
-    STR::ELEMENTS::EasType eastype_ = STR::ELEMENTS::EasType::eastype_undefined;
+    //! solid element properties
+    SolidElementProperties solid_ele_property_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
@@ -182,5 +176,7 @@ namespace DRT::ELEMENTS
   };  // class Solid
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_ELE_H

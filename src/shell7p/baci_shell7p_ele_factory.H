@@ -11,6 +11,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   // forward declaration
@@ -28,10 +30,12 @@ namespace DRT::ELEMENTS
 
    private:
     //! define shell calculation instances dependent on element technology
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static std::unique_ptr<Shell7pEleCalcInterface> DefineCalculationInterfaceType(
         const std::set<INPAR::STR::EleTech>& eletech);
   };  // class Shell7pFactory
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

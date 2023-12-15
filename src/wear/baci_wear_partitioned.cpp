@@ -40,6 +40,7 @@
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -56,6 +57,8 @@
 
 #include <Epetra_SerialComm.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                     farah 05/13 |
@@ -93,7 +96,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
     // init coupling
     Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)
-        ->Init(DRT::Problem::Instance()->GetDis("ale"),
+        ->Init(ndim, DRT::Problem::Instance()->GetDis("ale"),
             DRT::Problem::Instance()->GetDis("structure"), &coupleddof12, &coupleddof21, &dofset12,
             &dofset21, Teuchos::null, false);
 
@@ -101,7 +104,8 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
     //    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Redistribute();
 
     // setup projection matrices
-    Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)->Setup();
+    Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)
+        ->Setup(DRT::Problem::Instance()->VolmortarParams());
   }
 
   // create interface coupling
@@ -121,15 +125,6 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
   ale_i_ = Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(), true));
 
   alepara_ = DRT::Problem::Instance()->AleDynamicParams();
-}
-
-
-/*----------------------------------------------------------------------*
- | destructor (public)                                      farah 11/13 |
- *----------------------------------------------------------------------*/
-WEAR::Partitioned::~Partitioned()
-{
-  // empty
 }
 
 
@@ -718,7 +713,10 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     // 12. complete dmat
     dmat->Complete();
 
-    CORE::LINALG::Solver solver(Comm());
+    Teuchos::ParameterList solvparams;
+    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+        "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+    CORE::LINALG::Solver solver(solvparams, Comm());
     solver.Solve(dmat->EpetraMatrix(), disinterface_m, wear_master, true);
     disinterface_m->Scale(-fac);
   }
@@ -891,7 +889,10 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*activedofs));
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       if (activedofs->NumMyElements()) solver.Solve(daa->EpetraMatrix(), zref, wear_vectora, true);
 
       // different wear coefficients on both sides...
@@ -1103,7 +1104,10 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*slavedofs));
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       solver.Solve(dmat->EpetraOperator(), zref, forcecurr, true);
 
       // store reference LM into global vector and nodes
@@ -1114,7 +1118,10 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*slavedofs));
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       solver.Solve(dmat->EpetraOperator(), zref, disinterface_s, true);
 
       // store reference LM into global vector and nodes
@@ -1334,7 +1341,10 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*masterdofs));
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       solver.Solve(dmat->EpetraOperator(), zref, forcecurr, true);
 
       // store reference LM into global vector and nodes
@@ -1346,7 +1356,10 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*masterdofs));
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       solver.Solve(dmat->EpetraOperator(), zref, disinterface_m, true);
 
       // store reference LM into global vector and nodes
@@ -1518,20 +1531,20 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
 
     if (ndim == 2)
     {
-      if (actele->Shape() == DRT::Element::quad4)
-        WEAR::UTILS::av<DRT::Element::quad4>(
+      if (actele->Shape() == CORE::FE::CellType::quad4)
+        WEAR::UTILS::av<CORE::FE::CellType::quad4>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->Shape() == DRT::Element::quad8)
-        WEAR::UTILS::av<DRT::Element::quad8>(
+      else if (actele->Shape() == CORE::FE::CellType::quad8)
+        WEAR::UTILS::av<CORE::FE::CellType::quad8>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->Shape() == DRT::Element::quad9)
-        WEAR::UTILS::av<DRT::Element::quad9>(
+      else if (actele->Shape() == CORE::FE::CellType::quad9)
+        WEAR::UTILS::av<CORE::FE::CellType::quad9>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->Shape() == DRT::Element::tri3)
-        WEAR::UTILS::av<DRT::Element::tri3>(
+      else if (actele->Shape() == CORE::FE::CellType::tri3)
+        WEAR::UTILS::av<CORE::FE::CellType::tri3>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->Shape() == DRT::Element::tri6)
-        WEAR::UTILS::av<DRT::Element::tri6>(
+      else if (actele->Shape() == CORE::FE::CellType::tri6)
+        WEAR::UTILS::av<CORE::FE::CellType::tri6>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else
         dserror("shape function not supported!");
@@ -1559,19 +1572,19 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
     else
     {
       if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
-        WEAR::UTILS::av<DRT::Element::hex8>(
+        WEAR::UTILS::av<CORE::FE::CellType::hex8>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
-        WEAR::UTILS::av<DRT::Element::hex20>(
+        WEAR::UTILS::av<CORE::FE::CellType::hex20>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
-        WEAR::UTILS::av<DRT::Element::hex27>(
+        WEAR::UTILS::av<CORE::FE::CellType::hex27>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
-        WEAR::UTILS::av<DRT::Element::tet4>(
+        WEAR::UTILS::av<CORE::FE::CellType::tet4>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
-        WEAR::UTILS::av<DRT::Element::tet10>(
+        WEAR::UTILS::av<CORE::FE::CellType::tet10>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else
         dserror("element type not supported!");
@@ -1614,20 +1627,20 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
 
   if (ndim == 2)
   {
-    if (actele->Shape() == DRT::Element::quad4)
-      WEAR::UTILS::av<DRT::Element::quad4>(
+    if (actele->Shape() == CORE::FE::CellType::quad4)
+      WEAR::UTILS::av<CORE::FE::CellType::quad4>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->Shape() == DRT::Element::quad8)
-      WEAR::UTILS::av<DRT::Element::quad8>(
+    else if (actele->Shape() == CORE::FE::CellType::quad8)
+      WEAR::UTILS::av<CORE::FE::CellType::quad8>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->Shape() == DRT::Element::quad9)
-      WEAR::UTILS::av<DRT::Element::quad9>(
+    else if (actele->Shape() == CORE::FE::CellType::quad9)
+      WEAR::UTILS::av<CORE::FE::CellType::quad9>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->Shape() == DRT::Element::tri3)
-      WEAR::UTILS::av<DRT::Element::tri3>(
+    else if (actele->Shape() == CORE::FE::CellType::tri3)
+      WEAR::UTILS::av<CORE::FE::CellType::tri3>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->Shape() == DRT::Element::tri6)
-      WEAR::UTILS::av<DRT::Element::tri6>(
+    else if (actele->Shape() == CORE::FE::CellType::tri6)
+      WEAR::UTILS::av<CORE::FE::CellType::tri6>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else
       dserror("shape function not supported!");
@@ -1635,19 +1648,19 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
   else
   {
     if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
-      WEAR::UTILS::av<DRT::Element::hex8>(
+      WEAR::UTILS::av<CORE::FE::CellType::hex8>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
-      WEAR::UTILS::av<DRT::Element::hex20>(
+      WEAR::UTILS::av<CORE::FE::CellType::hex20>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
-      WEAR::UTILS::av<DRT::Element::hex27>(
+      WEAR::UTILS::av<CORE::FE::CellType::hex27>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
-      WEAR::UTILS::av<DRT::Element::tet4>(
+      WEAR::UTILS::av<CORE::FE::CellType::tet4>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
-      WEAR::UTILS::av<DRT::Element::tet10>(
+      WEAR::UTILS::av<CORE::FE::CellType::tet10>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else
       dserror("element type not supported!");
@@ -1770,3 +1783,5 @@ void WEAR::Partitioned::ReadRestart(int step)
   return;
 }
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

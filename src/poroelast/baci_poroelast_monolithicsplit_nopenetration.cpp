@@ -31,6 +31,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
@@ -49,7 +51,10 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
 
   k_Dn_ = Teuchos::null;
 
-  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar);
+  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(DRT::Problem::Instance()->NDim(),
+      DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 }
 
 void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
@@ -703,3 +708,5 @@ void POROELAST::MonolithicSplitNoPenetration::BuildConvergenceNorms()
 
   normrhs_nopenetration_ = UTILS::CalculateVectorNorm(vectornormfres_, nopenetration_rhs_);
 }
+
+BACI_NAMESPACE_CLOSE

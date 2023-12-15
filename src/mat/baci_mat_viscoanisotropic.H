@@ -13,11 +13,13 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 #define BACI_MAT_VISCOANISOTROPIC_H
 
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
 #include <Teuchos_ParameterList.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 namespace MAT
@@ -31,9 +33,6 @@ namespace MAT
      public:
       /// standard constructor
       ViscoAnisotropic(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      virtual ~ViscoAnisotropic() { ; }
 
       /// @name material parameters
       //@{
@@ -51,20 +50,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class ViscoAnisotropic
 
   }  // namespace PAR
 
-  class ViscoAnisotropicType : public DRT::ParObjectType
+  class ViscoAnisotropicType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ViscoAnisotropicType"; }
+    std::string Name() const override { return "ViscoAnisotropicType"; }
 
     static ViscoAnisotropicType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ViscoAnisotropicType instance_;
@@ -89,7 +88,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ViscoAnisotropicType::Instance().UniqueParObjectId();
     }
@@ -105,7 +104,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -120,52 +119,55 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_viscoanisotropic; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_viscoanisotropic;
+    }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ViscoAnisotropic(*this));
     }
 
     /// Setup and Initialize internal stress variables
     void Setup(int numgp,  ///< number of Gauss points
-        DRT::INPUT::LineDefinition* linedef);
+        DRT::INPUT::LineDefinition* linedef) override;
 
     /// Setup and Initialize internal stress variables and align fibers based on a given vector
     void Setup(const int numgp,             ///< number of Gauss points
-        const std::vector<double> fibervec  ///< direction fibers should be oriented in
+        const std::vector<double> thickvec  ///< direction fibers should be oriented in
     );
 
     /// Update internal stress variables
-    virtual void Update();
+    void Update() override;
 
-    void UpdateFiberDirs(const int numgp, CORE::LINALG::Matrix<3, 3>* defgrd);
+    void UpdateFiberDirs(const int numgp, CORE::LINALG::Matrix<3, 3>* defgrad);
 
     /// Evaluate material
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,      ///< green lagrange strain
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,      ///< deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
         Teuchos::ParameterList& params,                  ///< parameter list for communication
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  ///< 2nd PK-stress
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
         int gp,                                                    ///< Gauss point
         int eleGID                                                 ///< element GID
-    );
+        ) override;
 
     /// Return density
-    virtual double Density() const { return params_->density_; };
+    double Density() const override { return params_->density_; };
 
     /// Return shear modulus
     double ShearMod() const { return params_->mue_; };
@@ -182,13 +184,13 @@ namespace MAT
 
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    private:
     /// my material parameters
@@ -215,5 +217,7 @@ namespace MAT
     bool isinit_;  ///< indicates if material is initialized
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

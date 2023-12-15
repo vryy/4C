@@ -59,7 +59,12 @@ rst_prolog = """
 
 .. |newline| replace:: <br />
 
-.. |SOURCEDIR| replace:: @CMAKE_SOURCE_DIR@
+.. |SOURCEDIR| replace:: @PROJECT_SOURCE_DIR@
+
+.. role:: red
+.. role:: green
+.. role:: underline
+
 """
 
 # -- Options for HTML output -------------------------------------------------
@@ -83,7 +88,8 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 # Since up to now, we don't have these, it's not needed. Uncomment if necessary.
-# html_static_path = ["_static"]
+html_static_path = ["@PROJECT_BINARY_DIR@/doc/tmp/_static"]
+html_css_files = ['html_extensions.css']
 #
 # for finding headers as internal link targets, we have to set the variable myst_heading_anchors
 myst_heading_anchors = 4

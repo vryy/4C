@@ -26,6 +26,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                           dano 11/10 |
  *----------------------------------------------------------------------*/
@@ -84,8 +86,6 @@ namespace TSI
    public:
     explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& sdynparams);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~Monolithic();
 
 
     /*! do the setup for the monolithic system
@@ -102,17 +102,17 @@ namespace TSI
     ReadMesh is called), the dofmaps for the blocks might get invalid.
     */
     //! Setup the monolithic TSI system
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// non-linear solve, i.e. (multiple) corrector
-    virtual void Solve();
+    void Solve() override;
 
     //! outer level TSI time loop
-    virtual void TimeLoop();
+    void TimeLoop() override;
 
     //! read restart data
-    virtual void ReadRestart(int step  //!< step number where the calculation is continued
-    );
+    void ReadRestart(int step  //!< step number where the calculation is continued
+        ) override;
 
     //! @name Apply current field state to system
 
@@ -214,10 +214,10 @@ namespace TSI
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput();
+    void PrepareOutput() override;
     //@}
 
     //! convergence check for Newton solver
@@ -274,9 +274,7 @@ namespace TSI
     //! @name Printing and output
     //@{
 
-    bool printiter_;     //!< print intermediate iterations during solution
-    bool printerrfile_;  //!< print infos to error file #errfile_
-    FILE* errfile_;      //!< error file handle
+    bool printiter_;  //!< print intermediate iterations during solution
 
     //! calculate nodal values (displacements, temperatures, reaction forces) at
     //! specific nodes used for validation of implementation with literature
@@ -294,12 +292,12 @@ namespace TSI
 
 
     //! apply temperature state on structure discretization
-    virtual void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
-        Teuchos::RCP<const Epetra_Vector> temp_res = Teuchos::null);
+    void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
+        Teuchos::RCP<const Epetra_Vector> temp_res = Teuchos::null) override;
 
     //! apply structural displacements and velocities on thermo discretization
-    virtual void ApplyStructCouplingState(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel);
+    void ApplyStructCouplingState(
+        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) override;
 
    private:
     //! if just rho_inf is specified for genAlpha, the other parameters in the global parameter
@@ -427,4 +425,6 @@ namespace TSI
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // TSI_MONOLITHIC_H

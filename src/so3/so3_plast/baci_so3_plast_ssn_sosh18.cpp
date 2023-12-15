@@ -7,8 +7,8 @@
 
 #include "baci_so3_plast_ssn_sosh18.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_plasticelasthyper.H"
@@ -17,6 +17,8 @@
 #include "baci_so3_sh18.H"
 #include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -30,7 +32,7 @@ DRT::ELEMENTS::So_sh18PlastType& DRT::ELEMENTS::So_sh18PlastType::Instance() { r
 | create the new element type (public)                     seitz 11/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_sh18Plast(-1, -1);
   object->Unpack(data);
@@ -92,7 +94,7 @@ void DRT::ELEMENTS::So_sh18PlastType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(int id, int owner)
     : So_base(id, owner),
-      DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(id, owner),
+      DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(id, owner),
       DRT::ELEMENTS::So_hex18(id, owner),
       DRT::ELEMENTS::So_sh18(id, owner)
 {
@@ -111,7 +113,7 @@ DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(int id, int owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(const DRT::ELEMENTS::So_sh18Plast& old)
     : So_base(old),
-      DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(old),
+      DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(old),
       DRT::ELEMENTS::So_hex18(old),
       DRT::ELEMENTS::So_sh18(old)
 {
@@ -131,9 +133,9 @@ DRT::Element* DRT::ELEMENTS::So_sh18Plast::Clone() const
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18Plast::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_sh18Plast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -141,7 +143,7 @@ void DRT::ELEMENTS::So_sh18Plast::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
 
   // add base class So3_Plast Element
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::Pack(data);
+  DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::Pack(data);
 
   // add base class So3_sh18
   DRT::ELEMENTS::So_sh18::Pack(data);
@@ -155,14 +157,13 @@ void DRT::ELEMENTS::So_sh18Plast::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_sh18Plast::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::Unpack(basedata);
+  DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::Unpack(basedata);
   ExtractfromPack(position, data, basedata);
   DRT::ELEMENTS::So_sh18::Unpack(basedata);
 
@@ -172,8 +173,6 @@ void DRT::ELEMENTS::So_sh18Plast::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
-
-DRT::ELEMENTS::So_sh18Plast::~So_sh18Plast() { return; }
 
 void DRT::ELEMENTS::So_sh18Plast::Print(std::ostream& os) const
 {
@@ -189,9 +188,9 @@ void DRT::ELEMENTS::So_sh18Plast::Print(std::ostream& os) const
 bool DRT::ELEMENTS::So_sh18Plast::ReadElement(
     const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
-  bool read =
-      (DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::ReadElement(eletype, distype, linedef) &&
-          DRT::ELEMENTS::So_sh18::ReadElement(eletype, distype, linedef));
+  bool read = (DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::ReadElement(
+                   eletype, distype, linedef) &&
+               DRT::ELEMENTS::So_sh18::ReadElement(eletype, distype, linedef));
 
   // sync the EAS info
   SyncEAS();
@@ -209,21 +208,22 @@ void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
   {
     eastype_ = soh18p_eassosh18;
     neas_ = num_eas;
-    So3_Plast<DRT::Element::hex18>::KaaInv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
-        Teuchos::View, So_sh18::KaaInv_.A(), num_eas, num_eas, num_eas));
-    So3_Plast<DRT::Element::hex18>::Kad_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
+    So3_Plast<CORE::FE::CellType::hex18>::KaaInv_ =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
+            Teuchos::View, So_sh18::KaaInv_.A(), num_eas, num_eas, num_eas));
+    So3_Plast<CORE::FE::CellType::hex18>::Kad_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
         Teuchos::View, So_sh18::Kad_.A(), num_eas, num_eas, numdofperelement_));
-    So3_Plast<DRT::Element::hex18>::feas_ = Teuchos::rcp(
+    So3_Plast<CORE::FE::CellType::hex18>::feas_ = Teuchos::rcp(
         new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::feas_.A(), num_eas));
-    So3_Plast<DRT::Element::hex18>::alpha_eas_ = Teuchos::rcp(
+    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_ = Teuchos::rcp(
         new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::alpha_eas_.A(), num_eas));
-    So3_Plast<DRT::Element::hex18>::alpha_eas_last_timestep_ =
+    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_last_timestep_ =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector(
             Teuchos::View, So_sh18::alpha_eas_last_timestep_.A(), num_eas));
-    So3_Plast<DRT::Element::hex18>::alpha_eas_delta_over_last_timestep_ =
+    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_delta_over_last_timestep_ =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector(
             Teuchos::View, So_sh18::alpha_eas_delta_over_last_timestep_.A(), num_eas));
-    So3_Plast<DRT::Element::hex18>::alpha_eas_inc_ = Teuchos::rcp(
+    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_inc_ = Teuchos::rcp(
         new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::alpha_eas_inc_.A(), num_eas));
     Kba_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
         numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, num_eas, true)));
@@ -232,10 +232,10 @@ void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
   {
     eastype_ = soh8p_easnone;
     neas_ = 0;
-    So3_Plast<DRT::Element::hex18>::KaaInv_ = Teuchos::null;
-    So3_Plast<DRT::Element::hex18>::Kad_ = Teuchos::null;
-    So3_Plast<DRT::Element::hex18>::feas_ = Teuchos::null;
-    So3_Plast<DRT::Element::hex18>::alpha_eas_ = Teuchos::null;
+    So3_Plast<CORE::FE::CellType::hex18>::KaaInv_ = Teuchos::null;
+    So3_Plast<CORE::FE::CellType::hex18>::Kad_ = Teuchos::null;
+    So3_Plast<CORE::FE::CellType::hex18>::feas_ = Teuchos::null;
+    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_ = Teuchos::null;
     Kba_ = Teuchos::null;
   }
 }
@@ -273,7 +273,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -322,9 +322,9 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
 
     // in-plane shape functions and derivatives
     CORE::LINALG::Matrix<9, 1> shapefunct_q9;
-    CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(So_sh18::xsi_[gp], shapefunct_q9);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::quad9>(So_sh18::xsi_[gp], shapefunct_q9);
     CORE::LINALG::Matrix<2, 9> deriv_q9;
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(So_sh18::xsi_[gp], deriv_q9);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::quad9>(So_sh18::xsi_[gp], deriv_q9);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
@@ -550,7 +550,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
     {
       // shape function and derivatives
       CORE::LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
-      CORE::DRT::UTILS::shape_function<DRT::Element::hex18>(So_sh18::xsi_[gp], shapefunct);
+      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex18>(So_sh18::xsi_[gp], shapefunct);
 
       double density = Material()->Density(gp);
 
@@ -614,3 +614,5 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

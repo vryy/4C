@@ -18,11 +18,13 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -85,14 +87,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ElastHyperType : public DRT::ParObjectType
+  class ElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "ElastHyperType"; }
 
     static ElastHyperType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ElastHyperType instance_;
@@ -162,7 +164,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out) : char vector to store class information
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -389,5 +391,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

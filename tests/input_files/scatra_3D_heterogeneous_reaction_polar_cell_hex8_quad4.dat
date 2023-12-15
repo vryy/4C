@@ -27,8 +27,6 @@ RESTARTEVRY                     5
 RESULTSEVRY                     1
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-14
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-10
 EXPLPREDICT                     no
 ITEMAX                          10

@@ -70,12 +70,12 @@
 #include "baci_inpar_xfem.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem_enums.H"
-#include "baci_tutorial_inpar.H"
 
 #include <Teuchos_any.hpp>
 #include <Teuchos_Array.hpp>
 #include <Teuchos_StrUtils.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 //! Print function
@@ -443,8 +443,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::SOLVER::SetValidParameters(list);
   INPAR::NLNSOL::SetValidParameters(list);
 
-  INPAR::TUTORIAL::SetValidParameters(list);
-
   return list;
 }
 
@@ -475,3 +473,4 @@ bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
         return value_has_space || string_has_space(name);
       });
 }
+BACI_NAMESPACE_CLOSE

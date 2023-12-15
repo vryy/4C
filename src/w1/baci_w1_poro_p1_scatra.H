@@ -23,7 +23,10 @@ functionality
 #ifndef BACI_W1_PORO_P1_SCATRA_H
 #define BACI_W1_PORO_P1_SCATRA_H
 
+#include "baci_inpar_scatra.H"
 #include "baci_w1_poro_p1.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -37,7 +40,7 @@ namespace DRT
     p1 (mixed) approach including scatra functionality
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Wall1_PoroP1Scatra : public Wall1_PoroP1<distype>
     {
       typedef DRT::ELEMENTS::Wall1_PoroP1<distype> my;
@@ -62,11 +65,6 @@ namespace DRT
       */
       Wall1_PoroP1Scatra(const Wall1_PoroP1Scatra& old);
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~Wall1_PoroP1Scatra(){};
 
       //@}
 
@@ -79,7 +77,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -87,7 +85,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
       /*!
       \brief Pack this class so it can be communicated
@@ -95,7 +93,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -103,16 +101,16 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! @name Access methods
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const;
+      DRT::ElementType& ElementType() const override;
 
       //@}
 
@@ -122,7 +120,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       /// @name params
       /// return SCATRA::ImplType
@@ -139,5 +137,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_PORO_P1_SCATRA_H

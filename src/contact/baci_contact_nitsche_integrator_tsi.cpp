@@ -22,6 +22,7 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -747,7 +748,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTSForces(MORTAR::MortarElement& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parentdistype, int dim>
+template <CORE::FE::CellType parentdistype, int dim>
 void inline CONTACT::CoIntegratorNitscheTsi::SoEleGP(MORTAR::MortarElement& sele, const double wgt,
     const double* gpcoord, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtrafo)
@@ -1080,7 +1081,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
 
   CORE::LINALG::Matrix<dim, 1> pxsi(true);
   CORE::LINALG::Matrix<dim, dim> derivtravo_slave;
-  DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
+  CORE::FE::CellType distype = moEle.ParentElement()->Shape();
 
   double q = 0;
   CORE::LINALG::SerialDenseMatrix dq_dT_ele, dq_dd_ele, d2q_dT_dd, d2q_dT_dn, d2q_dT_dpxi;
@@ -1088,37 +1089,40 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
 
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
       auto* parent_ele =
-          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(moEle.ParentElement());
+          dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>*>(moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
-      SoEleGP<DRT::Element::hex8, dim>(moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
+      SoEleGP<CORE::FE::CellType::hex8, dim>(
+          moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
 
       parent_ele->HeatFlux(moEle.MoData().ParentTemp(), moEle.MoData().ParentDisp(), pxsi, normal,
           q, &dq_dT_ele, &dq_dd_ele, &dq_dn, &dq_dpxi, &d2q_dT_dd, &d2q_dT_dn, &d2q_dT_dpxi);
       break;
     }
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
     {
       auto* parent_ele =
-          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(moEle.ParentElement());
+          dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>*>(moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
-      SoEleGP<DRT::Element::hex27, dim>(moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
+      SoEleGP<CORE::FE::CellType::hex27, dim>(
+          moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
 
       parent_ele->HeatFlux(moEle.MoData().ParentTemp(), moEle.MoData().ParentDisp(), pxsi, normal,
           q, &dq_dT_ele, &dq_dd_ele, &dq_dn, &dq_dpxi, &d2q_dT_dd, &d2q_dT_dn, &d2q_dT_dpxi);
       break;
     }
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
     {
       auto* parent_ele =
-          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>*>(moEle.ParentElement());
+          dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>*>(moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
-      SoEleGP<DRT::Element::tet4, dim>(moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
+      SoEleGP<CORE::FE::CellType::tet4, dim>(
+          moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
 
       parent_ele->HeatFlux(moEle.MoData().ParentTemp(), moEle.MoData().ParentDisp(), pxsi, normal,
           q, &dq_dT_ele, &dq_dd_ele, &dq_dn, &dq_dpxi, &d2q_dT_dd, &d2q_dT_dn, &d2q_dT_dpxi);
@@ -1208,3 +1212,5 @@ void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestThermo(MORTAR::MortarEleme
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

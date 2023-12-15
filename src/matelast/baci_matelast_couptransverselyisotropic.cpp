@@ -9,13 +9,15 @@ computations
 
 #include "baci_matelast_couptransverselyisotropic.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
@@ -103,7 +105,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, DRT::INPUT::LineD
   }
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupTransverselyIsotropic::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, A_);
   AddtoPack(data, AA_);
@@ -122,7 +124,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::GetFiberVecs(
   fibervecs.push_back(A_);
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newgamma,
+void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newangle,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   if ((params_->angle_ < -90) || (params_->angle_ > 90))
@@ -181,7 +183,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
 
   // switch to stress notation
   CORE::LINALG::Matrix<6, 1> rcg_s(false);
-  UTILS::VOIGT::Strains::ToStressLike(rcg, rcg_s);
+  CORE::LINALG::VOIGT::Strains::ToStressLike(rcg, rcg_s);
 
   CORE::LINALG::Matrix<6, 1> rcg_inv_s(false);
   UpdateSecondPiolaKirchhoffStress(stress, rcg_s, rcg_inv_s);
@@ -211,7 +213,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
     cmat.MultiplyNT(delta, AA_, rcg_inv_s, 1.0);
   }
 
-  using vmap = UTILS::VOIGT::IndexMappings;
+  using vmap = CORE::LINALG::VOIGT::IndexMappings;
   // (2) contribution
   {
     const double delta = -alpha;
@@ -277,7 +279,7 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
 
   // calculate pseudo invariant I5 ( quad. strain measure in fiber direction )
   CORE::LINALG::Matrix<6, 1> rcg_quad(false);
-  UTILS::VOIGT::Strains::PowerOfSymmetricTensor(2, rcg, rcg_quad);
+  CORE::LINALG::VOIGT::Strains::PowerOfSymmetricTensor(2, rcg, rcg_quad);
   I5_ = AA_(0) * (rcg_quad(0)) + AA_(1) * (rcg_quad(1)) + AA_(2) * (rcg_quad(2)) +
         AA_(3) * (rcg_quad(3)) + AA_(4) * (rcg_quad(4)) + AA_(5) * (rcg_quad(5));
 
@@ -293,7 +295,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
   const double gamma = params_->gamma_;
 
   // compute inverse right Cauchy Green tensor
-  UTILS::VOIGT::Stresses::InverseTensor(rcg_s, rcg_inv_s);
+  CORE::LINALG::VOIGT::Stresses::InverseTensor(rcg_s, rcg_inv_s);
 
   // (0) contribution
   {
@@ -310,10 +312,10 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
   // (2) contribution
   {
     CORE::LINALG::Matrix<3, 1> ca(true);
-    UTILS::VOIGT::Stresses::MultiplyTensorVector(rcg_s, A_, ca);
+    CORE::LINALG::VOIGT::Stresses::MultiplyTensorVector(rcg_s, A_, ca);
 
     CORE::LINALG::Matrix<6, 1> caa_aac(true);
-    UTILS::VOIGT::Stresses::SymmetricOuterProduct(ca, A_, caa_aac);
+    CORE::LINALG::VOIGT::Stresses::SymmetricOuterProduct(ca, A_, caa_aac);
 
     const double fac = -alpha;
     stress.Update(fac, caa_aac, 1.0);
@@ -339,3 +341,4 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::ErrorHandling(
 
   dserror("Uncaught error detected:\n%s", msg.str().c_str());
 }
+BACI_NAMESPACE_CLOSE

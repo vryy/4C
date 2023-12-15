@@ -24,13 +24,15 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 
 #include "baci_mat_maxwell_0d_acinus_DoubleExponential.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_red_airways_elem_params.h"
 #include "baci_red_airways_elementbase.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -50,7 +52,8 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_DoubleExponential::Creat
 MAT::Maxwell_0d_acinusDoubleExponentialType MAT::Maxwell_0d_acinusDoubleExponentialType::instance_;
 
 
-DRT::ParObject* MAT::Maxwell_0d_acinusDoubleExponentialType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell_0d_acinusDoubleExponentialType::Create(
+    const std::vector<char>& data)
 {
   MAT::Maxwell_0d_acinus_DoubleExponential* mxwll_0d_acin =
       new MAT::Maxwell_0d_acinus_DoubleExponential();
@@ -78,9 +81,9 @@ MAT::Maxwell_0d_acinus_DoubleExponential::Maxwell_0d_acinus_DoubleExponential(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_DoubleExponential::Pack(DRT::PackBuffer& data) const
+void MAT::Maxwell_0d_acinus_DoubleExponential::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject
@@ -109,11 +112,8 @@ void MAT::Maxwell_0d_acinus_DoubleExponential::Pack(DRT::PackBuffer& data) const
 void MAT::Maxwell_0d_acinus_DoubleExponential::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // Extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  ;
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract e1_01_, e1_lin1_, e1_exp1_, tau1_
   ExtractfromPack(position, data, e1_01_);
@@ -268,3 +268,5 @@ void MAT::Maxwell_0d_acinus_DoubleExponential::Evaluate(CORE::LINALG::SerialDens
   rhs(0) = -1.0 * ((-kp_n * (p1n - p2n) + term_nonlin) * NumOfAcini / kq_np + (kq_n * qn) / kq_np);
   rhs(1) = 1.0 * ((-kp_n * (p1n - p2n) + term_nonlin) * NumOfAcini / kq_np + (kq_n * qn) / kq_np);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR
 {
   namespace IO_RUNTIME_VTP_STRUCTURE
@@ -64,3 +66,5 @@ namespace INPAR
 
   }  // namespace IO_RUNTIME_VTP_STRUCTURE
 }  // namespace INPAR
+
+BACI_NAMESPACE_CLOSE

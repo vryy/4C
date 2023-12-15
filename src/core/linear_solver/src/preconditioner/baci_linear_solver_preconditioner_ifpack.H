@@ -14,6 +14,8 @@
 
 #include <Ifpack.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /*! \brief  IFPACK preconditioners
@@ -24,24 +26,17 @@ namespace CORE::LINEAR_SOLVER
   {
    public:
     //! Constructor (empty)
-    IFPACKPreconditioner(
-        FILE* outfile, Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& azlist);
+    IFPACKPreconditioner(Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& solverlist);
 
     //! Setup
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    //! Access to preconditioner operator
-    Epetra_Operator* PrecOperator() const override { return &*prec_; }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return prec_; }
-
-    //! Print name of preconditioner
-    void Print(std::ostream& stream) const override { stream << "IFPACK"; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return prec_; }
 
     //! return name of sublist in parameter list which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "IFPACK Parameters"; }
+    std::string getParameterListName() const override { return "IFPACK Parameters"; }
 
    private:
     //! IFPACK parameter list
@@ -58,5 +53,7 @@ namespace CORE::LINEAR_SOLVER
 
   };  // class IFPACKPreconditioner
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

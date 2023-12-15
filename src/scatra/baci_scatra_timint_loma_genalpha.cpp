@@ -20,6 +20,8 @@
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
@@ -69,11 +71,6 @@ void SCATRA::TimIntLomaGenAlpha::Setup()
   return;
 }
 
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     vg 11/08 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntLomaGenAlpha::~TimIntLomaGenAlpha() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -254,12 +251,11 @@ void SCATRA::TimIntLomaGenAlpha::UpdateThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                  vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::OutputRestart() const
+void SCATRA::TimIntLomaGenAlpha::WriteRestart() const
 {
   // write standard fields first
-  TimIntGenAlpha::OutputRestart();
+  TimIntGenAlpha::WriteRestart();
 
   // write additional restart data for loma
   // required for restart of closed systems
@@ -374,3 +370,5 @@ void SCATRA::TimIntLomaGenAlpha::AddThermPressToParameterList(
   discret_->SetState("phiam", phiam_);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

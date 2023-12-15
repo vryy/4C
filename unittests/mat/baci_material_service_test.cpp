@@ -14,6 +14,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(MaterialServiceTest, TestInvariantsPrincipal)
   {
     CORE::LINALG::Matrix<3, 3> sym_tensor(false);

@@ -10,10 +10,12 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mat_anisotropy_extension.H"
 
-#include "baci_lib_parobject.H"
+#include "baci_comm_parobject.H"
 #include "baci_mat_anisotropy_utils.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 template <unsigned int numfib>
 MAT::FiberAnisotropyExtension<numfib>::FiberAnisotropyExtension(
@@ -165,13 +167,13 @@ const CORE::LINALG::Matrix<3, 3>& MAT::FiberAnisotropyExtension<numfib>::GetStru
 }
 
 template <unsigned int numfib>
-void MAT::FiberAnisotropyExtension<numfib>::PackAnisotropy(DRT::PackBuffer& data) const
+void MAT::FiberAnisotropyExtension<numfib>::PackAnisotropy(CORE::COMM::PackBuffer& data) const
 {
   PackFiberArray<CORE::LINALG::Matrix<3, 1>, numfib>(data, fibers_);
   PackFiberArray<CORE::LINALG::Matrix<6, 1>, numfib>(data, fiberStructuralTensors_stress_);
   PackFiberArray<CORE::LINALG::Matrix<3, 3>, numfib>(data, fiberStructuralTensors_);
-  DRT::ParObject::AddtoPack(data, static_cast<int>(tensor_flags_));
-  DRT::ParObject::AddtoPack(data, static_cast<int>(fiberLocation_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(tensor_flags_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(fiberLocation_));
 }
 
 template <unsigned int numfib>
@@ -182,8 +184,8 @@ void MAT::FiberAnisotropyExtension<numfib>::UnpackAnisotropy(
   UnpackFiberArray<CORE::LINALG::Matrix<6, 1>, numfib>(
       position, data, fiberStructuralTensors_stress_);
   UnpackFiberArray<CORE::LINALG::Matrix<3, 3>, numfib>(position, data, fiberStructuralTensors_);
-  tensor_flags_ = static_cast<uint_fast8_t>(DRT::ParObject::ExtractInt(position, data));
-  fiberLocation_ = static_cast<FiberLocation>(DRT::ParObject::ExtractInt(position, data));
+  tensor_flags_ = static_cast<uint_fast8_t>(CORE::COMM::ParObject::ExtractInt(position, data));
+  fiberLocation_ = static_cast<FiberLocation>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
 template <unsigned int numfib>
@@ -217,3 +219,4 @@ int MAT::FiberAnisotropyExtension<numfib>::GetFibersPerElement() const
 // explicit instatiations of template classes
 template class MAT::FiberAnisotropyExtension<1u>;
 template class MAT::FiberAnisotropyExtension<2u>;
+BACI_NAMESPACE_CLOSE

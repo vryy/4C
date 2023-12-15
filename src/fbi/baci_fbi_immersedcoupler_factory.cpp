@@ -16,6 +16,8 @@
 #include "baci_inpar_fbi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::CreateGeometryCoupler(
@@ -39,3 +41,5 @@ Teuchos::RCP<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::CreateGeometr
 
   return coupler;
 }
+
+BACI_NAMESPACE_CLOSE

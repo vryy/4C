@@ -26,13 +26,6 @@ namespace Teuchos
 {
   class ParameterList;
 }
-
-namespace CORE::LINALG
-{
-  class Solver;
-  class SparseOperator;
-}  // namespace CORE::LINALG
-
 namespace NOX
 {
   class Utils;
@@ -55,6 +48,18 @@ namespace NOX
   {
     class Generic;
   }  // namespace  StatusTest
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace CORE::LINALG
+{
+  class Solver;
+  class SparseOperator;
+}  // namespace CORE::LINALG
+
+namespace NOX
+{
   namespace NLN
   {
     class GlobalData;
@@ -74,30 +79,30 @@ namespace NOX
 
       //! standard constructor
       Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
-          const Teuchos::RCP<NOX::Epetra::Vector>& x,
+          const Teuchos::RCP<::NOX::Epetra::Vector>& x,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& A);
 
       //! destructor
-      virtual ~Problem(){};
+      virtual ~Problem() = default;
 
       //! initialize stuff (can be overloaded in derived classes)
-      virtual void Initialize(const Teuchos::RCP<NOX::Epetra::Vector>& x,
+      virtual void Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& A);
 
       //! create the linear system for the NOX framework
-      virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem() const;
+      virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem() const;
 
       //! create a nox group
-      virtual Teuchos::RCP<NOX::Abstract::Group> CreateGroup(
-          const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys) const;
+      virtual Teuchos::RCP<::NOX::Abstract::Group> CreateGroup(
+          const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys) const;
 
-      void CreateOuterStatusTest(Teuchos::RCP<NOX::StatusTest::Generic>& outerTests) const;
+      void CreateOuterStatusTest(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const;
 
-      virtual void CreateStatusTests(Teuchos::RCP<NOX::StatusTest::Generic>& outerTest,
+      virtual void CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTest,
           Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTest) const;
 
       //! check final status of the non-linear solving procedure
-      virtual void CheckFinalStatus(const NOX::StatusTest::StatusType& finalStatus) const;
+      virtual void CheckFinalStatus(const ::NOX::StatusTest::StatusType& finalStatus) const;
 
       /// access the global data object
       NOX::NLN::GlobalData& NlnGlobalData() { return *noxNlnGlobalData_; }
@@ -125,7 +130,7 @@ namespace NOX
 
       /** ptr to the state vector RCP. In this way the strong_count is neither lost
        *  nor increased. */
-      const Teuchos::RCP<NOX::Epetra::Vector>* xVector_;
+      const Teuchos::RCP<::NOX::Epetra::Vector>* xVector_;
 
       /** ptr to the state matrix RCP. In this way the strong_count is neither lost
        *  nor increased. */
@@ -136,5 +141,7 @@ namespace NOX
   }  // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_PROBLEM_H

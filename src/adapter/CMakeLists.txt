@@ -4,7 +4,6 @@ set(_adapter_dependencies
     # cmake-format: sortable
     ale
     beaminteraction
-    comm
     constraint
     contact
     core

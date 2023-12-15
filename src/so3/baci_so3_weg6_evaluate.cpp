@@ -9,7 +9,6 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -19,11 +18,14 @@
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_weg6.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -221,14 +223,14 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
             nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -270,7 +272,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       DRT::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_WEG6; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(i, 0) = x[0];
         xrefe(i, 1) = x[1];
         xrefe(i, 2) = x[2];
@@ -279,7 +281,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_WEG6 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_WEG6 + 2];
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_WEG6 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_WEG6 + 1];
@@ -307,7 +309,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
         CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           CORE::LINALG::Matrix<3, 3> invJdef;
@@ -513,7 +515,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         (*gpstrainmap)[gid] = gpstrain;
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -521,7 +523,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -587,13 +589,13 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
 
   }  // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 }
 
 /*----------------------------------------------------------------------*
@@ -632,7 +634,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -641,7 +643,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_WEG6 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_WEG6 + 2];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
       xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -667,7 +669,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
 
     CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1010,7 +1012,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fcts at all 6 Gauss Points           maf 09/08|
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::sow6_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::sow6_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
@@ -1023,7 +1025,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, wedge6);
+    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::wedge6);
   }
   return shapefcts;
 }
@@ -1031,8 +1033,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fct-derivs at all 6 Gauss Points     maf 09/08|
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>
-DRT::ELEMENTS::So_weg6::sow6_derivs()
+std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::So_weg6::sow6_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
@@ -1045,7 +1046,7 @@ DRT::ELEMENTS::So_weg6::sow6_derivs()
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, wedge6);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::wedge6);
   }
   return derivs;
 }
@@ -1053,7 +1054,7 @@ DRT::ELEMENTS::So_weg6::sow6_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Weights at all 6 Gauss Points              maf 09/08|
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
+std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
 {
   std::vector<double> weights(NUMGPT_WEG6);
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
@@ -1103,8 +1104,8 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 
       CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct;
       CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> deriv;
-      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, wedge6);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, wedge6);
+      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, CORE::FE::CellType::wedge6);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::wedge6);
       for (int inode = 0; inode < NUMNOD_WEG6; ++inode)
       {
         f(inode, igp) = funct(inode);
@@ -1265,12 +1266,12 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_WEG6; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       xcurr(i, 0) = x[0] + disp[i * NODDOF_WEG6 + 0];
       xcurr(i, 1) = x[1] + disp[i * NODDOF_WEG6 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_WEG6 + 2];
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
         xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -1298,7 +1299,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1407,3 +1408,5 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

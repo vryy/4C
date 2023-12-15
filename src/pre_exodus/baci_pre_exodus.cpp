@@ -46,6 +46,8 @@ its parameters and conditions.
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
+  using namespace BACI;
+
   // communication
   MPI_Init(&argc, &argv);
 
@@ -54,7 +56,7 @@ int main(int argc, char** argv)
   // create a problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
   // create default communicators
-  Teuchos::RCP<COMM_UTILS::Communicators> communicators = COMM_UTILS::CreateComm({});
+  Teuchos::RCP<CORE::COMM::Communicators> communicators = CORE::COMM::CreateComm({});
   DRT::Problem::Instance()->SetCommunicators(communicators);
   Teuchos::RCP<Epetra_Comm> comm = communicators->GlobalComm();
 
@@ -135,19 +137,16 @@ int main(int argc, char** argv)
       dserror("CommandLineProcessor reported an error");
     }
 
-    // create error file (enforce the file opening!)
     if (datfile != "")
     {
       const std::string basename = datfile.substr(0, datfile.find_last_of(".")) + "_pre";
       IO::cout.setup(
           true, false, false, IO::standard, comm, 0, 0, basename);  // necessary setup of IO::cout
-      problem->OpenErrorFile(*comm, basename, true);
     }
     else
     {
       IO::cout.setup(
           true, false, false, IO::standard, comm, 0, 0, "xxx_pre");  // necessary setup of IO::cout
-      problem->OpenErrorFile(*comm, "xxx_pre", true);
     }
 
     // centerline related: transfer separate doubles into vector
@@ -291,7 +290,7 @@ int main(int argc, char** argv)
                   << std::endl;
       {
         std::stringstream tmp;
-        DRT::UTILS::FunctionManager functionmanager;
+        CORE::UTILS::FunctionManager functionmanager;
         DRT::INPUT::Lines flines = functionmanager.ValidFunctionLines();
         flines.Print(tmp);
         std::string tmpstring = tmp.str();
@@ -407,6 +406,8 @@ int main(int argc, char** argv)
 /*----------------------------------------------------------------------*/
 int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 {
+  using namespace BACI;
+
   std::string defaultbcfilename = "default.bc";
   std::cout << "found no BC specification file --> creating " << defaultbcfilename << std::endl;
 
@@ -466,7 +467,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
               << "elementname=\"\""
               << std::endl
               //<<"elementshape=\""
-              //<< DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
+              //<< CORE::FE::CellTypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
               << std::endl;
   }
 

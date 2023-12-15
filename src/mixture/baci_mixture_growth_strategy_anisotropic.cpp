@@ -8,12 +8,14 @@
 
 #include "baci_mixture_growth_strategy_anisotropic.H"
 
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_mixture_growth_strategy.H"
+
+BACI_NAMESPACE_OPEN
 
 MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -39,7 +41,8 @@ MIXTURE::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
   anisotropyExtension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::PackMixtureGrowthStrategy(DRT::PackBuffer& data) const
+void MIXTURE::AnisotropicGrowthStrategy::PackMixtureGrowthStrategy(
+    CORE::COMM::PackBuffer& data) const
 {
   MixtureGrowthStrategy::PackMixtureGrowthStrategy(data);
 
@@ -79,3 +82,4 @@ void MIXTURE::AnisotropicGrowthStrategy::EvaluateGrowthStressCmat(
   S_stress.Clear();
   cmat.Clear();
 }
+BACI_NAMESPACE_CLOSE

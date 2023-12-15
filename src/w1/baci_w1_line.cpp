@@ -13,6 +13,8 @@
 #include "baci_utils_exceptions.H"
 #include "baci_w1.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::Wall1LineType DRT::ELEMENTS::Wall1LineType::instance_;
 
@@ -53,45 +55,45 @@ DRT::Element* DRT::ELEMENTS::Wall1Line::Clone() const
  |                                                             (public) |
  |                                                          farah 02/14 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Wall1Line::Shape() const
 {
-  DRT::Element::DiscretizationType distype_line = dis_none;
+  CORE::FE::CellType distype_line = CORE::FE::CellType::dis_none;
 
   switch (ParentMasterElement()->Shape())
   {
-    case tri3:
+    case CORE::FE::CellType::tri3:
     {
-      distype_line = line2;
+      distype_line = CORE::FE::CellType::line2;
       break;
     }
-    case tri6:
+    case CORE::FE::CellType::tri6:
     {
-      distype_line = line3;
+      distype_line = CORE::FE::CellType::line3;
       break;
     }
-    case quad4:
+    case CORE::FE::CellType::quad4:
     {
-      distype_line = line2;
+      distype_line = CORE::FE::CellType::line2;
       break;
     }
-    case quad8:
+    case CORE::FE::CellType::quad8:
     {
-      distype_line = line3;
+      distype_line = CORE::FE::CellType::line3;
       break;
     }
-    case quad9:
+    case CORE::FE::CellType::quad9:
     {
-      distype_line = line3;
+      distype_line = CORE::FE::CellType::line3;
       break;
     }
-    case nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      distype_line = nurbs2;
+      distype_line = CORE::FE::CellType::nurbs2;
       break;
     }
-    case nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      distype_line = nurbs3;
+      distype_line = CORE::FE::CellType::nurbs3;
       break;
     }
     default:
@@ -105,7 +107,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1Line::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Wall1Line element does not support communication");
 
@@ -122,10 +124,6 @@ void DRT::ELEMENTS::Wall1Line::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mgit 03/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Line::~Wall1Line() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -137,3 +135,5 @@ void DRT::ELEMENTS::Wall1Line::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

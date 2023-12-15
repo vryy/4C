@@ -33,6 +33,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -822,3 +824,5 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitRigidParticleContactHandle
   // init rigid particle contact handler
   if (rigidparticlecontact_) rigidparticlecontact_->Init();
 }
+
+BACI_NAMESPACE_CLOSE

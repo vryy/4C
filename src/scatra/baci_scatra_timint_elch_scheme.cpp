@@ -10,9 +10,12 @@
 #include "baci_scatra_timint_elch_scheme.H"
 
 #include "baci_io.H"
-#include "baci_lib_function_of_time.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
@@ -88,15 +91,14 @@ void SCATRA::ScaTraTimIntElchOST::PostCalcInitialPotentialField()
 
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::OutputRestart() const
+void SCATRA::ScaTraTimIntElchOST::WriteRestart() const
 {
   // output restart information associated with one-step-theta time integration scheme
-  TimIntOneStepTheta::OutputRestart();
+  TimIntOneStepTheta::WriteRestart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElch::OutputRestart();
+  ScaTraTimIntElch::WriteRestart();
 
   // write additional restart data for galvanostatic applications or simulations including a double
   // layer formulation
@@ -204,10 +206,10 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::I
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::Update(const int num)
+void SCATRA::ScaTraTimIntElchOST::Update()
 {
-  TimIntOneStepTheta::Update(num);
-  ScaTraTimIntElch::Update(num);
+  TimIntOneStepTheta::Update();
+  ScaTraTimIntElch::Update();
 }
 
 
@@ -283,7 +285,7 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
+            problem_->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
 
         // adjust potential at metal side accordingly
         pot0np *= functfac;
@@ -378,15 +380,14 @@ void SCATRA::ScaTraTimIntElchBDF2::PreCalcInitialPotentialField()
 
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::OutputRestart() const
+void SCATRA::ScaTraTimIntElchBDF2::WriteRestart() const
 {
   // output restart information associated with BDF2 time integration scheme
-  TimIntBDF2::OutputRestart();
+  TimIntBDF2::WriteRestart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElch::OutputRestart();
+  ScaTraTimIntElch::WriteRestart();
 
   // write additional restart data for galvanostatic applications
   if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
@@ -484,10 +485,10 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::Update(const int num)
+void SCATRA::ScaTraTimIntElchBDF2::Update()
 {
-  TimIntBDF2::Update(num);
-  ScaTraTimIntElch::Update(num);
+  TimIntBDF2::Update();
+  ScaTraTimIntElch::Update();
 }
 
 
@@ -679,15 +680,14 @@ void SCATRA::ScaTraTimIntElchGenAlpha::PostCalcInitialPotentialField()
 
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart() const
+void SCATRA::ScaTraTimIntElchGenAlpha::WriteRestart() const
 {
   // output restart information associated with generalized-alpha time integration scheme
-  TimIntGenAlpha::OutputRestart();
+  TimIntGenAlpha::WriteRestart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElch::OutputRestart();
+  ScaTraTimIntElch::WriteRestart();
 
   // write additional restart data for galvanostatic applications
   if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
@@ -775,10 +775,10 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::Update(const int num)
+void SCATRA::ScaTraTimIntElchGenAlpha::Update()
 {
-  TimIntGenAlpha::Update(num);
-  ScaTraTimIntElch::Update(num);
+  TimIntGenAlpha::Update();
+  ScaTraTimIntElch::Update();
 }
 
 
@@ -848,7 +848,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
+            problem_->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
         // adjust potential at metal side accordingly
 
         pot0np *= functfac;
@@ -917,15 +917,14 @@ void SCATRA::ScaTraTimIntElchStationary::PreCalcInitialPotentialField()
 
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::OutputRestart() const
+void SCATRA::ScaTraTimIntElchStationary::WriteRestart() const
 {
   // output restart information associated with stationary time integration scheme
-  TimIntStationary::OutputRestart();
+  TimIntStationary::WriteRestart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElch::OutputRestart();
+  ScaTraTimIntElch::WriteRestart();
 
   // write additional restart data for galvanostatic applications
   if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
@@ -1006,7 +1005,7 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::Update(const int num) { TimIntStationary::Update(num); }
+void SCATRA::ScaTraTimIntElchStationary::Update() { TimIntStationary::Update(); }
 
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
@@ -1113,13 +1112,13 @@ void SCATRA::ScaTraTimIntElchSCLOST::PostCalcInitialPotentialField()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::OutputRestart() const
+void SCATRA::ScaTraTimIntElchSCLOST::WriteRestart() const
 {
   // output restart information associated with one-step-theta time integration scheme
-  TimIntOneStepTheta::OutputRestart();
+  TimIntOneStepTheta::WriteRestart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElchSCL::OutputRestart();
+  ScaTraTimIntElchSCL::WriteRestart();
 }
 
 
@@ -1134,10 +1133,10 @@ void SCATRA::ScaTraTimIntElchSCLOST::ReadRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::Update(const int num)
+void SCATRA::ScaTraTimIntElchSCLOST::Update()
 {
-  TimIntOneStepTheta::Update(num);
-  ScaTraTimIntElchSCL::Update(num);
+  TimIntOneStepTheta::Update();
+  ScaTraTimIntElchSCL::Update();
 }
 
 
@@ -1187,3 +1186,4 @@ void SCATRA::ScaTraTimIntElchSCLOST::AddTimeIntegrationSpecificVectors(bool forc
   TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
   ScaTraTimIntElchSCL::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
 }
+BACI_NAMESPACE_CLOSE

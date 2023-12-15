@@ -10,12 +10,14 @@
 #define BACI_MAT_GROWTHREMODEL_ELASTHYPER_H
 
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_membrane_material_interfaces.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -116,14 +118,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class GrowthRemodel_ElastHyperType : public DRT::ParObjectType
+  class GrowthRemodel_ElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "GrowthRemodel_ElastHyperType"; }
 
     static GrowthRemodel_ElastHyperType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static GrowthRemodel_ElastHyperType instance_;
@@ -164,7 +166,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -281,7 +283,7 @@ namespace MAT
 
     /// Calculates AXI, CIR and RAD structural tensors and sets new fiber directions in the case of
     /// a cylinder
-    void SetupAxiCirRadCylinder(CORE::LINALG::Matrix<1, 3> gprefecoord, double const dt);
+    void SetupAxiCirRadCylinder(CORE::LINALG::Matrix<1, 3> elecenter, double const dt);
 
     /// Setup anisotropic growth tensors. Here we assume that the growth direction corresponds with
     /// the radial/ thickness direction
@@ -412,8 +414,8 @@ namespace MAT
         CORE::LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse growth deformation
                                                       ///< gradient w.r.t. the mass density
         CORE::LINALG::Matrix<1, 6> const&
-            sum_drhoC,  ///< Sum over all fiber families of the derivatives of the individual mass
-                        ///< density w.r.t. right Cauchy Green tensor
+            sum_drhodC,  ///< Sum over all fiber families of the derivatives of the individual mass
+                         ///< density w.r.t. right Cauchy Green tensor
         CORE::LINALG::Matrix<6, 9> const&
             dSdiFg,           ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
                               ///< the inverse inelastic growth deformation gradient
@@ -529,5 +531,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

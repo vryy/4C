@@ -17,6 +17,8 @@
 /*======================================================================*/
 int main(int argc, char** argv)
 {
+  using namespace BACI;
+
   // base vectors
   CORE::LINALG::Matrix<3, 1> vector1;
   CORE::LINALG::Matrix<3, 1> vector2;

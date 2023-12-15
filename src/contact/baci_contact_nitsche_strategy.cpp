@@ -22,6 +22,8 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |
  *----------------------------------------------------------------------*/
@@ -47,8 +49,8 @@ void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> 
     {
       auto* mele = dynamic_cast<MORTAR::MortarElement*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
-      mele->GetNitscheContainer().AssembleRHS(mele, DRT::UTILS::VecBlockType::displ, fc);
-      mele->GetNitscheContainer().AssembleMatrix(mele, DRT::UTILS::MatBlockType::displ_displ, kc);
+      mele->GetNitscheContainer().AssembleRHS(mele, CONTACT::VecBlockType::displ, fc);
+      mele->GetNitscheContainer().AssembleMatrix(mele, CONTACT::MatBlockType::displ_displ, kc);
     }
   }
 
@@ -237,16 +239,16 @@ void CONTACT::CoNitscheStrategy::Integrate(const CONTACT::ParamsInterface& cpara
   curr_state_eval_ = true;
 
   // ... and we can assemble the matric and rhs
-  fc_ = CreateRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
-  kc_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
+  fc_ = CreateRhsBlockPtr(CONTACT::VecBlockType::displ);
+  kc_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
 }
 
 Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::SetupRhsBlockVec(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("structure")->DofRowMap()));
     default:
@@ -257,7 +259,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::SetupRhsBlockVec(
 }
 
 Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::CreateRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
@@ -278,14 +280,14 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::CreateRhsBlockPtr(
 }
 
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fc_), 0));
-    case DRT::UTILS::VecBlockType::constraint:
+    case CONTACT::VecBlockType::constraint:
       return Teuchos::null;
     default:
       dserror("GetRhsBlockPtr: your type is no treated properly!");
@@ -296,11 +298,11 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt)
+    const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
@@ -313,11 +315,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::SetupMatrix
 }
 
 void CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
+    const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
       kc->Complete();
       break;
     default:
@@ -327,7 +329,7 @@ void CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt)
+    const enum CONTACT::MatBlockType& bt)
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
@@ -349,11 +351,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatri
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
-  if (bt == DRT::UTILS::MatBlockType::displ_displ)
+  if (bt == CONTACT::MatBlockType::displ_displ)
     return kc_;
   else
     dserror("GetMatrixBlockPtr: your type is no treated properly!");
@@ -454,8 +456,10 @@ void CONTACT::CoNitscheStrategy::ReconnectParentElements()
 
       faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
 
-      auto* vele_plast = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(vele);
+      auto* vele_plast = dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>*>(vele);
       if (vele_plast) vele_plast->SetIsNitscheContactEle(true);
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -37,6 +37,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::InterfaceDataContainer::InterfaceDataContainer()
@@ -239,34 +241,35 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
       int gid = Discret().NodeColMap()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* mrtrnode = dynamic_cast<CoNode*>(node);
-      bool isslave = mrtrnode->IsSlave();
+      auto* mrtrnode = dynamic_cast<CoNode*>(node);
+      const bool isslave = mrtrnode->IsSlave();
+      const int numdof = mrtrnode->NumDof();
 
       if (isslave)
       {
         // vertex
         if (mrtrnode->IsOnCorner())
         {
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) sVc.push_back(mrtrnode->Dofs()[j]);
+          for (int j = 0; j < numdof; ++j) sVc.push_back(mrtrnode->Dofs()[j]);
 
           if (Discret().NodeRowMap()->MyGID(gid))
-            for (int j = 0; j < mrtrnode->NumDof(); ++j) sVr.push_back(mrtrnode->Dofs()[j]);
+            for (int j = 0; j < numdof; ++j) sVr.push_back(mrtrnode->Dofs()[j]);
         }
         // edge
         else if (mrtrnode->IsOnEdge())
         {
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) sEc.push_back(mrtrnode->Dofs()[j]);
+          for (int j = 0; j < numdof; ++j) sEc.push_back(mrtrnode->Dofs()[j]);
 
           if (Discret().NodeRowMap()->MyGID(gid))
-            for (int j = 0; j < mrtrnode->NumDof(); ++j) sEr.push_back(mrtrnode->Dofs()[j]);
+            for (int j = 0; j < numdof; ++j) sEr.push_back(mrtrnode->Dofs()[j]);
         }
         // surface
         else if (!mrtrnode->IsOnCornerEdge())
         {
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) sSc.push_back(mrtrnode->Dofs()[j]);
+          for (int j = 0; j < numdof; ++j) sSc.push_back(mrtrnode->Dofs()[j]);
 
           if (Discret().NodeRowMap()->MyGID(gid))
-            for (int j = 0; j < mrtrnode->NumDof(); ++j) sSr.push_back(mrtrnode->Dofs()[j]);
+            for (int j = 0; j < numdof; ++j) sSr.push_back(mrtrnode->Dofs()[j]);
         }
         else
         {
@@ -282,8 +285,6 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
     sdofSurfRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSr.size(), sSr.data(), 0, Comm()));
     sdofSurfColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSc.size(), sSc.data(), 0, Comm()));
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -395,11 +396,11 @@ void CONTACT::CoInterface::AddCoNode(Teuchos::RCP<CONTACT::CoNode> cnode)
 void CONTACT::CoInterface::AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele)
 {
   // check for quadratic 2d slave elements to be modified
-  if (cele->IsSlave() && (cele->Shape() == DRT::Element::line3)) quadslave_ = true;
+  if (cele->IsSlave() && (cele->Shape() == CORE::FE::CellType::line3)) quadslave_ = true;
 
   // check for quadratic 3d slave elements to be modified
   if (cele->IsSlave() &&
-      (cele->Shape() == DRT::Element::quad8 || cele->Shape() == DRT::Element::tri6))
+      (cele->Shape() == CORE::FE::CellType::quad8 || cele->Shape() == CORE::FE::CellType::tri6))
     quadslave_ = true;
 
   idiscret_->AddElement(cele);
@@ -4649,7 +4650,7 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
   }
 
   // communicate from master node row to column map
-  DRT::Exporter ex(*mnoderowmap_, *masternodes, Comm());
+  CORE::COMM::Exporter ex(*mnoderowmap_, *masternodes, Comm());
   ex.Export(triad);
 
   ex.Export(n_x_key);
@@ -4852,7 +4853,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
     // empty vector of slave element pointers
     std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElementsS;
 
-    if (selement->Shape() == DRT::Element::quad4)
+    if (selement->Shape() == CORE::FE::CellType::quad4)
     {
       for (int j = 0; j < 4; ++j)
       {
@@ -4917,7 +4918,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
 
           // create line ele:
           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+              j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT::Node*, 2> nodes = {
@@ -4950,7 +4951,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
       if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
-      if (melement->Shape() == DRT::Element::quad4)
+      if (melement->Shape() == CORE::FE::CellType::quad4)
       {
         for (int j = 0; j < 4; ++j)
         {
@@ -5015,7 +5016,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
 
             // create line ele:
             Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-                j, melement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+                j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
             std::array<DRT::Node*, 2> nodes = {
@@ -5672,7 +5673,8 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
     }
 
     // check if found parameter space coordinate is within element domain
-    if (meles[ele]->Shape() == DRT::Element::line2 or meles[ele]->Shape() == DRT::Element::line3)
+    if (meles[ele]->Shape() == CORE::FE::CellType::line2 or
+        meles[ele]->Shape() == CORE::FE::CellType::line3)
     {
       if (-1.0 - tol > xi[0] or xi[0] > 1.0 + tol) continue;
     }
@@ -5781,13 +5783,15 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
     if (!success) continue;
 
     // check if found parameter space coordinate is within element domain
-    if (meles[ele]->Shape() == DRT::Element::quad4 or meles[ele]->Shape() == DRT::Element::quad8 or
-        meles[ele]->Shape() == DRT::Element::quad9)
+    if (meles[ele]->Shape() == CORE::FE::CellType::quad4 or
+        meles[ele]->Shape() == CORE::FE::CellType::quad8 or
+        meles[ele]->Shape() == CORE::FE::CellType::quad9)
     {
       if (-1.0 - tol > xi[0] or xi[0] > 1.0 + tol or -1.0 - tol > xi[1] or xi[1] > 1.0 + tol)
         continue;
     }
-    else if (meles[ele]->Shape() == DRT::Element::tri3 or meles[ele]->Shape() == DRT::Element::tri6)
+    else if (meles[ele]->Shape() == CORE::FE::CellType::tri3 or
+             meles[ele]->Shape() == CORE::FE::CellType::tri6)
     {
       if (xi[0] < 0.0 - tol or xi[1] < 0.0 - tol or xi[0] > 1.0 + tol or xi[1] > 1.0 + tol or
           xi[0] + xi[1] > 1.0 + 2 * tol)
@@ -5837,7 +5841,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
         int nodeIds[2] = {0, 0};
         int nodeLIds[2] = {0, 0};
 
-        if (meles[ele]->Shape() == DRT::Element::quad4)
+        if (meles[ele]->Shape() == CORE::FE::CellType::quad4)
         {
           if (j == 0)
           {
@@ -5900,7 +5904,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
 
           // create line ele:
           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, meles[ele]->Owner(), DRT::Element::line2, 2, nodeIds, false));
+              j, meles[ele]->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           DRT::Node* nodes[2] = {
@@ -6548,7 +6552,7 @@ void CONTACT::CoInterface::ExportNodalNormals() const
 
 
   // communicate from slave node row to column map
-  DRT::Exporter& ex = interfaceData_->Exporter();
+  CORE::COMM::Exporter& ex = interfaceData_->Exporter();
 
   ex.Export(triad);
 
@@ -6786,7 +6790,7 @@ void CONTACT::CoInterface::EvaluateSTL()
       if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
-      if (melement->Shape() == DRT::Element::quad4)
+      if (melement->Shape() == CORE::FE::CellType::quad4)
       {
         for (int j = 0; j < 4; ++j)
         {
@@ -6843,7 +6847,7 @@ void CONTACT::CoInterface::EvaluateSTL()
 
             // create line ele:
             Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-                j, melement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+                j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
             std::array<DRT::Node*, 2> nodes = {
@@ -6961,7 +6965,8 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
     CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
     // ele check
-    if (selement->Shape() != DRT::Element::quad4 and selement->Shape() != DRT::Element::tri3)
+    if (selement->Shape() != CORE::FE::CellType::quad4 and
+        selement->Shape() != CORE::FE::CellType::tri3)
       dserror("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
@@ -6972,13 +6977,14 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
     double slaveN[3] = {0.0, 0.0, 0.0};
     double loccenter[2] = {0.0, 0.0};
 
-    DRT::Element::DiscretizationType dt = selement->Shape();
-    if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+    CORE::FE::CellType dt = selement->Shape();
+    if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
     {
       loccenter[0] = 1.0 / 3.0;
       loccenter[1] = 1.0 / 3.0;
     }
-    else if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+    else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+             dt == CORE::FE::CellType::quad9)
     {
       loccenter[0] = 0.0;
       loccenter[1] = 0.0;
@@ -7003,13 +7009,14 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
       double masterN[3] = {0.0, 0.0, 0.0};
       double loccenterM[2] = {0.0, 0.0};
 
-      DRT::Element::DiscretizationType dt = melement->Shape();
-      if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+      CORE::FE::CellType dt = melement->Shape();
+      if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
       {
         loccenterM[0] = 1.0 / 3.0;
         loccenterM[1] = 1.0 / 3.0;
       }
-      else if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+      else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+               dt == CORE::FE::CellType::quad9)
       {
         loccenterM[0] = 0.0;
         loccenterM[1] = 0.0;
@@ -7043,7 +7050,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
         int nodeIds[2] = {0, 0};
         int nodeLIds[2] = {0, 0};
 
-        if (meleElements[m]->Shape() == DRT::Element::quad4)
+        if (meleElements[m]->Shape() == CORE::FE::CellType::quad4)
         {
           if (j == 0)
           {
@@ -7080,7 +7087,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
           else
             dserror("loop counter and edge number do not match!");
         }
-        else if (meleElements[m]->Shape() == DRT::Element::tri3)
+        else if (meleElements[m]->Shape() == CORE::FE::CellType::tri3)
         {
           if (j == 0)
           {
@@ -7135,7 +7142,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
 
           // create line ele:
           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, meleElements[m]->Owner(), DRT::Element::line2, 2, nodeIds, false));
+              j, meleElements[m]->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT::Node*, 2> nodes = {
@@ -7210,7 +7217,8 @@ void CONTACT::CoInterface::EvaluateLTS()
     CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
     // ele check
-    if (selement->Shape() != DRT::Element::quad4 and selement->Shape() != DRT::Element::tri3)
+    if (selement->Shape() != CORE::FE::CellType::quad4 and
+        selement->Shape() != CORE::FE::CellType::tri3)
       dserror("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
@@ -7221,13 +7229,14 @@ void CONTACT::CoInterface::EvaluateLTS()
     double slaveN[3] = {0.0, 0.0, 0.0};
     double loccenter[2] = {0.0, 0.0};
 
-    DRT::Element::DiscretizationType dt = selement->Shape();
-    if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+    CORE::FE::CellType dt = selement->Shape();
+    if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
     {
       loccenter[0] = 1.0 / 3.0;
       loccenter[1] = 1.0 / 3.0;
     }
-    else if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+    else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+             dt == CORE::FE::CellType::quad9)
     {
       loccenter[0] = 0.0;
       loccenter[1] = 0.0;
@@ -7252,13 +7261,14 @@ void CONTACT::CoInterface::EvaluateLTS()
       double masterN[3] = {0.0, 0.0, 0.0};
       double loccenterM[2] = {0.0, 0.0};
 
-      DRT::Element::DiscretizationType dt = melement->Shape();
-      if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+      CORE::FE::CellType dt = melement->Shape();
+      if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
       {
         loccenterM[0] = 1.0 / 3.0;
         loccenterM[1] = 1.0 / 3.0;
       }
-      else if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+      else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+               dt == CORE::FE::CellType::quad9)
       {
         loccenterM[0] = 0.0;
         loccenterM[1] = 0.0;
@@ -7290,7 +7300,7 @@ void CONTACT::CoInterface::EvaluateLTS()
       int nodeIds[2] = {0, 0};
       int nodeLIds[2] = {0, 0};
 
-      if (selement->Shape() == DRT::Element::quad4)
+      if (selement->Shape() == CORE::FE::CellType::quad4)
       {
         if (j == 0)
         {
@@ -7327,7 +7337,7 @@ void CONTACT::CoInterface::EvaluateLTS()
         else
           dserror("loop counter and edge number do not match!");
       }
-      else if (selement->Shape() == DRT::Element::tri3)
+      else if (selement->Shape() == CORE::FE::CellType::tri3)
       {
         if (j == 0)
         {
@@ -7382,7 +7392,7 @@ void CONTACT::CoInterface::EvaluateLTS()
 
         // create line ele:
         Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-            j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+            j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
         // get nodes
         std::array<DRT::Node*, 2> nodes = {
@@ -7438,7 +7448,7 @@ void CONTACT::CoInterface::EvaluateLTL()
     // empty vector of slave element pointers
     std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElementsS;
 
-    if (selement->Shape() == DRT::Element::quad4)
+    if (selement->Shape() == CORE::FE::CellType::quad4)
     {
       for (int j = 0; j < 4; ++j)
       {
@@ -7503,7 +7513,7 @@ void CONTACT::CoInterface::EvaluateLTL()
 
           // create line ele:
           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+              j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT::Node*, 2> nodes = {
@@ -7518,7 +7528,7 @@ void CONTACT::CoInterface::EvaluateLTL()
         }
       }  // end edge loop
     }
-    else if (selement->Shape() == DRT::Element::tri3)
+    else if (selement->Shape() == CORE::FE::CellType::tri3)
     {
       for (int j = 0; j < 3; ++j)
       {
@@ -7575,7 +7585,7 @@ void CONTACT::CoInterface::EvaluateLTL()
 
           // create line ele:
           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+              j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT::Node*, 2> nodes = {
@@ -7608,7 +7618,7 @@ void CONTACT::CoInterface::EvaluateLTL()
       if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
-      if (melement->Shape() == DRT::Element::quad4)
+      if (melement->Shape() == CORE::FE::CellType::quad4)
       {
         for (int j = 0; j < 4; ++j)
         {
@@ -7673,7 +7683,7 @@ void CONTACT::CoInterface::EvaluateLTL()
 
             // create line ele:
             Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-                j, melement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+                j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
             std::array<DRT::Node*, 2> nodes = {
@@ -7688,7 +7698,7 @@ void CONTACT::CoInterface::EvaluateLTL()
           }
         }  // end edge loop
       }
-      else if (melement->Shape() == DRT::Element::tri3)
+      else if (melement->Shape() == CORE::FE::CellType::tri3)
       {
         for (int j = 0; j < 3; ++j)
         {
@@ -7745,7 +7755,7 @@ void CONTACT::CoInterface::EvaluateLTL()
 
             // create line ele:
             Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-                j, melement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+                j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
             std::array<DRT::Node*, 2> nodes = {
@@ -7907,7 +7917,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
   double sxib[2] = {0.0, 0.0};
-  if (sele.Shape() == DRT::Element::tri3 || sele.Shape() == DRT::Element::tri6)
+  if (sele.Shape() == CORE::FE::CellType::tri3 || sele.Shape() == CORE::FE::CellType::tri6)
   {
     // parameter space is [0,1] for triangles
     sxib[0] = 1.0;
@@ -8018,7 +8028,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
 
-    int dim = cnode->NumDof();
+    const int dim = cnode->NumDof();
 
     // compute normal part of Lagrange multiplier
     double nz = 0.0;
@@ -8407,8 +8417,9 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
       //**************************************************************
       double sxi[2] = {0.0, 0.0};
 
-      if (selement->Shape() == DRT::Element::quad4 or selement->Shape() == DRT::Element::quad8 or
-          selement->Shape() == DRT::Element::quad9)
+      if (selement->Shape() == CORE::FE::CellType::quad4 or
+          selement->Shape() == CORE::FE::CellType::quad8 or
+          selement->Shape() == CORE::FE::CellType::quad9)
       {
         // TODO (pfaller): switch case
         if (snodes == 0)
@@ -8459,7 +8470,8 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
         else
           dserror("ERORR: wrong node LID");
       }
-      else if (selement->Shape() == DRT::Element::tri3 or selement->Shape() == DRT::Element::tri6)
+      else if (selement->Shape() == CORE::FE::CellType::tri3 or
+               selement->Shape() == CORE::FE::CellType::tri6)
       {
         if (snodes == 0)
         {
@@ -8519,9 +8531,10 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
         bool is_on_mele = true;
 
         // check GP projection
-        DRT::Element::DiscretizationType dt = melements[nummaster]->Shape();
+        CORE::FE::CellType dt = melements[nummaster]->Shape();
         const double tol = 1e-8;
-        if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+            dt == CORE::FE::CellType::quad9)
         {
           if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol ||
               mxi[1] > 1.0 + tol)
@@ -8613,7 +8626,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 
     // get some information from node
     double* n = cnode->MoData().n();
-    int dim = cnode->NumDof();
+    const int dim = cnode->NumDof();
 
     // tangential plane
     CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
@@ -9646,3 +9659,5 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     writer->WriteVector("Owner", owner, IO::VectorType::elementvector);
   }
 }
+
+BACI_NAMESPACE_CLOSE

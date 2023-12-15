@@ -24,6 +24,8 @@
 // forward declarations...
 class Epetra_Map;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class Solver;
@@ -44,12 +46,9 @@ namespace NOX
 
       namespace Interface
       {
-        class Preconditioner : public NOX::Epetra::Interface::Preconditioner
+        class Preconditioner : public ::NOX::Epetra::Interface::Preconditioner
         {
          public:
-          //! destructor
-          virtual ~Preconditioner(){};
-
           /*! \brief Is the (CURRENT) system to solve a saddle-point system?
            *
            *  This check is supposed to return TRUE, only if the CURRENT system
@@ -88,5 +87,7 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_PRECONDITIONER_H

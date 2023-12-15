@@ -16,6 +16,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -24,8 +26,8 @@ namespace DRT
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
           const DRT::Discretization& slavedis,  ///< coupling slave discretization
           const std::vector<int>& lm            ///< local map
@@ -38,8 +40,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
           const DRT::Discretization& slavedis,  ///< coupling slave discretization
           const std::vector<int>& lm,           ///< local map
@@ -80,8 +82,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveState(
           const DRT::Discretization& slavedis,  ///< coupling slave discretization
           const std::vector<int>& lm            ///< local map
@@ -113,8 +115,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveStaten(
           const DRT::Discretization& slavedis,  ///< coupling slave discretization
           const std::vector<int>& lm            ///< local map
@@ -146,8 +148,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelnp(
           CORE::LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
       ) const
@@ -157,8 +159,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVeln(
           CORE::LINALG::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
       ) const
@@ -168,8 +170,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfacePresnp(
           double& ipres  ///< interface pressure at coupling slave side
       ) const
@@ -180,8 +182,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfacePresn(
           double& ipresn  ///< interface pressure at coupling slave side
       ) const
@@ -192,8 +194,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelGradnp(
           CORE::LINALG::Matrix<nsd_, nsd_>&
               velgradint  ///< interface velocity gradients at coupling slave side
@@ -204,8 +206,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelGradn(
           CORE::LINALG::Matrix<nsd_, nsd_>&
               velgradintn  ///< interface velocity gradients at coupling slave side
@@ -216,8 +218,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetSlaveFunct(
           CORE::LINALG::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
       ) const
@@ -227,8 +229,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetInterfaceJumpStatenp(
           const DRT::Discretization& cutterdis,  ///< cutter discretization
@@ -260,8 +262,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetInterfaceJumpStaten(
           const DRT::Discretization& cutterdis,  ///< cutter discretization
           const std::string state,               ///< state
@@ -292,8 +294,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceJumpVelnp(
           CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
                                                        ///< or prescribed DBC at Gaussian point
@@ -304,8 +306,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceJumpVeln(
           CORE::LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump
                                                         ///< or prescribed DBC at Gaussian point
@@ -317,8 +319,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::Evaluate(
           CORE::LINALG::Matrix<nsd_, 1>& xslave)
       {
@@ -328,8 +330,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::Evaluate(
           CORE::LINALG::Matrix<nsd_, 1>& xslave, CORE::LINALG::Matrix<nsd_, 1>& rst_slave)
       {
@@ -382,8 +384,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::ComputeInterfaceForce(
           CORE::LINALG::SerialDenseVector& iforce,  ///< interface force vector
           CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
@@ -406,8 +408,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::ProjectOnSide(
           CORE::LINALG::Matrix<nsd_, 1>&
               x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
@@ -431,13 +433,14 @@ namespace DRT
         TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::ProjectOnSide");
 
 
-        if (slave_distype == DRT::Element::tri3 or slave_distype == DRT::Element::tri6)
+        if (slave_distype == CORE::FE::CellType::tri3 or slave_distype == CORE::FE::CellType::tri6)
         {
           proj_sol_(0) = 0.333333333333333;
           proj_sol_(1) = 0.333333333333333;
         }
-        else if (slave_distype == DRT::Element::quad4 or slave_distype == DRT::Element::quad8 or
-                 slave_distype == DRT::Element::quad9)
+        else if (slave_distype == CORE::FE::CellType::quad4 or
+                 slave_distype == CORE::FE::CellType::quad8 or
+                 slave_distype == CORE::FE::CellType::quad9)
         {
           proj_sol_(0) = 0.0;
           proj_sol_(1) = 0.0;
@@ -589,11 +592,11 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       double SlaveElementRepresentation<distype, slave_distype, slave_numdof>::EvalElementVolume()
       {
-        switch (CORE::DRT::UTILS::DisTypeToDim<slave_distype>::dim)
+        switch (CORE::FE::dim<slave_distype>)
         {
           case 3:
           {
@@ -610,8 +613,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetSlaveFunctDeriv(
           CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const
       {
@@ -625,211 +628,255 @@ namespace DRT
 
 
 // pairs with numdof=3
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad9, 3>;
 
 // volume coupled with numdof = 3, FSI Slavesided, FPI
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::hex8, 3>;
 
 // pairs with numdof=4
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,  DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad9, 4>;
 
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-// DRT::Element::tet4, 4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,  DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tet4, 4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::hex27, 4>;
+
+BACI_NAMESPACE_CLOSE

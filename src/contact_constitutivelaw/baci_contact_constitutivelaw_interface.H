@@ -13,6 +13,8 @@
 
 #include "baci_contact_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace MORTAR
 {
@@ -48,13 +50,6 @@ namespace CONTACT
         const Teuchos::ParameterList& icontact, bool selfcontact,
         const int contactconstitutivelawid);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~ConstitutivelawInterface() = default;
-
-
     /**
      * \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal
      * quantities using the Macauley bracket
@@ -80,17 +75,17 @@ namespace CONTACT
      * \params[in/out] localactivesetchange true if the active set changed
      *
      */
-    virtual void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange);
+    void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange) override;
 
     /**
      * \brief Throws an error since frictional contact is not yet tested
      */
-    virtual void AssembleRegTangentForcesPenalty();
+    void AssembleRegTangentForcesPenalty() override;
 
     /** \brief return the multi-scale constitutive law used for the contact containing information
      i.e. on the micro roughness
      */
-    const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> GetConstitutiveContactLaw()
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> GetConstitutiveContactLaw()
     {
       return coconstlaw_;
     }
@@ -102,5 +97,7 @@ namespace CONTACT
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
   };  // class CoInterface
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_INTERFACE_H

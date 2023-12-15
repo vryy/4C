@@ -16,6 +16,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_Reindex_LinearProblem2.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// direct linear solver (using amesos)
@@ -35,14 +37,12 @@ namespace CORE::LINEAR_SOLVER
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
+    void Setup(Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x,
         Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null) override;
 
     //! Actual call to the underlying amesos solver
-    virtual int Solve();
-
-    virtual int ApplyInverse(const VectorType& X, VectorType& Y);
+    int Solve() override;
 
     bool IsFactored() { return factored_; }
 
@@ -75,5 +75,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

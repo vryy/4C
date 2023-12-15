@@ -16,9 +16,8 @@
 #include "baci_inpar_ssi.H"
 #include "baci_inpar_volmortar.H"
 #include "baci_io_control.H"
-#include "baci_lib_function_of_time.H"
+#include "baci_io_inputreader.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_inputreader.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -33,6 +32,9 @@
 #include "baci_ssi_resulttest.H"
 #include "baci_ssi_str_model_evaluator_partitioned.H"
 #include "baci_ssi_utils.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -148,7 +150,7 @@ void SSI::SSIBase::Setup()
 
       temperature_vector_->PutScalar(
           DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
               .Evaluate(Time()));
 
       ssicoupling_->SetTemperatureField(
@@ -161,7 +163,7 @@ void SSI::SSIBase::Setup()
     // get wrapper and cast it to specific type
     // do not do so, in case the wrapper has already been set from outside
     if (structure_ == Teuchos::null)
-      structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
+      structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
           struct_adapterbase_ptr_->StructureField());
 
     if (structure_ == Teuchos::null)
@@ -574,7 +576,7 @@ void SSI::SSIBase::EvaluateAndSetTemperatureField()
     // evaluate temperature at current time and put to scalar
     const double temperature =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+            ->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
             .Evaluate(Time());
     temperature_vector_->PutScalar(temperature);
 
@@ -706,14 +708,14 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraField() const
+Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraField() const
 {
   return scatra_base_algorithm_->ScaTraField();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraManifold() const
+Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraManifold() const
 {
   return scatra_manifold_base_algorithm_->ScaTraField();
 }
@@ -759,7 +761,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
     {
       auto structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
-      structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
+      structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
           structure->StructureField(), true);
       if (structure_ == Teuchos::null)
         dserror("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
@@ -777,20 +779,22 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
   // create and initialize scatra base algorithm.
   // scatra time integrator constructed and initialized inside.
   // mesh is written inside. cloning must happen before!
-  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*scatratimeparams,
+      SSI::UTILS::ModifyScaTraParams(scatraparams),
+      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle));
 
-  ScaTraBaseAlgorithm()->Init(*scatratimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
-      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
+  ScaTraBaseAlgorithm()->Init();
 
   // create and initialize scatra base algorithm for manifolds
   if (IsScaTraManifold())
   {
-    scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-
-    ScaTraManifoldBaseAlgorithm()->Init(*scatratimeparams,
+    scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+        *scatratimeparams,
         SSI::UTILS::CloneScaTraManifoldParams(scatraparams, globaltimeparams.sublist("MANIFOLD")),
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
-        "scatra_manifold", isAle);
+        "scatra_manifold", isAle));
+
+    ScaTraManifoldBaseAlgorithm()->Init();
   }
 
   // do checks if adaptive time stepping is activated
@@ -944,3 +948,5 @@ void SSI::SSIBase::SetupModelEvaluator()
         "Basic Coupling Model", modelevaluator_ssi_base_);
   }
 }
+
+BACI_NAMESPACE_CLOSE

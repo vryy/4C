@@ -11,11 +11,14 @@
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_POLYNOMIAL_H
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
 #include <numeric>
 #include <utility>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::DRT::UTILS
 {
@@ -25,12 +28,12 @@ namespace CORE::DRT::UTILS
   struct PolynomialSpaceParams
   {
     explicit PolynomialSpaceParams(
-        ::DRT::Element::DiscretizationType distype, unsigned int degree, bool completeSpace)
+        CORE::FE::CellType distype, unsigned int degree, bool completeSpace)
         : distype_(distype), degree_(degree), completeSpace_(completeSpace)
     {
     }
 
-    ::DRT::Element::DiscretizationType distype_;
+    CORE::FE::CellType distype_;
     unsigned int degree_;
     bool completeSpace_;
 
@@ -268,8 +271,7 @@ namespace CORE::DRT::UTILS
   class PolynomialSpaceBase
   {
    public:
-    virtual ~PolynomialSpaceBase() {}
-
+    virtual ~PolynomialSpaceBase() = default;
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
@@ -326,7 +328,6 @@ namespace CORE::DRT::UTILS
       for (unsigned int i = 0; i < renumbering_.size(); ++i) renumbering_[i] = i;
     }
 
-    ~PolynomialSpaceTensor() override {}
 
     /*
      \brief Return the number of polynomials (over all dimensions)
@@ -341,25 +342,25 @@ namespace CORE::DRT::UTILS
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
-    virtual std::size_t Size() const { return Size(polySpace1d_.size() - 1); }
+    std::size_t Size() const override { return Size(polySpace1d_.size() - 1); }
 
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    virtual void Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const;
+    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
@@ -402,7 +403,7 @@ namespace CORE::DRT::UTILS
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
+    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
     std::vector<POLY> polySpace1d_;
@@ -434,7 +435,6 @@ namespace CORE::DRT::UTILS
       for (unsigned int i = 0; i < renumbering_.size(); ++i) renumbering_[i] = i;
     }
 
-    virtual ~PolynomialSpaceComplete() {}
 
     /*
      \brief Return the number of polynomials (over all dimensions)
@@ -453,30 +453,30 @@ namespace CORE::DRT::UTILS
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
-    virtual std::size_t Size() const { return Size(polySpace1d_.size() - 1); }
+    std::size_t Size() const override { return Size(polySpace1d_.size() - 1); }
 
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    virtual void Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const;
+    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
+    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
     std::vector<POLY> polySpace1d_;
@@ -502,8 +502,6 @@ namespace CORE::DRT::UTILS
         : PolynomialSpaceTensor<nsd_, LagrangePolynomial>(generateLagrangeBasis1D(degree))
     {
     }
-
-    ~LagrangeBasis() {}
   };
 
 
@@ -556,7 +554,6 @@ namespace CORE::DRT::UTILS
       ComputeVandermondeMatrices(degree);
     }
 
-    virtual ~LagrangeBasisTet() {}
 
     /*
      \brief Return the number of polynomials (over all dimensions)
@@ -575,30 +572,30 @@ namespace CORE::DRT::UTILS
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
-    virtual std::size_t Size() const { return legendre_.Size(); }
+    std::size_t Size() const override { return legendre_.Size(); }
 
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    virtual void Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const;
+    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
+    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
     void FillFeketePoints(const unsigned int degree);
@@ -627,8 +624,8 @@ namespace CORE::DRT::UTILS
   class PolynomialSpace
   {
    public:
-    PolynomialSpace(const ::DRT::Element::DiscretizationType distype, const unsigned int degree,
-        const bool completeSpace)
+    PolynomialSpace(
+        const CORE::FE::CellType distype, const unsigned int degree, const bool completeSpace)
         : polyspace_((CORE::DRT::UTILS::getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1)
                          ? static_cast<CORE::DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
                                new DRT::UTILS::LagrangeBasisTet<nsd_>(degree))
@@ -730,7 +727,7 @@ namespace CORE::DRT::UTILS
    Note: This class must always be synchronized with PolynomialSpace above!
    */
   inline int getBasisSize(
-      const ::DRT::Element::DiscretizationType distype, const int degree, const bool completeSpace)
+      const CORE::FE::CellType distype, const int degree, const bool completeSpace)
   {
     const int dim = CORE::DRT::UTILS::getDimension(distype);
     const int nfaces = CORE::DRT::UTILS::getNumberOfElementFaces(distype);
@@ -758,5 +755,7 @@ namespace CORE::DRT::UTILS
   }
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_POLYNOMIAL_H

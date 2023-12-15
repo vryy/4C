@@ -19,6 +19,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -63,7 +65,7 @@ namespace FLD
     XFluidOutputService(const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager);
 
-    virtual ~XFluidOutputService(){};
+    virtual ~XFluidOutputService() = default;
 
     /// prepare standard output
     void PrepareOutput();
@@ -168,38 +170,38 @@ namespace FLD
     void GmshSolutionOutput(const std::string& filename_base,  ///< name for output file
         int step,                                              ///< step number
         const Teuchos::RCP<FLD::XFluidState>& state,           ///< state
-        int count = -1);
+        int count = -1) override;
 
     /// Gmsh solution output for previous time step
     void GmshSolutionOutputPrevious(const std::string& filename_base,  ///< name for output file
         int step,                                                      ///< step number
         const Teuchos::RCP<FLD::XFluidState>& state,                   ///< state
-        int count = -1);
+        int count = -1) override;
 
     /// Gmsh output of solution (debug)
     void GmshSolutionOutputDebug(const std::string& filename_base,  ///< name for output file
         int step,                                                   ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<FLD::XFluidState>& state  ///< state
-    );
+        ) override;
 
     /// Gmsh output of residual (debug)
     void GmshResidualOutputDebug(const std::string& filename_base,  ///< name for output file
         int step,                                                   ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<FLD::XFluidState>& state  ///< state
-    );
+        ) override;
 
     /// Gmsh output of increment (debug)
     void GmshIncrementOutputDebug(const std::string& filename_base,  ///< name for output file
         int step,                                                    ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<FLD::XFluidState>& state  ///< state
-    );
+        ) override;
 
     /// Gmsh output of discretization
-    void GmshOutputDiscretization(
-        bool print_faces, int step, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr);
+    void GmshOutputDiscretization(bool print_faces, int step,
+        std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr) override;
 
     /// Main output routine for gmsh output
     void GmshOutput(const std::string& filename_base,  ///< name for output file
@@ -216,7 +218,7 @@ namespace FLD
     /// Gmsh output for EOS
     void GmshOutputEOS(int step,                     ///< step number
         Teuchos::RCP<XFEM::XFEM_EdgeStab> edge_stab  ///< stabilization handler
-    );
+        ) override;
 
    private:
     /// Gmsh output function for elements without an CORE::GEO::CUT::ElementHandle
@@ -271,5 +273,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

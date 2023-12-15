@@ -9,6 +9,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_H
 
+#include "baci_discretization_fem_general_cell_type.H"
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_lib_element.H"
 #include "baci_utils_exceptions.H"
 
@@ -16,6 +18,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::DRT::UTILS
 {
@@ -66,178 +70,6 @@ namespace CORE::DRT::UTILS
     pyramid_8point           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
   };
 
-  inline std::string GaussRuleToString(GaussRule3D gauss_rule)
-  {
-    switch (gauss_rule)
-    {
-      case GaussRule3D::undefined:
-        return "undefined";
-      case GaussRule3D::hex_1point:
-        return "hex_1point";
-      case GaussRule3D::hex_8point:
-        return "hex_8point";
-      case GaussRule3D::hex_18point:
-        return "hex_18point";
-      case GaussRule3D::hex_27point:
-        return "hex_27point";
-      case GaussRule3D::hex_64point:
-        return "hex_64point";
-      case GaussRule3D::hex_125point:
-        return "hex_125point";
-      case GaussRule3D::hex_216point:
-        return "hex_216point";
-      case GaussRule3D::hex_343point:
-        return "hex_343point";
-      case GaussRule3D::hex_512point:
-        return "hex_512point";
-      case GaussRule3D::hex_729point:
-        return "hex_729point";
-      case GaussRule3D::hex_1000point:
-        return "hex_1000point";
-      case GaussRule3D::tet_1point:
-        return "tet_1point";
-      case GaussRule3D::tet_4point:
-        return "tet_4point";
-      case GaussRule3D::tet_4point_gauss_radau:
-        return "tet_4point_gauss_radau";
-      case GaussRule3D::tet_5point:
-        return "tet_5point";
-      case GaussRule3D::tet_10point:
-        return "tet_10point";
-      case GaussRule3D::tet_11point:
-        return "tet_11point";
-      case GaussRule3D::tet_15point:
-        return "tet_15point";
-      case GaussRule3D::tet_24point:
-        return "tet_24point";
-      case GaussRule3D::tet_64point_peano:
-        return "tet_64point_peano";
-      case GaussRule3D::tet_45point:
-        return "tet_45point";
-      case GaussRule3D::tet_125point_peano:
-        return "tet_125point_peano";
-      case GaussRule3D::tet_343point_peano:
-        return "tet_343point_peano";
-      case GaussRule3D::tet_729point_peano:
-        return "tet_729point_peano";
-      case GaussRule3D::wedge_1point:
-        return "wedge_1point";
-      case GaussRule3D::wedge_6point:
-        return "wedge_6point";
-      case GaussRule3D::wedge_9point:
-        return "wedge_9point";
-      case GaussRule3D::pyramid_1point:
-        return "pyramid_1point";
-      case GaussRule3D::pyramid_8point:
-        return "pyramid_8point";
-    }
-    dserror("Your GaussRule3D (%d) has not beed added into the list above",
-        static_cast<int>(gauss_rule));
-    return "unknown";
-  }
-
-
-  /// allow to verify the openness of an integration rule
-  ///
-  /// \note: Open means that no integration point is on the boundary of the integrated domain
-  inline bool IntRuleIsOpen(CORE::DRT::UTILS::GaussRule3D intrule)
-  {
-    bool open = false;
-
-    switch (intrule)
-    {
-      case GaussRule3D::hex_1point:
-        open = true;
-        break;
-      case GaussRule3D::hex_8point:
-        open = true;
-        break;
-      case GaussRule3D::hex_27point:
-        open = true;
-        break;
-      case GaussRule3D::hex_64point:
-        open = true;
-        break;
-      case GaussRule3D::hex_125point:
-        open = true;
-        break;
-      case GaussRule3D::hex_216point:
-        open = true;
-        break;
-      case GaussRule3D::hex_343point:
-        open = true;
-        break;
-      case GaussRule3D::hex_512point:
-        open = true;
-        break;
-      case GaussRule3D::hex_729point:
-        open = true;
-        break;
-      case GaussRule3D::hex_1000point:
-        open = true;
-        break;
-      case GaussRule3D::tet_1point:
-        open = true;
-        break;
-      case GaussRule3D::tet_4point:
-        open = true;
-        break;
-      case GaussRule3D::tet_4point_gauss_radau:
-        open = false;
-        break;
-      case GaussRule3D::tet_5point:
-        open = true;
-        break;
-      case GaussRule3D::tet_10point:
-        open = false;
-        break;
-      case GaussRule3D::tet_11point:
-        open = true;
-        break;
-      case GaussRule3D::tet_15point:
-        open = false;
-        break;
-      case GaussRule3D::tet_24point:
-        open = true;
-        break;
-      case GaussRule3D::tet_64point_peano:
-        open = true;
-        break;
-      case GaussRule3D::tet_45point:
-        open = true;
-        break;
-      case GaussRule3D::tet_125point_peano:
-        open = true;
-        break;
-      case GaussRule3D::tet_343point_peano:
-        open = true;
-        break;
-      case GaussRule3D::tet_729point_peano:
-        open = true;
-        break;
-      case GaussRule3D::wedge_1point:
-        open = true;
-        break;
-      case GaussRule3D::wedge_6point:
-        open = true;
-        break;
-      case GaussRule3D::wedge_9point:
-        open = true;
-        break;
-      case GaussRule3D::pyramid_1point:
-        open = true;
-        break;
-      case GaussRule3D::pyramid_8point:
-        open = true;
-        break;
-      default:
-        std::cout << "Integration rule not categorized" << std::endl;
-        std::exit(1);
-    }
-
-    return open;
-  }
-
   /*!
    * @brief Evaluates the Gauss rule given the number of Gauss points
    *
@@ -248,8 +80,7 @@ namespace CORE::DRT::UTILS
    * @return GaussRule1D / GaussRule2D / GaussRule3D depending on the dimension of the
    * discretization
    */
-  template <::DRT::Element::DiscretizationType distype,
-      std::enable_if_t<::DRT::is_hex_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_hex<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -279,13 +110,21 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule3D for hex elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule3D::undefined;
   }
 
-  template <::DRT::Element::DiscretizationType distype,
-      std::enable_if_t<::DRT::is_tet_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_nurbs<distype>, int> = 0>
+  GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+  {
+    switch (numgp)
+    {
+      case 27:
+        return GaussRule3D::hex_27point;
+      default:
+        dserror("I don't know the GaussRule3D for nurbs elements with %d Gauss points", numgp);
+    }
+  }
+
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_tet<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -303,13 +142,9 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know an open GaussRule3D for tet elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule3D::undefined;
   }
 
-  template <::DRT::Element::DiscretizationType distype,
-      std::enable_if_t<::DRT::is_wedge_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_wedge<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -323,13 +158,9 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule3D for wedge elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule3D::undefined;
   }
 
-  template <::DRT::Element::DiscretizationType distype,
-      std::enable_if_t<::DRT::is_pyramid_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_pyramid<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -341,9 +172,6 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule3D for pyramid elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule3D::undefined;
   }
 
   /// get total number of GPs of the 3D Gauss rule at compile time
@@ -550,71 +378,7 @@ namespace CORE::DRT::UTILS
   };
 
 
-
-  inline std::string GaussRuleToString(GaussRule2D gauss_rule)
-  {
-    switch (gauss_rule)
-    {
-      case GaussRule2D::undefined:
-        return "undefined";
-      case GaussRule2D::quad_1point:
-        return "quad_1point";
-      case GaussRule2D::quad_4point:
-        return "quad_4point";
-      case GaussRule2D::quad_6point:
-        return "quad_6point";
-      case GaussRule2D::quad_9point:
-        return "quad_9point";
-      case GaussRule2D::quad_16point:
-        return "quad_16point";
-      case GaussRule2D::quad_25point:
-        return "quad_25point";
-      case GaussRule2D::quad_lobatto25point:
-        return "quad_lobatto25point";
-      case GaussRule2D::quad_36point:
-        return "quad_36point";
-      case GaussRule2D::quad_49point:
-        return "quad_49point";
-      case GaussRule2D::quad_64point:
-        return "quad_64point";
-      case GaussRule2D::quad_81point:
-        return "quad_81point";
-      case GaussRule2D::quad_100point:
-        return "quad_100point";
-      case GaussRule2D::quad_256point:
-        return "quad_256point";
-      case GaussRule2D::quad_400point:
-        return "quad_400point";
-      case GaussRule2D::quad_1024point:
-        return "quad_1024point";
-      case GaussRule2D::tri_1point:
-        return "tri_1point";
-      case GaussRule2D::tri_3point:
-        return "tri_3point";
-      case GaussRule2D::tri_3point_gauss_radau:
-        return "tri_3point_gauss_radau";
-      case GaussRule2D::tri_4point:
-        return "tri_4point";
-      case GaussRule2D::tri_6point:
-        return "tri_6point";
-      case GaussRule2D::tri_7point:
-        return "tri_7point";
-      case GaussRule2D::tri_12point:
-        return "tri_12point";
-      case GaussRule2D::tri_16point:
-        return "tri_16point";
-      case GaussRule2D::tri_37point:
-        return "tri_37point";
-      case GaussRule2D::tri_64point:
-        return "tri_64point";
-    }
-    dserror("Your GaussRule2D (%d) has not beed added into the list above",
-        static_cast<int>(gauss_rule));
-    return "unknown";
-  }
-
-  template <::DRT::Element::DiscretizationType distype,
-      std::enable_if_t<::DRT::is_quad_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_quad<distype>, int> = 0>
   GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -648,13 +412,9 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule2D for quad elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule2D::undefined;
   }
 
-  template <::DRT::Element::DiscretizationType distype,
-      std::enable_if_t<::DRT::is_tri_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_tri<distype>, int> = 0>
   GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -680,98 +440,6 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule2D for tri elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule2D::undefined;
-  }
-
-  /// allow to verify the openness of an integration rule
-  ///
-  /// \note: Open means that no integration point is on the boundary of the integrated domain
-  inline bool IntRuleIsOpen(CORE::DRT::UTILS::GaussRule2D intrule)
-  {
-    bool open = false;
-
-    switch (intrule)
-    {
-      case GaussRule2D::quad_1point:
-        open = true;
-        break;
-      case GaussRule2D::quad_4point:
-        open = true;
-        break;
-      case GaussRule2D::quad_6point:
-        open = true;
-        break;
-      case GaussRule2D::quad_9point:
-        open = true;
-        break;
-      case GaussRule2D::quad_16point:
-        open = true;
-        break;
-      case GaussRule2D::quad_25point:
-        open = true;
-        break;
-      case GaussRule2D::quad_lobatto25point:
-        open = false;
-        break;
-      case GaussRule2D::quad_36point:
-        open = true;
-        break;
-      case GaussRule2D::quad_49point:
-        open = true;
-        break;
-      case GaussRule2D::quad_64point:
-        open = true;
-        break;
-      case GaussRule2D::quad_81point:
-        open = true;
-        break;
-      case GaussRule2D::quad_100point:
-        open = true;
-        break;
-      case GaussRule2D::quad_256point:
-        open = true;
-        break;
-      case GaussRule2D::quad_400point:
-        open = true;
-        break;
-      case GaussRule2D::quad_1024point:
-        open = true;
-        break;
-      case GaussRule2D::tri_1point:
-        open = true;
-        break;
-      case GaussRule2D::tri_3point:
-        open = true;
-        break;
-      case GaussRule2D::tri_3point_gauss_radau:
-        open = false;
-        break;
-      case GaussRule2D::tri_6point:
-        open = true;
-        break;
-      case GaussRule2D::tri_7point:
-        open = true;
-        break;
-      case GaussRule2D::tri_12point:
-        open = true;
-        break;
-      case GaussRule2D::tri_16point:
-        open = true;
-        break;
-      case GaussRule2D::tri_37point:
-        open = true;
-        break;
-      case GaussRule2D::tri_64point:
-        open = true;
-        break;
-      default:
-        std::cout << "Integration rule not categorized" << std::endl;
-        std::exit(1);
-    }
-
-    return open;
   }
 
   //! supported 1d integration rules
@@ -808,74 +476,7 @@ namespace CORE::DRT::UTILS
     line_lobatto14point   ///< degree of precision: 25 (closed)
   };
 
-  inline std::string GaussRuleToString(GaussRule1D gauss_rule)
-  {
-    switch (gauss_rule)
-    {
-      case GaussRule1D::undefined:
-        return "undefined";
-      case GaussRule1D::line_1point:
-        return "line_1point";
-      case GaussRule1D::line_2point:
-        return "line_2point";
-      case GaussRule1D::line_3point:
-        return "line_3point";
-      case GaussRule1D::line_4point:
-        return "line_4point";
-      case GaussRule1D::line_5point:
-        return "line_5point";
-      case GaussRule1D::line_6point:
-        return "line_6point";
-      case GaussRule1D::line_7point:
-        return "line_7point";
-      case GaussRule1D::line_8point:
-        return "line_8point";
-      case GaussRule1D::line_9point:
-        return "line_9point";
-      case GaussRule1D::line_10point:
-        return "line_10point";
-      case GaussRule1D::line_16point:
-        return "line_16point";
-      case GaussRule1D::line_20point:
-        return "line_20point";
-      case GaussRule1D::line_32point:
-        return "line_32point";
-      case GaussRule1D::line_50point:
-        return "line_50point";
-      case GaussRule1D::line_lobatto2point:
-        return "line_lobatto2point";
-      case GaussRule1D::line_lobatto3point:
-        return "line_lobatto3point";
-      case GaussRule1D::line_lobatto4point:
-        return "line_lobatto4point";
-      case GaussRule1D::line_lobatto5point:
-        return "line_lobatto5point";
-      case GaussRule1D::line_lobatto6point:
-        return "line_lobatto6point";
-      case GaussRule1D::line_lobatto7point:
-        return "line_lobatto7point";
-      case GaussRule1D::line_lobatto8point:
-        return "line_lobatto8point";
-      case GaussRule1D::line_lobatto9point:
-        return "line_lobatto9point";
-      case GaussRule1D::line_lobatto10point:
-        return "line_lobatto10point";
-      case GaussRule1D::line_lobatto11point:
-        return "line_lobatto11point";
-      case GaussRule1D::line_lobatto12point:
-        return "line_lobatto12point";
-      case GaussRule1D::line_lobatto13point:
-        return "line_lobatto13point";
-      case GaussRule1D::line_lobatto14point:
-        return "line_lobatto14point";
-    }
-    dserror("Your GaussRule1D (%d) has not beed added into the list above",
-        static_cast<int>(gauss_rule));
-    return "unknown";
-  }
-
-  template <::DRT::Element::DiscretizationType distype,
-      std::enable_if_t<::DRT::is_line_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_line<distype>, int> = 0>
   GaussRule1D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -911,112 +512,10 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule1D for line elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule1D::undefined;
-  }
-
-  /// allow to verify the openness of an integration rule
-  ///
-  /// \note: Open means that no integration point is on the boundary of the integrated domain
-  inline bool IntRuleIsOpen(CORE::DRT::UTILS::GaussRule1D intrule)
-  {
-    bool open = false;
-
-    switch (intrule)
-    {
-      case GaussRule1D::line_1point:
-        open = true;
-        break;
-      case GaussRule1D::line_2point:
-        open = true;
-        break;
-      case GaussRule1D::line_3point:
-        open = true;
-        break;
-      case GaussRule1D::line_4point:
-        open = true;
-        break;
-      case GaussRule1D::line_5point:
-        open = true;
-        break;
-      case GaussRule1D::line_6point:
-        open = true;
-        break;
-      case GaussRule1D::line_7point:
-        open = true;
-        break;
-      case GaussRule1D::line_8point:
-        open = true;
-        break;
-      case GaussRule1D::line_9point:
-        open = true;
-        break;
-      case GaussRule1D::line_10point:
-        open = true;
-        break;
-      case GaussRule1D::line_16point:
-        open = true;
-        break;
-      case GaussRule1D::line_20point:
-        open = true;
-        break;
-      case GaussRule1D::line_32point:
-        open = true;
-        break;
-      case GaussRule1D::line_50point:
-        open = true;
-        break;
-      case GaussRule1D::line_lobatto2point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto3point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto4point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto5point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto6point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto7point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto8point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto9point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto10point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto11point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto12point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto13point:
-        open = false;
-        break;
-      case GaussRule1D::line_lobatto14point:
-        open = false;
-        break;
-      default:
-        std::cout << "Integration rule not categorized" << std::endl;
-        std::exit(1);
-    }
-
-    return open;
   }
 
   /*!
    \brief a point with a position and an associated weight
-
    */
   template <int dim, class Vec>
   class IntegrationPoint
@@ -1034,8 +533,6 @@ namespace CORE::DRT::UTILS
     {
       return;
     }
-
-    ~IntegrationPoint();
 
     //! return string representation of this class
     std::string toString() const
@@ -1225,7 +722,7 @@ namespace CORE::DRT::UTILS
    public:
     /// Constructor
     template <class G>
-    explicit IntPointsAndWeights(const G gaussrule);
+    explicit IntPointsAndWeights(const G intrule);
   };
 
 
@@ -1235,8 +732,8 @@ namespace CORE::DRT::UTILS
   {
    public:
     /// Constructor for 3D specialization
-    explicit IntPointsAndWeights(const GaussRule3D gaussrule)
-        : intpoints_(IntegrationPoints3D(gaussrule))
+    explicit IntPointsAndWeights(const GaussRule3D intrule)
+        : intpoints_(IntegrationPoints3D(intrule))
     {
       return;
     };
@@ -1261,8 +758,8 @@ namespace CORE::DRT::UTILS
   {
    public:
     /// Constructor for 2D specialization
-    explicit IntPointsAndWeights(const GaussRule2D gaussrule)
-        : intpoints_(IntegrationPoints2D(gaussrule))
+    explicit IntPointsAndWeights(const GaussRule2D intrule)
+        : intpoints_(IntegrationPoints2D(intrule))
     {
       return;
     };
@@ -1287,8 +784,8 @@ namespace CORE::DRT::UTILS
   {
    public:
     /// Constructor for 1D specialization
-    explicit IntPointsAndWeights(const GaussRule1D gaussrule)
-        : intpoints_(IntegrationPoints1D(gaussrule))
+    explicit IntPointsAndWeights(const GaussRule1D intrule)
+        : intpoints_(IntegrationPoints1D(intrule))
     {
       return;
     };
@@ -1308,5 +805,7 @@ namespace CORE::DRT::UTILS
 
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_INTEGRATION_H

@@ -13,13 +13,10 @@
 
 #include "baci_post_common.H"
 
+#include "baci_comm_exporter.H"
+#include "baci_comm_parobject.H"
 #include "baci_global_legacy_module.H"
 #include "baci_inpar_problemtype.H"
-#include "baci_io_legacy_table_cpp.h"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_dofset_independent.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_parobject.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_nurbs_discret.H"
 #include "baci_rigidsphere.H"
@@ -44,6 +41,8 @@ extern "C"
 PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv)
     : start_(0), end_(-1), step_(1), mortar_(false)
 {
+  using namespace BACI;
+
   MPI_Init(&argc, &argv);
 
   BACI::GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
@@ -158,7 +157,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   const std::string probtype(type);
   problemtype_ = INPAR::PROBLEMTYPE::StringToProblemType(probtype);
 
-  spatial_approx_ = INPAR::PROBLEMTYPE::StringToShapeFunctionType(
+  spatial_approx_ = CORE::FE::StringToShapeFunctionType(
       map_read_string(&control_table_, "spatial_approximation"));
 
   /*--------------------------------------------------------------------*/
@@ -413,6 +412,8 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
  *----------------------------------------------------------------------*/
 void PostProblem::read_meshes()
 {
+  using namespace BACI;
+
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
   if (mesh == nullptr) dserror("No field found.");
 
@@ -504,7 +505,7 @@ void PostProblem::read_meshes()
         // read periodic boundary conditions if available
         if (std::string(condname) == "LinePeriodic")
         {
-          DRT::Exporter exporter(*comm_);
+          CORE::COMM::Exporter exporter(*comm_);
 
           cond_pbcsline = Teuchos::rcp(new std::vector<char>());
 
@@ -548,7 +549,7 @@ void PostProblem::read_meshes()
         }
         else if (std::string(condname) == "SurfacePeriodic")
         {
-          DRT::Exporter exporter(*comm_);
+          CORE::COMM::Exporter exporter(*comm_);
 
           cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
 
@@ -600,7 +601,7 @@ void PostProblem::read_meshes()
       // read knot vectors for nurbs discretisations
       switch (spatial_approx_)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           // try a dynamic cast of the discretisation to a nurbs discretisation
           DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -619,7 +620,7 @@ void PostProblem::read_meshes()
           // distribute knots to all procs
           if (comm_->NumProc() > 1)
           {
-            DRT::Exporter exporter(nurbsdis->Comm());
+            CORE::COMM::Exporter exporter(nurbsdis->Comm());
 
             if (comm_->MyPID() == 0)
             {
@@ -715,6 +716,8 @@ void PostProblem::read_meshes()
  *----------------------------------------------------------------------*/
 void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputstep)
 {
+  using namespace BACI;
+
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
   if (mesh == nullptr) dserror("No field found.");
 
@@ -798,7 +801,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
       {
         dserror("periodic boundary conditions with changing geometries have never been tested");
 
-        DRT::Exporter exporter(*comm_);
+        CORE::COMM::Exporter exporter(*comm_);
 
         cond_pbcsline = Teuchos::rcp(new std::vector<char>());
 
@@ -842,7 +845,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
       }
       else if (std::string(condname) == "SurfacePeriodic")
       {
-        DRT::Exporter exporter(*comm_);
+        CORE::COMM::Exporter exporter(*comm_);
 
         cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
 
@@ -894,7 +897,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
     // read knot vectors for nurbs discretisations
     switch (spatial_approx_)
     {
-      case ShapeFunctionType::shapefunction_nurbs:
+      case CORE::FE::ShapeFunctionType::nurbs:
       {
         // try a dynamic cast of the discretisation to a nurbs discretisation
         DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -913,7 +916,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
         // distribute knots to all procs
         if (comm_->NumProc() > 1)
         {
-          DRT::Exporter exporter(nurbsdis->Comm());
+          CORE::COMM::Exporter exporter(nurbsdis->Comm());
 
           if (comm_->MyPID() == 0)
           {
@@ -1009,6 +1012,8 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
  *----------------------------------------------------------------------*/
 PostField PostProblem::getfield(MAP* field_info)
 {
+  using namespace BACI;
+
   const char* field_name = map_read_string(field_info, "field");
   const int numnd = map_read_int(field_info, "num_nd");
   const int numele = map_read_int(field_info, "num_ele");
@@ -1017,13 +1022,13 @@ PostField PostProblem::getfield(MAP* field_info)
 
   switch (spatial_approx_)
   {
-    case ShapeFunctionType::shapefunction_polynomial:
-    case ShapeFunctionType::shapefunction_hdg:
+    case CORE::FE::ShapeFunctionType::polynomial:
+    case CORE::FE::ShapeFunctionType::hdg:
     {
       dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_));
       break;
     }
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name, comm_));
       break;
@@ -1069,16 +1074,12 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 /*----------------------------------------------------------------------*
  * Constructor of PostField.
  *----------------------------------------------------------------------*/
-PostField::PostField(Teuchos::RCP<DRT::Discretization> dis, PostProblem* problem,
+PostField::PostField(Teuchos::RCP<BACI::DRT::Discretization> dis, PostProblem* problem,
     std::string field_name, const int numnd, const int numele)
     : dis_(dis), problem_(problem), field_name_(field_name), numnd_(numnd), numele_(numele)
 {
 }
 
-/*----------------------------------------------------------------------*
- * The Destructor
- *----------------------------------------------------------------------*/
-PostField::~PostField() {}
 
 
 /*----------------------------------------------------------------------*
@@ -1286,9 +1287,11 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+Teuchos::RCP<std::map<int, Teuchos::RCP<BACI::CORE::LINALG::SerialDenseMatrix>>>
 PostResult::read_result_serialdensematrix(const std::string name)
 {
+  using namespace BACI;
+
   Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
@@ -1314,12 +1317,12 @@ PostResult::read_result_serialdensematrix(const std::string name)
   {
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
         Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-    DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
+    CORE::COMM::ParObject::ExtractfromPack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)] = gpstress;
   }
 
   const Epetra_Map& elecolmap = *field_->discretization()->ElementColMap();
-  DRT::Exporter ex(*elemap, elecolmap, *comm);
+  CORE::COMM::Exporter ex(*elemap, elecolmap, *comm);
   ex.Export(*mapdata);
 
   return mapdata;

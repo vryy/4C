@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace LARGEROTATIONS
 {
   /**
@@ -36,7 +38,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    virtual ~TriadInterpolation(){};
+    virtual ~TriadInterpolation() = default;
 
     /** \brief return appropriate derived (templated) class (acts as a simple factory)
      *
@@ -87,5 +89,7 @@ namespace LARGEROTATIONS
   };
 
 }  // namespace LARGEROTATIONS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

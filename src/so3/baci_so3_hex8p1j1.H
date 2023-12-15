@@ -12,6 +12,7 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_hex8.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 struct _SOH8_DATA;
@@ -30,7 +31,7 @@ namespace DRT
 
       static So_Hex8P1J1Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -129,7 +130,7 @@ namespace DRT
      \ref Pack and \ref Unpack are used to communicate this element
 
      */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -182,11 +183,6 @@ namespace DRT
         }
       };
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_Hex8P1J1() override;
 
 
       //@}
@@ -317,5 +313,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_HEX8P1J1_H

@@ -12,6 +12,8 @@
 
 #include "baci_fluid_utils_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidFSIMsht::FluidFSIMsht(Teuchos::RCP<Fluid> fluid,
@@ -39,3 +41,5 @@ void ADAPTER::FluidFSIMsht::Init()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSIMsht::SetupFsiInterface() { fsiinterface_->Setup(*dis_); }
+
+BACI_NAMESPACE_CLOSE

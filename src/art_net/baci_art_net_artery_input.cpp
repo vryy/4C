@@ -8,8 +8,10 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_art_net_artery.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_cnst_1d_art.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -100,3 +102,5 @@ void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
     dserror("Artery element got unsupported material type %d", mat->MaterialType());
   return;
 }
+
+BACI_NAMESPACE_CLOSE

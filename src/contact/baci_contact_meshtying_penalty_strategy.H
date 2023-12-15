@@ -12,6 +12,8 @@
 
 #include "baci_contact_meshtying_abstract_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CONTACT
 {
@@ -44,11 +46,7 @@ namespace CONTACT
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
-    /*!
-    \brief Destructor
 
-    */
-    virtual ~MtPenaltyStrategy() = default;
 
     //! @name Access methods
 
@@ -56,13 +54,13 @@ namespace CONTACT
     \brief Return L2-norm of active constraints
 
     */
-    double ConstraintNorm() const { return constrnorm_; }
+    double ConstraintNorm() const override { return constrnorm_; }
 
     /*!
     \brief Return initial penalty parameter
 
     */
-    double InitialPenalty() { return initialpenalty_; }
+    double InitialPenalty() override { return initialpenalty_; }
 
     //@}
 
@@ -107,7 +105,7 @@ namespace CONTACT
 
     */
     void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
+        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!
     \brief Initialize Uzawa step
@@ -117,8 +115,8 @@ namespace CONTACT
     create an out-of-balance force again.
 
     */
-    void InitializeUzawa(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
     \brief Reset penalty parameter to intial value
@@ -132,9 +130,9 @@ namespace CONTACT
     at the beginning of each time step and resets the penalty parameter to its initial value.
 
     */
-    void ResetPenalty();
+    void ResetPenalty() override;
 
-    void ModifyPenalty();
+    void ModifyPenalty() override;
 
     /*!
     \brief Compute L2-norm of active constraints
@@ -146,7 +144,7 @@ namespace CONTACT
     in this method, too.
 
     */
-    void UpdateConstraintNorm(int uzawaiter = 0);
+    void UpdateConstraintNorm(int uzawaiter = 0) override;
 
     /*!
     \brief Store Lagrange multipliers for next Uzawa step
@@ -156,7 +154,7 @@ namespace CONTACT
     in the variable zuzawa_, which is then used in the next Uzawa step.
 
     */
-    void UpdateUzawaAugmentedLagrange();
+    void UpdateUzawaAugmentedLagrange() override;
 
     /*!
     \brief Tell that this is a penalty strategy
@@ -220,11 +218,11 @@ namespace CONTACT
 
     //! Return the desired right-hand-side block pointer (read-only) [derived]
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const override;
+        const enum CONTACT::MatBlockType& bt) const override;
 
     //@}
 
@@ -264,5 +262,7 @@ namespace CONTACT
 
   };  // class MtPenaltyStrategy
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_MESHTYING_PENALTY_STRATEGY_H

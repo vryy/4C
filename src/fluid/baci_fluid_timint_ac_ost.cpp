@@ -12,6 +12,8 @@
 
 #include "baci_fluid_timint_ac_ost.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 12/14 |
  *----------------------------------------------------------------------*/
@@ -27,11 +29,6 @@ FLD::TimIntACOst::TimIntACOst(const Teuchos::RCP<DRT::Discretization>& actdis,
 }
 
 /*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   Thon 12/14 |
-*----------------------------------------------------------------------*/
-FLD::TimIntACOst::~TimIntACOst() { return; }
-
-/*----------------------------------------------------------------------*
  |  read restart data                                        Thon 12/14 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntACOst::ReadRestart(int step)
@@ -42,3 +39,5 @@ void FLD::TimIntACOst::ReadRestart(int step)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

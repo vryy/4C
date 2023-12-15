@@ -24,10 +24,16 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
+
 namespace DRT
 {
   class Discretization;
-  class PackBuffer;
 }  // namespace DRT
 
 namespace CORE::GEO
@@ -56,7 +62,7 @@ namespace SCATRA
       Intersection();
 
       /// destructor
-      virtual ~Intersection(){};
+      virtual ~Intersection() = default;
 
       /** \brief construct zero iso-contour of level-set field
        *
@@ -96,8 +102,8 @@ namespace SCATRA
       /** \brief pack boundary integration cells from set into char array
        *
        *  \author henke \date 12/09 */
-      void packBoundaryIntCells(
-          const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap, DRT::PackBuffer& dataSend);
+      void packBoundaryIntCells(const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap,
+          CORE::COMM::PackBuffer& dataSend);
 
       /** brief unpack boundary integration cells from char array
        *
@@ -138,8 +144,7 @@ namespace SCATRA
 
       /// collect the cut elements after a successful cut operation
       void CollectCutEles(CORE::GEO::CUT::ElementHandle& ehandle,
-          CORE::GEO::CUT::plain_element_set& cuteles,
-          DRT::Element::DiscretizationType distype) const;
+          CORE::GEO::CUT::plain_element_set& cuteles, CORE::FE::CellType distype) const;
 
       /** \brief check the point position (OR-combination)
        *
@@ -157,13 +162,13 @@ namespace SCATRA
        *
        *  \author rasthofer \date 09/13 */
       void GetZeroLevelSetContour(const CORE::GEO::CUT::plain_element_set& cuteles,
-          const CORE::LINALG::SerialDenseMatrix& xyze, DRT::Element::DiscretizationType distype);
+          const CORE::LINALG::SerialDenseMatrix& xyze, CORE::FE::CellType distype);
 
       /// check for supported boundary cell discretization types
-      virtual void CheckBoundaryCellType(DRT::Element::DiscretizationType distype_bc) const;
+      virtual void CheckBoundaryCellType(CORE::FE::CellType distype_bc) const;
 
       virtual void AddToBoundaryIntCellsPerEle(const CORE::LINALG::SerialDenseMatrix& xyze,
-          const CORE::GEO::CUT::BoundaryCell& bcell, DRT::Element::DiscretizationType distype_ele);
+          const CORE::GEO::CUT::BoundaryCell& bcell, CORE::FE::CellType distype_ele);
 
       /// access the private boundary cell vector
       template <typename T>
@@ -215,5 +220,7 @@ namespace SCATRA
   }  // namespace LEVELSET
 }  // namespace SCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LEVELSET_INTERSECTION_UTILS_H

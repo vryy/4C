@@ -10,26 +10,26 @@
 #include "baci_mortar_node.H"
 
 #include "baci_lib_discret.H"
-#include "baci_mortar_defines.H"
 #include "baci_mortar_element.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MORTAR::MortarNodeType MORTAR::MortarNodeType::instance_;
 
 
-DRT::ParObject* MORTAR::MortarNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MORTAR::MortarNodeType::Create(const std::vector<char>& data)
 {
-  double x[3];
+  std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
-  MORTAR::MortarNode* node = new MORTAR::MortarNode(0, x, 0, 0, dofs, false);
+  auto* node = new MORTAR::MortarNode(0, x, 0, dofs, false);
   node->Unpack(data);
   return node;
 }
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mgit 02/10|
  *----------------------------------------------------------------------*/
 MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
     : drows_(0), drows_nts_(0), drows_lts_(0), drows_ltl_(0)
@@ -43,59 +43,50 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
     lmuzawa()[i] = 0.0;
     GetDscale() = 0.0;
   }
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNodeDataContainer::Pack(DRT::PackBuffer& data) const
+void MORTAR::MortarNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add n_
-  DRT::ParObject::AddtoPack(data, n_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, n_, 3 * sizeof(double));
   // add edgetangent_
-  DRT::ParObject::AddtoPack(data, edgeTangent_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, edgeTangent_, 3 * sizeof(double));
   // add lm_
-  DRT::ParObject::AddtoPack(data, lm_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, lm_, 3 * sizeof(double));
   // add lmold_
-  DRT::ParObject::AddtoPack(data, lmold_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, lmold_, 3 * sizeof(double));
   // add lmuzawa_
-  DRT::ParObject::AddtoPack(data, lmuzawa_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, lmuzawa_, 3 * sizeof(double));
 
   // no need to pack drows_, mrows_ and mmodrows_
   // (these will evaluated anew anyway)
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // n_
-  DRT::ParObject::ExtractfromPack(position, data, n_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, n_, 3 * sizeof(double));
   // edgetangent_
-  DRT::ParObject::ExtractfromPack(position, data, edgeTangent_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, edgeTangent_, 3 * sizeof(double));
   // lm_
-  DRT::ParObject::ExtractfromPack(position, data, lm_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, lm_, 3 * sizeof(double));
   // lmold_
-  DRT::ParObject::ExtractfromPack(position, data, lmold_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, lmold_, 3 * sizeof(double));
   // lmuzawa_
-  DRT::ParObject::ExtractfromPack(position, data, lmuzawa_, 3 * sizeof(double));
-
-  return;
+  CORE::COMM::ParObject::ExtractfromPack(position, data, lmuzawa_, 3 * sizeof(double));
 }
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-MORTAR::MortarNode::MortarNode(int id, const double* coords, const int owner, const int numdof,
+MORTAR::MortarNode::MortarNode(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave)
     : DRT::Node(id, coords, owner),
       isslave_(isslave),
@@ -104,7 +95,6 @@ MORTAR::MortarNode::MortarNode(int id, const double* coords, const int owner, co
       isonedge_(false),
       isoncorner_(false),
       isdbc_(false),
-      numdof_(numdof),
       dofs_(dofs),
       hasproj_(false),
       hassegment_(false),
@@ -113,19 +103,16 @@ MORTAR::MortarNode::MortarNode(int id, const double* coords, const int owner, co
       modata_(Teuchos::null),
       nurbsw_(-1.0)
 {
-  for (int i = 0; i < 3; ++i)
+  for (std::size_t i = 0; i < coords.size(); ++i)
   {
     uold()[i] = 0.0;
     xspatial()[i] = X()[i];
     dbcdofs_[i] = false;
   }
-
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarNode::MortarNode(const MORTAR::MortarNode& old)
     : DRT::Node(old),
@@ -133,7 +120,6 @@ MORTAR::MortarNode::MortarNode(const MORTAR::MortarNode& old)
       istiedslave_(old.istiedslave_),
       isonbound_(old.isonbound_),
       isdbc_(old.isdbc_),
-      numdof_(old.numdof_),
       dofs_(old.dofs_),
       hasproj_(old.hasproj_),
       hassegment_(old.hassegment_),
@@ -145,22 +131,19 @@ MORTAR::MortarNode::MortarNode(const MORTAR::MortarNode& old)
     xspatial()[i] = old.xspatial_[i];
     dbcdofs_[i] = false;
   }
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Deep copy this instance and return pointer to it (public)           |
- |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarNode* MORTAR::MortarNode::Clone() const
 {
-  MORTAR::MortarNode* newnode = new MORTAR::MortarNode(*this);
+  auto* newnode = new MORTAR::MortarNode(*this);
   return newnode;
 }
 
+
 /*----------------------------------------------------------------------*
- |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& mrtrnode)
 {
@@ -168,8 +151,8 @@ std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& mrtrnode)
   return os;
 }
 
+
 /*----------------------------------------------------------------------*
- |  print this MortarNode (public)                           mwgee 10/07|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::Print(std::ostream& os) const
 {
@@ -186,17 +169,14 @@ void MORTAR::MortarNode::Print(std::ostream& os) const
     os << " Boundary ";
   else
     os << " Interior ";
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
+void MORTAR::MortarNode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -220,8 +200,6 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, dbcdofs_[0]);
   AddtoPack(data, dbcdofs_[1]);
   AddtoPack(data, dbcdofs_[2]);
-  // add numdof_
-  AddtoPack(data, numdof_);
   // dentries_
   AddtoPack(data, dentries_);
   // add dofs_
@@ -241,22 +219,17 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
   bool hasdata = (modata_ != Teuchos::null);
   AddtoPack(data, hasdata);
   if (hasdata) modata_->Pack(data);
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class DRT::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -277,8 +250,6 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
   dbcdofs_[0] = ExtractInt(position, data);
   dbcdofs_[1] = ExtractInt(position, data);
   dbcdofs_[2] = ExtractInt(position, data);
-  // numdof_
-  ExtractfromPack(position, data, numdof_);
   // dentries_
   ExtractfromPack(position, data, dentries_);
   // dofs_
@@ -308,29 +279,26 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Add a value to the 'D' map                                popp 01/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddDValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddDValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddDValue: function called for boundary node %i", Id());
+  if (not IsSlave()) dserror("AddDValue: function called for master node %i", Id());
+  if (IsOnBound()) dserror("AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
   if ((int)MoData().GetD().size() == 0) MoData().GetD().resize(dentries_);
 
   // add the pair (col,val) to the given row
   MoData().GetD()[colnode] += val;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Add a value to the 'D' map                               farah 01/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddDntsValue(const int& colnode, const double& val)
 {
@@ -339,12 +307,10 @@ void MORTAR::MortarNode::AddDntsValue(const int& colnode, const double& val)
 
   // add the pair (col,val) to the given row
   MoData().GetDnts()[colnode] += val;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Add a value to the 'D' map                               farah 07/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddDltsValue(const int& colnode, const double& val)
 {
@@ -353,99 +319,83 @@ void MORTAR::MortarNode::AddDltsValue(const int& colnode, const double& val)
 
   // add the pair (col,val) to the given row
   MoData().GetDlts()[colnode] += val;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Add a value to the 'D' map                               farah 07/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddDltlValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddDValue: function called for master node %i", Id());
-  if (!IsOnEdge()) dserror("function called for non-edge node %i", Id());
+  if (not IsSlave()) dserror("AddDValue: function called for master node %i", Id());
+  if (not IsOnEdge()) dserror("function called for non-edge node %i", Id());
 
   // check if this has been called before
-  if ((int)MoData().GetDltl().size() == 0) MoData().GetDltl().resize(dentries_);
+  if (static_cast<int>(MoData().GetDltl().size()) == 0) MoData().GetDltl().resize(dentries_);
 
   // add the pair (col,val) to the given row
   MoData().GetDltl()[colnode] += val;
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Add a value to the 'M' map                                popp 01/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddMValue: function called for master node %i", Id());
-  if (IsOnBoundorCE() == true) dserror("AddMValue: function called for boundary node %i", Id());
+  if (not IsSlave()) dserror("AddMValue: function called for master node %i", Id());
+  if (IsOnBoundorCE()) dserror("AddMValue: function called for boundary node %i", Id());
 
   // add the pair (col,val) to the given row
   MoData().GetM()[colnode] += val;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Add a value to the 'M' map                               farah 01/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMntsValue(const int& colnode, const double& val)
 {
   // add the pair (col,val) to the given row
   MoData().GetMnts()[colnode] += val;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Add a value to the 'M' map                               farah 07/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMltsValue(const int& colnode, const double& val)
 {
   // add the pair (col,val) to the given row
   MoData().GetMlts()[colnode] += val;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Add a value to the 'M' map                               farah 07/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMltlValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddMValue: function called for master node %i", Id());
-  if (!IsOnEdge()) dserror("function called for non-edge node %i", Id());
+  if (not IsSlave()) dserror("AddMValue: function called for master node %i", Id());
+  if (not IsOnEdge()) dserror("function called for non-edge node %i", Id());
 
   // add the pair (col,val) to the given row
   MoData().GetMltl()[colnode] += val;
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Add a value to the 'Mmod' map                             popp 01/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMmodValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddMmodValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddMmodValue: function called for boundary node %i", Id());
+  if (not IsSlave()) dserror("AddMmodValue: function called for master node %i", Id());
+  if (IsOnBound()) dserror("AddMmodValue: function called for boundary node %i", Id());
 
   // add the pair (col,val) to the given row
   MoData().GetMmod()[colnode] += val;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Initialize data container                             gitterle 02/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::InitializeDataContainer()
 {
@@ -465,23 +415,19 @@ void MORTAR::MortarNode::InitializeDataContainer()
 
   // only initialize if not yet done
   if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Reset data container                                      popp 09/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::ResetDataContainer()
 {
   // reset to Teuchos::null
   modata_ = Teuchos::null;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Build averaged nodal normal                               popp 12/07|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::BuildAveragedNormal()
 {
@@ -505,7 +451,7 @@ void MORTAR::MortarNode::BuildAveragedNormal()
   // loop over all adjacent elements
   for (int i = 0; i < nseg; ++i)
   {
-    MortarElement* adjmrtrele = dynamic_cast<MortarElement*>(adjeles[i]);
+    auto* adjmrtrele = dynamic_cast<MortarElement*>(adjeles[i]);
 
     // build element normal at current node
     // (we have to pass in the index i to be able to store the
@@ -523,12 +469,10 @@ void MORTAR::MortarNode::BuildAveragedNormal()
     dserror("Nodal normal length 0, node ID %i", Id());
   else
     for (int j = 0; j < 3; ++j) MoData().n()[j] /= length;
-
-  return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Find closest node from given node set                     popp 01/08|
  *----------------------------------------------------------------------*/
 MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
     const Teuchos::RCP<DRT::Discretization> intdis, const Teuchos::RCP<Epetra_Map> nodesearchmap,
@@ -543,7 +487,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
     int gid = nodesearchmap->GID(i);
     DRT::Node* node = intdis->gNode(gid);
     if (!node) dserror("FindClosestNode: Cannot find node with gid %", gid);
-    MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
 
     // build distance between the two nodes
     double dist = 0.0;
@@ -566,8 +510,8 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
   return closestnode;
 }
 
+
 /*----------------------------------------------------------------------*
- | Check mesh re-initialization for this node                 popp 12/09|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, const double& limit)
 {
@@ -580,7 +524,7 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, const double& l
     // get the current element
     DRT::Element* ele = Elements()[i];
     if (!ele) dserror("Cannot find element with lid %", i);
-    MortarElement* mrtrele = dynamic_cast<MortarElement*>(ele);
+    auto* mrtrele = dynamic_cast<MortarElement*>(ele);
 
     // minimal edge size of the current element
     const double minedgesize = mrtrele->MinEdgeSize();
@@ -589,12 +533,12 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, const double& l
     if (relocation > limit * minedgesize)
     {
       // print information to screen
-      std::cout << "\n*****************WARNING***********************" << std::endl;
-      std::cout << "Checking distortion for CNode:     " << Id() << std::endl;
-      std::cout << "Relocation distance:               " << relocation << std::endl;
+      std::cout << "\n*****************WARNING***********************" << '\n';
+      std::cout << "Checking distortion for CNode:     " << Id() << '\n';
+      std::cout << "Relocation distance:               " << relocation << '\n';
       std::cout << "AdjEle: " << mrtrele->Id() << "\tLimit*MinEdgeSize: " << limit * minedgesize
-                << std::endl;
-      std::cout << "*****************WARNING***********************" << std::endl;
+                << '\n';
+      std::cout << "*****************WARNING***********************" << '\n';
 
       // set return parameter and stop
       ok = false;
@@ -604,3 +548,5 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, const double& l
 
   return ok;
 }
+
+BACI_NAMESPACE_CLOSE

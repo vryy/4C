@@ -15,6 +15,8 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class TimIntAC : public virtual FluidImplicitTimeInt
@@ -26,14 +28,12 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntAC();
 
     /// read restart from step
-    void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /// write output
-    virtual void Output();
+    void Output() override;
 
    protected:
    private:
@@ -41,5 +41,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_AC_H

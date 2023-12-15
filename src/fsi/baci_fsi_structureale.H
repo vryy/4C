@@ -20,6 +20,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 
 namespace ADAPTER
@@ -54,17 +56,19 @@ namespace FSI
    private:
     void Solve();
 
-    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override;
 
     /// interface structural operator
 
     /// coupling of structure and fluid at the interface, with mortar. Experimental!
-    Teuchos::RCP<::CORE::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupsfm_;
 
     /// nodes at the fluid-structure interface match
     bool matchingnodes_;
   };
 
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

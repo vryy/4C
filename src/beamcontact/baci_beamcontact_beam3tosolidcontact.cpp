@@ -15,16 +15,18 @@
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
 #include "baci_beaminteraction_beam_to_beam_contact_utils.H"
+#include "baci_comm_exporter.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | Constructor (public)                                     meier 01/14 |
@@ -1113,16 +1115,16 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
   CORE::LINALG::Matrix<2, dim1 + dim2, TYPEBTS> D(true);
 
   // Compute Lpar for all parametes
-  Lpar(0, 0) = -::CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi1) +
-               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi1);
-  Lpar(1, 0) = -::CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi2) +
-               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi1);
-  Lpar(0, 1) = -::CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi1) +
-               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi2);
-  Lpar(1, 1) = -::CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi2) +
-               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi2);
-  Lpar(0, 2) = ::CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi1);
-  Lpar(1, 2) = ::CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi2);
+  Lpar(0, 0) =
+      -CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi1) + CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi1);
+  Lpar(1, 0) =
+      -CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi2) + CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi1);
+  Lpar(0, 1) =
+      -CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi1) + CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi2);
+  Lpar(1, 1) =
+      -CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi2) + CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi2);
+  Lpar(0, 2) = CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi1);
+  Lpar(1, 2) = CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi2);
 
   // Assemble needed entries of Lpar in L
   L(0, 0) = Lpar(0, par_i[0]);
@@ -2168,7 +2170,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBea
   N_etaeta.Clear();
 
   // Get discretization type
-  const DRT::Element::DiscretizationType distype = element1_->Shape();
+  const CORE::FE::CellType distype = element1_->Shape();
 
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS> N_i(true);
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS> N_i_eta(true);
@@ -2267,11 +2269,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
 {
   // assembly_N is just an array to help assemble the matrices of the shape functions
   // it determines, which shape function is used in which column of N
-  int assembly_N[3][3 * numnodes * numnodalvalues];
-
-  // Initialize to zero
-  for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
-    for (int j = 0; j < 3; j++) assembly_N[j][i] = 0.0;
+  std::array<std::array<unsigned int, 3 * numnodes * numnodalvalues>, 3> assembly_N{};
 
   // Set number of shape functions for each 3x3 block:
   // e.g. second order Reissner beam (numnodes = 3, numnodalvalues = 1)
@@ -2336,12 +2334,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
 {
   // assembly_N is just an array to help assemble the matrices of the shape functions
   // it determines, which shape function is used in which column of N
-  int assembly_N[3][3 * numnodessol];
-
-  // Initialize to zero
-  for (int i = 0; i < 3 * numnodessol; i++)
-    for (int j = 0; j < 3; j++) assembly_N[j][i] = 0.0;
-
+  std::array<std::array<int, 3 * numnodessol>, 3> assembly_N{};
 
   // Set number of shape functions for each 3x3 block:
   // e.g. quad4 surface element (numnodesol = 4)
@@ -3745,3 +3738,5 @@ template class CONTACT::Beam3tosolidcontact<8, 2,
 // template class CONTACT::Beam3tosolidcontact<9,4,1>;
 // template class CONTACT::Beam3tosolidcontact<9,5,1>;
 // template class CONTACT::Beam3tosolidcontact<9,2,2>;
+
+BACI_NAMESPACE_CLOSE

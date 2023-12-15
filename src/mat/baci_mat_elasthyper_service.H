@@ -16,6 +16,8 @@
 #include "baci_matelast_summand.H"
 
 #include <NOX.H>
+
+BACI_NAMESPACE_OPEN
 namespace MAT
 {
   // Forward declaration
@@ -395,15 +397,15 @@ namespace MAT
      * Pack all data to distribute it on other processors
      * @param data data where to store the values
      */
-    void Pack(DRT::PackBuffer& data) const
+    void Pack(CORE::COMM::PackBuffer& data) const
     {
-      DRT::ParObject::AddtoPack(data, isoprinc);
-      DRT::ParObject::AddtoPack(data, isomod);
-      DRT::ParObject::AddtoPack(data, anisoprinc);
-      DRT::ParObject::AddtoPack(data, anisomod);
-      DRT::ParObject::AddtoPack(data, coeffStretchesPrinc);
-      DRT::ParObject::AddtoPack(data, coeffStretchesMod);
-      DRT::ParObject::AddtoPack(data, viscoGeneral);
+      CORE::COMM::ParObject::AddtoPack(data, isoprinc);
+      CORE::COMM::ParObject::AddtoPack(data, isomod);
+      CORE::COMM::ParObject::AddtoPack(data, anisoprinc);
+      CORE::COMM::ParObject::AddtoPack(data, anisomod);
+      CORE::COMM::ParObject::AddtoPack(data, coeffStretchesPrinc);
+      CORE::COMM::ParObject::AddtoPack(data, coeffStretchesMod);
+      CORE::COMM::ParObject::AddtoPack(data, viscoGeneral);
     }
 
     /**
@@ -413,13 +415,13 @@ namespace MAT
      */
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
-      isoprinc = (bool)DRT::ParObject::ExtractInt(position, data);
-      isomod = (bool)DRT::ParObject::ExtractInt(position, data);
-      anisoprinc = (bool)DRT::ParObject::ExtractInt(position, data);
-      anisomod = (bool)DRT::ParObject::ExtractInt(position, data);
-      coeffStretchesPrinc = (bool)DRT::ParObject::ExtractInt(position, data);
-      coeffStretchesMod = (bool)DRT::ParObject::ExtractInt(position, data);
-      viscoGeneral = (bool)DRT::ParObject::ExtractInt(position, data);
+      isoprinc = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
+      isomod = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
+      anisoprinc = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
+      anisomod = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
+      coeffStretchesPrinc = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
+      coeffStretchesMod = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
+      viscoGeneral = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
     }
 
     /**
@@ -467,5 +469,7 @@ namespace MAT
     }
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ELASTHYPER_SERVICE_H

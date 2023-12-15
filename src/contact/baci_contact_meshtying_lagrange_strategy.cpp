@@ -14,6 +14,7 @@
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -27,6 +28,8 @@
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
@@ -243,7 +246,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
       mmatrix_->Multiply(false, *xm, *rhs);
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       solver.Solve(lhs->EpetraOperator(), Xslavemod, rhs, true);
     }
     else
@@ -271,7 +277,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
       mmatrix_->Multiply(false, *Xmaster, *rhs);
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       solver.Solve(dmatrix_->EpetraOperator(), Xslavemod, rhs, true);
     }
   }
@@ -1059,17 +1068,17 @@ bool CONTACT::MtLagrangeStrategy::EvaluateForceStiff(const Teuchos::RCP<const Ep
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
     {
       vec_ptr = f_;
       break;
     }
-    case DRT::UTILS::VecBlockType::constraint:
+    case CONTACT::VecBlockType::constraint:
     {
       break;
     }
@@ -1086,23 +1095,23 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+    const enum CONTACT::MatBlockType& bt) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
       mat_ptr = Teuchos::null;
       break;
-    case DRT::UTILS::MatBlockType::displ_lm:
+    case CONTACT::MatBlockType::displ_lm:
       if (dm_matrix_.is_null()) dserror("matrix not available");
       mat_ptr = dm_matrix_;
       break;
-    case DRT::UTILS::MatBlockType::lm_displ:
+    case CONTACT::MatBlockType::lm_displ:
       if (dm_matrix_t_.is_null()) dserror("matrix not available");
       mat_ptr = dm_matrix_t_;
       break;
-    case DRT::UTILS::MatBlockType::lm_lm:
+    case CONTACT::MatBlockType::lm_lm:
       if (lm_diag_matrix_.is_null()) dserror("matrix not available");
       mat_ptr = lm_diag_matrix_;
       break;
@@ -1202,3 +1211,5 @@ void CONTACT::MtLagrangeStrategy::RemoveCondensedContributionsFromRhs(Epetra_Vec
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

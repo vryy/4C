@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   namespace SUBMODELEVALUATOR
@@ -33,7 +35,7 @@ namespace BEAMINTERACTION
       Factory();
 
       //! destructor
-      virtual ~Factory(){};
+      virtual ~Factory() = default;
 
       Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> BuildModelEvaluators(
           const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes) const;
@@ -47,5 +49,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

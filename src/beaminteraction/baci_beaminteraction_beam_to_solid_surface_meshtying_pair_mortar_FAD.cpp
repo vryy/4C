@@ -23,6 +23,7 @@ evaluated with FAD.
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -40,7 +41,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, sur
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const ::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssemble(const BACI::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -122,7 +123,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -461,7 +462,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const ::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssemble(const BACI::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -622,7 +623,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
         CORE::DRT::UTILS::shape_function_1D(
-            L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
+            L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -719,7 +720,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_GB,
     CORE::LINALG::SparseMatrix& global_GS, CORE::LINALG::SparseMatrix& global_FB,
     CORE::LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
@@ -862,7 +863,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
         CORE::DRT::UTILS::shape_function_1D(
-            L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
+            L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -968,7 +969,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::GetPairRotationalGIDs(const ::DRT::Discretization& discret,
+    mortar>::GetPairRotationalGIDs(const BACI::DRT::Discretization& discret,
     std::vector<int>& gid_surface, CORE::LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const
 {
   // Get the GIDs of the surface and beam.
@@ -1004,29 +1005,29 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation(const bool rotatio
 template <typename mortar>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
-    const DRT::Element::DiscretizationType surface_shape, const bool rotational_coupling)
+    const CORE::FE::CellType surface_shape, const bool rotational_coupling)
 {
   using namespace BEAMINTERACTION;
   using namespace GEOMETRYPAIR;
 
   switch (surface_shape)
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_tri3, mortar>(rotational_coupling);
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_tri6, mortar>(rotational_coupling);
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad4, mortar>(rotational_coupling);
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad8, mortar>(rotational_coupling);
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad9, mortar>(rotational_coupling);
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
           mortar>(rotational_coupling);
@@ -1042,22 +1043,22 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
 template <typename mortar>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
-    const DRT::Element::DiscretizationType surface_shape, const bool rotational_coupling)
+    const CORE::FE::CellType surface_shape, const bool rotational_coupling)
 {
   using namespace BEAMINTERACTION;
   using namespace GEOMETRYPAIR;
 
   switch (surface_shape)
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4,
           mortar>(rotational_coupling);
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8,
           mortar>(rotational_coupling);
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
           mortar>(rotational_coupling);
@@ -1072,7 +1073,7 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
-    const DRT::Element::DiscretizationType surface_shape,
+    const CORE::FE::CellType surface_shape,
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction,
     const bool rotational_coupling,
     const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy)
@@ -1124,3 +1125,5 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
 
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

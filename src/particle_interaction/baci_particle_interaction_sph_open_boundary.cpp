@@ -10,7 +10,6 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_open_boundary.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_interface.H"
@@ -22,6 +21,9 @@
 #include "baci_particle_interaction_sph_neighbor_pairs.H"
 #include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -285,7 +287,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::PrescribeOpenBoundaryStates(
   if (particlestored <= 0) return;
 
   // get reference to function
-  const auto& function = DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+  const auto& function = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
       prescribedstatefunctid_ - 1);
 
   // safety check
@@ -494,7 +496,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::PrescribeOpenBoundaryStates(
   if (prescribedstatefunctid_ > 0)
   {
     // get reference to function
-    const auto& function = DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+    const auto& function = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
         prescribedstatefunctid_ - 1);
 
     // safety check
@@ -534,3 +536,5 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::InterpolateOpenBoundaryStates(
 {
   // nothing to do
 }
+
+BACI_NAMESPACE_CLOSE

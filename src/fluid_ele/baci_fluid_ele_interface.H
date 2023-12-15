@@ -24,6 +24,8 @@
 #include <map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class Material;
@@ -61,8 +63,13 @@ namespace DRT
     class FluidEleInterface
     {
      public:
+      /**
+       * Virtual destructor.
+       */
+      virtual ~FluidEleInterface() = default;
+
       /// Empty constructor
-      FluidEleInterface() {}
+      FluidEleInterface() = default;
 
       /// Evaluate the element
       /*!
@@ -191,5 +198,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

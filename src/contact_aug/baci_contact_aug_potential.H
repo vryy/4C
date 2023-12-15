@@ -17,6 +17,8 @@
 
 class Epetra_Vector;
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -66,7 +68,7 @@ namespace CONTACT
       Potential(const CONTACT::AUG::Strategy& strategy, const CONTACT::AUG::DataContainer& data);
 
       /// destructor
-      virtual ~Potential(){};
+      virtual ~Potential() = default;
 
       /// setup the potential class
       void Setup();
@@ -345,5 +347,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_POTENTIAL_H

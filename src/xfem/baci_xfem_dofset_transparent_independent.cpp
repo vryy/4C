@@ -13,6 +13,8 @@
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_node.H"
 
+BACI_NAMESPACE_OPEN
+
 
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
     Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel,
@@ -35,3 +37,5 @@ int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const DRT::Node &node)
   }
   return DRT::DofSet::NumDofPerNode(node);
 }
+
+BACI_NAMESPACE_CLOSE

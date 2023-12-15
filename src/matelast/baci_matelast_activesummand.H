@@ -10,6 +10,8 @@
 #define BACI_MATELAST_ACTIVESUMMAND_H
 #include "baci_matelast_summand.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ELASTIC
@@ -50,5 +52,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_ACTIVESUMMAND_H

@@ -20,13 +20,15 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 #include <fftw3.h>
 #endif
 
+#include "baci_comm_exporter.H"
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_implicit_integration.H"
 #include "baci_fluid_timint_hdg.H"
 #include "baci_fluid_turbulence_hit_initial_field.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace FLD
 {
@@ -112,23 +114,23 @@ namespace FLD
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      DRT::Exporter exporter(discret_->Comm());
+      CORE::COMM::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          DRT::ParObject::AddtoPack(data, *x1line);
+          CORE::COMM::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          DRT::ParObject::AddtoPack(data, *x1line);
+          CORE::COMM::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -170,7 +172,7 @@ namespace FLD
           while (index < rblock.size())
           {
             double onecoord;
-            DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }
@@ -1305,3 +1307,5 @@ namespace FLD
   }
 
 };  // namespace FLD
+
+BACI_NAMESPACE_CLOSE

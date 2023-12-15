@@ -13,6 +13,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -72,9 +74,6 @@ namespace SSTI
   {
    public:
     explicit SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
-
-    ~SSTIMono() override = default;
-
     //! get vector containing positions within system matrix for specific subproblem
     std::vector<int> GetBlockPositions(Subproblem subproblem) const;
 
@@ -94,15 +93,15 @@ namespace SSTI
     void Timeloop() override;
 
     //! return all maps
-    const Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_maps_mono_; };
+    Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_maps_mono_; };
 
     //! number of current Newton Iteration
     unsigned int NewtonIteration() const { return Iter(); };
 
     //! state vectors
     //@{
-    const Teuchos::RCP<Epetra_Vector> Increment() const { return increment_; };
-    const Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
+    Teuchos::RCP<Epetra_Vector> Increment() const { return increment_; };
+    Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
     //}
 
     //! statistics for evaluation and solving
@@ -193,4 +192,6 @@ namespace SSTI
     Teuchos::RCP<CORE::LINALG::Equilibration> strategy_equilibration_;
   };
 }  // namespace SSTI
+BACI_NAMESPACE_CLOSE
+
 #endif

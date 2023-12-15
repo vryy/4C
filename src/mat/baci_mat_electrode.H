@@ -9,8 +9,10 @@
 #ifndef BACI_MAT_ELECTRODE_H
 #define BACI_MAT_ELECTRODE_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_elchsinglemat.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -33,8 +35,6 @@ namespace MAT
       //! constructor
       explicit Electrode(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~Electrode() override = default;
 
       //! create instance of electrode material
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
@@ -86,14 +86,14 @@ namespace MAT
 
 
   /*----------------------------------------------------------------------*/
-  class ElectrodeType : public DRT::ParObjectType
+  class ElectrodeType : public CORE::COMM::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "ElectrodeType"; };
 
     static ElectrodeType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ElectrodeType instance_;
@@ -133,7 +133,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -297,4 +297,6 @@ namespace MAT
     MAT::PAR::Electrode* params_;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

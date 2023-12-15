@@ -28,6 +28,7 @@ loop for the evaluation.
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
 
 // forward declaration
 namespace MAT
@@ -59,7 +60,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       int Initialize(DRT::Discretization& dis) override;
 
@@ -132,7 +133,7 @@ namespace DRT
       */
       Shell7p(int id, int owner)
           : DRT::Element(id, owner),
-            distype_(DRT::Element::dis_none),
+            distype_(CORE::FE::CellType::dis_none),
             interface_ptr_(Teuchos::null),
             thickness_(0.0),
             material_post_setup_(false)
@@ -141,8 +142,6 @@ namespace DRT
         shell_interface_ = nullptr;
       };
 
-      //! destructor
-      ~Shell7p() override = default;
 
       //! copy constructor
       Shell7p(const DRT::ELEMENTS::Shell7p& other);
@@ -164,7 +163,7 @@ namespace DRT
         return Shell7pType::Instance().UniqueParObjectId();
       };
 
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       void Unpack(const std::vector<char>& data) override;
 
@@ -173,7 +172,7 @@ namespace DRT
         return Shell7pType::Instance();
       }
 
-      [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
+      [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
       [[nodiscard]] int NumLine() const override;
 
@@ -251,7 +250,7 @@ namespace DRT
 
      private:
       //! discretization type
-      DRT::Element::DiscretizationType distype_;
+      CORE::FE::CellType distype_;
 
       //! interface ptr, data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
@@ -273,5 +272,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

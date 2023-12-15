@@ -10,6 +10,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterial<T>::RemodelFiberMaterial(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -19,3 +21,4 @@ MIXTURE::PAR::RemodelFiberMaterial<T>::RemodelFiberMaterial(
 
 template class MIXTURE::PAR::RemodelFiberMaterial<double>;
 template class MIXTURE::PAR::RemodelFiberMaterial<Sacado::Fad::DFad<double>>;
+BACI_NAMESPACE_CLOSE

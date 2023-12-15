@@ -20,6 +20,8 @@
 #include "baci_mat_particle_base.H"
 #include "baci_mat_particle_thermo.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
@@ -32,9 +34,6 @@ namespace MAT
      public:
       //! constructor
       ParticleMaterialSPHFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      //! desctructor
-      ~ParticleMaterialSPHFluid() override{};
 
       //! speed of sound
       double SpeedOfSound() const { return std::sqrt(bulkModulus_ / initDensity_); };
@@ -66,19 +65,19 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
     };
 
   }  // namespace PAR
 
-  class ParticleMaterialSPHFluidType : public DRT::ParObjectType
+  class ParticleMaterialSPHFluidType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "ParticleMaterialSPHType"; };
 
     static ParticleMaterialSPHFluidType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ParticleMaterialSPHFluidType instance_;
@@ -118,7 +117,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -159,4 +158,6 @@ namespace MAT
 }  // namespace MAT
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

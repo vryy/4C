@@ -11,6 +11,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  assemble a matrix                                         popp 01/08|
  *----------------------------------------------------------------------*/
@@ -309,3 +311,5 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> CORE::LINALG::ConvertDirichletToggleVec
   // build and return the map extractor of Dirichlet-conditioned and free DOFs
   return Teuchos::rcp(new CORE::LINALG::MapExtractor(fullmap, dbcmap, freemap));
 }
+
+BACI_NAMESPACE_CLOSE

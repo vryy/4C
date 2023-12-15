@@ -10,9 +10,13 @@
 /*---------------------------------------------------------------------*/
 
 
+#include "baci_lib_condition.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_stru_multi_microstatic.H"
 #include "baci_structure_aux.H"
+
+BACI_NAMESPACE_OPEN
 
 
 //-----------------------------------------------------------------------
@@ -117,7 +121,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
       if (!actnode) dserror("Cannot find global node %d", (*nodeids)[i]);
 
       // nodal coordinates
-      const double* x = actnode->X();
+      const auto& x = actnode->X();
 
       std::vector<int> dofs = discret_->Dof(actnode);
 
@@ -361,3 +365,5 @@ void STRUMULTI::MicroStatic::PrintPredictor()
   }
   fflush(stdout);
 }
+
+BACI_NAMESPACE_CLOSE

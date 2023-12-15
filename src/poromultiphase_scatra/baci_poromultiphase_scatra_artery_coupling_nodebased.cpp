@@ -12,7 +12,10 @@
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_lib_condition_selector.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_matrixtransform.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -368,3 +371,5 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PrintOutCoupli
 {
   std::cout << "<   Coupling-Method : Nodebased                    >" << std::endl;
 }
+
+BACI_NAMESPACE_CLOSE

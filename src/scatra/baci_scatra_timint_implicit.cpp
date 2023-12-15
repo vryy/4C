@@ -27,12 +27,10 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_selector.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parameter_list.H"
-#include "baci_lib_utils_vector.H"
 #include "baci_linalg_krylov_projector.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_method_parameters.H"
@@ -55,9 +53,12 @@
 #include "baci_scatra_turbulence_hit_initial_scalar_field.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 #include "baci_scatra_utils.H"
+#include "baci_utils_function.H"
 
 #include <unordered_set>
 #include <utility>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -72,7 +73,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       extraparams_(extraparams),
       myrank_(actdis->Comm().MyPID()),
       splitter_(Teuchos::null),
-      errfile_(extraparams->get<FILE*>("err file")),
       strategy_(Teuchos::null),
       additional_model_evaluator_(nullptr),
       isale_(extraparams->get<bool>("isale")),
@@ -148,8 +148,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       membrane_conc_(Teuchos::null),
       phinp_micro_(Teuchos::null),
       nds_disp_(-1),
+      nds_growth_(-1),
       nds_micro_(-1),
       nds_pres_(-1),
+      nds_scatra_(-1),
+      nds_thermo_(-1),
       nds_two_tensor_quantitiy_(-1),
       nds_vel_(-1),
       nds_wss_(-1),
@@ -634,8 +637,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     {
       // It is important to make a distinction as HDG always have NumDofPerNode = 0
       // The vector is therefore sized to contain the errors of one scalar and its gradient
-      if (DRT::Problem::Instance()->SpatialApproximationType() ==
-          ShapeFunctionType::shapefunction_hdg)
+      if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
         relerrors_ = Teuchos::rcp(new std::vector<double>(2));  // TODO: update to n species
       else
         relerrors_ = Teuchos::rcp(new std::vector<double>(2 * NumDofPerNode()));
@@ -910,7 +912,10 @@ void SCATRA::ScaTraTimIntImpl::SetElementNodesetParameters() const
       "action", SCATRA::Action::set_nodeset_parameter, eleparams);
 
   eleparams.set<int>("ndsdisp", NdsDisp());
+  eleparams.set<int>("ndsgrowth", NdsGrowth());
   eleparams.set<int>("ndspres", NdsPressure());
+  eleparams.set<int>("ndsscatra", NdsScaTra());
+  eleparams.set<int>("ndsthermo", NdsThermo());
   eleparams.set<int>("ndsTwoTensorQuantity", NdsTwoTensorQuantity());
   eleparams.set<int>("ndsvel", NdsVel());
   eleparams.set<int>("ndswss", NdsWallShearStress());
@@ -1047,7 +1052,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeLoop()
   if (step_ == 0)
   {
     // write out initial state
-    Output();
+    CheckAndWriteOutputAndRestart();
 
     // compute error for problems with analytical solution (initial field!)
     EvaluateErrorComparedToAnalyticalSol();
@@ -1220,8 +1225,8 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
         for (int index = 0; index < nsd_; ++index)
         {
-          double value = problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                             .Evaluate(lnode->X(), time_, index);
+          double value = problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+                             .Evaluate(lnode->X().data(), time_, index);
 
           // get global and local dof IDs
           const int gid = nodedofs[index];
@@ -1459,7 +1464,7 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    CheckAndWriteOutputAndRestart();
 
   }  // while
 
@@ -1518,8 +1523,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Update(const int num  //!< field number
-)
+void SCATRA::ScaTraTimIntImpl::Update()
 {
   // update quantities associated with meshtying strategy
   strategy_->Update();
@@ -1573,72 +1577,76 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::Bloc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Output(const int num)
+void SCATRA::ScaTraTimIntImpl::CheckAndWriteOutputAndRestart()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
 
-  // solution output and potentially restart data and/or flux data
-  if (DoOutput())
+  // write result and potentially flux data
+  if (IsResultStep()) WriteResult();
+
+  // add restart data
+  if (IsRestartStep()) WriteRestart();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::WriteResult()
+{
+  // step number and time (only after that data output is possible)
+  output_->NewStep(step_, time_);
+
+  // write domain decomposition for visualization (only once at the first time step!)
+  if (step_ == 0) output_->WriteElementData(true);
+
+  // write state vectors
+  OutputState();
+
+  // write output to Gmsh postprocessing files
+  if (outputgmsh_) OutputToGmsh(step_, time_);
+
+  // write flux vector field (only writing, calculation was done during Update() call)
+  if (calcflux_domain_ != INPAR::SCATRA::flux_none or
+      calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    // step number and time (only after that data output is possible)
-    output_->NewStep(step_, time_);
+    // for flux output of initial field (before first solve) do:
+    // flux_domain_ and flux_boundary_ vectors are initialized when CalcFlux() is called
+    if (step_ == 0 or
+        (calcflux_domain_ != INPAR::SCATRA::flux_none and flux_domain_ == Teuchos::null) or
+        (calcflux_boundary_ != INPAR::SCATRA::flux_none and flux_boundary_ == Teuchos::null))
+      CalcFlux(true);
 
-    // write domain decomposition for visualization (only once at the first time step!)
-    if (step_ == 0) output_->WriteElementData(true);
-
-    // write state vectors
-    OutputState();
-
-    // write output to Gmsh postprocessing files
-    if (outputgmsh_) OutputToGmsh(step_, time_);
-
-    // write flux vector field (only writing, calculation was done during Update() call)
-    if (calcflux_domain_ != INPAR::SCATRA::flux_none or
-        calcflux_boundary_ != INPAR::SCATRA::flux_none)
-    {
-      // for flux output of initial field (before first solve) do:
-      // flux_domain_ and flux_boundary_ vectors are initialized when CalcFlux() is called
-      if (step_ == 0 or
-          (calcflux_domain_ != INPAR::SCATRA::flux_none and flux_domain_ == Teuchos::null) or
-          (calcflux_boundary_ != INPAR::SCATRA::flux_none and flux_boundary_ == Teuchos::null))
-        CalcFlux(true, num);
-
-      if (calcflux_domain_ != INPAR::SCATRA::flux_none) OutputFlux(flux_domain_, "domain");
-      if (calcflux_boundary_ != INPAR::SCATRA::flux_none) OutputFlux(flux_boundary_, "boundary");
-    }
-
-    // write mean values of scalar(s)
-    OutputTotalAndMeanScalars(num);
-
-    // write domain and boundary integrals, i.e., surface areas and volumes of specified nodesets
-    OutputDomainOrBoundaryIntegrals("DomainIntegral");
-    OutputDomainOrBoundaryIntegrals("BoundaryIntegral");
-
-    // write integral values of reaction(s)
-    OutputIntegrReac(num);
-
-    // problem-specific outputs
-    OutputProblemSpecific();
-
-    // add restart data
-    if (step_ % uprestart_ == 0 and step_ != 0) OutputRestart();
-
-    // biofilm growth
-    if (scfldgrdisp_ != Teuchos::null)
-    {
-      output_->WriteVector("scfld_growth_displ", scfldgrdisp_);
-    }
-
-    // biofilm growth
-    if (scstrgrdisp_ != Teuchos::null)
-    {
-      output_->WriteVector("scstr_growth_displ", scstrgrdisp_);
-    }
-
-    // generate output associated with meshtying strategy
-    strategy_->Output();
+    if (calcflux_domain_ != INPAR::SCATRA::flux_none) OutputFlux(flux_domain_, "domain");
+    if (calcflux_boundary_ != INPAR::SCATRA::flux_none) OutputFlux(flux_boundary_, "boundary");
   }
+
+  // write mean values of scalar(s)
+  OutputTotalAndMeanScalars();
+
+  // write domain and boundary integrals, i.e., surface areas and volumes of specified nodesets
+  OutputDomainOrBoundaryIntegrals("DomainIntegral");
+  OutputDomainOrBoundaryIntegrals("BoundaryIntegral");
+
+  // write integral values of reaction(s)
+  OutputIntegrReac();
+
+  // problem-specific outputs
+  OutputProblemSpecific();
+
+  // biofilm growth
+  if (scfldgrdisp_ != Teuchos::null)
+  {
+    output_->WriteVector("scfld_growth_displ", scfldgrdisp_);
+  }
+
+  // biofilm growth
+  if (scstrgrdisp_ != Teuchos::null)
+  {
+    output_->WriteVector("scstr_growth_displ", scstrgrdisp_);
+  }
+
+  // generate output associated with meshtying strategy
+  strategy_->Output();
 
   // generate output on micro scale if necessary
   if (macro_scale_)
@@ -1661,8 +1669,6 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     filename << problem_->OutputControlFile()->FileName() << "-Result_Step" << step_ << ".m";
     CORE::LINALG::PrintVectorInMatlabFormat(filename.str(), *phinp_);
   }
-  // NOTE:
-  // statistics output for normal fluxes at boundaries was already done during Update()
 }
 
 /*----------------------------------------------------------------------*
@@ -1698,8 +1704,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           double initialval =
-              problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .Evaluate(lnode->X(), time_, k);
+              problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  .Evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }
@@ -1722,7 +1728,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         }
 
         DRT::NURBS::apply_nurbs_initial_condition(
-            *discret_, errfile_, problem_->SolverParams(lstsolver), startfuncno, phin_);
+            *discret_, problem_->SolverParams(lstsolver), startfuncno, phin_);
       }
 
       // initialize also the solution vector. These values are a pretty good guess for the
@@ -2432,6 +2438,14 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+int SCATRA::ScaTraTimIntImpl::GetMaxDofSetNumber() const
+{
+  return std::max({nds_disp_, nds_growth_, nds_micro_, nds_pres_, nds_scatra_, nds_thermo_,
+      nds_two_tensor_quantitiy_, nds_vel_, nds_wss_});
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels(
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
@@ -3123,7 +3137,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
         const double fac = DRT::INPUT::IntegralValue<bool>(*params_, "SPHERICALCOORDS")
-                               ? *node->X() * *node->X() * four_pi
+                               ? *node->X().data() * *node->X().data() * four_pi
                                : 1.0;
 
         // extract degrees of freedom from node
@@ -3263,15 +3277,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               const double expterm2 = std::exp(-alphac * frt * eta);
               const double expterm = expterm1 - expterm2;
 
-              // safety check
-              if (std::abs(expterm) > 1.e5)
-              {
-                dserror(
-                    "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
-                    "%lf",
-                    expterm);
-              }
-
               // core residual term associated with Butler-Volmer mass flux density
               q_ = j0 * expterm;
 
@@ -3279,10 +3284,9 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               // define flux linearization terms
               double dj_dc_ed(0.0), dj_dc_el(0.0), dj_dpot_ed(0.0), dj_dpot_el(0.0);
               // calculate flux linearizations
-              DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-                  CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv, alphaa,
-                      alphac, dummyresistance, expterm1, expterm2, kr, faraday, conc_el, conc_ed,
-                      cmax, eta, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
+              DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt,
+                  epdderiv, alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday,
+                  conc_el, conc_ed, cmax, eta, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
 
               dq_dphi_[0] = dj_dc_el;
               dq_dphi_[1] = dj_dpot_el;
@@ -3585,9 +3589,9 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
   }
 
   // nodes with 3 dofs
-  std::vector<int> multiscale_nodes;
+  std::set<int> multiscale_nodes;
   // nodes with 2 dofs
-  std::vector<int> other_nodes;
+  std::set<int> other_nodes;
 
   // loop over all element and search for nodes that are on elements with 2 dof on one side and 3
   // dofs at the other side
@@ -3620,8 +3624,6 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
       }
     }
   }
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(multiscale_nodes);
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(other_nodes);
 
   // find nodes that connect elements with 2 and 3 dofs ("hybrid nodes")
   std::vector<int> hybrid_nodes;
@@ -3699,3 +3701,5 @@ void SCATRA::ScaTraTimIntImpl::TestResults()
   DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
   DRT::Problem::Instance()->TestAll(discret_->Comm());
 }
+
+BACI_NAMESPACE_CLOSE

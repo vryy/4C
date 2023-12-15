@@ -13,13 +13,14 @@
 #include "baci_cut_edge.H"
 #include "baci_cut_output.H"
 
-
-std::ostream& operator<<(std::ostream& stream, const CORE::GEO::CUT::Cycle& cycle)
+std::ostream& operator<<(std::ostream& stream, const BACI::CORE::GEO::CUT::Cycle& cycle)
 {
   std::copy(cycle.points_.begin(), cycle.points_.end(),
-      std::ostream_iterator<CORE::GEO::CUT::Point*>(stream, " "));
+      std::ostream_iterator<BACI::CORE::GEO::CUT::Point*>(stream, " "));
   return stream << "\n";
 }
+
+BACI_NAMESPACE_OPEN
 
 bool CORE::GEO::CUT::Cycle::MakeCycle(const point_line_set& lines, Cycle& cycle)
 {
@@ -285,3 +286,5 @@ void CORE::GEO::CUT::Cycle::Print() const
     std::cout << "Point " << (*cit)->Id() << "\n";
   std::cout << std::endl;
 }
+
+BACI_NAMESPACE_CLOSE

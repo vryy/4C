@@ -13,11 +13,13 @@
 
 #include "baci_lib_dofset_definedmapping_wrapper.H"
 
+#include "baci_coupling_matchingoctree.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_base.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -91,7 +93,7 @@ int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
     if (iter_target != nodes.end()) targetnodes = *iter_target->second;
 
     // initialize search tree for search
-    DRT::UTILS::NodeMatchingOctree nodematchingtree;
+    CORE::COUPLING::NodeMatchingOctree nodematchingtree;
     nodematchingtree.Init(dis, targetnodes, 150, 1e-08);
     nodematchingtree.Setup();
 
@@ -218,3 +220,5 @@ const DRT::Node* DRT::DofSetDefinedMappingWrapper::GetSourceNode(int targetLid) 
   // get the node from the source discretization
   return sourcedis_->gNode(sourcegid);
 }
+
+BACI_NAMESPACE_CLOSE

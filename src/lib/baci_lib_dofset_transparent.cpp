@@ -13,6 +13,8 @@
 
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::TransparentDofSet::TransparentDofSet(
     Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel)
     : DRT::DofSet(), sourcedis_(sourcedis), parallel_(parallel)
@@ -162,7 +164,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 
   {
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(sourcedis.Comm());
+    CORE::COMM::Exporter exporter(sourcedis.Comm());
 
     // necessary variables
     MPI_Request request;
@@ -197,7 +199,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
         SetSourceDofsAvailableOnThisProc(gid_to_dofs);
 
         // Pack info into block to send
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         PackLocalSourceDofs(gid_to_dofs, data);
         data.StartPacking();
         PackLocalSourceDofs(gid_to_dofs, data);
@@ -380,12 +382,12 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::PackLocalSourceDofs(
-    std::map<int, std::vector<int>>& gid_to_dofs, DRT::PackBuffer& sblock)
+    std::map<int, std::vector<int>>& gid_to_dofs, CORE::COMM::PackBuffer& sblock)
 {
   int size = gid_to_dofs.size();
 
   // add size  to sendblock
-  DRT::ParObject::AddtoPack(sblock, size);
+  CORE::COMM::ParObject::AddtoPack(sblock, size);
 
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
        curr != gid_to_dofs.end(); ++curr)
@@ -394,11 +396,11 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
     std::vector<int> mydofs = curr->second;
     int numdofs = (int)mydofs.size();
 
-    DRT::ParObject::AddtoPack(sblock, gid);
-    DRT::ParObject::AddtoPack(sblock, numdofs);
+    CORE::COMM::ParObject::AddtoPack(sblock, gid);
+    CORE::COMM::ParObject::AddtoPack(sblock, numdofs);
     for (int ll = 0; ll < numdofs; ++ll)
     {
-      DRT::ParObject::AddtoPack(sblock, mydofs[ll]);
+      CORE::COMM::ParObject::AddtoPack(sblock, mydofs[ll]);
     }
   }
 
@@ -425,7 +427,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
 
   // extract size
   int size = 0;
-  DRT::ParObject::ExtractfromPack(position, rblock, size);
+  CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
 
   for (int rr = 0; rr < size; ++rr)
   {
@@ -433,14 +435,14 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
     std::vector<int> mydofs;
     int numdofs = 0;
 
-    DRT::ParObject::ExtractfromPack(position, rblock, gid);
-    DRT::ParObject::ExtractfromPack(position, rblock, numdofs);
+    CORE::COMM::ParObject::ExtractfromPack(position, rblock, gid);
+    CORE::COMM::ParObject::ExtractfromPack(position, rblock, numdofs);
 
     for (int ll = 0; ll < numdofs; ++ll)
     {
       int thisdof = 0;
 
-      DRT::ParObject::ExtractfromPack(position, rblock, thisdof);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, thisdof);
       mydofs.push_back(thisdof);
     }
 
@@ -461,7 +463,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock,
-    DRT::Exporter& exporter, MPI_Request& request)
+    CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // necessary variables
 
@@ -503,7 +505,7 @@ void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<c
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char>& sblock,
-    DRT::Exporter& exporter, MPI_Request& request)
+    CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // Send block to next proc.
   int tag = myrank;
@@ -518,3 +520,5 @@ void DRT::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char
 
   return;
 }  // SendBlock
+
+BACI_NAMESPACE_CLOSE

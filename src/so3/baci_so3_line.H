@@ -16,6 +16,8 @@
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace DRT
@@ -106,7 +108,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -116,12 +118,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~StructuralLine() override = default;
-
       //@}
 
       //! @name Acess methods
@@ -129,7 +125,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -219,5 +215,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_LINE_H

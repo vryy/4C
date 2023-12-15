@@ -12,6 +12,8 @@
 
 #include "baci_contact_abstract_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CONTACT
 {
@@ -44,11 +46,7 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
         Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof);
 
-    /*!
-    \brief Destructor
 
-    */
-    virtual ~CoLagrangeStrategy() = default;
 
     //! @name Access methods
 
@@ -62,7 +60,7 @@ namespace CONTACT
     this case and activesetssconv_ is meaningless.
 
     */
-    bool ActiveSetSemiSmoothConverged() const
+    bool ActiveSetSemiSmoothConverged() const override
     {
       bool semismooth = DRT::INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
       if (semismooth)
@@ -81,7 +79,7 @@ namespace CONTACT
     this case and activesetconv_ is meaningless.
 
     */
-    bool ActiveSetConverged()
+    bool ActiveSetConverged() override
     {
       bool semismooth = DRT::INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
       if (!semismooth)
@@ -94,7 +92,7 @@ namespace CONTACT
     \brief Return no. of fixed-point active sets in this time step
 
     */
-    int ActiveSetSteps() { return activesetsteps_; }
+    int ActiveSetSteps() override { return activesetsteps_; }
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)
      *
@@ -102,8 +100,8 @@ namespace CONTACT
      *  contributions are present.
      *
      *  \param bt (in): Desired vector block type, e.g. displ, constraint,*/
-    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const;
+    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum CONTACT::VecBlockType& bt) const override;
 
 
     /*! \brief Recover the current state
@@ -124,8 +122,8 @@ namespace CONTACT
      * \note The search direction \c dir in general differs from the actual step since the step
      * length can be differ from 1.0.
      * */
-    virtual void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-        const Epetra_Vector& dir, const Epetra_Vector& xnew);
+    void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+        const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
     /*! \brief Return the desired matrix block pointer (read-only)
      *
@@ -134,9 +132,8 @@ namespace CONTACT
      *
      *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *  \param cparams (in): contact parameter interface (read-only) */
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt,
-        const CONTACT::ParamsInterface* cparams = nullptr) const;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
+        const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     /*! \brief Apply modifications (e.g. condensation) directly before linear solve
      *
@@ -145,8 +142,8 @@ namespace CONTACT
      * @param kteff Jacobian matrix
      * @param rhs ?? Right-hand side of linear system or residual?
      */
-    virtual void RunPreApplyJacobianInverse(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
+    void RunPreApplyJacobianInverse(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs) override;
 
     /*! \brief Perform condensation of frictionless contact
      *
@@ -178,9 +175,9 @@ namespace CONTACT
      * @param xold ??
      * @param grp ??
      */
-    virtual void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
+    void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
         const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
-        const NOX::NLN::Group& grp);
+        const NOX::NLN::Group& grp) override;
 
     //! The contributions to the structural right-hand-side block are calculated.
     virtual void EvalStrContactRHS();
@@ -197,7 +194,7 @@ namespace CONTACT
     //! Assemble all contact contributions (frictional contact)
     virtual void AssembleAllContactTermsFriction();
 
-    virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const
+    const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override
     {
       if ((not redist) and ParRedist())
         dserror("The original / not redistributed slave normal row map is not available!");
@@ -206,13 +203,13 @@ namespace CONTACT
     }
 
     //! Get the active node row map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const
+    Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override
     {
       return gOldActiveSlaveNodes_;
     };
 
     //! Get the slip node row map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const { return gOldslipnodes_; };
+    Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override { return gOldslipnodes_; };
 
     //@}
 
@@ -297,7 +294,7 @@ namespace CONTACT
     This function is outsourced cause the vector is needed for the line search algorithm.
 
     */
-    void EvalConstrRHS();
+    void EvalConstrRHS() override;
 
     /*! \brief Compute force and stiffness terms
      *
@@ -309,12 +306,12 @@ namespace CONTACT
      *         set force evaluation flag
      *
      */
-    virtual void PreEvaluate(CONTACT::ParamsInterface& cparams);
+    void PreEvaluate(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Run in the end of the Evaluate() routine to reset
      *         force evaluation flag
      */
-    virtual void PostEvaluate(CONTACT::ParamsInterface& cparams);
+    void PostEvaluate(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief This is a postprocessing functionality for nonsmooth contact
      */
@@ -337,8 +334,8 @@ namespace CONTACT
      *                      integration
      * \param xnew    (in): new solution vector of the NOX solver
      */
-    virtual void ResetLagrangeMultipliers(
-        const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew);
+    void ResetLagrangeMultipliers(
+        const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override;
 
     /*! \brief Compute force terms
      *
@@ -360,7 +357,7 @@ namespace CONTACT
     to be performed for the current time / load step.
 
     */
-    void UpdateActiveSet();
+    void UpdateActiveSet() override;
 
     /*!
     \brief Update active set and check for convergence
@@ -384,13 +381,13 @@ namespace CONTACT
 
     \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false);
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override;
 
     /*!
     \brief Reset active set status for next time step
 
     */
-    void ResetActiveSet()
+    void ResetActiveSet() override
     {
       activesetssconv_ = false;
       activesetconv_ = false;
@@ -402,7 +399,7 @@ namespace CONTACT
     \brief Return matrix T
 
     */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> TMatrix() { return tmatrix_; }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> TMatrix() override { return tmatrix_; }
 
     //@}
 
@@ -436,7 +433,7 @@ namespace CONTACT
     \brief Saving reference state is required for penalty support (LTL)
 
     */
-    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis);
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override;
     //@}
 
     //! @name Empty methods
@@ -448,25 +445,25 @@ namespace CONTACT
     Call them whenever you like.
 
     */
-    double ConstraintNorm() const { return 0.0; }
-    void EvaluateRelMovPredict() {}
-    double InitialPenalty() { return 0.0; }
-    void InitializeUzawa(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    double ConstraintNorm() const override { return 0.0; }
+    void EvaluateRelMovPredict() override {}
+    double InitialPenalty() override { return 0.0; }
+    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
-    void ResetPenalty() {}
-    void ModifyPenalty() {}
-    void UpdateUzawaAugmentedLagrange() {}
-    void UpdateConstraintNorm(int uzawaiter = 0) {}
+    void ResetPenalty() override {}
+    void ModifyPenalty() override {}
+    void UpdateUzawaAugmentedLagrange() override {}
+    void UpdateConstraintNorm(int uzawaiter = 0) override {}
     bool IsPenalty() const override { return false; };
 
    protected:
     //! derived
-    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() { return interface_; }
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() override { return interface_; }
 
     //! derived
-    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const override
     {
       return interface_;
     }
@@ -478,7 +475,7 @@ namespace CONTACT
     the global derivative matrices S and P and Tresca friction matrix L + vector r.
 
     */
-    void Initialize();
+    void Initialize() override;
 
     /*!
     \brief Evaluate contact
@@ -489,17 +486,17 @@ namespace CONTACT
     results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
 
     */
-    void EvaluateContact(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
     \brief Evaluate frictional contact
 
     */
-    void EvaluateFriction(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override;
 
-    virtual void Update(Teuchos::RCP<const Epetra_Vector> dis);
+    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
 
    protected:
@@ -599,5 +596,7 @@ namespace CONTACT
   };  // class CoLagrangeStrategy
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_LAGRANGE_STRATEGY_H

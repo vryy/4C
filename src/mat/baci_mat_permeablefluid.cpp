@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*/
@@ -40,7 +42,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::PermeableFluid::CreateMaterial()
 MAT::PermeableFluidType MAT::PermeableFluidType::instance_;
 
 
-DRT::ParObject* MAT::PermeableFluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::PermeableFluidType::Create(const std::vector<char>& data)
 {
   MAT::PermeableFluid* permeable_fluid = new MAT::PermeableFluid();
   permeable_fluid->Unpack(data);
@@ -59,9 +61,9 @@ MAT::PermeableFluid::PermeableFluid(MAT::PAR::PermeableFluid* params) : params_(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PermeableFluid::Pack(DRT::PackBuffer& data) const
+void MAT::PermeableFluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -80,10 +82,8 @@ void MAT::PermeableFluid::Pack(DRT::PackBuffer& data) const
 void MAT::PermeableFluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -131,3 +131,5 @@ double MAT::PermeableFluid::SetViscosity() const
 
   return viscosity;
 }
+
+BACI_NAMESPACE_CLOSE

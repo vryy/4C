@@ -11,9 +11,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_coupanisoexpo.H"
@@ -22,6 +22,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class CoupAnisoExpoBaseInterfaceFake : public MAT::ELASTIC::CoupAnisoExpoBaseInterface
   {
    public:
@@ -56,7 +58,7 @@ namespace
         tmp.MultiplyNT(fibersa[i], fibersb[i]);
         tensors_[i].Update(0.5, tmp);
         tensors_[i].UpdateT(0.5, tmp, 1.0);
-        UTILS::VOIGT::Stresses::MatrixToVector(tensors_[i], tensors_stress_[i]);
+        CORE::LINALG::VOIGT::Stresses::MatrixToVector(tensors_[i], tensors_stress_[i]);
       }
     }
 
@@ -139,10 +141,10 @@ namespace
       E1_.Update(0.5, C1_, -0.5, Id);
       E2_.Update(0.5, C2_, -0.5, Id);
 
-      UTILS::VOIGT::Strains::MatrixToVector(C1_, C1_strain_);
-      UTILS::VOIGT::Strains::MatrixToVector(C2_, C2_strain_);
-      UTILS::VOIGT::Strains::MatrixToVector(E1_, E1_strain_);
-      UTILS::VOIGT::Strains::MatrixToVector(E2_, E2_strain_);
+      CORE::LINALG::VOIGT::Strains::MatrixToVector(C1_, C1_strain_);
+      CORE::LINALG::VOIGT::Strains::MatrixToVector(C2_, C2_strain_);
+      CORE::LINALG::VOIGT::Strains::MatrixToVector(E1_, E1_strain_);
+      CORE::LINALG::VOIGT::Strains::MatrixToVector(E2_, E2_strain_);
     }
 
 

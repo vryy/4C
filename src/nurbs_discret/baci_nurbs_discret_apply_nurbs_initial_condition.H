@@ -24,6 +24,8 @@ the function value as well)
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -52,7 +54,7 @@ namespace DRT
 
     \date 08/11
     */
-    void apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* outfile,
+    void apply_nurbs_initial_condition(DRT::Discretization& dis,
         const Teuchos::ParameterList& solverparams, const int startfuncno,
         Teuchos::RCP<Epetra_Vector> initialvals);
 
@@ -111,5 +113,7 @@ namespace DRT
   }  // namespace NURBS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H

@@ -15,16 +15,16 @@ coordinate system
 #include "baci_cut_side.H"
 #include "baci_cut_volumecell.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------*
  * Perform all the operations related to computing reference plane           sudhakar 06/15
  *-----------------------------------------------------------------------------------*/
 std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane()
 {
-  if (elem1_->Shape() != ::DRT::Element::hex8)
+  if (elem1_->Shape() != CORE::FE::CellType::hex8)
   {
-    std::cout << "Element Shape: " << elem1_->Shape() << std::endl;
-    throw std::runtime_error("Currently can handle only hexagonal family\n");
-    // dserror("Currently can handle only hexagonal family\n");
+    dserror("Currently can handle only hexagonal family, not %d\n", elem1_->Shape());
   }
 
   std::vector<double> RefPlaneEqn(4, 0.0);
@@ -246,7 +246,6 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
         xnormal = xn;
         RefPlaneEqn = RefPlaneTemp;
         refPtsGmsh_ = it->second.second;
-        ;
         found_refplane = true;
       }
     }
@@ -340,7 +339,6 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
         xnormal = xn;
         RefPlaneEqn = RefPlaneTemp;
         refPtsGmsh_ = it->second.second;
-        ;
         found_refplane = true;
       }
     }
@@ -406,3 +404,5 @@ const unsigned CORE::GEO::CUT::DirectDivergenceGlobalRefplane::tri_diags_[24][3]
 
 const unsigned CORE::GEO::CUT::DirectDivergenceGlobalRefplane::side_split_[4][3] = {
     {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}};
+
+BACI_NAMESPACE_CLOSE

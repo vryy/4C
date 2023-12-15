@@ -19,10 +19,12 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   /// numdofpernode = number of dofs per node for fluid problem
-  template <DRT::Element::DiscretizationType distype, int numdofpernode,
+  template <CORE::FE::CellType distype, int numdofpernode,
       DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 
   /*!
@@ -39,17 +41,15 @@ namespace FLD
    public:
     /// number of nodes for this element type including virtual nodes
     static const int elenumnode =
-        DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode *
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * CORE::FE::num_nodes<distype>;
     /// number of nodes for this element type (only real nodes)
-    static const int elenumnodereal =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int elenumnodereal = CORE::FE::num_nodes<distype>;
 
     /// standard constructor
     explicit RotationallySymmetricPeriodicBC() : rotangle_(0.0), rotmat_(true) { return; };
 
     /// empty destructor
-    virtual ~RotationallySymmetricPeriodicBC(){};
+    virtual ~RotationallySymmetricPeriodicBC() = default;
 
 
     /// is any rotation needed on the element level?
@@ -255,5 +255,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ROTSYM_PERIODICBC_H

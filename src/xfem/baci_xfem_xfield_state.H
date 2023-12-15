@@ -18,6 +18,8 @@
 
 class Epetra_Map;
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -39,7 +41,7 @@ namespace XFEM
     XFieldState();
 
     /// destructor
-    virtual ~XFieldState(){};
+    virtual ~XFieldState() = default;
 
     /** \brief initialize member variables for xfield<-->field couplings
      *
@@ -164,5 +166,7 @@ namespace XFEM
   };  // class XFieldState
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFIELD_STATE_H

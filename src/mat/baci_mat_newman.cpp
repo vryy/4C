@@ -12,11 +12,13 @@ species
 
 #include "baci_mat_newman.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function_of_time.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 // TODO: math.H was included automatically
 
@@ -53,7 +55,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Newman::CreateMaterial()
 MAT::NewmanType MAT::NewmanType::instance_;
 
 
-DRT::ParObject* MAT::NewmanType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::NewmanType::Create(const std::vector<char>& data)
 {
   MAT::Newman* newman = new MAT::Newman();
   newman->Unpack(data);
@@ -73,9 +75,9 @@ MAT::Newman::Newman(MAT::PAR::Newman* params) : params_(params) { return; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Newman::Pack(DRT::PackBuffer& data) const
+void MAT::Newman::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -97,10 +99,7 @@ void MAT::Newman::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -137,7 +136,7 @@ double MAT::Newman::ComputeTransferenceNumber(const double cint) const
     trans = EvalPreDefinedFunct(-1, cint, TransNrParams());
   else
     trans = DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfTime>(TransNrCurve() - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
                 .Evaluate(cint);
 
   return trans;
@@ -155,7 +154,7 @@ double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
     firstderiv = EvalFirstDerivPreDefinedFunct(-1, cint, TransNrParams());
   else
     firstderiv = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfTime>(TransNrCurve() - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
                      .EvaluateDerivative(cint);
 
   return firstderiv;
@@ -174,7 +173,7 @@ double MAT::Newman::ComputeThermFac(const double cint) const
     therm = 1.0;
   else
     therm = DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
                 .Evaluate(cint);
 
   return therm;
@@ -194,8 +193,10 @@ double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
     firstderiv = 0.0;
   else
     firstderiv = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
                      .EvaluateDerivative(cint);
 
   return firstderiv;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@ equations
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -45,8 +47,6 @@ namespace CORE::GEO
           : volcell_(volcell), elem1_(elem), position_(posi), num_func_(num_func)
       {
       }
-
-      ~VolumeIntegration(){};
 
       /*!
       \brief Compute Gauss point weights by solving the moment fitting equations and returns the
@@ -202,5 +202,7 @@ namespace CORE::GEO
     };
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

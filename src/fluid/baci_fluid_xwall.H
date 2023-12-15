@@ -13,11 +13,14 @@
 #define BACI_FLUID_XWALL_H
 
 #include "baci_inpar_fluid.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -55,7 +58,7 @@ namespace FLD
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager);
 
     /// Destructor
-    virtual ~XWall() { return; };
+    virtual ~XWall() = default;
 
     // set element params for xwall EnrichmentType
     virtual void SetXWallParams(Teuchos::ParameterList& eleparams);
@@ -297,22 +300,19 @@ namespace FLD
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
         Teuchos::RCP<Epetra_Vector> gridv);
 
-    /// Destructor
-    virtual ~XWallAleFSI() { return; };
-
     void UpdateWDistWALE();
 
     // set element params for xwall EnrichmentType
-    void SetXWallParams(Teuchos::ParameterList& eleparams);
+    void SetXWallParams(Teuchos::ParameterList& eleparams) override;
 
     // returns, if Properties for GenAlpha have to be updated
     void UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, int itnum,
         Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<Epetra_Vector> velnp,
-        Teuchos::RCP<Epetra_Vector> veln);
+        Teuchos::RCP<Epetra_Vector> veln) override;
 
    private:
     // set element params for xwall EnrichmentType, distributed for xwall discretization
-    void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams);
+    void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams) override;
     Teuchos::RCP<Epetra_Vector> mydispnp_;
     Teuchos::RCP<Epetra_Vector> mygridv_;
 
@@ -322,5 +322,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_XWALL_H

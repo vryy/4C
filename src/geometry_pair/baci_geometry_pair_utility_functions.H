@@ -12,12 +12,14 @@
 #define BACI_GEOMETRY_PAIR_UTILITY_FUNCTIONS_H
 
 
+#include "baci_beam3_base.H"
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_fad.H"
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
 
 // Forward declarations.
 namespace GEOMETRYPAIR
@@ -92,7 +94,89 @@ namespace GEOMETRYPAIR
     for (unsigned int i_point = 0; i_point < n_points; i_point++)
       projection_points_out[i_point].SetFromOtherPointDouble(projection_points_in[i_point]);
   }
+
+
+  /**
+   * @brief Print the current nodal normals of a surface element
+   *
+   * As the nodal normal are passed through the geometry pair functions via
+   * "typename... optional_type" template arguments, this function will print something
+   * in case nodal normals are provided.
+   */
+  template <typename other, typename scalar_type, typename... optional_type>
+  void PrintNodalNormals(std::ostream& out,
+      const CORE::LINALG::Matrix<3 * other::n_nodes_, 1, scalar_type>* nodal_normals,
+      optional_type... optional_args)
+  {
+    if (nodal_normals == nullptr)
+    {
+      out << "No nodal normals are given\n";
+    }
+    else
+    {
+      out << "Averaged nodal normals: ";
+      const auto& normal = *nodal_normals;
+      CORE::FADUTILS::CastToDouble(normal).Print(out);
+    }
+  }
+
+  /**
+   * @brief Print the current nodal normals of a surface element
+   *
+   * As the nodal normal are passed through the geometry pair functions via
+   * "typename... optional_type" template arguments, this function will print nothing if the other
+   * element type does not provide nodal normals.
+   */
+  template <typename other, typename... optional_type>
+  void PrintNodalNormals(std::ostream& out, optional_type... optional_args)
+  {
+  }
+
+  /**
+   * @brief Add the current displacement state of a pair to an output stream
+   */
+  template <typename pair_type, typename scalar_type, typename... optional_type>
+  void PrintPairInformation(std::ostream& out, const pair_type* pair,
+      const CORE::LINALG::Matrix<pair_type::t_line::n_dof_, 1, scalar_type>& q_line,
+      const CORE::LINALG::Matrix<pair_type::t_other::n_dof_, 1, scalar_type>& q_other,
+      optional_type... optional_args)
+  {
+    using other = typename pair_type::t_other;
+
+    constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
+    out << std::setprecision(max_precision);
+
+    // Print the line information
+    const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(pair->Element1());
+    if (beam_element == nullptr)
+      dserror(
+          "The element pointer has to point to a valid beam element when evaluating the shape "
+          "functions of a beam, as we need to get RefLength()!");
+
+    out << "\nLine GID: " << pair->Element1()->Id();
+    out << "\nLine ref length value: " << beam_element->RefLength();
+    out << "\nLine position vector: ";
+    CORE::FADUTILS::CastToDouble(q_line).Print(out);
+
+    // Print the other information
+    out << "Other GID: ";
+    const auto* face_element = dynamic_cast<const DRT::FaceElement*>(pair->Element2());
+    if (face_element == nullptr)
+    {
+      out << pair->Element2()->Id();
+    }
+    else
+    {
+      out << face_element->ParentElementId();
+    }
+    out << "\nOther position vector: ";
+    CORE::FADUTILS::CastToDouble(q_other).Print(out);
+    PrintNodalNormals<other>(out, optional_args...);
+  }
+
 }  // namespace GEOMETRYPAIR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

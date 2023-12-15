@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_ACTION_H
 #define BACI_FLUID_ELE_ACTION_H
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   /*--------------------------------------------------------------------------
@@ -97,7 +99,6 @@ namespace FLD
     flow_dep_pressure_bc,
     slip_supp_bc,
     navier_slip_bc,
-    conservative_outflow_bc,
     calc_Neumann_inflow,
     calc_pressure_bou_int,
     center_of_mass_calc,
@@ -124,5 +125,7 @@ namespace FLD
   };  // enum IntFaceAction
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -14,14 +14,16 @@
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_transparent.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_utils_function_of_time.H"
 
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
@@ -295,7 +297,7 @@ UTILS::MPConstraint3::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
       if (myrank == 0)
       {
         Teuchos::RCP<DRT::Element> constraintele =
-            DRT::UTILS::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
+            CORE::COMM::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
         // set the same global node ids to the ale element
         constraintele->SetNodeIds(ngid_ele.size(), ngid_ele.data());
         // add constraint element
@@ -466,7 +468,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
                 time);
       Teuchos::RCP<Epetra_Vector> timefact =
           params.get<Teuchos::RCP<Epetra_Vector>>("vector curve factors");
@@ -542,7 +544,7 @@ void UTILS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization
     if (time < 0.0) usetime = false;
     if (curvenum >= 0 && usetime)
       curvefac =
-          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
               time);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
@@ -552,3 +554,5 @@ void UTILS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization
   }
   return;
 }  // end of InitializeConstraint
+
+BACI_NAMESPACE_CLOSE

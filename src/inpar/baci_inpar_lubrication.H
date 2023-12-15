@@ -12,6 +12,8 @@
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR
 {
   namespace LUBRICATION
@@ -58,8 +60,7 @@ namespace INPAR
     };
 
     //! map enum term to std::string
-    static inline const std::string VectorNormString(
-        const enum VectorNorm norm  //!< input enum term
+    static inline std::string VectorNormString(const enum VectorNorm norm  //!< input enum term
     )
     {
       switch (norm)
@@ -90,5 +91,7 @@ namespace INPAR
 
   }  // namespace LUBRICATION
 }  // namespace INPAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // INPAR_LUBRICATION_H

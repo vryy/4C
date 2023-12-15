@@ -14,6 +14,8 @@
 #include "baci_inpar_scatra.H"
 #include "baci_so3_poro.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -28,7 +30,7 @@ namespace DRT
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    template <class so3_ele, CORE::FE::CellType distype>
     class So3_Poro_Scatra : public So3_Poro<so3_ele, distype>
     {
       typedef So3_Poro<so3_ele, distype> my;
@@ -52,12 +54,6 @@ namespace DRT
 
       */
       So3_Poro_Scatra(const So3_Poro_Scatra& old);
-
-      /*!
-      \brief Destructor
-
-      */
-      ~So3_Poro_Scatra() override = default;
 
       //@}
 
@@ -86,7 +82,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -133,4 +129,6 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif  // SO3_PORO_SCATRA_H

@@ -22,6 +22,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   /// fluid field solver
@@ -43,7 +45,7 @@ namespace ADAPTER
         const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<DRT::Discretization> discret);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~FluidBaseAlgorithm();
+    virtual ~FluidBaseAlgorithm() = default;
 
     /// access to fluid field solver
     const Teuchos::RCP<Fluid>& FluidField() { return fluid_; }
@@ -87,5 +89,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

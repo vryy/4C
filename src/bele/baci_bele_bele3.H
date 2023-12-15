@@ -12,16 +12,17 @@
 #define BACI_BELE_BELE3_H
 
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -34,25 +35,26 @@ namespace DRT
     class Bele3Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Bele3Type"; }
+      std::string Name() const override { return "Bele3Type"; }
 
       static Bele3Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static Bele3Type instance_;
@@ -93,9 +95,9 @@ namespace DRT
       */
       explicit Bele3(const Bele3& old);
 
-      DRT::Element* Clone() const;
-      virtual DiscretizationType Shape() const;
-      virtual int NumLine() const
+      DRT::Element* Clone() const override;
+      CORE::FE::CellType Shape() const override;
+      int NumLine() const override
       {
         if (NumNode() == 9 || NumNode() == 8 || NumNode() == 4)
           return 4;
@@ -107,28 +109,23 @@ namespace DRT
           return -1;
         }
       }
-      virtual int NumSurface() const { return 1; }
-      virtual int NumVolume() const { return -1; }
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
-      virtual int UniqueParObjectId() const { return Bele3Type::Instance().UniqueParObjectId(); }
-      virtual void Pack(DRT::PackBuffer& data) const;
-      virtual void Unpack(const std::vector<char>& data);
+      int NumSurface() const override { return 1; }
+      int NumVolume() const override { return -1; }
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      int UniqueParObjectId() const override { return Bele3Type::Instance().UniqueParObjectId(); }
+      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~Bele3();
 
       //@}
 
       //! @name Access methods
 
-      virtual int NumDofPerNode(const DRT::Node&) const { return numdofpernode_; }
-      virtual int NumDofPerElement() const { return 0; }
-      void Print(std::ostream& os) const;
-      virtual DRT::ElementType& ElementType() const { return Bele3Type::Instance(); }
+      int NumDofPerNode(const DRT::Node&) const override { return numdofpernode_; }
+      int NumDofPerElement() const override { return 0; }
+      void Print(std::ostream& os) const override;
+      DRT::ElementType& ElementType() const override { return Bele3Type::Instance(); }
 
       //@}
 
@@ -137,16 +134,16 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /// Read input for this element
-      virtual bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef) override;
       //@}
 
       //! @name Other
@@ -179,18 +176,18 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const DRT::Element::DiscretizationType distype) const
+      bool isHigherOrderElement(const CORE::FE::CellType distype) const
       {
         bool hoel = true;
         switch (distype)
         {
-          case quad4:
-          case quad8:
-          case quad9:
-          case tri6:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::quad9:
+          case CORE::FE::CellType::tri6:
             hoel = true;
             break;
-          case tri3:
+          case CORE::FE::CellType::tri3:
             hoel = false;
             break;
           default:
@@ -221,8 +218,8 @@ namespace DRT
 
       //! Submethod to compute the enclosed volume for volume constraint boundary condition
       double ComputeConstrVols(
-          const CORE::LINALG::SerialDenseMatrix& xscurr,  ///< current configuration
-          const int numnode                               ///< num nodes
+          const CORE::LINALG::SerialDenseMatrix& xc,  ///< current configuration
+          const int numnode                           ///< num nodes
       );
 
       //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the
@@ -261,19 +258,19 @@ namespace DRT
     class Bele3LineType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Bele3LineType"; }
+      std::string Name() const override { return "Bele3LineType"; }
 
       static Bele3LineType& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented for element type bele3!");
@@ -316,20 +313,15 @@ namespace DRT
       */
       Bele3Line(const Bele3Line& old);
 
-      DRT::Element* Clone() const;
-      virtual DiscretizationType Shape() const;
-      virtual int UniqueParObjectId() const
+      DRT::Element* Clone() const override;
+      CORE::FE::CellType Shape() const override;
+      int UniqueParObjectId() const override
       {
         return Bele3LineType::Instance().UniqueParObjectId();
       }
-      virtual void Pack(DRT::PackBuffer& data) const;
-      virtual void Unpack(const std::vector<char>& data);
+      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~Bele3Line();
 
       //@}
 
@@ -342,29 +334,29 @@ namespace DRT
 
       For this 3D boundary element, we have 3 displacements, if needed
       */
-      virtual int NumDofPerNode(const DRT::Node&) const { return numdofpernode_; }
+      int NumDofPerNode(const DRT::Node&) const override { return numdofpernode_; }
 
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return Bele3LineType::Instance(); }
+      DRT::ElementType& ElementType() const override { return Bele3LineType::Instance(); }
 
       //@}
 
       //! @name Evaluation
 
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! @name Evaluate methods
 
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -390,11 +382,11 @@ namespace DRT
 
 
       //! compute infintesimal line element dr for integration along the line
-      double f2_substitution(const CORE::LINALG::SerialDenseMatrix xyze,
+      double f2_substitution(const CORE::LINALG::SerialDenseMatrix xye,
           const CORE::LINALG::SerialDenseMatrix deriv, const int iel);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       //! integrate shape functions over a line
       void IntegrateShapeFunction(Teuchos::ParameterList& params,
@@ -409,5 +401,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

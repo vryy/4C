@@ -28,6 +28,8 @@
 #define MORTARCLIPTOL 1.0e-8 /* tolerance for polygon clipping */
 #define MORTARINTLIM 1.0e-12 /* min(area-%) cell/slave for integration */
 
+BACI_NAMESPACE_OPEN
+
 /************************************************************************/
 /* Mortar debugging options                                             */
 /************************************************************************/
@@ -39,5 +41,7 @@
 //#define MORTARGMSHCELLS      /* gmsh output of intcells in each iteration */
 //#define MORTARGMSHTN         /* gmsh output of all treenodes */
 //#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_DEFINES_H

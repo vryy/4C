@@ -15,6 +15,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ELASTIC
@@ -354,5 +356,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_H

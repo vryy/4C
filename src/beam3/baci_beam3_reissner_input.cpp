@@ -10,10 +10,12 @@
 
 #include "baci_beam3_reissner.H"
 #include "baci_discretization_fem_general_largerotations.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_beam_material_generic.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
+
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -81,3 +83,5 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3r::SetCenterlineHermite(const bool yesno) { centerline_hermite_ = yesno; }
+
+BACI_NAMESPACE_CLOSE

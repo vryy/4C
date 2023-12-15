@@ -17,6 +17,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declarations.
 namespace CORE::LINALG
@@ -36,7 +38,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVtuOutputWriterVisualization;
+  class BeamToSolidOutputWriterVisualization;
 }  // namespace BEAMINTERACTION
 
 
@@ -62,10 +64,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingPairBase();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidSurfaceMeshtyingPairBase(){};
 
     /**
      * \brief Update state of translational nodal DoFs (absolute positions and tangents) of the beam
@@ -88,7 +86,7 @@ namespace BEAMINTERACTION
     void PreEvaluate() override;
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
      *
      * Create segmentation and integration points output.
      *
@@ -96,14 +94,17 @@ namespace BEAMINTERACTION
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**
      * \brief Create the geometry pair for this contact pair.
+     * @param element1 Pointer to the first element
+     * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(
+    void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -136,7 +137,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Discretization.
      * @return Vector with the GIDs of this pair.
      */
-    std::vector<int> GetPairGID(const ::DRT::Discretization& discret) const;
+    std::vector<int> GetPairGID(const BACI::DRT::Discretization& discret) const;
 
    private:
     /**
@@ -146,7 +147,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list with visualization parameters.
      */
     void AddVisualizationIntegrationPoints(
-        const Teuchos::RCP<BeamToSolidVtuOutputWriterVisualization>& visualization_writer,
+        const Teuchos::RCP<BeamToSolidOutputWriterVisualization>& visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const;
 
@@ -159,5 +160,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>> face_element_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

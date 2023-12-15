@@ -17,6 +17,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -119,9 +121,9 @@ void INPAR::IMMERSED::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // IMMERSED COUPLING
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> immersedcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> immersedcomponents;
 
-  immersedcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
+  immersedcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
   Teuchos::RCP<ConditionDefinition> lineimmersed = Teuchos::rcp(
       new ConditionDefinition("DESIGN IMMERSED COUPLING LINE CONDITIONS", "IMMERSEDCoupling",
@@ -139,3 +141,5 @@ void INPAR::IMMERSED::SetValidConditions(
   condlist.push_back(lineimmersed);
   condlist.push_back(surfimmersed);
 }
+
+BACI_NAMESPACE_CLOSE

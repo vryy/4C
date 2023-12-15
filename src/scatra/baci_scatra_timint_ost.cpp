@@ -16,6 +16,8 @@
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> actdis,
@@ -257,20 +259,20 @@ void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::Update(const int num)
+void SCATRA::TimIntOneStepTheta::Update()
 {
   // compute time derivative at time n+1
   ComputeTimeDerivative();
 
   // call base class routine
-  ScaTraTimIntImpl::Update(num);
+  ScaTraTimIntImpl::Update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (DoOutput() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
+    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
   }
 
   // after the next command (time shift of solutions) do NOT call
@@ -304,10 +306,10 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::OutputRestart() const
+void SCATRA::TimIntOneStepTheta::WriteRestart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::OutputRestart();
+  ScaTraTimIntImpl::WriteRestart();
 
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);
@@ -438,3 +440,4 @@ void SCATRA::TimIntOneStepTheta::ClearState()
   step_ = -1;
   time_ = 0.0;
 }
+BACI_NAMESPACE_CLOSE

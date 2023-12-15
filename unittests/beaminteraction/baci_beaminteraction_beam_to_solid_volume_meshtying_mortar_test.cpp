@@ -34,6 +34,8 @@ namespace
      */
     BeamToSolidVolumeMeshtyingPairMortarTest()
     {
+      using namespace BACI;
+
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_volume_params_list;
       INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
@@ -46,15 +48,19 @@ namespace
      */
     template <typename beam_type, typename solid_type, typename lambda_type>
     void PerformMortarPairUnitTest(
-        BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>&
-            contact_pair,
-        const CORE::LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
-        const CORE::LINALG::Matrix<9, 1, double>& q_beam_rot,
-        const CORE::LINALG::Matrix<solid_type::n_dof_, 1, double>& q_solid,
-        const CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double>& result_local_D,
-        const CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double>& result_local_M,
-        const CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double>& result_local_kappa)
+        BACI::BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+            lambda_type>& contact_pair,
+        const BACI::CORE::LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
+        const BACI::CORE::LINALG::Matrix<9, 1, double>& q_beam_rot,
+        const BACI::CORE::LINALG::Matrix<solid_type::n_dof_, 1, double>& q_solid,
+        const BACI::CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double>&
+            result_local_D,
+        const BACI::CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double>&
+            result_local_M,
+        const BACI::CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double>& result_local_kappa)
     {
+      using namespace BACI;
+
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
       Teuchos::RCP<DRT::Element> beam_element = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -80,7 +86,7 @@ namespace
       std::vector<const DRT::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*solid_element));
-      contact_pair.CreateGeometryPair(evaluation_data_);
+      contact_pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
       contact_pair.Init(Teuchos::null, pair_elements);
 
       // Evaluate the local matrices.
@@ -88,7 +94,6 @@ namespace
       CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> local_M(false);
       CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double> local_kappa(false);
       CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double> local_constraint(false);
-      contact_pair.CastGeometryPair()->Setup();
       contact_pair.ele1posref_ = q_beam;
       contact_pair.ele2posref_ = q_solid;
       contact_pair.CastGeometryPair()->Evaluate(
@@ -116,7 +121,7 @@ namespace
 
 
     //! Evaluation data container for geometry pairs.
-    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
+    Teuchos::RCP<BACI::GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
   };
 
   /**
@@ -124,6 +129,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex8Line2)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex8 solid_type;
@@ -291,6 +298,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex8Line3)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex8 solid_type;
@@ -497,6 +506,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex8Line4)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex8 solid_type;
@@ -742,6 +753,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex20Line2)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex20 solid_type;
@@ -1017,6 +1030,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex20Line3)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex20 solid_type;
@@ -1367,6 +1382,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex20Line4)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex20 solid_type;
@@ -1792,6 +1809,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex27Line2)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex27 solid_type;
@@ -2130,6 +2149,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex27Line3)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex27 solid_type;
@@ -2564,6 +2585,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Hex27Line4)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_hex27 solid_type;
@@ -3094,6 +3117,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Tet4Line2)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_tet4 solid_type;
@@ -3225,6 +3250,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Tet4Line3)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_tet4 solid_type;
@@ -3383,6 +3410,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Tet4Line4)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_tet4 solid_type;
@@ -3568,6 +3597,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Tet10Line2)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_tet10 solid_type;
@@ -3753,6 +3784,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Tet10Line3)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_tet10 solid_type;
@@ -3983,6 +4016,8 @@ namespace
    */
   TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2Tet10Line4)
   {
+    using namespace BACI;
+
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
     typedef GEOMETRYPAIR::t_tet10 solid_type;

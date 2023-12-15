@@ -25,6 +25,8 @@
 #include "baci_mat_sutherland.H"
 #include "baci_nurbs_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   //-----------------------------------------------------------------------
@@ -48,7 +50,7 @@ namespace FLD
     CORE::LINALG::Matrix<4 * iel, 1> temp(temperature.data(), true);
 
     // set element data
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
 
     // the plane normal tells you in which plane the integration takes place
     const int normdirect = params.get<int>("normal direction to homogeneous plane");
@@ -110,14 +112,14 @@ namespace FLD
     DRT::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < iel; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
     }
 
-    if (distype == DRT::Element::hex8 || distype == DRT::Element::hex27 ||
-        distype == DRT::Element::hex20)
+    if (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::hex27 ||
+        distype == CORE::FE::CellType::hex20)
     {
       double min = xyze(normdirect, 0);
       double max = xyze(normdirect, 0);
@@ -458,7 +460,7 @@ namespace FLD
     CORE::LINALG::Matrix<4 * iel, 1> phi(scalar.data(), true);
 
     // set element data
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
 
     // the plane normal tells you in which plane the integration takes place
     const int normdirect = params.get<int>("normal direction to homogeneous plane");
@@ -512,14 +514,14 @@ namespace FLD
     DRT::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < iel; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
     }
 
-    if (distype == DRT::Element::hex8 || distype == DRT::Element::hex27 ||
-        distype == DRT::Element::hex20)
+    if (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::hex27 ||
+        distype == CORE::FE::CellType::hex20)
     {
       double min = xyze(normdirect, 0);
       double max = xyze(normdirect, 0);
@@ -890,7 +892,7 @@ namespace FLD
     }
 
     // set element data
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
 
     // allocate arrays for shape functions, derivatives and the transposed jacobian
     CORE::LINALG::Matrix<iel, 1> funct;
@@ -920,15 +922,15 @@ namespace FLD
         CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
-      case DRT::Element::hex8:
+      case CORE::FE::CellType::hex8:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
-      case DRT::Element::tet4:
+      case CORE::FE::CellType::tet4:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
-      case DRT::Element::tet10:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
+      case CORE::FE::CellType::tet10:
+      case CORE::FE::CellType::hex20:
+      case CORE::FE::CellType::hex27:
         dserror("the box filtering operation is only permitted for linear elements\n");
         break;
       default:
@@ -1382,7 +1384,7 @@ namespace FLD
     }
 
     // set element data
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
 
     // allocate arrays for shapefunctions, derivatives and the transposed jacobian
     CORE::LINALG::Matrix<iel, 1> funct;
@@ -1415,13 +1417,13 @@ namespace FLD
         CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
-      case DRT::Element::hex8:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
+      case CORE::FE::CellType::hex8:
+      case CORE::FE::CellType::hex20:
+      case CORE::FE::CellType::hex27:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
+      case CORE::FE::CellType::tet4:
+      case CORE::FE::CellType::tet10:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
       default:
@@ -1845,7 +1847,7 @@ namespace FLD
 
 
     // set element data
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     CORE::LINALG::Matrix<iel, 1> funct(true);
     // allocate arrays for shape functions, derivatives and the transposed jacobian
     CORE::LINALG::Matrix<NSD, NSD> xjm(true);
@@ -1867,15 +1869,15 @@ namespace FLD
         CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
-      case DRT::Element::hex8:
+      case CORE::FE::CellType::hex8:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
-      case DRT::Element::tet4:
+      case CORE::FE::CellType::tet4:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
-      case DRT::Element::tet10:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
+      case CORE::FE::CellType::tet10:
+      case CORE::FE::CellType::hex20:
+      case CORE::FE::CellType::hex27:
         dserror("the box filtering operation is only permitted for linear elements\n");
         break;
       default:
@@ -2006,7 +2008,7 @@ namespace FLD
   /*!
    \brief compute parameters of multifractal subgrid-scale model
   */
-  template <int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
+  template <int NEN, int NSD, CORE::FE::CellType DISTYPE>
   void f3_get_mf_params(DRT::ELEMENTS::Fluid* ele, DRT::ELEMENTS::FluidEleParameterStd* fldpara,
       Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat, std::vector<double>& vel,
       std::vector<double>& fsvel)
@@ -2640,6 +2642,7 @@ namespace FLD
       }
       velderxy = mffsvelintderxy;
 #endif
+
       CORE::LINALG::Matrix<NSD, NSD> two_epsilon;
       double rateofstrain = 0.0;
       for (int idim = 0; idim < NSD; idim++)
@@ -2745,7 +2748,7 @@ namespace FLD
   // calculate mean Cai of multifractal subgrid-scale modeling approach
   //                                                       rasthofer 08/12
   //----------------------------------------------------------------------
-  template <int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
+  template <int NEN, int NSD, CORE::FE::CellType DISTYPE>
   void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele, DRT::ELEMENTS::FluidEleParameterStd* fldpara,
       double& Cai, double& vol, std::vector<double>& vel, std::vector<double>& sca,
       const double& thermpress)
@@ -3047,7 +3050,7 @@ namespace FLD
     \param elevec1 (out)      : grad(N) integrated over Element
     \param edispnp (in)       : Displacement-vector
   */
-  template <DRT::Element::DiscretizationType DISTYPE>
+  template <CORE::FE::CellType DISTYPE>
   void ElementNodeNormal(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
       DRT::Discretization& discretization, std::vector<int>& lm,
       CORE::LINALG::SerialDenseVector& elevec1)
@@ -3058,10 +3061,10 @@ namespace FLD
     // point outwards on nodes at the rim of a basin (e.g. channel-flow).
 
     // get number of nodes
-    const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int iel = CORE::FE::num_nodes<DISTYPE>;
 
     // get number of dimensions
-    const int nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const int nsd = CORE::FE::dim<DISTYPE>;
 
     // get number of dof's
     const int numdofpernode = nsd + 1;
@@ -3100,7 +3103,7 @@ namespace FLD
     }
 
     // set element data
-    const DiscretizationType distype = this->Shape();
+    const CORE::FE::CellType distype = this->Shape();
   */
     //----------------------------------------------------------------------------
     //                         ELEMENT GEOMETRY
@@ -3118,7 +3121,7 @@ namespace FLD
     DRT::Node** nodes = Nodes();
     for (int inode=0; inode<iel; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0,inode) = x[0];
       xyze(1,inode) = x[1];
       xyze(2,inode) = x[2];
@@ -3205,9 +3208,9 @@ namespace FLD
           gp(1)=intpoints.qxg[iquad][1];
           gp(2)=intpoints.qxg[iquad][2];
 
-          if(!(distype == DRT::Element::nurbs8
+          if(!(distype == CORE::FE::CellType::nurbs8
                ||
-               distype == DRT::Element::nurbs27))
+               distype == CORE::FE::CellType::nurbs27))
           {
             // get values of shape functions and derivatives in the gausspoint
             CORE::DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
@@ -3268,5 +3271,7 @@ namespace FLD
 
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

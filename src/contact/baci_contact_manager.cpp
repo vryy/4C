@@ -44,6 +44,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
@@ -346,8 +348,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         // and found for the second, third, ... time!
         if (frictionType != INPAR::CONTACT::friction_none)
         {
-          Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(
-              new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), Discret().NumDof(0, node),
+          Teuchos::RCP<CONTACT::FriNode> cnode =
+              Teuchos::rcp(new CONTACT::FriNode(node->Id(), node->X(), node->Owner(),
                   Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
@@ -401,8 +403,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         }
         else
         {
-          Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
-              new CONTACT::CoNode(node->Id(), node->X(), node->Owner(), Discret().NumDof(0, node),
+          Teuchos::RCP<CONTACT::CoNode> cnode =
+              Teuchos::rcp(new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
                   Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
@@ -681,7 +683,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   // read Problem Type and Problem Dimension from DRT::Problem
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   const int dim = DRT::Problem::Instance()->NDim();
 
   // in case just System type system_condensed_lagmult
@@ -1143,7 +1145,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       cparams.set<bool>("NURBS", true);
       break;
@@ -1760,3 +1762,5 @@ void CONTACT::CoManager::FindPoroInterfaceTypes(bool& poromaster, bool& poroslav
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

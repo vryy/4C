@@ -23,6 +23,8 @@
 
 #define USE_PHIN_FOR_VEL  // TODO
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -42,28 +44,25 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// virtual destructor
-    virtual ~LevelSetAlgorithm();
 
     // -----------------------------------------------------------------
     // general methods
     // -----------------------------------------------------------------
 
     /// initialize level-set algorithm
-    virtual void Init();
+    void Init() override;
 
     /// setup level-set algorithm
-    virtual void Setup();
+    void Setup() override;
 
     /// time loop
-    void TimeLoop();
+    void TimeLoop() override;
 
-    /// output solution and restart data to file
-    void Output(const int num = 0);
+    void CheckAndWriteOutputAndRestart() override;
 
     /// read restart data
-    virtual void ReadRestart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) = 0;
+    void ReadRestart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override = 0;
 
     //! set the velocity field (zero or field by function) (pure level-set problems)
     void SetVelocityField(bool init = false);
@@ -73,10 +72,6 @@ namespace SCATRA
     void SetVelocityField(Teuchos::RCP<const Epetra_Vector> convvel,
         Teuchos::RCP<const Epetra_Vector> acc, Teuchos::RCP<const Epetra_Vector> vel,
         Teuchos::RCP<const Epetra_Vector> fsvel, bool setpressure = false, bool init = false);
-
-    /// access routine for nodal curvature
-    Teuchos::RCP<Epetra_Vector> GetNodalCurvature(const Teuchos::RCP<const Epetra_Vector> phi,
-        const Teuchos::RCP<const Epetra_MultiVector> gradphi);
 
 
     // output position of center of mass assuming a smoothed interfaces
@@ -88,20 +83,20 @@ namespace SCATRA
     void TestResults() override;
 
     /// set time and step value
-    void SetTimeStep(const double time, const int step);
+    void SetTimeStep(const double time, const int step) override;
 
     // -----------------------------------------------------------------
     // general methods
     // -----------------------------------------------------------------
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// solve level-set equation
-    void Solve();
+    void Solve() override;
 
     /// calculate error compared to analytical solution
-    void EvaluateErrorComparedToAnalyticalSol();
+    void EvaluateErrorComparedToAnalyticalSol() override;
 
    protected:
     virtual void GetInitialVolumeOfMinusDomain(const Teuchos::RCP<const Epetra_Vector>& phinp,
@@ -187,7 +182,7 @@ namespace SCATRA
 
    private:
     /// add parameters depending of the problem, i.e., loma, level-set, ...
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params);
+    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
 
     /// manipulate velocity field away from the interface
     void ManipulateFluidFieldForGfunc();
@@ -267,7 +262,7 @@ namespace SCATRA
     };
 
     /// project node into the boundary cell space (2D) (helper function for ReinitGeo())
-    template <DRT::Element::DiscretizationType DISTYPE>
+    template <CORE::FE::CellType DISTYPE>
     bool ProjectNodeOnPatch(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         const CORE::LINALG::Matrix<3, 1>& normal, CORE::LINALG::Matrix<2, 1>& eta, double& alpha);
@@ -361,5 +356,7 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LEVELSET_ALGORITHM_H

@@ -15,6 +15,8 @@
 
 #include "baci_lib_dofset_fixed_size.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace XFEM
 {
@@ -40,11 +42,8 @@ namespace XFEM
        *
        *  \author hiermeier
        *  \date 09/16 */
-      CouplingDofSet(const int& numreservedofpernode, const int& g_node_index_range,
+      CouplingDofSet(const int& my_num_reserve_dof_per_node, const int& g_node_index_range,
           const int& g_num_std_dof_per_node, const std::map<int, int>& my_num_dofs_per_node);
-
-      /// destructor
-      virtual ~CouplingDofSet(){};
 
       /** \brief Get the GIDs of all DoFs of a node.
        *
@@ -61,8 +60,8 @@ namespace XFEM
        *  \param nodal_dofset_id (in) : id of the nodal dofset
        *
        *  \author hiermeier \date 10/16 */
-      virtual void Dof(
-          std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const;
+      void Dof(
+          std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const override;
 
       /** \brief Get the number of standard DoFs per coupling node
        *
@@ -73,7 +72,7 @@ namespace XFEM
       int NumStandardDofPerNode() const;
 
      protected:
-      virtual int NumDofPerNode(const DRT::Node& node) const;
+      int NumDofPerNode(const DRT::Node& node) const override;
 
      private:
       /** \brief Get the number of DoFs of the node with the given nodal global ID
@@ -94,5 +93,7 @@ namespace XFEM
 }  // namespace XFEM
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFIELD_FIELD_COUPLING_DOFSET_H

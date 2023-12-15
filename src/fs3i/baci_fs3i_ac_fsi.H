@@ -18,6 +18,8 @@
 #include "baci_fs3i_partitioned_1wc.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -57,20 +59,17 @@ namespace FS3I
     /// constructor
     ACFSI(const Epetra_Comm& comm);
 
-    /// destructor
-    virtual ~ACFSI(){};
-
     /// initialize this class
-    virtual void Init();
+    void Init() override;
 
     /// setup this class
-    virtual void Setup();
+    void Setup() override;
 
     /// Read restart
-    void ReadRestart();
+    void ReadRestart() override;
 
     /// timeloop
-    void Timeloop();
+    void Timeloop() override;
 
     /// timeloop for small time scales
     void SmallTimeScaleLoop();
@@ -82,7 +81,7 @@ namespace FS3I
     void SmallTimeScalePrepareTimeStep();
 
     /// Prepare time step
-    void PrepareTimeStep()
+    void PrepareTimeStep() override
     {
       dserror(
           "This function is not implemented! Use SmallTimeScalePrepareTimeStep() or "
@@ -107,7 +106,7 @@ namespace FS3I
     void IsFsiPeriodic();
 
     /// provide wall shear stresses from FS3I subproblem for scatra subproblem
-    void SetWallShearStresses() const;
+    void SetWallShearStresses() const override;
 
     /// Decide if fluid scatra problem is periodic
     void IsScatraPeriodic();
@@ -122,7 +121,7 @@ namespace FS3I
     void DoFSIStepPeriodic();
 
     /// Get step number of on cycle ago
-    double GetStepOfOnePeriodAgoAndPrepareReading(const int step_, const double time);
+    double GetStepOfOnePeriodAgoAndPrepareReading(const int actstep, const double time);
 
     /// Get step number of the beginning of this cycle
     double GetStepOfBeginnOfThisPeriodAndPrepareReading(
@@ -144,7 +143,7 @@ namespace FS3I
     void FsiOutput();
 
     /// check convergence of scatra fields
-    bool ScatraConvergenceCheck(const int itnum);
+    bool ScatraConvergenceCheck(const int itnum) override;
 
     /// Convergence check for iterative staggered FS3I scheme
     bool PartFs3iConvergenceCkeck(const int itnum);
@@ -223,9 +222,9 @@ namespace FS3I
     );
 
     /// Compare if A mod B is relatively equal to zero
-    bool ModuloIsRealtiveZero(const double A,  ///< value to mod
-        const double B,                        ///< mod value
-        const double Ref = 1.0                 ///< reference value
+    bool ModuloIsRealtiveZero(const double value,  ///< value to mod
+        const double modulo,                       ///< mod value
+        const double Ref = 1.0                     ///< reference value
     );
 
    private:
@@ -274,7 +273,7 @@ namespace FS3I
     MeanManager(const Epetra_Map& wssmap, const Epetra_Map& phimap, const Epetra_Map& pressuremap);
 
     /// destructor
-    virtual ~MeanManager(){};
+    virtual ~MeanManager() = default;
 
     /// add value into the mean manager
     void AddValue(
@@ -305,5 +304,7 @@ namespace FS3I
     double SumDtPres_;
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

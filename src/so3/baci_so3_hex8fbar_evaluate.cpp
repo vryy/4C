@@ -11,9 +11,7 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -24,12 +22,16 @@
 #include "baci_mat_thermoplastichyperelast.H"
 #include "baci_so3_hex8fbar.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_enum_lists.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -249,21 +251,21 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         nlnstiffmass(lm, mydisp, nullptr, myres, nullptr, nullptr, nullptr, nullptr, &stress,
             &strain, &plstrain, params, iostress, iostrain, ioplstrain);
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, plstrain);
           data.StartPacking();
           AddtoPack(data, plstrain);
@@ -386,7 +388,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOH8 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_SOH8 + 2];
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_SOH8 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_SOH8 + 1];
@@ -402,7 +404,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
       // element coordinate derivatives at centroid
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-      CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
       {
         // inverse jacobian matrix at centroid
         CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
@@ -412,7 +414,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         N_XYZ_0.Multiply(invJ_0, N_rst_0);
       }
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         // centroid is 9th Gaussian point in storage
@@ -476,7 +478,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           CORE::LINALG::Matrix<3, 3> invJdef;
@@ -599,17 +601,17 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
   // init the centroid invJ
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     if (!(prestress_->IsInit()))
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-      CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
       invJ_0.Multiply(N_rst_0, xrefe);
       invJ_0.Invert();
@@ -617,7 +619,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
     }
 
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 
   return;
 }
@@ -675,7 +677,7 @@ int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -714,7 +716,7 @@ int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac =
           (functnum > 0) ? DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                .Evaluate(xrefegp.A(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
@@ -763,7 +765,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -772,7 +774,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -788,7 +790,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
   CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
   // element coordinate derivatives at centroid
   CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
   {
     // inverse jacobian matrix at centroid
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
@@ -798,7 +800,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     N_XYZ_0.Multiply(invJ_0, N_rst_0);
   }
 
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     // get Jacobian mapping wrt to the stored configuration
     // centroid is 9th Gaussian point in storage
@@ -855,7 +857,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1146,7 +1148,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     // in case of temperature-dependent material parameters, e.g. Young's modulus,
     // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
 
-    UTILS::GetTemperatureForStructuralMaterial<hex8>(shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
@@ -1468,7 +1470,7 @@ void DRT::ELEMENTS::So_hex8fbar::DefGradient(const std::vector<double>& disp,
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid point
   CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;  // current  coord. of element
@@ -1530,7 +1532,7 @@ void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid
   CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
 
   // get incremental disp
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
@@ -1610,7 +1612,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       xrefe(i, 0) = x[0];
       xrefe(i, 1) = x[1];
       xrefe(i, 2) = x[2];
@@ -1619,7 +1621,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
       xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
         xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -1636,7 +1638,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
     // element coordinate derivatives at centroid
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
     {
       // inverse jacobian matrix at centroid
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
@@ -1646,7 +1648,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
       N_XYZ_0.Multiply(invJ_0, N_rst_0);
     }
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       // centroid is 9th Gaussian point in storage
@@ -1714,7 +1716,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1761,3 +1763,5 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

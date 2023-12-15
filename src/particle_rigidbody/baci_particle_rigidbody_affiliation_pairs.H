@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -57,9 +59,6 @@ namespace PARTICLERIGIDBODY
      * \param[in] comm   communicator
      */
     explicit RigidBodyAffiliationPairs(const Epetra_Comm& comm);
-
-    //! destructor
-    ~RigidBodyAffiliationPairs() = default;
 
     /*!
      * \brief init affiliation pair handler
@@ -169,4 +168,6 @@ namespace PARTICLERIGIDBODY
 }  // namespace PARTICLERIGIDBODY
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -14,6 +14,8 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -37,10 +39,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingPairGaussPointBase();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidSurfaceMeshtyingPairGaussPointBase(){};
 
     /**
      * \brief Get energy for Gauss point to segment coupling.
@@ -55,5 +53,7 @@ namespace BEAMINTERACTION
     scalar_type GetPenaltyPotential() const;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

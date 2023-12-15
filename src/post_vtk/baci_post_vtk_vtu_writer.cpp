@@ -14,7 +14,6 @@
 #include "baci_beam3_base.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_element_vtk_cell_type_register.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -80,6 +79,8 @@ const std::string& PostVtuWriter::WriterPSuffix() const
 
 void PostVtuWriter::WriteGeo()
 {
+  using namespace BACI;
+
   Teuchos::RCP<DRT::Discretization> dis = this->GetField()->discretization();
 
   // count number of nodes and number for each processor; output is completely independent of
@@ -237,6 +238,8 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
@@ -353,6 +356,8 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
@@ -444,6 +449,8 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
 
@@ -510,39 +517,47 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
+void PostVtuWriter::WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
+  using namespace BACI;
+
   switch (ele->Shape())
   {
-    case DRT::Element::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs2>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<CORE::FE::CellType::nurbs2>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs3>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<CORE::FE::CellType::nurbs3>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs4>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<CORE::FE::CellType::nurbs4>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs9>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<CORE::FE::CellType::nurbs9>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs8:
+    case CORE::FE::CellType::nurbs8:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs8>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<CORE::FE::CellType::nurbs8>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs27>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<CORE::FE::CellType::nurbs27>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
     default:
@@ -555,15 +570,16 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType nurbs_type>
-void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
+template <BACI::CORE::FE::CellType nurbs_type>
+void PostVtuWriter::WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
-  const unsigned NUMNODES = CORE::DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
-  const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
+  using namespace BACI;
 
-  const DRT::Element::DiscretizationType mapped_dis_type =
-      MapNurbsDisTypeToLagrangeDisType(nurbs_type);
+  const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
+  const unsigned DIM = CORE::FE::dim<nurbs_type>;
+
+  const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
 
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
@@ -614,33 +630,37 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
-    const DRT::Element::DiscretizationType nurbs_dis_type) const
+BACI::CORE::FE::CellType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
+    const BACI::CORE::FE::CellType nurbs_dis_type) const
 {
+  using namespace BACI;
+
   switch (nurbs_dis_type)
   {
-    case DRT::Element::nurbs2:
-      return DRT::Element::line2;
-    case DRT::Element::nurbs3:
-      return DRT::Element::line3;
-    case DRT::Element::nurbs4:
-      return DRT::Element::quad4;
-    case DRT::Element::nurbs9:
-      return DRT::Element::quad9;
-    case DRT::Element::nurbs8:
-      return DRT::Element::hex8;
-    case DRT::Element::nurbs27:
-      return DRT::Element::hex27;
+    case CORE::FE::CellType::nurbs2:
+      return CORE::FE::CellType::line2;
+    case CORE::FE::CellType::nurbs3:
+      return CORE::FE::CellType::line3;
+    case CORE::FE::CellType::nurbs4:
+      return CORE::FE::CellType::quad4;
+    case CORE::FE::CellType::nurbs9:
+      return CORE::FE::CellType::quad9;
+    case CORE::FE::CellType::nurbs8:
+      return CORE::FE::CellType::hex8;
+    case CORE::FE::CellType::nurbs27:
+      return CORE::FE::CellType::hex27;
     default:
       dserror("No known mapping from NURBS to Lagrange.");
       exit(EXIT_FAILURE);
   }
 }
 
-void PostVtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriter::WriteGeoBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
+  using namespace BACI;
+
   /* visualize the beam centerline as a sequence of straight line segments (POLY_LINE)
    * which is supported as vtkCellType number 4 (see also list in GetVtkElementType) */
   celltypes.push_back(4);
@@ -664,45 +684,47 @@ void PostVtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
   celloffset.push_back(outNodeId);
 }
 
-void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+void PostVtuWriter::WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
+  using namespace BACI;
+
   switch (ele->Shape())
   {
-    case DRT::Element::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs2>(
+      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs2>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs3>(
+      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs3>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs4>(
+      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs4>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs9>(
+      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs9>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs8:
+    case CORE::FE::CellType::nurbs8:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs8>(
+      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs8>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs27>(
+      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs27>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
@@ -716,19 +738,20 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType nurbs_type>
-void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+template <BACI::CORE::FE::CellType nurbs_type>
+void PostVtuWriter::WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
-  const unsigned NUMNODES = CORE::DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
-  const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
+  using namespace BACI;
+
+  const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
+  const unsigned DIM = CORE::FE::dim<nurbs_type>;
 
   const Teuchos::RCP<const DRT::Discretization> dis = field_->discretization();
   std::vector<int> nodedofs;
 
-  const DRT::Element::DiscretizationType mapped_dis_type =
-      MapNurbsDisTypeToLagrangeDisType(nurbs_type);
+  const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
 
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
@@ -790,10 +813,12 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 }
 
 
-void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriter::WriteDofResultStepBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
 {
+  using namespace BACI;
+
   if (numdf != ncomponents or numdf != 3)
   {
     dserror(
@@ -848,45 +873,47 @@ void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* be
   }
 }
 
-void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+void PostVtuWriter::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
+  using namespace BACI;
+
   switch (ele->Shape())
   {
-    case DRT::Element::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs2>(
+      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs2>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs3>(
+      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs3>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs4>(
+      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs4>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs9>(
+      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs9>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs8:
+    case CORE::FE::CellType::nurbs8:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs8>(
+      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs8>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs27>(
+      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs27>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
@@ -899,19 +926,20 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType nurbs_type>
-void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+template <BACI::CORE::FE::CellType nurbs_type>
+void PostVtuWriter::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
-  const unsigned NUMNODES = CORE::DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
-  const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
+  using namespace BACI;
+
+  const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
+  const unsigned DIM = CORE::FE::dim<nurbs_type>;
 
   const Teuchos::RCP<const DRT::Discretization> dis = field_->discretization();
   std::vector<int> nodedofs;
 
-  const DRT::Element::DiscretizationType mapped_dis_type =
-      MapNurbsDisTypeToLagrangeDisType(nurbs_type);
+  const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
 
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
@@ -968,61 +996,61 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
 }
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs2>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs3>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs4>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs9>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs8>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs27>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs2>(
+    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs3>(
+    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs4>(
+    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs9>(
+    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs8>(
+    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs27>(
+    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs2>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs2>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs3>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs3>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs4>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs4>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs9>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs9>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs8>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs8>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs27>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs27>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs2>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs2>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs3>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs3>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs4>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs4>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs9>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs9>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs8>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs8>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs27>(
-    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs27>(
+    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;

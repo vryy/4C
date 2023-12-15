@@ -11,6 +11,8 @@
 
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhaseMonolithic::PoroMultiPhaseMonolithic(
@@ -18,3 +20,5 @@ POROMULTIPHASE::PoroMultiPhaseMonolithic::PoroMultiPhaseMonolithic(
     : PoroMultiPhaseBase(comm, globaltimeparams)
 {
 }
+
+BACI_NAMESPACE_CLOSE

@@ -11,15 +11,15 @@
 #include "baci_bele_bele3.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_newtonianfluid.H"
-#include "baci_so3_surface.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -63,7 +63,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
 
       // write dummy stress
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         AddtoPack(data, dummy);
         data.StartPacking();
         AddtoPack(data, dummy);
@@ -72,7 +72,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
 
       // write dummy strain
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         AddtoPack(data, dummy);
         data.StartPacking();
         AddtoPack(data, dummy);
@@ -353,3 +353,5 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
   V *= invnumind;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@
 #include "baci_fsi_xfem_coupling_comm_manager.H"
 #include "baci_fsi_xfem_coupling_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class XFluid;
@@ -39,32 +41,29 @@ namespace XFEM
     //! @name Destruction
     //@{
 
-    /// virtual to get polymorph destruction
-    virtual ~XFPCoupling_Manager() {}
-
     //! predict states in the coupling object
-    virtual void PredictCouplingStates() {}
+    void PredictCouplingStates() override {}
 
     //! Initializes the couplings (done at the beginning of the algorithm after fields have their
     //! state for timestep n)
-    virtual void InitCouplingStates();
+    void InitCouplingStates() override;
 
-    virtual void SetCouplingStates();
+    void SetCouplingStates() override;
 
-    virtual void AddCouplingMatrix(
-        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
+    void AddCouplingMatrix(
+        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
-    virtual void AddCouplingRHS(
-        Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling);
+    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me,
+        double scaling) override;
 
     //! Update (Perform after Each Timestep)
-    virtual void Update(double scaling);
+    void Update(double scaling) override;
 
     //! Write Output (For restart or write results on the interface)
-    virtual void Output(IO::DiscretizationWriter& writer);
+    void Output(IO::DiscretizationWriter& writer) override;
 
     //! Read Restart (For lambda_)
-    virtual void ReadRestart(IO::DiscretizationReader& reader);
+    void ReadRestart(IO::DiscretizationReader& reader) override;
 
    private:
     //! Get Timeface on the interface (for OST this is 1/(theta dt))
@@ -101,4 +100,6 @@ namespace XFEM
     Teuchos::RCP<Epetra_Vector> lambda_pf_;
   };
 }  // namespace XFEM
+BACI_NAMESPACE_CLOSE
+
 #endif

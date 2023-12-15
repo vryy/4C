@@ -16,6 +16,8 @@ function)
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -27,7 +29,7 @@ MAT::BeamElastHyperMaterialType<T> MAT::BeamElastHyperMaterialType<T>::instance_
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-DRT::ParObject* MAT::BeamElastHyperMaterialType<T>::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::BeamElastHyperMaterialType<T>::Create(const std::vector<char>& data)
 {
   MAT::Material* matobject = new MAT::BeamElastHyperMaterial<T>();
   matobject->Unpack(data);
@@ -92,9 +94,9 @@ void MAT::BeamElastHyperMaterial<T>::ComputeConstitutiveParameter(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamElastHyperMaterial<T>::Pack(DRT::PackBuffer& data) const
+void MAT::BeamElastHyperMaterial<T>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -113,10 +115,8 @@ template <typename T>
 void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  this->ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -268,3 +268,5 @@ template class MAT::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>;
 
 template class MAT::BeamElastHyperMaterialType<double>;
 template class MAT::BeamElastHyperMaterialType<Sacado::Fad::DFad<double>>;
+
+BACI_NAMESPACE_CLOSE

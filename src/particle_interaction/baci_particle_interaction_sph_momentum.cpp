@@ -32,6 +32,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -910,3 +912,5 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     visualization_data.SetPointDataVector<double>("normal direction", normaldirection, 3);
   }
 }
+
+BACI_NAMESPACE_CLOSE

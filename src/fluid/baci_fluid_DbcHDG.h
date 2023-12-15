@@ -14,6 +14,8 @@
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::UTILS
 {
   class Dbc;
@@ -32,9 +34,6 @@ namespace FLD
      public:
       /// constructor
       DbcHDG_Fluid(){};
-
-      /// destructor
-      virtual ~DbcHDG_Fluid(){};
 
      protected:
       /** \brief Determine Dirichlet condition
@@ -65,9 +64,10 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      virtual void DoDirichletCondition(const DRT::Discretization& discret,
-          const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
+      void DoDirichletCondition(const DRT::Discretization& discret, const DRT::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle,
+          const Teuchos::RCP<std::set<int>>* dbcgids) const override;
       void DoDirichletCondition(const DRT::DiscretizationFaces& discret, const DRT::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle) const;
@@ -75,4 +75,7 @@ namespace FLD
   }     // namespace UTILS
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // BACI_FLUID_DBCHDG_H

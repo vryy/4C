@@ -16,6 +16,9 @@
 #include <Teuchos_RCP.hpp>
 
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class ParamsInterface;
@@ -42,9 +45,6 @@ namespace CONTACT
             data_(data),
             interval_((par_redist_interval > 0 ? par_redist_interval
                                                : std::numeric_limits<int>::max())){/* empty */};
-
-      /// destructor
-      ~ParallelDistributionController() = default;
 
       /// setup the controller
       void setup(CONTACT::ParamsInterface& cparams);
@@ -94,5 +94,7 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_PARALLEL_DISTRIBUTION_CONTROLLER_H

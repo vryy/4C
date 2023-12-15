@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -76,7 +78,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::LubricationMat::CreateMaterial()
 
 MAT::LubricationMatType MAT::LubricationMatType::instance_;
 
-DRT::ParObject* MAT::LubricationMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::LubricationMatType::Create(const std::vector<char>& data)
 {
   MAT::LubricationMat* lubrication_mat = new MAT::LubricationMat();
   lubrication_mat->Unpack(data);
@@ -96,9 +98,9 @@ MAT::LubricationMat::LubricationMat(MAT::PAR::LubricationMat* params) : params_(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::LubricationMat::Pack(DRT::PackBuffer& data) const
+void MAT::LubricationMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -117,12 +119,8 @@ void MAT::LubricationMat::Pack(DRT::PackBuffer& data) const
 void MAT::LubricationMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "wrong instance type data. type = %d, UniqueParObjectId()=%d", type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -166,3 +164,5 @@ double MAT::LubricationMat::ComputeViscosityDeriv(const double press, const doub
 
   return visc_dp;
 }
+
+BACI_NAMESPACE_CLOSE

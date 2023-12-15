@@ -13,10 +13,12 @@
 #include "baci_scatra_ele_calc_elch_electrode.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*
 DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -34,7 +36,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode(
     const int numdofpernode, const int numscal, const std::string& disname)
     : myelch::ScaTraEleUtilsElch(numdofpernode, numscal, disname)
@@ -44,7 +46,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::MatElectrode(
     Teuchos::RCP<const MAT::Material> material, const double concentration,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diffmanager)
@@ -81,24 +83,29 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::MatElectrode(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::nurbs3>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::hex8>;
+// template class
+// DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::tet10>;
+// template class
+// DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::pyramid5>;
+// template class
+// DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

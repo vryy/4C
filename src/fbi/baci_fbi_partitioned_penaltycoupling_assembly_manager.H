@@ -19,10 +19,12 @@
 
 #include <vector>
 
-
 // Forward declarations.
 class Epetra_FEVector;
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -36,7 +38,6 @@ namespace BEAMINTERACTION
 {
   class BeamContactPair;
 }
-
 
 namespace BEAMINTERACTION
 {
@@ -89,5 +90,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

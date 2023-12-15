@@ -14,6 +14,8 @@
 
 #include "baci_adapter_fld_fluid_ale.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   // forward declarations
@@ -43,12 +45,12 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// nonlinear solve
-    virtual void NonlinearSolve(
-        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel);
+    void NonlinearSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-        Teuchos::RCP<Epetra_Vector> idisp, double dt);
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -56,7 +58,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
     //@}
 
     /*========================================================================*/
@@ -64,14 +66,16 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
 
     /// extract the interface velocity at time t^n
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
     //@}
     //@}
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

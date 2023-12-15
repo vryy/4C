@@ -15,6 +15,8 @@
 #include "baci_fluid_xfluid.H"
 #include "baci_fluid_xfluid_fluid_state.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace XFEM
 {
@@ -61,22 +63,21 @@ namespace FLD
         bool ale_fluid = false    ///< embedded fluid in ALE-formulation
     );
 
-    virtual ~XFluidFluid();
-
     /// initialization
-    virtual void Init() { Init(true); }
-    virtual void Init(bool createinitialstate);
+    void Init() override { Init(true); }
+    void Init(bool createinitialstate) override;
 
-    virtual void CreateInitialState();
+    void CreateInitialState() override;
 
     /// don't keep a sparse matrix underneath
-    void UseBlockMatrix(bool splitmatrix = true);
+    void UseBlockMatrix(bool splitmatrix = true) override;
 
     /// set fluid-fluid coupling specific parameters
     void SetXFluidFluidParams();
 
     /// set initial flow field for fluid domains
-    void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno);
+    void SetInitialFlowField(
+        const INPAR::FLUID::InitialField initfield, const int startfuncno) override;
 
     /// set fluid-fluid interface fixed for current time step
     void SetInterfaceFixed();
@@ -85,22 +86,22 @@ namespace FLD
     void SetInterfaceFree();
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// get initial guess for both fluids
-    Teuchos::RCP<const Epetra_Vector> InitialGuess();
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
 
     /// prepare solution (cut happens here)
-    void PrepareXFEMSolve();
+    void PrepareXFEMSolve() override;
 
     /// Monolithic FSI needs to access the linear fluid problem.
     void Evaluate(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
-    );
+        ) override;
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
-    void TimeUpdate();
+    void TimeUpdate() override;
 
     /*!
      * \brief set underlying dof-maps for new shape derivatives matrix
@@ -123,16 +124,16 @@ namespace FLD
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix(
         Teuchos::RCP<Epetra_Map> innermap, Teuchos::RCP<Epetra_Map> condmap);
 
-    Teuchos::RCP<const Epetra_Vector> RHS() { return xff_state_->xffluidresidual_; }
-    Teuchos::RCP<const Epetra_Vector> Velnp() { return xff_state_->xffluidvelnp_; }
-    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() { return xff_state_->xffluidvelnp_; }
-    Teuchos::RCP<const Epetra_Vector> Veln() { return xff_state_->xffluidveln_; }
-    Teuchos::RCP<const Epetra_Vector> Stepinc() { return stepinc_; }
+    Teuchos::RCP<const Epetra_Vector> RHS() override { return xff_state_->xffluidresidual_; }
+    Teuchos::RCP<const Epetra_Vector> Velnp() override { return xff_state_->xffluidvelnp_; }
+    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() override { return xff_state_->xffluidvelnp_; }
+    Teuchos::RCP<const Epetra_Vector> Veln() override { return xff_state_->xffluidveln_; }
+    Teuchos::RCP<const Epetra_Vector> Stepinc() override { return stepinc_; }
 
     Teuchos::RCP<Epetra_Vector> WriteAccessDispOldState() { return dispnpoldstate_; }
 
     /// get merged fluid dofmap
-    Teuchos::RCP<const Epetra_Map> DofRowMap()
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override
     {
       //    return Teuchos::rcp((xff_state_->xffluiddofrowmap_).get(), false); // TODO: does not
       //    work at the moment, no nox structure split gives segfault!
@@ -140,15 +141,15 @@ namespace FLD
     }
 
     /// get merged vel-pres-splitter
-    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter()
+    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() override
     {
       return xff_state_->xffluidvelpressplitter_;
     }
 
     // get merged pressure dof-map
-    Teuchos::RCP<const Epetra_Map> PressureRowMap();
+    Teuchos::RCP<const Epetra_Map> PressureRowMap() override;
     // get merged velocity dof-map
-    Teuchos::RCP<const Epetra_Map> VelocityRowMap();
+    Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
 
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ExtendedShapeDerivatives()
     {
@@ -156,14 +157,14 @@ namespace FLD
     }
 
     /// get the combined fluid-fluid system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(xff_state_->xffluidsysmat_);
     }
 
     /// get the combined fluid-fluid system matrix in block form (embedded and background fluid
     /// blocks)
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
           xff_state_->xffluidsysmat_);
@@ -176,13 +177,13 @@ namespace FLD
     }
 
     //! get combined background and embedded fluid dirichlet map extractor
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return xff_state_->xffluiddbcmaps_;
     }
 
     //! access to new merged fluid state container
-    Teuchos::RCP<FLD::XFluidState> GetNewState();
+    Teuchos::RCP<FLD::XFluidState> GetNewState() override;
 
     /// solve fluid field after ALE-mesh relaxation
     void UpdateMonolithicFluidSolution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
@@ -191,13 +192,13 @@ namespace FLD
     void InterpolateEmbeddedStateVectors();
 
     /// create a result test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
     /// write output for both fluid discretizations
-    void Output();
+    void Output() override;
 
     /// evaluate errors compared to implemented analytical solutions
-    Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol();
+    Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol() override;
 
    private:
     /// projection of history from other discretization - returns true if projection was successful
@@ -209,20 +210,21 @@ namespace FLD
         Teuchos::RCP<const Epetra_Vector>
             target_dispnp,     ///< displacement col - vector timestep n+1
         const bool screen_out  ///< screen output?
-    );
+        ) override;
 
     //! transfer dofs between Newton steps
-    bool XTimint_DoIncrementStepTransfer(const bool screen_out, const bool firstcall_in_timestep);
+    bool XTimint_DoIncrementStepTransfer(
+        const bool screen_out, const bool firstcall_in_timestep) override;
 
     //! create a new merged state container
-    void CreateState();
+    void CreateState() override;
 
     /// call the loop over elements to assemble volume and interface integrals
     void AssembleMatAndRHS(int itnum  ///< iteration number
-    );
+        ) override;
 
     /// Update velocity and pressure by increment
-    void UpdateByIncrement();
+    void UpdateByIncrement() override;
 
     /// add additional EOS terms to interface-contributing embedded fluid elements
     void AddEosPresStabToEmbLayer();
@@ -275,4 +277,6 @@ namespace FLD
   };
 
 } /* namespace FLD */
+BACI_NAMESPACE_CLOSE
+
 #endif  // FLUID_XFLUID_FLUID_H

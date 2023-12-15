@@ -10,12 +10,14 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_engine_object.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleObjectType PARTICLEENGINE::ParticleObjectType::instance_;
 
-DRT::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<char>& data)
 {
   ParticleObject* my_particleobject = new ParticleObject();
   my_particleobject->Unpack(data);
@@ -35,9 +37,9 @@ PARTICLEENGINE::ParticleObject::ParticleObject(
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleObject::Pack(DRT::PackBuffer& data) const
+void PARTICLEENGINE::ParticleObject::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -66,10 +68,7 @@ void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // particletype_
   ExtractfromPack(position, data, type_);
@@ -92,3 +91,5 @@ void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
+
+BACI_NAMESPACE_CLOSE

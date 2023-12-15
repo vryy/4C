@@ -16,6 +16,8 @@
 #include "baci_inpar_beam_to_solid.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -33,7 +35,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidParamsBase(){};
+    virtual ~BeamToSolidParamsBase() = default;
 
     /**
      * \brief Initialize with the stuff coming from input file.
@@ -148,5 +150,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

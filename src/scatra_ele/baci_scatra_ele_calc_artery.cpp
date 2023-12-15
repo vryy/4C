@@ -15,9 +15,11 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
     const int numdofpernode, const int numscal, const std::string& disname)
     : my::ScaTraEleCalc(numdofpernode, numscal, disname)
@@ -40,7 +42,7 @@ DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -59,7 +61,7 @@ DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  | setup element evaluation                            kremheller 03/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
@@ -75,7 +77,7 @@ int DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)              kremheller 04/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Materials(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -115,7 +117,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Materials(
 /*----------------------------------------------------------------------*
  | set internal variables                              kremheller 03/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetInternalVariablesForMatAndRHS()
 {
   VarManager()->SetInternalVariablesArtery(my::funct_, my::derxy_, my::deriv_, my::xjm_,
@@ -127,7 +129,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetInternalVariablesF
 /*----------------------------------------------------------------------*
  | extract element based or nodal values               kremheller 03/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNodeValues(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -225,7 +227,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
  |  calculation of convective element matrix                                    |
  |  in convective form (OD fluid)                              kremheller 05/18 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::CalcMatConvODFluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
@@ -253,31 +255,33 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::CalcMatConvODFluid(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::line3, 1>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line3,2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line3,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::line3, 1>;
+// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::line3,2>;
+// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::line3,3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::quad9, 2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad9,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::nurbs9, 2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::nurbs9,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::quad4, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::quad9, 2>;
+// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::quad9,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::nurbs9, 2>;
+// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::nurbs9,3>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::nurbs27>;s
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::hex8, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tet10, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::pyramid5, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::nurbs27>;s
+
+BACI_NAMESPACE_CLOSE

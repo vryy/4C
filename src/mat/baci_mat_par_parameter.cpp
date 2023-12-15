@@ -21,6 +21,8 @@
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Parameter::Parameter(Teuchos::RCP<const MAT::PAR::Material> matdata)
@@ -155,3 +157,5 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> 
     dserror("Unknown type of structural tensor strategy for anisotropic material chosen.");
 }
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

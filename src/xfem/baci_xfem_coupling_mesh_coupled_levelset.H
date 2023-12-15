@@ -17,6 +17,8 @@
 #include "baci_xfem_coupling_mesh.H"
 #include "baci_xfem_interface_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   /*!
@@ -43,8 +45,8 @@ namespace XFEM
     Return prescribed velocities and traction vectors for a GNBC boundary condition.
     Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
     */
-    template <DRT::Element::DiscretizationType DISTYPE, class V1, class V2, class X1, class T1,
-        class M1, class M2, class M3>
+    template <CORE::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
+        class M2, class M3>
     void EvaluateCouplingConditions(V1& ivel,  ///< prescribed velocity at interface
         V2& itraction,                         ///< prescribed traction at interface
         X1& x,                                 ///< coordinates of gauss point
@@ -142,53 +144,53 @@ namespace XFEM
     };
 
 
-    // template <DRT::Element::DiscretizationType DISTYPE>//,class M1, class M2>
+    // template <CORE::FE::CellType DISTYPE>//,class M1, class M2>
     //! Updates configurationmap for specific Gausspoint
-    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< master sided dynamic viscosity
-        double& visc_s,                                      //< slave sided dynamic viscosity
-        double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                              //< master sided dynamic viscosity
+        double& visc_s,                              //< slave sided dynamic viscosity
+        double& density_m,                           //< master sided density
+        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
+        double& full_stab,                           //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
+        const DRT::Condition* cond,                  //< Condition
+        DRT::Element* ele,                           //< Element
+        DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
         CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
-    )
+        ) override
     {
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double sliplength = 0.0;
 
-      if (ele->Shape() == DRT::Element::hex8)
+      if (ele->Shape() == CORE::FE::CellType::hex8)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::hex8;
+        const CORE::FE::CellType shape = CORE::FE::CellType::hex8;
         //
-        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::FE::dim<shape>;
+        const size_t nen = CORE::FE::num_nodes<shape>;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == DRT::Element::hex27)
+      else if (ele->Shape() == CORE::FE::CellType::hex27)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::hex27;
+        const CORE::FE::CellType shape = CORE::FE::CellType::hex27;
         //
-        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::FE::dim<shape>;
+        const size_t nen = CORE::FE::num_nodes<shape>;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == DRT::Element::hex20)
+      else if (ele->Shape() == CORE::FE::CellType::hex20)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::hex20;
+        const CORE::FE::CellType shape = CORE::FE::CellType::hex20;
         //
-        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::FE::dim<shape>;
+        const size_t nen = CORE::FE::num_nodes<shape>;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
@@ -221,9 +223,11 @@ namespace XFEM
       }
     };
 
-    virtual void SetConditionSpecificParameters();
+    void SetConditionSpecificParameters() override;
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_COUPLING_MESH_COUPLED_LEVELSET_H

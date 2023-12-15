@@ -20,5 +20,4 @@ void ntaini_ccadiscret(int argc,       //!< number of command line arguments
     std::string& outputfile_kenner,    //!< output file kenner
     std::string& restartfile_kenner);  //!< restart file kenner
 
-
 #endif

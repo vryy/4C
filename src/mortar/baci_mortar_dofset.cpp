@@ -12,6 +12,8 @@
 #include "baci_lib_discret.H"
 #include "baci_mortar_node.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
@@ -53,7 +55,7 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
         dynamic_cast<MORTAR::MortarNode*>(node);
     if (!mrtrnode) dserror("dynamic_cast DRT::Node -> MORTAR::MortarNode failed");
 #endif
-    const int* newdofs = mrtrnode->Dofs();
+    const auto& newdofs = mrtrnode->Dofs();
     for (std::size_t j = 0; j < numDofsOfNode; ++j)
     {
       // build dof column map
@@ -101,3 +103,5 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
 
   return count;
 }
+
+BACI_NAMESPACE_CLOSE

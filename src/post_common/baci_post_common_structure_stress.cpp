@@ -11,6 +11,7 @@
 
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_io_legacy_table_cpp.h"
+#include "baci_lib_discret.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_post_common.H"
@@ -98,12 +99,14 @@ struct WriteNodalStressStep : public SpecialFieldInterface
 {
   WriteNodalStressStep(StructureFilter& filter) : filter_(filter) {}
 
-  virtual std::vector<int> NumDfMap() { return std::vector<int>(1, 6); }
+  std::vector<int> NumDfMap() override { return std::vector<int>(1, 6); }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 1, "Unexpected number of names");
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
@@ -119,7 +122,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
         [&](DRT::Element& ele)
         {
           CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-              ele, *data->at(ele.Id()), nodal_stress);
+              ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
     filter_.GetWriter().WriteNodalResultStep(
@@ -138,12 +141,14 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
 {
   WriteElementCenterStressStep(StructureFilter& filter) : filter_(filter) {}
 
-  virtual std::vector<int> NumDfMap() { return std::vector<int>(1, 6); }
+  std::vector<int> NumDfMap() override { return std::vector<int>(1, 6); }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 1, "Unexpected number of names");
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
@@ -174,12 +179,14 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
 {
   WriteElementCenterRotation(StructureFilter& filter) : filter_(filter) {}
 
-  virtual std::vector<int> NumDfMap() { return std::vector<int>(1, 9); }
+  std::vector<int> NumDfMap() override { return std::vector<int>(1, 9); }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 1, "Unexpected number of names");
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
@@ -215,12 +222,14 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
 {
   WriteNodalMembraneThicknessStep(StructureFilter& filter) : filter_(filter) {}
 
-  virtual std::vector<int> NumDfMap() { return std::vector<int>(1, 1); }
+  std::vector<int> NumDfMap() override { return std::vector<int>(1, 1); }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 1, "Unexpected number of names");
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
@@ -373,17 +382,19 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
 {
   WriteNodalEigenStressStep(StructureFilter& filter) : filter_(filter) {}
 
-  virtual std::vector<int> NumDfMap()
+  std::vector<int> NumDfMap() override
   {
     std::vector<int> map(3, 1);
     for (int i = 0; i < 3; ++i) map.push_back(3);
     return map;
   }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 6, "Unexpected number of names");
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
@@ -398,7 +409,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         [&](DRT::Element& ele)
         {
           CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-              ele, *data->at(ele.Id()), nodal_stress);
+              ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
 
@@ -490,17 +501,19 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
 {
   WriteElementCenterEigenStressStep(StructureFilter& filter) : filter_(filter) {}
 
-  virtual std::vector<int> NumDfMap()
+  std::vector<int> NumDfMap() override
   {
     std::vector<int> map(3, 1);
     for (int i = 0; i < 3; ++i) map.push_back(3);
     return map;
   }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 

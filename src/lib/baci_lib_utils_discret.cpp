@@ -12,11 +12,13 @@
 #include "baci_lib_utils_discret.H"
 
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_node.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_Map.h>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -107,8 +109,8 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
           const int funct_num = (*funct)[0];
           const double functfac =
               funct_num > 0 ? DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                  .Evaluate(node->X(), time, localdof)
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                                  .Evaluate(node->X().data(), time, localdof)
                             : 0.0;
 
           // assign value
@@ -121,3 +123,5 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,7 @@
 #include "baci_truss3_scatra.H"
 #include "baci_w1_scatra.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -32,15 +33,16 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   if (eletypename == "So_tet4ScatraType")
   {
     impltype =
-        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(ele))
+        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>*>(
+             ele))
             ->ImplType();
   }
   // tet10 solid scatra
   else if (eletypename == "So_tet10ScatraType")
   {
     impltype =
-        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(
-             ele))
+        (dynamic_cast<
+             DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>*>(ele))
             ->ImplType();
   }
   // HEX 8 Elements
@@ -48,31 +50,32 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   else if (eletypename == "So_hex8ScatraType")
   {
     impltype =
-        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(ele))
+        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
+             ele))
             ->ImplType();
   }
   // hex8fbar solid scatra
   else if (eletypename == "So_hex8fbarScatraType")
   {
     impltype =
-        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
-             ele))
+        (dynamic_cast<
+             DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(ele))
             ->ImplType();
   }
   // hex27 solid scatra
   else if (eletypename == "So_hex27ScatraType")
   {
     impltype =
-        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(
-             ele))
+        (dynamic_cast<
+             DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>*>(ele))
             ->ImplType();
   }
   // wedge6
   else if (eletypename == "So_weg6ScatraType")
   {
     impltype =
-        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>*>(
-             ele))
+        (dynamic_cast<
+             DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>*>(ele))
             ->ImplType();
   }
   // wall scatra elements
@@ -88,22 +91,26 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   // membrane3 scatra element
   else if (eletypename == "MembraneScatra_tri3Type")
   {
-    impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::tri3>*>(ele))->ImplType();
+    impltype =
+        (dynamic_cast<DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>*>(ele))->ImplType();
   }
   // membrane6 scatra element
   else if (eletypename == "MembraneScatra_tri6Type")
   {
-    impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::tri6>*>(ele))->ImplType();
+    impltype =
+        (dynamic_cast<DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>*>(ele))->ImplType();
   }
   // membrane4 scatra element
   else if (eletypename == "MembraneScatra_quad4Type")
   {
-    impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::quad4>*>(ele))->ImplType();
+    impltype =
+        (dynamic_cast<DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>*>(ele))->ImplType();
   }
   // membrane9 scatra element
   else if (eletypename == "MembraneScatra_quad9Type")
   {
-    impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>*>(ele))->ImplType();
+    impltype =
+        (dynamic_cast<DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>*>(ele))->ImplType();
   }
   // truss3 scatra element
   else if (eletypename == "Truss3ScatraType")
@@ -118,3 +125,4 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
 
   return impltype;
 }
+BACI_NAMESPACE_CLOSE

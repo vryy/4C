@@ -14,6 +14,8 @@
 #include "baci_lib_conditiondefinition.H"
 #include "baci_linalg_equilibrate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -104,7 +106,7 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
       &poromultiphasedynmono);
 
   // convergence criteria adaptivity --> note ADAPTCONV_BETTER set pretty small
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &poromultiphasedynmono);
   DoubleParameter("ADAPTCONV_BETTER", 0.001,
@@ -133,3 +135,5 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
   DoubleParameter(
       "MAXOMEGA", 10.0, "largest omega allowed for Aitken relaxation", &poromultiphasedynpart);
 }
+
+BACI_NAMESPACE_CLOSE

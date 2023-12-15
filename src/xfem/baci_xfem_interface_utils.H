@@ -18,6 +18,8 @@
 #include "baci_lib_element.H"
 #include "baci_lib_element_integration_select.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -53,7 +55,7 @@ namespace XFEM
     and polynomial order of the element
      */
     double NIT_getTraceEstimateConstant(
-        const DRT::Element::DiscretizationType ele_distype, const bool is_pseudo_2D);
+        const CORE::FE::CellType ele_distype, const bool is_pseudo_2D);
 
 
     //! @name NIT_Compute_ViscPenalty_Stabfac
@@ -61,9 +63,8 @@ namespace XFEM
     \brief compute viscous part of Nitsche's penalty term scaling for Nitsche's method
      */
     void NIT_Compute_ViscPenalty_Stabfac(
-        const DRT::Element::DiscretizationType
-            ele_distype,  ///< the discretization type of the element w.r.t which the stabilization
-                          ///< factor is computed
+        const CORE::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t
+                                               ///< which the stabilization factor is computed
         const double&
             penscaling,  ///< material dependent penalty scaling (e.g. visceff) divided by h
         const double& NIT_stabscaling,  ///< basic nit penalty stab scaling
@@ -119,17 +120,13 @@ namespace XFEM
     }
 
     //! evaluate element volume
-    template <DRT::Element::DiscretizationType distype>
-    double EvalElementVolume(
-        CORE::LINALG::Matrix<3,
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-            xyze,
-        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-            1>* nurbs_weights = nullptr,
+    template <CORE::FE::CellType distype>
+    double EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> xyze,
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>* nurbs_weights = nullptr,
         std::vector<CORE::LINALG::SerialDenseVector>* nurbs_knots = nullptr);
 
     //! compute characteristic element length h_k
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     double ComputeCharEleLength(DRT::Element* ele,                 ///< fluid element
         CORE::LINALG::SerialDenseMatrix& ele_xyze,                 ///< element coordinates
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -151,8 +148,8 @@ namespace XFEM
                                     ///< (viscous+convective part)
         const CORE::LINALG::Matrix<3, 1>& normal,    ///< interface-normal vector
         const double h_k,                            ///< characteristic element length
-        const double kappa1,                         ///< Weight parameter (parameter +/master side)
-        const double kappa2,                         ///< Weight parameter (parameter -/slave  side)
+        const double kappa_m,                        ///< Weight parameter (parameter +/master side)
+        const double kappa_s,                        ///< Weight parameter (parameter -/slave  side)
         const CORE::LINALG::Matrix<3, 1>& velint_m,  ///< Master side velocity at gauss-point
         const CORE::LINALG::Matrix<3, 1>& velint_s,  ///< Slave side velocity at gauss-point
         const double NIT_visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term
@@ -194,5 +191,7 @@ namespace XFEM
 
   }  // namespace UTILS
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_INTERFACE_UTILS_H

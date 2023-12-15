@@ -13,6 +13,8 @@
 
 #include "baci_io.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
@@ -56,8 +58,4 @@ void FLD::TimIntRedModelsGenAlpha::ReadRestart(int step)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                    bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntRedModelsGenAlpha::~TimIntRedModelsGenAlpha() { return; }
+BACI_NAMESPACE_CLOSE

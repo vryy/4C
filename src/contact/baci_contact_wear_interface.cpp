@@ -29,6 +29,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/13|
  *----------------------------------------------------------------------*/
@@ -1033,7 +1035,7 @@ void WEAR::WearInterface::ExportNodalNormals() const
     }
 
     // communicate from master node row to column map
-    DRT::Exporter ex(*mnoderowmap_, *masternodes, Comm());
+    CORE::COMM::Exporter ex(*mnoderowmap_, *masternodes, Comm());
     ex.Export(triad);
 
     ex.Export(n_x_key);
@@ -1374,7 +1376,8 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       /******************************************************************/
 
       // loop over the dimension
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      const int numdof = cnode->NumDof();
+      for (int dim = 0; dim < numdof; ++dim)
       {
         double valtxi = 0.0;
         double valteta = 0.0;
@@ -1435,7 +1438,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
         std::vector<std::map<int, double>> derivjump = cnode->FriData().GetDerivJump();
 
         // loop over dimensions
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // linearization of normal direction *****************************************
           // loop over all entries of the current derivative map
@@ -1464,7 +1467,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
         std::vector<std::map<int, double>> derivjump = cnode->FriData().GetDerivJump();
 
         // loop over dimensions
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map (jump)
           for (colcurr = derivjump[dim].begin(); colcurr != derivjump[dim].end(); ++colcurr)
@@ -1948,8 +1951,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
   }        // Coulomb friction
   else
     dserror("linslip wear only for coulomb friction!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3143,7 +3144,6 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    ;
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID())
@@ -3159,7 +3159,6 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    ;
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID()) frinode->FriData().Slip() = true;
@@ -3348,7 +3347,6 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    ;
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID()) frinode->Active() = false;
@@ -3361,7 +3359,6 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    ;
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID()) frinode->FriData().Slip() = false;
@@ -4248,3 +4245,5 @@ void WEAR::WearInterface::UpdateWSets(int offset_if, int maxdofwear, bool bothdi
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

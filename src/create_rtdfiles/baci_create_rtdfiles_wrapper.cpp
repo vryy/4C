@@ -9,24 +9,25 @@
 \level 0
 */
 
-#include "baci_config_compile_settings.H"
+#include "baci_config_revision.H"
 
 #include "baci_create_rtdfiles_wrapper.H"
 
 #include "baci_comm_utils.H"
-#include "baci_config_revision.H"
 #include "baci_create_rtdfiles_utils.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_inpar_validcontactconstitutivelaw.H"
 #include "baci_inpar_validmaterials.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_elementdefinition.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -47,6 +48,20 @@ namespace DRT
       headerdocumentationfile << "Header parameters\n";
       headerdocumentationfile << "=================\n\n";
       WriteHeaderReference(headerdocumentationfile, *DRT::INPUT::ValidParameters(), "");
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename)
+    {
+      // open ascii file for writing all header parameters
+      std::ofstream celltypeocumentationfile(celltypedocumentationfilename.c_str());
+      if (!celltypeocumentationfile)
+        dserror("failed to open file: %s", celltypedocumentationfilename.c_str());
+      celltypeocumentationfile << "..\n   Created using baci version (git SHA1):\n";
+      celltypeocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
+
+      WriteCelltypeReference(celltypeocumentationfile);
     }
 
     /*----------------------------------------------------------------------*/
@@ -101,3 +116,5 @@ namespace DRT
 
   }  // namespace RTD
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

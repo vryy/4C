@@ -21,6 +21,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::Init(const int ndim,
@@ -226,7 +228,10 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
   scatradis_->FillComplete(true, false, false);
 
   // setup mortar adapter for surface volume coupling
-  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
+      DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   SetIsInit(true);
 }
@@ -347,7 +352,7 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   volcoupl_structurescatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // init projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Init(structdis, scatradis);
+  volcoupl_structurescatra_->Init(ndim, structdis, scatradis);
 
   // parallel redistribution is performed in the global control
   // algorithm. We redistribute between Init(...) and Setup().
@@ -363,7 +368,7 @@ void SSI::SSICouplingNonMatchingVolume::Setup()
   CheckIsInit();
 
   // setup projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Setup();
+  volcoupl_structurescatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
 
   SetIsSetup(true);
 }
@@ -603,3 +608,5 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarFieldMicro(
 {
   dserror("transferring micro scalar state to structure discretization not implemented.");
 }
+
+BACI_NAMESPACE_CLOSE

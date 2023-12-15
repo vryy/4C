@@ -18,6 +18,8 @@
 #include "baci_linalg_sparsematrix.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
@@ -45,9 +47,11 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& di
     int j = 0;
     for (unsigned int i = 0; i < num_dof; ++i)
     {
-      if (!((i + 1) % 4)) ++i;
-      ele_centerline_dof_indices[j] = i;
-      j++;
+      if ((i + 1) % 4 != 0)
+      {
+        ele_centerline_dof_indices[j] = i;
+        j++;
+      }
     }
   }
 }
@@ -132,3 +136,5 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

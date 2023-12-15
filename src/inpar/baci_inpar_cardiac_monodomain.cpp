@@ -11,6 +11,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -36,3 +38,5 @@ void INPAR::EP::SetValidConditions(
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
 {
 }
+
+BACI_NAMESPACE_CLOSE

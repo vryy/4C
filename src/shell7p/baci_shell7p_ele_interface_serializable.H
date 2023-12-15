@@ -7,9 +7,11 @@
 #ifndef BACI_SHELL7P_ELE_INTERFACE_SERIALIZABLE_H
 #define BACI_SHELL7P_ELE_INTERFACE_SERIALIZABLE_H
 
-#include "baci_lib_pack_buffer.H"
+#include "baci_comm_pack_buffer.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS::SHELL
 {
@@ -27,7 +29,7 @@ namespace DRT::ELEMENTS::SHELL
      *
      * @param data (out) : the buffer to pack into.
      */
-    virtual void Pack(DRT::PackBuffer& data) const = 0;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const = 0;
 
     /*!
      * @brief Unpack the state of an object from a char vector starting from the position
@@ -38,5 +40,7 @@ namespace DRT::ELEMENTS::SHELL
     virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) = 0;
   };
 }  // namespace DRT::ELEMENTS::SHELL
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SHELL7P_ELE_INTERFACE_SERIALIZABLE_H

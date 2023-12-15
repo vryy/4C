@@ -12,11 +12,14 @@
 #include "baci_adapter_art_net.H"
 #include "baci_adapter_scatra_base_algorithm.H"
 #include "baci_inpar_bio.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_poromultiphase_scatra_artery_coupling_nodebased.H"
 #include "baci_poromultiphase_scatra_utils.H"
 #include "baci_scatra_timint_implicit.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 04/18 |
@@ -44,15 +47,15 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
       INPAR::SCATRA::velocity_zero)
     dserror("set your velocity field to zero!");
 
-  // artery scatra problem
+  // construct artery scatra problem
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> art_scatra =
-      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
+          DRT::Problem::Instance()->SolverParams(myscatraparams.get<int>("LINEAR_SOLVER")),
+          "artery_scatra", false));
 
   // initialize the base algo.
-  // scatra time integrator is constructed and initialized inside.
-  art_scatra->Init(globaltimeparams, myscatraparams,
-      DRT::Problem::Instance()->SolverParams(myscatraparams.get<int>("LINEAR_SOLVER")),
-      "artery_scatra", false);
+  // scatra time integrator is initialized inside.
+  art_scatra->Init();
 
   // only now we must call Setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
@@ -376,3 +379,5 @@ void SCATRA::MeshtyingStrategyArtery::CheckInitialFields() const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

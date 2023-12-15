@@ -17,6 +17,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
@@ -30,7 +32,7 @@ ADAPTER::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const Teuchos::RCP<const CORE::LINALG::MapExtractor> ADAPTER::AleXFFsiWrapper::GetDBCMapExtractor()
+Teuchos::RCP<const CORE::LINALG::MapExtractor> ADAPTER::AleXFFsiWrapper::GetDBCMapExtractor()
 {
   return AleWrapper::GetDBCMapExtractor(ALE::UTILS::MapExtractor::dbc_set_x_ff);
 }
@@ -58,3 +60,5 @@ int ADAPTER::AleXFFsiWrapper::Solve()
 
   return err;
 }
+
+BACI_NAMESPACE_CLOSE

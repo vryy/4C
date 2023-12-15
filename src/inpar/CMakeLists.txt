@@ -7,6 +7,5 @@ set(_inpar_dependencies
     io
     lib
     solver_nonlin_nox
-    tutorial
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_inpar_dependencies})

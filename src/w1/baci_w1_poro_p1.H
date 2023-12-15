@@ -14,6 +14,8 @@
 
 #include "baci_w1_poro.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -24,7 +26,7 @@ namespace DRT
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Wall1_PoroP1 : public Wall1_Poro<distype>
     {
       using Base = DRT::ELEMENTS::Wall1_Poro<distype>;
@@ -82,7 +84,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -163,7 +165,7 @@ namespace DRT
       //!@}
 
       //! initialize the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitElement();
+      void InitElement() override;
 
       //! don't want = operator
       Wall1_PoroP1& operator=(const Wall1_PoroP1& old) = delete;
@@ -180,7 +182,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int MyEvaluate(
+      int MyEvaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
@@ -192,7 +194,7 @@ namespace DRT
               elevec1,  //!< (internal force-)vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
-      );
+          ) override;
 
       //! Calculate nonlinear stiffness and internal force for poroelasticity problems
       void NonlinearStiffnessPoroelast(std::vector<int>& lm,         //!< location matrix
@@ -226,19 +228,17 @@ namespace DRT
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. structural
       //! displacements
-      virtual void ComputePorosityAndLinearization(Teuchos::ParameterList& params,
-          const double& press, const double& J, const int& gp,
-          const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
+      void ComputePorosityAndLinearization(Teuchos::ParameterList& params, const double& press,
+          const double& J, const int& gp, const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
           const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity,
           const CORE::LINALG::Matrix<1, Base::numdof_>& dJ_dus, double& porosity,
-          CORE::LINALG::Matrix<1, Base::numdof_>& dphi_dus);
+          CORE::LINALG::Matrix<1, Base::numdof_>& dphi_dus) override;
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
-      virtual void ComputePorosityAndLinearizationOD(Teuchos::ParameterList& params,
-          const double& press, const double& J, const int& gp,
-          const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
+      void ComputePorosityAndLinearizationOD(Teuchos::ParameterList& params, const double& press,
+          const double& J, const int& gp, const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
           const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity, double& porosity,
-          double& dphi_dp);
+          double& dphi_dp) override;
 
       //! evaluate gauss points for diagonal terms
       void GaussPointLoopP1(Teuchos::ParameterList& params,
@@ -265,11 +265,13 @@ namespace DRT
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
           const CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
           const CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
-          CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& estiff_p1,
+          CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& ecoupl_p1,
           CORE::LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>& sub_stiff);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_PORO_P1_H

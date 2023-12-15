@@ -16,6 +16,8 @@
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -24,49 +26,49 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface* DRT::ELEMENTS::ScaTraHDGBoundaryI
 {
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::quad4>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::quad8>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::quad9>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::tri3>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::tri3>::Instance();
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::tri6>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::tri6>::Instance();
     }
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::line2>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::line2>::Instance();
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::line3>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::line3>::Instance();
     }
-    case DRT::Element::nurbs2:  // 1D nurbs boundary element
+    case CORE::FE::CellType::nurbs2:  // 1D nurbs boundary element
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::nurbs2>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::nurbs2>::Instance();
     }
-    case DRT::Element::nurbs3:  // 1D nurbs boundary element
+    case CORE::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::nurbs3>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::nurbs3>::Instance();
     }
-    case DRT::Element::nurbs4:  // 2D nurbs boundary element
+    case CORE::FE::CellType::nurbs4:  // 2D nurbs boundary element
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::nurbs4>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::nurbs4>::Instance();
     }
-    case DRT::Element::nurbs9:  // 2D nurbs boundary element
+    case CORE::FE::CellType::nurbs9:  // 2D nurbs boundary element
     {
-      return ScaTraHDGBoundaryImpl<DRT::Element::nurbs9>::Instance();
+      return ScaTraHDGBoundaryImpl<CORE::FE::CellType::nurbs9>::Instance();
     }
     default:
       dserror(
@@ -76,7 +78,7 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface* DRT::ELEMENTS::ScaTraHDGBoundaryI
   return nullptr;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>*
 DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
@@ -92,7 +94,7 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::Instance(CORE::UTILS::SingletonAc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::ScaTraHDGBoundaryImpl()
     : xyze_(true),
       funct_(true),
@@ -107,7 +109,7 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::ScaTraHDGBoundaryImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
     DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -155,3 +157,5 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

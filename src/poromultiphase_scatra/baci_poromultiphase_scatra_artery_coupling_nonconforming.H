@@ -15,6 +15,9 @@
 
 // forward declaration
 class Epetra_FEVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -233,5 +236,7 @@ namespace POROMULTIPHASESCATRA
   };
 }  // namespace POROMULTIPHASESCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NONCONFORMING_H

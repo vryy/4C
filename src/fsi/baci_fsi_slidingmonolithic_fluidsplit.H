@@ -19,6 +19,8 @@ with condensed fluid interface velocities
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -79,38 +81,38 @@ namespace FSI
 
 
     */
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
+    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
-        Epetra_Vector& b                                                ///< right hand side
-    );
+    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+        Epetra_Vector& b                                        ///< right hand side
+        ) override;
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
-        Epetra_Vector& x,                                                   ///< solution vector
-        Epetra_Vector& b                                                    ///< right hand side
-    );
+    void UnscaleSolution(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+        Epetra_Vector& x,                                           ///< solution vector
+        Epetra_Vector& b                                            ///< right hand side
+        ) override;
 
     //@}
 
     /// read restart
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /// start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /*! \brief Recover Lagrange multiplier \f$\lambda_\Gamma\f$
      *
@@ -119,7 +121,7 @@ namespace FSI
      *  for rhs in next time step in order to guarantee temporal consistent
      *  exchange of coupling traction
      */
-    virtual void RecoverLagrangeMultiplier();
+    void RecoverLagrangeMultiplier() override;
 
     /*! \brief Compute spurious interface energy increment due to temporal discretization
      *
@@ -134,7 +136,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 05/2014
      */
-    virtual void CalculateInterfaceEnergyIncrement();
+    void CalculateInterfaceEnergyIncrement() override;
 
     /*! \brief Additional safety check of kinematic constraint during a single time step:
      *
@@ -182,7 +184,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 08/2013
      */
-    virtual double SelectDtErrorBased() const;
+    double SelectDtErrorBased() const override;
 
     /*! \brief Check whether time step is accepted or not
      *
@@ -191,7 +193,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 08/2013
      */
-    virtual bool SetAccepted() const;
+    bool SetAccepted() const override;
 
     //@}
 
@@ -205,18 +207,18 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    virtual void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+    void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
-        const INPAR::FSI::Redistribute domain);
+        const INPAR::FSI::Redistribute domain) override;
 
-    const Teuchos::RCP<ADAPTER::FluidFSIMsht> FsiFluidField()
+    Teuchos::RCP<ADAPTER::FluidFSIMsht> FsiFluidField()
     {
       return Teuchos::rcp_static_cast<ADAPTER::FluidFSIMsht>(FluidField());
     }
 
-    const Teuchos::RCP<ADAPTER::AleFsiMshtWrapper> FsiAleField()
+    Teuchos::RCP<ADAPTER::AleFsiMshtWrapper> FsiAleField()
     {
       return Teuchos::rcp_static_cast<ADAPTER::AleFsiMshtWrapper>(AleField());
     }
@@ -225,20 +227,20 @@ namespace FSI
     /// create the composed system matrix
     void CreateSystemMatrix();
 
-    virtual void Update();
+    void Update() override;
 
-    virtual void Output();
+    void Output() override;
 
     /// Write Lagrange multiplier
-    virtual void OutputLambda();
+    void OutputLambda() override;
 
     /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
-        NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils);
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp);
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /* \brief Extract the three field vectors from a given composed vector
      *
@@ -255,12 +257,12 @@ namespace FSI
      *
      *  \sa  ADAPTER::FluidFSI::DisplacementToVelocity()
      */
-    virtual void ExtractFieldVectors(
+    void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
         Teuchos::RCP<const Epetra_Vector>& fx,  ///< fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
-    );
+        ) override;
 
    private:
     /*! \brief Create the combined DOF row map for the FSI problem
@@ -270,7 +272,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 05/2014
      */
-    virtual void CreateCombinedDofRowMap();
+    void CreateCombinedDofRowMap() override;
 
     /*! \brief Setup the Dirichlet map extractor
      *
@@ -281,26 +283,26 @@ namespace FSI
      *
      *  \author mayr.mt \date 05/2014
      */
-    virtual void SetupDBCMapExtractor();
+    void SetupDBCMapExtractor() override;
 
     /// setup RHS contributions based on single field residuals
-    void SetupRHSResidual(Epetra_Vector& f);
+    void SetupRHSResidual(Epetra_Vector& f) override;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void SetupRHSLambda(Epetra_Vector& f);
+    void SetupRHSLambda(Epetra_Vector& f) override;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void SetupRHSFirstiter(Epetra_Vector& f);
+    void SetupRHSFirstiter(Epetra_Vector& f) override;
 
     void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
         const bool slave_vectors_contain_interface_dofs) final;
 
     //! Create #lambda_ and #lambdaold_
-    virtual void SetLambda();
+    void SetLambda() override;
 
     //! Set #notsetup_ = true after redistribution
-    virtual void SetNotSetup()
+    void SetNotSetup() override
     {
       notsetup_ = true;
       return;
@@ -321,10 +323,10 @@ namespace FSI
     /// Handle row and column map exchange for matrix blocks
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<::CORE::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<::CORE::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupsfm_;
 
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
@@ -426,5 +428,7 @@ namespace FSI
   };
 }  // namespace FSI
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_H

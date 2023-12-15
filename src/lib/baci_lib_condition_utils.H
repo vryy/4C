@@ -19,6 +19,7 @@
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -54,9 +55,6 @@ namespace DRT
       \param dis : (in) Discretization
       \param condname : (in) name of condition in question
       \param nodes : (out) empty set on input, filled with nodal gids of local nodes
-
-      \author u.kue
-      \date 06/07
     */
     void FindConditionedNodes(
         const DRT::Discretization& dis, const std::string& condname, std::vector<int>& nodes);
@@ -78,9 +76,6 @@ namespace DRT
       \param dis : (in) Discretization
       \param conds : (in) conditions in question
       \param nodes : (out) empty set on input, filled with nodal gids of local nodes
-
-      \author u.kue
-      \date 06/07
     */
     void FindConditionedNodes(const DRT::Discretization& dis,
         const std::vector<DRT::Condition*>& conds, std::vector<int>& nodes);
@@ -125,7 +120,7 @@ namespace DRT
       \param condname name of condition
      */
     void FindConditionObjects(const DRT::Discretization& dis, std::map<int, DRT::Node*>& nodes,
-        std::map<int, DRT::Node*>& ghostnodes, std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+        std::map<int, DRT::Node*>& gnodes, std::map<int, Teuchos::RCP<DRT::Element>>& elements,
         const std::vector<DRT::Condition*>& conds);
 
     /// collect all elements in a condition including ghosts
@@ -146,7 +141,7 @@ namespace DRT
       \param condname name of condition
      */
     void FindConditionObjects(const DRT::Discretization& dis, std::map<int, DRT::Node*>& nodes,
-        std::map<int, DRT::Node*>& ghostnodes, std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+        std::map<int, DRT::Node*>& gnodes, std::map<int, Teuchos::RCP<DRT::Element>>& elements,
         const std::string& condname);
 
     /// collect all nodes (in- and excluding 'ghosts') and
@@ -160,7 +155,7 @@ namespace DRT
      */
     void FindConditionObjects(const DRT::Discretization& dis,
         std::map<int, std::map<int, DRT::Node*>>& nodes,
-        std::map<int, std::map<int, DRT::Node*>>& ghostnodes,
+        std::map<int, std::map<int, DRT::Node*>>& gnodes,
         std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>& elements,
         const std::string& condname);
 
@@ -233,5 +228,7 @@ namespace DRT
 
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

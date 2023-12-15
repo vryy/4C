@@ -18,6 +18,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class MixtureConstituent;
@@ -30,9 +32,6 @@ namespace MIXTURE
     {
      public:
       explicit MixtureConstituent_RemodelFiberExpl(const Teuchos::RCP<MAT::PAR::Material>& matdata);
-
-      ~MixtureConstituent_RemodelFiberExpl() override = default;
-
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
@@ -65,7 +64,7 @@ namespace MIXTURE
 
     [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override;
 
-    void PackConstituent(DRT::PackBuffer& data) const override;
+    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
@@ -94,10 +93,10 @@ namespace MIXTURE
 
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
@@ -124,5 +123,7 @@ namespace MIXTURE
     MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H

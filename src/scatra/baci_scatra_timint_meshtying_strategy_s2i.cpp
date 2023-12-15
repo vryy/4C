@@ -23,7 +23,6 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parameter_list.H"
-#include "baci_lib_utils_vector.H"
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_multiply.H"
@@ -42,6 +41,8 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -866,7 +867,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
   }
   // extract boundary conditions for scatra-scatra interface layer growth
   std::vector<DRT::Condition*> s2icoupling_growth_conditions;
-  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", s2icoupling_growth_conditions);
+  scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", s2icoupling_growth_conditions);
 
   // evaluate scatra-scatra interface layer growth
   if (s2icoupling_growth_conditions.size())
@@ -894,7 +895,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         SetConditionSpecificScaTraParameters(*s2icoupling_growth_conditions[0]);
         // evaluate the condition
         scatratimint_->Discretization()->EvaluateCondition(conditionparams, islavematrix_,
-            imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICouplingGrowth");
+            imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
 
         // finalize interface matrices
         islavematrix_->Complete();
@@ -1000,7 +1001,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // the corresponding boundary condition for scatra-scatra interface coupling is expected
           // to have the same ID
           const int condid = scatratimint_->Discretization()
-                                 ->GetCondition("S2ICouplingGrowth")
+                                 ->GetCondition("S2IKineticsGrowth")
                                  ->GetInt("ConditionID");
 
           // set global state vectors according to time-integration scheme
@@ -1042,8 +1043,18 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
-                scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2IKinetics", condid);
+                for (auto [kinetics_slave_cond_id, kinetics_slave_cond] :
+                    kinetics_conditions_meshtying_slaveside_)
+                {
+                  if (kinetics_slave_cond_id == condid)
+                  {
+                    // collect condition specific data and store to scatra boundary parameter class
+                    SetConditionSpecificScaTraParameters(*kinetics_slave_cond);
+
+                    scatratimint_->Discretization()->EvaluateCondition(
+                        condparams, strategy, "S2IKinetics", condid);
+                  }
+                }
 
                 // finalize auxiliary matrix block
                 islavematrix->Complete(dofrowmap_growth, dofrowmap_scatra);
@@ -1064,8 +1075,14 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface layer
                 // growth
+                auto* s2i_coupling_growth_cond =
+                    scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
+
+                // collect condition specific data and store to scatra boundary parameter class
+                SetConditionSpecificScaTraParameters(*s2i_coupling_growth_cond);
+
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICouplingGrowth", condid);
+                    condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix block
                 islavematrix->Complete(dofrowmap_growth, dofrowmap_scatra);
@@ -1116,7 +1133,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICouplingGrowth", condid);
+                    condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix blocks
                 islavematrix->Complete(dofrowmap_scatra, dofrowmap_growth);
@@ -1196,7 +1213,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface layer
                 // growth
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICouplingGrowth", condid);
+                    condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // layer growth w.r.t. scatra-scatra interface layer thicknesses
@@ -1248,7 +1265,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICouplingGrowth", condid);
+                    condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix blocks
                 blockslavematrix->Complete();
@@ -1317,7 +1334,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
             // evaluate main-diagonal linearizations and corresponding residuals
             scatratimint_->Discretization()->EvaluateCondition(
-                condparams, strategy, "S2ICouplingGrowth", condid);
+                condparams, strategy, "S2IKineticsGrowth", condid);
 
             // finalize global matrix block
             growthgrowthblock_->Complete();
@@ -1752,16 +1769,16 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
   switch (slaveelement.Shape())
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return MortarCellCalc<DRT::Element::tri3>(
+      return MortarCellCalc<CORE::FE::CellType::tri3>(
           impltype, masterelement, couplingtype, lmside, numdofpernode_slave, disname);
       break;
     }
 
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return MortarCellCalc<DRT::Element::quad4>(
+      return MortarCellCalc<CORE::FE::CellType::quad4>(
           impltype, masterelement, couplingtype, lmside, numdofpernode_slave, disname);
       break;
     }
@@ -1778,7 +1795,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS>
+template <CORE::FE::CellType distypeS>
 SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
     const INPAR::SCATRA::ImplType& impltype, const MORTAR::MortarElement& masterelement,
     const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
@@ -1789,16 +1806,16 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
   switch (masterelement.Shape())
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return MortarCellCalc<distypeS, DRT::Element::tri3>(
+      return MortarCellCalc<distypeS, CORE::FE::CellType::tri3>(
           impltype, couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
 
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return MortarCellCalc<distypeS, DRT::Element::quad4>(
+      return MortarCellCalc<distypeS, CORE::FE::CellType::quad4>(
           impltype, couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
@@ -1815,7 +1832,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
     const INPAR::SCATRA::ImplType& impltype, const INPAR::S2I::CouplingType& couplingtype,
     const INPAR::S2I::InterfaceSides& lmside, const int& numdofpernode_slave,
@@ -2011,14 +2028,14 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           if (kinetics_condition->GetInt("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            DRT::UTILS::AddOwnedNodeGIDVector(
+            DRT::UTILS::AddOwnedNodeGIDFromList(
                 *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
 
-            DRT::UTILS::AddOwnedNodeGIDVector(*scatratimint_->Discretization(),
+            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
                 *mastercondition->second->Nodes(), imasternodegidvec);
 
             islavenodegidvec_cond.push_back(islavenodegidvec);
@@ -2032,8 +2049,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       }
       else
       {
-        std::vector<int> islavenodegidvec;
-        std::vector<int> imasternodegidvec;
+        std::set<int> islavenodegidset;
+        std::set<int> imasternodegidset;
 
         for (const auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
         {
@@ -2049,20 +2066,20 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           if (kinetics_condition->GetInt("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            DRT::UTILS::AddOwnedNodeGIDVector(
-                *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
+            DRT::UTILS::AddOwnedNodeGIDFromList(
+                *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidset);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
             else
-              DRT::UTILS::AddOwnedNodeGIDVector(*scatratimint_->Discretization(),
-                  *mastercondition->second->Nodes(), imasternodegidvec);
+              DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+                  *mastercondition->second->Nodes(), imasternodegidset);
           }
         }
 
-        DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
-        DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
+        std::vector<int> islavenodegidvec(islavenodegidset.begin(), islavenodegidset.end());
+        std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
         icoup_->SetupCoupling(*(scatratimint_->Discretization()),
             *(scatratimint_->Discretization()), imasternodegidvec, islavenodegidvec,
@@ -2174,7 +2191,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             slaveelements, slavecondition);
 
         // initialize mortar coupling adapter
-        icoupmortar_[condid] = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+        icoupmortar_[condid] = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
+            DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+            DRT::Problem::Instance()->ContactDynamicParams(),
+            DRT::Problem::Instance()->SpatialApproximationType()));
         CORE::ADAPTER::CouplingMortar& icoupmortar = *icoupmortar_[condid];
         std::vector<int> coupleddof(scatratimint_->NumDofPerNode(), 1);
         icoupmortar.SetupInterface(scatratimint_->Discretization(), scatratimint_->Discretization(),
@@ -2313,11 +2333,11 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               std::array<double, 2> coordinates_master;
               double dummy(0.);
               MORTAR::MortarProjector::Impl(*master_mortar_ele)
-                  ->ProjectGaussPointAuxn3D(slavenode->X(), slavenode->MoData().n(),
+                  ->ProjectGaussPointAuxn3D(slavenode->X().data(), slavenode->MoData().n(),
                       *master_mortar_ele, coordinates_master.data(), dummy);
 
               // check whether projected node lies inside master-side element
-              if (master_mortar_ele->Shape() == DRT::Element::quad4)
+              if (master_mortar_ele->Shape() == CORE::FE::CellType::quad4)
               {
                 if (coordinates_master[0] < -1. - ntsprojtol_ or
                     coordinates_master[1] < -1. - ntsprojtol_ or
@@ -2327,7 +2347,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                   continue;
               }
 
-              else if (master_mortar_ele->Shape() == DRT::Element::tri3)
+              else if (master_mortar_ele->Shape() == CORE::FE::CellType::tri3)
               {
                 if (coordinates_master[0] < -ntsprojtol_ or coordinates_master[1] < -ntsprojtol_ or
                     coordinates_master[0] + coordinates_master[1] > 1. + 2 * ntsprojtol_)
@@ -2682,7 +2702,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
   // extract boundary condition for scatra-scatra interface layer growth
   const DRT::Condition* const condition =
-      scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth");
+      scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
 
   // setup evaluation of scatra-scatra interface layer growth if applicable
   if (condition)
@@ -3022,7 +3042,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
       break;
     }
 
-    case DRT::Condition::ConditionType::S2ICouplingGrowth:
+    case DRT::Condition::ConditionType::S2IKineticsGrowth:
     {
       // set the kinetic model specific parameters
       switch (kineticmodel)
@@ -3081,7 +3101,7 @@ void SCATRA::MeshtyingStrategyS2I::SetOldPartOfRHS() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::OutputRestart() const
+void SCATRA::MeshtyingStrategyS2I::WriteRestart() const
 {
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer
   // growth
@@ -3162,7 +3182,7 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
 
     // extract boundary condition for scatra-scatra interface layer growth
     const DRT::Condition* const condition =
-        scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth");
+        scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
 
     // extract nodal cloud from condition
     const std::vector<int>* nodegids = condition->Nodes();
@@ -3311,7 +3331,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
   // extract boundary conditions for scatra-scatra interface layer growth
   std::vector<Teuchos::RCP<DRT::Condition>> conditions;
-  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", conditions);
+  scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
   // initialize scatra-scatra interface layer growth
   if (conditions.size())
@@ -3359,13 +3379,16 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     {
       // add one degree of freedom for scatra-scatra interface layer growth to current node if
       // applicable
-      if (scatratimint_->Discretization()->lColNode(inode)->GetCondition("S2ICouplingGrowth"))
+      if (scatratimint_->Discretization()->lColNode(inode)->GetCondition("S2IKineticsGrowth"))
         (*numdofpernode)[inode] = 1;
     }
+
+    int number_dofsets = scatratimint_->GetMaxDofSetNumber();
     Teuchos::RCP<DRT::DofSetInterface> dofset = Teuchos::rcp(
         new DRT::DofSetPredefinedDoFNumber(numdofpernode, Teuchos::null, Teuchos::null, true));
-    if (scatratimint_->Discretization()->AddDofSet(dofset) != 2)
+    if (scatratimint_->Discretization()->AddDofSet(dofset) != ++number_dofsets)
       dserror("Scalar transport discretization exhibits invalid number of dofsets!");
+    scatratimint_->SetNumberOfDofSetGrowth(number_dofsets);
 
     // initialize linear solver for monolithic scatra-scatra interface coupling involving interface
     // layer growth
@@ -3383,8 +3406,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
       }
       extendedsolver_ = Teuchos::rcp(
           new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(extendedsolver),
-              scatratimint_->Discretization()->Comm(),
-              DRT::Problem::Instance()->ErrorFile()->Handle()));
+              scatratimint_->Discretization()->Comm()));
     }
   }  // initialize scatra-scatra interface layer growth
 
@@ -3406,7 +3428,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           "Adaptive time stepping for scatra-scatra interface layer growth requires "
           "ADAPTIVE_TIMESTEPPING flag to be set!");
     }
-    if (not scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth"))
+    if (not scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth"))
     {
       dserror(
           "Adaptive time stepping for scatra-scatra interface layer growth requires corresponding "
@@ -3962,7 +3984,7 @@ SCATRA::MortarCellInterface::MortarCellInterface(const INPAR::S2I::CouplingType&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, distypeM>::Instance(
     const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
     const int& numdofpernode_slave, const int& numdofpernode_master, const std::string& disname)
@@ -3989,7 +4011,7 @@ SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, dis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretization& idiscret,
     MORTAR::IntCell& cell, MORTAR::MortarElement& slaveelement,
     MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
@@ -4029,7 +4051,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretizat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discretization& idiscret,
     const MORTAR::MortarNode& slavenode, const double& lumpedarea,
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
@@ -4070,7 +4092,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discreti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarElement(
     const DRT::Discretization& idiscret, MORTAR::MortarElement& element,
     DRT::Element::LocationArray& la, const Teuchos::ParameterList& params,
@@ -4099,7 +4121,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarElement(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
     const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
     const int& numdofpernode_slave, const int& numdofpernode_master)
@@ -4125,7 +4147,7 @@ SCATRA::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
     const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
     DRT::Element::LocationArray& la_master)
@@ -4137,7 +4159,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
     CORE::LINALG::Matrix<nen_slave_, 1>& estate_slave, const DRT::Discretization& idiscret,
     DRT::Element::LocationArray& la_slave, const std::string& statename, const int& nds) const
@@ -4155,7 +4177,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
     std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& estate_slave,
     std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& estate_master,
@@ -4176,7 +4198,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
     MORTAR::IntCell& cell, const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,
@@ -4279,7 +4301,7 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
     MORTAR::MortarElement& element,
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints, const int iquad)
@@ -4312,7 +4334,7 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
     const MORTAR::MortarNode& slavenode, MORTAR::MortarElement& slaveelement,
     MORTAR::MortarElement& masterelement)
@@ -4344,8 +4366,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
   std::array<double, 2> coordinates_master;
   double dummy(0.);
   MORTAR::MortarProjector::Impl(masterelement)
-      ->ProjectGaussPointAuxn3D(
-          slavenode.X(), slavenode.MoData().n(), masterelement, coordinates_master.data(), dummy);
+      ->ProjectGaussPointAuxn3D(slavenode.X().data(), slavenode.MoData().n(), masterelement,
+          coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element
   CORE::VOLMORTAR::UTILS::shape_function<distypeM>(funct_master_, coordinates_master.data());
@@ -4353,7 +4375,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(MORTAR::IntCell& cell,
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
     CORE::LINALG::SerialDenseMatrix& D, CORE::LINALG::SerialDenseMatrix& M,
@@ -4470,7 +4492,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(MORTAR::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
     const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::MortarElement& slaveelement,
     MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
@@ -4520,7 +4542,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
     const MORTAR::MortarNode& slavenode, const double& lumpedarea,
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
@@ -4559,7 +4581,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNodalAreaFractions(
     MORTAR::MortarElement& slaveelement, CORE::LINALG::SerialDenseVector& areafractions)
 {
@@ -4815,7 +4837,9 @@ void SCATRA::MortarCellAssemblyStrategy::InitCellVector(CORE::LINALG::SerialDens
 
 
 // forward declarations
-template class SCATRA::MortarCellCalc<DRT::Element::tri3, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalc<DRT::Element::tri3, DRT::Element::quad4>;
-template class SCATRA::MortarCellCalc<DRT::Element::quad4, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalc<DRT::Element::quad4, DRT::Element::quad4>;
+template class SCATRA::MortarCellCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>;
+template class SCATRA::MortarCellCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
+template class SCATRA::MortarCellCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
+template class SCATRA::MortarCellCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
+
+BACI_NAMESPACE_CLOSE

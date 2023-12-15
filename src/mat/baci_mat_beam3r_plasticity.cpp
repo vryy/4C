@@ -17,6 +17,8 @@ function)
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMaterialParams(
@@ -76,7 +78,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::BeamReissnerElastPlasticMaterialParams::Cr
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-DRT::ParObject* MAT::BeamElastPlasticMaterialType<T>::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::BeamElastPlasticMaterialType<T>::Create(const std::vector<char>& data)
 {
   // create material from packed data
   MAT::BeamPlasticMaterial<T>* matobject = new MAT::BeamPlasticMaterial<T>();
@@ -159,9 +161,9 @@ void MAT::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
  *-----------------------------------------------------------------------------------------------*/
 // Pack data
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::Pack(DRT::PackBuffer& data) const
+void MAT::BeamPlasticMaterial<T>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -191,9 +193,8 @@ template <typename T>
 void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  int type = 0;
-  this->ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   int matid;
   this->ExtractfromPack(position, data, matid);
@@ -611,3 +612,5 @@ void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfForces(
 template class MAT::BeamPlasticMaterial<double>;
 
 template class MAT::BeamElastPlasticMaterialType<double>;
+
+BACI_NAMESPACE_CLOSE

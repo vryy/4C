@@ -18,6 +18,8 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 #include "baci_mat_membrane_elasthyper_service.H"
 #include "baci_matelast_summand.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
@@ -39,7 +41,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Membrane_ElastHyper::CreateMaterial()
 MAT::Membrane_ElastHyperType MAT::Membrane_ElastHyperType::instance_;
 
 
-DRT::ParObject* MAT::Membrane_ElastHyperType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Membrane_ElastHyperType::Create(const std::vector<char>& data)
 {
   MAT::Membrane_ElastHyper* memelhy = new MAT::Membrane_ElastHyper();
   memelhy->Unpack(data);
@@ -67,9 +69,9 @@ MAT::Membrane_ElastHyper::Membrane_ElastHyper(MAT::PAR::Membrane_ElastHyper* par
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::Membrane_ElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -90,10 +92,8 @@ void MAT::Membrane_ElastHyper::Pack(DRT::PackBuffer& data) const
 void MAT::Membrane_ElastHyper::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -263,3 +263,5 @@ void MAT::Membrane_ElastHyper::EvaluateAnisotropicStressCmat(
     cmat_aniso.Update(1.0, cmat_aniso_red, 1.0);
   }
 }  // MAT::Membrane_ElastHyper::EvaluateAnisotropicStressCmat
+
+BACI_NAMESPACE_CLOSE

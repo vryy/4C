@@ -16,6 +16,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -38,8 +40,8 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitscheTsi(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm)
+    CoIntegratorNitscheTsi(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
         : CoIntegratorNitsche(params, eletype, comm),
           theta_thermo_(params.get<double>("NITSCHE_THETA_TSI")),
           nit_thr_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheThermoMethod>(
@@ -51,8 +53,6 @@ namespace CONTACT
           gamma_master_(params.get<double>("HEATTRANSMASTER"))
     {
     }
-
-    ~CoIntegratorNitscheTsi() override = default;
 
    protected:
     /*!
@@ -99,7 +99,8 @@ namespace CONTACT
         const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
         const double gap, const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
+        std::vector<CORE::GEN::pairedvector<int, double>>& deriv_contact_normal, double* sxi,
+        double* mxi);
 
     template <int dim>
     void BuildAdjointTestTsi(MORTAR::MortarElement& moEle, const double fac,
@@ -144,7 +145,7 @@ namespace CONTACT
 
 
 
-    template <DRT::Element::DiscretizationType parentdistype, int dim>
+    template <CORE::FE::CellType parentdistype, int dim>
     void inline SoEleGP(MORTAR::MortarElement& sele, const double wgt, const double* gpcoord,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo);
 
@@ -201,4 +202,6 @@ namespace CONTACT
     double gamma_master_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_TSI_H

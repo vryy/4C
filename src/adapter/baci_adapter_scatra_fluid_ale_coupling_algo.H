@@ -17,6 +17,8 @@
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 #include "baci_coupling_adapter.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace ADAPTER
 {
@@ -48,24 +50,16 @@ namespace ADAPTER
         const std::string condname,  ///< name of condition that defines fluid-ale coupling
         const Teuchos::ParameterList& solverparams);
 
-    /// virtual destructor to support polymorph destruction
-    virtual ~ScaTraFluidAleCouplingAlgorithm();
 
     /// setup
-    virtual void Setup();
+    void Setup() override;
 
     /// init
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
-        const Teuchos::ParameterList&
-            scatradyn,  ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-        const std::string& disname = "scatra",       ///< name of scalar transport discretization
-        const bool isale = false                     ///< ALE flag
-    );
+    void Init() override;
 
     /// read restart data (pure virtual)
-    virtual void ReadRestart(int step  ///< step number where the calculation is continued
-        ) = 0;
+    void ReadRestart(int step  ///< step number where the calculation is continued
+        ) override = 0;
 
     /// solve fluid-ale
     virtual void FluidAleNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
@@ -107,5 +101,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H

@@ -14,6 +14,8 @@
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_activesummand.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ELASTIC
@@ -99,7 +101,7 @@ namespace MAT
       ///@name Packing and Unpacking
       //@{
 
-      void PackSummand(DRT::PackBuffer& data) const override;
+      void PackSummand(CORE::COMM::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -123,10 +125,10 @@ namespace MAT
       void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
       void EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
-          const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+          const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
-      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& dPI_aniso,
-          const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
+          const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants
@@ -257,5 +259,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_COUPANISOEXPOACTIVE_H

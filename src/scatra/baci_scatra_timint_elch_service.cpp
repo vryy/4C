@@ -12,6 +12,8 @@
 
 #include "baci_io.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
@@ -21,8 +23,6 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
           static_cast<bool>(cccvcyclingcondition.GetInt("AdaptiveTimeSteppingInitRelax"))),
       beginwithcharge_(static_cast<bool>(cccvcyclingcondition.GetInt("BeginWithCharging"))),
       charging_(false),
-      halfcycle_charge_(Teuchos::null),
-      halfcycle_discharge_(Teuchos::null),
       ihalfcycle_(-1),
       initrelaxtime_(cccvcyclingcondition.GetDouble("InitRelaxTime")),
       min_time_steps_during_init_relax_(cccvcyclingcondition.GetInt("MinTimeStepsDuringInitRelax")),
@@ -78,7 +78,7 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::CCCVCondition::SetFirstCCCVHalfCycle(int step)
+void SCATRA::CCCVCondition::SetFirstCCCVHalfCycle(const int step)
 {
   // only the current simulation is not restarted
   if (ihalfcycle_ == -1)
@@ -114,7 +114,7 @@ INPAR::ELCH::CCCVHalfCyclePhase SCATRA::CCCVCondition::GetCCCVHalfCyclePhase() c
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 bool SCATRA::CCCVCondition::IsEndOfHalfCyclePhase(
-    double cellvoltage, double cellcrate, double time) const
+    const double cellvoltage, const double cellcrate, const double time) const
 {
   bool phasefinished = false;
 
@@ -123,12 +123,12 @@ bool SCATRA::CCCVCondition::IsEndOfHalfCyclePhase(
   {
     case INPAR::ELCH::CCCVHalfCyclePhase::constant_current:
     {
-      phasefinished = IsExceedCellVoltage(cellvoltage);
+      phasefinished = ExceedCellVoltage(cellvoltage);
       break;
     }
     case INPAR::ELCH::CCCVHalfCyclePhase::constant_voltage:
     {
-      phasefinished = IsExceedCellCCRate(cellcrate);
+      phasefinished = ExceedCellCRate(cellcrate);
       break;
     }
     case INPAR::ELCH::CCCVHalfCyclePhase::relaxation:
@@ -146,7 +146,7 @@ bool SCATRA::CCCVCondition::IsEndOfHalfCyclePhase(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::CCCVCondition::NextPhase(int step, double time, bool print)
+void SCATRA::CCCVCondition::NextPhase(const int step, const double time, const bool print)
 {
   // store, that phase is changed now.
   SetPhaseChangeObserver(step);
@@ -154,7 +154,7 @@ void SCATRA::CCCVCondition::NextPhase(int step, double time, bool print)
   // print cycling information to improve readability of the output
   if (print)
   {
-    std::cout << std::endl << "CCCV cycling: ";
+    std::cout << "\n CCCV cycling: ";
     if (charging_)
       std::cout << "Charging half-cycle: ";
     else
@@ -175,7 +175,7 @@ void SCATRA::CCCVCondition::NextPhase(int step, double time, bool print)
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool SCATRA::CCCVCondition::IsExceedCellVoltage(double expected_cellvoltage) const
+bool SCATRA::CCCVCondition::ExceedCellVoltage(const double expected_cellvoltage) const
 {
   return ((charging_ and expected_cellvoltage > halfcycle_charge_->GetCutOffVoltage() - 1e-14) or
           (!charging_ and expected_cellvoltage < halfcycle_discharge_->GetCutOffVoltage() + 1e-14));
@@ -183,7 +183,7 @@ bool SCATRA::CCCVCondition::IsExceedCellVoltage(double expected_cellvoltage) con
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool SCATRA::CCCVCondition::IsExceedCellCCRate(double expected_cellcrate) const
+bool SCATRA::CCCVCondition::ExceedCellCRate(const double expected_cellcrate) const
 {
   return ((charging_ and expected_cellcrate < (halfcycle_charge_->GetCutOffCRate() + 1e-14)) or
           (!charging_ and expected_cellcrate < (halfcycle_discharge_->GetCutOffCRate() + 1e-14)));
@@ -198,9 +198,9 @@ int SCATRA::CCCVCondition::GetHalfCycleConditionID() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool SCATRA::CCCVCondition::IsStepsFromLastPhaseChange(int step)
+bool SCATRA::CCCVCondition::ExceedMaxStepsFromLastPhaseChange(const int step)
 {
-  bool out = (phasechanged_ && (step >= (steplastphasechange_ + num_add_adapt_timesteps_)));
+  const bool out = (phasechanged_ && (step >= (steplastphasechange_ + num_add_adapt_timesteps_)));
   if (out) phasechanged_ = false;
 
   return out;
@@ -225,7 +225,7 @@ bool SCATRA::CCCVCondition::IsAdaptiveTimeSteppingPhase() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::CCCVCondition::SetPhaseChangeObserver(int step)
+void SCATRA::CCCVCondition::SetPhaseChangeObserver(const int step)
 {
   // store, that phase is changed now
   phasechanged_ = true;
@@ -264,7 +264,7 @@ void SCATRA::CCCVCondition::ReadRestart(IO::DiscretizationReader& reader)
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
-    const DRT::Condition& cccvhalfcyclecondition, bool adaptivetimestepping)
+    const DRT::Condition& cccvhalfcyclecondition, const bool adaptivetimestepping)
     : adaptivetimesteppingonoff_(
           *cccvhalfcyclecondition.Get<std::vector<int>>("AdaptiveTimeSteppingPhaseOnOff")),
       cutoffcrate_(cccvhalfcyclecondition.GetDouble("CutoffCRate")),
@@ -288,7 +288,7 @@ SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool SCATRA::CCCVHalfCycleCondition::IsEndOfHalfCycleNextPhase(double time, bool print)
+bool SCATRA::CCCVHalfCycleCondition::IsEndOfHalfCycleNextPhase(const double time, const bool print)
 {
   bool halfcycle_finished = false;
 
@@ -298,20 +298,20 @@ bool SCATRA::CCCVHalfCycleCondition::IsEndOfHalfCycleNextPhase(double time, bool
     case INPAR::ELCH::CCCVHalfCyclePhase::constant_current:
     {
       phase_cccv_ = INPAR::ELCH::CCCVHalfCyclePhase::constant_voltage;
-      if (print) std::cout << "CC-phase finished!" << std::endl;
+      if (print) std::cout << "CC-phase finished! \n";
       break;
     }
     case INPAR::ELCH::CCCVHalfCyclePhase::constant_voltage:
     {
       phase_cccv_ = INPAR::ELCH::CCCVHalfCyclePhase::relaxation;
       relaxendtime_ = time + relaxtime_;
-      if (print) std::cout << "CV-phase finished!" << std::endl;
+      if (print) std::cout << "CV-phase finished! \n";
       break;
     }
     case INPAR::ELCH::CCCVHalfCyclePhase::relaxation:
     {
       halfcycle_finished = true;
-      if (print) std::cout << "Relaxation-phase finished!" << std::endl;
+      if (print) std::cout << "Relaxation-phase finished! \n";
       break;
     }
     default:
@@ -371,3 +371,5 @@ void SCATRA::CCCVHalfCycleCondition::ReadRestart(IO::DiscretizationReader& reade
   // current phase in half cycle
   phase_cccv_ = static_cast<INPAR::ELCH::CCCVHalfCyclePhase>(reader.ReadInt("phase_cccv"));
 }
+
+BACI_NAMESPACE_CLOSE

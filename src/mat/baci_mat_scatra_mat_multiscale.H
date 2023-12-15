@@ -12,6 +12,8 @@
 #include "baci_mat_scatra_mat.H"
 #include "baci_mat_scatra_multiscale.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -26,11 +28,9 @@ namespace MAT
       //! constructor
       ScatraMatMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      virtual ~ScatraMatMultiScale() { return; };
 
       //! create material
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       //! return porosity
       double Porosity() const { return porosity_; };
@@ -52,14 +52,14 @@ namespace MAT
 
 
   /*----------------------------------------------------------------------*/
-  class ScatraMatMultiScaleType : public DRT::ParObjectType
+  class ScatraMatMultiScaleType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ScatraMatMultiScaleType"; };
+    std::string Name() const override { return "ScatraMatMultiScaleType"; };
 
     static ScatraMatMultiScaleType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiScaleType instance_;
@@ -84,7 +84,7 @@ namespace MAT
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ScatraMatMultiScaleType::Instance().UniqueParObjectId();
     };
@@ -99,7 +99,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -112,14 +112,20 @@ namespace MAT
 
       \param data (in) : vector storing all data to be unpacked into this instance.
     */
-    void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
     //@}
 
     //! return material type
-    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_scatra_multiscale; };
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_scatra_multiscale;
+    };
 
     //! clone material
-    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ScatraMatMultiScale(*this)); };
+    Teuchos::RCP<Material> Clone() const override
+    {
+      return Teuchos::rcp(new ScatraMatMultiScale(*this));
+    };
 
     //! return porosity
     double Porosity() const { return params_->Porosity(); };
@@ -129,10 +135,12 @@ namespace MAT
 
    private:
     //! return material parameters
-    const MAT::PAR::ScatraMultiScale* Params() const { return params_; };
+    const MAT::PAR::ScatraMultiScale* Params() const override { return params_; };
 
     //! material parameters
     MAT::PAR::ScatraMatMultiScale* params_;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

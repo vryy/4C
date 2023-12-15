@@ -15,6 +15,8 @@
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_inpar_cut.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -178,8 +180,7 @@ namespace CORE::GEO
       /*!
       \brief Create integration cell of specified shape
        */
-      void NewIntegrationCell(
-          Mesh& mesh, ::DRT::Element::DiscretizationType shape, const std::vector<Point*>& x);
+      void NewIntegrationCell(Mesh& mesh, CORE::FE::CellType shape, const std::vector<Point*>& x);
 
       /// create line2 volume cell
       void NewLine2Cell(Mesh& mesh, const std::vector<Point*>& points);
@@ -205,8 +206,8 @@ namespace CORE::GEO
       /*!
       \brief Create boundary cells of specified shape
       */
-      void NewBoundaryCell(Mesh& mesh, ::DRT::Element::DiscretizationType shape, Facet* f,
-          const std::vector<Point*>& x);
+      void NewBoundaryCell(
+          Mesh& mesh, CORE::FE::CellType shape, Facet* f, const std::vector<Point*>& x);
 
       /*!
       \brief Create Point1 boundary cell
@@ -243,7 +244,7 @@ namespace CORE::GEO
       \brief Return the number of Gauss points generated over the volumecell when tessellation is
       used
        */
-      int NumGaussPoints(::DRT::Element::DiscretizationType shape);
+      int NumGaussPoints(CORE::FE::CellType shape);
 
       /*!
       \brief Write Geometry of volumecell together with gauss points produced from moment fitting
@@ -319,7 +320,7 @@ namespace CORE::GEO
        */
       void integrateSpecificFunctionsTessellation();
 
-      template <::DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(
           CORE::GEO::CUT::IntegrationCell* ic);
 
@@ -409,5 +410,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

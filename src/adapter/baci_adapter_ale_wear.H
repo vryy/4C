@@ -18,6 +18,8 @@
 /* header inclusions */
 #include "baci_adapter_ale_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace ALE
@@ -41,9 +43,6 @@ namespace ADAPTER
     //! constructor
     explicit AleWearWrapper(Teuchos::RCP<Ale> ale);
 
-    //! Destructor
-    virtual ~AleWearWrapper() {}
-
     //@}
 
     //! communicate object at the interface
@@ -60,5 +59,7 @@ namespace ADAPTER
 
   };  // class AleWearWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_WEAR_H

@@ -21,6 +21,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------------*
  | entry point for simulations of scalar-thermo interaction problems   fang 04/15 |
  *--------------------------------------------------------------------------------*/
@@ -153,7 +155,6 @@ void sti_dyn(const int& restartstep  //! time step for restart
     default:
     {
       dserror("Unknown coupling algorithm for scatra-thermo interaction!");
-      break;
     }
   }
 
@@ -186,3 +187,5 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   return;
 }  // sti_dyn()
+
+BACI_NAMESPACE_CLOSE

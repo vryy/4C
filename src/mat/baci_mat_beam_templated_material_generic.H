@@ -10,6 +10,8 @@
 
 #include "baci_mat_beam_material_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declaration
 namespace DRT
@@ -97,5 +99,7 @@ namespace MAT
         const CORE::LINALG::Matrix<3, 3, T>& C_N, const int gp) = 0;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

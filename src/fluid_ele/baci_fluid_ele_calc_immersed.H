@@ -15,13 +15,15 @@
 #include "baci_fluid_ele_calc.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     class FluidImmersedBase;
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcImmersed : public FluidEleCalc<distype>
     {
       typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
@@ -33,8 +35,6 @@ namespace DRT
       FluidEleCalcImmersed();
 
      public:
-      virtual ~FluidEleCalcImmersed() {}
-
       /// Singleton access method
       static FluidEleCalcImmersed<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
@@ -58,13 +58,13 @@ namespace DRT
         be calculated
 
        */
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       //! compute residual of momentum equation and subgrid-scale velocity
       void ComputeSubgridScaleVelocity(
@@ -95,7 +95,7 @@ namespace DRT
           CORE::LINALG::Matrix<nsd_, 1>&
               resM_Du,          ///< linearisation of the Garlerkin momentum residual
           const double& rhsfac  ///< right-hand-side factor
-      );
+          ) override;
 
       //! Compute element matrix entries: continuity terms of the Garlerkin part and rhs
       void ContinuityGalPart(
@@ -122,5 +122,7 @@ namespace DRT
     };  // class FluidEleCalcImmersed
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -9,10 +9,12 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mat_anisotropy_utils.H"
 
-#include "baci_lib_inputreader.H"
-#include "baci_lib_pack_buffer.H"
-#include "baci_lib_parobject.H"
+#include "baci_comm_pack_buffer.H"
+#include "baci_comm_parobject.H"
+#include "baci_io_inputreader.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
+
+BACI_NAMESPACE_OPEN
 
 void MAT::ReadAnisotropyFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
     CORE::LINALG::Matrix<3, 1>& fiber_vector)
@@ -66,26 +68,27 @@ void MAT::ComputeStructuralTensors(
 }
 
 template <typename T>
-void MAT::PackFiberVector(DRT::PackBuffer& buffer, const std::vector<std::vector<T>>& vct)
+void MAT::PackFiberVector(CORE::COMM::PackBuffer& buffer, const std::vector<std::vector<T>>& vct)
 {
-  DRT::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
+  CORE::COMM::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
 
   for (const auto& list : vct)
   {
-    DRT::ParObject::AddtoPack(buffer, list);
+    CORE::COMM::ParObject::AddtoPack(buffer, list);
   }
 }
 
 template <typename T, unsigned int numfib>
-void MAT::PackFiberArray(DRT::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct)
+void MAT::PackFiberArray(
+    CORE::COMM::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct)
 {
-  DRT::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
+  CORE::COMM::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
 
   for (const auto& list : vct)
   {
     for (const auto& fiber : list)
     {
-      DRT::ParObject::AddtoPack<T::numRows(), T::numCols()>(buffer, fiber);
+      CORE::COMM::ParObject::AddtoPack<T::numRows(), T::numCols()>(buffer, fiber);
     }
   }
 }
@@ -95,11 +98,11 @@ void MAT::UnpackFiberVector(std::vector<char>::size_type& position, const std::v
     std::vector<std::vector<T>>& vct)
 {
   vct.clear();
-  int numgps = DRT::ParObject::ExtractInt(position, data);
+  int numgps = CORE::COMM::ParObject::ExtractInt(position, data);
   for (int i = 0; i < numgps; ++i)
   {
     std::vector<T> mat(0);
-    DRT::ParObject::ExtractfromPack(position, data, mat);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, mat);
     vct.emplace_back(mat);
   }
 }
@@ -109,13 +112,13 @@ void MAT::UnpackFiberArray(std::vector<char>::size_type& position, const std::ve
     std::vector<std::array<T, numfib>>& vct)
 {
   vct.clear();
-  int numgps = DRT::ParObject::ExtractInt(position, data);
+  int numgps = CORE::COMM::ParObject::ExtractInt(position, data);
   for (int i = 0; i < numgps; ++i)
   {
     std::array<T, numfib> mat;
     for (unsigned int j = 0; j < numfib; ++j)
     {
-      DRT::ParObject::ExtractfromPack<T::numRows(), T::numCols()>(position, data, mat.at(j));
+      CORE::COMM::ParObject::ExtractfromPack<T::numRows(), T::numCols()>(position, data, mat.at(j));
     }
     vct.emplace_back(mat);
   }
@@ -140,25 +143,25 @@ template void MAT::ComputeStructuralTensors<CORE::LINALG::Matrix<3, 3>, 2u>(
     std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 2>>& structural_tensor,
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
 
-template void MAT::PackFiberVector(
-    DRT::PackBuffer& buffer, const std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>>& vct);
+template void MAT::PackFiberVector(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>>& vct);
 template void MAT::UnpackFiberVector(std::vector<char>::size_type& position,
     const std::vector<char>& data, std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>>& vct);
-template void MAT::PackFiberVector(
-    DRT::PackBuffer& buffer, const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& vct);
+template void MAT::PackFiberVector(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& vct);
 template void MAT::UnpackFiberVector(std::vector<char>::size_type& position,
     const std::vector<char>& data, std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& vct);
-template void MAT::PackFiberVector(
-    DRT::PackBuffer& buffer, const std::vector<std::vector<CORE::LINALG::Matrix<6, 1>>>& vct);
+template void MAT::PackFiberVector(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::vector<CORE::LINALG::Matrix<6, 1>>>& vct);
 template void MAT::UnpackFiberVector(std::vector<char>::size_type& position,
     const std::vector<char>& data, std::vector<std::vector<CORE::LINALG::Matrix<6, 1>>>& vct);
 
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 1>, 1u>(
-    DRT::PackBuffer& buffer, const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 1>>& vct);
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 3>, 1u>(
-    DRT::PackBuffer& buffer, const std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 1>>& vct);
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<6, 1>, 1u>(
-    DRT::PackBuffer& buffer, const std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 1>>& vct);
+template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 1>, 1u>(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 1>>& vct);
+template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 3>, 1u>(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 1>>& vct);
+template void MAT::PackFiberArray<CORE::LINALG::Matrix<6, 1>, 1u>(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 1>>& vct);
 
 template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<3, 1>, 1>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
@@ -170,12 +173,12 @@ template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<6, 1>, 1>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
     std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 1>>& vct);
 
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 1>, 2u>(
-    DRT::PackBuffer& buffer, const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 2>>& vct);
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 3>, 2u>(
-    DRT::PackBuffer& buffer, const std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 2>>& vct);
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<6, 1>, 2u>(
-    DRT::PackBuffer& buffer, const std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 2>>& vct);
+template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 1>, 2u>(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 2>>& vct);
+template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 3>, 2u>(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 2>>& vct);
+template void MAT::PackFiberArray<CORE::LINALG::Matrix<6, 1>, 2u>(CORE::COMM::PackBuffer& buffer,
+    const std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 2>>& vct);
 
 template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<3, 1>, 2>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
@@ -186,3 +189,5 @@ template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<3, 3>, 2>(
 template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<6, 1>, 2>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
     std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 2>>& vct);
+
+BACI_NAMESPACE_CLOSE

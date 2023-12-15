@@ -17,6 +17,7 @@
 #include "baci_cut_volumecell.H"
 #include "baci_linalg_gauss.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -970,23 +971,23 @@ void CORE::GEO::CUT::Facet::Neighbors(Point* p, const plain_volumecell_set& cell
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::Equals(::DRT::Element::DiscretizationType distype)
+bool CORE::GEO::CUT::Facet::Equals(CORE::FE::CellType distype)
 {
   if (holes_.size() == 0)
   {
     FindCornerPoints();
     switch (distype)
     {
-      case ::DRT::Element::point1:
+      case CORE::FE::CellType::point1:
         return KERNEL::IsValidPoint1(corner_points_);
         break;
-      case ::DRT::Element::line2:
+      case CORE::FE::CellType::line2:
         return KERNEL::IsValidLine2(corner_points_);
         break;
-      case ::DRT::Element::quad4:
+      case CORE::FE::CellType::quad4:
         return KERNEL::IsValidQuad4(corner_points_);
         break;
-      case ::DRT::Element::tri3:
+      case CORE::FE::CellType::tri3:
         return KERNEL::IsValidTri3(corner_points_);
         break;
       default:
@@ -1355,7 +1356,7 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
  * Return the global coordinates all of its corner points in order
  *                                                              sudhakar 05/15
  *----------------------------------------------------------------------------*/
-const std::vector<std::vector<double>> CORE::GEO::CUT::Facet::CornerPointsGlobal(
+std::vector<std::vector<double>> CORE::GEO::CUT::Facet::CornerPointsGlobal(
     Element* elem1, bool shadow)
 {
   const std::vector<Point*>& corners = CornerPoints();
@@ -1463,3 +1464,5 @@ std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Facet& f)
   stream << "}";
   return stream;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -29,9 +29,11 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -49,7 +51,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(numdofpernode, numscal, disname)
@@ -63,7 +65,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    ehrl 11/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Materials(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -86,7 +88,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Materials(
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                          ehrl 11/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -115,7 +117,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin diffusive term on right hand side     ehrl 11/13 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
@@ -136,7 +138,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
 /*------------------------------------------------------------------- *
  |  calculation of diffusive element matrix                ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
@@ -159,27 +161,29 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line3, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::quad4, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::hex8, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::tet10, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::pyramid5, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcAniso<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

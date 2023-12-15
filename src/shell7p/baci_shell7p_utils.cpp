@@ -7,11 +7,13 @@
 
 #include "baci_shell7p_utils.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_shell7p_ele.H"
 #include "baci_shell7p_ele_scatra.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -326,7 +328,7 @@ namespace
 Teuchos::SerialDenseMatrix<int, double> STR::UTILS::SHELL::ComputeShellNullSpace(
     DRT::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir)
 {
-  const double* x = node.X();
+  const auto& x = node.X();
 
   Teuchos::SerialDenseMatrix<int, double> nullspace(6, 6);
   // x-modes
@@ -495,7 +497,7 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::El
   // export this map from nodal row map to nodal col map
   const Epetra_Map* noderowmap = dis.NodeRowMap();
   const Epetra_Map* nodecolmap = dis.NodeColMap();
-  DRT::Exporter exporter(*noderowmap, *nodecolmap, dis.Comm());
+  CORE::COMM::Exporter exporter(*noderowmap, *nodecolmap, dis.Comm());
   exporter.Export(director_map);
 
   // loop through column nodes and put directors back into discretization
@@ -662,14 +664,13 @@ void STR::UTILS::SHELL::LumpMassMatrix(CORE::LINALG::SerialDenseMatrix& mass_mat
 }
 
 
-void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(
-    const DRT::Element::DiscretizationType& distype, DRT::INPUT::LineDefinition* linedef,
-    STR::ELEMENTS::ShellLockingTypes& locking_types)
+void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(const CORE::FE::CellType& distype,
+    DRT::INPUT::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types)
 {
   std::string type;
   switch (distype)
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
       linedef->ExtractString("EAS", type);
       SetMembraneLockingSizeQuad4(locking_types.membrane, type);
@@ -683,7 +684,7 @@ void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(
       SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_lin, type);
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
       linedef->ExtractString("EAS", type);
       SetMembraneLockingSizeQuad9(locking_types.membrane, type);
@@ -712,16 +713,15 @@ int STR::UTILS::SHELL::READELEMENT::ReadAndSetElementMaterial(DRT::INPUT::LineDe
   return material;
 }
 
-int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(
-    const DRT::Element::DiscretizationType& distype)
+int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(const CORE::FE::CellType& distype)
 {
   switch (distype)
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
       return 2;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
       return 6;
     }
@@ -729,3 +729,4 @@ int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(
       dserror("ANS is not supported with %s", distype);
   }
 }
+BACI_NAMESPACE_CLOSE

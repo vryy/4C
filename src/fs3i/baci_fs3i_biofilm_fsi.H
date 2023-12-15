@@ -20,6 +20,7 @@
 #include "baci_coupling_adapter.H"
 #include "baci_fs3i_partitioned_1wc.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -46,13 +47,11 @@ namespace FS3I
    public:
     BiofilmFSI(const Epetra_Comm& comm);
 
-    ~BiofilmFSI(){};
+    void Init() override;
 
-    virtual void Init();
+    void Setup() override;
 
-    virtual void Setup();
-
-    virtual void Timeloop();
+    void Timeloop() override;
 
     void InnerTimeloop();
 
@@ -210,5 +209,7 @@ namespace FS3I
   };
 
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief Extension of Trilinos's NOX::Solver::SingleStep to include Baci's specific inner/outer
+\brief Extension of Trilinos's ::NOX::Solver::SingleStep to include Baci's specific inner/outer
 tests
 
 \level 3
@@ -33,6 +33,8 @@ namespace Teuchos
   class ParameterList;
 }  // namespace Teuchos
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -50,25 +52,23 @@ namespace NOX
     }    // namespace INNER
     namespace Solver
     {
-      class SingleStep : public NOX::Solver::SingleStep
+      class SingleStep : public ::NOX::Solver::SingleStep
       {
        public:
         //! Constructor
         /*!
-          See reset(NOX::Abstract::Group&, NOX::StatusTest::Generic&, Teuchos::ParameterList&) for
-          description
+          See reset(::NOX::Abstract::Group&, ::NOX::StatusTest::Generic&, Teuchos::ParameterList&)
+          for description
          */
-        SingleStep(const Teuchos::RCP<NOX::Abstract::Group>& grp,
+        SingleStep(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
-        //! Destructor
-        ~SingleStep() override = default;
 
-        [[nodiscard]] NOX::StatusTest::StatusType getStatus() const override;
+        [[nodiscard]] ::NOX::StatusTest::StatusType getStatus() const override;
 
-        //! Returns the NOX::Utils object
-        [[nodiscard]] const NOX::Utils& GetUtils() const;
+        //! Returns the ::NOX::Utils object
+        [[nodiscard]] const ::NOX::Utils& GetUtils() const;
 
        protected:
         //! initialize additional variables after base class initialization
@@ -79,5 +79,7 @@ namespace NOX
     }     // namespace Solver
   }       // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif /* BACI_SOLVER_NONLIN_NOX_SOLVER_SINGLESTEP_H */

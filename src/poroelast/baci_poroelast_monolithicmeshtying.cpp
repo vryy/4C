@@ -20,13 +20,18 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
     : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
 {
   // Initialize mortar adapter for meshtying interface
-  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar);
+  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar(DRT::Problem::Instance()->NDim(),
+      DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   const int ndim = DRT::Problem::Instance()->NDim();
   std::vector<int> coupleddof(ndim, 1);  // 1,1,1 should be in coupleddof
@@ -47,10 +52,11 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
 
 void POROELAST::MonolithicMeshtying::SetupSystem() { Monolithic::SetupSystem(); }
 
-void POROELAST::MonolithicMeshtying::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool firstiter)
+void POROELAST::MonolithicMeshtying::Evaluate(
+    Teuchos::RCP<const Epetra_Vector> iterinc, bool firstiter)
 {
   // evaluate monolithic system for newton iterations
-  Monolithic::Evaluate(x, firstiter);
+  Monolithic::Evaluate(iterinc, firstiter);
 
   // get state vectors to store in contact data container
   Teuchos::RCP<Epetra_Vector> fvel = FluidStructureCoupling().SlaveToMaster(
@@ -114,18 +120,18 @@ void POROELAST::MonolithicMeshtying::Update()
 }
 
 void POROELAST::MonolithicMeshtying::RecoverLagrangeMultiplierAfterNewtonStep(
-    Teuchos::RCP<const Epetra_Vector> x)
+    Teuchos::RCP<const Epetra_Vector> iterinc)
 {
-  Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(x);
+  Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(iterinc);
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Epetra_Vector> sx;
-  Teuchos::RCP<const Epetra_Vector> fx;
-  ExtractFieldVectors(x, sx, fx);
+  Teuchos::RCP<const Epetra_Vector> s_iterinc;
+  Teuchos::RCP<const Epetra_Vector> f_iterinc;
+  ExtractFieldVectors(iterinc, s_iterinc, f_iterinc);
 
   // RecoverStructuralLM
-  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*sx));
-  Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*fx));
+  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*s_iterinc));
+  Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*f_iterinc));
 
   mortar_adapter_->RecoverFluidLMPoroMt(tmpsx, tmpfx);
 }
@@ -407,3 +413,5 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

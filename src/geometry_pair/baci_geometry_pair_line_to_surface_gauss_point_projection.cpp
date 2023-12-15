@@ -14,17 +14,19 @@
 #include "baci_geometry_pair_line_to_surface_evaluation_data.H"
 #include "baci_geometry_pair_scalar_types.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::Setup()
+GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
+    surface>::GeometryPairLineToSurfaceGaussPointProjection(const DRT::Element* element1,
+    const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
+    : GeometryPairLineToSurface<scalar_type, line, surface>(
+          element1, element2, line_to_surface_evaluation_data)
 {
-  // Call Setup on the base class.
-  GeometryPairLineToSurface<scalar_type, line, surface>::Setup();
-
   // Check if a projection tracking vector exists for this line element. If not a new one is
   // created.
   int line_element_id = this->Element1()->Id();
@@ -50,9 +52,6 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, li
     std::vector<LineSegment<scalar_type>>& segments,
     const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
-  // Check if the element is initialized.
-  this->CheckInitSetup();
-
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
       GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>>::PreEvaluate(this,
@@ -69,9 +68,6 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, li
     std::vector<LineSegment<scalar_type>>& segments,
     const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
-  // Check if the element is initialized.
-  this->CheckInitSetup();
-
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
       GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>>::Evaluate(this,
@@ -166,3 +162,5 @@ namespace GEOMETRYPAIR
   template class GeometryPairLineToSurfaceGaussPointProjection<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE

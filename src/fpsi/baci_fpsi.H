@@ -12,6 +12,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace FPSI
 {
   class FPSI_Base : public ADAPTER::AlgorithmBase
@@ -19,9 +21,6 @@ namespace FPSI
    public:
     /// constructor of base class
     FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams);
-
-    /// destructor of base class
-    virtual ~FPSI_Base(){};
 
     /// setup
     virtual void SetupSystem() = 0;
@@ -36,11 +35,13 @@ namespace FPSI
     virtual void TestResults(const Epetra_Comm& comm) = 0;
 
     /// read restart
-    virtual void ReadRestart(int restartstep) = 0;
+    void ReadRestart(int restartstep) override = 0;
 
     /// redistribute FPSI interface if running on parallel
     void RedistributeInterface();
   };
 }  // namespace FPSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

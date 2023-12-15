@@ -13,11 +13,13 @@
 #include "baci_fluid_volumetric_surfaceFlow_condition.H"
 
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <stdio.h>
+
+BACI_NAMESPACE_OPEN
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -179,18 +181,6 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(
 
   return;
 }
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  Destructor dtor (public)                               ismail 09/10 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::~FluidVolumetricSurfaceFlowWrapper() { return; }
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -535,7 +525,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
       if (discret_->gNode(it->first)->Owner() == myrank)
       {
         // get the coordinate of a node
-        const double* x = discret_->gNode(it->first)->X();
+        const auto& x = discret_->gNode(it->first)->X();
         for (unsigned int i = 0; i < xyze.size(); i++)
         {
           xyze[i] = x[i];
@@ -605,7 +595,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
       if (discret_->gNode(gid)->Owner() == myrank)
       {
         double border_raduis = 0.0;
-        const double* curr_xyze = discret_->gNode(gid)->X();
+        const auto& curr_xyze = discret_->gNode(gid)->X();
 
         //----------------------------------------------------------------
         // loop over all of the border nodes
@@ -1076,7 +1066,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   if (functnum > 0)
   {
     functfac = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                   ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                    .Evaluate(time);
     flowrate = val * functfac;
   }
@@ -2131,19 +2121,6 @@ void FLD::UTILS::TotalTractionCorrector::ReadRestart(IO::DiscretizationReader& r
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Distructor (public)                                    ismail 04/11|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
-FLD::UTILS::TotalTractionCorrector::~TotalTractionCorrector() { return; }
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
  |  Export boundary values and setstate                     ismail 07/14|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2185,3 +2162,5 @@ void FLD::UTILS::TotalTractionCorrector::ExportAndSetBoundaryValues(
   // Set state
   discret_->SetState(name, target);
 }
+
+BACI_NAMESPACE_CLOSE

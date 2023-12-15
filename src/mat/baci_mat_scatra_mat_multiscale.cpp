@@ -11,6 +11,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------*
  | constructor                                             fang 11/15 |
  *--------------------------------------------------------------------*/
@@ -36,7 +38,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiScale::CreateMaterial()
 MAT::ScatraMatMultiScaleType MAT::ScatraMatMultiScaleType::instance_;
 
 
-DRT::ParObject* MAT::ScatraMatMultiScaleType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatMultiScaleType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatMultiScale* ScatraMatMultiScale = new MAT::ScatraMatMultiScale();
   ScatraMatMultiScale->Unpack(data);
@@ -63,9 +65,9 @@ MAT::ScatraMatMultiScale::ScatraMatMultiScale(MAT::PAR::ScatraMatMultiScale* par
 /*--------------------------------------------------------------------*
  | pack material for communication purposes                fang 11/15 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatMultiScale::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -90,10 +92,7 @@ void MAT::ScatraMatMultiScale::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("Wrong instance type data!");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -123,3 +122,5 @@ void MAT::ScatraMatMultiScale::Unpack(const std::vector<char>& data)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

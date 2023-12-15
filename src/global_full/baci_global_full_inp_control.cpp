@@ -9,10 +9,11 @@
 
 #include "baci_comm_utils.H"
 #include "baci_global_legacy_module.H"
+#include "baci_inpar_parameterlist_utils.H"
+#include "baci_io_inputreader.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_inputreader.H"
 
 #include <utility>
 
@@ -25,11 +26,13 @@ void SetupParallelOutput(
 void ntainp_ccadiscret(
     std::string& inputfile_name, std::string& outputfile_kenner, std::string& restartfile_kenner)
 {
+  using namespace BACI;
+
   DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
   int group = problem->GetCommunicators()->GroupId();
-  NestedParallelismType npType = problem->GetCommunicators()->NpType();
+  CORE::COMM::NestedParallelismType npType = problem->GetCommunicators()->NpType();
 
 
 
@@ -39,9 +42,6 @@ void ntainp_ccadiscret(
   problem->ReadParameter(reader);
 
   SetupParallelOutput(outputfile_kenner, lcomm, group);
-
-  // create error files
-  problem->OpenErrorFile(*lcomm, outputfile_kenner);
 
   // create control file for output and read restart data if required
   problem->OpenControlFile(*lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
@@ -56,7 +56,7 @@ void ntainp_ccadiscret(
   problem->ReadCloningMaterialMap(reader);
 
   {
-    DRT::UTILS::FunctionManager function_manager;
+    CORE::UTILS::FunctionManager function_manager;
     BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
     function_manager.ReadInput(reader);
     problem->SetFunctionManager(std::move(function_manager));
@@ -69,9 +69,9 @@ void ntainp_ccadiscret(
 
   switch (npType)
   {
-    case no_nested_parallelism:
-    case every_group_read_dat_file:
-    case separate_dat_files:
+    case CORE::COMM::NestedParallelismType::no_nested_parallelism:
+    case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
+    case CORE::COMM::NestedParallelismType::separate_dat_files:
       // input of fields
       problem->ReadFields(reader);
 
@@ -83,7 +83,7 @@ void ntainp_ccadiscret(
       // and add it to the (derived) nurbs discretization
       problem->ReadKnots(reader);
       break;
-    case copy_dat_file:
+    case CORE::COMM::NestedParallelismType::copy_dat_file:
       // group 0 only reads discretization etc
       if (group == 0)
       {
@@ -110,25 +110,17 @@ void ntainp_ccadiscret(
 
   // all reading is done at this point!
 
-  if (lcomm->MyPID() == 0 && npType != copy_dat_file) problem->WriteInputParameters();
+  if (lcomm->MyPID() == 0 && npType != CORE::COMM::NestedParallelismType::copy_dat_file)
+    problem->WriteInputParameters();
 
-  /// dump input file contents to error file (DEBUG-mode only)
-  if (npType == copy_dat_file)
-  {
-    if (group == 0) reader.DumpInput();
-  }
-  else
-    reader.DumpInput();
 
   // before we destroy the reader we want to know about unused sections
-  if (npType == copy_dat_file)
+  if (npType == CORE::COMM::NestedParallelismType::copy_dat_file)
   {
     if (group == 0) reader.PrintUnknownSections();
   }
   else
     reader.PrintUnknownSections();
-
-  return;
 }  // end of ntainp_ccadiscret()
 
 
@@ -137,6 +129,8 @@ void ntainp_ccadiscret(
  *----------------------------------------------------------------------*/
 void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group)
 {
+  using namespace BACI;
+
   // configure the parallel output environment
   const Teuchos::ParameterList& io = DRT::Problem::Instance()->IOParams();
   bool screen = DRT::INPUT::IntegralValue<int>(io, "WRITE_TO_SCREEN");
@@ -146,6 +140,4 @@ void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Com
   auto level = DRT::INPUT::IntegralValue<IO::verbositylevel>(io, "VERBOSITY");
 
   IO::cout.setup(screen, file, preGrpID, level, std::move(lcomm), oproc, group, outputfile_kenner);
-
-  return;
 }

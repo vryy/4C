@@ -18,6 +18,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Node;
@@ -40,7 +42,7 @@ namespace DRT
     DofSetInterface(){};
 
     /// Destructor
-    virtual ~DofSetInterface(){};
+    virtual ~DofSetInterface() = default;
 
     //@}
 
@@ -185,5 +187,7 @@ namespace DRT
 
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_INTERFACE_H

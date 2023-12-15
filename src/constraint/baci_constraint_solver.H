@@ -15,6 +15,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -46,10 +48,6 @@ namespace UTILS
         Teuchos::ParameterList param  ///< parameterlist containing solver parameters
     );
 
-    /*!
-        \brief Destructor
-     */
-    ~ConstraintSolver() { return; };
 
     /*!
       \brief Set it up
@@ -65,8 +63,8 @@ namespace UTILS
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Epetra_Vector> dispinc,   ///< displacement increment to compute
-        Teuchos::RCP<Epetra_Vector> displagr,  ///< lagrange multiplier increment to compute
+        Teuchos::RCP<Epetra_Vector> dispinc,  ///< displacement increment to compute
+        Teuchos::RCP<Epetra_Vector> lagrinc,  ///< lagrange multiplier increment to compute
         const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
         const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
@@ -106,8 +104,8 @@ namespace UTILS
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Epetra_Vector> dispinc,   ///< displacement increment to compute
-        Teuchos::RCP<Epetra_Vector> displagr,  ///< lagrange multiplier increment to compute
+        Teuchos::RCP<Epetra_Vector> dispinc,  ///< displacement increment to compute
+        Teuchos::RCP<Epetra_Vector> lagrinc,  ///< lagrange multiplier increment to compute
         const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
         const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
@@ -120,8 +118,8 @@ namespace UTILS
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Epetra_Vector> dispinc,   ///< displacement increment to compute
-        Teuchos::RCP<Epetra_Vector> displagr,  ///< lagrange multiplier increment to compute
+        Teuchos::RCP<Epetra_Vector> dispinc,  ///< displacement increment to compute
+        Teuchos::RCP<Epetra_Vector> lagrinc,  ///< lagrange multiplier increment to compute
         const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
         const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
@@ -134,8 +132,8 @@ namespace UTILS
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Epetra_Vector> dispinc,   ///< displacement increment to compute
-        Teuchos::RCP<Epetra_Vector> displagr,  ///< lagrange multiplier increment to compute
+        Teuchos::RCP<Epetra_Vector> dispinc,  ///< displacement increment to compute
+        Teuchos::RCP<Epetra_Vector> lagrinc,  ///< lagrange multiplier increment to compute
         const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
         const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
@@ -164,4 +162,6 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONSTRAINT_SOLVER_H

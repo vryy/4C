@@ -21,6 +21,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace ADAPTER
@@ -54,7 +56,7 @@ namespace FS3I
     FS3I_Base();
 
     /// destructor of base class
-    virtual ~FS3I_Base(){};
+    virtual ~FS3I_Base() = default;
 
     /// initialize this class
     virtual void Init();
@@ -139,7 +141,8 @@ namespace FS3I
 
    private:
     /// extracts membrane concentration in membrane (interface)
-    void ExtractMembraneConcentration(std::vector<Teuchos::RCP<Epetra_Vector>>& MeanConc) const;
+    void ExtractMembraneConcentration(
+        std::vector<Teuchos::RCP<Epetra_Vector>>& MembraneConcentration) const;
 
     /// Calculation of membane concentration in the membrane between fluid-scatra and
     /// structure-scatra
@@ -237,5 +240,7 @@ namespace FS3I
     void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

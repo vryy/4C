@@ -13,8 +13,10 @@
 
 #include "baci_fluid_ele_parameter_std.H"
 
+BACI_NAMESPACE_OPEN
 
-template <DRT::Element::DiscretizationType distype>
+
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -31,7 +33,7 @@ DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd()
     : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
@@ -41,18 +43,20 @@ DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd()
  *----------------------------------------------------------------------*/
 
 // template classes
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::wedge15>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::nurbs9>;
+template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

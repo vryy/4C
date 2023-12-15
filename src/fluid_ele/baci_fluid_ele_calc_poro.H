@@ -17,6 +17,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class StructPoro;
@@ -45,7 +47,7 @@ namespace DRT
      \author vuong 10/14
      */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcPoro : public FluidEleCalc<distype>
     {
       using Base = DRT::ELEMENTS::FluidEleCalc<distype, DRT::ELEMENTS::Fluid::none>;
@@ -80,13 +82,13 @@ namespace DRT
         calculated
 
        */
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /*!
         \brief calculate element matrix and rhs for porous flow (2)
@@ -144,11 +146,12 @@ namespace DRT
       /*!
           Interface function for supporting methods of the element
        */
-      virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
      protected:
       /*!
@@ -476,7 +479,7 @@ namespace DRT
 
       //! Compute linearization of momentum residual w.r.t fluid pressure
       void ComputeLinResMDp(const double& timefacfacpre, const double& dphi_dp,
-          CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Du);
+          CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Dp);
 
       //! calculate div(epsilon(u))
       void CalcDivEps(
@@ -547,7 +550,7 @@ namespace DRT
         dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
        */
       virtual void ComputeLinearization(const double& dphi_dp, const double& dphi_dpp,
-          const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
+          const double& dphi_dJdp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
           CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp);
 
       /*!
@@ -958,12 +961,12 @@ namespace DRT
        */
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec) override;
 
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints2);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints2) override;
 
       //! interpolate the anisotropic permeability coefficients at GP from nodal values
       std::vector<double> ComputeAnisotropicPermeabilityCoeffsAtGP() const;
@@ -1078,5 +1081,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

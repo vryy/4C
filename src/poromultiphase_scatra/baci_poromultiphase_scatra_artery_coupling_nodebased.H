@@ -13,6 +13,8 @@
 #include "baci_coupling_adapter.H"
 #include "baci_poromultiphase_scatra_artery_coupling_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -43,8 +45,8 @@ namespace POROMULTIPHASESCATRA
         const std::string& contcoupleddofname);
 
     //! Evaluate the 1D-3D coupling
-    virtual void Evaluate(
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+    void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs) override
     {
       // nothing to do here, is done in SetupSystem for this type of coupling
     }
@@ -55,7 +57,7 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
         Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
         Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art);
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art) override;
 
     /*!
      * @brief setup global vector
@@ -65,7 +67,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   vec_art vector containing quantities from artery field
      */
     void SetupVector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
-        Teuchos::RCP<const Epetra_Vector> vec_art);
+        Teuchos::RCP<const Epetra_Vector> vec_art) override;
 
     /*!
      * @brief extract single field vectors
@@ -75,32 +77,33 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   vec_art vector containing quantities from artery field
      */
     void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
-        Teuchos::RCP<const Epetra_Vector>& vec_cont, Teuchos::RCP<const Epetra_Vector>& vec_art);
+        Teuchos::RCP<const Epetra_Vector>& vec_cont,
+        Teuchos::RCP<const Epetra_Vector>& vec_art) override;
 
     //! check if initial fields on coupled DOFs are equal
-    void CheckInitialFields(
-        Teuchos::RCP<const Epetra_Vector> vec_cont, Teuchos::RCP<const Epetra_Vector> vec_art);
+    void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont,
+        Teuchos::RCP<const Epetra_Vector> vec_art) override;
 
     //! access artery (1D) dof row map
-    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     //! access full dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> DofRowMap() const override;
 
     //! init the strategy
-    void Init();
+    void Init() override;
 
     //! setup the strategy
-    void Setup();
+    void Setup() override;
 
     //! apply mesh movement (on artery elements)
-    void ApplyMeshMovement();
+    void ApplyMeshMovement() override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction();
+    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
 
     //! print out the coupling method
-    void PrintOutCouplingMethod() const;
+    void PrintOutCouplingMethod() const override;
 
    private:
     //! set-up of global rhs vector of coupled problem
@@ -157,5 +160,7 @@ namespace POROMULTIPHASESCATRA
 
 }  // namespace POROMULTIPHASESCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NODEBASED_H

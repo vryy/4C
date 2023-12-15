@@ -8,7 +8,6 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -18,6 +17,8 @@
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_SerialComm.h>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -187,14 +188,14 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
         ForceStiffMass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
             params, iostress, iostrain);
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -283,7 +284,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -980,3 +981,5 @@ void DRT::ELEMENTS::So_Hex8P1J1::soh8P1J1_recover(const std::vector<double>& res
   t_ += dt_;
   p_ += dp_;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,11 +18,13 @@
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_inpar_thermo.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_nurbs_discret.H"
 #include "baci_thermo_ele_action.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -37,54 +39,54 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
 
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      static TemperBoundaryImpl<DRT::Element::quad4>* cp4;
-      if (cp4 == nullptr) cp4 = new TemperBoundaryImpl<DRT::Element::quad4>(numdofpernode);
+      static TemperBoundaryImpl<CORE::FE::CellType::quad4>* cp4;
+      if (cp4 == nullptr) cp4 = new TemperBoundaryImpl<CORE::FE::CellType::quad4>(numdofpernode);
       return cp4;
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      static TemperBoundaryImpl<DRT::Element::quad8>* cp8;
-      if (cp8 == nullptr) cp8 = new TemperBoundaryImpl<DRT::Element::quad8>(numdofpernode);
+      static TemperBoundaryImpl<CORE::FE::CellType::quad8>* cp8;
+      if (cp8 == nullptr) cp8 = new TemperBoundaryImpl<CORE::FE::CellType::quad8>(numdofpernode);
       return cp8;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      static TemperBoundaryImpl<DRT::Element::quad9>* cp9;
-      if (cp9 == nullptr) cp9 = new TemperBoundaryImpl<DRT::Element::quad9>(numdofpernode);
+      static TemperBoundaryImpl<CORE::FE::CellType::quad9>* cp9;
+      if (cp9 == nullptr) cp9 = new TemperBoundaryImpl<CORE::FE::CellType::quad9>(numdofpernode);
       return cp9;
     }
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      static TemperBoundaryImpl<DRT::Element::nurbs9>* cpn9;
-      if (cpn9 == nullptr) cpn9 = new TemperBoundaryImpl<DRT::Element::nurbs9>(numdofpernode);
+      static TemperBoundaryImpl<CORE::FE::CellType::nurbs9>* cpn9;
+      if (cpn9 == nullptr) cpn9 = new TemperBoundaryImpl<CORE::FE::CellType::nurbs9>(numdofpernode);
       return cpn9;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      static TemperBoundaryImpl<DRT::Element::tri3>* cp3;
-      if (cp3 == nullptr) cp3 = new TemperBoundaryImpl<DRT::Element::tri3>(numdofpernode);
+      static TemperBoundaryImpl<CORE::FE::CellType::tri3>* cp3;
+      if (cp3 == nullptr) cp3 = new TemperBoundaryImpl<CORE::FE::CellType::tri3>(numdofpernode);
       return cp3;
     }
-    /*  case DRT::Element::tri6:
+    /*  case CORE::FE::CellType::tri6:
     {
-      static TemperBoundaryImpl<DRT::Element::tri6>* cp6;
+      static TemperBoundaryImpl<CORE::FE::CellType::tri6>* cp6;
       if (cp6 == nullptr)
-        cp6 = new TemperBoundaryImpl<DRT::Element::tri6>(numdofpernode);
+        cp6 = new TemperBoundaryImpl<CORE::FE::CellType::tri6>(numdofpernode);
       return cp6;
     }*/
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      static TemperBoundaryImpl<DRT::Element::line2>* cl2;
-      if (cl2 == nullptr) cl2 = new TemperBoundaryImpl<DRT::Element::line2>(numdofpernode);
+      static TemperBoundaryImpl<CORE::FE::CellType::line2>* cl2;
+      if (cl2 == nullptr) cl2 = new TemperBoundaryImpl<CORE::FE::CellType::line2>(numdofpernode);
       return cl2;
     } /*
-     case DRT::Element::line3:
+     case CORE::FE::CellType::line3:
      {
-       static TemperBoundaryImpl<DRT::Element::line3>* cl3;
+       static TemperBoundaryImpl<CORE::FE::CellType::line3>* cl3;
        if (cl3 == nullptr)
-         cl3 = new TemperBoundaryImpl<DRT::Element::line3>(numdofpernode);
+         cl3 = new TemperBoundaryImpl<CORE::FE::CellType::line3>(numdofpernode);
        return cl3;
      }*/
     default:
@@ -98,7 +100,7 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode)
     : numdofpernode_(numdofpernode),
       xyze_(true),
@@ -117,7 +119,7 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -219,7 +221,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     if (curvenum >= 0)
     {
       curvefac =
-          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
               time);
     }
     // multiply heat convection coefficient with the timecurve factor
@@ -232,7 +234,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     if (surtempcurvenum >= 0)
     {
       surtempcurvefac = DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfTime>(surtempcurvenum)
+                            ->FunctionById<CORE::UTILS::FunctionOfTime>(surtempcurvenum)
                             .Evaluate(time);
     }
     // complete surrounding temperatures T_oo: multiply with the timecurve factor
@@ -433,9 +435,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
-          curvefac =
-              DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
-                  time);
+          curvefac = DRT::Problem::Instance()
+                         ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                         .Evaluate(time);
         }
         // multiply heat convection coefficient with the timecurve factor
         coeff *= curvefac;
@@ -447,7 +449,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         if (surtempcurvenum >= 0)
         {
           surtempcurvefac = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfTime>(surtempcurvenum)
+                                ->FunctionById<CORE::UTILS::FunctionOfTime>(surtempcurvenum)
                                 .Evaluate(time);
         }
         // complete surrounding temperatures T_oo: multiply with the timecurve factor
@@ -578,7 +580,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
  | integrate a Surface/Line Neumann boundary condition        gjb 01/09 |
  | i.e. calculate q^ = q . n over surface da                            |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
@@ -632,7 +634,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
           {
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate(coordgpref, time, dof);
           }
           else
@@ -660,7 +662,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
 /*----------------------------------------------------------------------*
  | evaluate a convective thermo boundary condition          dano 12/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
     const DRT::Element* ele, CORE::LINALG::Matrix<nen_, nen_>* econd,
     CORE::LINALG::Matrix<nen_, 1>* efext, const double coeff, const double surtemp,
@@ -742,7 +744,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
 /*----------------------------------------------------------------------*
  | evaluate a convective thermo boundary condition          dano 11/12 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(DRT::Element* ele,
     std::vector<double>& disp,  // current displacements
     CORE::LINALG::Matrix<nen_, nen_>* econd,
@@ -939,7 +941,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
 /*----------------------------------------------------------------------*
  | evaluate shape functions and int. factor at int. point     gjb 01/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
     const int& iquad,                                              // id of current Gauss point
@@ -982,7 +984,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 /*----------------------------------------------------------------------*
  | get constant normal                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
     CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,
     const CORE::LINALG::Matrix<nsd_ + 1, nen_>& xyze  // node coordinates
@@ -1036,7 +1038,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
 /*----------------------------------------------------------------------*
  | integrate shapefunctions over surface (private)            gjb 02/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const DRT::Element* ele,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec1, const bool addarea)
 {
@@ -1083,7 +1085,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const D
 /*----------------------------------------------------------------------*
  | evaluate sqrt of determinant of metric at gp (private)    dano 12/12 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
     double& detA, CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,
     const CORE::LINALG::Matrix<nen_, nsd_ + 1>& xcurr  // current coordinates of nodes
@@ -1147,13 +1149,13 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
     DRT::Element* ele,                   // the element whose matrix is calculated
     DRT::Discretization& discretization  // current discretisation
 )
 {
-  if (ele->Shape() != DRT::Element::nurbs9)
+  if (ele->Shape() != CORE::FE::CellType::nurbs9)
   {
     myknots_.resize(0);
     return;
@@ -1177,3 +1179,5 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
     weights_(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode])->W();
 }
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

@@ -18,15 +18,17 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_print.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_lubrication_ele_action.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*==========================================================================*/
 // Constructors and destructors and related methods
@@ -42,7 +44,6 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
       solver_(solver),
       params_(params),
       myrank_(actdis->Comm().MyPID()),
-      errfile_(extraparams->get<FILE*>("err file")),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
       modified_reynolds_(DRT::INPUT::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
@@ -158,10 +159,6 @@ void LUBRICATION::TimIntImpl::Init()
   return;
 }  // TimIntImpl::Init()
 
-/*----------------------------------------------------------------------*
- | Destructor dtor                                 (public) wirtz 11/15 |
- *----------------------------------------------------------------------*/
-LUBRICATION::TimIntImpl::~TimIntImpl() { return; }
 
 
 /*========================================================================*/
@@ -293,9 +290,10 @@ void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
 
     for (int index = 0; index < nsd_; ++index)
     {
-      double heightfuncvalue = DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
-                                   .Evaluate(lnode->X(), time_, index);
+      double heightfuncvalue =
+          DRT::Problem::Instance()
+              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
+              .Evaluate(lnode->X().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -337,8 +335,8 @@ void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
     for (int index = 0; index < nsd_; ++index)
     {
       double velfuncvalue = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                                .Evaluate(lnode->X(), time_, index);
+                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+                                .Evaluate(lnode->X().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -795,12 +793,6 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
       // print finish line of convergence table to screen
       PrintConvergenceFinishLine();
 
-      // write info to error file
-      if (myrank_ == 0)
-        if (errfile_ != nullptr)
-          fprintf(errfile_, "solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
-              itemax, ittol, preresnorm, incprenorm_L2 / prenorm_L2);
-
       return true;
     }
   }
@@ -826,13 +818,6 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
       std::cout << "|            >>>>>> not converged in itemax steps!              |" << std::endl;
       std::cout << "+---------------------------------------------------------------+" << std::endl
                 << std::endl;
-
-      if (errfile_ != nullptr)
-      {
-        fprintf(errfile_,
-            "divergent solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
-            itemax, ittol, preresnorm, incprenorm_L2 / prenorm_L2);
-      }
     }
     // yes, we stop the iteration
     return true;
@@ -1292,3 +1277,5 @@ void LUBRICATION::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> pre
   return;
 
 }  // UpdateNewton()
+
+BACI_NAMESPACE_CLOSE

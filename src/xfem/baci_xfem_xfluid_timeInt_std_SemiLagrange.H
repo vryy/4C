@@ -15,6 +15,8 @@
 
 #include "baci_xfem_xfluid_timeInt_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -58,15 +60,12 @@ namespace XFEM
 
     );
 
-    //! destructor
-    ~XFLUID_SemiLagrange() { return; }
-
     /*========================================================================*/
     //! compute routines
     /*========================================================================*/
 
     //! get startvalues in time step for nodes which changed interface-side
-    void compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVectorsn);
+    void compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVectorsn) override;
 
    private:
     /*========================================================================*/
@@ -112,7 +111,7 @@ namespace XFEM
     void newIteration_prepare(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
 
     //! gradients at a node
-    void newIteration_nodalData(std::vector<Teuchos::RCP<Epetra_Vector>> newColVectors);
+    void newIteration_nodalData(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
 
     //! reinitialize some data for new computations, e.g. at a new FGI
     void reinitializeData();
@@ -130,7 +129,7 @@ namespace XFEM
     );
 
     //! track back the Lagrangian origin to get final values
-    template <const int numnode, DRT::Element::DiscretizationType DISTYPE>
+    template <const int numnode, CORE::FE::CellType DISTYPE>
     void backTracking(DRT::Element*& fittingele,  ///< pointer to element
         TimeIntData* data,                        ///< data
         CORE::LINALG::Matrix<3, 1>& xi,           ///< local coordinates
@@ -181,7 +180,7 @@ namespace XFEM
     void exportAlternativAlgoData();
 
     //! export data to neighbour proc in Newton loop
-    void exportIterData(bool& procfinished);
+    void exportIterData(bool& procDone);
 
 
     /*========================================================================*/
@@ -196,5 +195,7 @@ namespace XFEM
   };  // class XFLUID_SemiLagrange
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_H

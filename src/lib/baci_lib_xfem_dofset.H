@@ -18,6 +18,8 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_fixed_size.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -78,11 +80,12 @@ namespace XFEM
     \param node            (in) : the node
     \param nodal_dofset_id (in) : id of the nodal dofset
     */
-    virtual void Dof(std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const;
+    void Dof(
+        std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const override;
 
    protected:
     /// get number of nodal dofs for this element at this node
-    virtual int NumDofPerNode(const DRT::Node& node) const;
+    int NumDofPerNode(const DRT::Node& node) const override;
 
    private:
     /// the cut wizard, holds information about the number of XFEM dofsets per node
@@ -93,5 +96,7 @@ namespace XFEM
         dis_;  ///< use reference instead of RCP to avoid Ringschluss in discretization
   };
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

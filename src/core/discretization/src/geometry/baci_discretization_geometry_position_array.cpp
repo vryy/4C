@@ -11,56 +11,48 @@
 
 #include "baci_discretization_geometry_position_array.H"
 
-/*!
- * \brief create an often used array with 3D nodal positions
- */
-CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const ::DRT::Element* const ele)
+#include "baci_lib_element.H"
+
+BACI_NAMESPACE_OPEN
+
+CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const BACI::DRT::Element* const ele)
 {
   const int numnode = ele->NumNode();
   CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
-  const ::DRT::Node* const* nodes = ele->Nodes();
+  const BACI::DRT::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
   {
     dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
   }
   for (int inode = 0; inode < numnode; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const double* x = nodes[inode]->X().data();
     std::copy(x, x + 3, &xyze(0, inode));
   }
   return xyze;
 }
 
 
-/*!
- * \brief create an often used array with 3D nodal positions
- */
 void CORE::GEO::InitialPositionArray(
-    CORE::LINALG::SerialDenseMatrix& xyze, const ::DRT::Element* const ele)
+    CORE::LINALG::SerialDenseMatrix& xyze, const BACI::DRT::Element* const ele)
 {
   const int numnode = ele->NumNode();
   xyze.shape(3, numnode);
-  const ::DRT::Node* const* nodes = ele->Nodes();
+  const BACI::DRT::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
   {
     dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
   }
   for (int inode = 0; inode < numnode; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const double* x = nodes[inode]->X().data();
     std::copy(x, x + 3, &xyze(0, inode));
   }
 }
 
 
-
-/*!
-\brief  fill array with current nodal positions
-
-\return array with element nodal positions (3,numnode)
- */
 CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
-    const ::DRT::Element* const ele,  ///< element with nodal pointers
+    const BACI::DRT::Element* const ele,  ///< element with nodal pointers
     const std::map<int, CORE::LINALG::Matrix<3, 1>>&
         currentcutterpositions  ///< current positions of all cutter nodes
 )
@@ -79,14 +71,8 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
 }
 
 
-
-/*!
-\brief  fill array with current nodal positions
-
-\return array with element nodal positions (3,numnode)
- */
 CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
-    const Teuchos::RCP<const ::DRT::Element> ele,  ///< pointer on element
+    const Teuchos::RCP<const BACI::DRT::Element> ele,  ///< pointer on element
     const std::map<int, CORE::LINALG::Matrix<3, 1>>&
         currentpositions  ///< current positions of all cutter nodes
 )
@@ -103,3 +89,5 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
   }
   return xyze;
 }
+
+BACI_NAMESPACE_CLOSE

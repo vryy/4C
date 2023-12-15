@@ -25,8 +25,6 @@ PREDICTOR                       steady_state
 CONVCHECK                       L_2_norm
 INITIALFIELD                    field_by_function
 CONVFORM                        convective
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 RESULTSEVRY                           1
 RESTARTEVRY                     50000
 NUMSTEP                         5

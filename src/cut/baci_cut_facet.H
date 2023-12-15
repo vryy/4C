@@ -15,6 +15,8 @@
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_io_pstream.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -102,7 +104,7 @@ namespace CORE::GEO
 
       bool Equals(const std::vector<Point*>& facet_points) { return Equals(points_, facet_points); }
 
-      bool Equals(::DRT::Element::DiscretizationType distype);
+      bool Equals(CORE::FE::CellType distype);
 
       bool CornerEquals(const std::vector<Point*>& facet_points)
       {
@@ -171,8 +173,7 @@ namespace CORE::GEO
       /*!
       \brief Return the global coordinates all of its corner points in order
        */
-      const std::vector<std::vector<double>> CornerPointsGlobal(
-          Element* elem1, bool shadow = false);
+      std::vector<std::vector<double>> CornerPointsGlobal(Element* elem1, bool shadow = false);
 
       /*!
       \brief Get the triangulated sides of this facet
@@ -269,7 +270,7 @@ namespace CORE::GEO
       \brief split the facet into a number of tri and quad. Reduced number of Gauss points when
       facet is split instead of triangulated
        */
-      void SplitFacet(const std::vector<Point*>& points);
+      void SplitFacet(const std::vector<Point*>& facetpts);
 
       /*!
       \brief Get the triangulated sides of this facet
@@ -432,5 +433,7 @@ namespace CORE::GEO
 }  // namespace CORE::GEO
 
 std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Facet& f);
+
+BACI_NAMESPACE_CLOSE
 
 #endif

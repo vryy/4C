@@ -14,6 +14,7 @@
 #include "baci_membrane.H"
 #include "baci_membrane_scatra_eletypes.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -22,7 +23,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class MembraneScatra : public Membrane<distype>
     {
      public:
@@ -51,7 +52,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-constructor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -59,23 +60,23 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case CORE::FE::CellType::tri3:
           {
             return MembraneScatra_tri3Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::tri6:
+          case CORE::FE::CellType::tri6:
           {
             return MembraneScatra_tri6Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::quad4:
+          case CORE::FE::CellType::quad4:
           {
             return MembraneScatra_quad4Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::quad9:
+          case CORE::FE::CellType::quad9:
           {
             return MembraneScatra_quad9Type::Instance().UniqueParObjectId();
           }
@@ -93,7 +94,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -101,13 +102,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~MembraneScatra(){};
 
       //@}
 
@@ -116,28 +112,28 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const
+      DRT::ElementType& ElementType() const override
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case CORE::FE::CellType::tri3:
           {
             return MembraneScatra_tri3Type::Instance();
           }
           break;
-          case DRT::Element::tri6:
+          case CORE::FE::CellType::tri6:
           {
             return MembraneScatra_tri6Type::Instance();
           }
           break;
-          case DRT::Element::quad4:
+          case CORE::FE::CellType::quad4:
           {
             return MembraneScatra_quad4Type::Instance();
           }
           break;
-          case DRT::Element::quad9:
+          case CORE::FE::CellType::quad9:
           {
             return MembraneScatra_quad9Type::Instance();
           }
@@ -158,7 +154,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -206,7 +202,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //@}
 
@@ -222,12 +218,12 @@ namespace DRT
       /*!
       \brief Get vector of ptrs to nodes
       */
-      DRT::Node** Nodes();
+      DRT::Node** Nodes() override;
 
       /*!
       \brief Get shape type of element
       */
-      DRT::Element::DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       //! @{
       //! scalar transport implementation type (physics)
@@ -241,5 +237,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

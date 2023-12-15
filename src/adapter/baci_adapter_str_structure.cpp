@@ -44,6 +44,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
@@ -52,10 +54,6 @@ ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::Parameter
   CreateStructure(prbdyn, sdyn, actdis);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -132,7 +130,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
-  xparams->set<FILE*>("err file", problem->ErrorFile()->Handle());
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = *snox;
 
@@ -489,9 +486,8 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinear
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-          actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
@@ -555,9 +551,8 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
       }
 
       // build meshtying/contact solver
-      solver = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
@@ -601,9 +596,8 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
     default:
     {
       // build meshtying solver
-      solver = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
     }
     break;
@@ -611,3 +605,5 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
 
   return solver;
 }
+
+BACI_NAMESPACE_CLOSE

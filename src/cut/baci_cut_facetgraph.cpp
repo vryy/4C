@@ -15,6 +15,7 @@
 #include "baci_cut_output.H"
 #include "baci_cut_side.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -369,3 +370,5 @@ Teuchos::RCP<CORE::GEO::CUT::FacetGraph> CORE::GEO::CUT::FacetGraph::Create(
   // return the facet graph object pointer
   return fg;
 };
+
+BACI_NAMESPACE_CLOSE

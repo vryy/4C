@@ -25,12 +25,19 @@ Created on: Feb 27, 2014
 #include <MueLu_Utilities.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::LINEAR_SOLVER::AMGNXN
 {
   class GenericSmoother
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~GenericSmoother() = default;
+
     virtual void Solve(
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const = 0;
 
@@ -278,7 +285,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   {
    public:
     IfpackWrapper(Teuchos::RCP<CORE::LINALG::SparseMatrixBase> A, Teuchos::ParameterList& list);
-    ~IfpackWrapper() { delete prec_; }
+    ~IfpackWrapper() override { delete prec_; }
     void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
         bool InitialGuessIsZero = false) const override;
 
@@ -405,6 +412,11 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class SmootherFactoryBase : public SmootherManager
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~SmootherFactoryBase() = default;
+
     virtual Teuchos::RCP<GenericSmoother> Create() = 0;
   };
 
@@ -489,5 +501,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<GenericSmoother> Create() override;
   };
 }  // namespace CORE::LINEAR_SOLVER::AMGNXN
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_AMGNXN_SMOOTHERS_H

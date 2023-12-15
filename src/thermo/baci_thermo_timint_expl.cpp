@@ -17,6 +17,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 01/12 |
@@ -62,15 +64,6 @@ void THR::TimIntExpl::PrintStep()
   {
     PrintStepText(stdout);
   }
-
-  if (printerrfile_)
-  {
-    PrintStepText(errfile_);
-  }
-
-  // fall asleep
-  return;
-
 }  // PrintStep()
 
 
@@ -104,3 +97,5 @@ void THR::TimIntExpl::PrintStepText(FILE* ofile)
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

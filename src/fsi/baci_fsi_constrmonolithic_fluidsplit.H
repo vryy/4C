@@ -14,6 +14,8 @@
 
 #include "baci_fsi_constrmonolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -37,13 +39,13 @@ namespace FSI
       2.) create combined map
       3.) create block system matrix
     */
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
+    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override;
 
    protected:
     /// extract the three field vectors from a given composed vector
@@ -56,17 +58,17 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
     */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
-        Teuchos::RCP<const Epetra_Vector>& ax);
+        Teuchos::RCP<const Epetra_Vector>& ax) override;
 
     /// build block vector from field vectors
-    virtual void SetupVector(Epetra_Vector& f,
+    void SetupVector(Epetra_Vector& f,
         Teuchos::RCP<const Epetra_Vector> sv,  ///< structure vector
         Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid vector
         Teuchos::RCP<const Epetra_Vector> av,  ///< ale vector
         Teuchos::RCP<const Epetra_Vector> cv,  ///< constraint vector
-        double fluidscale);                    ///< scaling
+        double fluidscale) override;           ///< scaling
 
    private:
     /*! \brief Create the combined DOF row map for the FSI problem
@@ -74,7 +76,7 @@ namespace FSI
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
      */
-    virtual void CreateCombinedDofRowMap();
+    void CreateCombinedDofRowMap() override;
 
     /*! \brief Setup the Dirichlet map extractor
      *
@@ -83,16 +85,16 @@ namespace FSI
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
      */
-    virtual void SetupDBCMapExtractor() { dserror("Not implemented, yet."); }
+    void SetupDBCMapExtractor() override { dserror("Not implemented, yet."); }
 
     /// setup RHS contributions based on single field residuals
-    void SetupRHSResidual(Epetra_Vector& f);
+    void SetupRHSResidual(Epetra_Vector& f) override;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void SetupRHSLambda(Epetra_Vector& f);
+    void SetupRHSLambda(Epetra_Vector& f) override;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void SetupRHSFirstiter(Epetra_Vector& f);
+    void SetupRHSFirstiter(Epetra_Vector& f) override;
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sconT_;
 
@@ -111,5 +113,7 @@ namespace FSI
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

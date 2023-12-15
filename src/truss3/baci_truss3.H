@@ -15,6 +15,8 @@
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Sacado.hpp>
+
+BACI_NAMESPACE_OPEN
 using FAD = Sacado::Fad::DFad<double>;
 
 namespace STR
@@ -35,7 +37,7 @@ namespace DRT
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -171,11 +173,9 @@ namespace DRT
 
       int NumLine() const override { return 1; }
 
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
-
-      void Print(std::ostream& os) const override;
 
       bool ReadElement(const std::string& eletype, const std::string& distype,
           DRT::INPUT::LineDefinition* linedef) override;
@@ -194,7 +194,7 @@ namespace DRT
       //! \param xrefe     nodal coordinates in reference frame
       void SetUpReferenceGeometry(const std::vector<double>& xrefe);
 
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       int UniqueParObjectId() const override { return Truss3Type::Instance().UniqueParObjectId(); }
 
@@ -334,5 +334,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // TRUSS3_H

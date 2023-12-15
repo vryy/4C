@@ -10,16 +10,17 @@
 #define BACI_CONSTRAINT_ELEMENT3_H
 
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -32,22 +33,22 @@ namespace DRT
     class ConstraintElement3Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "ConstraintElement3Type"; }
+      std::string Name() const override { return "ConstraintElement3Type"; }
 
       static ConstraintElement3Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
      private:
       static ConstraintElement3Type instance_;
@@ -86,15 +87,15 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const
+      CORE::FE::CellType Shape() const override
       {
         dserror("ConstraintElement3 has no shape!");
-        return DRT::Element::dis_none;
+        return CORE::FE::CellType::dis_none;
       };
 
       /*!
@@ -103,7 +104,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ConstraintElement3Type::Instance().UniqueParObjectId();
       }
@@ -114,7 +115,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -122,13 +123,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~ConstraintElement3();
 
       //@}
 
@@ -144,7 +140,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -157,14 +153,9 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
-      /*!
-      \brief Print this element
-      */
-      void Print(std::ostream& os) const;
-
-      virtual DRT::ElementType& ElementType() const { return ConstraintElement3Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return ConstraintElement3Type::Instance(); }
 
       //@}
 
@@ -183,7 +174,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1,  ///< third matrix to be filled by element
           CORE::LINALG::SerialDenseVector& elevec2,  ///< first vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec3   ///< second vector to be filled by element
-      );
+          ) override;
 
 
       /*!
@@ -193,13 +184,12 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(
-          Teuchos::ParameterList& params,            ///< ParameterList for communication
-          DRT::Discretization& discretization,       ///< discretization
-          DRT::Condition& condition,                 ///< Neumann condition to evaluate
-          std::vector<int>& lm,                      ///< location vector
-          CORE::LINALG::SerialDenseVector& elevec1,  ///< vector to be filled by element
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params,  ///< ParameterList for communication
+          DRT::Discretization& discretization,             ///< discretization
+          DRT::Condition& condition,                       ///< Neumann condition to evaluate
+          std::vector<int>& lm,                            ///< location vector
+          CORE::LINALG::SerialDenseVector& elevec1,        ///< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
      private:
@@ -318,7 +308,7 @@ namespace DRT
 
       /// Compute difference of spatial configuration to masternode in given direction
       double ComputeWeightedDistance(
-          const CORE::LINALG::Matrix<2, 3> x, const std::vector<double> direct);
+          const CORE::LINALG::Matrix<2, 3> disp, const std::vector<double> direct);
     };  // class ConstraintElement3
 
 
@@ -332,5 +322,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

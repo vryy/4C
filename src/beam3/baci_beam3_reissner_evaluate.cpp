@@ -14,8 +14,6 @@
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
@@ -26,11 +24,14 @@
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_RCP.hpp>
 
 #include <iomanip>
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 01/08|
@@ -574,7 +575,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
   const unsigned int dofpertriadnode = 3;
   const unsigned int dofpercombinode = dofperclnode + dofpertriadnode;
 
-  const DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(neumann_lineload));
@@ -610,7 +611,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
     // evaluation of shape functions at Gauss points
     CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype);
     if (centerline_hermite_)
-      CORE::DRT::UTILS::shape_function_hermite_1D(H_i, xi, reflength_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(H_i, xi, reflength_, CORE::FE::CellType::line2);
     else
       CORE::DRT::UTILS::shape_function_1D(H_i, xi, distype);
 
@@ -650,7 +651,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
       // evaluate function at the position of the current GP
       if (functnum > 0)
         functionfac = DRT::Problem::Instance()
-                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                           .Evaluate(X_ref.data(), time, dof);
       else
         functionfac = 1.0;
@@ -3075,3 +3076,5 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<5, 
     const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
     const CORE::LINALG::Matrix<1, 5, double>&, const CORE::LINALG::Matrix<1, 5, double>&,
     const double, const double) const;
+
+BACI_NAMESPACE_CLOSE

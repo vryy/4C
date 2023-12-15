@@ -20,10 +20,15 @@ namespace Teuchos
 {
   class ParameterList;
 }
-
 namespace NOX
 {
   class Utils;
+}
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace INNER
@@ -39,35 +44,35 @@ namespace NOX
           Factory();
 
           //! Destructor.
-          virtual ~Factory(){};
+          virtual ~Factory() = default;
 
           //! Returns a inner status test set from a parameter list.
           Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,
-              const NOX::Utils& utils,
+              const ::NOX::Utils& utils,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
          protected:
           //! Build the Armijo sufficient decrease test
           Teuchos::RCP<Generic> BuildArmijoTest(
-              Teuchos::ParameterList& p, const NOX::Utils& u) const;
+              Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
           //! Build the filter test
           Teuchos::RCP<Generic> BuildFilterTest(
-              Teuchos::ParameterList& p, const NOX::Utils& u) const;
+              Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
           //! Build the upper bound test
           Teuchos::RCP<Generic> BuildUpperBoundTest(
-              Teuchos::ParameterList& p, const NOX::Utils& u) const;
+              Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
           /*! \brief Build the inner_statustest_combo object
 
           */
-          Teuchos::RCP<Generic> BuildComboTest(Teuchos::ParameterList& p, const NOX::Utils& u,
+          Teuchos::RCP<Generic> BuildComboTest(Teuchos::ParameterList& p, const ::NOX::Utils& u,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
           /// \brief Build volume change test
           Teuchos::RCP<Generic> BuildVolumeChangeTest(
-              Teuchos::ParameterList& p, const NOX::Utils& u) const;
+              Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
           bool CheckAndTagTest(const Teuchos::ParameterList& p, const Teuchos::RCP<Generic>& test,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
@@ -83,12 +88,14 @@ namespace NOX
 
         */
         Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,
-            const NOX::Utils& utils,
+            const ::NOX::Utils& utils,
             std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests = nullptr);
       }  // namespace StatusTest
     }    // namespace INNER
   }      // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_FACTORY_H

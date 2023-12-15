@@ -14,6 +14,8 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_w1_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -61,7 +63,7 @@ void DRT::ELEMENTS::Wall1_Scatra::PreEvaluate(Teuchos::ParameterList& params,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnode; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     (*xrefe)[0] += x[0] / numnode;
     (*xrefe)[1] += x[1] / numnode;
   }
@@ -170,3 +172,5 @@ int DRT::ELEMENTS::Wall1_Scatra::Evaluate(Teuchos::ParameterList& params,
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

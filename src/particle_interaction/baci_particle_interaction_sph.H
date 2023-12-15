@@ -17,6 +17,8 @@
 #include "baci_inpar_particle.H"
 #include "baci_particle_interaction_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -105,10 +107,10 @@ namespace PARTICLEINTERACTION
     void CommunicateInteractionHistory() const override;
 
     //! set current time
-    void SetCurrentTime(const double currenttime);
+    void SetCurrentTime(const double currenttime) override;
 
     //! set current step size
-    void SetCurrentStepSize(const double currentstepsize);
+    void SetCurrentStepSize(const double currentstepsize) override;
 
    private:
     //! init kernel handler
@@ -202,4 +204,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

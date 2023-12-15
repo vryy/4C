@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*/
 std::vector<std::vector<double>> IO::ReadCsv(const int number_of_columns, std::istream& csv_stream)
 {
@@ -66,3 +68,5 @@ std::vector<std::vector<double>> IO::ReadCsv(
 
   return ReadCsv(number_of_columns, csv_file_stream);
 }
+
+BACI_NAMESPACE_CLOSE

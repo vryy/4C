@@ -13,6 +13,8 @@
 
 #include "baci_w1.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -22,25 +24,26 @@ namespace DRT
       class Wall1NurbsType : public DRT::ElementType
       {
        public:
-        std::string Name() const { return "Wall1NurbsType"; }
+        std::string Name() const override { return "Wall1NurbsType"; }
 
         static Wall1NurbsType& Instance();
 
-        virtual DRT::ParObject* Create(const std::vector<char>& data);
+        CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-        virtual Teuchos::RCP<DRT::Element> Create(
-            const std::string eletype, const std::string eledistype, const int id, const int owner);
+        Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+            const int id, const int owner) override;
 
-        virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+        Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-        virtual void SetupElementDefinition(
-            std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+        void SetupElementDefinition(
+            std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+            override;
 
-        virtual void NodalBlockInformation(
-            DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+        void NodalBlockInformation(
+            DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-            DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+        CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+            DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
        private:
         static Wall1NurbsType instance_;
@@ -66,17 +69,12 @@ namespace DRT
         */
         Wall1Nurbs(const Wall1Nurbs& old);
 
-        /*!
-        \brief Destructor
-
-        */
-        virtual ~Wall1Nurbs();
 
         /*!
         \brief Deep copy this instance of Wall1 and return pointer to it
         */
 
-        virtual DRT::Element* Clone() const;
+        DRT::Element* Clone() const override;
 
 
         /*!
@@ -87,16 +85,16 @@ namespace DRT
 
         \return my parobject id
         */
-        virtual int UniqueParObjectId() const
+        int UniqueParObjectId() const override
         {
           return Wall1NurbsType::Instance().UniqueParObjectId();
         }
 
 
         /// Print this element
-        void Print(std::ostream& os) const;
+        void Print(std::ostream& os) const override;
 
-        virtual DRT::ElementType& ElementType() const { return Wall1NurbsType::Instance(); }
+        DRT::ElementType& ElementType() const override { return Wall1NurbsType::Instance(); }
 
         /*!
         \brief Get shape type of element
@@ -104,13 +102,13 @@ namespace DRT
         \return nurbs4 or nurbs9
 
         */
-        virtual DiscretizationType Shape() const;
+        CORE::FE::CellType Shape() const override;
 
 
         /*!
         \brief Return number of lines of this element.
         */
-        virtual int NumLine() const
+        int NumLine() const override
         {
           if (NumNode() == 9 || NumNode() == 4)
           {
@@ -127,13 +125,13 @@ namespace DRT
         /*!
         \brief Get vector of Teuchos::RCPs to the lines of this element
         */
-        virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+        std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
 
         /*!
         \brief Get vector of Teuchos::RCPs to the surfaces of this element
         */
-        virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+        std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
 
        private:
@@ -143,5 +141,7 @@ namespace DRT
   }    // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_NURBS_H

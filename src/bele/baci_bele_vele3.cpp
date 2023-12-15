@@ -10,16 +10,18 @@
 
 #include "baci_bele_vele3.H"
 
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
 
 DRT::ELEMENTS::Vele3Type& DRT::ELEMENTS::Vele3Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Vele3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Vele3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Vele3* object = new DRT::ELEMENTS::Vele3(-1, -1);
   object->Unpack(data);
@@ -102,38 +104,37 @@ DRT::Element* DRT::ELEMENTS::Vele3::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Vele3::Shape() const
 {
   switch (NumNode())
   {
     case 4:
-      return tet4;
+      return CORE::FE::CellType::tet4;
     case 5:
-      return pyramid5;
+      return CORE::FE::CellType::pyramid5;
     case 6:
-      return wedge6;
+      return CORE::FE::CellType::wedge6;
     case 8:
-      return hex8;
+      return CORE::FE::CellType::hex8;
     case 10:
-      return tet10;
+      return CORE::FE::CellType::tet10;
     case 15:
-      return wedge15;
+      return CORE::FE::CellType::wedge15;
     case 20:
-      return hex20;
+      return CORE::FE::CellType::hex20;
     case 27:
-      return hex27;
+      return CORE::FE::CellType::hex27;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Vele3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -151,10 +152,9 @@ void DRT::ELEMENTS::Vele3::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -168,14 +168,9 @@ void DRT::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3::~Vele3() { return; }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3::Print(std::ostream& os) const
 {
-  os << "Vele3 " << DRT::DistypeToString(Shape());
+  os << "Vele3 " << CORE::FE::CellTypeToString(Shape());
   Element::Print(os);
   return;
 }
@@ -185,14 +180,7 @@ void DRT::ELEMENTS::Vele3::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Vele3Line, Vele3>(DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Vele3Line, Vele3>(CORE::COMM::buildLines, *this);
 }
 
 
@@ -201,26 +189,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Vele3Surface, Vele3>(DRT::UTILS::buildSurfaces, this);
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                g.bau 03/07|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
+  return CORE::COMM::ElementBoundaryFactory<Vele3Surface, Vele3>(CORE::COMM::buildSurfaces, *this);
 }
 
 
@@ -229,22 +198,22 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Volumes()
  |  get optimal gauss rule (public)                          u.may 05/09|
  *----------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
-    const DRT::Element::DiscretizationType& distype) const
+    const CORE::FE::CellType& distype) const
 {
   CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
       rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
       rule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
       rule = CORE::DRT::UTILS::GaussRule3D::tet_10point;
       break;
     default:
@@ -260,3 +229,5 @@ bool DRT::ELEMENTS::Vele3::ReadElement(
 {
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

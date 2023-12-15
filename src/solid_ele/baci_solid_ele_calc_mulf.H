@@ -19,6 +19,8 @@ based with MULF prestressing
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+BACI_NAMESPACE_OPEN
 namespace MAT
 {
   class So3Material;
@@ -29,22 +31,18 @@ namespace STR::MODELEVALUATOR
 }
 namespace DRT::ELEMENTS
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType celltype>
   struct MulfHistoryData
   {
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-        inverse_jacobian;
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-        deformation_gradient;
+    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> inverse_jacobian;
+    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> deformation_gradient;
     bool is_setup = false;
 
     MulfHistoryData()
     {
-      for (int i = 0; i < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++i)
+      for (int i = 0; i < CORE::FE::dim<celltype>; ++i)
       {
-        for (int j = 0; j < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++j)
+        for (int j = 0; j < CORE::FE::dim<celltype>; ++j)
         {
           inverse_jacobian(i, j) = static_cast<double>(i == j);
           deformation_gradient(i, j) = static_cast<double>(i == j);
@@ -53,13 +51,13 @@ namespace DRT::ELEMENTS
     }
   };
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType celltype>
   class SolidEleCalcMulf
   {
    public:
     SolidEleCalcMulf();
 
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const;
 
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
@@ -113,13 +111,12 @@ namespace DRT::ELEMENTS
 
    private:
     /// static values for matrix sizes
-    static constexpr int num_nodes_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-    static constexpr int num_dim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
+    static constexpr int num_dim_ = CORE::FE::dim<celltype>;
     static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
     static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
-    std::vector<MulfHistoryData<distype>> history_data_;
+    std::vector<MulfHistoryData<celltype>> history_data_;
 
     CORE::DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
     CORE::DRT::UTILS::GaussIntegration mass_matrix_integration_;
@@ -177,5 +174,7 @@ namespace DRT::ELEMENTS
     std::visit(DETAILS::UpdatePrestressAction(element, mat, discretization, lm, params), variant);
   }
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_ELE_CALC_MULF_H

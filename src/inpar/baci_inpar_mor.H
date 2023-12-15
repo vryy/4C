@@ -13,6 +13,8 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -25,4 +27,6 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // INPAR_MOR_H

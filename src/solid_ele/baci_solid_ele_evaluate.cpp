@@ -12,10 +12,13 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_solid_ele.H"
 #include "baci_solid_ele_calc_interface.H"
 #include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_calc_lib_io.H"
 #include "baci_solid_ele_calc_mulf.H"
 #include "baci_solid_ele_neumann_evaluator.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -222,3 +225,5 @@ int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

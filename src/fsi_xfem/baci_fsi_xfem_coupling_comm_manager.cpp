@@ -22,6 +22,8 @@ transform matrixes, vectors, ...
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------*
 | constructor - simplified for 1 discretization to couple (public)             ager 03/2016|
@@ -61,10 +63,6 @@ XFEM::Coupling_Comm_Manager::Coupling_Comm_Manager(
   Setup(dis);
 }
 
-/*-----------------------------------------------------------------------------------------*
-| dstructor (public)                                                         ager 03/2016|
-*-----------------------------------------------------------------------------------------*/
-XFEM::Coupling_Comm_Manager::~Coupling_Comm_Manager() {}
 
 /*--------------------------------------------------------------------------------------------------------------*
 | Transfer conditioned part of Vector from Discretization A --> B with different transfer types ager
@@ -466,3 +464,5 @@ void XFEM::Coupling_Comm_Manager::DebugOut(
 #endif
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,8 @@ xfluid class and the cut-library
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_xfem_coupling_mesh.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -58,11 +60,8 @@ namespace XFEM
         MeshCouplingFPI::coupled_field field  ///< which field is coupled to the fluid
     );
 
-    //! destructor
-    virtual ~MeshCouplingFPI() { return; }
-
     //! cutter dis should be loaded into the cut?
-    virtual bool CutGeometry() { return (coupled_field_ == MeshCouplingFPI::ps_ps); }
+    bool CutGeometry() override { return (coupled_field_ == MeshCouplingFPI::ps_ps); }
 
     bool isBJ() const { return full_BJ_; }
 
@@ -100,7 +99,7 @@ namespace XFEM
      Return prescribed velocities and traction vectors for a GNBC boundary condition.
      Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
      */
-    template <DRT::Element::DiscretizationType DISTYPE, class T1, class M3>
+    template <CORE::FE::CellType DISTYPE, class T1, class M3>
     void EvaluateCouplingConditions(T1& projection_matrix,  ///< Projection matrix
         M3& normal                                          ///< surface normal of cut element
     )
@@ -110,18 +109,18 @@ namespace XFEM
     };
 
     // finalize the interface true residual vector
-    virtual void CompleteStateVectors();
+    void CompleteStateVectors() override;
 
     virtual void ZeroStateVectors_FPI();
 
-    virtual void GmshOutput(const std::string& filename_base, const int step,
-        const int gmsh_step_diff, const bool gmsh_debug_out_screen);
+    void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,
+        const bool gmsh_debug_out_screen) override;
 
-    virtual void GmshOutputDiscretization(std::ostream& gmshfilecontent);
+    void GmshOutputDiscretization(std::ostream& gmshfilecontent) override;
 
-    virtual void LiftDrag(const int step, const double time) const;
+    void LiftDrag(const int step, const double time) const override;
 
-    virtual void ReadRestart(const int step);
+    void ReadRestart(const int step) override;
 
     // interface foces
     Teuchos::RCP<Epetra_Vector> ITrueResidual() { return itrueresidual_; }
@@ -165,41 +164,41 @@ namespace XFEM
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
 
    private:
-    void Output(const int step, const double time, const bool write_restart_data);
+    void Output(const int step, const double time, const bool write_restart_data) override;
 
    protected:
     //! Initializes configurationmap
-    virtual void SetupConfigurationMap();
+    void SetupConfigurationMap() override;
 
     //! set the name of the coupling object based on the field coupling
-    virtual void SetCouplingName();
+    void SetCouplingName() override;
 
     //! Updates configurationmap for specific Gausspoint
-    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< master sided dynamic viscosity
-        double& visc_s,                                      //< slave sided dynamic viscosity
-        double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                              //< master sided dynamic viscosity
+        double& visc_s,                              //< slave sided dynamic viscosity
+        double& density_m,                           //< master sided density
+        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
+        double& full_stab,                           //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
+        const DRT::Condition* cond,                  //< Condition
+        DRT::Element* ele,                           //< Element
+        DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
         CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
-    );
+        ) override;
 
-    virtual void InitStateVectors();
+    void InitStateVectors() override;
 
-    virtual void DoConditionSpecificSetup();
+    void DoConditionSpecificSetup() override;
 
-    virtual bool HasMovingInterface() { return true; }
+    bool HasMovingInterface() override { return true; }
 
-    virtual void SetConditionSpecificParameters();
+    void SetConditionSpecificParameters() override;
 
    private:
     //! Updates configurationmap for specific Gausspoint in the contact case
@@ -269,5 +268,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_COUPLING_FPI_MESH_H

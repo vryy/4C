@@ -16,6 +16,9 @@
 
 // forward declaration
 class Epetra_IntVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace POROMULTIPHASESCATRA
 {
   // forward declaration
@@ -196,5 +199,7 @@ namespace POROMULTIPHASESCATRA
     std::map<int, std::vector<double>> gid_to_seglength_;
   };
 }  // namespace POROMULTIPHASESCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H

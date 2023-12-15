@@ -21,6 +21,8 @@
 //     is a smoothed projection matrix given.
 #define PROJECT_VEL_FOR_PRESSURE_ADJOINT
 
+BACI_NAMESPACE_OPEN
+
 //  For comparison to Urquizas paper with his slip length implementation
 //   Only working for Navier-Slip (i.e. itraction_jump_ = 0)!
 //   Can be modified to work for this case as well.
@@ -37,21 +39,19 @@ namespace DRT
       //! this can be an arbitrary 2D/3D element and can be associated with a structure (monolithic
       //! XFSI), fluid (XFF, XFFSI, partitioned XFSI, XWDBC) or a xfluid-element with another active
       //! dofset (two-phase flow)
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       class SlaveElementRepresentation : virtual public SlaveElementInterface<distype>
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::FE::dim<distype>;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = CORE::DRT::UTILS::DisTypeToDim<slave_distype>::dim;
+        static const unsigned slave_nsd_ = CORE::FE::dim<slave_distype>;
         /// number of slave element's nodes
-        static const unsigned slave_nen_ =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<slave_distype>::numNodePerElement;
+        static const unsigned slave_nen_ = CORE::FE::num_nodes<slave_distype>;
 
         //! ctor
         SlaveElementRepresentation(CORE::LINALG::SerialDenseMatrix::Base& slave_xyze)
@@ -66,22 +66,22 @@ namespace DRT
         void AddSlaveEleDisp(
             const DRT::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm            ///< local map
-        );
+            ) override;
         void AddSlaveEleDisp(
             const DRT::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm,           ///< local map
             std::vector<double>& mymatrix         ///< slave element displacement vector
-        );
+            ) override;
 
         //! set slave element's interface velocity & pressure for current time step
         void SetSlaveState(const DRT::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm                           ///< local map
-        );
+            ) override;
 
         //! set slave element's interface velocity & pressure for previous time step
         void SetSlaveStaten(const DRT::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm                            ///< local map
-        );
+            ) override;
 
         //! @name Accessors
         //@{
@@ -89,30 +89,30 @@ namespace DRT
         //! extract interface velocity at current time step
         void GetInterfaceVelnp(
             CORE::LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
-        ) const;
+        ) const override;
 
         //! get interface pressure at current time step
         void GetInterfacePresnp(double& ipres  ///< interface pressure at coupling slave side
-        ) const;
+        ) const override;
 
         //! get interface velocity gradient at current time step
         void GetInterfaceVelGradnp(CORE::LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
-        ) const;
+        ) const override;
 
         //! extract interface velocity at previous time step
         void GetInterfaceVeln(
             CORE::LINALG::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
-        ) const;
+        ) const override;
 
         //! get interface pressure at previous time step
         void GetInterfacePresn(double& ipresn  ///< interface pressure at coupling slave side
-        ) const;
+        ) const override;
 
         //! get interface velocity gradient at previous time step
         void GetInterfaceVelGradn(CORE::LINALG::Matrix<nsd_, nsd_>&
                 velgradintn  ///< interface velocity gradients at coupling slave side
-        ) const;
+        ) const override;
 
         //! get slave elements nodal shape functions
         void GetSlaveFunct(
@@ -124,44 +124,44 @@ namespace DRT
             const DRT::Discretization& cutterdis,  ///< cutter discretization
             const std::string state,               ///< state
             const std::vector<int>& lm             ///< local map
-        );
+            ) override;
 
         //! set state for interface velocity jump for previous time step
         void SetInterfaceJumpStaten(
             const DRT::Discretization& cutterdis,  ///< cutter discretization
             const std::string state,               ///< state
             const std::vector<int>& lm             ///< local map
-        );
+            ) override;
 
         //! get interface velocity jump at Gaussian point
         void GetInterfaceJumpVelnp(
             CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
                                                          ///< or prescribed DBC at Gaussian point
-        ) const;
+        ) const override;
 
         //! get interface velocity jump for previous time step at Gaussian point
         void GetInterfaceJumpVeln(CORE::LINALG::Matrix<nsd_, 1>&
                 ivelintn_jump  ///< cutter element interface velocity jump or
                                ///< prescribed DBC at Gaussian point
-        ) const;
+        ) const override;
 
         //@}
 
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //!  gaussian point
-        void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xside);
+        void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xslave) override;
 
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //!  gaussian point
-        void Evaluate(
-            CORE::LINALG::Matrix<nsd_, 1>& xside, CORE::LINALG::Matrix<nsd_, 1>& rst_slave);
+        void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xslave,
+            CORE::LINALG::Matrix<nsd_, 1>& rst_slave) override;
 
         //! compute interface force
         void ComputeInterfaceForce(
             CORE::LINALG::SerialDenseVector& iforce,  ///< interface force vector
             CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
             const double& fac                         ///< integration factor
-        );
+            ) override;
 
         //! project gaussian point from linearized interface in normal direction onto corresponding
         //! side
@@ -171,10 +171,10 @@ namespace DRT
             CORE::LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
             CORE::LINALG::Matrix<nsd_, 1>&
                 xi_side  ///< local coordinates of projected gaussian point w.r.t side
-        );
+            ) override;
 
         //! evaluate element volume
-        double EvalElementVolume();
+        double EvalElementVolume() override;
 
        protected:
         //! default constructor
@@ -261,17 +261,16 @@ namespace DRT
        * level-set field (we then don't couple with a concrete slave element!)
        */
       //!
-      template <DRT::Element::DiscretizationType distype, unsigned int slave_numdof>
-      class SlaveElementRepresentation<distype, DRT::Element::dis_none, slave_numdof>
+      template <CORE::FE::CellType distype, unsigned int slave_numdof>
+      class SlaveElementRepresentation<distype, CORE::FE::CellType::dis_none, slave_numdof>
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::FE::dim<distype>;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned slave_nsd_ = CORE::FE::dim<distype>;
         /// just for compatibility...
         static const unsigned slave_nen_ = nen_;
 
@@ -299,8 +298,8 @@ namespace DRT
       };
 
       //! concrete evaluation class for interface coupling using Nitsche's method
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       class NitscheCoupling
           : public NitscheInterface<distype>,
             public SlaveElementRepresentation<distype, slave_distype, slave_numdof>
@@ -363,7 +362,7 @@ namespace DRT
                 ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height
                                ///< for coupled problems
             const INPAR::XFEM::EleCouplingCondType& cond_type  ///< condition type
-        );
+            ) override;
 
         //! build coupling matrices and assemble terms for Nitsche's (NIT) method
         void NIT_evaluateCoupling(const CORE::LINALG::Matrix<nsd_, 1>&
@@ -395,7 +394,7 @@ namespace DRT
                 solid_stress,  ///< structural cauchy stress and linearization
             std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>&
                 configmap  ///< Interface Terms configuration map
-        );
+            ) override;
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
         void NIT_evaluateCouplingOldState(
@@ -424,7 +423,7 @@ namespace DRT
                                  ///< height for coupled problems
             std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>&
                 configmap  ///< Interface Terms configuration map
-        );
+            ) override;
 
        private:
         //! evaluate traction-consistency term for Nitsche's method
@@ -884,8 +883,8 @@ namespace DRT
 
       /// concrete class for interface coupling using mixed/hybrid stress-based Lagrange multipliers
       /// method
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       class HybridLMCoupling
           : public HybridLMInterface<distype>,
             public SlaveElementRepresentation<distype, slave_distype, slave_numdof>
@@ -958,7 +957,7 @@ namespace DRT
                 ivelint_jump,  ///< prescribed interface velocity or interface jump height
             const CORE::LINALG::Matrix<nsd_, 1>&
                 itraction_jump  ///< prescribed interface traction or interface jump height
-        );
+            ) override;
 
         //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
         void MHVS_buildCouplingMatrices(
@@ -974,7 +973,7 @@ namespace DRT
                 ivelint_jump,  ///< prescribed interface velocity or interface jump height
             const CORE::LINALG::Matrix<nsd_, 1>&
                 itraction_jump  ///< prescribed interface traction or interface jump height
-        );
+            ) override;
 
         //! apply the standard consistency traction interface jump term
         void MH_Traction_Consistency_Term(
@@ -996,7 +995,7 @@ namespace DRT
                 master_numdof_>& BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
             CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
                 rhs_s  ///< block rhs vector \f$ rhs_{\sigma}\f$
-        );
+            ) override;
 
        protected:
         //! @name useful constants for DOF-index numbering
@@ -1062,5 +1061,7 @@ namespace DRT
     }  // namespace XFLUID
   }    // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H

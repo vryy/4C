@@ -16,6 +16,8 @@
 #include <functional>
 #include <list>
 
+BACI_NAMESPACE_OPEN
+
 // #define DEBUG_SO_HEX8_DET_ANALYSIS
 namespace DRT
 {
@@ -40,9 +42,6 @@ namespace DRT
        *
        *  \return RCP to the created class object. */
       static Teuchos::RCP<So_Hex8_Determinant_Analysis> create();
-
-      /// destructor
-      ~So_Hex8_Determinant_Analysis() = default;
 
       /** \brief Test the validity of the current element
        *
@@ -329,5 +328,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_HEX8_DETERMINANT_ANALYSIS_H

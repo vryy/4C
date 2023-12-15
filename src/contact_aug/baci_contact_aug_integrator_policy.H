@@ -12,6 +12,9 @@
 
 #include "baci_contact_aug_contact_integrator_utils.H"
 #include "baci_contact_aug_timemonitor.H"
+#include "baci_lib_node.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace CONTACT
 {
@@ -21,20 +24,17 @@ namespace CONTACT
     class NodeDataContainer;
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype>
+    template <unsigned probdim, CORE::FE::CellType slavetype>
     class BaseSlaveIntPolicy
     {
      protected:
-      static const unsigned SLAVEDIM = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
-      static const unsigned SLAVENUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
+      static const unsigned SLAVEDIM = CORE::FE::dim<slavetype>;
+      static const unsigned SLAVENUMNODE = CORE::FE::num_nodes<slavetype>;
 
      public:
       /// constructor
       BaseSlaveIntPolicy(){/* empty */};
 
-      /// destructor
-      ~BaseSlaveIntPolicy(){/* empty */};
 
       double UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<3, 2>& tau,
@@ -98,23 +98,19 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class BaseIntPolicy : public BaseSlaveIntPolicy<probdim, slavetype>
     {
       typedef BaseSlaveIntPolicy<probdim, slavetype> my;
 
      protected:
-      static const unsigned MASTERDIM = CORE::DRT::UTILS::DisTypeToDim<mastertype>::dim;
-      static const unsigned MASTERNUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<mastertype>::numNodePerElement;
+      static const unsigned MASTERDIM = CORE::FE::dim<mastertype>;
+      static const unsigned MASTERNUMNODE = CORE::FE::num_nodes<mastertype>;
 
      public:
       /// constructor
       BaseIntPolicy(){/* empty */};
 
-      /// destructor
-      ~BaseIntPolicy(){/* empty */};
 
       void LMatrixInverse(const CORE::LINALG::Matrix<3, 2>& mtau,
           const CORE::LINALG::Matrix<probdim, 1>& snormal,
@@ -192,8 +188,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class IncompleteIntPolicy : public BaseIntPolicy<probdim, slavetype, mastertype>
     {
       typedef BaseIntPolicy<probdim, slavetype, mastertype> my;
@@ -202,8 +197,6 @@ namespace CONTACT
       /// constructor
       IncompleteIntPolicy(){/* empty */};
 
-      /// destructor
-      ~IncompleteIntPolicy(){/* empty */};
 
       void Get_Deriv2nd_Jacobian(const MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
@@ -281,8 +274,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class CompleteIntPolicy : public BaseIntPolicy<probdim, slavetype, mastertype>
     {
       typedef BaseIntPolicy<probdim, slavetype, mastertype> my;
@@ -291,8 +283,6 @@ namespace CONTACT
       /// constructor
       CompleteIntPolicy(){/* empty */};
 
-      /// destructor
-      ~CompleteIntPolicy(){/* empty */};
 
       void Get_Deriv2nd_Jacobian(const MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
@@ -368,8 +358,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class DebugIncompleteIntPolicy : public IncompleteIntPolicy<probdim, slavetype, mastertype>
     {
       typedef IncompleteIntPolicy<probdim, slavetype, mastertype> my;
@@ -378,8 +367,6 @@ namespace CONTACT
       /// constructor
       DebugIncompleteIntPolicy(){/* empty */};
 
-      /// destructor
-      ~DebugIncompleteIntPolicy(){/* empty */};
 
       void Get_Debug(MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,
@@ -410,8 +397,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class DebugCompleteIntPolicy : public CompleteIntPolicy<probdim, slavetype, mastertype>
     {
       typedef CompleteIntPolicy<probdim, slavetype, mastertype> my;
@@ -420,8 +406,6 @@ namespace CONTACT
       /// constructor
       DebugCompleteIntPolicy(){/* empty */};
 
-      /// destructor
-      ~DebugCompleteIntPolicy(){/* empty */};
 
       void Get_Debug(MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,
@@ -484,9 +468,9 @@ namespace CONTACT
       void Debug_Deriv2nd_WGap_Sl(MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
-          const Deriv2ndVecMap& dd_n_unit, const Deriv1stMap& d_jac, const Deriv1stMap& d_gap_sl,
-          const Deriv2ndMap& dd_jac, const double gapn_sl, const double wgt,
-          const double jac) const;
+          const Deriv2ndVecMap& dd_n_unit, const Deriv1stMap& d_jac,
+          const Deriv1stMap& d_gapn_sl_complete, const Deriv2ndMap& dd_jac, const double gapn_sl,
+          const double wgt, const double jac) const;
 
       void Debug_Deriv1st_WGap(MORTAR::MortarElement& sele) const;
 
@@ -540,5 +524,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_INTEGRATOR_POLICY_H

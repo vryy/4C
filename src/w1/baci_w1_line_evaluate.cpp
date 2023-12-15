@@ -12,7 +12,6 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elements_paramsinterface.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -22,7 +21,10 @@
 #include "baci_mat_structporo.H"
 #include "baci_nurbs_discret.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 #include "baci_w1.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
@@ -83,7 +85,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // set number of nodes
   const int numnod = NumNode();
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
@@ -155,12 +157,12 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     const double e1 = intpoints.qxg[gpid][0];
 
     // get shape functions and derivatives in the line
-    if (distype == line2 || distype == line3)
+    if (distype == CORE::FE::CellType::line2 || distype == CORE::FE::CellType::line3)
     {
       CORE::DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
       CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
     }
-    else if (distype == nurbs2 || distype == nurbs3)
+    else if (distype == CORE::FE::CellType::nurbs2 || distype == CORE::FE::CellType::nurbs3)
     {
       DRT::NURBS::NurbsDiscretization* nurbsdis =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
@@ -223,7 +225,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
-                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, i);
             }
             else
@@ -278,7 +280,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, 0);
         }
 
@@ -417,21 +419,21 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 }
 
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
-    case nurbs2:
+    case CORE::FE::CellType::nurbs2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case nurbs3:
+    case CORE::FE::CellType::nurbs3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -443,7 +445,7 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
 
 // determinant of jacobian matrix
 
-double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDenseMatrix& xye,
+double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDenseMatrix& xyze,
     const CORE::LINALG::SerialDenseMatrix& deriv,
     std::vector<double>* unrm,  // unit normal
     const int iel)
@@ -473,7 +475,7 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDense
   // compute derivative of parametrization
   double dr = 0.0;
   CORE::LINALG::SerialDenseMatrix der_par(1, 2);
-  int err = CORE::LINALG::multiplyNT(der_par, deriv, xye);
+  int err = CORE::LINALG::multiplyNT(der_par, deriv, xyze);
   if (err != 0) dserror("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
   if (unrm != nullptr)
@@ -491,7 +493,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2,
     CORE::LINALG::SerialDenseVector& elevector3)
 {
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // set number of dofs per node
   const int noddof = NumDofPerNode(*Nodes()[0]);
@@ -519,7 +521,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     // just compute the enclosed volume (e.g. for initialization)
     case calc_struct_constrarea:
     {
-      if (distype != line2)
+      if (distype != CORE::FE::CellType::line2)
       {
         dserror("Area Constraint only works for line2 curves!");
       }
@@ -575,7 +577,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
         // integration of the displacements over the surface
         const int dim = Wall1::numdim_;
-        const DiscretizationType distype = Shape();
+        const CORE::FE::CellType distype = Shape();
 
         // gaussian points
         const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
@@ -619,7 +621,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_areaconstrstiff:
     {
-      if (distype != line2)
+      if (distype != CORE::FE::CellType::line2)
       {
         dserror("Area Constraint only works for line2 curves!");
       }  // element geometry update
@@ -673,7 +675,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         elematrix1, elematrix2, elevector1, elevector2, elevector3);
   }
 
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // start with "none"
   DRT::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
@@ -726,7 +728,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       const DRT::Node* const* nodes = parentele->Nodes();
       for (int i = 0; i < nenparent; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(0, i) = x[0];
         xrefe(1, i) = x[1];
 
@@ -784,7 +786,6 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         {
           det = xjm(0, 0) * xjm(1, 1) - xjm(0, 1) * xjm(1, 0);
           detJ = Jmat(0, 0) * Jmat(1, 1) - Jmat(0, 1) * Jmat(1, 0);
-          ;
         }
         else
           dserror("not implemented");
@@ -858,3 +859,5 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(
   elematrix.scale(-1.0);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

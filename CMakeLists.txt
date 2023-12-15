@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.25)
 
 # try to prevent modification of source directory
 # note: some files may still be written before CMake can abort and need to be removed manually
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
   message(
     FATAL_ERROR
       "In-source build not allowed. "
@@ -16,7 +16,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     )
 endif()
 
-project(baci CXX C Fortran)
+project(baci CXX C)
 
 # Print CMake version to screen
 message(STATUS "Using CMake ${CMAKE_VERSION}")
@@ -31,7 +31,7 @@ set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
 
 # specify where our own cmake modules are located
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 # include all external (cmake) macros that we use
 include(CheckCXXSourceRuns)
@@ -52,6 +52,12 @@ if(BACI_WITH_ADDRESS_SANITIZER)
   add_link_options(-fsanitize=address -fno-omit-frame-pointer)
 endif()
 
+# macro definition for namespace BACI
+set(BACI_NAMESPACE_OPEN "namespace BACI {")
+set(BACI_NAMESPACE_CLOSE "}")
+add_compile_definitions(BACI_NAMESPACE_OPEN=${BACI_NAMESPACE_OPEN})
+add_compile_definitions(BACI_NAMESPACE_CLOSE=${BACI_NAMESPACE_CLOSE})
+
 #
 ### Build in default values
 
@@ -61,10 +67,6 @@ endif()
 
 ###------------------------------------------------------------------- Default cmake settings
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-if(${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
-  set_property(GLOBAL APPEND PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS "DEBUG")
-endif()
 
 ### process global options
 include(cmake/setup_global_options.cmake)
@@ -117,9 +119,6 @@ if(BACI_WITH_ADDRESS_SANITIZER)
   string(APPEND MPIEXEC_EXTRA_OPTS_FOR_TESTING " -x LSAN_OPTIONS=detect_leaks=0")
   set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
-
-# Get the global compile definitions which have been populated until here
-get_property(BACI_GLOBAL_COMPILE_DEFINITIONS GLOBAL PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS)
 
 set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
 

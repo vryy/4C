@@ -14,6 +14,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /**
@@ -106,5 +108,7 @@ namespace CORE::LINALG
   double DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A);
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

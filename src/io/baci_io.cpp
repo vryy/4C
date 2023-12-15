@@ -21,6 +21,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -156,7 +158,7 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(
   {
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matrix =
         Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-    DRT::ParObject::ExtractfromPack(position, *data, *matrix);
+    CORE::COMM::ParObject::ExtractfromPack(position, *data, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }
 }
@@ -505,7 +507,7 @@ IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
       meshfile_changed_(-1),
       output_(Teuchos::null),
       binio_(false),
-      spatial_approx_(ShapeFunctionType::shapefunction_undefined)
+      spatial_approx_(CORE::FE::ShapeFunctionType::undefined)
 {
   // intentionally left blank
 }
@@ -1491,7 +1493,7 @@ void IO::DiscretizationWriter::WriteKnotvector() const
       Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
 
       // put knotvector into block
-      DRT::PackBuffer block;
+      CORE::COMM::PackBuffer block;
       knots->Pack(block);
       block.StartPacking();
       knots->Pack(block);
@@ -1684,3 +1686,5 @@ const DRT::Discretization& IO::DiscretizationWriter::GetDiscret() const
   if (dis_.is_null()) dserror("The discretization pointer has not been initialized!");
   return *dis_;
 }
+
+BACI_NAMESPACE_CLOSE

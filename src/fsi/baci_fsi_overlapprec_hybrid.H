@@ -12,15 +12,6 @@
 #define BACI_FSI_OVERLAPPREC_HYBRID_H
 
 /*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
-/* forward declarations */
-namespace CORE::LINEAR_SOLVER
-{
-  class IFPACKPreconditioner;
-}
-
-/*----------------------------------------------------------------------------*/
 /* headers */
 // Standard library
 #include "baci_fsi_overlapprec.H"
@@ -29,6 +20,15 @@ namespace CORE::LINEAR_SOLVER
 #include <Teuchos_RCP.hpp>
 
 #include <list>
+
+BACI_NAMESPACE_OPEN
+
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
+namespace CORE::LINEAR_SOLVER
+{
+  class IFPACKPreconditioner;
+}
 
 namespace FSI
 {
@@ -63,15 +63,14 @@ namespace FSI
         int analyze,                             ///< Run FSIAMG anaylzer?
         INPAR::FSI::LinearBlockSolver strategy,  ///< type of linear preconditioner
         std::list<int> interfaceprocs,           ///< IDs of processors that own interface nodes
-        INPAR::FSI::Verbosity verbosity,         ///< verbosity of FSI algorithm
-        FILE* err = nullptr                      ///< error file handle
+        INPAR::FSI::Verbosity verbosity          ///< verbosity of FSI algorithm
     );
 
     //! @name Setup
     //@{
 
     //! setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
     //@}
 
@@ -93,7 +92,7 @@ namespace FSI
      *  stationary Richardson iteration, where each ApplyInverse() might also be
      *  a stationary Richardson iteration by itself.
      */
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     //@}
 
@@ -101,7 +100,7 @@ namespace FSI
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     //@}
 
@@ -126,5 +125,7 @@ namespace FSI
     bool additiveschwarzeverywhere_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_OVERLAPPREC_HYBRID_H

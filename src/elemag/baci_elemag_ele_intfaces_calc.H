@@ -13,7 +13,15 @@
 
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_utils_singleton_owner.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -48,8 +56,7 @@ namespace DRT
       ElemagIntFaceImplInterface() {}
 
       /// Empty destructor
-      virtual ~ElemagIntFaceImplInterface() {}
-
+      virtual ~ElemagIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
@@ -104,7 +111,7 @@ namespace DRT
       (see fluid_ele_intfaces_calc.H)
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ElemagIntFaceImpl : public ElemagIntFaceImplInterface
     {
       friend class ElemagEleParameterTimInt;
@@ -120,7 +127,7 @@ namespace DRT
 
 
       //! Assemble internal faces integrals using data from both parent elements
-      virtual void AssembleInternalFacesUsingNeighborData(
+      void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
           std::vector<int>& nds_master,              ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,               ///< nodal dofset w.r.t. slave element
@@ -128,24 +135,23 @@ namespace DRT
           DRT::DiscretizationFaces& discretization,  ///< faces discretization
           Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
-      );
+          ) override;
 
       //! Evaluate internal faces
-      virtual int EvaluateInternalFaces(
-          DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
-          Teuchos::ParameterList& params,         ///< parameter list
-          DRT::Discretization& discretization,    ///< discretization
-          std::vector<int>& patchlm,              ///< patch local map
-          std::vector<int>& lm_masterToPatch,     ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,       ///< local map between face dofs and patchlm
+      int EvaluateInternalFaces(DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
+          Teuchos::ParameterList& params,                               ///< parameter list
+          DRT::Discretization& discretization,                          ///< discretization
+          std::vector<int>& patchlm,                                    ///< patch local map
+          std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,    ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
           std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
           std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
-      );
+          ) override;
 
       //! decide which terms have to be assembled and decide the assembly pattern, return if no
       //! assembly required
@@ -161,5 +167,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -13,7 +13,6 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_elasthyper.H"
@@ -21,6 +20,7 @@
 #include "baci_nurbs_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
     const bool spatialconfiguration)
 {
   const int iel = NumNode();  // numnode of this element
-  const DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
   int numcnd;          // number of corner nodes
   int node_i, node_j;  // end nodes of actual spring
   double length;       // length of actual edge
@@ -396,13 +396,13 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
   // number of corner nodes
   switch (distype)
   {
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
       numcnd = 4;
       break;
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
       numcnd = 3;
       break;
     default:
@@ -465,7 +465,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
   // and put edge nodes on the middle of the respective edge
   switch (distype)
   {
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
       (*sys_mat)(8, 8) = 1.0;
       (*sys_mat)(8, 0) = -0.5;
       (*sys_mat)(8, 2) = -0.5;
@@ -492,7 +492,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
       (*sys_mat)(15, 1) = -0.5;
       ale2_tors_spring_quad4(sys_mat, xyze);
       break;
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
       (*sys_mat)(8, 8) = 1.0;
       (*sys_mat)(8, 0) = -0.5;
       (*sys_mat)(8, 2) = -0.5;
@@ -525,13 +525,13 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
       (*sys_mat)(17, 13) = -0.5;
       ale2_tors_spring_quad4(sys_mat, xyze);
       break;
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
       ale2_tors_spring_quad4(sys_mat, xyze);
       break;
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
       ale2_tors_spring_tri3(sys_mat, xyze);
       break;
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
       (*sys_mat)(6, 6) = 1.0;
       (*sys_mat)(6, 0) = -0.5;
       (*sys_mat)(6, 2) = -0.5;
@@ -601,7 +601,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 
   /*------- get integration data ---------------------------------------- */
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
@@ -625,7 +625,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
   /*--------------------------------- get node weights for nurbs elements */
   CORE::LINALG::SerialDenseVector weights(numnode);
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
@@ -645,7 +645,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     const double wgt = intpoints.qwgt[ip];
 
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+    if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -703,16 +703,16 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 ///*----------------------------------------------------------------------------*/
 ///*----------------------------------------------------------------------------*/
-// static void ale2_min_jaco(DRT::Element::DiscretizationType distyp,
+// static void ale2_min_jaco(CORE::FE::CellType distyp,
 //    CORE::LINALG::SerialDenseMatrix xyz, double *min_detF)
 //{
 //  double  detF[4]; // Jacobian determinant at nodes
 //
 //  switch (distyp)
 //  {
-//    case DRT::Element::quad4:
-//    case DRT::Element::quad8:
-//    case DRT::Element::quad9:
+//    case CORE::FE::CellType::quad4:
+//    case CORE::FE::CellType::quad8:
+//    case CORE::FE::CellType::quad9:
 //      /*--------------------- evaluate Jacobian determinant at nodes ---*/
 //      detF[0] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][0]-xyz[1][3])
 //                       - (xyz[1][0]-xyz[1][1]) * (xyz[0][0]-xyz[0][3]) );
@@ -739,7 +739,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 //      *min_detF = (*min_detF < detF[3]) ? *min_detF : detF[3];
 //      /*----------------------------------------------------------------*/
 //      break;
-//    case DRT::Element::tri3:
+//    case CORE::FE::CellType::tri3:
 //      *min_detF = (-xyz[0][0]+xyz[0][1]) * (-xyz[1][0]+xyz[1][2])
 //                - (-xyz[0][0]+xyz[0][2]) * (-xyz[1][0]+xyz[1][1]);
 //      if (*min_detF <= 0.0) dserror("Negative JACOBIAN ");
@@ -762,7 +762,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
   //      "using it.");
 
   const int iel = NumNode();
-  const DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
 
   CORE::LINALG::SerialDenseMatrix xyze(2, iel);
 
@@ -788,7 +788,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
   std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
   CORE::LINALG::SerialDenseVector weights(iel);
 
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
@@ -824,7 +824,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
     const double e2 = intpoints.qxg[iquad][1];
 
     // get values of shape functions and derivatives at the gausspoint
-    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+    if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -1271,8 +1271,8 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& eleve
   CORE::LINALG::SerialDenseVector quality(4);
 
   /*------- get integration data ---------------------------------------- */
-  const DiscretizationType distype = Shape();
-  if (distype != quad4)
+  const CORE::FE::CellType distype = Shape();
+  if (distype != CORE::FE::CellType::quad4)
     dserror("Quality metric is currently implemented for Quad4 elements, only.");
 
   /*----------------------------------------------------- geometry update */
@@ -1365,3 +1365,5 @@ void DRT::ELEMENTS::Ale2::EvaluateOddy(
 
   qm = d;
 }
+
+BACI_NAMESPACE_CLOSE

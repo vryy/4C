@@ -10,6 +10,8 @@
 
 #include "baci_mixture_growth_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class StiffnessGrowthStrategy;
@@ -63,5 +65,7 @@ namespace MIXTURE
     const PAR::StiffnessGrowthStrategy* params_{};
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_GROWTH_STRATEGY_STIFFNESS_H

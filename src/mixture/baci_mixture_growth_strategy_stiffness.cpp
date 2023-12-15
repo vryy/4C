@@ -8,11 +8,13 @@
 
 #include "baci_mixture_growth_strategy_stiffness.H"
 
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 #include "baci_mixture_growth_strategy.H"
+
+BACI_NAMESPACE_OPEN
 
 MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -51,7 +53,7 @@ void MIXTURE::StiffnessGrowthStrategy::EvaluateGrowthStressCmat(
   iC.Invert();
 
   CORE::LINALG::Matrix<6, 1> iC_stress(false);
-  UTILS::VOIGT::Stresses::MatrixToVector(iC, iC_stress);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(iC, iC_stress);
 
   const double kappa = params_->kappa_;
   const double detF = F.Determinant();
@@ -77,3 +79,4 @@ void MIXTURE::StiffnessGrowthStrategy::EvaluateGrowthStressCmat(
 
   cmat.MultiplyNN(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
 }
+BACI_NAMESPACE_CLOSE

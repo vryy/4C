@@ -17,6 +17,8 @@
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Bundle::Bundle() : readfromproblem_(0) {}
 /*----------------------------------------------------------------------*/
@@ -58,18 +60,20 @@ void CONTACT::CONSTITUTIVELAW::Bundle::MakeParameters()
 
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> CONTACT::CONSTITUTIVELAW::Bundle::ById(
-    const int num) const
+    const int id) const
 {
   std::map<int, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container>>::const_iterator m =
-      map_.find(num);
+      map_.find(id);
 
-  if (map_.size() == 0) dserror("No contact constitutivelaws available, num=%d", num);
+  if (map_.size() == 0) dserror("No contact constitutivelaws available, num=%d", id);
 
   if (m == map_.end())
-    dserror("Contact Constitutive Law 'Law %d' could not be found", num);
+    dserror("Contact Constitutive Law 'Law %d' could not be found", id);
   else
     return m->second;
 
   // catch up
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

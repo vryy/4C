@@ -16,6 +16,8 @@
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Problem;
@@ -70,7 +72,7 @@ namespace ADAPTER
     }
 
     /// get constraint manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
+    virtual Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
     {
       return structure_->GetConstraintManager();
     }
@@ -133,5 +135,7 @@ namespace ADAPTER
     Teuchos::RCP<FSIStructureWrapper> structure_;  ///< underlying structural time integration
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

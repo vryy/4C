@@ -12,12 +12,14 @@
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beam3_kirchhoff.H"
 #include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_scalar_types.H"
 
 #include <Sacado.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /**
@@ -314,3 +316,5 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>,
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

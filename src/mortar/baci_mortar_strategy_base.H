@@ -20,6 +20,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace INPAR
@@ -65,7 +66,7 @@ namespace MORTAR
     StratDataContainer();
 
     //! destructor
-    virtual ~StratDataContainer(){};
+    virtual ~StratDataContainer() = default;
 
     //! Return underlying problem dof row map (not only interfaces)
     Teuchos::RCP<Epetra_Map>& ProbDofsPtr() { return probdofs_; };
@@ -206,8 +207,6 @@ namespace MORTAR
         const Teuchos::ParameterList& params, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
-    //! Destructor
-    virtual ~StrategyBase() = default;
 
     //! @name Access methods
     //! @{
@@ -244,11 +243,11 @@ namespace MORTAR
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
-    virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodes() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> ActiveRowNodes() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> ActiveRowDofs() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() = 0;
+    virtual Teuchos::RCP<Epetra_Map> SlaveRowNodes() = 0;
+    virtual Teuchos::RCP<Epetra_Map> ActiveRowNodes() = 0;
+    virtual Teuchos::RCP<Epetra_Map> ActiveRowDofs() = 0;
+    virtual Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() = 0;
+    virtual Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() = 0;
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() const = 0;
     virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
@@ -327,7 +326,7 @@ namespace MORTAR
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) = 0;
-    virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
+    virtual Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
     virtual void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(Teuchos::RCP<const Epetra_Vector> dis) = 0;
@@ -359,10 +358,10 @@ namespace MORTAR
     virtual Teuchos::RCP<const Epetra_Map> MasterActiveNodes() const { return Teuchos::null; };
 
     // constraint preconditioner functions
-    virtual bool IsSaddlePointSystem() const = 0;
-    virtual bool IsCondensedSystem() const = 0;
+    bool IsSaddlePointSystem() const override = 0;
+    bool IsCondensedSystem() const override = 0;
     virtual bool IsPenalty() const = 0;
-    virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
+    void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override = 0;
     //@}
 
    private:
@@ -413,5 +412,7 @@ namespace MORTAR
 
   };  // class StrategyBase
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_STRATEGY_BASE_H

@@ -12,6 +12,7 @@
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_structure_new.H"
 #include "baci_io_control.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -19,12 +20,13 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
 #include "baci_ssi_monolithic_evaluate_OffDiag.H"
-#include "baci_ssi_utils.H"
 #include "baci_ssti_algorithm.H"
 #include "baci_ssti_monolithic_assemble_strategy.H"
 #include "baci_ssti_monolithic_evaluate_OffDiag.H"
 #include "baci_ssti_utils.H"
 #include "baci_sti_monolithic_evaluate_OffDiag.H"
+
+BACI_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -35,7 +37,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
       solver_(Teuchos::rcp(new CORE::LINALG::Solver(
           DRT::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
-          comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
+          comm))),
       scatrastructureoffdiagcoupling_(Teuchos::null),
       scatrathermooffdiagcoupling_(Teuchos::null),
       thermostructureoffdiagcoupling_(Teuchos::null),
@@ -223,8 +225,8 @@ void SSTI::SSTIMono::Output()
               << std::endl;
   }
 
-  ScaTraField()->Output();
-  ThermoField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ThermoField()->CheckAndWriteOutputAndRestart();
   StructureField()->Output();
 }
 
@@ -423,8 +425,8 @@ void SSTI::SSTIMono::Timeloop()
   {
     DistributeSolutionAllFields();
 
-    ScaTraField()->Output();
-    ThermoField()->Output();
+    ScaTraField()->CheckAndWriteOutputAndRestart();
+    ThermoField()->CheckAndWriteOutputAndRestart();
   }
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())
@@ -751,3 +753,5 @@ std::vector<CORE::LINALG::EquilibrationMethod> SSTI::SSTIMono::GetBlockEquilibra
 
   return equilibration_method_vector;
 }
+
+BACI_NAMESPACE_CLOSE

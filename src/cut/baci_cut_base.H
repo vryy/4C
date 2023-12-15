@@ -11,12 +11,13 @@
 #ifndef BACI_CUT_BASE_H
 #define BACI_CUT_BASE_H
 
-#include "baci_cut_clnwrapper.H"
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <cmath>
 #include <iostream>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 /*!
 \brief Returns the function that is to be integrated along the bounding lines of the irregular
@@ -803,4 +804,7 @@ double base_func_line_int(CORE::LINALG::Matrix<2, 1> pt, int inte_num, std::vect
   dserror("the base function required is not defined");
   return 0.0;
 }
+
+BACI_NAMESPACE_CLOSE
+
 #endif

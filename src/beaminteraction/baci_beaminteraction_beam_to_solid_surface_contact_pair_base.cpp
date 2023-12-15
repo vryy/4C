@@ -10,10 +10,10 @@
 #include "baci_beaminteraction_beam_to_solid_surface_contact_pair_base.H"
 
 #include "baci_beaminteraction_beam_to_solid_surface_contact_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_geometry_pair_element_faces.H"
@@ -23,6 +23,8 @@
 #include "baci_geometry_pair_scalar_types.H"
 
 #include <Epetra_FEVector.h>
+
+BACI_NAMESPACE_OPEN
 
 
 /**
@@ -70,16 +72,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surfa
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam,
-    surface>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>&
-        geometry_evaluation_data_ptr)
+    surface>::CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  // Call the method of the base class.
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
-
-  // Set up the geometry pair, it will be initialized in the Init call of the base class.
   this->geometry_pair_ =
       GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<scalar_type, beam, surface>(
-          geometry_evaluation_data_ptr);
+          element1, element2, geometry_evaluation_data_ptr);
 }
 
 /**
@@ -120,7 +118,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
 BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::GetPairGID(
-    const ::DRT::Discretization& discret) const
+    const BACI::DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
   CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
@@ -203,3 +201,5 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

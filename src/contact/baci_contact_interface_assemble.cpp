@@ -18,6 +18,8 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                 gitterle 10/09|
  *----------------------------------------------------------------*/
@@ -208,21 +210,22 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
-    int dim = cnode->NumDof();
+    int numdof = cnode->NumDof();
     double kappa = cnode->CoData().Kappa();
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
-    CORE::LINALG::SerialDenseMatrix lmuzawa(dim, 1);
-    for (int k = 0; k < dim; ++k) lmuzawa(k, 0) = cnode->MoData().lmuzawa()[k];
+    CORE::LINALG::SerialDenseMatrix lmuzawa(numdof, 1);
+    for (int k = 0; k < numdof; ++k) lmuzawa(k, 0) = cnode->MoData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
-    for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
+    for (int k = 0; k < numdof; ++k)
+      lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
 
     // tangential plane
-    CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
-    if (dim == 3)
+    CORE::LINALG::SerialDenseMatrix tanplane(numdof, numdof);
+    if (numdof == 3)
     {
       tanplane(0, 0) = 1 - (n[0] * n[0]);
       tanplane(0, 1) = -(n[0] * n[1]);
@@ -235,7 +238,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       tanplane(2, 1) = -(n[2] * n[1]);
       tanplane(2, 2) = 1 - (n[2] * n[2]);
     }
-    else if (dim == 2)
+    else if (numdof == 2)
     {
       tanplane(0, 0) = 1 - (n[0] * n[0]);
       tanplane(0, 1) = -(n[0] * n[1]);
@@ -247,22 +250,22 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       dserror("Error in AssembleTangentForces: Unknown dimension.");
 
     // evaluate traction
-    CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
+    CORE::LINALG::SerialDenseMatrix jumpvec(numdof, 1);
 
-    for (int i = 0; i < dim; i++) jumpvec(i, 0) = cnode->FriData().jump()[i];
+    for (int i = 0; i < numdof; i++) jumpvec(i, 0) = cnode->FriData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
-    CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
+    CORE::LINALG::SerialDenseMatrix temptrac(numdof, 1);
     CORE::LINALG::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
 
     // fill vector tractionold
-    std::vector<double> tractionold(dim);
-    for (int i = 0; i < dim; i++) tractionold[i] = cnode->FriData().tractionold()[i];
+    std::vector<double> tractionold(numdof);
+    for (int i = 0; i < numdof; i++) tractionold[i] = cnode->FriData().tractionold()[i];
 
     // Evaluate trailtraction (tractionold+temptrac in penalty case)
-    std::vector<double> trailtraction(dim);
+    std::vector<double> trailtraction(numdof);
     double magnitude = 0;
-    for (int i = 0; i < dim; i++)
+    for (int i = 0; i < numdof; i++)
     {
       trailtraction[i] = tractionold[i] + temptrac(i, 0);
       magnitude += (trailtraction[i] * trailtraction[i]);
@@ -286,10 +289,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       cnode->FriData().Slip() = false;
 
       // in the stick case, traction is trailtraction
-      for (int i = 0; i < dim; i++) cnode->FriData().traction()[i] = trailtraction[i];
+      for (int i = 0; i < numdof; i++) cnode->FriData().traction()[i] = trailtraction[i];
 
       // compute lagrange multipliers and store into node
-      for (int j = 0; j < dim; ++j)
+      for (int j = 0; j < numdof; ++j)
         cnode->MoData().lm()[j] = n[j] * (-kappa * ppnor * gap) + trailtraction[j];
     }
     else
@@ -298,11 +301,11 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       cnode->FriData().Slip() = true;
 
       // in the slip case, traction is evaluated with a return map algorithm
-      for (int i = 0; i < dim; i++)
+      for (int i = 0; i < numdof; i++)
         cnode->FriData().traction()[i] = maxtantrac / magnitude * trailtraction[i];
 
       // compute lagrange multipliers and store into node
-      for (int j = 0; j < dim; ++j)
+      for (int j = 0; j < numdof; ++j)
         cnode->MoData().lm()[j] =
             n[j] * (-kappa * ppnor * gap) + maxtantrac / magnitude * trailtraction[j];
     }
@@ -320,9 +323,9 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
-      for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+      for (int dimrow = 0; dimrow < numdof; ++dimrow)
       {
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map
           for (colcurr = derivjump[dim].begin(); colcurr != derivjump[dim].end(); ++colcurr)
@@ -338,12 +341,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
-      for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+      for (int dimrow = 0; dimrow < numdof; ++dimrow)
       {
         // loop over all entries of the current derivative map
         for (_colcurr = derivn[dimrow].begin(); _colcurr != derivn[dimrow].end(); ++_colcurr)
         {
-          for (int dim = 0; dim < cnode->NumDof(); ++dim)
+          for (int dim = 0; dim < numdof; ++dim)
           {
             int col = _colcurr->first;
             double val =
@@ -354,12 +357,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       // loop over dimensions
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      for (int dim = 0; dim < numdof; ++dim)
       {
         // loop over all entries of the current derivative map
         for (_colcurr = derivn[dim].begin(); _colcurr != derivn[dim].end(); ++_colcurr)
         {
-          for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+          for (int dimrow = 0; dimrow < numdof; ++dimrow)
           {
             int col = _colcurr->first;
             double val =
@@ -379,9 +382,9 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
-      for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+      for (int dimrow = 0; dimrow < numdof; ++dimrow)
       {
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map
           for (colcurr = derivjump[dim].begin(); colcurr != derivjump[dim].end(); ++colcurr)
@@ -398,12 +401,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
-      for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+      for (int dimrow = 0; dimrow < numdof; ++dimrow)
       {
         // loop over all entries of the current derivative map
         for (_colcurr = derivn[dimrow].begin(); _colcurr != derivn[dimrow].end(); ++_colcurr)
         {
-          for (int dim = 0; dim < cnode->NumDof(); ++dim)
+          for (int dim = 0; dim < numdof; ++dim)
           {
             int col = _colcurr->first;
             double val = -pptan * kappa * (_colcurr->second) * n[dim] *
@@ -413,12 +416,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
         }
       }
       // loop over dimensions
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      for (int dim = 0; dim < numdof; ++dim)
       {
         // loop over all entries of the current derivative map
         for (_colcurr = derivn[dim].begin(); _colcurr != derivn[dim].end(); ++_colcurr)
         {
-          for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+          for (int dimrow = 0; dimrow < numdof; ++dimrow)
           {
             int col = _colcurr->first;
             double val = -pptan * kappa * (_colcurr->second) * n[dimrow] *
@@ -432,7 +435,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       std::map<int, double>& derivg = cnode->CoData().GetDerivG();
       std::map<int, double>::iterator gcurr;
 
-      for (int j = 0; j < cnode->NumDof(); ++j)
+      for (int j = 0; j < numdof; ++j)
       {
         for (gcurr = derivg.begin(); gcurr != derivg.end(); ++gcurr)
         {
@@ -443,20 +446,20 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 
       /******************** tanplane.jump.maxtantrac/deriv(magnitude) ***/
       // vector double temp
-      std::vector<double> temp(cnode->NumDof());
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      std::vector<double> temp(numdof);
+      for (int dim = 0; dim < numdof; ++dim)
         temp[dim] = -maxtantrac / (magnitude * magnitude) * trailtraction[dim];
 
       // loop over dimensions
-      for (int dimout = 0; dimout < cnode->NumDof(); ++dimout)
+      for (int dimout = 0; dimout < numdof; ++dimout)
       {
         double traction = 0;
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
           traction += tanplane(dimout, dim) * cnode->FriData().jump()[dim] * kappa * pptan;
 
         traction += tractionold[dimout];
 
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map
           for (colcurr = derivjump[dim].begin(); colcurr != derivjump[dim].end(); ++colcurr)
@@ -465,7 +468,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
             double val =
                 tanplane(dimout, dim) * pptan * kappa * (colcurr->second) * traction / magnitude;
 
-            for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+            for (int dimrow = 0; dimrow < numdof; ++dimrow)
             {
               double val1 = val * temp[dimrow];
               cnode->AddDerivZValue(dimrow, col, val1);
@@ -475,10 +478,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       // loop over dimensions
-      for (int dimout = 0; dimout < cnode->NumDof(); ++dimout)
+      for (int dimout = 0; dimout < numdof; ++dimout)
       {
         double traction = 0;
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
           traction += tanplane(dimout, dim) * cnode->FriData().jump()[dim] * kappa * pptan;
 
         traction += tractionold[dimout];
@@ -488,11 +491,11 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
         {
           int col = _colcurr->first;
 
-          for (int dim = 0; dim < cnode->NumDof(); ++dim)
+          for (int dim = 0; dim < numdof; ++dim)
           {
             double val = -_colcurr->second * n[dim] * cnode->FriData().jump()[dim] * traction /
                          magnitude * pptan * kappa;
-            for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+            for (int dimrow = 0; dimrow < numdof; ++dimrow)
             {
               double val1 = val * temp[dimrow];
               cnode->AddDerivZValue(dimrow, col, val1);
@@ -502,15 +505,15 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       // loop over dimensions
-      for (int dimout = 0; dimout < cnode->NumDof(); ++dimout)
+      for (int dimout = 0; dimout < numdof; ++dimout)
       {
         double traction = 0;
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
           traction += tanplane(dimout, dim) * cnode->FriData().jump()[dim] * kappa * pptan;
 
         traction += tractionold[dimout];
 
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map
           for (_colcurr = derivn[dim].begin(); _colcurr != derivn[dim].end(); ++_colcurr)
@@ -520,7 +523,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
             double val = -_colcurr->second * n[dimout] * cnode->FriData().jump()[dim] * traction /
                          magnitude * pptan * kappa;
 
-            for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+            for (int dimrow = 0; dimrow < numdof; ++dimrow)
             {
               double val1 = val * temp[dimrow];
               cnode->AddDerivZValue(dimrow, col, val1);
@@ -532,12 +535,11 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     else
     {
       // clear tractions
-      for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = 0;
+      for (int j = 0; j < numdof; ++j) cnode->MoData().lm()[j] = 0;
       // clear derivz
       cnode->CoData().GetDerivZ().clear();
     }
   }  // loop over active nodes
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -665,11 +667,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
       CORE::GEN::pairedvector<int, double>::iterator _colcurr;
+      const int numdof = cnode->NumDof();
 
       // loop over dimensions
-      for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+      for (int dimrow = 0; dimrow < numdof; ++dimrow)
       {
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map
           for (colcurr = derivjump[dim].begin(); colcurr != derivjump[dim].end(); ++colcurr)
@@ -685,12 +688,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
-      for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+      for (int dimrow = 0; dimrow < numdof; ++dimrow)
       {
         // loop over all entries of the current derivative map
         for (_colcurr = derivn[dimrow].begin(); _colcurr != derivn[dimrow].end(); ++_colcurr)
         {
-          for (int dim = 0; dim < cnode->NumDof(); ++dim)
+          for (int dim = 0; dim < numdof; ++dim)
           {
             int col = _colcurr->first;
             double val =
@@ -702,12 +705,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       // loop over dimensions
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      for (int dim = 0; dim < numdof; ++dim)
       {
         // loop over all entries of the current derivative map
         for (_colcurr = derivn[dim].begin(); _colcurr != derivn[dim].end(); ++_colcurr)
         {
-          for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+          for (int dimrow = 0; dimrow < numdof; ++dimrow)
           {
             int col = _colcurr->first;
             double val =
@@ -726,11 +729,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
       CORE::GEN::pairedvector<int, double>::iterator _colcurr;
+      const int numdof = cnode->NumDof();
 
       // loop over dimensions
-      for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+      for (int dimrow = 0; dimrow < numdof; ++dimrow)
       {
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map
           for (colcurr = derivjump[dim].begin(); colcurr != derivjump[dim].end(); ++colcurr)
@@ -747,12 +751,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
-      for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+      for (int dimrow = 0; dimrow < numdof; ++dimrow)
       {
         // loop over all entries of the current derivative map
         for (_colcurr = derivn[dimrow].begin(); _colcurr != derivn[dimrow].end(); ++_colcurr)
         {
-          for (int dim = 0; dim < cnode->NumDof(); ++dim)
+          for (int dim = 0; dim < numdof; ++dim)
           {
             int col = _colcurr->first;
             double val =
@@ -765,12 +769,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       // loop over dimensions
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      for (int dim = 0; dim < numdof; ++dim)
       {
         // loop over all entries of the current derivative map
         for (_colcurr = derivn[dim].begin(); _colcurr != derivn[dim].end(); ++_colcurr)
         {
-          for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+          for (int dimrow = 0; dimrow < numdof; ++dimrow)
           {
             int col = _colcurr->first;
             double val =
@@ -786,7 +790,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       std::map<int, double>& derivg = cnode->CoData().GetDerivG();
       std::map<int, double>::iterator gcurr;
 
-      for (int j = 0; j < cnode->NumDof(); ++j)
+      for (int j = 0; j < numdof; ++j)
       {
         for (gcurr = derivg.begin(); gcurr != derivg.end(); ++gcurr)
         {
@@ -795,11 +799,11 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
         }
       }
 
-      for (int j = 0; j < cnode->NumDof(); ++j)
+      for (int j = 0; j < numdof; ++j)
       {
         for (_colcurr = (derivn[j]).begin(); _colcurr != (derivn[j]).end(); ++_colcurr)
         {
-          for (int k = 0; k < cnode->NumDof(); ++k)
+          for (int k = 0; k < numdof; ++k)
           {
             double val =
                 frcoeff * (_colcurr->second) * lmuzawa(j, 0) * trailtraction[k] / magnitude;
@@ -810,19 +814,19 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
 
       /******************** tanplane.jump.maxtantrac/deriv(magnitude) ***/
       // vector double temp
-      std::vector<double> temp(cnode->NumDof());
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      std::vector<double> temp(numdof);
+      for (int dim = 0; dim < numdof; ++dim)
         temp[dim] = -maxtantrac / (magnitude * magnitude) * trailtraction[dim];
 
       // loop over dimensions
-      for (int dimout = 0; dimout < cnode->NumDof(); ++dimout)
+      for (int dimout = 0; dimout < numdof; ++dimout)
       {
         double traction = 0;
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
           traction += tanplane(dimout, dim) *
                       (lmuzawa(dim, 0) + cnode->FriData().jump()[dim] * kappa * pptan);
 
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map
           for (colcurr = derivjump[dim].begin(); colcurr != derivjump[dim].end(); ++colcurr)
@@ -831,7 +835,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
             double val =
                 tanplane(dimout, dim) * pptan * kappa * (colcurr->second) * traction / magnitude;
 
-            for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+            for (int dimrow = 0; dimrow < numdof; ++dimrow)
             {
               double val1 = val * temp[dimrow];
               cnode->AddDerivZValue(dimrow, col, val1);
@@ -841,10 +845,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       // loop over dimensions
-      for (int dimout = 0; dimout < cnode->NumDof(); ++dimout)
+      for (int dimout = 0; dimout < numdof; ++dimout)
       {
         double traction = 0;
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
           traction += tanplane(dimout, dim) *
                       (lmuzawa(dim, 0) + cnode->FriData().jump()[dim] * kappa * pptan);
 
@@ -853,12 +857,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
         {
           int col = _colcurr->first;
 
-          for (int dim = 0; dim < cnode->NumDof(); ++dim)
+          for (int dim = 0; dim < numdof; ++dim)
           {
             double val = -_colcurr->second * n[dim] *
                          (lmuzawa(dim, 0) + cnode->FriData().jump()[dim] * pptan * kappa) *
                          traction / magnitude;
-            for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+            for (int dimrow = 0; dimrow < numdof; ++dimrow)
             {
               double val1 = val * temp[dimrow];
               cnode->AddDerivZValue(dimrow, col, val1);
@@ -868,14 +872,14 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       // loop over dimensions
-      for (int dimout = 0; dimout < cnode->NumDof(); ++dimout)
+      for (int dimout = 0; dimout < numdof; ++dimout)
       {
         double traction = 0;
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
           traction += tanplane(dimout, dim) *
                       (lmuzawa(dim, 0) + cnode->FriData().jump()[dim] * kappa * pptan);
 
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map
           for (_colcurr = derivn[dim].begin(); _colcurr != derivn[dim].end(); ++_colcurr)
@@ -885,7 +889,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
                          (lmuzawa(dim, 0) + cnode->FriData().jump()[dim] * pptan * kappa) *
                          traction / magnitude;
 
-            for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
+            for (int dimrow = 0; dimrow < numdof; ++dimrow)
             {
               double val1 = val * temp[dimrow];
               cnode->AddDerivZValue(dimrow, col, val1);
@@ -902,7 +906,6 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       cnode->CoData().GetDerivZ().clear();
     }
   }  // loop over active nodes
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -976,7 +979,8 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    auto* cnode = dynamic_cast<CoNode*>(node);
+    const int numdof = cnode->NumDof();
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleTN: Node ownership inconsistency!");
 
@@ -991,12 +995,12 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
           std::vector<int> lmrowownerT(cnode->NumDof());
           std::vector<int> lmcol(cnode->NumDof());
 
-          CORE::LINALG::SerialDenseMatrix Tnode(cnode->NumDof(), cnode->NumDof());
-          for (int i = 0; i < cnode->NumDof(); ++i)
+          CORE::LINALG::SerialDenseMatrix Tnode(numdof, numdof);
+          for (int i = 0; i < numdof; ++i)
           {
             lmrowT[i] = cnode->Dofs()[i];
             lmrowownerT[i] = cnode->Owner();
-            for (int j = 0; j < cnode->NumDof(); ++j)
+            for (int j = 0; j < numdof; ++j)
             {
               lmcol[j] = cnode->Dofs()[j];
               Tnode(i, j) = cnode->CoData().txi()[i] * cnode->CoData().txi()[j];
@@ -1010,13 +1014,13 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
           std::vector<int> lmrowownerT(cnode->NumDof());
           std::vector<int> lmcol(cnode->NumDof());
 
-          CORE::LINALG::SerialDenseMatrix Tnode(cnode->NumDof(), cnode->NumDof());
+          CORE::LINALG::SerialDenseMatrix Tnode(numdof, numdof);
 
-          for (int i = 0; i < cnode->NumDof(); ++i)
+          for (int i = 0; i < numdof; ++i)
           {
             lmrowT[i] = cnode->Dofs()[i];
             lmrowownerT[i] = cnode->Owner();
-            for (int j = 0; j < cnode->NumDof(); ++j)
+            for (int j = 0; j < numdof; ++j)
             {
               lmcol[j] = cnode->Dofs()[j];
               Tnode(i, j) = cnode->CoData().txi()[i] * cnode->CoData().txi()[j] +
@@ -1033,7 +1037,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
         if (Dim() == 2)
         {
           // prepare assembly
-          int colsize = cnode->NumDof();
+          int colsize = numdof;
           std::vector<int> lmrowT(1);
           std::vector<int> lmrowownerT(1);
           std::vector<int> lmcol(colsize);
@@ -1057,7 +1061,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
         else if (Dim() == 3)
         {
           // prepare assembly
-          int colsize = cnode->NumDof();
+          int colsize = numdof;
           std::vector<int> lmrowT(2);
           std::vector<int> lmrowownerT(2);
           std::vector<int> lmcol(colsize);
@@ -1093,13 +1097,11 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
       int row = activen_->GID(i);
 
       // add normal to corresponding row in global matrix
-      for (int k = 0; k < cnode->NumDof(); ++k)
+      for (int k = 0; k < numdof; ++k)
         nglobal->Assemble(
             nodalnormal[k], row, cnode->Dofs()[k]);  // use the first dof for normal direction!!!
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1118,7 +1120,7 @@ void CONTACT::CoInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    auto* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
 
@@ -1143,8 +1145,6 @@ void CONTACT::CoInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
         sglobal.Assemble(val, row, col);
     }
   }  // for (int i=0;i<activenodes_->NumMyElements();++i)
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -5274,7 +5274,7 @@ void CONTACT::CoInterface::AssembleCoupLinD(
         dserror("Mortar Nodes on interface must have same number of dofs!");
 
       // inner product D_{jk,c} * z_j for index j
-      for (int prodj = 0; prodj < (cnode->NumDof()); ++prodj)
+      for (int prodj = 0; prodj < cnode->NumDof(); ++prodj)
       {
         int row = csnode->Dofs()[prodj];
         std::map<int, double>::iterator scolcurr = thisdderiv.begin();
@@ -5353,7 +5353,7 @@ void CONTACT::CoInterface::AssembleCoupLinM(
         dserror("Mortar Nodes on interface must have same number of dofs!");
 
       // inner product M_{jl,c} * z_j for index j
-      for (int prodj = 0; prodj < (cmnode->NumDof()); ++prodj)
+      for (int prodj = 0; prodj < cmnode->NumDof(); ++prodj)
       {
         int row = cmnode->Dofs()[prodj];
         std::map<int, double>::iterator mcolcurr = thismderiv.begin();
@@ -5388,3 +5388,4 @@ void CONTACT::CoInterface::AssembleCoupLinM(
     /*********************************************************************/
   }
 }
+BACI_NAMESPACE_CLOSE

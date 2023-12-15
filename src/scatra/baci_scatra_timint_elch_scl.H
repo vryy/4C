@@ -15,6 +15,8 @@
 #include "baci_io_runtime_csv_writer.H"
 #include "baci_scatra_timint_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
@@ -55,7 +57,7 @@ namespace SCATRA
 
     void NonlinearSolve() override;
 
-    void Output(int num) override;
+    void CheckAndWriteOutputAndRestart() override;
 
     void PrepareTimeLoop() override;
 
@@ -67,7 +69,7 @@ namespace SCATRA
 
     void TestResults() override;
 
-    void Update(int num) override;
+    void Update() override;
 
    protected:
     void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
@@ -151,4 +153,6 @@ namespace SCATRA
     Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix_elch_scl_;
   };
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif

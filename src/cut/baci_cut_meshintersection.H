@@ -11,6 +11,7 @@
 
 #include "baci_cut_parentintersection.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -52,19 +53,18 @@ namespace CORE::GEO
 
       /// add this background element if it falls within the bounding box of cut mesh
       ElementHandle* AddElement(int eid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
+          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype,
           const double* lsv = nullptr);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
-      SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
-          ::DRT::Element::DiscretizationType distype, int mi = 0);
+      SideHandle* AddCutSide(
+          int sid, const std::vector<int>& nids, CORE::FE::CellType distype, int mi = 0);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
       SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
-          int mi = 0);
+          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, int mi = 0);
 
       /// build the static search tree for the collision detection in the self cut
       void BuildSelfCutTree();
@@ -85,13 +85,13 @@ namespace CORE::GEO
                                                    // can be activated, otherwise this will fail!
 
       /// handles cut sides which cut each other
-      void Cut_SelfCut(bool include_inner, bool screenoutput = true);
+      void Cut_SelfCut(bool include_inner, bool screenoutput = true) override;
 
       /// detects if a side of the cut mesh possibly collides with an element of the background mesh
-      void Cut_CollisionDetection(bool include_inner, bool screenoutput = true);
+      void Cut_CollisionDetection(bool include_inner, bool screenoutput = true) override;
 
       /// Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
-      void Cut_MeshIntersection(bool screenoutput = true);
+      void Cut_MeshIntersection(bool screenoutput = true) override;
 
       /// Routine for deciding the inside-outside position. This creates the dofset data, just
       /// serial
@@ -112,7 +112,8 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// status
-      void Status(INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation);
+      void Status(
+          INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation) override;
 
      private:
       /*========================================================================*/
@@ -124,5 +125,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

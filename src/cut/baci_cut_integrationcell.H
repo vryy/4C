@@ -13,6 +13,8 @@
 
 #include "baci_cut_point.H"  // necessary due to enumerator
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -32,15 +34,14 @@ namespace CORE::GEO
       {
       }
 
-      virtual ~IntegrationCell() {}
-
+      virtual ~IntegrationCell() = default;
       /// get the dimension of the integration cell
       virtual unsigned Dim() const = 0;
 
       /// get the shape of the integration cell
-      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
+      virtual CORE::FE::CellType Shape() const = 0;
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const = 0;
+      virtual int CubatureDegree(CORE::FE::CellType elementshape) const = 0;
 
       void DumpGmsh(std::ofstream& file, int* value = nullptr);
 
@@ -60,7 +61,7 @@ namespace CORE::GEO
 
       bool Contains(CORE::LINALG::Matrix<3, 1>& x);
 
-      template <unsigned probdim, ::DRT::Element::DiscretizationType celltype>
+      template <unsigned probdim, CORE::FE::CellType celltype>
       bool Contains(CORE::LINALG::Matrix<probdim, 1>& x);
 
 
@@ -87,14 +88,11 @@ namespace CORE::GEO
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const
-      {
-        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::line2>::dim;
-      };
+      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::line2>; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::line2; }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::line2; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(CORE::FE::CellType elementshape) const override;
 
     };  // class Line2IntegrationCell
 
@@ -107,14 +105,11 @@ namespace CORE::GEO
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const
-      {
-        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::tri3>::dim;
-      };
+      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::tri3>; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::tri3; }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tri3; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(CORE::FE::CellType elementshape) const override;
 
     };  // class Tri3IntegrationCell
 
@@ -128,14 +123,11 @@ namespace CORE::GEO
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const
-      {
-        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::quad4>::dim;
-      };
+      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::quad4>; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::quad4; }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::quad4; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(CORE::FE::CellType elementshape) const override;
 
     };  // class Tri3IntegrationCell
 
@@ -150,11 +142,11 @@ namespace CORE::GEO
       {
       }
 
-      virtual unsigned Dim() const { return 3; };
+      unsigned Dim() const override { return 3; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::hex8; }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::hex8; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(CORE::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
 
@@ -172,11 +164,11 @@ namespace CORE::GEO
       {
       }
 
-      virtual unsigned Dim() const { return 3; };
+      unsigned Dim() const override { return 3; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::tet4; }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tet4; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(CORE::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
     };
@@ -193,11 +185,11 @@ namespace CORE::GEO
       {
       }
 
-      virtual unsigned Dim() const { return 3; };
+      unsigned Dim() const override { return 3; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::wedge6; }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::wedge6; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(CORE::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
      private:
@@ -215,11 +207,11 @@ namespace CORE::GEO
       {
       }
 
-      virtual unsigned Dim() const { return 3; };
+      unsigned Dim() const override { return 3; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::pyramid5; }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::pyramid5; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(CORE::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
      private:
@@ -227,5 +219,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

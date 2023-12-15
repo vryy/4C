@@ -35,6 +35,8 @@ const int Hex20_BaciToEnsightGold[20] = {
 EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
     : PostWriterBase(field, filename), nodeidgiven_(true), writecp_(false)
 {
+  using namespace BACI;
+
   // initialize proc0map_ correctly
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
@@ -59,24 +61,24 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   // it includes only strings for cell types known in ensight
   // you need to manually switch to other types distypes before querying this map
   distype2ensightstring_.clear();
-  distype2ensightstring_[DRT::Element::point1] = "point";
-  distype2ensightstring_[DRT::Element::line2] = "bar2";
-  distype2ensightstring_[DRT::Element::line3] = "bar2";  //"bar3";
-  distype2ensightstring_[DRT::Element::hex8] = "hexa8";
-  distype2ensightstring_[DRT::Element::hex20] = "hexa20";
-  distype2ensightstring_[DRT::Element::tet4] = "tetra4";
-  distype2ensightstring_[DRT::Element::tet10] = "tetra10";
-  distype2ensightstring_[DRT::Element::nurbs8] = "hexa8";
-  distype2ensightstring_[DRT::Element::nurbs27] = "hexa8";
-  distype2ensightstring_[DRT::Element::nurbs4] = "quad4";
-  distype2ensightstring_[DRT::Element::nurbs9] = "quad4";
-  distype2ensightstring_[DRT::Element::quad4] = "quad4";
-  distype2ensightstring_[DRT::Element::quad8] = "quad8";
-  distype2ensightstring_[DRT::Element::tri3] = "tria3";
-  distype2ensightstring_[DRT::Element::tri6] = "tria6";
-  distype2ensightstring_[DRT::Element::wedge6] = "penta6";
-  distype2ensightstring_[DRT::Element::wedge15] = "penta15";
-  distype2ensightstring_[DRT::Element::pyramid5] = "pyramid5";
+  distype2ensightstring_[CORE::FE::CellType::point1] = "point";
+  distype2ensightstring_[CORE::FE::CellType::line2] = "bar2";
+  distype2ensightstring_[CORE::FE::CellType::line3] = "bar2";  //"bar3";
+  distype2ensightstring_[CORE::FE::CellType::hex8] = "hexa8";
+  distype2ensightstring_[CORE::FE::CellType::hex20] = "hexa20";
+  distype2ensightstring_[CORE::FE::CellType::tet4] = "tetra4";
+  distype2ensightstring_[CORE::FE::CellType::tet10] = "tetra10";
+  distype2ensightstring_[CORE::FE::CellType::nurbs8] = "hexa8";
+  distype2ensightstring_[CORE::FE::CellType::nurbs27] = "hexa8";
+  distype2ensightstring_[CORE::FE::CellType::nurbs4] = "quad4";
+  distype2ensightstring_[CORE::FE::CellType::nurbs9] = "quad4";
+  distype2ensightstring_[CORE::FE::CellType::quad4] = "quad4";
+  distype2ensightstring_[CORE::FE::CellType::quad8] = "quad8";
+  distype2ensightstring_[CORE::FE::CellType::tri3] = "tria3";
+  distype2ensightstring_[CORE::FE::CellType::tri6] = "tria6";
+  distype2ensightstring_[CORE::FE::CellType::wedge6] = "penta6";
+  distype2ensightstring_[CORE::FE::CellType::wedge15] = "penta15";
+  distype2ensightstring_[CORE::FE::CellType::pyramid5] = "pyramid5";
 }
 
 
@@ -96,7 +98,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
   // for the control points. Here, a new .case file is created which
   // ends with "_cp".
   int iter = 1;
-  if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs)
+  if (field_->problem()->SpatialApproximationType() == BACI::CORE::FE::ShapeFunctionType::nurbs)
     iter++;
 
   // For none-NURBS cases, this loop is just passed through once!
@@ -420,6 +422,8 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string name)
 {
+  using namespace BACI;
+
   std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
@@ -442,7 +446,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs &&
+  if (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
     // cast dis to NurbsDiscretisation
@@ -499,13 +503,15 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
-    std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis)
+    std::ofstream& geofile, const Teuchos::RCP<BACI::DRT::Discretization> dis)
 {
-  ShapeFunctionType distype = field_->problem()->SpatialApproximationType();
+  using namespace BACI;
+
+  CORE::FE::ShapeFunctionType distype = field_->problem()->SpatialApproximationType();
   if (myrank_ == 0)
   {
     std::cout << "(computing) coordinates for a ";
-    std::cout << INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(distype);
+    std::cout << CORE::FE::ShapeFunctionTypeToString(distype);
     std::cout << " approximation\n";
   }
 
@@ -515,13 +521,13 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
 
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_polynomial:
-    case ShapeFunctionType::shapefunction_hdg:
+    case CORE::FE::ShapeFunctionType::polynomial:
+    case CORE::FE::ShapeFunctionType::hdg:
     {
       WriteCoordinatesForPolynomialShapefunctions(geofile, dis, proc0map);
       break;
     }
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       // write real geometry coordinates
       if (!writecp_) WriteCoordinatesForNurbsShapefunctions(geofile, dis, proc0map);
@@ -543,9 +549,12 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
 /*----------------------------------------------------------------------*
   | write node connectivity for every element                  gjb 12/07 |
   *----------------------------------------------------------------------*/
-void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis,
+void EnsightWriter::WriteCells(std::ofstream& geofile,
+    const Teuchos::RCP<BACI::DRT::Discretization> dis,
     const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
+  using namespace BACI;
+
   const Epetra_Map* elementmap = dis->ElementRowMap();
 
   std::vector<int> nodevector;
@@ -560,13 +569,13 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
   NumElePerDisType::const_iterator iter;
   for (iter = numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
   {
-    const DRT::Element::DiscretizationType distypeiter = iter->first;
+    const CORE::FE::CellType distypeiter = iter->first;
     const int ne = GetNumEleOutput(distypeiter, iter->second);
     const std::string ensightCellType = GetEnsightString(distypeiter);
 
     if (myrank_ == 0)
     {
-      std::cout << "writing " << iter->second << " " << DRT::DistypeToString(distypeiter)
+      std::cout << "writing " << iter->second << " " << CORE::FE::CellTypeToString(distypeiter)
                 << " element(s) as " << ne << " " << ensightCellType << " ensight cell(s)..."
                 << std::endl;
       Write(geofile, ensightCellType);
@@ -584,19 +593,20 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
         DRT::Node** const nodes = actele->Nodes();
         switch (actele->Shape())
         {
-          case DRT::Element::point1:
-          case DRT::Element::line2:
-            // case DRT::Element::line3: // Ensight format supports line3, Paraview does not.
-          case DRT::Element::hex8:
-          case DRT::Element::quad4:
-          case DRT::Element::quad8:
-          case DRT::Element::tet4:
-          case DRT::Element::tet10:
-          case DRT::Element::tri3:
-          case DRT::Element::tri6:
-          case DRT::Element::wedge6:
-          case DRT::Element::wedge15:
-          case DRT::Element::pyramid5:
+          case CORE::FE::CellType::point1:
+          case CORE::FE::CellType::line2:
+            // case CORE::FE::CellType::line3: // Ensight format supports line3,
+            // Paraview does not.
+          case CORE::FE::CellType::hex8:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::tet4:
+          case CORE::FE::CellType::tet10:
+          case CORE::FE::CellType::tri3:
+          case CORE::FE::CellType::tri6:
+          case CORE::FE::CellType::wedge6:
+          case CORE::FE::CellType::wedge15:
+          case CORE::FE::CellType::pyramid5:
           {
             // standard case with direct support
             const int numnp = actele->NumNode();
@@ -609,7 +619,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             }
             break;
           }
-          case DRT::Element::hex20:
+          case CORE::FE::CellType::hex20:
           {
             // standard case with direct support
             const int numnp = actele->NumNode();
@@ -622,10 +632,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             }
             break;
           }
-          case DRT::Element::hex16:
+          case CORE::FE::CellType::hex16:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::hex16); ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex16); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->Id()) + 1);
@@ -633,10 +643,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[subhex16map[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::hex18:
+          case CORE::FE::CellType::hex18:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::hex18); ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex18); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[subhex18map[isubele][isubnode]]->Id()) + 1);
@@ -644,10 +654,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[subhex18map[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::hex27:
+          case CORE::FE::CellType::hex27:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::hex27); ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex27); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
@@ -655,10 +665,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::quad9:
+          case CORE::FE::CellType::quad9:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::quad9); ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::quad9); ++isubele)
               for (int isubnode = 0; isubnode < 4; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
@@ -666,10 +676,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::line3:
+          case CORE::FE::CellType::line3:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::line3); ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::line3); ++isubele)
               for (int isubnode = 0; isubnode < 2; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->Id()) + 1);
@@ -677,7 +687,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::nurbs4:
+          case CORE::FE::CellType::nurbs4:
           {
             if (!writecp_)
               WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
@@ -695,14 +705,14 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             }
             break;
           }
-          case DRT::Element::nurbs9:
+          case CORE::FE::CellType::nurbs9:
           {
             if (!writecp_)
               WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
-              for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::quad9); ++isubele)
+              for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::quad9); ++isubele)
                 for (int isubnode = 0; isubnode < 4; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
                     Write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
@@ -711,14 +721,14 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             }
             break;
           }
-          case DRT::Element::nurbs27:
+          case CORE::FE::CellType::nurbs27:
           {
             if (!writecp_)
               WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
-              for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::hex27); ++isubele)
+              for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex27); ++isubele)
                 for (int isubnode = 0; isubnode < 8; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
                     Write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
@@ -751,24 +761,26 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
  \date 12/07
 */
 void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
-    const Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& nodevector,
+    const Teuchos::RCP<BACI::DRT::Discretization> dis, const std::vector<int>& nodevector,
     const Teuchos::RCP<Epetra_Map> proc0map) const
 {
-  // no we have communicate the connectivity infos from proc 1...proc n to proc 0
+  using namespace BACI;
+
+  // now we have communicated the connectivity infos from proc 1...proc n to proc 0
 
   std::vector<char> sblock;  // sending block
   std::vector<char> rblock;  // recieving block
 
   // create an exporter for communication
-  DRT::Exporter exporter(dis->Comm());
+  CORE::COMM::Exporter exporter(dis->Comm());
 
   // pack my node ids into sendbuffer
   sblock.clear();
 
-  DRT::PackBuffer data;
-  DRT::ParObject::AddtoPack(data, nodevector);
+  CORE::COMM::PackBuffer data;
+  CORE::COMM::ParObject::AddtoPack(data, nodevector);
   data.StartPacking();
-  DRT::ParObject::AddtoPack(data, nodevector);
+  CORE::COMM::ParObject::AddtoPack(data, nodevector);
   swap(sblock, data());
 
   // now we start the communication
@@ -812,7 +824,7 @@ void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
       // extract data from recieved package
       while (index < rblock.size())
       {
-        DRT::ParObject::ExtractfromPack(index, rblock, nodeids);
+        CORE::COMM::ParObject::ExtractfromPack(index, rblock, nodeids);
       }
       // compute node lid based on proc0map and write it to file
       for (int i = 0; i < (int)nodeids.size(); ++i)
@@ -839,15 +851,17 @@ void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
  * \date 01/08
  */
 EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
-    const Teuchos::RCP<DRT::Discretization> dis) const
+    const Teuchos::RCP<BACI::DRT::Discretization> dis) const
 {
+  using namespace BACI;
+
   const Epetra_Map* elementmap = dis->ElementRowMap();
 
   NumElePerDisType numElePerDisType;
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     DRT::Element* actele = dis->gElement(elementmap->GID(iele));
-    const DRT::Element::DiscretizationType distype = actele->Shape();
+    const CORE::FE::CellType distype = actele->Shape();
     // update counter for current distype
     numElePerDisType[distype]++;
   }
@@ -855,16 +869,16 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
   // in parallel case we have to sum up the local element distype numbers
 
   // determine maximum number of possible element discretization types
-  DRT::Element::DiscretizationType numeledistypes = DRT::Element::max_distype;
+  auto numeledistypes = static_cast<int>(CORE::FE::CellType::max_distype);
 
   // write the final local numbers into a vector
   std::vector<int> myNumElePerDisType(numeledistypes);
   NumElePerDisType::const_iterator iter;
   for (iter = numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
   {
-    const DRT::Element::DiscretizationType distypeiter = iter->first;
+    const CORE::FE::CellType distypeiter = iter->first;
     const int ne = iter->second;
-    myNumElePerDisType[distypeiter] += ne;
+    myNumElePerDisType[static_cast<int>(distypeiter)] += ne;
   }
 
   // wait for all procs before communication is started
@@ -879,7 +893,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
   for (int i = 0; i < numeledistypes; ++i)
   {
     if (globalnumeleperdistype[i] > 0)  // no entry when we have no element of this type
-      globalNumElePerDisType[DRT::Element::DiscretizationType(i)] = globalnumeleperdistype[i];
+      globalNumElePerDisType[CORE::FE::CellType(i)] = globalnumeleperdistype[i];
   }
 
   return globalNumElePerDisType;
@@ -888,8 +902,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::GetNumEleOutput(
-    const DRT::Element::DiscretizationType distype, const int numele) const
+int EnsightWriter::GetNumEleOutput(const BACI::CORE::FE::CellType distype, const int numele) const
 {
   return GetNumSubEle(distype) * numele;
 }
@@ -897,26 +910,28 @@ int EnsightWriter::GetNumEleOutput(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::GetNumSubEle(const DRT::Element::DiscretizationType distype) const
+int EnsightWriter::GetNumSubEle(const BACI::CORE::FE::CellType distype) const
 {
+  using namespace BACI;
+
   switch (distype)
   {
-    case DRT::Element::hex18:
+    case CORE::FE::CellType::hex18:
       return 4;
       break;
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       return 8;
       break;
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return 8;
       break;
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
       return 4;
       break;
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
       return 4;
       break;
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
       return 2;
       break;
     default:
@@ -928,8 +943,10 @@ int EnsightWriter::GetNumSubEle(const DRT::Element::DiscretizationType distype) 
  * \brief parse all elements and get the global ids of the elements for each distype
  */
 EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
-    const Teuchos::RCP<DRT::Discretization> dis, NumElePerDisType numeleperdistype) const
+    const Teuchos::RCP<BACI::DRT::Discretization> dis, NumElePerDisType numeleperdistype) const
 {
+  using namespace BACI;
+
   const Epetra_Map* elementmap = dis->ElementRowMap();
 
   EleGidPerDisType eleGidPerDisType;
@@ -945,7 +962,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
   {
     const int gid = elementmap->GID(iele);
     DRT::Element* actele = dis->gElement(gid);
-    const DRT::Element::DiscretizationType distype = actele->Shape();
+    const CORE::FE::CellType distype = actele->Shape();
     // update counter for current distype
     eleGidPerDisType[distype].push_back(gid);
   }
@@ -964,15 +981,15 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
     std::vector<char> rblock;  // recieving block
 
     // create an exporter for communication
-    DRT::Exporter exporter(dis->Comm());
+    CORE::COMM::Exporter exporter(dis->Comm());
 
     // pack my element gids of this discretization type into sendbuffer
     sblock.clear();
 
-    DRT::PackBuffer data;
-    DRT::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
+    CORE::COMM::PackBuffer data;
+    CORE::COMM::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
     data.StartPacking();
-    DRT::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
+    CORE::COMM::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
     swap(sblock, data());
 
     // now we start the communication
@@ -1016,7 +1033,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
         // extract data from recieved package
         while (index < rblock.size())
         {
-          DRT::ParObject::ExtractfromPack(index, rblock, elegids);
+          CORE::COMM::ParObject::ExtractfromPack(index, rblock, elegids);
         }
         for (int i = 0; i < (int)elegids.size(); ++i)
         {
@@ -1034,29 +1051,29 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetEnsightString(const DRT::Element::DiscretizationType distype) const
+std::string EnsightWriter::GetEnsightString(const BACI::CORE::FE::CellType distype) const
 {
-  std::map<DRT::Element::DiscretizationType, std::string>::const_iterator entry;
+  using namespace BACI;
+
+  std::map<CORE::FE::CellType, std::string>::const_iterator entry;
   switch (distype)
   {
-    case DRT::Element::hex18:
-      entry = distype2ensightstring_.find(DRT::Element::hex8);
-    case DRT::Element::hex27:
-      entry = distype2ensightstring_.find(DRT::Element::hex8);
+    case CORE::FE::CellType::hex18:
+    case CORE::FE::CellType::hex27:
+      entry = distype2ensightstring_.find(CORE::FE::CellType::hex8);
       break;
-    case DRT::Element::quad9:
-      entry = distype2ensightstring_.find(DRT::Element::quad4);
+    case CORE::FE::CellType::quad9:
+      entry = distype2ensightstring_.find(CORE::FE::CellType::quad4);
       break;
-    case DRT::Element::tet10:
-      entry = distype2ensightstring_.find(DRT::Element::tet10);
+    case CORE::FE::CellType::tet10:
+      entry = distype2ensightstring_.find(CORE::FE::CellType::tet10);
       break;
     default:
       entry = distype2ensightstring_.find(distype);
       break;
   }
   if (entry == distype2ensightstring_.end())
-    dserror("No entry in distype2ensightstring_ found for DRT::Element::DiscretizationType = '%d'.",
-        distype);
+    dserror("No entry in distype2ensightstring_ found for CORE::FE::CellType = '%d'.", distype);
   return entry->second;
 }
 
@@ -1640,6 +1657,8 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
     const std::string& groupname, const std::string& name, const int numdf, const int frompid,
     const bool fillzeros) const
 {
+  using namespace BACI;
+
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -1693,16 +1712,15 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   const int offset = min_gid_glob_epetradatamap - min_gid_glob_dofrowmap;
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs &&
+  if (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
     WriteDofResultStepForNurbs(file, numdf, data, name, offset);
   }
   else if (field_->problem()->SpatialApproximationType() ==
-               ShapeFunctionType::shapefunction_polynomial or
-           field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
-           (field_->problem()->SpatialApproximationType() ==
-                   ShapeFunctionType::shapefunction_nurbs &&
+               CORE::FE::ShapeFunctionType::polynomial or
+           field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg or
+           (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
                writecp_))
   {
     //------------------------------------------------------
@@ -1855,6 +1873,8 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
+  using namespace BACI;
+
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -1870,16 +1890,15 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   const Epetra_BlockMap& datamap = data->Map();
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs &&
+  if (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
     WriteNodalResultStepForNurbs(file, numdf, data, name, 0);
   }
   else if (field_->problem()->SpatialApproximationType() ==
-               ShapeFunctionType::shapefunction_polynomial or
-           field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
-           (field_->problem()->SpatialApproximationType() ==
-                   ShapeFunctionType::shapefunction_nurbs &&
+               CORE::FE::ShapeFunctionType::polynomial or
+           field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg or
+           (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
                writecp_))
   {
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
@@ -1947,6 +1966,8 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdof, const int from) const
 {
+  using namespace BACI;
+
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -2118,6 +2139,8 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
+  using namespace BACI;
+
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -2477,8 +2500,10 @@ std::string EnsightWriter::GetFileSectionStringFromFilesets(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    const Teuchos::RCP<BACI::DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
+  using namespace BACI;
+
   // refcountpointer to vector of all coordinates
   // distributed among all procs
   Teuchos::RCP<Epetra_MultiVector> nodecoords;

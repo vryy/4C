@@ -26,6 +26,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
@@ -66,23 +68,21 @@ namespace FPSI
     explicit MonolithicBase(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
-    //! dtor
-    virtual ~MonolithicBase();
 
     //! read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! calculate stresses, strains, energies
     virtual void PrepareOutput(bool force_prepare);
 
     //! Output routine accounting for Lagrange multiplier at the interface
-    virtual void Output();
+    void Output() override;
 
     //! @name access sub-fields
     const Teuchos::RCP<POROELAST::Monolithic>& PoroField() { return poroelast_subproblem_; };
@@ -179,13 +179,13 @@ namespace FPSI
         const Teuchos::ParameterList& poroelastdynparams);
 
     //! setup fpsi system
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! setup fsi part of the system
     virtual void SetupSystem_FSI();
 
     //! perform time loop
-    void Timeloop();
+    void Timeloop() override;
 
     //! prepare time loop
     void PrepareTimeloop();
@@ -194,7 +194,7 @@ namespace FPSI
     virtual void TimeStep();
 
     //! perform result test
-    void TestResults(const Epetra_Comm& comm);
+    void TestResults(const Epetra_Comm& comm) override;
 
     //! build RHS vector from sub fields
     virtual void SetupRHS(bool firstcall = false) = 0;
@@ -208,7 +208,7 @@ namespace FPSI
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// setup solver
-    virtual void SetupSolver();
+    void SetupSolver() override;
 
     /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
     virtual void RecoverLagrangeMultiplier()
@@ -389,10 +389,8 @@ namespace FPSI
     //! iteration step
     int iter_;
 
-    int printscreen_;    ///> print infos to standard out every printscreen_ steps
-    bool printiter_;     ///> print intermediate iterations during solution
-    bool printerrfile_;  ///>print infos to error file #errfile_
-    FILE* errfile_;      ///> error file handle
+    int printscreen_;  ///> print infos to standard out every printscreen_ steps
+    bool printiter_;   ///> print intermediate iterations during solution
     //! timer for solution technique
     Teuchos::Time timer_;
 
@@ -409,5 +407,7 @@ namespace FPSI
   // class Monolithic
 
 }  // namespace FPSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FPSI_MONOLITHIC_H

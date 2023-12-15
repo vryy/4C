@@ -17,6 +17,8 @@
 
 #include <Epetra_Operator.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -62,11 +64,6 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
-    /*!
-      \brief Destructor
-
-     */
-    virtual ~CoTSILagrangeStrategy(){};
 
     //! @name Access methods
 
@@ -87,13 +84,13 @@ namespace CONTACT
       \param statetype (in): enumerator defining which quantity to set (see mortar_interface.H for
       an overview) \param vec (in): current global state of the quantity defined by statetype
      */
-    virtual void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec);
+    void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
 
     // Overload CONTACT::CoAbstractStrategy::ApplyForceStiffCmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
-    virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
-        const int step, const int iter, bool predictor)
+        const int step, const int iter, bool predictor) override
     {
       // structure single-field predictors (e.g.TangDis) may evaluate the structural contact part
       if (predictor) CoAbstractStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
@@ -136,7 +133,7 @@ namespace CONTACT
      \param dis (in):  current displacements (-> old displacements)
 
      */
-    virtual void Update(Teuchos::RCP<const Epetra_Vector> dis);
+    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
      \brief Set time integration parameter from Thermo time integration
@@ -153,8 +150,8 @@ namespace CONTACT
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
-        bool forcedrestart = false) const;
+    void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+        bool forcedrestart = false) const override;
 
     /*!
     \brief Perform a write restart
@@ -165,7 +162,7 @@ namespace CONTACT
 
     */
     void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
-        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
+        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
     void SetCoupling(Teuchos::RCP<CORE::ADAPTER::Coupling> coupST) { coupST_ = coupST; };
 
@@ -226,5 +223,7 @@ namespace CONTACT
   }  // namespace UTILS
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_TSI_LAGRANGE_STRATEGY_H

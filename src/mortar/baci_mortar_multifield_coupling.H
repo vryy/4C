@@ -15,6 +15,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace CORE::LINALG
 {
@@ -34,8 +36,6 @@ namespace MORTAR
     /// c-tor
     MultiFieldCoupling(){};
 
-    /// d-tor
-    ~MultiFieldCoupling(){};
 
     /// add a new discretization to perform coupling on
     void PushBackCoupling(const Teuchos::RCP<DRT::Discretization>& dis,  ///< discretization
@@ -47,7 +47,7 @@ namespace MORTAR
     void CondenseMatrix(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat);
 
     /// Perform condensation in the right-hand side
-    void CondenseRhs(Teuchos::RCP<Epetra_Vector>& mat);
+    void CondenseRhs(Teuchos::RCP<Epetra_Vector>& rhs);
 
     /// recover condensed primal slave-sided dofs
     void RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr);
@@ -58,5 +58,7 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

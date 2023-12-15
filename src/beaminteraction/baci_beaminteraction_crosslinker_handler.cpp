@@ -20,6 +20,7 @@
 
 #include <unordered_set>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -50,7 +51,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::DistributeLinkerToBins(
   for (int lid = 0; lid < linkerrowmap->NumMyElements(); ++lid)
   {
     DRT::Node* node = binstrategy_->BinDiscret()->gNode(linkerrowmap->GID(lid));
-    const double* currpos = node->X();
+    const double* currpos = node->X().data();
     PlaceNodeCorrectly(Teuchos::rcp(node, false), currpos, homelesslinker);
   }
 
@@ -85,7 +86,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
   const int torank = (myrank + 1) % numproc;                      // to
   const int fromrank = (myrank + numproc - 1) % numproc;          // from
 
-  DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  CORE::COMM::Exporter exporter(binstrategy_->BinDiscret()->Comm());
 
   for (int irobin = 0; irobin < numproc; ++irobin)
   {
@@ -94,7 +95,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
 
     // ---- pack data for sending -----
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       for (std::list<Teuchos::RCP<DRT::Node>>::const_iterator currlinker = homelesslinker.begin();
            currlinker != homelesslinker.end(); ++currlinker)
       {
@@ -136,14 +137,14 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
       while (index < rdata.size())
       {
         std::vector<char> data;
-        DRT::ParObject::ExtractfromPack(index, rdata, data);
+        CORE::COMM::ParObject::ExtractfromPack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
-        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+        Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
         Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
         if (node == Teuchos::null) dserror("Received object is not a node");
 
         // process received linker
-        const double* currpos = node->X();
+        const double* currpos = node->X().data();
         PlaceNodeCorrectly(node, currpos, homelesslinker);
       }
     }
@@ -185,7 +186,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
   std::list<Teuchos::RCP<DRT::Node>>::const_iterator hlp;
   for (hlp = homelesslinker.begin(); hlp != homelesslinker.end(); ++hlp)
   {
-    const int binId = binstrategy_->ConvertPosToGid((*hlp)->X());
+    const int binId = binstrategy_->ConvertPosToGid((*hlp)->X().data());
     targetbinIdlist.push_back(binId);
   }
 
@@ -225,7 +226,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
     const int targetproc = pidlist[iter];
     if (targetproc != -1)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       iterhomelesslinker->Pack(data);
       data.StartPacking();
       iterhomelesslinker->Pack(data);
@@ -252,7 +253,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
   binstrategy_->BinDiscret()->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
   // ---- send ----
-  DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  CORE::COMM::Exporter exporter(binstrategy_->BinDiscret()->Comm());
   const int length = sdata.size();
   std::vector<MPI_Request> request(length);
   int tag = 0;
@@ -296,7 +297,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
   int binId, binowner;
   for (hlp = homelesslinker.begin(); hlp != homelesslinker.end(); ++hlp)
   {
-    binId = binstrategy_->ConvertPosToGid((*hlp)->X());
+    binId = binstrategy_->ConvertPosToGid((*hlp)->X().data());
     if (binId == -1)
     {
       binowner = -1;
@@ -330,7 +331,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
       std::list<Teuchos::RCP<DRT::Node>>::const_iterator iter;
       for (iter = p->second.begin(); iter != p->second.end(); ++iter)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         (*iter)->Pack(data);
         data.StartPacking();
         (*iter)->Pack(data);
@@ -352,7 +353,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
   }
 
   // ---- send ----
-  DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  CORE::COMM::Exporter exporter(binstrategy_->BinDiscret()->Comm());
   const int length = sdata.size();
   std::vector<MPI_Request> request(length);
   int tag = 0;
@@ -393,8 +394,8 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(
-    int const numrec, DRT::Exporter& exporter, std::list<Teuchos::RCP<DRT::Node>>& homelesslinker)
+void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(int const numrec,
+    CORE::COMM::Exporter& exporter, std::list<Teuchos::RCP<DRT::Node>>& homelesslinker)
 {
   // ---- receive ----
   for (int rec = 0; rec < numrec; ++rec)
@@ -413,14 +414,14 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(
       while (index < rdata.size())
       {
         std::vector<char> data;
-        DRT::ParObject::ExtractfromPack(index, rdata, data);
+        CORE::COMM::ParObject::ExtractfromPack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
-        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+        Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
         Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
         if (node == Teuchos::null) dserror("Received object is not a node");
 
         // process received linker
-        const double* currpos = node->X();
+        const double* currpos = node->X().data();
         PlaceNodeCorrectly(node, currpos, homelesslinker);
         if (homelesslinker.size())
           dserror(
@@ -654,3 +655,5 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::GetNeighbouringBinsOfLinkerContain
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

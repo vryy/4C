@@ -16,6 +16,8 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -28,26 +30,24 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntBDF2();
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief Print information about current time step to screen
 
     */
-    virtual void PrintTimeStepInfo();
+    void PrintTimeStepInfo() override;
 
     /*!
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
 
     */
-    virtual void SetTheta();
+    void SetTheta() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -73,45 +73,44 @@ namespace FLD
 
 
     */
-    virtual void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /*!
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    virtual void SetStateTimInt();
+    void SetStateTimInt() override;
 
     /*!
     \brief Calculate time derivatives for
            stationary/one-step-theta/BDF2/af-generalized-alpha time integration
            for incompressible and low-Mach-number flow
     */
-    virtual void CalculateAcceleration(
-        const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at     n+1
+    void CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
         const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
         const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
         const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
         const Teuchos::RCP<Epetra_Vector> accnp         ///< acceleration at n+1
-    );
+        ) override;
 
     /*!
     \brief Set gamma to a value
 
     */
-    virtual void SetGamma(Teuchos::ParameterList& eleparams);
+    void SetGamma(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Scale separation
 
     */
-    virtual void Sep_Multiply();
+    void Sep_Multiply() override;
 
     /*!
     \brief Output of filtered velocity
 
     */
-    virtual void OutputofFilteredVel(
-        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec);
+    void OutputofFilteredVel(
+        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
 
     /*!
 
@@ -120,28 +119,28 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void SetElementTimeParameter();
+    void SetElementTimeParameter() override;
 
     /*!
     \brief return scheme-specific time integration parameter
 
     */
-    virtual double TimIntParam() const { return 0.0; }
+    double TimIntParam() const override { return 0.0; }
 
     /*!
     \brief return scaling factor for the residual
 
     */
-    virtual double ResidualScaling() const { return 1.0 / (theta_ * dta_); }
+    double ResidualScaling() const override { return 1.0 / (theta_ * dta_); }
 
     //! @name Time Step Size Adaptivity
     //@{
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const { return 2; };
+    int MethodOrderOfAccuracyVel() const override { return 2; };
 
     //! Give local order of accuracy of pressure part
-    virtual int MethodOrderOfAccuracyPres() const { return 2; };
+    int MethodOrderOfAccuracyPres() const override { return 2; };
 
     /*! \brief Return linear error coefficient of velocity
      *
@@ -155,7 +154,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 04/2015
      */
-    virtual double MethodLinErrCoeffVel() const;
+    double MethodLinErrCoeffVel() const override;
 
     //@}
 
@@ -167,7 +166,7 @@ namespace FLD
     \brief velocity required for evaluation of related quantities required on element level
 
     */
-    virtual Teuchos::RCP<const Epetra_Vector> EvaluationVel() { return velnp_; };
+    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return velnp_; };
 
 
    private:
@@ -178,5 +177,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_BDF2_H

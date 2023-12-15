@@ -17,7 +17,6 @@ ENV LC_ALL en_US.UTF-8
 RUN apt-get update && apt-get install -y \
       build-essential \
       ccache \
-      cmake \
       ffmpeg \
       git \
       libglu1-mesa \ 
@@ -46,7 +45,8 @@ RUN apt-get update && apt-get install -y \
       libopenmpi-dev \
       libparmetis-dev \
       metis \
-      ninja-build
+      ninja-build \
+      libyaml-dev
 
 # Create directory for dependencies
 ARG NPROCS=12
@@ -56,22 +56,22 @@ RUN mkdir -p ${INSTALL_DIR}
 
 COPY dependencies /dependencies
 # Install cmake
-RUN /dependencies/cmake/install.sh ${INSTALL_DIR}
+RUN /dependencies/current/cmake/install.sh /usr/local
 
 # Install SuiteSparse 5.4.0
-RUN /dependencies/suitesparse/install.sh ${INSTALL_DIR}
+RUN /dependencies/current/suitesparse/install.sh ${INSTALL_DIR}
 
 # Install superLU_dist 2.5
-RUN /dependencies/superlu_dist/install.sh ${INSTALL_DIR}
+RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
 
 # Install qhull 2012.1
-RUN /dependencies/qhull/install.sh ${INSTALL_DIR}
+RUN /dependencies/current/qhull/install.sh ${INSTALL_DIR}
 
  # Install CLN 1.3.4
-RUN /dependencies/cln/install.sh ${INSTALL_DIR}
+RUN /dependencies/current/cln/install.sh ${INSTALL_DIR}
 
 # Install Trilinos 2022_Q1
-RUN /dependencies/trilinos/install.sh ${INSTALL_DIR}
+RUN /dependencies/current/trilinos/install.sh ${INSTALL_DIR}
 
 # Packages for testing
 # Installation directory for dependencies concerning testing

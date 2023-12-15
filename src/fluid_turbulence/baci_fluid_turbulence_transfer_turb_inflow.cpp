@@ -13,10 +13,12 @@ boundary of the actual domain
 
 #include "baci_fluid_turbulence_transfer_turb_inflow.H"
 
+#include "baci_coupling_matchingoctree.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_matchingoctree.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -166,7 +168,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     }
 
     // build processor local octree
-    DRT::UTILS::NodeMatchingOctree nodematchingoctree = DRT::UTILS::NodeMatchingOctree();
+    auto nodematchingoctree = CORE::COUPLING::NodeMatchingOctree();
     nodematchingoctree.Init(*dis_, masternodeids, maxnodeperleaf, tol);
     nodematchingoctree.Setup();
 
@@ -214,7 +216,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curve_).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
                 time);
       }
       else
@@ -257,7 +259,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
     }
 
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(dis_->Comm());
+    CORE::COMM::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
@@ -291,7 +293,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
         SetValuesAvailableOnThisProc(mymasters, mymasters_vel, velnp);
 
         // Pack info into block to send
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         PackLocalMasterValues(mymasters, mymasters_vel, data);
         data.StartPacking();
         PackLocalMasterValues(mymasters, mymasters_vel, data);
@@ -304,19 +306,6 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
   return;
 }  // Transfer
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Destructor dtor  (public)                                 gammi 03/10|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::TransferTurbulentInflowCondition::~TransferTurbulentInflowCondition()
-{
-  return;
-}  // ~TransferTurbulentInflowCondition
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -389,7 +378,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
-    std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = dis_->Comm().NumProc();
@@ -436,7 +425,7 @@ void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::SendBlock(
-    std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = dis_->Comm().NumProc();
@@ -489,14 +478,14 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
 
   // extract size
   int size = 0;
-  DRT::ParObject::ExtractfromPack(position, rblock, size);
+  CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
 
   // extract master ids
   for (int i = 0; i < size; ++i)
   {
     int id;
 
-    DRT::ParObject::ExtractfromPack(position, rblock, id);
+    CORE::COMM::ParObject::ExtractfromPack(position, rblock, id);
     mymasters.push_back(id);
 
     std::map<int, std::vector<int>>::iterator iter = midtosid_.find(id);
@@ -516,12 +505,12 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
   {
     int slavesize;
 
-    DRT::ParObject::ExtractfromPack(position, rblock, slavesize);
+    CORE::COMM::ParObject::ExtractfromPack(position, rblock, slavesize);
 
     for (int ll = 0; ll < slavesize; ++ll)
     {
       int sid;
-      DRT::ParObject::ExtractfromPack(position, rblock, sid);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, sid);
 
       std::map<int, std::vector<int>>::iterator iter = midtosid_.find(mymasters[rr]);
 
@@ -549,7 +538,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
     {
       double value;
 
-      DRT::ParObject::ExtractfromPack(position, rblock, value);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, value);
 
       (mymasters_vel[mm]).push_back(value);
     }
@@ -572,7 +561,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<int>& mymasters,
-    std::vector<std::vector<double>>& mymasters_vel, DRT::PackBuffer& sblock)
+    std::vector<std::vector<double>>& mymasters_vel, CORE::COMM::PackBuffer& sblock)
 {
   int size = mymasters.size();
 
@@ -590,12 +579,12 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
   }
 
   // add size  to sendblock
-  DRT::ParObject::AddtoPack(sblock, size);
+  CORE::COMM::ParObject::AddtoPack(sblock, size);
 
   // add master ids
   for (int rr = 0; rr < size; ++rr)
   {
-    DRT::ParObject::AddtoPack(sblock, mymasters[rr]);
+    CORE::COMM::ParObject::AddtoPack(sblock, mymasters[rr]);
   }
 
   // add slave ids
@@ -613,10 +602,10 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
 
       int slavesize = (int)slaves.size();
 
-      DRT::ParObject::AddtoPack(sblock, slavesize);
+      CORE::COMM::ParObject::AddtoPack(sblock, slavesize);
       for (int ll = 0; ll < slavesize; ++ll)
       {
-        DRT::ParObject::AddtoPack(sblock, slaves[ll]);
+        CORE::COMM::ParObject::AddtoPack(sblock, slaves[ll]);
       }
     }
   }
@@ -626,7 +615,7 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
   {
     for (int rr = 0; rr < size; ++rr)
     {
-      DRT::ParObject::AddtoPack(sblock, (mymasters_vel[mm])[rr]);
+      CORE::COMM::ParObject::AddtoPack(sblock, (mymasters_vel[mm])[rr]);
     }
   }
 
@@ -717,19 +706,6 @@ FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
   numveldof_ = 6;
 }
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Destructor dtor  (public)                                    bk 09/14|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::TransferTurbulentInflowConditionXW::~TransferTurbulentInflowConditionXW()
-{
-  return;
-}  // ~TransferTurbulentInflowCondition (XW)
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -759,7 +735,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curve_).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
                 time);
       }
       else
@@ -818,7 +794,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
     }
 
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(dis_->Comm());
+    CORE::COMM::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
@@ -852,7 +828,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         SetValuesAvailableOnThisProc(mymasters, mymasters_vel, velnp);
 
         // Pack info into block to send
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         PackLocalMasterValues(mymasters, mymasters_vel, data);
         data.StartPacking();
         PackLocalMasterValues(mymasters, mymasters_vel, data);
@@ -965,19 +941,6 @@ FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNoda
   numveldof_ = 1;
 }
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Destructor dtor  (public)                                    bk 09/14|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::TransferTurbulentInflowConditionNodal::~TransferTurbulentInflowConditionNodal()
-{
-  return;
-}  // ~TransferTurbulentInflowCondition (Nodal)
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1021,7 +984,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
     }
 
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(dis_->Comm());
+    CORE::COMM::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
@@ -1055,7 +1018,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
         SetValuesAvailableOnThisProc(mymasters, mymasters_vec, outvec);
 
         // Pack info into block to send
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         PackLocalMasterValues(mymasters, mymasters_vec, data);
         data.StartPacking();
         PackLocalMasterValues(mymasters, mymasters_vec, data);
@@ -1101,3 +1064,5 @@ void FLD::TransferTurbulentInflowConditionNodal::SetValuesAvailableOnThisProc(
 
   return;
 }  // SetValuesAvailableOnThisProc (Nodal)
+
+BACI_NAMESPACE_CLOSE

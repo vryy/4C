@@ -11,9 +11,11 @@
 
 #include "baci_art_net_artery_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ArteryEleCalc<distype>::ArteryEleCalc(
     const int numdofpernode, const std::string& disname)
     : funct_(), deriv_(), tderiv_(), xjm_(), xji_(), derxy_()
@@ -21,7 +23,7 @@ DRT::ELEMENTS::ArteryEleCalc<distype>::ArteryEleCalc(
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::ArteryEleCalc<distype>::CalculateEleLength(Artery* ele)
 {
   // get node coordinates and number of elements per node
@@ -30,7 +32,7 @@ double DRT::ELEMENTS::ArteryEleCalc<distype>::CalculateEleLength(Artery* ele)
   // TODO: does this work for line3?
   for (int inode = 0; inode < iel_; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -48,4 +50,6 @@ double DRT::ELEMENTS::ArteryEleCalc<distype>::CalculateEleLength(Artery* ele)
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ArteryEleCalc<DRT::Element::line2>;
+template class DRT::ELEMENTS::ArteryEleCalc<CORE::FE::CellType::line2>;
+
+BACI_NAMESPACE_CLOSE

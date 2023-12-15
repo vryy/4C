@@ -11,6 +11,8 @@
 
 #include "baci_contact_nitsche_integrator.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -46,8 +48,8 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param[in] comm     contact interface communicator
      */
-    CoIntegratorNitscheSsi(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm);
+    CoIntegratorNitscheSsi(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
    protected:
     //! access method to scatra time integration factors
@@ -294,4 +296,6 @@ namespace CONTACT
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_SSI_H

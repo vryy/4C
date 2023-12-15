@@ -12,12 +12,14 @@
 #ifndef BACI_MAT_CROSSLINKERMAT_H
 #define BACI_MAT_CROSSLINKERMAT_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_beaminteraction.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 
 #include <Teuchos_ParameterList.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -30,9 +32,6 @@ namespace MAT
      public:
       /// standard constructor
       CrosslinkerMat(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      virtual ~CrosslinkerMat() { ; }
 
       /// number of material for underlying linker element
       int const link_element_matnum_;
@@ -71,20 +70,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class CrosslinkerMat
 
   }  // namespace PAR
 
-  class CrosslinkerMatType : public DRT::ParObjectType
+  class CrosslinkerMatType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "CrosslinkerMatType"; }
+    std::string Name() const override { return "CrosslinkerMatType"; }
 
     static CrosslinkerMatType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CrosslinkerMatType instance_;
@@ -109,7 +108,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return CrosslinkerMatType::Instance().UniqueParObjectId();
     }
@@ -124,7 +123,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -138,17 +137,20 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     //! @name Access methods
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_crosslinkermat; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_crosslinkermat; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new CrosslinkerMat(*this)); }
+    Teuchos::RCP<Material> Clone() const override
+    {
+      return Teuchos::rcp(new CrosslinkerMat(*this));
+    }
 
     /// number of beam elasthyper material
     virtual double BeamElastHyperMatNum() const { return params_->link_element_matnum_; }
@@ -187,7 +189,7 @@ namespace MAT
     };
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //@}
 
@@ -198,5 +200,7 @@ namespace MAT
 }  // namespace MAT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_CROSSLINKERMAT_H

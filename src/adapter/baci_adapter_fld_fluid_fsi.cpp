@@ -28,6 +28,9 @@
 
 #include <set>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
@@ -70,7 +73,7 @@ void ADAPTER::FluidFSI::Init()
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
+  if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
   {
     nds_master = 2;
   }
@@ -159,7 +162,7 @@ double ADAPTER::FluidFSI::TimeScaling() const
 void ADAPTER::FluidFSI::Update()
 {
   if (DRT::Problem::Instance()->SpatialApproximationType() !=
-      ShapeFunctionType::shapefunction_hdg)  // TODO als fix this!
+      CORE::FE::ShapeFunctionType::hdg)  // TODO als fix this!
   {
     Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
 
@@ -499,9 +502,8 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
         "no simpler solver, that is used to solve this system, defined for fluid pressure problem. "
         "\nPlease set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(
-      new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(simplersolvernumber),
-          Discretization()->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(simplersolvernumber), Discretization()->Comm()));
 
   if (solver->Params().isSublist("ML Parameters"))
   {
@@ -781,7 +783,7 @@ double ADAPTER::FluidFSI::GetTimAdaErrOrder() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
+std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
 {
   switch (auxintegrator_)
   {
@@ -833,3 +835,5 @@ void ADAPTER::FluidFSI::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
 {
   fluidimpl_->UpdateSlaveDOF(f);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,12 +14,14 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 #ifndef BACI_MAT_VISCONEOHOOKE_H
 #define BACI_MAT_VISCONEOHOOKE_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 namespace MAT
@@ -34,9 +36,6 @@ namespace MAT
       /// standard constructor
       ViscoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~ViscoNeoHooke() { ; }
-
       /// @name material parameters
       //@{
       const double youngs_slow_;
@@ -48,20 +47,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class ViscoNeoHooke
 
   }  // namespace PAR
 
-  class ViscoNeoHookeType : public DRT::ParObjectType
+  class ViscoNeoHookeType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ViscoNeoHookeType"; }
+    std::string Name() const override { return "ViscoNeoHookeType"; }
 
     static ViscoNeoHookeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ViscoNeoHookeType instance_;
@@ -86,7 +85,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ViscoNeoHookeType::Instance().UniqueParObjectId();
     }
@@ -102,7 +101,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -117,40 +116,40 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_visconeohooke; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_visconeohooke; }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ViscoNeoHooke(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new ViscoNeoHooke(*this)); }
 
     /// Initialize internal stress variables
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /// Update internal stress variables
-    virtual void Update();
+    void Update() override;
 
     /// Evaluate material
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,      ///< green lagrange strain
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,      ///< deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
         Teuchos::ParameterList& params,                  ///< parameter list for communication
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  ///< 2nd PK-stress
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
         int gp,                                                    ///< Gauss point
-        int eleGID);
+        int eleGID) override;
 
     /// Return density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// Return shear modulus
     double ShearMod() const { return 0.5 * params_->youngs_slow_ / (1.0 + params_->poisson_); };
@@ -159,7 +158,7 @@ namespace MAT
     bool Initialized() const { return isinit_ && (histstresscurr_ != Teuchos::null); }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
@@ -178,5 +177,7 @@ namespace MAT
     bool isinit_;  ///< indicates if #Initialized routine has been called
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_VISCONEOHOOKE_H

@@ -15,17 +15,17 @@
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Init(
-    const DRT::Element* element1, const DRT::Element* element2)
+GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GeometryPairLineToVolume(
+    const DRT::Element* element1, const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
+    : GeometryPair(element1, element2), line_to_3d_evaluation_data_(line_to_3d_evaluation_data)
 {
-  // Call init of base class.
-  GeometryPair::Init(element1, element2);
-
   // For the current implementation, the line element has to be on the same processor as the pair
   // object. This is because the tracking vector in LineTo3DEvaluationData is only local and we
   // need this vector for segmentation e.t.c.
@@ -310,3 +310,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_he
     GEOMETRYPAIR::t_tet10>;
 template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_nurbs27>;
+
+BACI_NAMESPACE_CLOSE

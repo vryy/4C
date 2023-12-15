@@ -16,6 +16,8 @@
 #include <fstream>
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -299,8 +301,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(Teuchos::RCP<DRT::Discretization> discre
     CORE::LINALG::Matrix<3, 2> xyze;
     for (int inode = 0; inode < 2; inode++)
     {
-      //      const double* x = discret->lColNode((*nodes)[i+inode])->X();
-      const double* x = discret->gNode((*nodes)[i + inode])->X();
+      const auto& x = discret->gNode((*nodes)[i + inode])->X();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -339,3 +340,5 @@ void ART::UTILS::ArtWriteGnuplot::Write(Teuchos::RCP<DRT::Discretization> discre
   }
   (*fout_) << std::endl;
 }
+
+BACI_NAMESPACE_CLOSE

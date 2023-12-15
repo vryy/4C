@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -38,7 +40,7 @@ namespace FLD
         FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
 
     //! destructor
-    virtual ~HomIsoTurbInitialField() { return; };
+    virtual ~HomIsoTurbInitialField() = default;
 
     //! calculate initial field
     virtual void CalculateInitialField();
@@ -94,11 +96,9 @@ namespace FLD
     HomIsoTurbInitialFieldHDG(
         FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
 
-    //! destructor
-    ~HomIsoTurbInitialFieldHDG() { return; };
 
     //! calculate initial field
-    void CalculateInitialField();
+    void CalculateInitialField() override;
 
    protected:
     Teuchos::RCP<Epetra_Vector> intveln_;
@@ -107,5 +107,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

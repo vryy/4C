@@ -20,6 +20,7 @@ namespace Teuchos
   class ParameterList;
 }
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -35,7 +36,7 @@ namespace DRT
       BeamRuntimeVtuOutputParams();
 
       /// destructor
-      virtual ~BeamRuntimeVtuOutputParams(){};
+      virtual ~BeamRuntimeVtuOutputParams() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IO_vtk_structure_beams_paramslist);
@@ -244,5 +245,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -19,13 +19,14 @@
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_structure_timint_impl.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|
@@ -1894,11 +1895,11 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinXiAndLinEta(
   CORE::LINALG::Matrix<2, dim1 + dim2, TYPE> D(true);
 
   // compute L elementwise
-  L(0, 0) = ::CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) +
-            ::CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
-  L(1, 1) = -::CORE::FADUTILS::ScalarProduct(r2_xi, r2_xi) +
-            ::CORE::FADUTILS::ScalarProduct(delta_r, r2_xixi);
-  L(0, 1) = -::CORE::FADUTILS::ScalarProduct(r2_xi, r1_xi);
+  L(0, 0) =
+      CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) + CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
+  L(1, 1) = -CORE::FADUTILS::ScalarProduct(r2_xi, r2_xi) +
+            CORE::FADUTILS::ScalarProduct(delta_r, r2_xixi);
+  L(0, 1) = -CORE::FADUTILS::ScalarProduct(r2_xi, r1_xi);
   L(1, 0) = -L(0, 1);
 
   // invert L by hand
@@ -2747,8 +2748,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
     const TYPE& eta2)
 {
   // get both discretization types
-  const DRT::Element::DiscretizationType distype1 = element1_->Shape();
-  const DRT::Element::DiscretizationType distype2 = element2_->Shape();
+  const CORE::FE::CellType distype1 = element1_->Shape();
+  const CORE::FE::CellType distype2 = element2_->Shape();
 
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i(true);
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi(true);
@@ -2817,16 +2818,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::AssembleShapefunctions(
 {
   // assembly_N is just an array to help assemble the matrices of the shape functions
   // it determines, which shape function is used in which column of N
-  int assembly_N[3][3 * numnodes * numnodalvalues];
 
-  // Initialize to zero
-  for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
-  {
-    for (int j = 0; j < 3; j++)
-    {
-      assembly_N[j][i] = 0.0;
-    }
-  }
+  std::array<std::array<unsigned int, 3 * numnodes * numnodalvalues>, 3> assembly_N{};
 
   /*
   Set number of shape functions for each 3*3 block:
@@ -3998,3 +3991,5 @@ template class CONTACT::Beam3contactnew<3, 1>;
 template class CONTACT::Beam3contactnew<4, 1>;
 template class CONTACT::Beam3contactnew<5, 1>;
 template class CONTACT::Beam3contactnew<2, 2>;
+
+BACI_NAMESPACE_CLOSE

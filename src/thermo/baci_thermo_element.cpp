@@ -10,13 +10,16 @@
  *----------------------------------------------------------------------*/
 #include "baci_thermo_element.H"
 
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_element.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_thermostvenantkirchhoff.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
 
@@ -26,7 +29,7 @@ DRT::ELEMENTS::ThermoType& DRT::ELEMENTS::ThermoType::Instance() { return instan
  | create the new element type (public)                      dano 09/09 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::ThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Thermo* object = new DRT::ELEMENTS::Thermo(-1, -1);
   object->Unpack(data);
@@ -170,7 +173,8 @@ DRT::ELEMENTS::ThermoBoundaryType& DRT::ELEMENTS::ThermoBoundaryType::Instance()
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Thermo::Thermo(int id, int owner) : DRT::Element(id, owner), distype_(dis_none)
+DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
+    : DRT::Element(id, owner), distype_(CORE::FE::CellType::dis_none)
 {
   // default: geometrically linear, also including purely thermal probelm
   kintype_ = INPAR::STR::kinem_linear;
@@ -184,7 +188,7 @@ DRT::ELEMENTS::Thermo::Thermo(int id, int owner) : DRT::Element(id, owner), dist
 DRT::ELEMENTS::Thermo::Thermo(const DRT::ELEMENTS::Thermo& old)
     : DRT::Element(old), kintype_(old.kintype_), distype_(old.distype_), data_(old.data_)
 {
-  if (old.Shape() == DRT::Element::nurbs27) SetNurbsElement() = true;
+  if (old.Shape() == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
   return;
 }  // copy-ctor
 
@@ -203,18 +207,15 @@ DRT::Element* DRT::ELEMENTS::Thermo::Clone() const
 /*----------------------------------------------------------------------*
  | return the shape of a Thermo element (public)             dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Thermo::Shape() const
-{
-  return distype_;
-}  // Shape()
+CORE::FE::CellType DRT::ELEMENTS::Thermo::Shape() const { return distype_; }  // Shape()
 
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Thermo::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Thermo::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -239,10 +240,9 @@ void DRT::ELEMENTS::Thermo::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -250,8 +250,8 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   // kintype_
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
   // distype
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
-  if (distype_ == DRT::Element::nurbs27) SetNurbsElement() = true;
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  if (distype_ == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
 
   std::vector<char> tmp(0);
   ExtractfromPack(position, data, tmp);
@@ -263,11 +263,6 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
 }  // Unpack()
 
 
-/*----------------------------------------------------------------------*
- | dtor (public)                                             dano 09/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Thermo::~Thermo() { return; }
-
 
 /*----------------------------------------------------------------------*
  | print this element (public)                               dano 09/09 |
@@ -277,7 +272,7 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
   os << "Thermo element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << distype_ << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
   std::cout << std::endl;
@@ -291,22 +286,7 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Thermo::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  if (NumLine() > 1)  // 3D and 2D
-    return DRT::UTILS::ElementBoundaryFactory<ThermoBoundary, Thermo>(DRT::UTILS::buildLines, this);
-  else
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> lines(1);
-    lines[0] = Teuchos::rcp(this, false);
-    return lines;
-  }
+  return CORE::COMM::GetElementLines<ThermoBoundary, Thermo>(*this);
 }  // Lines()
 
 
@@ -315,50 +295,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Thermo::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Thermo::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
-  if (NumSurface() > 1)  // 3D
-    return DRT::UTILS::ElementBoundaryFactory<ThermoBoundary, Thermo>(
-        DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() == 1)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    // 1D
-    dserror("Surfaces() for 1D-Thermo element not implemented");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementSurfaces<ThermoBoundary, Thermo>(*this);
 }  // Surfaces()
-
-
-/*----------------------------------------------------------------------*
- | get vector of volumes (length 1) (public)                 dano 09/09 |
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Thermo::Volumes()
-{
-  if (NumVolume() == 1)
-  {
-    std::vector<Teuchos::RCP<Element>> volumes(1);
-    volumes[0] = Teuchos::rcp(this, false);
-    return volumes;
-  }
-  else
-  {
-    dserror("Surfaces() for 1D-/2D-Thermo element not implemented");
-    return DRT::Element::Volumes();
-  }
-}  // Volumes()
-
 
 /*----------------------------------------------------------------------*
  | return names of visualization data (public)               dano 09/09 |
@@ -408,12 +346,12 @@ bool DRT::ELEMENTS::Thermo::VisData(const std::string& name, std::vector<double>
  | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::ELEMENTS::Thermo* parent, const int lbeleid)
+    DRT::Node** nodes, DRT::ELEMENTS::Thermo* parent, const int lsurface)
     : DRT::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lbeleid);
+  SetParentMasterElement(parent, lsurface);
   return;
 }  // ctor
 
@@ -441,33 +379,40 @@ DRT::Element* DRT::ELEMENTS::ThermoBoundary::Clone() const
 /*----------------------------------------------------------------------*
  | return shape of this element (public)                     dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ThermoBoundary::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      if ((ParentElement()->Shape() == quad8) or (ParentElement()->Shape() == quad9))
-        return line3;
+      if ((ParentElement()->Shape() == CORE::FE::CellType::quad8) or
+          (ParentElement()->Shape() == CORE::FE::CellType::quad9))
+        return CORE::FE::CellType::line3;
       else
-        return tri3;
+        return CORE::FE::CellType::tri3;
     case 4:
-      return quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      if (ParentElement()->Shape() == hex27)
-        return quad9;
-      else if (ParentElement()->Shape() == nurbs27)
-        return nurbs9;
+      if (ParentElement()->Shape() == CORE::FE::CellType::hex27)
+        return CORE::FE::CellType::quad9;
+      else if (ParentElement()->Shape() == CORE::FE::CellType::nurbs27)
+        return CORE::FE::CellType::nurbs9;
+      else
+      {
+        dserror(
+            "Your parent discretization type is %s. Ccurrently only hex27 and nurbs27 are "
+            "implemented.",
+            CORE::FE::CellTypeToString(ParentElement()->Shape()).c_str());
+      }
       break;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }  // Shape()
 
 
@@ -492,11 +437,6 @@ void DRT::ELEMENTS::ThermoBoundary::Unpack(const std::vector<char>& data)
 }  // Unpack()
 
 
-/*----------------------------------------------------------------------*
- | dtor (public)                                             dano 09/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ThermoBoundary::~ThermoBoundary() { return; }
-
 
 /*----------------------------------------------------------------------*
  | print this element (public)                               dano 09/09 |
@@ -514,16 +454,7 @@ void DRT::ELEMENTS::ThermoBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ThermoBoundary::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   dserror("Lines of ThermoBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }  // Lines()
 
 
@@ -532,14 +463,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ThermoBoundary::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ThermoBoundary::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   dserror("Surfaces of ThermoBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }  // Surfaces()
+
+BACI_NAMESPACE_CLOSE

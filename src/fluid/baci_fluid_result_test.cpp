@@ -13,10 +13,12 @@
 
 #include "baci_fluid_implicit_integration.H"
 #include "baci_fluid_utils.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 
 #include <string>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -27,7 +29,7 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid) : DRT::Result
   mysol_ = fluid.velnp_;
 
   // quantities not implemented in the HDG formulation
-  if (DRT::Problem::Instance()->SpatialApproximationType() != ShapeFunctionType::shapefunction_hdg)
+  if (DRT::Problem::Instance()->SpatialApproximationType() != CORE::FE::ShapeFunctionType::hdg)
   {
     mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
     mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);
@@ -129,3 +131,5 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,8 +13,8 @@
 
 #include "baci_mat_myocard.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_myocard_fitzhugh_nagumo.H"
 #include "baci_mat_myocard_inada.H"
 #include "baci_mat_myocard_minimal.H"
@@ -24,6 +24,8 @@
 
 #include <fstream>  // For plotting ion concentrations
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -51,7 +53,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Myocard::CreateMaterial()
 MAT::MyocardType MAT::MyocardType::instance_;
 
 
-DRT::ParObject* MAT::MyocardType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MyocardType::Create(const std::vector<char>& data)
 {
   MAT::Myocard* myocard = new MAT::Myocard();
   myocard->Unpack(data);
@@ -88,9 +90,9 @@ MAT::Myocard::Myocard(MAT::PAR::Myocard* params)
 /*----------------------------------------------------------------------*
  |  Pack                                           (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
-void MAT::Myocard::Pack(DRT::PackBuffer& data) const
+void MAT::Myocard::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -130,10 +132,7 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -199,10 +198,7 @@ void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -594,3 +590,5 @@ void MAT::Myocard::Update(const double phi, const double dt)
  |  get number of Gauss points                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
 int MAT::Myocard::GetNumberOfGP() const { return myocard_mat_->GetNumberOfGP(); };
+
+BACI_NAMESPACE_CLOSE

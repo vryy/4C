@@ -12,6 +12,8 @@
 
 #include "baci_scatra_ele_boundary_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace MAT
 {
@@ -28,8 +30,7 @@ namespace DRT
     class ScaTraEleBoundaryCalcElchElectrodeUtils;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcSTIElectrode : public ScaTraEleBoundaryCalc<distype, probdim>
     {
       using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
@@ -70,21 +71,16 @@ namespace DRT
        *
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
-      template <DRT::Element::DiscretizationType distype_master>
+      template <CORE::FE::CellType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              emastertempnp,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& emastertempnp,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              funct_master,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, double detF,
           CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
@@ -114,21 +110,16 @@ namespace DRT
        * @param[out] k_ss         linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm         linearizations of slave-side residuals w.r.t. master-side dofs
        */
-      template <DRT::Element::DiscretizationType distype_master>
+      template <CORE::FE::CellType distype_master>
       static void EvaluateS2ICouplingODAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              emastertempnp,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& emastertempnp,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              funct_master,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacwgt, double detF,
           SCATRA::DifferentiationType differentiationtype,
@@ -185,4 +176,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcSTIElectrode
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

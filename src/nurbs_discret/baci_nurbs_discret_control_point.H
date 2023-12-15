@@ -16,21 +16,23 @@
 #ifndef BACI_NURBS_DISCRET_CONTROL_POINT_H
 #define BACI_NURBS_DISCRET_CONTROL_POINT_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
   namespace NURBS
   {
-    class ControlPointType : public DRT::ParObjectType
+    class ControlPointType : public CORE::COMM::ParObjectType
     {
      public:
-      std::string Name() const { return "ControlPointType"; }
+      std::string Name() const override { return "ControlPointType"; }
 
       static ControlPointType& Instance() { return instance_; };
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
      private:
       static ControlPointType instance_;
@@ -71,7 +73,7 @@ namespace DRT
       \param weight (in): nurbs weight
       \param owner  (in): Owner of this node.
       */
-      ControlPoint(int id, const double* coords, const double weight, const int owner);
+      ControlPoint(int id, const std::vector<double>& coords, const double weight, const int owner);
 
       /*!
       \brief Copy Constructor
@@ -88,13 +90,8 @@ namespace DRT
              pointer to it
 
       */
-      virtual DRT::NURBS::ControlPoint* Clone() const;
+      DRT::NURBS::ControlPoint* Clone() const override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~ControlPoint();
 
       /*!
       \brief Return unique ParObject id
@@ -104,7 +101,7 @@ namespace DRT
 
       \return the parobject id
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ControlPointType::Instance().UniqueParObjectId();
       }
@@ -117,7 +114,7 @@ namespace DRT
       \param data (in/out): a char vector to pack the data into
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -127,7 +124,7 @@ namespace DRT
       \param data (in): a char vector to unpack the data from
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //@}
 
@@ -146,7 +143,7 @@ namespace DRT
 
       \param os ofstrem
       */
-      virtual void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //@}
 
@@ -160,4 +157,6 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // NURBS_DISCRET_CONTROL_POINT_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_NURBS_DISCRET_CONTROL_POINT_H

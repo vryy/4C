@@ -13,6 +13,8 @@
 
 #include "baci_contact_aug_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -22,7 +24,7 @@ namespace CONTACT
       /** \brief Augmented steepest ascent contact interface class
        *
        *  \author hiermeier \date 03/17 */
-      class Interface : public ::CONTACT::AUG::Interface
+      class Interface : public CONTACT::AUG::Interface
       {
        public:
         /** \brief Alternative constructor
@@ -40,9 +42,6 @@ namespace CONTACT
         Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
             const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
             bool selfcontact);
-
-        /// destructor
-        virtual ~Interface(){};
 
        protected:
         Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy> CreateNodeBasedAssembleStrategy()
@@ -69,11 +68,7 @@ namespace CONTACT
           explicit NodeBasedAssembleStrategy(Interface* inter)
               : CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>(inter)
           { /* empty */
-            ;
           }
-
-          /// destructor
-          virtual ~NodeBasedAssembleStrategy(){};
 
           /// derived
           void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const override;
@@ -88,5 +83,7 @@ namespace CONTACT
   }      // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_STEEPEST_ASCENT_INTERFACE_H

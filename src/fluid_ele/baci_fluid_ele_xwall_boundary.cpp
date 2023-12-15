@@ -15,6 +15,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::FluidXWallBoundaryType DRT::ELEMENTS::FluidXWallBoundaryType::instance_;
 
 DRT::ELEMENTS::FluidXWallBoundaryType& DRT::ELEMENTS::FluidXWallBoundaryType::Instance()
@@ -228,3 +230,5 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -30,7 +30,6 @@
 #include "baci_lib_condition_selector.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linear_solver_method_linalg.H"
@@ -39,6 +38,8 @@
 #include "baci_ssi_clonestrategy.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -247,11 +248,12 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
             "since the velocity field in the structure is NOT divergence free!");
     }
   }
-
+  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
   if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_statics and
-      !::UTILS::PRESTRESS::IsMulf())
+      pstype != INPAR::STR::PreStress::mulf)
     dserror(
         "Since we need a velocity field in the structure domain for the scalar field you need do "
         "calculate the structure dynamically! Exception: when prestressing..");
@@ -319,7 +321,6 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
         }
 
         PermCoeffs[i].insert(std::pair<int, std::vector<double>*>(myID, params));
-        ;
       }
     }
   }
@@ -412,7 +413,7 @@ void FS3I::FS3I_Base::ScatraOutput()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->Output(i);
+    scatra->ScaTraField()->CheckAndWriteOutputAndRestart();
   }
 }
 
@@ -433,7 +434,7 @@ void FS3I::FS3I_Base::UpdateScatraFields()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->Update(i);
+    scatra->ScaTraField()->Update();
   }
 }
 
@@ -811,3 +812,5 @@ void FS3I::FS3I_Base::CheckIsInit()
 {
   if (not IsInit()) dserror("Init(...) was not called.");
 };
+
+BACI_NAMESPACE_CLOSE

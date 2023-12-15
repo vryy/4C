@@ -12,6 +12,8 @@ comparison instead of a cumbersome std::string compare.
 #ifndef BACI_SCATRA_ELE_ACTION_H
 #define BACI_SCATRA_ELE_ACTION_H
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /*--------------------------------------------------------------------------*/
@@ -33,7 +35,6 @@ namespace SCATRA
     calc_error,                             ///< calc_error,
     calc_error_reinit,                      ///< calc_error_reinit,
     calc_flux_domain,                       ///< calc_condif_flux,
-    calc_grad_ele_center,                   ///< reconstruct gradient at ele center
     calc_heteroreac_mat_and_rhs,   ///< calculate RHS and linearizations of heterogeneous reaction
                                    ///< terms
     calc_immersed_element_source,  ///< calculate sink/source term due to segregation from an
@@ -88,8 +89,6 @@ namespace SCATRA
     project_field,                  ///< project field
     project_material_field,         ///< project material field for hdg
     project_neumann_field,          ///< project neumann field for hdg
-    recon_curvature_at_nodes,       ///< reconstruct curvature at node points through L2-projection
-    recon_gradients_at_nodes,       ///< reconstruct gradients at node points through L2-projection
     set_diffcond_scatra_parameter,  ///< set diffusion-conduction parameters for element evaluation
     set_elch_scatra_parameter,      ///< set elch parameters for element evaluation
     set_general_scatra_parameter,   ///< set general parameters for element evaluation
@@ -165,4 +164,6 @@ namespace SCATRA
     temp
   };
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_ELE_ACTION_H

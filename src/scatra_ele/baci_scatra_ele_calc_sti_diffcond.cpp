@@ -17,10 +17,12 @@
 #include "baci_scatra_ele_utils_elch_diffcond.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>*
 DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -40,7 +42,7 @@ DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
 /*--------------------------------------------------------------------------*
  | calculate element matrix and element right-hand side vector   fang 11/15 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Sysmat(
     DRT::Element* ele,                          ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
@@ -120,7 +122,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Sysmat(
 /*------------------------------------------------------------------------------------------------*
  | element matrix and right-hand side vector contributions arising from Joule's heat   fang 11/15 |
  *------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
@@ -177,7 +179,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJouleSolid(
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     const double& timefacfac, const double& rhsfac)
@@ -198,7 +200,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJouleSolid(
  | element matrix and right-hand side vector contributions arising from heat of mixing   fang 11/15
  |
  *--------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
@@ -252,7 +254,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
 /*------------------------------------------------------------------------------------------------*
  | element matrix and right-hand side vector contributions arising from Soret effect   fang 11/15 |
  *------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
@@ -320,7 +322,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
 /*----------------------------------------------------------------------*
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::EvaluateActionOD(
     DRT::Element* ele,                                //!< current element
     Teuchos::ParameterList& params,                   //!< parameter list
@@ -362,7 +364,7 @@ int DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::EvaluateActionOD(
  | fill element matrix with linearizations of discrete thermo residuals w.r.t. scatra dofs   fang
  11/15 |
  *------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SysmatODThermoScatra(
     DRT::Element* ele,                     //!< current element
     CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix
@@ -401,7 +403,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SysmatODThermoScatra(
  | provide element matrix with linearizations of Joule's heat term in discrete thermo residuals
  w.r.t. scatra dofs   fang 11/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
@@ -483,7 +485,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleSolidOD(
     CORE::LINALG::SerialDenseMatrix& emat, const double& timefacfac)
 {
@@ -516,7 +518,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleSolidOD(
  | provide element matrix with linearizations of heat of mixing term in discrete thermo residuals
  w.r.t. scatra dofs   fang 11/15 |
  *--------------------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
@@ -570,7 +572,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
  | provide element matrix with linearizations of Soret effect term in discrete thermo residuals
  w.r.t. scatra dofs   fang 11/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
@@ -635,7 +637,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
 /*----------------------------------------------------------------------*
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ExtractElementAndNodeValues(
     DRT::Element* ele,                    //!< current element
     Teuchos::ParameterList& params,       //!< parameter list
@@ -653,7 +655,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ExtractElementAndNodeValu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(const DRT::Element* ele,
     std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
     double& visc, const int iquad)
@@ -689,7 +691,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(const D
 /*----------------------------------------------------------------------*
  | evaluate Soret material                                   fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatSoret(
     const Teuchos::RCP<const MAT::Material> material,  //!< Soret material
     double& densn,                                     //!< density at time t_(n)
@@ -707,7 +709,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatSoret(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatFourier(
     const Teuchos::RCP<const MAT::Material> material,  //!< Fourier material
     double& densn,                                     //!< density at time t_(n)
@@ -726,7 +728,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatFourier(
 /*------------------------------------------------------------------------------*
  | set internal variables for element evaluation                     fang 11/15 |
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SetInternalVariablesForMatAndRHS()
 {
   // set internal variables for element evaluation
@@ -738,7 +740,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SetInternalVariablesForMa
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
     const int numdofpernode, const int numscal, const std::string& disname)
     :  // constructors of base classes
@@ -768,23 +770,26 @@ DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::pyramid5>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

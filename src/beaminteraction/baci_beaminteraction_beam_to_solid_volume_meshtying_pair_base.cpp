@@ -11,10 +11,10 @@
 
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_utils.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_geometry_pair_element_functions.H"
@@ -23,6 +23,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /**
@@ -61,14 +63,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Setup()
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::CreateGeometryPair(
+    const DRT::Element* element1, const DRT::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  // Call the method of the base class.
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
-
-  // Set up the geometry pair, it will be initialized in the Init call of the base class.
   this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, solid>(
-      geometry_evaluation_data_ptr);
+      element1, element2, geometry_evaluation_data_ptr);
 }
 
 
@@ -136,24 +135,24 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::SetRestar
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
-    Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.
   base_class::GetPairVisualization(visualization_writer, visualization_params);
 
   // Get the writers.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_segmentation =
-          visualization_writer->GetVisualizationWriter("btsvc-segmentation");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
+      visualization_writer->GetVisualizationWriter("btsvc-segmentation");
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->GetVisualizationWriter("btsvc-integration-points");
   if (visualization_segmentation.is_null() and visualization_integration_points.is_null()) return;
 
-  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
-          "btsvc-output_params_ptr");
+  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
+      visualization_params
+          .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+              "btsvc-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
 
   if (visualization_segmentation != Teuchos::null)
@@ -302,3 +301,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_tet10>;
   template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_nurbs27>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

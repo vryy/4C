@@ -14,16 +14,18 @@
 #ifndef BACI_LIB_UTILS_CREATEDIS_H
 #define BACI_LIB_UTILS_CREATEDIS_H
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_immersed_node.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_nurbs_discret.H"
 
 #include <Teuchos_Time.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -43,8 +45,7 @@ namespace DRT
       explicit DiscretizationCreatorBase() : numeleskips_(0) {}
 
       //! destructor
-      virtual ~DiscretizationCreatorBase() {}
-
+      virtual ~DiscretizationCreatorBase() = default;
       //! copy given conditions from source to target discretization
       void CopyConditions(const DRT::Discretization& sourcedis, DRT::Discretization& targetdis,
           const std::map<std::string, std::string>& conditions_to_copy) const;
@@ -183,7 +184,7 @@ namespace DRT
             else
             {
               // create an element with the same global element id
-              condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
+              condele = CORE::COMM::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
               // set the same global node ids to the new element
               condele->SetNodeIds(nids.size(), nids.data());
             }
@@ -284,9 +285,6 @@ namespace DRT
      public:
       /// constructor
       explicit DiscretizationCreator(){};
-
-      /// destructor
-      virtual ~DiscretizationCreator(){};
 
       /// Create the clone field material map from the input file
       void CreateCloneFieldMatMap(std::map<int, int>& matmap, const DRT::Discretization& sourcedis,
@@ -653,7 +651,7 @@ namespace DRT
 
           // create a new element of desired type with the same global element id
           Teuchos::RCP<DRT::Element> newele =
-              DRT::UTILS::Factory(eletype_[i], approxtype, *it, myrank);
+              CORE::COMM::Factory(eletype_[i], approxtype, *it, myrank);
 
           // get global node ids of source element
           std::vector<int> nids;
@@ -766,7 +764,7 @@ namespace DRT
           // create a new element of desired type with the same global element id and same owner as
           // source element
           Teuchos::RCP<DRT::Element> newele =
-              DRT::UTILS::Factory(eletype_[i], approxtype, *it, sourceeleowner);
+              CORE::COMM::Factory(eletype_[i], approxtype, *it, sourceeleowner);
 
           // get global node ids of fluid element
           std::vector<int> nids;
@@ -932,5 +930,7 @@ namespace DRT
 
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_CREATEDIS_H

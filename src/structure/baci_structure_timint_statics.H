@@ -12,6 +12,8 @@
 /* headers */
 #include "baci_structure_timint_impl.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
@@ -71,9 +73,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
+    void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
+        const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+        Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -93,11 +95,11 @@ namespace STR
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    void Setup() override;
 
     //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here exept when doing optimization
-    void ResizeMStep() { ; }
+    void ResizeMStep() override { ; }
 
     //@}
 
@@ -105,73 +107,73 @@ namespace STR
     //@{
 
     //! Return name
-    enum INPAR::STR::DynamicType MethodName() const { return INPAR::STR::dyna_statics; }
+    enum INPAR::STR::DynamicType MethodName() const override { return INPAR::STR::dyna_statics; }
 
     //! Provide number of steps, a single-step method returns 1
-    virtual int MethodSteps() const { return 1; }
+    int MethodSteps() const override { return 1; }
 
     //! Give local order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracyDis() const
+    int MethodOrderOfAccuracyDis() const override
     {
       dserror("Sensible to ask?");
       return 0;
     }
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const
+    int MethodOrderOfAccuracyVel() const override
     {
       dserror("Sensible to ask?");
       return 0;
     }
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis() const
+    double MethodLinErrCoeffDis() const override
     {
       dserror("Sensible to ask?");
       return 0.0;
     }
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() const
+    double MethodLinErrCoeffVel() const override
     {
       dserror("Sensible to ask?");
       return 0.0;
     }
 
     //! return time integration factor
-    virtual double TimIntParam() const { return 0.0; }
+    double TimIntParam() const override { return 0.0; }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements
-    void PredictConstDisConsistVelAcc();
+    void PredictConstDisConsistVelAcc() override;
 
     //! Consistent predictor with constant velocities,
     //! extrapolated displacements and consistent accelerations
     //! For quasi-static problems this is equivalent to
     //! a linear extrapolation of the displacement field.
     //! In the first step we do TangDis
-    void PredictConstVelConsistAcc();
+    void PredictConstVelConsistAcc() override;
 
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
     //! For quasi-static problems this is equivalent to
     //! a quadratic extrapolation of the displacement field.
     //! In the first step we do TangDis, in the second ConstVel
-    void PredictConstAcc();
+    void PredictConstAcc() override;
 
     //! Create force residual #fres_ and its stiffness #stiff_
     void EvaluateForceStiffResidual(Teuchos::ParameterList& params) final;
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
-    void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params);
+    void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params) override;
 
     //! Evaluate residual #fres_
-    void EvaluateForceResidual();
+    void EvaluateForceResidual() override;
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
-    double CalcRefNormForce();
+    double CalcRefNormForce() override;
 
     //! Update iteration incrementally
     //!
@@ -187,47 +189,47 @@ namespace STR
     //! displacements #disi_
     //! The Dirichlet BCs are automatically respected, because the
     //! residual displacements #disi_ are blanked at these DOFs.
-    void UpdateIterIteratively();
+    void UpdateIterIteratively() override;
 
     //! Update step
-    void UpdateStepState();
+    void UpdateStepState() override;
 
     //! Update element
-    void UpdateStepElement();
+    void UpdateStepElement() override;
 
     //! Read and set restart for forces
-    void ReadRestartForce();
+    void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override;
     //@}
 
-    virtual void ApplyDirichletBC(const double time,  //!< at time
-        Teuchos::RCP<Epetra_Vector> dis,              //!< displacements
-                                                      //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> vel,              //!< velocities
-                                                      //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> acc,              //!< accelerations
-                                                      //!< (may be Teuchos::null)
-        bool recreatemap                              //!< recreate mapextractor/toggle-vector
-                                                      //!< which stores the DOF IDs subjected
-                                                      //!< to Dirichlet BCs
-                                                      //!< This needs to be true if the bounded DOFs
-                                                      //!< have been changed.
-    );
+    void ApplyDirichletBC(const double time,  //!< at time
+        Teuchos::RCP<Epetra_Vector> dis,      //!< displacements
+                                              //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> vel,      //!< velocities
+                                              //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> acc,      //!< accelerations
+                                              //!< (may be Teuchos::null)
+        bool recreatemap                      //!< recreate mapextractor/toggle-vector
+                                              //!< which stores the DOF IDs subjected
+                                              //!< to Dirichlet BCs
+                                              //!< This needs to be true if the bounded DOFs
+                                              //!< have been changed.
+        ) override;
 
     //! @name Access methods
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext()
+    Teuchos::RCP<Epetra_Vector> Fext() override
     {
       dserror("Statics: no external forces at t_n available");
       return Teuchos::null;
     }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> FextNew() override { return fextn_; }
 
     //@}
 
@@ -255,4 +257,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_STATICS_H

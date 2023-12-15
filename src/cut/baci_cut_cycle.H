@@ -14,16 +14,18 @@
 #include "baci_cut_utils.H"
 
 // forward declaration for the operator
-namespace CORE::GEO
+namespace BACI::CORE::GEO
 {
   namespace CUT
   {
     class Cycle;
   }
-}  // namespace CORE::GEO
+}  // namespace BACI::CORE::GEO
 
 // must be here, as it is supposed to be a friend of the Cycle-class
-std::ostream& operator<<(std::ostream& stream, const CORE::GEO::CUT::Cycle& cycle);
+std::ostream& operator<<(std::ostream& stream, const BACI::CORE::GEO::CUT::Cycle& cycle);
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -128,7 +130,7 @@ namespace CORE::GEO
 
       void GnuplotDump(std::ostream& stream) const;
 
-      // output cycle as as collection of lines into gmsh
+      // output cycle as a collection of lines into gmsh
       void GmshDump(std::ofstream& file) const;
 
       /// Print the stored points to the screen
@@ -140,5 +142,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

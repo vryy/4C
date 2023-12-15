@@ -17,10 +17,12 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #include "baci_comm_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_growth.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 MAT::GrowthLaw::GrowthLaw() : params_(nullptr) {}
@@ -83,7 +85,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
 
   // transform Cdach into a vector
   CORE::LINALG::Matrix<6, 1> Cdachvec(true);
-  UTILS::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
 
   // elastic Green Lagrange strain
   CORE::LINALG::Matrix<NUM_STRESS_3D, 1> glstraindachvec(Cdachvec);
@@ -144,7 +146,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
 
       // transform Cdach into a vector
       Cdachvec.putScalar(0.0);
-      UTILS::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
+      CORE::LINALG::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
 
       glstraindachvec = Cdachvec;
       glstraindachvec -= Id;
@@ -196,7 +198,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
   CORE::LINALG::Matrix<3, 3> Sdach(true);
-  UTILS::VOIGT::Stresses::VectorToMatrix(Sdachvec, Sdach);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(Sdachvec, Sdach);
 
   CORE::LINALG::Matrix<3, 3> tmp(true);
   tmp.MultiplyNT(Sdach, F_ginv);
@@ -204,7 +206,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
   S.MultiplyNN(F_ginv, tmp);
 
   CORE::LINALG::Matrix<6, 1> Svec(true);
-  UTILS::VOIGT::Stresses::MatrixToVector(S, Svec);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(S, Svec);
 
   CORE::LINALG::Matrix<NUM_STRESS_3D, 1> dgrowthfuncdCvec(true);
   EvaluateGrowthFunctionDerivC(
@@ -334,7 +336,7 @@ void MAT::GrowthLawAnisoStrain::EvaluateGrowthTrigger(double& growthtrig,
 {
   // transform Cdachvec into a matrix
   CORE::LINALG::Matrix<3, 3> Cdach(true);
-  UTILS::VOIGT::Strains::VectorToMatrix(Cdachvec, Cdach);
+  CORE::LINALG::VOIGT::Strains::VectorToMatrix(Cdachvec, Cdach);
 
   CORE::LINALG::Matrix<3, 1> CdachDir(true);
   CdachDir.MultiplyNN(1.0, Cdach, direction);
@@ -551,7 +553,6 @@ void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowth
     dktheta = (gammarev / taurev) *
               pow(((theta - thetamin) / (thetamax - thetamin)), gammarev - 1.) /
               (thetamax - thetamin);
-    ;
   }
 
   // calculate F_g^(-1)
@@ -570,7 +571,7 @@ void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowth
 
   // transform Cdachvec into a matrix
   CORE::LINALG::Matrix<3, 3> Cdach(true);
-  UTILS::VOIGT::Strains::VectorToMatrix(Cdachvec, Cdach);
+  CORE::LINALG::VOIGT::Strains::VectorToMatrix(Cdachvec, Cdach);
 
   CORE::LINALG::Matrix<3, 3> dFgT_Cdach(true);
   dFgT_Cdach.MultiplyTN(dFgdtheta, Cdach);
@@ -586,7 +587,7 @@ void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowth
 
   // transform dCdachdtheta into a vector
   CORE::LINALG::Matrix<6, 1> dCdachdthetavec(true);
-  UTILS::VOIGT::Strains::MatrixToVector(dCdachdtheta, dCdachdthetavec);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(dCdachdtheta, dCdachdthetavec);
 
   CORE::LINALG::Matrix<6, 1> dSdachdthetavec(true);
 
@@ -614,7 +615,7 @@ void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowth
 
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivC(
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double traceM, double theta,
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double growthtrig, double theta,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
@@ -632,7 +633,7 @@ void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivC(
 
   double ktheta = 0.;
 
-  if (traceM >= pcrit)
+  if (growthtrig >= pcrit)
     ktheta = (1. / tau) * pow(((thetamax - theta) / (thetamax - thetamin)), gamma);
   else
     ktheta = (1. / taurev) * pow(((theta - thetamin) / (thetamax - thetamin)), gammarev);
@@ -752,7 +753,7 @@ void MAT::GrowthLawAnisoStrainConstTrig::EvaluateGrowthFunctionDerivTheta(double
 
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthLawAnisoStrainConstTrig::EvaluateGrowthFunctionDerivC(
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double traceM, double theta,
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double growthtrig, double theta,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
@@ -835,7 +836,6 @@ void MAT::GrowthLawAnisoStressConstTrig::EvaluateGrowthFunctionDerivTheta(double
     dktheta = (gammarev / taurev) *
               pow(((theta - thetamin) / (thetamax - thetamin)), gammarev - 1.) /
               (thetamax - thetamin);
-    ;
   }
 
   dgrowthfunctheta = dktheta * (growthtrig - pcrit);
@@ -843,7 +843,7 @@ void MAT::GrowthLawAnisoStressConstTrig::EvaluateGrowthFunctionDerivTheta(double
 
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthLawAnisoStressConstTrig::EvaluateGrowthFunctionDerivC(
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double traceM, double theta,
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double growthtrig, double theta,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
@@ -893,7 +893,7 @@ MAT::GrowthLawIsoStress::GrowthLawIsoStress(MAT::PAR::GrowthLawIsoStress* params
 
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthLawIsoStress::EvaluateGrowthFunction(
-    double& growthfunc, const double traceM, const double theta)
+    double& growthfunc, const double growthtrig, const double theta)
 {
   MAT::PAR::GrowthLawIsoStress* params = Parameter();
   // parameters
@@ -907,13 +907,13 @@ void MAT::GrowthLawIsoStress::EvaluateGrowthFunction(
 
   double ktheta = 0.0;
 
-  if (traceM >= hommandel)
+  if (growthtrig >= hommandel)
     ktheta = kthetaplus * pow((thetaplus - theta) / (thetaplus - 1.0), mthetaplus);
   else
     ktheta = kthetaminus * pow((theta - thetaminus) / (1.0 - thetaminus), mthetaminus);
 
 
-  growthfunc = ktheta * (traceM - hommandel);
+  growthfunc = ktheta * (growthtrig - hommandel);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -930,7 +930,7 @@ void MAT::GrowthLawIsoStress::EvaluateGrowthTrigger(double& growthtrig,
 
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthLawIsoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta,
-    double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+    double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
     const CORE::LINALG::Matrix<3, 3>& F_g, const CORE::LINALG::Matrix<3, 1>& direction)
@@ -948,7 +948,7 @@ void MAT::GrowthLawIsoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowthfu
   double ktheta = 0.0;
   double dktheta = 0.0;
 
-  if (traceM >= hommandel)
+  if (growthtrig >= hommandel)
   {
     ktheta = kthetaplus * pow((thetaplus - theta) / (thetaplus - 1.0), mthetaplus);
     dktheta = mthetaplus * kthetaplus *
@@ -970,9 +970,9 @@ void MAT::GrowthLawIsoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowthfu
                               cmatelastic(i, 4) * Cdachvec(4) + cmatelastic(i, 5) * Cdachvec(5));
   }
 
-  const double dtraceM = -(2.0 * traceM + temp) / theta;
+  const double dtraceM = -(2.0 * growthtrig + temp) / theta;
 
-  dgrowthfunctheta = (dktheta * (traceM - hommandel) + ktheta * dtraceM);
+  dgrowthfunctheta = (dktheta * (growthtrig - hommandel) + ktheta * dtraceM);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1463,3 +1463,5 @@ double MAT::GrowthLawConst::DensityScale(const double theta)
 }
 /*----------------------------------------------------------------------------*/
 double MAT::GrowthLawConst::DensityDerivScale(const double theta) { return 3.0 * theta * theta; }
+
+BACI_NAMESPACE_CLOSE

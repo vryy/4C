@@ -11,11 +11,15 @@
 
 #include "baci_mat_muscle_utils.H"
 
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <cmath>
 #include <functional>
+
+BACI_NAMESPACE_OPEN
 
 void MAT::UTILS::MUSCLE::EvaluateLambert(
     const double xi, double &W0, const double tol, const int maxiter)
@@ -323,6 +327,26 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double si
   return sigma_max_ft;
 }
 
+double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
+    const CORE::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
+    const CORE::LINALG::Matrix<1, 3> &x)
+{
+  const std::vector<double> x_vec{x(0), x(1), x(2)};
+
+  // compute time-dependency ft
+  dsassert(activation_function != nullptr, "pointer to activation function is nullptr!");
+  const double ft = activation_function->Evaluate(&x_vec.front(), t_current, 0);
+
+  // ft needs to be in interval [0, 1]
+  if (ft < 0.00 || ft > 1.00)
+    dserror(
+        "Function value not physical, please prescribe a function with values in interval [0,1].");
+
+  const double sigma_max_ft = sigma_max * ft;
+
+  return sigma_max_ft;
+}
+
 double MAT::UTILS::MUSCLE::FiberStretch(
     const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M)
 {
@@ -353,3 +377,4 @@ double MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(
   double dotLambdaM = (lambdaM - lambdaMOld) / timeStepSize;
   return dotLambdaM;
 }
+BACI_NAMESPACE_CLOSE

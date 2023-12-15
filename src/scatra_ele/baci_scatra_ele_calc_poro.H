@@ -14,6 +14,8 @@
 
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace MAT
 {
@@ -27,7 +29,7 @@ namespace DRT
     class ScaTraEleDiffManagerPoro;
 
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcPoro : public virtual ScaTraEleCalc<distype>
     {
      protected:
@@ -41,8 +43,6 @@ namespace DRT
       using my::nsd_ele_;
 
      public:
-      virtual ~ScaTraEleCalcPoro() {}
-
       /// Singleton access method
       static ScaTraEleCalcPoro<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
@@ -63,13 +63,13 @@ namespace DRT
 
      protected:
       //! evaluate action
-      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //   int EvaluateODMesh(  DRT::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
@@ -106,12 +106,12 @@ namespace DRT
       //   );
 
       //! read element coordinates
-      virtual void ReadElementCoordinates(const DRT::Element* ele);
+      void ReadElementCoordinates(const DRT::Element* ele) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
@@ -120,13 +120,13 @@ namespace DRT
           DRT::Element::LocationArray& la);
 
       //! get the material parameters
-      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                          //!< density at t_(n)
-          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-          double& visc,                 //!< fluid viscosity
-          const int iquad = -1          //!< id of current gauss point (default = -1)
-      );
+      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                  //!< density at t_(n)
+          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< id of current gauss point (default = -1)
+          ) override;
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
       virtual void ComputePorosity(const DRT::Element* ele  //!< the element we are dealing with
@@ -136,7 +136,7 @@ namespace DRT
       virtual double ComputePorePressure();
 
       //! material ScaTra
-      virtual void MatScaTra(
+      void MatScaTra(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
           double& densn,                                     //!< density at t_(n)
@@ -144,7 +144,7 @@ namespace DRT
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
 
       //! set diffusivity for poro scatra problem (i.e. scale by porosity)
@@ -200,8 +200,6 @@ namespace DRT
         return;
       }
 
-      ~ScaTraEleDiffManagerPoro(){};
-
       void SetPorosity(double porosity) { porosity_ = porosity; }
 
       double GetPorosity(const int k) const
@@ -232,7 +230,7 @@ namespace DRT
         return;
       }
 
-      virtual ~ScaTraEleInternalVariableManagerPoro(){};
+      virtual ~ScaTraEleInternalVariableManagerPoro() = default;
 
       /*========================================================================*/
       //! @name return methods for internal variables
@@ -247,31 +245,34 @@ namespace DRT
     //      return zeroconvel_;
   };  // namespace ELEMENTS
   //! return convective part in convective form
-  virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const {//    if(k<NO_CONVECTION_NR)
-      {return my::conv_;
-}  // namespace DRT
-   //    else
-   //      return zeroconv_;
-}
-;
+  virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const
+  {  //    if(k<NO_CONVECTION_NR)
+    {
+      return my::conv_;
+    }  // namespace DRT
+       //    else
+       //      return zeroconv_;
+  }
 
-//! return convective term of current scalar value
-virtual const double& ConvPhi(const int k) const {//    if(k<NO_CONVECTION_NR)
-    {return my::conv_phi_[k];
-}
-//    else
-//      return zero_;
-}
-;
+  //! return convective term of current scalar value
+  virtual const double& ConvPhi(const int k) const
+  {  //    if(k<NO_CONVECTION_NR)
+    {
+      return my::conv_phi_[k];
+    }
+    //    else
+    //      return zero_;
+  }
 
-private:
-CORE::LINALG::Matrix<NSD, 1> zeroconvel_;
-CORE::LINALG::Matrix<NEN, 1> zeroconv_;
-double zero_;
-}
-;
+ private:
+  CORE::LINALG::Matrix<NSD, 1> zeroconvel_;
+  CORE::LINALG::Matrix<NEN, 1> zeroconv_;
+  double zero_;
+};  // namespace DRT
 }
 }
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_PORO_H

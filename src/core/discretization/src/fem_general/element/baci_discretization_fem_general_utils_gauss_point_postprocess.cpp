@@ -13,13 +13,14 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   const auto& GetGaussIntegration(unsigned numgp)
   {
-    static std::unordered_map<unsigned,
-        CORE::DRT::UTILS::IntegrationPoints<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>>
+    static std::unordered_map<unsigned, CORE::DRT::UTILS::IntegrationPoints<CORE::FE::dim<distype>>>
         gaussIntegrations = {};
 
     if (gaussIntegrations.find(numgp) == gaussIntegrations.end())
@@ -32,110 +33,107 @@ namespace
   }
 }  // namespace
 
-void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(::DRT::Element& ele,
-    const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& nodal_data)
+void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(BACI::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& data, const BACI::DRT::Discretization& dis,
+    Epetra_MultiVector& nodal_data)
 {
   switch (ele.Shape())
   {
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<::DRT::Element::DiscretizationType::hex8>(
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex8>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::hex8>(data.numRows()));
+    }
+    break;
+    case CORE::FE::CellType::hex27:
+    {
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex27>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::hex27>(data.numRows()));
+    }
+    break;
+    case CORE::FE::CellType::nurbs27:
+    {
+      DRT::UTILS::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<CORE::FE::CellType::nurbs27>(dis,
           ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::hex8>(data.numRows()));
+          GetGaussIntegration<CORE::FE::CellType::nurbs27>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::tet10:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::hex27>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::hex27>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet10>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::tet10>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::tet10>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::tet10>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet4>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::tet4>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::hex20:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<::DRT::Element::DiscretizationType::tet4>(
-          ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::tet4>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex20>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::hex20>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::wedge6:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::hex20>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::hex20>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge6>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::wedge6>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge15:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::wedge6>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::wedge6>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge15>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::wedge15>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::pyramid5:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::wedge15>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::wedge15>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::pyramid5>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::pyramid5>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::quad4:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::pyramid5>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::pyramid5>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad4>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::quad4>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad8:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::quad4>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::quad4>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad8>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::quad8>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad9:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::quad8>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::quad8>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad9>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::quad9>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::tri3:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-          ::DRT::Element::DiscretizationType::quad9>(ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::quad9>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tri3>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::tri3>(data.numRows()));
     }
     break;
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri6:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<::DRT::Element::DiscretizationType::tri3>(
-          ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::tri3>(data.numRows()));
-    }
-    break;
-    case ::DRT::Element::DiscretizationType::tri6:
-    {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<::DRT::Element::DiscretizationType::tri6>(
-          ele, data, nodal_data, true,
-          GetGaussIntegration<::DRT::Element::DiscretizationType::tri6>(data.numRows()));
+      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tri6>(ele, data,
+          nodal_data, true, GetGaussIntegration<CORE::FE::CellType::tri6>(data.numRows()));
     }
     break;
     default:
       dserror("Your discretization type (%s) is not yet in the list!",
-          ::DRT::DistypeToString(ele.Shape()).c_str());
+          CORE::FE::CellTypeToString(ele.Shape()).c_str());
   }
 }
 
-void CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(::DRT::Element& ele,
+void CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(BACI::DRT::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data)
 {
   AssembleAveragedElementValues(element_data, data, ele);
 }
+
+BACI_NAMESPACE_CLOSE

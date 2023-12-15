@@ -12,6 +12,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -26,8 +28,8 @@ namespace DRT::ELEMENTS::SHELL
    * @brief Evaluates a Neumann condition @p condition for the element @p element.
    *
    * @note This function determines the shape of the element at runtime and calls the respective
-   * templated version of @p EvaluateNeumann. If you already know the DiscretizationType of the
-   * element at compile-time, you could directly call @EvaluateNeumann.
+   * templated version of @p EvaluateNeumann. If you already know the CORE::FE::CellType
+   * of the element at compile-time, you could directly call @EvaluateNeumann.
    *
    * @param element (in) : The element where we integrate
    * @param discretization (in) : Discretization
@@ -61,12 +63,14 @@ namespace DRT::ELEMENTS::SHELL
    * Neumann condition
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateNeumann(DRT::Element& element, const DRT::Discretization& discretization,
       DRT::Condition& condition, const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector,
       CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time);
 
 }  // namespace DRT::ELEMENTS::SHELL
+
+BACI_NAMESPACE_CLOSE
 
 #endif

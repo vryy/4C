@@ -24,6 +24,8 @@
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -52,7 +54,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~FluidVolumetricSurfaceFlowWrapper();
+      virtual ~FluidVolumetricSurfaceFlowWrapper() = default;
 
 
       /*!
@@ -106,14 +108,14 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~TotalTractionCorrector();
+      virtual ~TotalTractionCorrector() = default;
 
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
       */
       void EvaluateVelocities(
-          Teuchos::RCP<Epetra_Vector> bcdof, double time, double theta, double dta);
+          Teuchos::RCP<Epetra_Vector> velocities, double time, double theta, double dta);
 
       /*!
       \brief export and set boundary values
@@ -180,8 +182,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~FluidVolumetricSurfaceFlowBc() {}
-
+      virtual ~FluidVolumetricSurfaceFlowBc() = default;
 
       /*!
       \brief calculates the center of mass
@@ -321,7 +322,7 @@ namespace FLD
       \brief Interpolation function
       */
       void Interpolate(Teuchos::RCP<std::vector<double>> V1, Teuchos::RCP<std::vector<double>> V2,
-          int index1, int& index2, double time);
+          int index1, int& index2, double period);
 
       /*!
       \brief Return prebiasing flag
@@ -423,5 +424,7 @@ namespace FLD
 
   }  // namespace UTILS
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_H

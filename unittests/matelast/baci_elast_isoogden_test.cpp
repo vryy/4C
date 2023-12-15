@@ -17,6 +17,7 @@
 
 namespace
 {
+  using namespace BACI;
 
   class IsoOgdenTest : public ::testing::Test
   {

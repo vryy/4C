@@ -26,13 +26,15 @@ namespace
    public:
     Beam3k()
     {
+      using namespace BACI;
+
       testdis_ =
           Teuchos::rcp(new DRT::Discretization("Beam3k", Teuchos::rcp(new Epetra_SerialComm)));
 
-      std::vector<double> xrefe{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
+      std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
 
       for (int lid = 0; lid < 2; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, &xrefe[3 * lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, xrefe[lid], 0)));
 
       testele_ = Teuchos::rcp(new DRT::ELEMENTS::Beam3k(0, 0));
       std::array<int, 2> node_ids{0, 1};
@@ -45,13 +47,13 @@ namespace
       // setup internal beam element parameters
       // different data layout is necessary to call this method
       CORE::LINALG::Matrix<3, 1> coord1(true);
-      coord1(0) = xrefe[0];
-      coord1(1) = xrefe[1];
-      coord1(2) = xrefe[2];
+      coord1(0) = xrefe[0][0];
+      coord1(1) = xrefe[0][1];
+      coord1(2) = xrefe[0][2];
       CORE::LINALG::Matrix<3, 1> coord2(true);
-      coord2(0) = xrefe[3];
-      coord2(1) = xrefe[4];
-      coord2(2) = xrefe[5];
+      coord2(0) = xrefe[1][0];
+      coord2(1) = xrefe[1][1];
+      coord2(2) = xrefe[1][2];
       std::vector<CORE::LINALG::Matrix<3, 1>> xrefe_setup{coord1, coord2};
 
       // setup internal beam element parameters
@@ -72,9 +74,9 @@ namespace
 
    protected:
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<DRT::Discretization> testdis_;
+    Teuchos::RCP<BACI::DRT::Discretization> testdis_;
     //! the beam3k element to be tested
-    Teuchos::RCP<DRT::ELEMENTS::Beam3k> testele_;
+    Teuchos::RCP<BACI::DRT::ELEMENTS::Beam3k> testele_;
   };
 
   /**

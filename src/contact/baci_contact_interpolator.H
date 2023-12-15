@@ -22,6 +22,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 09/14 |
  *---------------------------------------------------------------------*/
@@ -57,7 +59,7 @@ namespace NTS
      \brief Destructor
 
      */
-    virtual ~CoInterpolator(){};
+    virtual ~CoInterpolator() = default;
 
     /*!
      \brief Interpolate for nts algorithm
@@ -202,8 +204,7 @@ namespace NTS
     MTInterpolator(){};
 
     // destructor
-    virtual ~MTInterpolator() {}
-
+    virtual ~MTInterpolator() = default;
     //! @name Access methods
     /// Internal implementation class
     static MTInterpolator* Impl(std::vector<MORTAR::MortarElement*> meles);
@@ -220,7 +221,7 @@ namespace NTS
   /*!
   \author farah
   */
-  template <DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeM>
   class MTInterpolatorCalc : public MTInterpolator
   {
    public:
@@ -228,19 +229,18 @@ namespace NTS
 
     /// Singleton access method
     static MTInterpolatorCalc<distypeM>* Instance(CORE::UTILS::SingletonAction action);
-    ;
 
     //! nm_: number of master element nodes
-    static const int nm_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nm_ = CORE::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distypeM>::dim + 1;
+    static const int ndim_ = CORE::FE::dim<distypeM> + 1;
 
     /*!
      \brief Interpolate for nts problems
 
      */
-    virtual void Interpolate(MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles);
+    void Interpolate(MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles) override;
 
    private:
     /*!
@@ -259,5 +259,7 @@ namespace NTS
   };
 
 }  // namespace NTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_INTERPOLATOR_H

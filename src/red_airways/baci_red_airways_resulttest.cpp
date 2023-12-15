@@ -12,9 +12,11 @@
 
 #include "baci_red_airways_resulttest.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_red_airways_implicitintegration.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -165,3 +167,5 @@ void AIRWAY::RedAirwayResultTest::TestElement(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

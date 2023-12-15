@@ -13,6 +13,8 @@
 #include "baci_mat_anisotropy_extension_provider.H"
 #include "baci_matelast_coupanisoexpobase.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -133,7 +135,7 @@ namespace MAT
 
       /// @name Methods for Packing and Unpacking
       ///@{
-      void PackSummand(DRT::PackBuffer& data) const override;
+      void PackSummand(CORE::COMM::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -187,5 +189,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_COUPANISOEXPO_H

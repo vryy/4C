@@ -36,10 +36,6 @@ BEAM3R
 
 *Shapes:*
 
-- :ref:`HERM2LINE2 <herm2line2>` (2 nodes)
-- :ref:`HERM2LINE3 <herm2line3>` (3 nodes)
-- :ref:`HERM2LINE4 <herm2line4>` (4 nodes)
-- :ref:`HERM2LINE5 <herm2line5>` (5 nodes)
 - :ref:`LINE2 <line2>` (2 nodes)
 - :ref:`LINE3 <line3>` (3 nodes)
 - :ref:`LINE4 <line4>` (4 nodes)
@@ -102,35 +98,6 @@ BEAM3K
 | FAD (opt.)   | None        |
 +--------------+-------------+
 
-.. _structurebele2:
-
-BELE2
-^^^^^
-
-*Shapes:*
-
-- :ref:`LINE2 <line2>` (2 nodes)
-- :ref:`LINE3 <line3>` (3 nodes)
-
-.. _structurediscsh3:
-
-DISCSH3
-^^^^^^^
-
-*Shapes:*
-
-- :ref:`TRI3 <tri3>` (3 nodes)
-
-**Parameters**
-
-+--------------+-------------+
-| Parameter    | Values      |
-+==============+=============+
-| MAT          |  1 x number |
-+--------------+-------------+
-| THICK        |  1 x number |
-+--------------+-------------+
-
 .. _structurerigidsphere:
 
 RIGIDSPHERE
@@ -148,25 +115,6 @@ RIGIDSPHERE
 | RADIUS       |  1 x number |
 +--------------+-------------+
 | DENSITY      |  1 x number |
-+--------------+-------------+
-
-.. _structurenstet4:
-
-NSTET4
-^^^^^^
-
-*Shapes:*
-
-- :ref:`TET4 <tet4>` (4 nodes)
-
-**Parameters**
-
-+--------------+-------------+
-| Parameter    | Values      |
-+==============+=============+
-| MAT          |  1 x number |
-+--------------+-------------+
-| KINEM        |  1 x string |
 +--------------+-------------+
 
 .. _structurenstet5:
@@ -209,7 +157,7 @@ NSTET5
 .. _structureshell7p:
 
 SHELL7P
-^^^^^^
+^^^^^^^
 
 *Shapes:*
 
@@ -250,7 +198,7 @@ SHELL7P
 .. _structureshell7pscatra:
 
 SHELL7PSCATRA
-^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 *Shapes:*
 

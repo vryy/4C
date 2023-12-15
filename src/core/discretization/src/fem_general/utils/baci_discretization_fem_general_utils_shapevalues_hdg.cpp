@@ -12,11 +12,13 @@
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
     const unsigned int degree, const bool completepoly, const unsigned int quadratureDegree)
     : degree_(degree),
@@ -74,9 +76,9 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
 /*----------------------------------------------------------------------*
  |  Evaluate element-dependent shape data (public)    kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
-    const ::DRT::Element& ele, const std::vector<double>& aleDis)
+    const BACI::DRT::Element& ele, const std::vector<double>& aleDis)
 {
   dsassert(ele.Shape() == distype, "Internal error");
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
@@ -142,7 +144,7 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 schoeder 06/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
     : params_(params), degree_(params.degree_)
 {
@@ -192,12 +194,11 @@ CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParam
 /*----------------------------------------------------------------------*
  |  Evaluate face-dependent shape data (public)       kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
-    const ::DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
+    const BACI::DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
-  const ::DRT::Element::DiscretizationType facedis =
-      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
+  const CORE::FE::CellType facedis = CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
   dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
@@ -263,9 +264,9 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
 /*----------------------------------------------------------------------*
  |  Reorder evaluated face shape functions (private)  kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
-    const ::DRT::Element& ele, const unsigned int face)
+    const BACI::DRT::Element& ele, const unsigned int face)
 {
   // For the shape values on faces, we need to figure out how the master element of
   // a face walks over the face and how the current face element wants to walk over
@@ -313,9 +314,9 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
         }
         break;
       case 3:
-        if (distype == ::DRT::Element::hex8 || distype == ::DRT::Element::hex20 ||
-            distype == ::DRT::Element::hex27 || distype == ::DRT::Element::nurbs8 ||
-            distype == ::DRT::Element::nurbs27)
+        if (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::hex20 ||
+            distype == CORE::FE::CellType::hex27 || distype == CORE::FE::CellType::nurbs8 ||
+            distype == CORE::FE::CellType::nurbs27)
         {
           if (trafomap[0] == 1 && trafomap[1] == 0 && trafomap[2] == 3 &&
               trafomap[3] == 2)  // x-direction mirrored
@@ -384,7 +385,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
             dserror("Unknown HEX face orientation in 3D");
           }
         }
-        else if (distype == ::DRT::Element::tet4 || distype == ::DRT::Element::tet10)
+        else if (distype == CORE::FE::CellType::tet4 || distype == CORE::FE::CellType::tet10)
         {
           if (trafomap[0] == 1 && trafomap[1] == 0 && trafomap[2] == 2)
           {
@@ -465,7 +466,8 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
           }
         }
         else
-          dserror("Shape type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+          dserror(
+              "Shape type %s not yet implemented", (CORE::FE::CellTypeToString(distype)).c_str());
         break;
       default:
         dserror("Only implemented in 2D and 3D");
@@ -478,9 +480,9 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
 /*----------------------------------------------------------------------*
  |  Compute the face reference system       (private)  berardocco 09/18 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
-    const ::DRT::Element& ele, const unsigned int face)
+    const BACI::DRT::Element& ele, const unsigned int face)
 {
   // In the case in which the element is not the master element for the face there is the need to
   // find the master element and build the face reference system from the master side.
@@ -534,7 +536,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
 }
 
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::DRT::UTILS::ShapeValuesFaceCache<distype>&
 CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
 {
@@ -546,7 +548,7 @@ CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
   return *owner.Instance(CORE::UTILS::SingletonAction::create);
 }
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>
 CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams params)
 {
@@ -568,7 +570,7 @@ CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams pa
 
 
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>&
 CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Instance()
 {
@@ -584,7 +586,7 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Instance()
 }
 
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesInteriorOnFace>
 CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
 {
@@ -596,7 +598,7 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
   }
 
   // this is expensive and should not be done too often
-  const int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const int nsd = CORE::FE::dim<distype>;
 
   PolynomialSpaceParams polyparams(distype, params.degree_, params.completepoly_);
   Teuchos::RCP<PolynomialSpace<nsd>> polySpace =
@@ -632,50 +634,52 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
 
 
 // explicit instantiation of template classes
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::hex8>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::hex20>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::hex27>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::tet4>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::tet10>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::wedge6>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::wedge15>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::quad4>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::quad8>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::quad9>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::tri3>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::tri6>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::nurbs27>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex8>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex20>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex27>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tet4>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tet10>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::wedge6>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::wedge15>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::pyramid5>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad4>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad8>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad9>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tri3>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tri6>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::nurbs9>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::nurbs27>;
 
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::hex8>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::hex20>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::hex27>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::tet4>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::tet10>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::wedge6>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::wedge15>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::quad4>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::quad8>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::quad9>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::tri3>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::tri6>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::nurbs27>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex8>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex20>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex27>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tet4>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tet10>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::wedge6>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::wedge15>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::pyramid5>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad4>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad8>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad9>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tri3>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tri6>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::nurbs9>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::nurbs27>;
 
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::hex8>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::hex20>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::hex27>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::tet4>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::tet10>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::wedge6>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::wedge15>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::quad4>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::quad8>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::quad9>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::tri3>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::tri6>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::nurbs27>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex8>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex20>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex27>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tet4>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tet10>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::wedge6>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::wedge15>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::pyramid5>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad4>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad8>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad9>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tri3>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tri6>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::nurbs9>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

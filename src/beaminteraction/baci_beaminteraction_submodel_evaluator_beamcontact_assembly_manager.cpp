@@ -14,8 +14,12 @@
 
 #include "baci_beaminteraction_contact_pair.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
  */
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager::BeamContactAssemblyManager() {}
+
+BACI_NAMESPACE_CLOSE

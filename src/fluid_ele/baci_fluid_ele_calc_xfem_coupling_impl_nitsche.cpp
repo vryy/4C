@@ -16,6 +16,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -24,8 +26,8 @@ namespace DRT
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
           CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
           CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
@@ -43,8 +45,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
           CORE::LINALG::SerialDenseMatrix::Base&
               slave_xyze,  ///< global node coordinates of slave element
@@ -64,8 +66,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
           CORE::LINALG::SerialDenseMatrix::Base&
               slave_xyze,  ///< global node coordinates of slave element
@@ -93,8 +95,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::ApplyConvStabTerms(
           const Teuchos::RCP<SlaveElementInterface<distype>>&
               slave_ele,  ///< associated slave element coupling object
@@ -201,8 +203,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_evaluateCoupling(
           const CORE::LINALG::Matrix<nsd_, 1>&
               normal,  ///< outward pointing normal (defined by the coupling partner, that
@@ -343,7 +345,7 @@ namespace DRT
 
         // funct_s * timefac * fac
         funct_s_.Clear();
-        if (slave_distype != DRT::Element::dis_none) this->GetSlaveFunct(funct_s_);
+        if (slave_distype != CORE::FE::CellType::dis_none) this->GetSlaveFunct(funct_s_);
 
         // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
         funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
@@ -756,8 +758,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_solid_Consistency_SlaveTerms(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
           const double& timefacfac,                      ///< theta*dt*fac
@@ -825,8 +827,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype,
           slave_numdof>::NIT_solid_Consistency_SlaveTerms_Projected(const CORE::LINALG::Matrix<nen_,
                                                                         1>& funct_m,  ///< funct_m
@@ -910,8 +912,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype,
           slave_numdof>::NIT_solid_AdjointConsistency_SlaveTerms(const CORE::LINALG::Matrix<nen_,
                                                                      1>& funct_m,  ///< funct_m
@@ -978,8 +980,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_solid_AdjointConsistency_SlaveTerms_Projected(
               const CORE::LINALG::Matrix<nen_, 1>& funct_m,           ///< funct_m
@@ -1016,8 +1018,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_evaluateCouplingOldState(
           const CORE::LINALG::Matrix<nsd_, 1>&
               normal,  ///< outward pointing normal (defined by the coupling partner, that
@@ -1156,7 +1158,7 @@ namespace DRT
 
         // funct_s * timefac * fac
         funct_s_.Clear();
-        if (slave_distype != DRT::Element::dis_none) this->GetSlaveFunct(funct_s_);
+        if (slave_distype != CORE::FE::CellType::dis_none) this->GetSlaveFunct(funct_s_);
 
         // funct_m * funct_m (dyadic product)
         funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
@@ -1451,8 +1453,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Traction_Consistency_Term(
           const CORE::LINALG::Matrix<nen_, 1>&
               funct_m_timefacfac_ks,  ///< funct * timefacfac *kappa_s
@@ -1500,8 +1502,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_Projected_Traction_Consistency_Term(
               const CORE::LINALG::Matrix<nsd_, nen_>&
@@ -1571,8 +1573,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_Consistency_MasterTerms(
           const double& pres_m,                                    ///< master pressure
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
@@ -1669,8 +1671,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_Consistency_SlaveTerms(
           const double& pres_s,                                    ///< slave pressure
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
@@ -1741,8 +1743,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void
       NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_AdjointConsistency_MasterTerms(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
@@ -1852,8 +1854,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void
       NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_AdjointConsistency_SlaveTerms(
           const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
@@ -1939,8 +1941,8 @@ namespace DRT
         return;
       }
 
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_Consistency_MasterTerms(
           const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,  ///< master deriv
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,     ///< funct_m
@@ -2033,8 +2035,8 @@ namespace DRT
       }
 
 
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_visc_Consistency_MasterTerms_Projected(
               const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,      ///< master deriv
@@ -2157,8 +2159,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_Consistency_SlaveTerms(
           const CORE::LINALG::Matrix<nsd_, slave_nen_>&
               derxy_s,                                   ///< slave shape function derivatives
@@ -2251,8 +2253,8 @@ namespace DRT
         return;
       }
 
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_visc_AdjointConsistency_MasterTerms(
               const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
@@ -2356,8 +2358,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_visc_AdjointConsistency_MasterTerms_Projected(
               const CORE::LINALG::Matrix<nsd_, nen_>&
@@ -2483,8 +2485,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void
       NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_AdjointConsistency_SlaveTerms(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< embedded element funct *mu*timefacfac
@@ -2594,8 +2596,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_visc_Neumann_AdjointConsistency_MasterTerms_Projected(
               const CORE::LINALG::Matrix<nsd_, nen_>&
@@ -2724,8 +2726,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
           const double& timefacfac,                      ///< time integration factor
@@ -2865,8 +2867,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty_lin(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
           const double& timefacfac,                      ///< time integration factor
@@ -2912,8 +2914,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty_Projected(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,               ///< funct
           const CORE::LINALG::Matrix<nsd_, nsd_>& projection_matrix,  ///< projection_matrix
@@ -3083,8 +3085,8 @@ namespace DRT
        * add averaged term to balance instabilities due to convective
        * mass transport across the fluid-fluid interface
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Inflow_AveragedTerm(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,   ///< funct
           const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< master velocity
@@ -3165,8 +3167,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_Create_Standard_Projection_Matrices(
               const CORE::LINALG::Matrix<nsd_, 1>& normal  ///< normal vector n^b
@@ -3192,8 +3194,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
               const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
@@ -3261,179 +3263,280 @@ namespace DRT
 
 
 // pairs with numdof=3
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad4,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad8,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad9,
-    3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad9, 3>;
 
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::dis_none,
-    3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::dis_none, 3>;
 
 // volume coupled with numdof = 3, FSI Slavesided, FPI
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::hex8, 3>;
 
 // pairs with numdof=4
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad4,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad8,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad9,
-    4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad9, 4>;
 //
 
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tet4,
-// 4>; template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,
-// DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet4,4>; template
-// class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::tet4,4>; template
-// class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::hex20,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::hex27,
-    4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,
-// DRT::Element::wedge15,4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tet4, 4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::wedge15,4>;
 
 
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::dis_none,
-    4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::dis_none, 4>;
+
+BACI_NAMESPACE_CLOSE

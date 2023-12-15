@@ -44,6 +44,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 MORTAR::InterfaceDataContainer::InterfaceDataContainer()
@@ -498,15 +500,16 @@ void MORTAR::MortarInterface::AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrt
 void MORTAR::MortarInterface::AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele)
 {
   // check for quadratic 2d slave elements to be modified
-  if (mrtrele->IsSlave() &&
-      (mrtrele->Shape() == DRT::Element::line3 || mrtrele->Shape() == DRT::Element::nurbs3))
+  if (mrtrele->IsSlave() && (mrtrele->Shape() == CORE::FE::CellType::line3 ||
+                                mrtrele->Shape() == CORE::FE::CellType::nurbs3))
     quadslave_ = true;
 
   // check for quadratic 3d slave elements to be modified
-  if (mrtrele->IsSlave() &&
-      (mrtrele->Shape() == DRT::Element::quad9 || mrtrele->Shape() == DRT::Element::quad8 ||
-          mrtrele->Shape() == DRT::Element::tri6 || mrtrele->Shape() == DRT::Element::nurbs8 ||
-          mrtrele->Shape() == DRT::Element::nurbs9))
+  if (mrtrele->IsSlave() && (mrtrele->Shape() == CORE::FE::CellType::quad9 ||
+                                mrtrele->Shape() == CORE::FE::CellType::quad8 ||
+                                mrtrele->Shape() == CORE::FE::CellType::tri6 ||
+                                mrtrele->Shape() == CORE::FE::CellType::nurbs8 ||
+                                mrtrele->Shape() == CORE::FE::CellType::nurbs9))
     quadslave_ = true;
 
   idiscret_->AddElement(mrtrele);
@@ -714,13 +717,13 @@ void MORTAR::MortarInterface::InitializeLagMultLin()
       if (node->IsSlave())
       {
         // search the first adjacent element
-        MORTAR::MortarElement::DiscretizationType shape = (node->Elements()[0])->Shape();
+        CORE::FE::CellType shape = (node->Elements()[0])->Shape();
 
         // which discretization type
         switch (shape)
         {
           // line3 contact elements (= quad8/9 or tri6 discretizations)
-          case MORTAR::MortarElement::line3:
+          case CORE::FE::CellType::line3:
           {
             // case1: vertex nodes remain SLAVE
             if (node->Id() == (node->Elements()[0])->NodeIds()[0] ||
@@ -740,7 +743,7 @@ void MORTAR::MortarInterface::InitializeLagMultLin()
           }
 
             // tri6 contact elements (= tet10 discretizations)
-          case MORTAR::MortarElement::tri6:
+          case CORE::FE::CellType::tri6:
           {
             // case1: vertex nodes remain SLAVE
             if (node->Id() == (node->Elements()[0])->NodeIds()[0] ||
@@ -761,9 +764,9 @@ void MORTAR::MortarInterface::InitializeLagMultLin()
           }
 
             // quad8 contact elements (= hex20 discretizations)
-          case MORTAR::MortarElement::quad8:
+          case CORE::FE::CellType::quad8:
             // quad9 contact elements (= hex27 discretizations)
-          case MORTAR::MortarElement::quad9:
+          case CORE::FE::CellType::quad9:
           {
             // case1: vertex nodes remain SLAVE
             if (node->Id() == (node->Elements()[0])->NodeIds()[0] ||
@@ -819,13 +822,13 @@ void MORTAR::MortarInterface::InitializeLagMultConst()
       if (node->IsSlave())
       {
         // search the first adjacent element
-        MORTAR::MortarElement::DiscretizationType shape = (node->Elements()[0])->Shape();
+        CORE::FE::CellType shape = (node->Elements()[0])->Shape();
 
         // which discretization type
         switch (shape)
         {
           // line3 contact elements (= quad8/9 or tri6 discretizations)
-          case MORTAR::MortarElement::line3:
+          case CORE::FE::CellType::line3:
           {
             // case1: vertex nodes must be set to MASTER
             if (node->Id() == (node->Elements()[0])->NodeIds()[0] ||
@@ -843,7 +846,7 @@ void MORTAR::MortarInterface::InitializeLagMultConst()
 
             break;
           }
-          case MORTAR::MortarElement::quad9:
+          case CORE::FE::CellType::quad9:
             if (node->Id() == (node->Elements()[0])->NodeIds()[8])
             {
               // do nothing
@@ -1604,18 +1607,19 @@ void MORTAR::MortarInterface::UpdateMasterSlaveDofMaps()
     if (!node) dserror("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<MortarNode*>(node);
     bool isslave = mrtrnode->IsSlave();
+    const int numdof = mrtrnode->NumDof();
 
     if (isslave)
-      for (int j = 0; j < mrtrnode->NumDof(); ++j) sc.push_back(mrtrnode->Dofs()[j]);
+      for (int j = 0; j < numdof; ++j) sc.push_back(mrtrnode->Dofs()[j]);
     else
-      for (int j = 0; j < mrtrnode->NumDof(); ++j) mc.push_back(mrtrnode->Dofs()[j]);
+      for (int j = 0; j < numdof; ++j) mc.push_back(mrtrnode->Dofs()[j]);
 
     if (Discret().NodeRowMap()->MyGID(gid))
     {
       if (isslave)
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) sr.push_back(mrtrnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) sr.push_back(mrtrnode->Dofs()[j]);
       else
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) mr.push_back(mrtrnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) mr.push_back(mrtrnode->Dofs()[j]);
     }
   }
 
@@ -1736,7 +1740,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps(
 
   // build exporter
   interfaceData_->SlExporterPtr() =
-      Teuchos::rcp(new DRT::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
+      Teuchos::rcp(new CORE::COMM::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
 }
 
 /*----------------------------------------------------------------------*
@@ -1790,13 +1794,14 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<MortarNode*>(node);
-      int istied = (int)mrtrnode->IsTiedSlave();
+      const bool istied = mrtrnode->IsTiedSlave();
+      const int numdof = mrtrnode->NumDof();
 
       if (istied && snodecolmap_->MyGID(gid))
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) sc.push_back(mrtrnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) sc.push_back(mrtrnode->Dofs()[j]);
 
       if (istied && snoderowmap_->MyGID(gid))
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) sr.push_back(mrtrnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) sr.push_back(mrtrnode->Dofs()[j]);
     }
 
     sdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sr.size(), sr.data(), 0, Comm()));
@@ -3094,11 +3099,11 @@ bool MORTAR::MortarInterface::SplitIntElements(
   // *********************************************************************
   // do splitting for given element
   // *********************************************************** quad9 ***
-  if (ele.Shape() == DRT::Element::quad9)
+  if (ele.Shape() == CORE::FE::CellType::quad9)
   {
     // split into for quad4 elements
     int numnode = 4;
-    DRT::Element::DiscretizationType dt = DRT::Element::quad4;
+    CORE::FE::CellType dt = CORE::FE::CellType::quad4;
 
     // first integration element
     // containing parent nodes 0,4,8,7
@@ -3164,13 +3169,13 @@ bool MORTAR::MortarInterface::SplitIntElements(
   }
 
   // *********************************************************** quad8 ***
-  else if (ele.Shape() == DRT::Element::quad8)
+  else if (ele.Shape() == CORE::FE::CellType::quad8)
   {
     // split into four tri3 elements and one quad4 element
     int numnodetri = 3;
     int numnodequad = 4;
-    DRT::Element::DiscretizationType dttri = DRT::Element::tri3;
-    DRT::Element::DiscretizationType dtquad = DRT::Element::quad4;
+    CORE::FE::CellType dttri = CORE::FE::CellType::tri3;
+    CORE::FE::CellType dtquad = CORE::FE::CellType::quad4;
 
     // first integration element
     // containing parent nodes 0,4,7
@@ -3245,11 +3250,11 @@ bool MORTAR::MortarInterface::SplitIntElements(
   }
 
   // ************************************************************ tri6 ***
-  else if (ele.Shape() == DRT::Element::tri6)
+  else if (ele.Shape() == CORE::FE::CellType::tri6)
   {
     // split into four tri3 elements
     int numnode = 3;
-    DRT::Element::DiscretizationType dt = DRT::Element::tri3;
+    CORE::FE::CellType dt = CORE::FE::CellType::tri3;
 
     // first integration element
     // containing parent nodes 0,3,5
@@ -3307,7 +3312,7 @@ bool MORTAR::MortarInterface::SplitIntElements(
   }
 
   // *********************************************************** quad4 ***
-  else if (ele.Shape() == DRT::Element::quad4)
+  else if (ele.Shape() == CORE::FE::CellType::quad4)
   {
     // 1:1 conversion to IntElement
     std::vector<DRT::Node*> nodes(4);
@@ -3321,7 +3326,7 @@ bool MORTAR::MortarInterface::SplitIntElements(
   }
 
   // ************************************************************ tri3 ***
-  else if (ele.Shape() == DRT::Element::tri3)
+  else if (ele.Shape() == CORE::FE::CellType::tri3)
   {
     // 1:1 conversion to IntElement
     std::vector<DRT::Node*> nodes(3);
@@ -3502,7 +3507,7 @@ void MORTAR::MortarInterface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
     {
       std::map<int, double>& mmap = mrtrnode->MoData().GetMmod();
       int rowsize = mrtrnode->NumDof();
-      int colsize = (int)mmap.size() * rowsize;
+      int colsize = static_cast<int>(mmap.size()) * rowsize;
 
       CORE::LINALG::SerialDenseMatrix Mnode(rowsize, colsize);
       std::vector<int> lmrow(rowsize);
@@ -3626,13 +3631,13 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
 
     // search within the first adjacent element
     auto* mrtrele = dynamic_cast<MortarElement*>(mrtrnode->Elements()[0]);
-    MORTAR::MortarElement::DiscretizationType shape = mrtrele->Shape();
+    CORE::FE::CellType shape = mrtrele->Shape();
 
     // which discretization type
     switch (shape)
     {
       // line3 contact elements (= tri6||quad8||quad9 discretizations)
-      case MORTAR::MortarElement::line3:
+      case CORE::FE::CellType::line3:
       {
         // modification factor
         if (INPAR::MORTAR::LagMultQuad() == INPAR::MORTAR::lagmult_lin)
@@ -3656,7 +3661,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
       }
 
       // tri6 contact elements (= tet10 discretizations)
-      case MORTAR::MortarElement::tri6:
+      case CORE::FE::CellType::tri6:
       {
         // modification factor
         theta = 1.0 / 5.0;
@@ -3679,7 +3684,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
       }
 
         // quad8 contact elements (= hex20 discretizations)
-      case MORTAR::MortarElement::quad8:
+      case CORE::FE::CellType::quad8:
       {
         // modification factor
         theta = 1.0 / 5.0;
@@ -3712,7 +3717,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
         // ** identity matrix here, which we achieve by   **
         // ** setting the trafo factor theta = 0.0!       **
         // *************************************************
-      case MORTAR::MortarElement::quad9:
+      case CORE::FE::CellType::quad9:
       {
         // modification factor
         theta = 0.0;
@@ -3865,7 +3870,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
 
       // search within the first adjacent element
       auto* mrtrele = dynamic_cast<MortarElement*>(mrtrnode->Elements()[0]);
-      MORTAR::MortarElement::DiscretizationType shape = mrtrele->Shape();
+      CORE::FE::CellType shape = mrtrele->Shape();
 
       // real master nodes are easily identified
       if (!mrtrnode->IsOnBound()) nt = master;
@@ -3874,7 +3879,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
       {
         switch (shape)
         {
-          case MORTAR::MortarElement::line3:
+          case CORE::FE::CellType::line3:
           {
             // edge node
             if (mrtrnode->Id() == mrtrele->NodeIds()[2]) nt = slaveedge;
@@ -3883,7 +3888,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           }
 
           // tri6 contact elements (= tet10 discretizations)
-          case MORTAR::MortarElement::tri6:
+          case CORE::FE::CellType::tri6:
           {
             // edge nodes
             if (mrtrnode->Id() == mrtrele->NodeIds()[3] ||
@@ -3894,7 +3899,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           }
 
           // quad8 contact elements (= hex20 discretizations)
-          case MORTAR::MortarElement::quad8:
+          case CORE::FE::CellType::quad8:
           {
             // edge nodes
             if (mrtrnode->Id() == mrtrele->NodeIds()[4] ||
@@ -3906,7 +3911,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           }
 
           // quad9 contact elements (= hex27 discretizations)
-          case MORTAR::MortarElement::quad9:
+          case CORE::FE::CellType::quad9:
           {
             // edge nodes
             if (mrtrnode->Id() == mrtrele->NodeIds()[4] ||
@@ -4382,3 +4387,5 @@ bool MORTAR::MortarInterface::CheckOutputList(
   // We only make it to here, if all checks passed. So it's safe to return 'true'.
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

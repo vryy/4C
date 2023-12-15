@@ -17,10 +17,12 @@
 #include "baci_so3_poro.H"
 #include "baci_xfem_xfluid_contact_communicator.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegratorNitscheFsi::CoIntegratorNitscheFsi(Teuchos::ParameterList& params,
-    DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
+CONTACT::CoIntegratorNitscheFsi::CoIntegratorNitscheFsi(
+    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : CoIntegratorNitsche(params, eletype, comm), ele_contact_state_(-2)
 {
   if (fabs(theta_) > 1e-12)
@@ -263,12 +265,12 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele,
     const CORE::LINALG::Matrix<2, 1>& xsi, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir)
 {
-  if (cele->ParentElement()->Shape() != DRT::Element::hex8)
+  if (cele->ParentElement()->Shape() != CORE::FE::CellType::hex8)
     dserror("This Element shape is not implemented for CONTACT::UTILS::CauchyStressatXi");
 
   CORE::LINALG::Matrix<3, 1> pxsi(true);
   CORE::LINALG::Matrix<3, 3> trafo;
-  CONTACT::UTILS::SoEleGP<DRT::Element::hex8, 3>(*cele, 1., xsi.A(), pxsi, trafo);
+  CONTACT::UTILS::SoEleGP<CORE::FE::CellType::hex8, 3>(*cele, 1., xsi.A(), pxsi, trafo);
 
   double sigma_nt;
 
@@ -281,7 +283,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele,
   }
   else
   {
-    dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
+    dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
         cele->ParentElement())
         ->GetCauchyNDirAndDerivativesAtXi(pxsi, cele->MoData().ParentDisp(),
             cele->MoData().ParentPFPres(), n, dir, sigma_nt, nullptr, nullptr, nullptr, nullptr,
@@ -292,7 +294,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parentdistype, int dim>
+template <CORE::FE::CellType parentdistype, int dim>
 void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wgt,
     const double* gpcoord, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtrafo)
@@ -311,3 +313,5 @@ void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wg
   // coordinates of the current integration point in parent coordinate system
   for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);
 }
+
+BACI_NAMESPACE_CLOSE

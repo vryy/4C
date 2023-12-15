@@ -27,6 +27,8 @@ CORRLENGTH 5.0
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -49,7 +51,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAAneohooke_stopro::CreateMaterial()
 
 MAT::AAAneohooke_stoproType MAT::AAAneohooke_stoproType::instance_;
 
-DRT::ParObject* MAT::AAAneohooke_stoproType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAAneohooke_stoproType::Create(const std::vector<char>& data)
 {
   MAT::AAAneohooke_stopro* aaa = new MAT::AAAneohooke_stopro();
   aaa->Unpack(data);
@@ -77,9 +79,9 @@ MAT::AAAneohooke_stopro::AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke_stopro::Pack(DRT::PackBuffer& data) const
+void MAT::AAAneohooke_stopro::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -98,10 +100,8 @@ void MAT::AAAneohooke_stopro::Pack(DRT::PackBuffer& data) const
 void MAT::AAAneohooke_stopro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -472,3 +472,5 @@ bool MAT::AAAneohooke_stopro::VisData(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

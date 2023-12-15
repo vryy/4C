@@ -17,14 +17,16 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 /*----------------------------------------------------------------------*/
 #include "baci_mat_viscoelasthyper.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_summand.H"
 #include "baci_matelast_visco_generalizedgenmax.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -49,7 +51,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ViscoElastHyper::CreateMaterial()
 MAT::ViscoElastHyperType MAT::ViscoElastHyperType::instance_;
 
 
-DRT::ParObject* MAT::ViscoElastHyperType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ViscoElastHyperType::Create(const std::vector<char>& data)
 {
   MAT::ViscoElastHyper* elhy = new MAT::ViscoElastHyper();
   elhy->Unpack(data);
@@ -106,9 +108,9 @@ MAT::ViscoElastHyper::ViscoElastHyper(MAT::PAR::ViscoElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -196,10 +198,8 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
   viscofract_ = false;
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -513,17 +513,18 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<33, 1> modxi(true);
 
   EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
-  UTILS::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
-  UTILS::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
-  UTILS::VOIGT::Strains::ToStressLike(C_strain, C_stress);
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
+  CORE::LINALG::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
+  CORE::LINALG::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
+  CORE::LINALG::VOIGT::Strains::ToStressLike(C_strain, C_stress);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
 
 
-  UTILS::VOIGT::IdentityMatrix(id2);
+  CORE::LINALG::VOIGT::IdentityMatrix(id2);
 
-  using VoigtNotation = UTILS::VOIGT::NotationType;
-  UTILS::VOIGT::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::stress>(id4sharp);
-  UTILS::VOIGT::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::strain>(id4);
+  using VoigtNotation = CORE::LINALG::VOIGT::NotationType;
+  CORE::LINALG::VOIGT::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::stress>(
+      id4sharp);
+  CORE::LINALG::VOIGT::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::strain>(id4);
 
   ElastHyperEvaluateInvariantDerivatives(
       prinv, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
@@ -1018,9 +1019,9 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
     CORE::LINALG::Matrix<6, 1> ddPII(true);
 
     EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
-    UTILS::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
+    CORE::LINALG::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
 
-    UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
+    CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
     ElastHyperEvaluateInvariantDerivatives(
         prinv, dPI, ddPII, branchpotsum, branchProperties, gp, eleGID);
 
@@ -1217,3 +1218,5 @@ void MAT::ViscoElastHyper::EvaluateViscoFract(CORE::LINALG::Matrix<6, 1> stress,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

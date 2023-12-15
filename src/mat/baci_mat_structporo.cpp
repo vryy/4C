@@ -8,13 +8,15 @@
 
 #include "baci_mat_structporo.H"
 
+#include "baci_comm_utils_factory.H"  // for function Factory in Unpack
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"  // for function Factory in Unpack
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_poro_law.H"
 #include "baci_mat_so3_material.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
@@ -92,7 +94,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::StructPoro::CreateMaterial()
 
 MAT::StructPoroType MAT::StructPoroType::instance_;
 
-DRT::ParObject* MAT::StructPoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::StructPoroType::Create(const std::vector<char>& data)
 {
   auto* struct_poro = new MAT::StructPoro();
   struct_poro->Unpack(data);
@@ -144,11 +146,11 @@ double MAT::StructPoro::Density() const
 
 double MAT::StructPoro::DensitySolidPhase() const { return mat_->Density(); }
 
-void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
+void MAT::StructPoro::Pack(CORE::COMM::PackBuffer& data) const
 {
   if (not is_initialized_) dserror("poro material not initialized. Not a poro element?");
 
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -186,10 +188,8 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
 void MAT::StructPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -240,7 +240,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, datamat);
   if (datamat.size() > 0)
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(datamat);  // Unpack is done here
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(datamat);  // Unpack is done here
     auto* mat = dynamic_cast<MAT::So3Material*>(o);
     if (mat == nullptr) dserror("failed to unpack elastic material");
     mat_ = Teuchos::rcp(mat);
@@ -416,3 +416,5 @@ bool MAT::StructPoro::VisData(
   }
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,9 @@ namespace Teuchos
 {
   class ParameterList;
 }
+
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class CoordinateSystemProvider;
@@ -38,6 +41,11 @@ namespace MIXTURE
   class ElastinMembranePrestressStrategy
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ElastinMembranePrestressStrategy() = default;
+
     /*!
      * \brief Evaluates the fraction of the elastin membrane contribution to the total elastin
      * response to ensure equilibrium in the reference configuration
@@ -63,6 +71,11 @@ namespace MIXTURE
   class ElastinMembraneEvaluation
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ElastinMembraneEvaluation() = default;
+
     /*!
      * \brief Evaluates the 2D membrane stress
      *
@@ -75,4 +88,6 @@ namespace MIXTURE
         CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
+BACI_NAMESPACE_CLOSE
+
 #endif  // MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H

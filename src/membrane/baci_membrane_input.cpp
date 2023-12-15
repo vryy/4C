@@ -8,15 +8,17 @@
 \brief Nonlinear Membrane Finite Element input
 
 *----------------------------------------------------------------------*/
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_so3_material.H"
 #include "baci_membrane.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
  |  ReadElement                                            fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -57,7 +59,9 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
   return true;
 }
 
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

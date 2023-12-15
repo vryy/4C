@@ -18,6 +18,8 @@
 #include "baci_lib_conditiondefinition.H"
 #include "baci_linalg_equilibrate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -82,7 +84,7 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
       &poromultiphasescatradynmono);
 
   // convergence criteria adaptivity --> note ADAPTCONV_BETTER set pretty small
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &poromultiphasescatradynmono);
   DoubleParameter("ADAPTCONV_BETTER", 0.001,
@@ -158,24 +160,23 @@ void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
         DRT::Condition::PoroMultiphaseScatraOxyPartPressCalcCond, true, DRT::Condition::Volume));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<::INPUT::LineComponent>> oxypartpresscomponents;
+    std::vector<Teuchos::RCP<INPUT::LineComponent>> oxypartpresscomponents;
 
     {
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("SCALARID")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("SCALARID")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("n")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("n")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("Pb50")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("Pb50")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("CaO2_max")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("CaO2_max")));
-      oxypartpresscomponents.push_back(
-          Teuchos::rcp(new ::INPUT::SeparatorComponent("alpha_bl_eff")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("alpha_bl_eff")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("rho_oxy")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("rho_oxy")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("rho_bl")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("rho_bl")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("SCALARID")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("SCALARID")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("n")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("n")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("Pb50")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("Pb50")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("CaO2_max")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("CaO2_max")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("alpha_bl_eff")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("alpha_bl_eff")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("rho_oxy")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("rho_oxy")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("rho_bl")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("rho_bl")));
     }
 
     // insert input file line components into condition definitions
@@ -196,3 +197,5 @@ void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
 
 
 #endif  // INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
+
+BACI_NAMESPACE_CLOSE

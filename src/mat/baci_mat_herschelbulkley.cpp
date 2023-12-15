@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::HerschelBulkley::HerschelBulkley(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -38,7 +40,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::HerschelBulkley::CreateMaterial()
 MAT::HerschelBulkleyType MAT::HerschelBulkleyType::instance_;
 
 
-DRT::ParObject* MAT::HerschelBulkleyType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::HerschelBulkleyType::Create(const std::vector<char>& data)
 {
   MAT::HerschelBulkley* herbul = new MAT::HerschelBulkley();
   herbul->Unpack(data);
@@ -57,9 +59,9 @@ MAT::HerschelBulkley::HerschelBulkley(MAT::PAR::HerschelBulkley* params) : param
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::HerschelBulkley::Pack(DRT::PackBuffer& data) const
+void MAT::HerschelBulkley::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -77,10 +79,8 @@ void MAT::HerschelBulkley::Pack(DRT::PackBuffer& data) const
 void MAT::HerschelBulkley::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -101,3 +101,5 @@ void MAT::HerschelBulkley::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

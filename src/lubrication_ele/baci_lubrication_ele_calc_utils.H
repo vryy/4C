@@ -13,86 +13,88 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace LUBRICATION
 {
   //! Template Meta Programming version of switch over discretization type
-  template <DRT::Element::DiscretizationType DISTYPE>
+  template <CORE::FE::CellType DISTYPE>
   struct DisTypeToOptGaussRule
   {
   };
   template <>
-  struct DisTypeToOptGaussRule<DRT::Element::quad4>
+  struct DisTypeToOptGaussRule<CORE::FE::CellType::quad4>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
   };
   template <>
-  struct DisTypeToOptGaussRule<DRT::Element::quad8>
+  struct DisTypeToOptGaussRule<CORE::FE::CellType::quad8>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
   };
   template <>
-  struct DisTypeToOptGaussRule<DRT::Element::quad9>
+  struct DisTypeToOptGaussRule<CORE::FE::CellType::quad9>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
   };
   template <>
-  struct DisTypeToOptGaussRule<DRT::Element::tri3>
+  struct DisTypeToOptGaussRule<CORE::FE::CellType::tri3>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
   };
   template <>
-  struct DisTypeToOptGaussRule<DRT::Element::tri6>
+  struct DisTypeToOptGaussRule<CORE::FE::CellType::tri6>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_16point;
   };
   template <>
-  struct DisTypeToOptGaussRule<DRT::Element::line2>
+  struct DisTypeToOptGaussRule<CORE::FE::CellType::line2>
   {
     static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
   };
   template <>
-  struct DisTypeToOptGaussRule<DRT::Element::line3>
+  struct DisTypeToOptGaussRule<CORE::FE::CellType::line3>
   {
     static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_5point;
   };
 
   //! Template Meta Programming version of switch over discretization type
-  template <DRT::Element::DiscretizationType DISTYPE>
+  template <CORE::FE::CellType DISTYPE>
   struct DisTypeToGaussRuleForExactSol
   {
   };
   template <>
-  struct DisTypeToGaussRuleForExactSol<DRT::Element::quad4>
+  struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad4>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
   };
   template <>
-  struct DisTypeToGaussRuleForExactSol<DRT::Element::quad8>
+  struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad8>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
   };
   template <>
-  struct DisTypeToGaussRuleForExactSol<DRT::Element::quad9>
+  struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad9>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
   };
   template <>
-  struct DisTypeToGaussRuleForExactSol<DRT::Element::tri3>
+  struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tri3>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
   };
   template <>
-  struct DisTypeToGaussRuleForExactSol<DRT::Element::tri6>
+  struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tri6>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_16point;
   };
   template <>
-  struct DisTypeToGaussRuleForExactSol<DRT::Element::line2>
+  struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::line2>
   {
     static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
   };  // not tested
   template <>
-  struct DisTypeToGaussRuleForExactSol<DRT::Element::line3>
+  struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::line3>
   {
     static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_5point;
   };  // not tested
@@ -100,5 +102,7 @@ namespace LUBRICATION
 
 }  // namespace LUBRICATION
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_ELE_CALC_UTILS_H

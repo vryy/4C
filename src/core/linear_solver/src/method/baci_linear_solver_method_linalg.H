@@ -20,6 +20,8 @@
 // forward declarations
 class Epetra_LinearProblem;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -48,50 +50,27 @@ namespace CORE::LINALG
   {
    public:
     /*!
-    \brief Standard Constructor
-
-    \param params (in) : parameter list holding solver configuration
-    \param comm (in)   : a reference to a epetra communicator object
-    \param outfile (in): ptr to an error file on proc 0 only. If nullptr on input,
-                         no output will be generated.
-    */
-    Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm, FILE* outfile);
-
-    /*!
     \brief Destructor
 
     */
     virtual ~Solver();
 
     /*!
-    \brief Constructor with default solver Amesos_KLU
-
-    Creates a default solver using nonsymmetric KLU without passing a
-    parameter list. This is useful for quick development.
-    default solver intentionally is not Umfpack as Umfpack is not a
-     Trilinos build-in library.
-
-    \param comm (in)   : a reference to a epetra communicator object
-    \param outfile (in): ptr to an error file on proc 0 only. If nullptr on input,
-                         no output will be generated.
-    */
-    Solver(const Epetra_Comm& comm, FILE* outfile = nullptr);
-
-    /*!
     \brief Constructor taking a validated input parameter list for Solver
 
-    Creates a solver using the parameters provided by inparams. This parameter
-    list differs from the internally stored #params_. They are translated
-    by #TranslateSolverParameters.
+    Creates a solver using the parameters provided by inparams. They are translated
+    by #TranslateSolverParameters to the format required by Belos, if @p translate_params is true.
+    Otherwise, they need to be provided such that Belos understands them.
 
     \param inparams (in): input parameter list as provided by DRT::Problem,
-                          e.g. DRT::Problem::SolverParams(num) in case of solver for
-                          structures and num according to STRUCTURAL DYNAMIC
+                          e.g. DRT::Problem::SolverParams(num)
     \param comm     (in): a reference to a Epetra communicator object
-    \param outfile  (in): pointer to an error file
+
+    \param translate_params_to_belos  (in): translate parameters to Belos
 
     */
-    Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm, FILE* outfile);
+    Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm,
+        bool translate_params_to_belos = true);
 
     /*!
     \brief Set-up of stuff common to all constructors
@@ -231,24 +210,21 @@ namespace CORE::LINALG
                           with #params_
     \date 02/07,11/08
     */
-    static const Teuchos::ParameterList TranslateSolverParameters(
-        const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList TranslateSolverParameters(const Teuchos::ParameterList& inparams);
 
     /*!
     \brief Translate BACI dat file parameters
 
     */
-    static const Teuchos::ParameterList TranslateBACIToML(
+    static Teuchos::ParameterList TranslateBACIToML(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
-    static const Teuchos::ParameterList TranslateBACIToMuelu(
+    static Teuchos::ParameterList TranslateBACIToMuelu(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
-    static const Teuchos::ParameterList TranslateBACIToIfpack(
-        const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList TranslateBACIToIfpack(const Teuchos::ParameterList& inparams);
 
-    static const Teuchos::ParameterList TranslateBACIToBelos(
-        const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList TranslateBACIToBelos(const Teuchos::ParameterList& inparams);
 
     /*!
     \brief Add a validated input parameter list as sublist to internal
@@ -300,8 +276,6 @@ namespace CORE::LINALG
     const Epetra_Comm& comm_;
     //! (internal) parameter list
     Teuchos::RCP<Teuchos::ParameterList> params_;
-    //! file to write output to (proc 0 only, can be nullptr on input)
-    FILE* outfile_;
 
     /// internal solver strategy
     Teuchos::RCP<CORE::LINEAR_SOLVER::SolverType<Epetra_Operator, Epetra_MultiVector>> solver_;
@@ -316,5 +290,7 @@ namespace CORE::LINALG
   };  // class Solver
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_LINALG_SOLVER_H

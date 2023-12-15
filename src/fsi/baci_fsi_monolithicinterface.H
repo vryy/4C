@@ -13,14 +13,15 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   /// Interface of monolithic algorithms to NOX group
   class MonolithicInterface
   {
    public:
-    virtual ~MonolithicInterface() {}
-
+    virtual ~MonolithicInterface() = default;
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
@@ -42,5 +43,7 @@ namespace FSI
     //@}
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

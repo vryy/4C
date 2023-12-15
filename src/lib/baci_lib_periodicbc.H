@@ -18,6 +18,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -65,7 +67,7 @@ class PeriodicBoundaryConditions
   \brief Destructor
 
   */
-  virtual ~PeriodicBoundaryConditions();
+  virtual ~PeriodicBoundaryConditions() = default;
 
   //! @name Framework
 
@@ -363,5 +365,7 @@ class PeriodicBoundaryConditions
   //!\brief time measurement (discret->Redistribute)
   Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_PERIODICBC_H

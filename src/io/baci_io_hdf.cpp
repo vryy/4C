@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  * The Constructor of the HDFReader (num_proc defaults to 1)
@@ -463,3 +465,5 @@ void IO::HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int&
           (num_output_proc_ / new_proc_num) * (my_id - mod + 1);
   }
 }
+
+BACI_NAMESPACE_CLOSE

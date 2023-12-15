@@ -17,6 +17,8 @@
 #include "baci_poroelast_monolithic.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /// constructor
 ADAPTER::StructurePoroWrapper::StructurePoroWrapper(
     Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection)
@@ -136,3 +138,5 @@ void ADAPTER::StructurePoroWrapper::RecoverLagrangeMultiplierAfterNewtonStep(
   if (type_ == FieldWrapper::type_PoroField)
     poro_->RecoverLagrangeMultiplierAfterNewtonStep(iterinc);
 }
+
+BACI_NAMESPACE_CLOSE

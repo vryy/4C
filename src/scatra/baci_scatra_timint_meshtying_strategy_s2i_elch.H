@@ -10,8 +10,11 @@
 #ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H
 
+#include "baci_lib_element.H"
 #include "baci_scatra_timint_elch.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace SCATRA
 {
@@ -39,19 +42,16 @@ namespace SCATRA
             parameters  //!< input parameters for scatra-scatra interface coupling
     );
 
-    //! destructor
-    virtual ~MeshtyingStrategyS2IElch() { return; };
-
     //! compute time step size
     void ComputeTimeStepSize(double& dt) final;
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying();
+    void EvaluateMeshtying() override;
 
     void EvaluatePointCoupling() override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    void Update() const;
+    void Update() const override;
 
    private:
     //! copy constructor
@@ -64,7 +64,7 @@ namespace SCATRA
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
 
     //! minimum interfacial overpotential associated with scatra-scatra interface layer growth
     double etagrowthmin_;
@@ -95,7 +95,7 @@ namespace SCATRA
         const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const override;
   };
 
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarCellCalcElch : public MortarCellCalc<distypeS, distypeM>
   {
    public:
@@ -147,7 +147,7 @@ namespace SCATRA
             k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
         CORE::LINALG::SerialDenseVector& r_s,  //!< slave-side residual vector
         CORE::LINALG::SerialDenseVector& r_m   //!< master-side residual vector
-    );
+        ) override;
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
     void EvaluateConditionNTS(
@@ -171,14 +171,14 @@ namespace SCATRA
             k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
         CORE::LINALG::SerialDenseVector& r_s,  //!< slave-side residual vector
         CORE::LINALG::SerialDenseVector& r_m   //!< master-side residual vector
-    );
+        ) override;
 
     //! evaluate factor F/RT
     virtual double GetFRT() const;
   };  // class MortarCellCalcElch
 
 
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarCellCalcElchSTIThermo : public MortarCellCalcElch<distypeS, distypeM>
   {
    public:
@@ -208,7 +208,7 @@ namespace SCATRA
         CORE::LINALG::SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
         CORE::LINALG::SerialDenseVector& cellvector1,   //!< cell vector 1
         CORE::LINALG::SerialDenseVector& cellvector2    //!< cell vector 2
-    );
+        ) override;
 
    private:
     //! abbreviation
@@ -245,17 +245,17 @@ namespace SCATRA
     void ExtractNodeValues(const DRT::Discretization& idiscret,  //!< interface discretization
         DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
         DRT::Element::LocationArray& la_master                   //!< master-side location array
-    );
+        ) override;
 
     //! evaluate factor F/RT
-    double GetFRT() const;
+    double GetFRT() const override;
 
     //! nodal, slave-side temperature variables associated with time t_{n+1} or t_{n+alpha_f}
     CORE::LINALG::Matrix<nen_slave_, 1> etempnp_slave_;
   };  // class MortarCellCalcElchSTIThermo
 
 
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarCellCalcSTIElch : public MortarCellCalc<distypeS, distypeM>
   {
    public:
@@ -284,7 +284,7 @@ namespace SCATRA
         CORE::LINALG::SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
         CORE::LINALG::SerialDenseVector& cellvector1,   //!< cell vector 1
         CORE::LINALG::SerialDenseVector& cellvector2    //!< cell vector 2
-    );
+        ) override;
 
    private:
     //! abbreviation
@@ -333,7 +333,7 @@ namespace SCATRA
     void ExtractNodeValues(const DRT::Discretization& idiscret,  //!< interface discretization
         DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
         DRT::Element::LocationArray& la_master                   //!< master-side location array
-    );
+        ) override;
 
     //! nodal, slave-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
     std::vector<CORE::LINALG::Matrix<nen_slave_, 1>> eelchnp_slave_;
@@ -342,4 +342,6 @@ namespace SCATRA
     std::vector<CORE::LINALG::Matrix<nen_master_, 1>> eelchnp_master_;
   };  // class MortarCellCalcSTIElch
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H

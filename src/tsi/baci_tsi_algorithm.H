@@ -23,6 +23,7 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/12 |
@@ -80,8 +81,6 @@ namespace TSI
     //! create using a Epetra_Comm
     explicit Algorithm(const Epetra_Comm& comm);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
 
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
@@ -93,26 +92,26 @@ namespace TSI
     virtual void Solve() = 0;
 
     //! read restart data
-    virtual void ReadRestart(int step  //!< step number where the calculation is continued
-        ) = 0;
+    void ReadRestart(int step  //!< step number where the calculation is continued
+        ) override = 0;
 
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
 
     //! access to thermal field
-    const Teuchos::RCP<::ADAPTER::Thermo>& ThermoField() { return thermo_; }
+    const Teuchos::RCP<ADAPTER::Thermo>& ThermoField() { return thermo_; }
 
    protected:
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep() = 0;
+    void PrepareTimeStep() override = 0;
 
     //! calculate stresses, strains, energies
     virtual void PrepareOutput() = 0;
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! write output
     virtual void Output(bool forced_writerestart = false);
@@ -160,10 +159,10 @@ namespace TSI
     //! @name Underlying fields
 
     //! underlying structure of the FSI problem
-    Teuchos::RCP<::ADAPTER::Structure> structure_;
+    Teuchos::RCP<ADAPTER::Structure> structure_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<::ADAPTER::Thermo> thermo_;
+    Teuchos::RCP<ADAPTER::Thermo> thermo_;
 
     //! contact strategies
     Teuchos::RCP<CONTACT::CoTSILagrangeStrategy> contact_strategy_lagrange_;
@@ -176,7 +175,7 @@ namespace TSI
     //! flag for matchinggrid
     const bool matchinggrid_;
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volcoupl_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_;
 
     Teuchos::RCP<CORE::ADAPTER::Coupling> coupST_;  // S: master, T: slave
     //@}
@@ -189,6 +188,8 @@ namespace TSI
   };  // Algorithm
 }  // namespace TSI
 
-
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // TSI_ALGORITHM_H

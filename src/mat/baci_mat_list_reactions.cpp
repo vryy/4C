@@ -18,6 +18,8 @@ is just a "control instance".
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | standard constructor                                     thon 11/14 |
  *----------------------------------------------------------------------*/
@@ -58,7 +60,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatListReactions::CreateMaterial()
 MAT::MatListReactionsType MAT::MatListReactionsType::instance_;
 
 
-DRT::ParObject* MAT::MatListReactionsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MatListReactionsType::Create(const std::vector<char>& data)
 {
   MAT::MatListReactions* MatListReactions = new MAT::MatListReactions();
   MatListReactions->Unpack(data);
@@ -137,9 +139,9 @@ void MAT::MatListReactions::Clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 11/14 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::Pack(DRT::PackBuffer& data) const
+void MAT::MatListReactions::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -177,10 +179,8 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
   Clear();
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover paramsreac_
   int matid(-1);
@@ -409,3 +409,5 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrixAddVariables(const int k,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

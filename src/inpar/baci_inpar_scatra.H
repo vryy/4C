@@ -11,6 +11,8 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -251,14 +253,6 @@ namespace INPAR
       coupling_volmortar
     };
 
-    /// system type for the l2-projection
-    enum L2ProjectionSystemType
-    {
-      l2_proj_system_std,
-      l2_proj_system_lumped,
-      l2_proj_system_dual
-    };
-
     /// set the scatra parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
@@ -269,4 +263,6 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // INPAR_SCATRA_H

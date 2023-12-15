@@ -11,6 +11,7 @@
 
 #include "baci_contact_meshtying_defines.H"
 #include "baci_inpar_contact.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -22,6 +23,8 @@
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -162,7 +165,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   mmatrix_->Multiply(false, *Xmaster, *rhs);
 
   // solve with default solver
-  CORE::LINALG::Solver solver(Comm());
+  Teuchos::ParameterList solvparams;
+  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+  CORE::LINALG::Solver solver(solvparams, Comm());
   solver.Solve(dmatrix_->EpetraOperator(), Xslavemod, rhs, true);
 
   //**********************************************************************
@@ -448,12 +454,12 @@ bool CONTACT::MtPenaltyStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epe
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
     {
       if (force_.is_null()) dserror("force vector not available");
       vec_ptr = force_;
@@ -472,12 +478,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::GetRhsBlockPtr(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+    const enum CONTACT::MatBlockType& bt) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
       if (stiff_.is_null()) dserror("stiffness not available");
       mat_ptr = stiff_;
       break;
@@ -487,3 +493,5 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBl
   }
   return mat_ptr;
 }
+
+BACI_NAMESPACE_CLOSE

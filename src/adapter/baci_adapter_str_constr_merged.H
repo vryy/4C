@@ -24,6 +24,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace STR
@@ -58,36 +60,36 @@ namespace ADAPTER
     StructureConstrMerged(Teuchos::RCP<Structure> stru);
 
     /// setup this object
-    virtual void Setup();
+    void Setup() override;
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
 
     /// right-hand-side of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS();
+    Teuchos::RCP<const Epetra_Vector> RHS() override;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const;
+    Teuchos::RCP<const Epetra_Vector> Dispnp() const override;
 
     /// known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const;
+    Teuchos::RCP<const Epetra_Vector> Dispn() const override;
 
     /*! \brief known velocity at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() const;
+    Teuchos::RCP<const Epetra_Vector> Veln() const override;
 
     /*! known acceleration at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    virtual Teuchos::RCP<const Epetra_Vector> Accn() const;
+    Teuchos::RCP<const Epetra_Vector> Accn() const override;
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override;
 
     /// apply interface forces to structural solver
     ///
@@ -95,40 +97,40 @@ namespace ADAPTER
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce);
+    void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     /// update displacement and evaluate elements
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void Evaluate(Teuchos::RCP<const Epetra_Vector>
             dispstepinc  ///< solution increment between time step n and n+1
-    );
+        ) override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return structure_->GetDBCMapExtractor();
     };
 
     /// domain map of system matrix
-    virtual const Epetra_Map& DomainMap() const;
+    const Epetra_Map& DomainMap() const override;
 
     /// are there any algebraic constraints?
-    virtual bool HaveConstraint() { return structure_->HaveConstraint(); };
+    bool HaveConstraint() override { return structure_->HaveConstraint(); };
 
     /// Return bool indicating if constraints are defined
-    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
     {
       return structure_->GetConstraintManager();
     };
 
-    virtual INPAR::STR::STC_Scale GetSTCAlgo() { return structure_->GetSTCAlgo(); };
+    INPAR::STR::STC_Scale GetSTCAlgo() override { return structure_->GetSTCAlgo(); };
 
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
     {
       dserror("FSI with merged structural constraints does not work in combination with STC!");
       return structure_->GetSTCMat();
@@ -136,9 +138,9 @@ namespace ADAPTER
 
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void UpdateIterIncrConstr(
+    void UpdateIterIncrConstr(
         Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
-    )
+        ) override
     {
       structure_->UpdateIterIncrConstr(lagrincr);
     }
@@ -148,7 +150,7 @@ namespace ADAPTER
     //@}
 
     /// Integrate from t1 to t2
-    virtual int Integrate() { return structure_->Integrate(); }
+    int Integrate() override { return structure_->Integrate(); }
 
    private:
     /// the constraint map setup for full <-> stuct+constr transition
@@ -177,4 +179,6 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

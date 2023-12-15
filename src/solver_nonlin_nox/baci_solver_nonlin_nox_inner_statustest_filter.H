@@ -36,6 +36,12 @@ namespace NOX
   {
     class Vector;
   }  // namespace Epetra
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     class Group;
@@ -78,7 +84,7 @@ namespace NOX
           Teuchos::RCP<Generic> armijo_ = Teuchos::null;
 
           /// set of the used infeasibility measures
-          std::vector<Teuchos::RCP<NOX::MeritFunction::Generic>> infeasibility_vec_;
+          std::vector<Teuchos::RCP<::NOX::MeritFunction::Generic>> infeasibility_vec_;
 
           /// weight for the objective function value
           double weight_objective_func_ = 0.0;
@@ -138,7 +144,7 @@ namespace NOX
           typedef std::pair<Teuchos::RCP<const Point>, Teuchos::RCP<const Point>>
               plain_const_point_pair;
           typedef std::vector<Teuchos::RCP<Point>> plain_point_set;
-          typedef std::vector<Teuchos::RCP<NOX::MeritFunction::Generic>> plain_merit_func_set;
+          typedef std::vector<Teuchos::RCP<::NOX::MeritFunction::Generic>> plain_merit_func_set;
 
          public:
           /// \brief constructor
@@ -155,34 +161,31 @@ namespace NOX
            * manager object
            *
            *  \author hiermeier \date 04/17 */
-          Filter(const FilterParams& fparams, const NOX::Utils& utils);
-
-          /// destructor
-          virtual ~Filter(){};
+          Filter(const FilterParams& fparams, const ::NOX::Utils& utils);
 
           /** \brief %Test the inner stopping criterion
            *
            *  The test can (and should, if possible) be skipped if
            *  checkType is NOX::StatusType::None.  If the test is skipped, then
-           *  the status should be set to NOX::StatusTest::Unevaluated. */
-          virtual StatusType CheckStatus(const Interface::Required& interface,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType);
+           *  the status should be set to ::NOX::StatusTest::Unevaluated. */
+          StatusType CheckStatus(const Interface::Required& interface,
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent inner checkStatus call
-          virtual StatusType GetStatus() const;
+          StatusType GetStatus() const override;
 
           //! Output formatted description of inner stopping test to output stream.
-          virtual std::ostream& Print(std::ostream& stream, int indent = 0) const;
+          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          private:
           /// initialize the (filter) points
-          void InitPoints(const Interface::Required& interface, const NOX::Solver::Generic& solver,
-              const NOX::Abstract::Group& grp);
+          void InitPoints(const Interface::Required& interface,
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp);
 
           /// evaluate and set new trial point
           void SetTrialPoint(
-              const NOX::MeritFunction::Generic& merit_func, const NOX::Abstract::Group& grp);
+              const ::NOX::MeritFunction::Generic& merit_func, const ::NOX::Abstract::Group& grp);
 
           /// reset the internal state at the beginning of a new Newton iteration
           void Reset();
@@ -202,8 +205,8 @@ namespace NOX
               const Point& trial_fp, const unsigned non_dominated_index);
 
           /// set-up all model terms
-          void SetupModelTerms(const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp,
-              const Interface::Required& interface);
+          void SetupModelTerms(const ::NOX::Abstract::Vector& dir,
+              const ::NOX::Abstract::Group& grp, const Interface::Required& interface);
 
           /// execute the sufficient reduction check
           enum NOX::NLN::INNER::StatusTest::StatusType SufficientReductionCheck(
@@ -211,14 +214,14 @@ namespace NOX
 
           /// Is the step still larger than the minimal step length estimate?
           NOX::NLN::INNER::StatusTest::StatusType IsAdmissibleStep(
-              const NOX::Solver::Generic& solver, const double& step) const;
+              const ::NOX::Solver::Generic& solver, const double& step) const;
 
           /// access the active set status
-          enum NOX::StatusTest::StatusType GetActiveSetStatus(
-              const NOX::Solver::Generic& solver) const;
+          enum ::NOX::StatusTest::StatusType GetActiveSetStatus(
+              const ::NOX::Solver::Generic& solver) const;
 
           /// get the specified constraint tolerance
-          double GetConstraintTolerance(const NOX::Solver::Generic& solver) const;
+          double GetConstraintTolerance(const ::NOX::Solver::Generic& solver) const;
 
           /** \brief Augment the current filter
            *
@@ -291,20 +294,20 @@ namespace NOX
 
           /// executed in the end of the check status test
           StatusType PostCheckStatus(const NOX::NLN::LineSearch::Generic& linesearch,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType);
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType);
 
           /// actual test
           void ExecuteCheckStatus(const NOX::NLN::LineSearch::Generic& linesearch,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType);
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType);
 
           /// recover from a back up state if the SOC fails
-          void RecoverFromBackup(NOX::Abstract::Group& grp) const;
+          void RecoverFromBackup(::NOX::Abstract::Group& grp) const;
 
           /// throw an error if all strategies fail and the step is too short
           void ThrowIfStepTooShort(const NOX::NLN::LineSearch::Generic& linesearch,
-              const NOX::Solver::Generic& solver) const;
+              const ::NOX::Solver::Generic& solver) const;
 
          protected:
           //! Status of the inner filter status test
@@ -316,10 +319,6 @@ namespace NOX
           class BackupState
           {
            public:
-            BackupState() = default;
-
-            ~BackupState() = default;
-
             /** \brief Create a backup of the lastly accepted state at the very
              *  beginning of each new Newton step
              *
@@ -328,20 +327,20 @@ namespace NOX
              *  \param(in) dir: current search direction
              *
              *  \author hiermeier \date 12/17 */
-            void create(const NOX::Abstract::Group& grp, const NOX::Abstract::Vector& dir);
+            void create(const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& dir);
 
             /// recover from the back-up
-            void recover(NOX::Abstract::Group& grp) const;
+            void recover(::NOX::Abstract::Group& grp) const;
 
            private:
             /** \brief check the recovered state
              *
              *  If the L2-norm of the recovered rhs differs more than machine
              *  precision from the backup state rhs, an error will be thrown. */
-            void checkRecoveredState(const NOX::Abstract::Vector& f) const;
+            void checkRecoveredState(const ::NOX::Abstract::Vector& f) const;
 
            private:
-            Teuchos::RCP<NOX::Epetra::Vector> xvector_ = Teuchos::null;
+            Teuchos::RCP<::NOX::Epetra::Vector> xvector_ = Teuchos::null;
             double normf_ = 0.0;
           };
 
@@ -371,12 +370,12 @@ namespace NOX
             SOCBase() = delete;
 
             /// use default destructor
-            virtual ~SOCBase(){};
+            virtual ~SOCBase() = default;
 
             /// The base class does not perform a SOC step
             virtual StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
-                const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-                NOX::StatusTest::CheckType checkType)
+                const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+                ::NOX::StatusTest::CheckType checkType)
             {
               return filter_.GetStatus();
             };
@@ -397,31 +396,30 @@ namespace NOX
                 : SOCBase(filter, user_type){/* empty */};
 
             SecondOrderCorrection() = delete;
-            virtual ~SecondOrderCorrection(){};
 
             /// compute the SOC step
-            virtual StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
-                const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-                NOX::StatusTest::CheckType checkType);
+            StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
+                const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+                ::NOX::StatusTest::CheckType checkType) override;
 
            private:
             /// compute the SOC system
-            void computeSystem(NOX::NLN::Group& grp, const NOX::Solver::Generic& solver) const;
+            void computeSystem(NOX::NLN::Group& grp, const ::NOX::Solver::Generic& solver) const;
 
             /// solve the SOC system
             void solve(const NOX::NLN::LineSearch::Generic& linesearch,
-                const NOX::Solver::Generic& solver, NOX::Abstract::Group& grp) const;
+                const ::NOX::Solver::Generic& solver, ::NOX::Abstract::Group& grp) const;
 
             /// postprocess the SOC step
             void postprocess(const NOX::NLN::LineSearch::Generic& linesearch,
-                const NOX::Solver::Generic& solver, NOX::Abstract::Group& grp,
-                NOX::StatusTest::CheckType checkType);
+                const ::NOX::Solver::Generic& solver, ::NOX::Abstract::Group& grp,
+                ::NOX::StatusTest::CheckType checkType);
 
             /// Which SOC system shall be used?
-            CorrectionType whichType(const NOX::Solver::Generic& solver) const;
+            CorrectionType whichType(const ::NOX::Solver::Generic& solver) const;
 
             /// Use an automatic type choice (recommended).
-            CorrectionType automaticTypeChoice(const NOX::Solver::Generic& solver) const;
+            CorrectionType automaticTypeChoice(const ::NOX::Solver::Generic& solver) const;
 
             /// print infos about the SOC step
             void print(std::ostream& os) const;
@@ -464,16 +462,13 @@ namespace NOX
                   init_max_theta_scaling_(fparams.init_max_theta_blocking_scaling_),
                   filter_(filter){};
 
-            /// destructor
-            ~Blocking() = default;
-
             /* \brief check if the current filter set blocks good iterates
              *
              * If the filter rejected the trial point but the inner test would accept it
              * we have an indicator for a blocking filter set. This can happen due to old
              * historic information which is not reliable for the current neighborhood. */
             void Check(const NOX::NLN::LineSearch::Generic& linesearch,
-                const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
+                const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 const Point& rejected_fp);
 
             /** add the current iterate to the blocking set if the sufficient
@@ -519,18 +514,18 @@ namespace NOX
             }
 
             /// evaluate the function values of the infeasibility merit functions
-            void computef(double* theta_values, const NOX::Abstract::Group& grp) const;
+            void computef(double* theta_values, const ::NOX::Abstract::Group& grp) const;
 
             /// find the maximal infeasibility measure in a set of theta values
             unsigned findMaxThetaId(double* theta_values) const;
 
             /// compute the slope of all infeasibility merit functions
-            void computeSlope(const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp,
+            void computeSlope(const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp,
                 double* theta_slope_values) const;
 
             /// compute mixed 2-nd order terms of all infeasibility merit functions
-            void computeMixed2ndOrderTerms(const NOX::Abstract::Vector& dir,
-                const NOX::Abstract::Group& grp, double* theta_mixed_values) const;
+            void computeMixed2ndOrderTerms(const ::NOX::Abstract::Vector& dir,
+                const ::NOX::Abstract::Group& grp, double* theta_mixed_values) const;
 
             /** \brief compute the over-all minimal step length estimate based on
              *  all infeasibility merit functions */
@@ -551,8 +546,8 @@ namespace NOX
           {
            public:
             /// create a new point ( NOT a filter point)
-            static Teuchos::RCP<Point> create(const NOX::MeritFunction::Generic& merit_func,
-                const Infeasibility& infeasibility_func, const NOX::Abstract::Group& grp);
+            static Teuchos::RCP<Point> create(const ::NOX::MeritFunction::Generic& merit_func,
+                const Infeasibility& infeasibility_func, const ::NOX::Abstract::Group& grp);
 
             /// create a new filter point from an existing point
             static Teuchos::RCP<Point> makeFilterPoint(const Point& p, const bool do_scaling);
@@ -655,13 +650,13 @@ namespace NOX
 
             /// print the current point
             std::ostream& print(
-                std::ostream& stream, int par_indent_length, const NOX::Utils* u) const;
+                std::ostream& stream, int par_indent_length, const ::NOX::Utils* u) const;
             inline std::ostream& print(
-                std::ostream& stream, int par_indent_length, const NOX::Utils& u) const
+                std::ostream& stream, int par_indent_length, const ::NOX::Utils& u) const
             {
               return print(stream, par_indent_length, &u);
             };
-            inline std::ostream& print(std::ostream& stream, const NOX::Utils& u) const
+            inline std::ostream& print(std::ostream& stream, const ::NOX::Utils& u) const
             {
               return print(stream, 0, u);
             };
@@ -786,7 +781,7 @@ namespace NOX
           enum FilterStatusType filter_status_;
 
           /// nox output management object
-          const NOX::Utils& utils_;
+          const ::NOX::Utils& utils_;
 
           /// output precision of the scientific numbers in the print methods
           static const int OUTPUT_PRECISION = 15;
@@ -796,5 +791,7 @@ namespace NOX
   }         // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_H

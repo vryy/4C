@@ -2,6 +2,7 @@ set(TESTNAME unittests_mat)
 
 set(SOURCE_LIST
     # cmake-format: sortable
+    baci_druckerprager_test.cpp
     baci_elasthyper_service_test.cpp
     baci_electrode_test.cpp
     baci_inelastic_defgrad_factors_test.cpp

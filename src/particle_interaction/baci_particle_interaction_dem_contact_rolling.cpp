@@ -14,6 +14,8 @@
 #include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -231,3 +233,5 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingPotentialEnergy(
 {
   rollingpotentialenergy = 0.5 * k_rolling_ * UTILS::VecDot(gap_rolling, gap_rolling);
 }
+
+BACI_NAMESPACE_CLOSE

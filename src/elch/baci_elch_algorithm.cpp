@@ -12,6 +12,8 @@
 #include "baci_linalg_mapextractor.H"
 #include "baci_scatra_timint_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& elchcontrol,
@@ -190,3 +192,5 @@ bool ELCH::Algorithm::ConvergenceCheck(
 
   return stopnonliniter;
 }
+
+BACI_NAMESPACE_CLOSE

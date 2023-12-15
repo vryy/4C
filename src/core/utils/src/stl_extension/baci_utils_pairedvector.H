@@ -24,6 +24,8 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEN
 {
   /// copy types
@@ -101,7 +103,7 @@ namespace CORE::GEN
      *  @param[in] type   Apply this copy type.
      *
      *  \author hiermeier \date 05/17 */
-    pairedvector(const pairedvector<Key, T>& source, enum GEN::CopyType type = DeepCopy)
+    pairedvector(const pairedvector& source, enum GEN::CopyType type = DeepCopy)
         : _m(0, pair_type()), _entries(0)
 
     {
@@ -119,14 +121,6 @@ namespace CORE::GEN
           break;
       }
     }
-
-    /**
-     *  The dtor only erases the elements, and note that if the
-     *  elements themselves are pointers, the pointed-to memory is
-     *  not touched in any way.  Managing the pointer is the user's
-     *  responsibility.
-     */
-    ~pairedvector() {}
 
     /**
      *  Returns a read/write iterator that points to the first
@@ -480,5 +474,7 @@ namespace CORE::GEN
   using quick_pairedvector = pairedvector<Key, T, quick_insert_policy<Key, T>>;
 
 }  // namespace CORE::GEN
+
+BACI_NAMESPACE_CLOSE
 
 #endif

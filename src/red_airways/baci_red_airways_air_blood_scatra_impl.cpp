@@ -16,7 +16,6 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gder2.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_air_0d_O2_saturation.H"
@@ -25,9 +24,12 @@
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_red_airways_evaluation_data.h"
+#include "baci_utils_function.H"
 
 #include <fstream>
 #include <iomanip>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -37,12 +39,12 @@ DRT::ELEMENTS::RedAirBloodScatraImplInterface* DRT::ELEMENTS::RedAirBloodScatraI
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      static RedAirBloodScatraImpl<DRT::Element::line2>* acinus;
+      static RedAirBloodScatraImpl<CORE::FE::CellType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new RedAirBloodScatraImpl<DRT::Element::line2>;
+        acinus = new RedAirBloodScatraImpl<CORE::FE::CellType::line2>;
       }
       return acinus;
     }
@@ -57,7 +59,7 @@ DRT::ELEMENTS::RedAirBloodScatraImplInterface* DRT::ELEMENTS::RedAirBloodScatraI
 /*----------------------------------------------------------------------*
   | constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::RedAirBloodScatraImpl()
 {
 }
@@ -65,7 +67,7 @@ DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::RedAirBloodScatraImpl()
 /*----------------------------------------------------------------------*
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Evaluate(RedAirBloodScatra* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -81,7 +83,7 @@ int DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Evaluate(RedAirBloodScatra* e
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(RedAirBloodScatra* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const MAT::Material> material)
@@ -100,50 +102,12 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(RedAirBloodScatra* e
 
 }  // RedAirBloodScatraImpl::Initial
 
-/*----------------------------------------------------------------------*
- |  calculate element matrix and right hand side (private)  ismail 01/10|
- |                                                                      |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Sysmat(RedAirBloodScatra* ele,
-    CORE::LINALG::SerialDenseVector& epnp, CORE::LINALG::SerialDenseVector& epn,
-    CORE::LINALG::SerialDenseVector& epnm, CORE::LINALG::SerialDenseMatrix& sysmat,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<const MAT::Material> material,
-    Teuchos::ParameterList& params, double time, double dt)
-{
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 01/10|
- |  at terminal nodes.                                                  |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::EvaluateTerminalBC(RedAirBloodScatra* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
-{
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 01/10|
- |  at terminal nodes.                                                  |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::CalcFlowRates(RedAirBloodScatra* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& elevec1,  // a_volumenp,
-    CORE::LINALG::SerialDenseVector& elevec2,  // a_volume_strain_np,
-    std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
-
-{
-}
 
 /*----------------------------------------------------------------------*
  |  Get the coupled the values on the coupling interface    ismail 07/10|
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::GetCoupledValues(RedAirBloodScatra* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
@@ -196,7 +160,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::GetCoupledValues(RedAirBlood
  |                [RED_AIR_BLOOD_SCATRA element]                        |
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAirBloodScatra* ele,
     CORE::LINALG::SerialDenseVector& dscatra, CORE::LINALG::SerialDenseVector& dvo2,
     CORE::LINALG::SerialDenseVector& scatra_acinus, Teuchos::ParameterList& params,
@@ -434,3 +398,5 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
   scatra_acinus[ai[0]] = (vO2[ai[0]] - vO2ab) * nO2perVO2a / vAir;
   scatra_acinus[ci[0]] = (vO2[ci[0]] + vO2ab) * nO2perVO2b / vBlood;
 }
+
+BACI_NAMESPACE_CLOSE

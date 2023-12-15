@@ -23,6 +23,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -65,41 +66,37 @@ namespace FS3I
     //! constructor of base class for partitioned FS3I
     PartFS3I(const Epetra_Comm& comm);
 
-    //! destructor of base class for partitioned FS3I
-    virtual ~PartFS3I(){};
-
     //! initialize this class
-    virtual void Init();
+    void Init() override;
 
     //! setup this class
-    virtual void Setup();
+    void Setup() override;
 
     //! @name overall FS3I system
     //@{
 
     //! time loop to be defined in inherited classes (structure depends on
     //! considered coupling, i.e. one-way or two-way)
-    virtual void Timeloop() = 0;
+    void Timeloop() override = 0;
 
     //! flag whether time loop should be finished
     bool NotFinished() const { return ((step_ < numstep_) and ((time_ + 1e-14) < timemax_)); };
 
     //! read and set fields needed for restart
-    virtual void ReadRestart();
+    void ReadRestart() override;
 
     /// redistribute the  FPSI interface, if running on parallel. Just needed in the case of FPS3I
-    void RedistributeInterface() { return; };
+    void RedistributeInterface() override { return; };
 
     /// create a volmortar object
-    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
-        Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> structscatradis);
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
+        Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis);
 
     //! set-up of FSI and ScaTra systems
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! test results for individual fields
-    virtual void TestResults(const Epetra_Comm& comm);
+    void TestResults(const Epetra_Comm& comm) override;
 
     //! information transfer FSI -> ScaTra
     void SetFSISolution();
@@ -137,28 +134,28 @@ namespace FS3I
     //@}
 
     /// transport quantity from fluid to fluid-scalar
-    const Teuchos::RCP<const Epetra_Vector> FluidToFluidScalar(
+    Teuchos::RCP<const Epetra_Vector> FluidToFluidScalar(
         const Teuchos::RCP<const Epetra_Vector> fluidvector) const;
 
     /// transport quantity from fluid-scalar to fluid
-    const Teuchos::RCP<const Epetra_Vector> FluidScalarToFluid(
+    Teuchos::RCP<const Epetra_Vector> FluidScalarToFluid(
         const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const;
 
     /// transport quantity from structure to structure-scalar
-    const Teuchos::RCP<const Epetra_Vector> StructureToStructureScalar(
+    Teuchos::RCP<const Epetra_Vector> StructureToStructureScalar(
         const Teuchos::RCP<const Epetra_Vector> structurevector) const;
 
     /// transport quantity from structure-scalar to structure
-    const Teuchos::RCP<const Epetra_Vector> StructureScalarToStructure(
+    Teuchos::RCP<const Epetra_Vector> StructureScalarToStructure(
         const Teuchos::RCP<const Epetra_Vector> structurescalavector) const;
 
    private:
     /// transport quantity from i-th volmortar master to i-th volmortar slave
-    const Teuchos::RCP<const Epetra_Vector> VolMortarMasterToSlavei(
+    Teuchos::RCP<const Epetra_Vector> VolMortarMasterToSlavei(
         const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const;
 
     /// transport quantity from i-th volmortar slave to i-th volmortar master
-    const Teuchos::RCP<const Epetra_Vector> VolMortarSlaveToMasteri(
+    Teuchos::RCP<const Epetra_Vector> VolMortarSlaveToMasteri(
         const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const;
 
    protected:
@@ -171,7 +168,7 @@ namespace FS3I
 
    private:
     //! volume coupling (using mortar) adapter
-    std::vector<Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl>> volume_coupling_objects_;
+    std::vector<Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl>> volume_coupling_objects_;
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
@@ -181,5 +178,7 @@ namespace FS3I
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

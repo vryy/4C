@@ -18,6 +18,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -35,7 +37,7 @@ namespace DRT
       \date 01/09
     */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ArteryEleCalcLinExp : public ArteryEleCalc<distype>
     {
      private:
@@ -91,17 +93,17 @@ namespace DRT
         */
       void Sysmat(Artery* ele, const CORE::LINALG::Matrix<my::iel_, 1>& eqnp,
           const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
-          CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& estif,
-          CORE::LINALG::Matrix<2 * my::iel_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
+          CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
+          CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const MAT::Material> material,
           double dt);
 
       void ScatraSysmat(Artery* ele, const CORE::LINALG::Matrix<2 * my::iel_, 1>& escatran,
-          const CORE::LINALG::Matrix<my::iel_, 1>& eqnp,
-          const CORE::LINALG::Matrix<my::iel_, 1>& eqn,
+          const CORE::LINALG::Matrix<my::iel_, 1>& ewfnp,
+          const CORE::LINALG::Matrix<my::iel_, 1>& ewbnp,
           const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
           const CORE::LINALG::Matrix<my::iel_, 1>& earean,
-          CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& estif,
-          CORE::LINALG::Matrix<2 * my::iel_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
+          CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
+          CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const MAT::Material> material,
           double dt);
 
       virtual bool SolveRiemann(Artery* ele, Teuchos::ParameterList& params,
@@ -109,12 +111,12 @@ namespace DRT
           Teuchos::RCP<const MAT::Material> mat);
 
       virtual void EvaluateTerminalBC(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& disctretization, std::vector<int>& lm,
+          DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> mat);
 
       virtual void EvaluateScatraBC(Artery* ele, Teuchos::ParameterList& params,
           DRT::Discretization& disctretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat);
+          Teuchos::RCP<MAT::Material> material);
 
       virtual void CalcPostprocessingValues(Artery* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -170,5 +172,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -14,6 +14,8 @@
 #include "baci_inpar_wear.H"
 #include "baci_mortar_coupling2d.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -38,12 +40,6 @@ namespace CONTACT
     CoCoupling2d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
         MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~CoCoupling2d() {}
-
     //! @name Evlauation methods
 
     /*!
@@ -58,7 +54,7 @@ namespace CONTACT
     integration includes the Mortar matrices D/M and the gap g.
 
     */
-    bool IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
     \brief Return type of wear surface definition
@@ -113,11 +109,6 @@ namespace CONTACT
         Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
         std::vector<MORTAR::MortarElement*> mele);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~CoCoupling2dManager() {}
 
     /*!
     \brief Get communicator
@@ -144,16 +135,16 @@ namespace CONTACT
     \brief Evaluate mortar coupling
 
     */
-    virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
-    virtual bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
     //@}
    private:
     /*!
     \brief Calculate consistent dual shape functions in boundary elements
 
     */
-    virtual void ConsistDualShape();
+    void ConsistDualShape() override;
 
    protected:
     // don't want = operator and cctor
@@ -166,5 +157,7 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_COUPLING2D_H

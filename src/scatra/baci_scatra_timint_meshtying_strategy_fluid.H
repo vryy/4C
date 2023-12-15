@@ -13,6 +13,8 @@
 #include "baci_inpar_fluid.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace FLD
 {
@@ -41,26 +43,23 @@ namespace SCATRA
     //! constructor
     explicit MeshtyingStrategyFluid(SCATRA::ScaTraTimIntImpl* scatratimint);
 
-    //! destructor
-    virtual ~MeshtyingStrategyFluid() { return; };
-
     //! return global map of degrees of freedom
-    const Epetra_Map& DofRowMap() const;
+    const Epetra_Map& DofRowMap() const override;
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying();
+    void EvaluateMeshtying() override;
 
     //! include Dirichlet conditions into condensation
-    void IncludeDirichletInCondensation() const;
+    void IncludeDirichletInCondensation() const override;
 
     //! initialize meshtying objects
-    virtual void InitMeshtying();
+    void InitMeshtying() override;
 
     bool SystemMatrixInitializationNeeded() const override { return true; }
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override;
 
-    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       dserror("InterfaceMaps() is not implemented in MeshtyingStrategyFluid.");
       return Teuchos::null;
@@ -77,14 +76,14 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
         const int& iteration,                      //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
-    ) const;
+    ) const override;
 
     //! return linear solver for global system of linear equations
-    const CORE::LINALG::Solver& Solver() const;
+    const CORE::LINALG::Solver& Solver() const override;
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check
-    virtual void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
 
     //! fluid-fluid meshtying algorithm for internal interface
     Teuchos::RCP<FLD::Meshtying> meshtying_;
@@ -97,4 +96,6 @@ namespace SCATRA
     MeshtyingStrategyFluid(const MeshtyingStrategyFluid& old);
   };  // class MeshtyingStrategyFluid
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H

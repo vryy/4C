@@ -12,11 +12,13 @@
 
 #include "baci_fluid_xfluid.H"
 #include "baci_fluid_xfluid_fluid.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 
 #include <string>
+
+BACI_NAMESPACE_OPEN
 
 
 FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluid& xfluid)
@@ -115,3 +117,5 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@ simplifies the triad construction and torsion free beam elements can be used.
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -41,16 +43,12 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingPair2D3DPlane() = default;
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidVolumeMeshtyingPair2D3DPlane(){};
 
     /*!
      *\brief things that need to be done in a separate loop before the actual evaluation loop
      *      over all contact pairs
      */
-    virtual void PreEvaluate() override;
+    void PreEvaluate() override;
 
     /**
      * \brief Evaluate this contact element pair.
@@ -75,5 +73,7 @@ namespace BEAMINTERACTION
         const bool reference) const override;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

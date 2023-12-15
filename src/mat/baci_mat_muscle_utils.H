@@ -13,8 +13,11 @@
 #define BACI_MAT_MUSCLE_UTILS_H
 
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_function.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -241,15 +244,35 @@ namespace MAT
        *
        * The time-dependent optimal active stress is obtained by sigma_opt = sigma_max * ft
        *
-       * @param[in]     sigma_max optimal (i.e. maximal) active stress
-       * @param[in]     alpha tetanised activation level
-       * @param[in]     beta scaling factor
-       * @param[in]     t_act_start time of start of activation
-       * @param[in]     t_current current time
+       * @param[in]     sigma_max Optimal (i.e. maximal) active stress
+       * @param[in]     alpha Tetanised activation level
+       * @param[in]     beta Scaling factor
+       * @param[in]     t_act_start Time of start of activation
+       * @param[in]     t_current Current time
        * @param[out]    sigma_max_ft Time-dependent optimal active stress at t_current
        */
       double EvaluateTimeDependentActiveStressTanh(const double sigma_max, const double alpha,
           const double beta, const double t_act_start, const double t_current);
+
+      /*!
+       * @brief Evaluate the time- and space-dependent optimal (i.e. maximal) active stress through
+       * any arbitrary function ft defined in the input file (e.g., SYMBOLIC_FUNCTION_OF_SPACE_TIME
+       * x*tanh(10*t)).
+       *
+       * The time- and space-dependent activation function ft is computed by evaluating the given
+       * activation_function in x and t_current.
+       *
+       * The time-dependent optimal active stress is obtained by sigma_opt = sigma_max * ft
+       *
+       * @param[in]     sigma_max Optimal (i.e. maximal) active stress
+       * @param[in]     activation_function Time-/space-dependent function to be evaluated
+       * @param[in]     t_current Current time
+       * @param[in]     x Point in 3D space (e.g., element centroid)
+       * @param[out]    sigma_max_ft Time-/space-dependent optimal active stress at x, t_current
+       */
+      double EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
+          const CORE::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
+          const CORE::LINALG::Matrix<1, 3> &x);
 
       /*!
        *  @brief Returns the fiber stretch in the current configuration
@@ -284,4 +307,6 @@ namespace MAT
     }  // namespace MUSCLE
   }    // namespace UTILS
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

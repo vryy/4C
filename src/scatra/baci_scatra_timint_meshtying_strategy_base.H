@@ -18,6 +18,8 @@ strategy without meshtying)
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace IO
 {
@@ -56,11 +58,15 @@ namespace SCATRA
   class MeshtyingStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MeshtyingStrategyBase() = default;
+
     //! constructor
     explicit MeshtyingStrategyBase(SCATRA::ScaTraTimIntImpl* scatratimint)
         : convcheckstrategy_(Teuchos::null), scatratimint_(scatratimint)
     {
-      return;
     }
 
     /*!
@@ -180,13 +186,13 @@ namespace SCATRA
     virtual Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const = 0;
 
     //! return interface map extractor
-    virtual const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
 
     //! output solution for post-processing
     virtual void Output() const { return; };
 
     //! output restart information
-    virtual void OutputRestart() const { return; };
+    virtual void WriteRestart() const {};
 
     /*!
      * @brief  read restart data
@@ -269,4 +275,6 @@ namespace SCATRA
     MeshtyingStrategyBase(const MeshtyingStrategyBase& old);
   };  // class MeshtyingStrategyBase
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H

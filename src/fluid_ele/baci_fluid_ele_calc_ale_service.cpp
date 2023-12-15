@@ -13,8 +13,10 @@
 #include "baci_fluid_ele_calc.H"
 #include "baci_fluid_ele_parameter_timint.H"
 
+BACI_NAMESPACE_OPEN
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
@@ -119,7 +121,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_3D(
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
@@ -830,20 +832,23 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_3D(
 
 
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8, DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4, DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge15, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad9, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri3, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri6, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs9, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs27, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex8, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex8, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet4, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex20, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex27, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet4, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet10, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::wedge6, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::wedge15, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::pyramid5,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad4, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad8, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad9, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri3, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri6, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs9, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs27, DRT::ELEMENTS::Fluid::none>;
+
+BACI_NAMESPACE_CLOSE

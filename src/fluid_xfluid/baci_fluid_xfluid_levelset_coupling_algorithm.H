@@ -15,6 +15,8 @@
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 #include "baci_linalg_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace XFLUIDLEVELSET
 {
@@ -36,11 +38,9 @@ namespace XFLUIDLEVELSET
         const Teuchos::ParameterList& prbdyn,        ///< problem-specific parameter list
         const Teuchos::ParameterList& solverparams,  ///< solver-specific parameter list
         const std::map<std::string, int>&
-            dofset_couling_map  ///< key=meaning of a dofset in a dis, nodal dofset number
+            dofset_coupling_map  ///< key=meaning of a dofset in a dis, nodal dofset number
     );
 
-    /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
 
     /*! \brief Initialize this object
 
@@ -63,13 +63,7 @@ namespace XFLUIDLEVELSET
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
-        const Teuchos::ParameterList&
-            scatradyn,  ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-        const std::string& disname = "scatra",       ///< name of scalar transport discretization
-        const bool isale = false                     ///< ALE flag
-    );
+    void Init() override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -89,10 +83,10 @@ namespace XFLUIDLEVELSET
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    void Setup() override;
 
     /// Two phase flow time loop
-    void TimeLoop();
+    void TimeLoop() override;
 
     /// Two phase flow stationary problem
     void SolveStationaryProblem();
@@ -101,10 +95,10 @@ namespace XFLUIDLEVELSET
     void TestResults();
 
     /// Restart
-    void Restart(int restart);
+    void Restart(int step);
 
    protected:
-    virtual void DoAlgorithmSpecificInit();
+    void DoAlgorithmSpecificInit() override;
 
     /// convergence Check for present iteration step
     bool ConvergenceCheck(int itnum);
@@ -148,7 +142,7 @@ namespace XFLUIDLEVELSET
     /// update time
     void TimeUpdate();
     /// prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
     /// prepare outer iteration
     void PrepareOuterIteration();
 
@@ -156,7 +150,7 @@ namespace XFLUIDLEVELSET
     void SynchronicityTimeCheck();
 
     /// write output
-    void Output();
+    void Output() override;
     /// write output of initial field
     void OutputInitialField();
 
@@ -192,5 +186,7 @@ namespace XFLUIDLEVELSET
   };
 
 }  // namespace XFLUIDLEVELSET
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_XFLUID_LEVELSET_COUPLING_ALGORITHM_H

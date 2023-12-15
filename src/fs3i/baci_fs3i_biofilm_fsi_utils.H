@@ -14,6 +14,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -31,5 +33,7 @@ namespace FS3I
     } /* namespace UTILS */
   }   // namespace BIOFILM
 } /* namespace FS3I */
+
+BACI_NAMESPACE_CLOSE
 
 #endif

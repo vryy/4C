@@ -18,6 +18,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 
 Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMasterConverter::SrcToDst(
@@ -94,3 +96,5 @@ void CORE::ADAPTER::CouplingSlaveConverter::FillSrcToDstMap(std::map<int, int>& 
 {
   coup_.FillSlaveToMasterMap(rowmap);
 }
+
+BACI_NAMESPACE_CLOSE

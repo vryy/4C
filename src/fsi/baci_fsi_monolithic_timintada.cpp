@@ -26,6 +26,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
@@ -176,7 +178,8 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+void FSI::Monolithic::TimeloopAdaDt(
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
   /*--------------------------------------------------------------------------*/
   /* Initialize some parameters                                               */
@@ -802,3 +805,5 @@ double FSI::Monolithic::DtPast(const int step) const { return (*dt_)[step]; }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::UpdateDtPast(const double dtnew) { dt_->UpdateSteps(dtnew); }
+
+BACI_NAMESPACE_CLOSE

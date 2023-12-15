@@ -23,6 +23,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string condname)
@@ -46,7 +48,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
+  if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
   {
     nds_master = 2;
   }
@@ -94,11 +96,12 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     std::pair<int, int> dofsets21(0, 0);
 
     // initialize coupling adapter
-    coupfa_volmortar->Init(FluidField()->Discretization(), AleField()->WriteAccessDiscretization(),
-        &coupleddof12, &coupleddof21, &dofsets12, &dofsets21, Teuchos::null, false);
+    coupfa_volmortar->Init(ndim, FluidField()->Discretization(),
+        AleField()->WriteAccessDiscretization(), &coupleddof12, &coupleddof21, &dofsets12,
+        &dofsets21, Teuchos::null, false);
 
     // setup coupling adapter
-    coupfa_volmortar->Setup();
+    coupfa_volmortar->Setup(DRT::Problem::Instance()->VolmortarParams());
 
     // set pointer to coupling adapter
     coupfa_ = coupfa_volmortar;
@@ -149,11 +152,11 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     std::pair<int, int> dofsets12(0, 0);
     std::pair<int, int> dofsets21(0, 0);
 
-    icoupfa->Init(DRT::Problem::Instance()->GetDis("fluid"),
+    icoupfa->Init(ndim, DRT::Problem::Instance()->GetDis("fluid"),
         DRT::Problem::Instance()->GetDis("ale"), &coupleddof12, &coupleddof21, &dofsets12,
         &dofsets21, Teuchos::null, false);
 
-    icoupfa->Setup();
+    icoupfa->Setup(DRT::Problem::Instance()->VolmortarParams());
 
     icoupfa_ = icoupfa;
   }
@@ -467,3 +470,5 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(
 {
   return icoupfa_->MasterToSlave(iv);
 }
+
+BACI_NAMESPACE_CLOSE

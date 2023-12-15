@@ -676,7 +676,7 @@ add_test(
   NAME test_cleanup
   COMMAND
     sh -c
-    "if [ -f *_CUTFAIL.pos ]; then mkdir -p ../cut-debug ; cp *_CUTFAIL.pos ../cut-debug/ ; fi ; rm -vfr xxx* framework_test_output* core.* amesos-failure.dat default.bc default.head"
+    "if [ -f *_CUTFAIL.pos ]; then mkdir -p ../cut-debug ; cp *_CUTFAIL.pos ../cut-debug/ ; fi ; rm -fr xxx* framework_test_output* core.* amesos-failure.dat default.bc default.head"
   )
 set_processors(test_cleanup 1)
 set_tests_properties(test_cleanup PROPERTIES FIXTURES_CLEANUP test_cleanup)

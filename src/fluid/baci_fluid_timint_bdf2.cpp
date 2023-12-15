@@ -18,6 +18,8 @@
 #include "baci_io.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
@@ -53,10 +55,6 @@ void FLD::TimIntBDF2::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                    bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntBDF2::~TimIntBDF2() { return; }
 
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen          bk 11/13 |
@@ -227,3 +225,5 @@ double FLD::TimIntBDF2::MethodLinErrCoeffVel() const
 
   return nominator / denominator;
 }
+
+BACI_NAMESPACE_CLOSE

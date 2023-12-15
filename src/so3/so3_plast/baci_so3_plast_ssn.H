@@ -20,6 +20,8 @@
 #include "baci_so3_plast_ssn_eletypes.H"
 #include "baci_thermo_ele_impl_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |
  *----------------------------------------------------------------------*/
@@ -60,7 +62,7 @@ namespace DRT
 
     //! A C++ version of a 3 dimensional solid element with modifications von Mises
     //! plasticity using a semi-smooth Newton method
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class So3_Plast : public virtual So_base
     {
       //! @name Friends
@@ -90,7 +92,7 @@ namespace DRT
       //@}
 
       //! number of element nodes
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
       //! number of space dimensions
       static const int nsd_ = 3;
       //! number of dofs per node
@@ -118,7 +120,7 @@ namespace DRT
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
@@ -144,7 +146,7 @@ namespace DRT
       DRT::ElementType& ElementType() const override;
 
       //! return element shape
-      DiscretizationType Shape() const override { return distype; };
+      CORE::FE::CellType Shape() const override { return distype; };
 
       /*!
       \brief Return number of volumes of this element
@@ -173,11 +175,6 @@ namespace DRT
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
       //@}
 
       //! @name Input and Creation
@@ -385,7 +382,6 @@ namespace DRT
 
       //! setup EAS for each evaluation
       virtual void EasSetup();
-      ;
 
       // evaluate EAS shape functions
       virtual void EasShape(const int gp);
@@ -437,11 +433,11 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>* res_t = nullptr);
 
       void RecoverEAS(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
-          const CORE::LINALG::Matrix<nen_, 1>* temp = nullptr);
+          const CORE::LINALG::Matrix<nen_, 1>* res_T = nullptr);
 
       template <int spintype>
       void RecoverPlasticity(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d, const int gp,
-          const double* temp = nullptr);
+          const double* res_t = nullptr);
 
       void ReduceEasStep(const double new_step_length, const double old_step_length);
       void ReducePlasticityStep(
@@ -1071,7 +1067,8 @@ namespace DRT
       {
         // element coordinate derivatives at centroid
         static CORE::LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-        CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+        CORE::DRT::UTILS::shape_function_3D_deriv1(
+            N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
 
         // inverse jacobian matrix at centroid
         SetJac_0().Multiply(N_rst_0, Xrefe());
@@ -1123,7 +1120,7 @@ namespace DRT
 
       inline void EvaluateShape(const CORE::LINALG::Matrix<3, 1>& xi)
       {
-        if (distype == DRT::Element::nurbs27)
+        if (distype == CORE::FE::CellType::nurbs27)
           CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
         else
@@ -1132,7 +1129,7 @@ namespace DRT
 
       inline void EvaluateShapeDeriv(const CORE::LINALG::Matrix<3, 1>& xi)
       {
-        if (distype == DRT::Element::nurbs27)
+        if (distype == CORE::FE::CellType::nurbs27)
           CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
         else
@@ -1180,4 +1177,6 @@ namespace DRT
 }  // namespace DRT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // SO3_SSN_PLAST_H

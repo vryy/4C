@@ -15,8 +15,10 @@
 #include "baci_fluid_ele_factory.H"
 #include "baci_fluid_ele_interface.H"
 #include "baci_inpar_fluid.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret_faces.H"
-#include "baci_lib_linedefinition.H"
+
+BACI_NAMESPACE_OPEN
 
 
 // initialize static variable
@@ -26,7 +28,7 @@ DRT::ELEMENTS::FluidHDGType& DRT::ELEMENTS::FluidHDGType::Instance() { return in
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::FluidHDGType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::FluidHDG* object = new DRT::ELEMENTS::FluidHDG(-1, -1);
   object->Unpack(data);
@@ -172,18 +174,11 @@ DRT::Element* DRT::ELEMENTS::FluidHDG::Clone() const
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                      kronbichler 05/13|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidHDG::~FluidHDG() {}
-
-
-
-/*----------------------------------------------------------------------*
  |  Pack data (public)                                kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDG::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidHDG::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -207,10 +202,8 @@ void DRT::ELEMENTS::FluidHDG::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -327,3 +320,5 @@ void DRT::ELEMENTS::FluidHDG::Print(std::ostream& os) const
   os << "FluidHDG ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

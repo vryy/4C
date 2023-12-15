@@ -15,6 +15,8 @@
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -68,11 +70,6 @@ namespace CONTACT
         const int& nvectors, const int layer, const bool nonsmoothsurf,
         std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~SelfBinaryTreeNode(){};
 
     //! @name Evaluation methods
 
@@ -80,7 +77,7 @@ namespace CONTACT
     \brief Update slabs of current tree node in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& eps) final;
+    void UpdateSlabsBottomUp(double& enlarge) final;
 
     /*!
     \brief Calculate the logical array of qualified sample vectors for leaf nodes
@@ -400,7 +397,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~SelfDualEdge(){};
+    virtual ~SelfDualEdge() = default;
 
     /*!
     \brief Return costs
@@ -513,11 +510,6 @@ namespace CONTACT
     SelfBinaryTree(DRT::Discretization& discret, const Teuchos::ParameterList& iparams,
         Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~SelfBinaryTree(){};
 
     //! @name Evaluation methods
 
@@ -854,5 +846,7 @@ namespace CONTACT
   };  // class SelfBinaryTree
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_SELFCONTACT_BINARYTREE_H

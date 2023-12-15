@@ -15,6 +15,8 @@
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -159,7 +161,7 @@ namespace INPAR
     };
 
     //! Map action type enum to std::string
-    static inline const std::string CrosslinkerType2String(const enum CrosslinkerType type)
+    static inline std::string CrosslinkerType2String(const enum CrosslinkerType type)
     {
       switch (type)
       {
@@ -194,4 +196,6 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

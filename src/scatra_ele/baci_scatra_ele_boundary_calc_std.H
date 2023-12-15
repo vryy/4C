@@ -13,12 +13,13 @@
 
 #include "baci_scatra_ele_boundary_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcStd : public ScaTraEleBoundaryCalc<distype, probdim>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
@@ -28,8 +29,6 @@ namespace DRT
       static ScaTraEleBoundaryCalcStd<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      /// Empty destructor
-      virtual ~ScaTraEleBoundaryCalcStd() { return; };
 
      private:
       /// private constructor since we are singleton
@@ -38,4 +37,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcStd
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

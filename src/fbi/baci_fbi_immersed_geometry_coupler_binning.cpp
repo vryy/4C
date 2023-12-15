@@ -20,6 +20,8 @@ performed afterwards
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 
 FBI::FBIBinningGeometryCoupler::FBIBinningGeometryCoupler()
@@ -184,3 +186,5 @@ void FBI::FBIBinningGeometryCoupler::SetBinning(Teuchos::RCP<BINSTRATEGY::Binnin
   binstrategy_->BinDiscret()->FillComplete(false, false, false);
   binrowmap_ = Teuchos::rcp(new Epetra_Map(*(binstrategy_->BinDiscret()->ElementRowMap())));
 };
+
+BACI_NAMESPACE_CLOSE

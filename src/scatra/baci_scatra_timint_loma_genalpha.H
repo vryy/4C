@@ -16,6 +16,8 @@
 #include "baci_scatra_timint_genalpha.H"
 #include "baci_scatra_timint_loma.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace SCATRA
 {
@@ -29,60 +31,57 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// Destructor
-    virtual ~TimIntLomaGenAlpha();
 
     /// initialize time integration scheme
-    virtual void Init();
+    void Init() override;
 
     /// setup time integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     /// predict thermodynamic pressure and time derivative for low-Mach-number flow
-    void PredictThermPressure();
+    void PredictThermPressure() override;
 
     /// compute values of thermodynamic pressure at intermediate time steps
-    void ComputeThermPressureIntermediateValues();
+    void ComputeThermPressureIntermediateValues() override;
 
     /// compute thermodynamic pressure and time derivative for low-Mach-number flow
-    void ComputeThermPressure();
+    void ComputeThermPressure() override;
 
     ///  compute time derivative of thermodynamic pressure
-    void ComputeThermPressureTimeDerivative();
+    void ComputeThermPressureTimeDerivative() override;
 
     /// update thermodynamic pressure and time derivative for low-Mach-number flow
-    void UpdateThermPressure();
+    void UpdateThermPressure() override;
 
     /// read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
-    double ThermPressAf() { return thermpressaf_; }
+    double ThermPressAf() override { return thermpressaf_; }
 
     /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
-    double ThermPressAm() { return thermpressam_; }
+    double ThermPressAm() override { return thermpressam_; }
 
     /// routine to return time derivative of thermo. press. at time step n+alpha_F for
     /// low-Mach-number flow
-    double ThermPressDtAf() { return thermpressdtaf_; }
+    double ThermPressDtAf() override { return thermpressdtaf_; }
 
     /// routine to return time derivative of thermo. press. at time step n+alpha_M for
     /// low-Mach-number flow
-    double ThermPressDtAm() { return thermpressdtam_; }
+    double ThermPressDtAm() override { return thermpressdtam_; }
 
    protected:
-    /// write additional data required for restart
-    void OutputRestart() const;
+    void WriteRestart() const override;
 
     /// dynamic Smagorinsky model
-    void DynamicComputationOfCs();
+    void DynamicComputationOfCs() override;
 
     /// dynamic Vreman model
-    void DynamicComputationOfCv();
+    void DynamicComputationOfCv() override;
 
     /// add thermodynamic pressure to parameter list for element evaluation
     void AddThermPressToParameterList(Teuchos::ParameterList& params  //!< parameter list
-    );
+        ) override;
 
    private:
     /// LOMA-specific parameter: thermodynamic pressure at n+alpha_F and n+alpha_M
@@ -97,4 +96,6 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // SCATRA_TIMINT_LOMA_GENALPHA_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_SCATRA_TIMINT_LOMA_GENALPHA_H

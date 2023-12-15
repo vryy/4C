@@ -13,6 +13,8 @@
 #include "baci_scatra_ele_calc_elch_electrode.H"
 #include "baci_scatra_ele_parameter_elch_diffcond.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -21,12 +23,11 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCond;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchDiffCond;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchDiffCond;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcElchDiffCond : public ScaTraEleCalcElchElectrode<distype, probdim>
     {
      protected:
@@ -52,11 +53,10 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate contributions to matrix and rhs (inside of loop over all scalars)
-      virtual void CalcMatAndRhs(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
-          const int k,                            //!< index of current scalar
-          const double fac,                       //!< domain-integration factor
+      void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                 //!< element rhs to calculate
+          const int k,                                           //!< index of current scalar
+          const double fac,                                      //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double taufac,  //!< tau times domain-integration factor
@@ -67,36 +67,36 @@ namespace DRT
           CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
-      );
+          ) override;
 
       //! calculate contributions to matrix and rhs (outside of loop over all scalars)
-      virtual void CalcMatAndRhsOutsideScalarLoop(
+      void CalcMatAndRhsOutsideScalarLoop(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
           const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
-      );
+          ) override;
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
       void CorrectionForFluxAcrossDC(DRT::Discretization& discretization,  //!< discretization
           const std::vector<int>& lm,                                      //!< location vector
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
-      );
+          ) override;
 
       /*========================================================================*/
       //! @name material and related and related functions
       /*========================================================================*/
 
       //! get material parameters
-      virtual void GetMaterialParams(const DRT::Element* ele,  //!< current element
-          std::vector<double>& densn,                          //!< density at t_(n)
-          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-          double& visc,                 //!< fluid viscosity
-          const int iquad = -1          //!< ID of current integration point
-      );
+      void GetMaterialParams(const DRT::Element* ele,  //!< current element
+          std::vector<double>& densn,                  //!< density at t_(n)
+          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< ID of current integration point
+          ) override;
 
       /*========================================================================*/
       //! @name methods for evaluation of individual terms
@@ -285,13 +285,13 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate action
-      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate an electrode boundary kinetics point condition
       void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
@@ -310,7 +310,7 @@ namespace DRT
           const double frt,                   ///< factor F/RT
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
-      );
+          ) override;
 
       //! evaluate electrode kinetics domain condition
       void EvaluateElchDomainKinetics(const DRT::Element* ele,  ///< the actual boundary element
@@ -330,7 +330,7 @@ namespace DRT
       //! validity check for all elements with respect to
       //! formulation-specific parameter, degree's of freedom, number of scalars, ...
       void CheckElchElementParameter(DRT::Element* ele  //!< the element we are dealing with
-      );
+          ) override;
 
       //! calculate element mass matrix and element residual for initial time derivative
       void CalcInitialTimeDerivative(DRT::Element* ele,  //!< current element
@@ -339,7 +339,7 @@ namespace DRT
           Teuchos::ParameterList& params,                //!< parameter list
           DRT::Discretization& discretization,           //!< discretization
           DRT::Element::LocationArray& la                //!< location array
-      );
+          ) override;
 
       //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term
       void CorrectRHSFromCalcRHSLinMass(
@@ -348,7 +348,7 @@ namespace DRT
           const double fac,                       //!< domain-integration factor
           const double densnp,                    //!< density at time_(n+1)
           const double phinp                      //!< scalar at time_(n+1)
-      );
+          ) override;
 
       //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
       void CalculateFlux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
@@ -367,7 +367,7 @@ namespace DRT
           const DRT::Element* ele,                 //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
-      );
+          ) override;
 
       void CalcElchDomainKinetics(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -390,7 +390,7 @@ namespace DRT
       );
 
       //! set internal variables for diffusion-conduction formulation
-      void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! get diffusion manager for diffusion-conduction formulation
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> DiffManager()
@@ -733,4 +733,6 @@ namespace DRT
     };  // class ScaTraEleInternalVariableManagerElchDiffCond
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

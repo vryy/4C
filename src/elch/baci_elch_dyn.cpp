@@ -17,16 +17,16 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_scatra_ele.H"
-#include "baci_scatra_resulttest_elch.H"
 #include "baci_scatra_timint_elch.H"
 #include "baci_scatra_utils_clonestrategy.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
-// entry point for ELCH in DRT
 /*----------------------------------------------------------------------*/
 void elch_dyn(int restart)
 {
@@ -70,13 +70,6 @@ void elch_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
-      // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
-      if (scatradis->AddDofSet(dofsetaux) != 1)
-        dserror("Scatra discretization has illegal number of dofsets!");
-
-
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == -1)
@@ -87,13 +80,23 @@ void elch_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+      auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
+      // add proxy of velocity related degrees of freedom to scatra discretization
+      auto dofsetaux = Teuchos::rcp(
+          new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+      if (scatradis->AddDofSet(dofsetaux) != 1)
+        dserror("Scatra discretization has illegal number of dofsets!");
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+
+      // now me may redistribute or ghost the scatra discretization
+      // finalize discretization
+      scatradis->FillComplete(true, true, true);
 
       // now we can call Init() on the base algorithm
       // scatra time integrator is constructed and initialized inside
-      scatraonly->Init(
-          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      scatraonly->Init();
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
@@ -180,14 +183,6 @@ void elch_dyn(int restart)
         else
           dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
 
-        // add proxy of fluid degrees of freedom to scatra discretization
-        if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-          dserror("Scatra discretization has illegal number of dofsets!");
-
-        // add proxy of ALE degrees of freedom to scatra discretization
-        if (scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
-          dserror("Scatra discretization has illegal number of dofsets!");
-
         // get linear solver id from SCALAR TRANSPORT DYNAMIC
         const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
         if (linsolvernumber == -1)
@@ -198,13 +193,22 @@ void elch_dyn(int restart)
         }
 
         // create an ELCH::MovingBoundaryAlgorithm instance
+        // NOTE: elch reads time parameters from scatra dynamic section!
         auto elch = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(
             comm, elchcontrol, scatradyn, problem->SolverParams(linsolvernumber)));
 
-        // now we must call Init()
-        // NOTE : elch reads time parameters from scatra dynamic section !
-        elch->Init(scatradyn, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true);
+        // add proxy of fluid degrees of freedom to scatra discretization
+        if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+          dserror("Scatra discretization has illegal number of dofsets!");
         elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
+
+        // add proxy of ALE degrees of freedom to scatra discretization
+        if (scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
+          dserror("Scatra discretization has illegal number of dofsets!");
+        elch->ScaTraField()->SetNumberOfDofSetDisplacement(2);
+
+        // now we must call Init()
+        elch->Init();
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
@@ -239,17 +243,17 @@ void elch_dyn(int restart)
         }
 
         // create an ELCH::Algorithm instance
+        // NOTE: elch reads time parameters from scatra dynamic section!
         auto elch = Teuchos::rcp(new ELCH::Algorithm(
             comm, elchcontrol, scatradyn, fdyn, problem->SolverParams(linsolvernumber)));
 
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
           dserror("Scatra discretization has illegal number of dofsets!");
+        elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
         // now we must call Init()
-        // NOTE : elch reads time parameters from scatra dynamic section !
-        elch->Init(scatradyn, scatradyn, problem->SolverParams(linsolvernumber));
-        elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
+        elch->Init();
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
@@ -274,37 +278,37 @@ void elch_dyn(int restart)
       }
 
       break;
-    }  // case 2
+    }
     default:
       dserror("Unknown velocity field type for transport of passive scalar: %d", veltype);
-      break;
   }
 }
 
 
 /*----------------------------------------------------------------------*/
-// print ELCH-Module logo
 /*----------------------------------------------------------------------*/
 void printlogo()
 {
   // more at http://www.ascii-art.de under entry "moose" (or "elk")
-  std::cout << "     ___            ___    " << std::endl;
-  std::cout << "    /   \\          /   \\ " << std::endl;
-  std::cout << "    \\_   \\        /  __/ " << std::endl;
+  std::cout << "     ___            ___    " << '\n';
+  std::cout << "    /   \\          /   \\ " << '\n';
+  std::cout << "    \\_   \\        /  __/ " << '\n';
   std::cout << "     _\\   \\      /  /__  "
-            << "     _____ _     _____  _   _   " << std::endl;
+            << "     _____ _     _____  _   _   " << '\n';
   std::cout << "     \\___  \\____/   __/  "
-            << "    |  ___| |   /  __ \\| | | |  " << std::endl;
+            << "    |  ___| |   /  __ \\| | | |  " << '\n';
   std::cout << "         \\_       _/      "
-            << "   | |__ | |   | /  \\/| |_| |  " << std::endl;
+            << "   | |__ | |   | /  \\/| |_| |  " << '\n';
   std::cout << "           | @ @  \\_      "
-            << "   |  __|| |   | |    |  _  |   " << std::endl;
+            << "   |  __|| |   | |    |  _  |   " << '\n';
   std::cout << "           |               "
-            << "  | |___| |___| \\__/\\| | | | " << std::endl;
+            << "  | |___| |___| \\__/\\| | | | " << '\n';
   std::cout << "         _/     /\\        "
-            << "   \\____/\\_____/\\____/\\_| |_/ " << std::endl;
-  std::cout << "        /o)  (o/\\ \\_     " << std::endl;
-  std::cout << "        \\_____/ /         " << std::endl;
-  std::cout << "          \\____/          " << std::endl;
-  std::cout << "                           " << std::endl;
+            << "   \\____/\\_____/\\____/\\_| |_/ " << '\n';
+  std::cout << "        /o)  (o/\\ \\_     " << '\n';
+  std::cout << "        \\_____/ /         " << '\n';
+  std::cout << "          \\____/          " << '\n';
+  std::cout << "                           " << '\n';
 }
+
+BACI_NAMESPACE_CLOSE

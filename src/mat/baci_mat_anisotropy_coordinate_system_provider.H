@@ -13,6 +13,8 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -32,14 +34,14 @@ namespace MAT
      *
      * \return const Teuchos::RCP<CylinderCoordinateSystemProvider>
      */
-    virtual const Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
+    virtual Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
         const = 0;
   };
 
   class CoordinateSystemHolder : public CoordinateSystemProvider
   {
    public:
-    const Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
+    Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
         const override
     {
       return cylinderCoordinateSystem_;
@@ -56,5 +58,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_COORDINATE_SYSTEM_PROVIDER_H

@@ -10,35 +10,38 @@
 
  *----------------------------------------------------------------------*/
 
+BACI_NAMESPACE_OPEN
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3, 1>;
-// template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3,2>;
-// template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3,3>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::line3, 1>;
+// template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::line3,2>;
+// template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::line3,3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9, 2>;
-// template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9,3>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9, 2>;
-// template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9,3>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::quad4, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::quad9, 2>;
+// template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::quad9,3>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::nurbs9, 2>;
+// template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::nurbs9,3>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::hex8, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::tet10, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::pyramid5, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -17,6 +17,8 @@ the input line should read
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -38,7 +40,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FourierIso::CreateMaterial()
 MAT::FourierIsoType MAT::FourierIsoType::instance_;
 
 
-DRT::ParObject* MAT::FourierIsoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FourierIsoType::Create(const std::vector<char>& data)
 {
   MAT::FourierIso* fourieriso = new MAT::FourierIso();
   fourieriso->Unpack(data);
@@ -59,9 +61,9 @@ MAT::FourierIso::FourierIso(MAT::PAR::FourierIso* params) : params_(params) {}
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Pack(DRT::PackBuffer& data) const
+void MAT::FourierIso::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -80,10 +82,8 @@ void MAT::FourierIso::Pack(DRT::PackBuffer& data) const
 void MAT::FourierIso::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -145,3 +145,5 @@ void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<3, 1>& gradtemp,
   // heatflux
   heatflux.MultiplyNN(cmat, gradtemp);
 }
+
+BACI_NAMESPACE_CLOSE

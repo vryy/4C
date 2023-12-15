@@ -12,6 +12,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -128,9 +130,9 @@ void INPAR::FPSI::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // FPSI
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> fpsicomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> fpsicomponents;
 
-  fpsicomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
+  fpsicomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
   Teuchos::RCP<ConditionDefinition> linefpsi =
       Teuchos::rcp(new ConditionDefinition("DESIGN FPSI COUPLING LINE CONDITIONS", "FPSICoupling",
@@ -170,3 +172,5 @@ void INPAR::FPSI::SetValidConditions(
 
   condlist.push_back(neumannintegration_line);
 }
+
+BACI_NAMESPACE_CLOSE

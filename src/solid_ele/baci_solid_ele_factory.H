@@ -8,6 +8,7 @@
 #ifndef BACI_SOLID_ELE_FACTORY_H
 #define BACI_SOLID_ELE_FACTORY_H
 
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_solid_ele_calc.H"
@@ -18,34 +19,49 @@
 
 #include <variant>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::ELEMENTS
 {
   enum class EasType;
 }
 namespace DRT::ELEMENTS
 {
+  /*!
+   *  @brief struct for managing solid element properties
+   */
+  struct SolidElementProperties
+  {
+    //! kinematic type
+    INPAR::STR::KinemType kintype{INPAR::STR::kinem_vague};
+
+    //! element technology
+    std::set<INPAR::STR::EleTech> eletech;
+
+    //! specify EAS type in case contains enhanced assumed strains
+    STR::ELEMENTS::EasType eastype{STR::ELEMENTS::EasType::eastype_undefined};
+  };
+
   namespace DETAILS
   {
-    using ImplementedSolidDiscretizationTypes =
-        DRT::DiscretizationTypeList<DRT::Element::DiscretizationType::hex8,
-            DRT::Element::DiscretizationType::hex18, DRT::Element::DiscretizationType::hex20,
-            DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::tet4,
-            DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::wedge6,
-            DRT::Element::DiscretizationType::pyramid5>;
+    using ImplementedSolidCellTypes = CORE::FE::celltype_sequence<CORE::FE::CellType::hex8,
+        CORE::FE::CellType::hex18, CORE::FE::CellType::hex20, CORE::FE::CellType::hex27,
+        CORE::FE::CellType::nurbs27, CORE::FE::CellType::tet4, CORE::FE::CellType::tet10,
+        CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
 
     using DisplacementBasedEvaluators =
-        DRT::ApplyToBase<SolidEleCalc, ImplementedSolidDiscretizationTypes>;
-    using FbarEvaluators = DRT::ApplyToBase<SolidEleCalcFbar,
-        DRT::DiscretizationTypeList<DRT::Element::DiscretizationType::hex8,
-            DRT::Element::DiscretizationType::pyramid5>>;
-    using EASEvaluators = DRT::BaseTypeList<SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
-                                                STR::ELEMENTS::EasType::eastype_h8_9>,
-        SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
-            STR::ELEMENTS::EasType::eastype_h8_21>>;
-    using MulfEvaluators = DRT::ApplyToBase<SolidEleCalcMulf, ImplementedSolidDiscretizationTypes>;
+        CORE::FE::apply_celltype_sequence<SolidEleCalc, ImplementedSolidCellTypes>;
+
+    using FbarEvaluators = CORE::FE::apply_celltype_sequence<SolidEleCalcFbar,
+        CORE::FE::celltype_sequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
+    using EASEvaluators = CORE::FE::BaseTypeList<
+        SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
+        SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
+    using MulfEvaluators =
+        CORE::FE::apply_celltype_sequence<SolidEleCalcMulf, ImplementedSolidCellTypes>;
 
     using SolidEvaluators =
-        DRT::Join_t<DisplacementBasedEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
+        CORE::FE::Join<DisplacementBasedEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
   }  // namespace DETAILS
 
   using SolidCalcVariant = CreateVariantType<DETAILS::SolidEvaluators>;
@@ -58,12 +74,14 @@ namespace DRT::ELEMENTS
       const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
       STR::ELEMENTS::EasType eastype);
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType celltype>
   SolidCalcVariant CreateSolidCalculationInterface(const DRT::Element& ele,
       const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
       STR::ELEMENTS::EasType eastype);
 
 }  // namespace DRT::ELEMENTS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_FACTORY_H

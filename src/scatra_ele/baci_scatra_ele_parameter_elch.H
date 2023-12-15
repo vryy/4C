@@ -20,6 +20,8 @@ general static parameters required for scalar transport element evaluation.
 #include "baci_inpar_elch.H"
 #include "baci_scatra_ele_parameter_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -28,9 +30,6 @@ namespace DRT
     class ScaTraEleParameterElch : public ScaTraEleParameterBase
     {
      public:
-      //! destructor
-      virtual ~ScaTraEleParameterElch() { return; };
-
       //! singleton access method
       static ScaTraEleParameterElch* Instance(
           const std::string& disname  //!< name of discretization
@@ -42,7 +41,7 @@ namespace DRT
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+          ) override;
 
       //! return type of closing equation for electric potential
       INPAR::ELCH::EquPot EquPot() const { return equpot_; };
@@ -92,4 +91,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

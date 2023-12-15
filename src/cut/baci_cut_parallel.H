@@ -14,11 +14,16 @@
 
 #include "baci_cut_meshintersection.H"
 
+BACI_NAMESPACE_OPEN
+
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
 
 namespace DRT
 {
   class Discretization;
-  class PackBuffer;
 }  // namespace DRT
 
 
@@ -46,13 +51,13 @@ namespace CORE::GEO
       /*!
       \brief Basic CUT parallel constructor
        */
-      explicit Parallel(const Teuchos::RCP<::DRT::Discretization>& discret,
+      explicit Parallel(const Teuchos::RCP<BACI::DRT::Discretization>& discret,
           CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::ParentIntersection& parentintersection);
 
       /*!
       \brief Destructor
       */
-      virtual ~Parallel(){};
+      virtual ~Parallel() = default;
 
       /*!
       \brief Communicates the node positions
@@ -110,7 +115,7 @@ namespace CORE::GEO
       /*!
       \brief Pack the point coordinates
        */
-      void packPoints(::DRT::PackBuffer& dataSend,
+      void packPoints(CORE::COMM::PackBuffer& dataSend,
           std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const;
 
       /*!
@@ -124,10 +129,10 @@ namespace CORE::GEO
       /*!
       \brief Basic function sending data to destination and receiving data from source
        */
-      void sendData(::DRT::PackBuffer& dataSend,  //!< pack buffer
-          int& dest,                              //!< destination proc
-          int& source,                            //!< source proc
-          std::vector<char>& dataRecv             //!< received data
+      void sendData(CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
+          int& dest,                                   //!< destination proc
+          int& source,                                 //!< source proc
+          std::vector<char>& dataRecv                  //!< received data
       ) const;
 
       /*!
@@ -155,7 +160,7 @@ namespace CORE::GEO
       // data accessing
 
       //! discretization
-      Teuchos::RCP<::DRT::Discretization> discret_;
+      Teuchos::RCP<BACI::DRT::Discretization> discret_;
 
       //! current processor id
       const int myrank_;
@@ -184,5 +189,7 @@ namespace CORE::GEO
 }  // namespace CORE::GEO
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CUT_PARALLEL_H

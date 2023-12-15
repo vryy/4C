@@ -24,11 +24,13 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegratorNitschePoro::CoIntegratorNitschePoro(Teuchos::ParameterList& params,
-    DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
+CONTACT::CoIntegratorNitschePoro::CoIntegratorNitschePoro(
+    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : CoIntegratorNitsche(params, eletype, comm),
       no_penetration_(params.get<bool>("CONTACTNOPEN")),
       dv_dd_(params.get<double>("porotimefac"))
@@ -190,7 +192,7 @@ void CONTACT::CoIntegratorNitschePoro::SoEleCauchy(MORTAR::MortarElement& moEle,
   }
   else
   {
-    dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
+    dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
         moEle.ParentElement())
         ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(),
             moEle.MoData().ParentPFPres(), normal, direction, sigma_nt, &dsntdd, &dsntdp, &dsntdn,
@@ -518,3 +520,5 @@ template void CONTACT::CoIntegratorNitschePoro::SoEleCauchy<3>(MORTAR::MortarEle
     std::vector<CORE::GEN::pairedvector<int, double>>& direction_deriv, const double w,
     double& cauchy_nt, CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_d,
     CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_p);
+
+BACI_NAMESPACE_CLOSE

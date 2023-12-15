@@ -20,6 +20,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 void immersed_problem_drt()
@@ -147,3 +149,5 @@ void immersed_problem_drt()
   }    // end switch(coupling)
 
 }  // immersed_problem_drt()
+
+BACI_NAMESPACE_CLOSE

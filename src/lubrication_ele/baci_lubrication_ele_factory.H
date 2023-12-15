@@ -14,6 +14,8 @@
 
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -28,15 +30,14 @@ namespace DRT
       LubricationFactory() { return; }
 
       //! dtor
-      virtual ~LubricationFactory() { return; }
-
+      virtual ~LubricationFactory() = default;
       //! ProvideImpl
       static LubricationEleInterface* ProvideImpl(
-          DRT::Element::DiscretizationType distype, const std::string& disname);
+          CORE::FE::CellType distype, const std::string& disname);
 
      private:
       //! define LubricationEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype, int probdim>
+      template <CORE::FE::CellType distype, int probdim>
       static LubricationEleInterface* DefineProblemType(const std::string& disname);
 
 
@@ -46,5 +47,7 @@ namespace DRT
 
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_ELE_FACTORY_H

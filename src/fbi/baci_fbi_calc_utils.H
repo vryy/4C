@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -84,5 +86,7 @@ namespace FBI
 }  // namespace FBI
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FBI_CALC_UTILS_H

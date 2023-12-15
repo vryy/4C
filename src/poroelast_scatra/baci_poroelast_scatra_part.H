@@ -18,6 +18,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
@@ -43,9 +45,6 @@ namespace POROELASTSCATRA
     /// Constructor
     explicit PoroScatraPart(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    /// destructor
-    virtual ~PoroScatraPart(){};
-
     // Methods
 
     //! solve one time/incremental step of porous media problem (depending on coupling algorithm)
@@ -55,5 +54,7 @@ namespace POROELASTSCATRA
     virtual void DoScatraStep() = 0;
   };
 }  // namespace POROELASTSCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -13,12 +13,14 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 
 #include "baci_mat_viscoanisotropic.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -53,7 +55,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ViscoAnisotropic::CreateMaterial()
 MAT::ViscoAnisotropicType MAT::ViscoAnisotropicType::instance_;
 
 
-DRT::ParObject* MAT::ViscoAnisotropicType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ViscoAnisotropicType::Create(const std::vector<char>& data)
 {
   MAT::ViscoAnisotropic* visco = new MAT::ViscoAnisotropic();
   visco->Unpack(data);
@@ -76,9 +78,9 @@ MAT::ViscoAnisotropic::ViscoAnisotropic(MAT::PAR::ViscoAnisotropic* params) : pa
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoAnisotropic::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoAnisotropic::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -128,10 +130,8 @@ void MAT::ViscoAnisotropic::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -743,3 +743,5 @@ bool MAT::ViscoAnisotropic::VisData(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

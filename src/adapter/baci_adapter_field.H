@@ -27,6 +27,8 @@ functions there exist also for fields.
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations:
 namespace DRT
 {
@@ -55,8 +57,7 @@ namespace ADAPTER
     //@{
 
     /// virtual to get polymorph destruction
-    virtual ~Field() {}
-
+    virtual ~Field() = default;
     //! @name Vector access
 
     /// Return the already evaluated RHS of Newton's method
@@ -150,5 +151,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

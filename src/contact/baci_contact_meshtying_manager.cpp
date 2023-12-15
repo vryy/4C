@@ -26,6 +26,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
@@ -211,8 +213,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         if (!node) dserror("Cannot find node with gid %", gid);
 
         // create MortarNode object
-        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
-            node->X(), node->Owner(), discret.NumDof(0, node), discret.Dof(0, node), isslave[j]));
+        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(
+            node->Id(), node->X(), node->Owner(), discret.Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
         if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mtnode);
@@ -372,7 +374,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // read Problem Type and Problem Dimension from DRT::Problem
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
   const int spatialDim = DRT::Problem::Instance()->NDim();
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -558,7 +560,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // NURBS PROBLEM?
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       mtparams.set<bool>("NURBS", true);
       break;
@@ -682,3 +684,5 @@ void CONTACT::MtManager::PostprocessQuantitiesPerInterface(
 {
   GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
 }
+
+BACI_NAMESPACE_CLOSE

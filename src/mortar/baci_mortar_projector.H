@@ -15,6 +15,8 @@
 #include "baci_utils_pairedvector.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   // forward declarations
@@ -31,8 +33,7 @@ namespace MORTAR
    public:
     MortarProjector(){};
 
-    virtual ~MortarProjector() {}
-
+    virtual ~MortarProjector() = default;
     //! @name Access methods
 
     /// 1. Internal implementation class
@@ -74,7 +75,7 @@ namespace MORTAR
   \brief A class to perform projections of nodes onto opposing elements
 
   */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class MortarProjectorCalc : public MortarProjector
   {
    public:
@@ -86,10 +87,10 @@ namespace MORTAR
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! n_: number of element nodes
-    static const int n_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int n_ = CORE::FE::num_nodes<distype>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
+    static const int ndim_ = CORE::FE::dim<distype> + 1;
 
     //! @name 2D and 3D projection methods
 
@@ -110,7 +111,8 @@ namespace MORTAR
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectNodalNormal(MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi);
+    bool ProjectNodalNormal(
+        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) override;
 
     /*!
     \brief Project a node onto an element along the interpolated
@@ -130,7 +132,8 @@ namespace MORTAR
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectElementNormal(MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi);
+    bool ProjectElementNormal(
+        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) override;
 
     /*!
     \brief Project a Gauss point onto an element along GP normal
@@ -146,8 +149,8 @@ namespace MORTAR
     \param xi (out)  : Local coordinates of projection on master element
 
     */
-    bool ProjectGaussPoint2D(
-        MORTAR::MortarElement& gpele, const double* gpeta, MORTAR::MortarElement& ele, double* xi)
+    bool ProjectGaussPoint2D(MORTAR::MortarElement& gpele, const double* gpeta,
+        MORTAR::MortarElement& ele, double* xi) override
     {
       dserror("Called ele-based projection for segment-based integration!!!");
       return false;
@@ -169,7 +172,7 @@ namespace MORTAR
 
     */
     bool ProjectGaussPoint3D(MORTAR::MortarElement& gpele, const double* gpeta,
-        MORTAR::MortarElement& ele, double* xi, double& par)
+        MORTAR::MortarElement& ele, double* xi, double& par) override
     {
       dserror("Called ele-based projection for segment-based integration!!!");
       return false;
@@ -191,21 +194,21 @@ namespace MORTAR
 
     */
     bool ProjectGaussPointAuxn3D(const double* globgp, const double* auxn,
-        MORTAR::MortarElement& ele, double* xi, double& par);
+        MORTAR::MortarElement& ele, double* xi, double& par) override;
 
     // TODO explanation
     bool ProjectSNodeByMNormal(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
-        double* normal, double& dist);
+        double* normal, double& dist) override;
 
     // TODO explanation
     bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override;
 
     // TODO explanation
     bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override;
 
    protected:
     bool ProjectSNodeByMNormal3D(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
@@ -277,7 +280,7 @@ namespace MORTAR
   \brief A class to perform element based projections of nodes onto opposing elements
 
   */
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarProjectorCalc_EleBased : public MortarProjector
   {
    public:
@@ -289,13 +292,13 @@ namespace MORTAR
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes
-    static const int ns_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+    static const int ns_ = CORE::FE::num_nodes<distypeS>;
 
     //! nm_: number of master element nodes
-    static const int nm_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nm_ = CORE::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim + 1;
+    static const int ndim_ = CORE::FE::dim<distypeS> + 1;
 
     //! @name 2D and 3D projection methods
 
@@ -316,7 +319,8 @@ namespace MORTAR
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectNodalNormal(MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi)
+    bool ProjectNodalNormal(
+        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) override
     {
       dserror("Called segment-based projection for element-based integration!!!");
       return false;
@@ -340,7 +344,8 @@ namespace MORTAR
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectElementNormal(MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi)
+    bool ProjectElementNormal(
+        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) override
     {
       dserror("Called segment-based projection for element-based integration!!!");
       return false;
@@ -360,8 +365,8 @@ namespace MORTAR
     \param xi (out)  : Local coordinates of projection on master element
 
     */
-    bool ProjectGaussPoint2D(
-        MORTAR::MortarElement& gpele, const double* gpeta, MORTAR::MortarElement& ele, double* xi);
+    bool ProjectGaussPoint2D(MORTAR::MortarElement& gpele, const double* gpeta,
+        MORTAR::MortarElement& ele, double* xi) override;
 
     /*!
     \brief Project a Gauss point onto an element along GP normal (3D)
@@ -379,7 +384,7 @@ namespace MORTAR
 
     */
     bool ProjectGaussPoint3D(MORTAR::MortarElement& gpele, const double* gpeta,
-        MORTAR::MortarElement& ele, double* xi, double& par);
+        MORTAR::MortarElement& ele, double* xi, double& par) override;
 
     /*!
     \brief Project a Gauss point onto an element along AuxPlane normal (3D)
@@ -397,14 +402,14 @@ namespace MORTAR
 
     */
     bool ProjectGaussPointAuxn3D(const double* globgp, const double* auxn,
-        MORTAR::MortarElement& ele, double* xi, double& par)
+        MORTAR::MortarElement& ele, double* xi, double& par) override
     {
       dserror("Called Aux.-plane projection for element-based integration!!!");
       return false;
     };
 
     bool ProjectSNodeByMNormal(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
-        double* normal, double& dist)
+        double* normal, double& dist) override
     {
       dserror("ERROR");
       return false;
@@ -412,7 +417,7 @@ namespace MORTAR
 
     bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override
     {
       dserror("ERROR");
       return false;
@@ -420,7 +425,7 @@ namespace MORTAR
 
     bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override
     {
       dserror("ERROR");
       return false;
@@ -472,5 +477,7 @@ namespace MORTAR
   };
 }  // namespace MORTAR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_PROJECTOR_H

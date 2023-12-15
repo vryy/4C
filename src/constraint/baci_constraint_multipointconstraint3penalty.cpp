@@ -12,15 +12,17 @@
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_transparent.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_utils_function_of_time.H"
 
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -291,7 +293,7 @@ UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
       if (myrank == 0)
       {
         Teuchos::RCP<DRT::Element> constraintele =
-            DRT::UTILS::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
+            CORE::COMM::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
         // set the same global node ids to the ale element
         constraintele->SetNodeIds(ngid_ele.size(), ngid_ele.data());
         // add constraint element
@@ -411,7 +413,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Discretiz
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
                 time);
 
 
@@ -497,3 +499,5 @@ void UTILS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discretization
   systemvector->Import(*acterrdist, *errorimport_, Insert);
   return;
 }  // end of EvaluateError
+
+BACI_NAMESPACE_CLOSE

@@ -29,6 +29,12 @@ namespace NOX
   {
     class Group;
   }  // namespace Abstract
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace StatusTest
@@ -51,7 +57,7 @@ namespace NOX
                  $\frac{\| x_i^{(k+1)} - x_i^{(k)} \|}{\|x_i^{(k)}\|} \leq RTOL$
 
        */
-      class NormUpdate : public NOX::StatusTest::Generic
+      class NormUpdate : public ::NOX::StatusTest::Generic
       {
        public:
         //! Type that determines whether to scale the norm by the problem size.
@@ -77,15 +83,12 @@ namespace NOX
         NormUpdate(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
             const std::vector<NormUpdate::ToleranceType>& toltype,
             const std::vector<double>& tolerance,
-            const std::vector<NOX::Abstract::Vector::NormType>& ntype,
+            const std::vector<::NOX::Abstract::Vector::NormType>& ntype,
             const std::vector<NormUpdate::ScaleType>& stype, const double& alpha,
-            const double& beta, const NOX::Utils* u = nullptr);
+            const double& beta, const ::NOX::Utils* u = nullptr);
 
-        //! Destructor.
-        virtual ~NormUpdate(){};
-
-        NOX::StatusTest::StatusType checkStatus(
-            const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
+        ::NOX::StatusTest::StatusType checkStatus(
+            const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
         /*! \brief Returns the norm type as <int> of the desired quantity
          *
@@ -96,17 +99,17 @@ namespace NOX
         bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
         //! NOTE: returns the global status of all normF tests
-        NOX::StatusTest::StatusType getStatus() const override;
+        ::NOX::StatusTest::StatusType getStatus() const override;
 
         std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
        protected:
         virtual void ComputeNorm(
-            const NOX::Abstract::Group& grp, const NOX::Solver::Generic& problem);
+            const ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& problem);
 
        private:
         //! check status in first nonlinear iteration step
-        virtual NOX::StatusTest::StatusType checkStatusFirstIter();
+        virtual ::NOX::StatusTest::StatusType checkStatusFirstIter();
 
         //! throws an NOX error
         void throwError(const std::string& functionName, const std::string& errorMsg) const;
@@ -132,13 +135,13 @@ namespace NOX
         std::vector<NOX::NLN::StatusTest::QuantityType> checkList_;
 
         //! global status
-        NOX::StatusTest::StatusType gStatus_;
+        ::NOX::StatusTest::StatusType gStatus_;
 
         //! Status
-        std::vector<NOX::StatusTest::StatusType> status_;
+        std::vector<::NOX::StatusTest::StatusType> status_;
 
         //! Type of norm to use
-        std::vector<NOX::Abstract::Vector::NormType> normType_;
+        std::vector<::NOX::Abstract::Vector::NormType> normType_;
 
         //! Scaling to use
         std::vector<NormUpdate::ScaleType> scaleType_;
@@ -159,7 +162,7 @@ namespace NOX
         Teuchos::RCP<const std::vector<double>> normUpdate_;
 
         //! Ostream used to print errors
-        NOX::Utils utils_;
+        ::NOX::Utils utils_;
 
         //! Flag that tells the print method whether to print the criteria 2 information.
         bool printCriteria2Info_;
@@ -196,24 +199,23 @@ namespace NOX
         NormUpdateSkipFirstIter(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
             const std::vector<NormUpdate::ToleranceType>& toltype,
             const std::vector<double>& tolerance,
-            const std::vector<NOX::Abstract::Vector::NormType>& ntype,
+            const std::vector<::NOX::Abstract::Vector::NormType>& ntype,
             const std::vector<NormUpdate::ScaleType>& stype, const double& alpha,
-            const double& beta, const NOX::Utils* u = nullptr)
+            const double& beta, const ::NOX::Utils* u = nullptr)
             :  // call base class constructor
               NormUpdate(checkList, toltype, tolerance, ntype, stype, alpha, beta, u)
         {
           return;
         };
 
-        //! Destructor.
-        virtual ~NormUpdateSkipFirstIter() { return; };
-
        private:
         //! check status in first nonlinear iteration step
-        virtual NOX::StatusTest::StatusType checkStatusFirstIter();
+        ::NOX::StatusTest::StatusType checkStatusFirstIter() override;
       };  // class NormUpdateSkipFirstIter
     }     // namespace StatusTest
   }       // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_STATUSTEST_NORMUPDATE_H

@@ -23,6 +23,8 @@
 #include <memory>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -42,9 +44,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit InteractionWriter(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~InteractionWriter() = default;
 
     //! init interaction writer
     void Init();
@@ -119,4 +118,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

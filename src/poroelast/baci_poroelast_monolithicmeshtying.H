@@ -17,6 +17,8 @@
 
 #include "baci_poroelast_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class CouplingPoroMortar;
@@ -43,7 +45,8 @@ namespace POROELAST
     void Update() override;
 
     //! Recover Lagrange Multiplier after Newton step
-    void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x) override;
+    void RecoverLagrangeMultiplierAfterNewtonStep(
+        Teuchos::RCP<const Epetra_Vector> iterinc) override;
 
     //! build meshtying specific norms where meshtying constraint residuals are evaluated separately
     void BuildConvergenceNorms() override;
@@ -83,5 +86,7 @@ namespace POROELAST
     double tolfres_ncoup_;  //!< residuum tolerance for porofluid normal coupling condition
   };
 }  // namespace POROELAST
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_MONOLITHICMESHTYING_H

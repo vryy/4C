@@ -22,13 +22,15 @@
 #include <Epetra_Map.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // define and initialize static member
 CONTACT::INTEGRATOR::UniqueProjInfoPair CONTACT::AUG::IntegrationWrapper::projInfo_(0);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::IntegrationWrapper::IntegrationWrapper(Teuchos::ParameterList& params,
-    DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
+CONTACT::AUG::IntegrationWrapper::IntegrationWrapper(
+    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : CONTACT::CoIntegrator::CoIntegrator(params, eletype, comm), integrator_(nullptr)
 
 {
@@ -177,7 +179,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::MortarEle
     dserror("IntegrateDerivSegment2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
-  if (sele.Shape() == MORTAR::MortarElement::line3 ||
+  if (sele.Shape() == CORE::FE::CellType::line3 ||
       ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     dserror("Petrov-Galerkin / quadratic FE interpolation not yet implemented.");
 
@@ -282,8 +284,8 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create(int probdim,
-    DRT::Element::DiscretizationType slavetype, DRT::Element::DiscretizationType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper)
+    CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+    CONTACT::CoIntegrator* wrapper)
 {
   switch (probdim)
   {
@@ -300,49 +302,49 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create(int pro
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
-    DRT::Element::DiscretizationType slavetype, DRT::Element::DiscretizationType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper)
+    CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+    CONTACT::CoIntegrator* wrapper)
 {
   switch (slavetype)
   {
-    case DRT::Element::line2:
-      return Create2D<DRT::Element::line2>(mastertype, cparams, wrapper);
-    case DRT::Element::nurbs2:
-      return Create2D<DRT::Element::nurbs2>(mastertype, cparams, wrapper);
-    case DRT::Element::nurbs3:
-      return Create2D<DRT::Element::nurbs3>(mastertype, cparams, wrapper);
+    case CORE::FE::CellType::line2:
+      return Create2D<CORE::FE::CellType::line2>(mastertype, cparams, wrapper);
+    case CORE::FE::CellType::nurbs2:
+      return Create2D<CORE::FE::CellType::nurbs2>(mastertype, cparams, wrapper);
+    case CORE::FE::CellType::nurbs3:
+      return Create2D<CORE::FE::CellType::nurbs3>(mastertype, cparams, wrapper);
     default:
       dserror("Unsupported slave element type %d|\"%s\"", slavetype,
-          DRT::DistypeToString(slavetype).c_str());
+          CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType slavetype>
+template <CORE::FE::CellType slavetype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper)
 {
   switch (mastertype)
   {
-    case DRT::Element::line2:
-      return Create2D<slavetype, DRT::Element::line2>(cparams, wrapper);
-    case DRT::Element::nurbs2:
-      return Create2D<slavetype, DRT::Element::nurbs2>(cparams, wrapper);
-    case DRT::Element::nurbs3:
-      return Create2D<slavetype, DRT::Element::nurbs3>(cparams, wrapper);
+    case CORE::FE::CellType::line2:
+      return Create2D<slavetype, CORE::FE::CellType::line2>(cparams, wrapper);
+    case CORE::FE::CellType::nurbs2:
+      return Create2D<slavetype, CORE::FE::CellType::nurbs2>(cparams, wrapper);
+    case CORE::FE::CellType::nurbs3:
+      return Create2D<slavetype, CORE::FE::CellType::nurbs3>(cparams, wrapper);
     default:
       dserror("Unsupported master element type %d|\"%s\"", mastertype,
-          DRT::DistypeToString(mastertype).c_str());
+          CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType slavetype, DRT::Element::DiscretizationType mastertype>
+template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper)
 {
@@ -372,52 +374,53 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
-    DRT::Element::DiscretizationType slavetype, DRT::Element::DiscretizationType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper)
+    CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+    CONTACT::CoIntegrator* wrapper)
 {
   switch (slavetype)
   {
-    case DRT::Element::quad4:
-      return Create3D<DRT::Element::quad4>(mastertype, cparams, wrapper);
-    case DRT::Element::tri3:
-      return Create3D<DRT::Element::tri3>(mastertype, cparams, wrapper);
-    case DRT::Element::nurbs4:
-      return Create3D<DRT::Element::nurbs4>(mastertype, cparams, wrapper);
-    case DRT::Element::nurbs9:
-      return Create3D<DRT::Element::nurbs9>(mastertype, cparams, wrapper);
+    case CORE::FE::CellType::quad4:
+      return Create3D<CORE::FE::CellType::quad4>(mastertype, cparams, wrapper);
+    case CORE::FE::CellType::tri3:
+      return Create3D<CORE::FE::CellType::tri3>(mastertype, cparams, wrapper);
+    case CORE::FE::CellType::nurbs4:
+      return Create3D<CORE::FE::CellType::nurbs4>(mastertype, cparams, wrapper);
+    case CORE::FE::CellType::nurbs9:
+      return Create3D<CORE::FE::CellType::nurbs9>(mastertype, cparams, wrapper);
     default:
-      dserror("Unsupported slave element type %d|\"%s\"", DRT::DistypeToString(mastertype).c_str());
+      dserror("Unsupported slave element type %d|\"%s\"",
+          CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType slavetype>
+template <CORE::FE::CellType slavetype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper)
 {
   switch (mastertype)
   {
-    case DRT::Element::quad4:
-      return Create3D<slavetype, DRT::Element::quad4>(cparams, wrapper);
-    case DRT::Element::tri3:
-      return Create3D<slavetype, DRT::Element::tri3>(cparams, wrapper);
-    case DRT::Element::nurbs4:
-      return Create3D<slavetype, DRT::Element::nurbs4>(cparams, wrapper);
-    case DRT::Element::nurbs9:
-      return Create3D<slavetype, DRT::Element::nurbs9>(cparams, wrapper);
+    case CORE::FE::CellType::quad4:
+      return Create3D<slavetype, CORE::FE::CellType::quad4>(cparams, wrapper);
+    case CORE::FE::CellType::tri3:
+      return Create3D<slavetype, CORE::FE::CellType::tri3>(cparams, wrapper);
+    case CORE::FE::CellType::nurbs4:
+      return Create3D<slavetype, CORE::FE::CellType::nurbs4>(cparams, wrapper);
+    case CORE::FE::CellType::nurbs9:
+      return Create3D<slavetype, CORE::FE::CellType::nurbs9>(cparams, wrapper);
     default:
-      dserror(
-          "Unsupported master element type %d|\"%s\"", DRT::DistypeToString(mastertype).c_str());
+      dserror("Unsupported master element type %d|\"%s\"",
+          CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType slavetype, DRT::Element::DiscretizationType mastertype>
+template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper)
 {
@@ -446,8 +449,8 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>*
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
     CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper)
@@ -469,8 +472,8 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator()
     : IntegratorGeneric(), IntPolicy()
 {
@@ -479,8 +482,8 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator& wrapper)
     : IntegratorGeneric(cparams, wrapper), IntPolicy()
@@ -490,8 +493,8 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::IntegrateDerivSegment2D(
     MORTAR::MortarElement& sele, double& sxia, double& sxib, MORTAR::MortarElement& mele,
     double& mxia, double& mxib)
@@ -503,8 +506,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, MORTAR::IntCell& cell, double* auxn)
@@ -516,8 +519,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::IntegrateDerivSlaveElement(MORTAR::MortarElement& sele)
 {
@@ -565,8 +568,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluate(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
@@ -609,8 +612,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::SetEvaluator(
     const enum MORTAR::ActionType action)
 {
@@ -651,8 +654,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::SetEva
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::IntegrateDerivEle(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
@@ -786,8 +789,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::IntegrateWeightedGap(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
@@ -856,8 +859,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::IntegrateWeightedGapGradientError(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, bool boundary_ele,
@@ -960,8 +963,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 int CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GetLinSize(
     MORTAR::MortarElement& sele) const
 {
@@ -978,8 +981,8 @@ int CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GetLinS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::ExtractActiveSlaveNodeLIDs(std::vector<unsigned>& active_nlids,
     const MORTAR::MortarElement& sele) const
@@ -999,8 +1002,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::HardReset(
     const unsigned linsize)
 {
@@ -1022,8 +1025,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::HardRe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::WeakReset(
     const unsigned linsize)
 {
@@ -1045,101 +1048,96 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::WeakRe
 
 /*----------------------------------------------------------------------------*/
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::line2>(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper);
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::line2>(CORE::FE::CellType mastertype,
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::line2, DRT::Element::line2>(
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::line2, CORE::FE::CellType::line2>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs2>(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs2, DRT::Element::nurbs2>(
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs2>(CORE::FE::CellType mastertype,
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs2, DRT::Element::nurbs3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs3>(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs3, DRT::Element::nurbs3>(
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs3, DRT::Element::nurbs2>(
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4>(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4, DRT::Element::quad4>(
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs3>(CORE::FE::CellType mastertype,
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4, DRT::Element::tri3>(
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4, DRT::Element::nurbs4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4, DRT::Element::nurbs9>(
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3>(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3, DRT::Element::quad4>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4>(CORE::FE::CellType mastertype,
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3, DRT::Element::tri3>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3, DRT::Element::nurbs4>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3, DRT::Element::nurbs9>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4>(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4, DRT::Element::nurbs4>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4, DRT::Element::quad4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4, DRT::Element::tri3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4, DRT::Element::nurbs9>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs9>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9>(
-    DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::nurbs9>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3>(CORE::FE::CellType mastertype,
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::quad4>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::tri3>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::nurbs4>(
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs9>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4>(CORE::FE::CellType mastertype,
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs4>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4, CORE::FE::CellType::quad4>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4, CORE::FE::CellType::tri3>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs9>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9>(CORE::FE::CellType mastertype,
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs9>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::quad4>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::tri3>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+template CONTACT::AUG::IntegratorGeneric*
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4>(
+    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+
+BACI_NAMESPACE_CLOSE
 
 #include "baci_contact_aug_integrator.inst.H"

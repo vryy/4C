@@ -17,6 +17,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------
                   Standard Constructor (public)
   ---------------------------------------------------------------------*/
@@ -262,14 +264,6 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<DRT::Discreti
   return;
 }  // TurbulenceStatisticsCha::TurbulenceStatisticsTgv
 
-
-/*----------------------------------------------------------------------*
-                           Destructor
- -----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsTgv::~TurbulenceStatisticsTgv()
-{
-  return;
-}  // TurbulenceStatisticsCha::~TurbulenceStatisticsTgv()
 
 
 /*----------------------------------------------------------------------*
@@ -1016,3 +1010,5 @@ void FLD::TurbulenceStatisticsTgv::ClearStatistics()
 
   return;
 }  // TurbulenceStatisticsTvg::ClearStatistics
+
+BACI_NAMESPACE_CLOSE

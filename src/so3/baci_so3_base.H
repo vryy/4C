@@ -15,6 +15,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration ...
 namespace STR
 {
@@ -67,7 +69,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -331,5 +333,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_BASE_H

@@ -31,6 +31,8 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "baci_lib_utils.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -57,8 +59,7 @@ namespace DRT
       //! Empty constructor
       FluidIntFaceStab() {}
       //! Empty destructor
-      virtual ~FluidIntFaceStab() {}
-
+      virtual ~FluidIntFaceStab() = default;
       /*!
         \brief Evaluate the surface elements edge-oriented stabilization and ghost penalty
 
@@ -117,8 +118,7 @@ namespace DRT
     //-----------------------------------------------------------------
     ///
     //-----------------------------------------------------------------
-    template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-        DRT::Element::DiscretizationType ndistype>
+    template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
     class FluidInternalSurfaceStab : public FluidIntFaceStab
     {
      public:
@@ -129,11 +129,9 @@ namespace DRT
       /// Constructor with number of nodes
       FluidInternalSurfaceStab();
 
-      /// empty destructor
-      ~FluidInternalSurfaceStab() { return; };
 
       /// number of space dimensions of the FluidIntFace element
-      static const int facensd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int facensd_ = CORE::FE::dim<distype>;
 
       /// number of space dimensions of the parent element
       static const int nsd_ = facensd_ + 1;
@@ -142,13 +140,13 @@ namespace DRT
       static const int numdofpernode_ = nsd_ + 1;
 
       /// number of nodes
-      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::FE::num_nodes<distype>;
 
       /// number of parentnodes
-      static const int piel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+      static const int piel = CORE::FE::num_nodes<pdistype>;
 
       /// number of parentnodes of neighbor element
-      static const int niel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<ndistype>::numNodePerElement;
+      static const int niel = CORE::FE::num_nodes<ndistype>;
 
       /// number of second order derivatives for master element
       static const int numderiv2_p = CORE::DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
@@ -169,7 +167,7 @@ namespace DRT
         Burman Fernandez and Hansbo (2006-2009)
 
       */
-      virtual int EvaluateEdgeBasedStabilization(
+      int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace* intface,   ///< internal face element
           Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
           DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
@@ -187,10 +185,10 @@ namespace DRT
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
           std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
           std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
-      );
+          ) override;
 
      private:
-      int Degree(const DRT::Element::DiscretizationType parent_ele_distype);
+      int Degree(const CORE::FE::CellType parent_ele_distype);
 
       //! reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
       void ReassembleMATBlock(const int row_block,     ///< row block
@@ -367,8 +365,7 @@ namespace DRT
         \brief provide parameter r_alpha depending on polynomial degree and shape of element
         for each parent distype required for certain stabilization parameter definitions
        */
-      inline void r_pow_alpha(
-          DRT::Element::DiscretizationType parent_distype, double& r_visc, double& r_conv)
+      inline void r_pow_alpha(CORE::FE::CellType parent_distype, double& r_visc, double& r_conv)
       {
         // the scaling factor for face/edge-oriented stabilizations is r^alpha with
         // *    r_triangle      = highest polynomial degree on triangle/tet
@@ -381,26 +378,26 @@ namespace DRT
 
         switch (parent_distype)
         {
-          case DRT::Element::hex8:
-          case DRT::Element::tet4:
-          case DRT::Element::pyramid5:
-          case DRT::Element::wedge6:
-          case DRT::Element::quad4:
-          case DRT::Element::tri3:
-          case DRT::Element::line2:
+          case CORE::FE::CellType::hex8:
+          case CORE::FE::CellType::tet4:
+          case CORE::FE::CellType::pyramid5:
+          case CORE::FE::CellType::wedge6:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::tri3:
+          case CORE::FE::CellType::line2:
           {
             r_visc = 1.0;  ///< 1.0^4
             r_conv = 1.0;  ///< 1.0^(7/2)
             break;
           }
-          case DRT::Element::hex20:
-          case DRT::Element::hex27:
-          case DRT::Element::tet10:
-          case DRT::Element::wedge15:
-          case DRT::Element::quad8:
-          case DRT::Element::quad9:
-          case DRT::Element::tri6:
-          case DRT::Element::line3:
+          case CORE::FE::CellType::hex20:
+          case CORE::FE::CellType::hex27:
+          case CORE::FE::CellType::tet10:
+          case CORE::FE::CellType::wedge15:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::quad9:
+          case CORE::FE::CellType::tri6:
+          case CORE::FE::CellType::line3:
           {
             r_visc = 16.0;                   ///< 2.0^4
             r_conv = 11.313708498984761164;  ///< 2.0^(7/2)
@@ -764,11 +761,10 @@ namespace DRT
 
       //! find the surface at the opposite side, return the local side id of opposite side
       //! return -1 if not unique!
-      int FindOppositeSurface(
-          DRT::Element::DiscretizationType ele_distype, const int surfacelocalid)
+      int FindOppositeSurface(CORE::FE::CellType ele_distype, const int surfacelocalid)
       {
-        if (ele_distype == DRT::Element::hex8 or ele_distype == DRT::Element::hex20 or
-            ele_distype == DRT::Element::hex27)
+        if (ele_distype == CORE::FE::CellType::hex8 or ele_distype == CORE::FE::CellType::hex20 or
+            ele_distype == CORE::FE::CellType::hex27)
         {
           switch (surfacelocalid)
           {
@@ -795,8 +791,9 @@ namespace DRT
               break;
           }
         }
-        else if (ele_distype == DRT::Element::quad4 or ele_distype == DRT::Element::quad8 or
-                 ele_distype == DRT::Element::quad9)
+        else if (ele_distype == CORE::FE::CellType::quad4 or
+                 ele_distype == CORE::FE::CellType::quad8 or
+                 ele_distype == CORE::FE::CellType::quad9)
         {
           switch (surfacelocalid)
           {
@@ -817,9 +814,9 @@ namespace DRT
               break;
           }
         }
-        if (ele_distype == DRT::Element::tet4 or ele_distype == DRT::Element::tet10 or
-            ele_distype == DRT::Element::tri3 or ele_distype == DRT::Element::tri6 or
-            ele_distype == DRT::Element::pyramid5)
+        if (ele_distype == CORE::FE::CellType::tet4 or ele_distype == CORE::FE::CellType::tet10 or
+            ele_distype == CORE::FE::CellType::tri3 or ele_distype == CORE::FE::CellType::tri6 or
+            ele_distype == CORE::FE::CellType::pyramid5)
         {
           // no unique opposite side
           return -1;
@@ -1183,5 +1180,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

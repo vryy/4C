@@ -11,9 +11,9 @@
 
 #include "baci_mixture_rule.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_inpar_material.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_parobject.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_par_parameter.H"
@@ -22,18 +22,21 @@
 #include "baci_mixture_rule_simple.H"
 #include "baci_utils_exceptions.H"
 
-// forward declarations
-namespace DRT
-{
-  class PackBuffer;
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
 namespace Teuchos
 {
   class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
+// forward declarations
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
+namespace DRT::INPUT
+{
+  class LineDefinition;
 }
 
 // Constructor of the material parameters
@@ -86,16 +89,16 @@ MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
 }
 
 // Pack the mixture rule
-void MIXTURE::MixtureRule::PackMixtureRule(DRT::PackBuffer& data) const
+void MIXTURE::MixtureRule::PackMixtureRule(CORE::COMM::PackBuffer& data) const
 {
   // Add number of Gauss points
-  DRT::ParObject::AddtoPack(data, numgp_);
+  CORE::COMM::ParObject::AddtoPack(data, numgp_);
 
   // Add flag whether it has already read the element
-  DRT::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
 
   // Add flags whether it is setup
-  DRT::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack the mixture rule
@@ -103,13 +106,13 @@ void MIXTURE::MixtureRule::UnpackMixtureRule(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // Read initialized flag
-  numgp_ = DRT::ParObject::ExtractInt(position, data);
+  numgp_ = CORE::COMM::ParObject::ExtractInt(position, data);
 
   // Read element read flag
-  has_read_element_ = (bool)DRT::ParObject::ExtractInt(position, data);
+  has_read_element_ = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
 
   // Read is setup flag
-  is_setup_ = (bool)DRT::ParObject::ExtractInt(position, data);
+  is_setup_ = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
 }
 
 // reads the element definition and set up all quantities
@@ -132,3 +135,4 @@ void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params, const int eleGI
   if (is_setup_) dserror("Setup() is called multiple times. Just once allowed.");
   is_setup_ = true;
 }
+BACI_NAMESPACE_CLOSE

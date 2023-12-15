@@ -17,6 +17,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -58,7 +59,7 @@ namespace FLD
    \brief Destructor
 
    */
-    virtual ~FluidMHDEvaluate();
+    virtual ~FluidMHDEvaluate() = default;
 
 
     void BoundaryElementLoop(Teuchos::ParameterList& mhdbcparams,
@@ -78,4 +79,6 @@ namespace FLD
   };
 
 }  // namespace FLD
+BACI_NAMESPACE_CLOSE
+
 #endif  // FLUID_MHD_EVALUATE_H

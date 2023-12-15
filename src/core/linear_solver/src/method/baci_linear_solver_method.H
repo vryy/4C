@@ -13,6 +13,8 @@
 #include "baci_linalg_krylov_projector.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// linear solver type base class
@@ -38,8 +40,6 @@ namespace CORE::LINEAR_SOLVER
 
     virtual int Solve() = 0;
 
-    virtual int ApplyInverse(const VectorType& X, VectorType& Y) = 0;
-
     /// return number of iterations performed by solver
     virtual int getNumIters() const
     {
@@ -48,5 +48,7 @@ namespace CORE::LINEAR_SOLVER
     };
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

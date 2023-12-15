@@ -12,9 +12,11 @@
 
 #include "baci_lib_utils_createdis.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_dofset_transparent_independent.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_parallel.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -283,3 +285,5 @@ void DRT::UTILS::PrintCloningMaterialMapDatHeader()
   DRT::INPUT::Lines lines = ValidCloningMaterialMapLines();
   lines.Print(std::cout);
 }  // DRT::UTILS::PrintCloningMaterialMapDatHeader
+
+BACI_NAMESPACE_CLOSE

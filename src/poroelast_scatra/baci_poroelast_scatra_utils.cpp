@@ -25,11 +25,13 @@
 #include "baci_poroelast_utils.H"
 #include "baci_so3_poro_p1_scatra_eletypes.H"
 #include "baci_so3_poro_scatra_eletypes.H"
-#include "baci_solid_ele_poro.H"
+#include "baci_solid_poro_ele.H"
 #include "baci_w1_poro_p1_scatra_eletypes.H"
 #include "baci_w1_poro_scatra_eletypes.H"
 
 #include <Epetra_Time.h>
+
+BACI_NAMESPACE_OPEN
 
 
 bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const DRT::Element* actele)
@@ -208,3 +210,5 @@ void POROELASTSCATRA::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(voldis[1]);
   if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
 }
+
+BACI_NAMESPACE_CLOSE

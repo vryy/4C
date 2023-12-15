@@ -19,6 +19,8 @@ correct implementation is still missing.
 #include "baci_lib_element.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Condition;
@@ -41,8 +43,7 @@ namespace DRT
       /// Empty constructor
       ElemagBoundaryImplInterface() {}
       /// Empty destructor
-      virtual ~ElemagBoundaryImplInterface() {}
-
+      virtual ~ElemagBoundaryImplInterface() = default;
       /// Evaluate a Neumann boundary condition
       /*!
         This class does not provide a definition for this function, it
@@ -69,7 +70,7 @@ namespace DRT
     };  // class ElemagBoundaryImplInterface
 
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ElemagBoundaryImpl : public ElemagBoundaryImplInterface
     {
      public:
@@ -81,30 +82,28 @@ namespace DRT
       ElemagBoundaryImpl();
 
       //! number of element nodes
-      static const int bdrynen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions of the ElemagBoundary element
-      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::FE::dim<distype>;
 
       //! number of space dimensions of the parent element
       static const int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm,
+      int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseMatrix* elemat1);
+          CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
       /// Evaluate routine for boundary elements
-      virtual int Evaluate(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      private:
       //! node coordinates for boundary element
@@ -128,5 +127,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_ELE_BOUNDARY_CALC_H

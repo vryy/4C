@@ -11,6 +11,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::REDAIRWAYS
 {
   /**
@@ -101,5 +103,7 @@ namespace DRT::REDAIRWAYS
     EvaluationData& operator=(EvaluationData&&) = delete;
   };
 }  // namespace DRT::REDAIRWAYS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

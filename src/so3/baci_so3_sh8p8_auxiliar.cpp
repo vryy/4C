@@ -9,19 +9,19 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+
 #include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_so3_sh8p8.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-using VoigtMapping = ::UTILS::VOIGT::IndexMappings;
+BACI_NAMESPACE_OPEN
+
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 
 /*----------------------------------------------------------------------*/
@@ -525,9 +525,9 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& sqfderf,
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, ::UTILS::VOIGT::NotationType outvoigt6)
+    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, CORE::LINALG::VOIGT::NotationType outvoigt6)
 {
-  if (outvoigt6 != ::UTILS::VOIGT::NotationType::strain)
+  if (outvoigt6 != CORE::LINALG::VOIGT::NotationType::strain)
     dserror("Can only produce row of strain-like type");
 
   sqfderf(0, 0) = 2.0 * fmat(0, 0);
@@ -794,8 +794,8 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& bm,  ///< (out) 6x6 Voigt matrix
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
     const bool transpose,                              ///< 3x3 input matrix is transposed
-    ::UTILS::VOIGT::NotationType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-    ::UTILS::VOIGT::NotationType colvoigt6   ///< 6-Voigt vector layout on columns of 6x6 matrix
+    CORE::LINALG::VOIGT::NotationType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
+    CORE::LINALG::VOIGT::NotationType colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
 )
 {
   for (int ab = 0; ab < MAT::NUM_STRESS_3D; ++ab)
@@ -816,9 +816,9 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
         bm(AB, ab) = bt(a, A) * bt(b, B);
         if (ab >= NUMDIM_) bm(AB, ab) += bt(b, A) * bt(a, B);
       }
-      if ((colvoigt6 == ::UTILS::VOIGT::NotationType::stress) and (ab >= NUMDIM_))
+      if ((colvoigt6 == CORE::LINALG::VOIGT::NotationType::stress) and (ab >= NUMDIM_))
         bm(AB, ab) *= 0.5;
-      if ((rowvoigt6 == ::UTILS::VOIGT::NotationType::strain) and (AB >= NUMDIM_))
+      if ((rowvoigt6 == CORE::LINALG::VOIGT::NotationType::strain) and (AB >= NUMDIM_))
         bm(AB, ab) *= 2.0;
     }
   }
@@ -1410,3 +1410,5 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
   //
   return;
 }
+
+BACI_NAMESPACE_CLOSE

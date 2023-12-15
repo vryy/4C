@@ -8,8 +8,10 @@
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_thermo_element.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -23,9 +25,11 @@ bool DRT::ELEMENTS::Thermo::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
-  if (Shape() == DRT::Element::nurbs27) SetNurbsElement() = true;
+  if (Shape() == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

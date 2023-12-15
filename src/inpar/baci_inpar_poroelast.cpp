@@ -17,6 +17,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_linalg_equilibrate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -141,3 +143,5 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
           CORE::LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
       &poroelastdyn);
 }
+
+BACI_NAMESPACE_CLOSE

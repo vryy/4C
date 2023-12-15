@@ -22,6 +22,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 void dyn_red_airways_drt();
@@ -29,5 +31,7 @@ void redairway_tissue_dyn();
 
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // RED_AIRWAYS_DYN_DRT_H

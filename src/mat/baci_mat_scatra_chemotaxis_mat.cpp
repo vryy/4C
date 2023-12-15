@@ -15,6 +15,8 @@ This file contains the base material for chemotactic scalars.
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -57,7 +59,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraChemotaxisMat::CreateMaterial()
 MAT::ScatraChemotaxisMatType MAT::ScatraChemotaxisMatType::instance_;
 
 
-DRT::ParObject* MAT::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
 {
   MAT::ScatraChemotaxisMat* scatra_chemotaxis_mat = new MAT::ScatraChemotaxisMat();
   scatra_chemotaxis_mat->Unpack(data);
@@ -80,9 +82,9 @@ MAT::ScatraChemotaxisMat::ScatraChemotaxisMat(MAT::PAR::ScatraChemotaxisMat* par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraChemotaxisMat::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraChemotaxisMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -101,12 +103,9 @@ void MAT::ScatraChemotaxisMat::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraChemotaxisMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "wrong instance type data. type = %d, UniqueParObjectId()=%d", type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
@@ -126,3 +125,5 @@ void MAT::ScatraChemotaxisMat::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

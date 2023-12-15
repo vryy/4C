@@ -90,7 +90,7 @@ GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                gauss_point_cross_section
 INTEGRATION_POINTS_CIRCUMFERENCE      24
 GEOMETRY_PAIR_STRATEGY                gauss_point_projection_cross_section
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 COUPLE_RESTART_STATE                  Yes
 --------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 23 QUANTITY dispx VALUE -0.0068964766068355 TOLERANCE 1e-7

@@ -34,6 +34,8 @@
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 04/14 |
  *----------------------------------------------------------------------*/
@@ -739,8 +741,7 @@ void FLD::XWall::SetupL2Projection()
     const auto solvertype =
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, xwdiscret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, xwdiscret_->Comm()));
 
     if (solvertype != INPAR::SOLVER::SolverType::umfpack)
     {
@@ -1536,7 +1537,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
 
                     if (not isuglydirnode)
                     {
-                      const double* x = test[l]->X();
+                      const auto& x = test[l]->X();
                       double dist = abs(x[0] - xwallnode->X()[0]) + abs(x[1] - xwallnode->X()[1]) +
                                     abs(x[2] - xwallnode->X()[2]);
                       if (founddist > dist)
@@ -1728,3 +1729,5 @@ void FLD::XWallAleFSI::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresi
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

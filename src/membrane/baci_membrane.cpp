@@ -10,9 +10,11 @@
 *----------------------------------------------------------------------*/
 #include "baci_membrane.H"
 
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+
+BACI_NAMESPACE_OPEN
 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line2Type::Create(const int id, const int owner)
@@ -31,7 +33,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line3Type::Create(const int i
  |  constructor (public)                                          fbraeu 06/16 |
  |  id          (in)  this element's global id                                 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
     : DRT::Element(id, owner),
       thickness_(0.0),
@@ -42,28 +44,28 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
 {
   switch (distype)
   {
-    case tri3:
+    case CORE::FE::CellType::tri3:
     {
       CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       // get gauss integration points
       intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
-    case tri6:
+    case CORE::FE::CellType::tri6:
     {
       CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       // get gauss integration points
       intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
-    case quad4:
+    case CORE::FE::CellType::quad4:
     {
       CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       // get gauss integration points
       intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
-    case quad9:
+    case CORE::FE::CellType::quad9:
     {
       CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       // get gauss integration points
@@ -82,7 +84,7 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
  |  copy-constructor (public)                                     fbraeu 06/16 |
  |  id               (in)  this element's global id                            |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype>& old)
     : DRT::Element(old),
       thickness_(old.thickness_),
@@ -99,7 +101,7 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype
  |  Deep copy this instance of Membrane and return pointer to it (public) |
  |                                                           fbraeu 06/16 |
  *------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::Element* DRT::ELEMENTS::Membrane<distype>::Clone() const
 {
   DRT::ELEMENTS::Membrane<distype>* newelement = new DRT::ELEMENTS::Membrane<distype>(*this);
@@ -110,8 +112,8 @@ DRT::Element* DRT::ELEMENTS::Membrane<distype>::Clone() const
  |                                                             (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::Element::DiscretizationType DRT::ELEMENTS::Membrane<distype>::Shape() const
+template <CORE::FE::CellType distype>
+CORE::FE::CellType DRT::ELEMENTS::Membrane<distype>::Shape() const
 {
   return distype;
 }
@@ -120,7 +122,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Membrane<distype>::Shape() const
  |  Return number of lines of this element                     (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Membrane<distype>::NumLine() const
 {
   return CORE::DRT::UTILS::getNumberOfElementLines(distype);
@@ -130,10 +132,10 @@ int DRT::ELEMENTS::Membrane<distype>::NumLine() const
  |  Pack data                                                  (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::Pack(DRT::PackBuffer& data) const
+template <CORE::FE::CellType distype>
+void DRT::ELEMENTS::Membrane<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -160,14 +162,13 @@ void DRT::ELEMENTS::Membrane<distype>::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -186,19 +187,11 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  destructor (public)                                    fbraeu 06/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Membrane<distype>::~Membrane()
-{
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  return solid material (public)                         sfuchs 05/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Membrane<distype>::SolidMaterial(int nummat) const
 {
   return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
@@ -206,7 +199,7 @@ Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Membrane<distype>::SolidMaterial(i
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
@@ -217,7 +210,7 @@ void DRT::ELEMENTS::Membrane<distype>::SetParamsInterfacePtr(const Teuchos::Para
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Membrane<distype>::ParamsInterfacePtr()
 {
   return interface_ptr_;
@@ -225,7 +218,7 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Membrane<distype>::P
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::Membrane<distype>::StrParamsInterface()
 {
   if (not IsParamsInterface()) dserror("The interface ptr is not set!");
@@ -235,11 +228,11 @@ STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::Membrane<distype>::StrParamsInter
 /*----------------------------------------------------------------------*
  |  print this element (public)                            fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
 {
   os << "Membrane ";
-  os << " Discretization type: " << DRT::DistypeToString(distype).c_str();
+  os << " Discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
   Element::Print(os);
   std::cout << std::endl;
   std::cout << data_;
@@ -249,32 +242,25 @@ void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                        fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

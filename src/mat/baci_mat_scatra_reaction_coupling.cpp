@@ -8,8 +8,10 @@
 
 #include "baci_mat_scatra_reaction_coupling.H"
 
-#include "baci_lib_get_functionofanything.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  * factory method                                            vuong 09/16
@@ -599,7 +601,9 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::InitializeInternal(int numscal,  //
       const int functID = round(couprole[ii]);
       if (functID != 0)
       {
-        if (DRT::UTILS::GetFunctionOfAnything(functID - 1).NumberComponents() != 1)
+        if (DRT::Problem::Instance()
+                ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID - 1)
+                .NumberComponents() != 1)
           dserror("expected only one component for the reaction evaluation");
 
         for (int k = 0; k < numscal; k++)
@@ -682,7 +686,8 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTermInternal(
   variables_for_parser_evaluation.emplace_back("z", 0.0);
 
   // evaluate reaction term
-  double bftfac = DRT::UTILS::GetFunctionOfAnything(round(couprole[k]) - 1)
+  double bftfac = DRT::Problem::Instance()
+                      ->FunctionById<CORE::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
                       .Evaluate(variables_for_parser_evaluation, constants, 0);
 
   return scale_reac * bftfac;
@@ -709,11 +714,9 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< 
     case 2:
       return CalcReaBodyForceDerivInternal<2>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
-      ;
     case 3:
       return CalcReaBodyForceDerivInternal<3>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
-      ;
     default:
       dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
   }
@@ -752,7 +755,8 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivInternal(
 
   // evaluate the derivatives of the reaction term
   std::vector<double> myderivs =
-      DRT::UTILS::GetFunctionOfAnything(round(couprole[k]) - 1)
+      DRT::Problem::Instance()
+          ->FunctionById<CORE::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
           .EvaluateDerivative(variables_, constants_for_parser_evaluation, 0);
 
   // add it to derivs
@@ -782,11 +786,9 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
     case 2:
       return CalcReaBodyForceDerivAddVariablesInternal<2>(
           k, derivs, variables, constants, couprole, scale_reac);
-      ;
     case 3:
       return CalcReaBodyForceDerivAddVariablesInternal<3>(
           k, derivs, variables, constants, couprole, scale_reac);
-      ;
     default:
       dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
   }
@@ -806,8 +808,10 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariablesIn
 )
 {
   // evaluate the derivatives of the reaction term
-  std::vector<double> myderivs = DRT::UTILS::GetFunctionOfAnything(round(couprole[k]) - 1)
-                                     .EvaluateDerivative(variables, constants, 0);
+  std::vector<double> myderivs =
+      DRT::Problem::Instance()
+          ->FunctionById<CORE::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
+          .EvaluateDerivative(variables, constants, 0);
 
   if (myderivs.size() != derivs.size())
   {
@@ -835,10 +839,8 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
       return AddAdditionalVariablesInternal<1>(k, variables, couprole);
     case 2:
       return AddAdditionalVariablesInternal<2>(k, variables, couprole);
-      ;
     case 3:
       return AddAdditionalVariablesInternal<3>(k, variables, couprole);
-      ;
     default:
       dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
   }
@@ -874,3 +876,5 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::BuildPhiVectorForFunction(
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

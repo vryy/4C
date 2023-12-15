@@ -11,15 +11,16 @@
 
 #include "baci_module_registry_callbacks.H"
 
-namespace BACI
-{
-  /**
-   * Expose callbacks for the global legacy module.
-   *
-   * @note This function exists for historic reasons. Its internals need to be split up to remove
-   * forced dependencies on the main apps.
-   */
-  [[nodiscard]] ModuleCallbacks GlobalLegacyModuleCallbacks();
-}  // namespace BACI
+BACI_NAMESPACE_OPEN
+
+/**
+ * Expose callbacks for the global legacy module.
+ *
+ * @note This function exists for historic reasons. Its internals need to be split up to remove
+ * forced dependencies on the main apps.
+ */
+[[nodiscard]] ModuleCallbacks GlobalLegacyModuleCallbacks();
+
+BACI_NAMESPACE_CLOSE
 
 #endif

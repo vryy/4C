@@ -10,9 +10,13 @@
 #ifndef BACI_STRUCTURE_DYN_NLN_DRT_H
 #define BACI_STRUCTURE_DYN_NLN_DRT_H
 
+BACI_NAMESPACE_OPEN
+
 
 void dyn_nlnstructural_drt();
 void caldyn_drt();
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_DYN_NLN_DRT_H

@@ -12,6 +12,8 @@
 
 #include "baci_particle_engine_object.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -52,3 +54,5 @@ void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<d
   particlesgenerated.emplace_back(
       std::make_shared<PARTICLEENGINE::ParticleObject>(particletype, -1, particlestates));
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -23,9 +25,6 @@ namespace MAT
       /// standard constructor
       explicit FluidPoroViscosityLaw(Teuchos::RCP<MAT::PAR::Material> matdata, bool constviscosity)
           : Parameter(matdata), constviscosity_(constviscosity){};
-
-      /// destructor
-      virtual ~FluidPoroViscosityLaw() { ; }
 
       // get viscosity
       virtual double GetViscosity(const double abspressgrad) const = 0;
@@ -50,17 +49,17 @@ namespace MAT
       /// standard constructor
       explicit FluidPoroViscosityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~FluidPoroViscosityLawConstant() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get viscosity
-      double GetViscosity(const double abspressgrad) const { return viscosity_; };
+      double GetViscosity(const double abspressgrad) const override { return viscosity_; };
 
       // get derivative of viscosity wrt |grad(p)|  --> 0 in case of const. viscosity
-      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const { return 0.0; };
+      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const override
+      {
+        return 0.0;
+      };
 
      private:
       /// @name material parameters
@@ -81,17 +80,14 @@ namespace MAT
       /// standard constructor
       explicit FluidPoroViscosityLawCellAdherence(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~FluidPoroViscosityLawCellAdherence() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get viscosity
-      double GetViscosity(const double abspressgrad) const;
+      double GetViscosity(const double abspressgrad) const override;
 
       // get derivative of viscosity wrt |grad(p)|
-      virtual double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const;
+      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const override;
 
      private:
       /// @name material parameters
@@ -110,5 +106,7 @@ namespace MAT
 }  // namespace MAT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_FLUIDPORO_VISCOSITY_LAW_H

@@ -31,6 +31,8 @@
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizeblockmatrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -50,19 +52,19 @@ namespace DRT
        * without assembling any coupling terms (e.g. in two-sided xfluid-fluid coupling
        * for gauss-point projection or error calculation in case of a given analytical solution).
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       class SlaveElementInterface
       {
        public:
         /// number of spatial dimensions
-        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::FE::dim<distype>;
 
         //! set names of displacement and velocity states (differ dependent on the slave element)
         static void DefineStateNames(
-            DRT::Element::DiscretizationType slave_distype,  ///< coupling slave discretization type
-            std::string& disp_statename,  ///< name of displacement state at current step
-            std::string& vel_statename,   ///< name of velocity state at current step
-            std::string& veln_statename   ///< name of velocity state at previous step
+            CORE::FE::CellType slave_distype,  ///< coupling slave discretization type
+            std::string& disp_statename,       ///< name of displacement state at current step
+            std::string& vel_statename,        ///< name of velocity state at current step
+            std::string& veln_statename        ///< name of velocity state at previous step
         );
 
         //! create a pure coupling slave element representation
@@ -73,7 +75,7 @@ namespace DRT
         );
 
         //! dtor
-        virtual ~SlaveElementInterface(){};
+        virtual ~SlaveElementInterface() = default;
 
         //! add slave element's displacements and set current element's nodal coordinates
         virtual void AddSlaveEleDisp(
@@ -255,13 +257,12 @@ namespace DRT
       };
 
       //! factory class for coupling with Nitsche's method
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       class NitscheInterface : virtual public SlaveElementInterface<distype>
       {
        public:
         /// number of nodes per master element
-        static const unsigned nen_ =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions
         static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal DOF for master element (always a xfem-fluid element)
@@ -315,9 +316,6 @@ namespace DRT
             const DRT::ELEMENTS::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
-
-        //! dtor
-        virtual ~NitscheInterface(){};
 
         //! add contributions from convective stabilization
         //! this method can also be applied in a non-Nitsche context (e.g. MHVS) by
@@ -403,13 +401,12 @@ namespace DRT
       };
 
       //! factory class for coupling with mixed/hybrid stress-based Lagrange multipliers
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       class HybridLMInterface : virtual public SlaveElementInterface<distype>
       {
        public:
         /// number of nodes per master (xfluid) element
-        static const unsigned nen_ =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
         static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal dof for master element (coupling master is always a fluid element!)
@@ -472,9 +469,6 @@ namespace DRT
           return Teuchos::null;
         }
 
-        //! dtor
-        virtual ~HybridLMInterface(){};
-
         //! evaluate interface matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
         virtual void MHCS_buildCouplingMatrices(
             const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
@@ -522,5 +516,7 @@ namespace DRT
     }  // end namespace XFLUID
   }    // end namespace ELEMENTS
 }  // end namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_CALC_XFEM_COUPLING_H

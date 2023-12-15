@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *  Update material configuration of discretization with
  *  given displacement field                                             |
@@ -68,3 +70,5 @@ void DRT::UTILS::UpdateMaterialConfigWithDispVector(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

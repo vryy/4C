@@ -12,6 +12,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::GEOMETRICSEARCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -28,4 +30,10 @@ void INPAR::GEOMETRICSEARCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "Bounding volume of the sphere is the sphere center extended by this factor times the sphere "
       "radius in all directions (+ and -).",
       &boundingvolumestrategy);
+
+  BoolParameter("WRITE_GEOMETRIC_SEARCH_VISUALIZATION", "no",
+      "If visualization output for the geometric search should be written",
+      &boundingvolumestrategy);
 }
+
+BACI_NAMESPACE_CLOSE

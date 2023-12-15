@@ -10,15 +10,17 @@
 
 #include "baci_so3_nurbs27.H"
 
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::NURBS::So_nurbs27Type DRT::ELEMENTS::NURBS::So_nurbs27Type::instance_;
 
@@ -27,7 +29,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27Type& DRT::ELEMENTS::NURBS::So_nurbs27Type::Inst
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::NURBS::So_nurbs27(-1, -1);
   object->Unpack(data);
@@ -132,14 +134,17 @@ DRT::Element* DRT::ELEMENTS::NURBS::So_nurbs27::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::So_nurbs27::Shape() const { return nurbs27; }
+CORE::FE::CellType DRT::ELEMENTS::NURBS::So_nurbs27::Shape() const
+{
+  return CORE::FE::CellType::nurbs27;
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -168,10 +173,9 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -195,11 +199,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                                       |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::So_nurbs27::~So_nurbs27() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
@@ -213,32 +212,14 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(std::ostream& os) const
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                           |
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
 /*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, So_nurbs27>(
-      DRT::UTILS::buildSurfaces, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, So_nurbs27>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -246,14 +227,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Surfac
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, So_nurbs27>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, So_nurbs27>(
+      CORE::COMM::buildLines, *this);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(_mat_dependencies
     # cmake-format: sortable
-    comm
     core
     fiber
     inpar
@@ -17,7 +16,6 @@ set(_mat_dependencies
     so3
     stru_multi
     structure_new
-    surfstress
     tsi
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_mat_dependencies})

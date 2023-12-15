@@ -16,6 +16,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  find shell-thickness direction via Jacobian                maf 07/07|
@@ -319,7 +321,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
 DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);
@@ -363,3 +365,5 @@ DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
   }
   return derivs;
 }
+
+BACI_NAMESPACE_CLOSE

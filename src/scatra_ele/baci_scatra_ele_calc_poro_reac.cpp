@@ -18,9 +18,11 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
@@ -37,7 +39,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>*
 DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -57,7 +59,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    vuong 10/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::GetMaterialParams(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
@@ -79,7 +81,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::GetMaterialParams(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -105,7 +107,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                          thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -124,7 +126,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                     vuong 04/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ExtractElementAndNodeValues(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -138,23 +140,25 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ExtractElementAndNodeValues(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::quad9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::nurbs9>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::nurbs9>;
+// template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

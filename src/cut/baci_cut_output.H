@@ -14,6 +14,8 @@
 #include "baci_cut_boundarycell.H"
 #include "baci_cut_point.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -28,7 +30,7 @@ namespace CORE::GEO
 
     namespace OUTPUT
     {
-      char GmshElementType(::DRT::Element::DiscretizationType shape);
+      char GmshElementType(CORE::FE::CellType shape);
 
       /** \brief Write a Gmsh output file, which contains only the given volume cells
        *
@@ -69,7 +71,7 @@ namespace CORE::GEO
        *                         it will overrule the position input.
        *
        *  \author hiermeier \date 01/17 */
-      void GmshCellDump(std::ofstream& file, ::DRT::Element::DiscretizationType shape,
+      void GmshCellDump(std::ofstream& file, CORE::FE::CellType shape,
           const CORE::LINALG::SerialDenseMatrix& xyze,
           const Point::PointPosition* position = nullptr, const int* value = nullptr);
 
@@ -496,4 +498,7 @@ namespace CORE::GEO
 
   } /* namespace CUT */
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // CUT_OUTPUT_H

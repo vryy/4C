@@ -11,6 +11,8 @@
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale2_nurbs.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::NURBS::Ale2_NurbsType DRT::ELEMENTS::NURBS::Ale2_NurbsType::instance_;
 
 DRT::ELEMENTS::NURBS::Ale2_NurbsType& DRT::ELEMENTS::NURBS::Ale2_NurbsType::Instance()
@@ -20,7 +22,7 @@ DRT::ELEMENTS::NURBS::Ale2_NurbsType& DRT::ELEMENTS::NURBS::Ale2_NurbsType::Inst
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::NURBS::Ale2Nurbs* object = new DRT::ELEMENTS::NURBS::Ale2Nurbs(-1, -1);
   object->Unpack(data);
@@ -67,10 +69,6 @@ DRT::ELEMENTS::NURBS::Ale2Nurbs::Ale2Nurbs(const DRT::ELEMENTS::NURBS::Ale2Nurbs
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Ale2Nurbs::~Ale2Nurbs() { return; }
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::NURBS::Ale2Nurbs::Print(std::ostream& os) const
 {
   os << "Ale2Nurbs ";
@@ -80,18 +78,18 @@ void DRT::ELEMENTS::NURBS::Ale2Nurbs::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Ale2Nurbs::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::NURBS::Ale2Nurbs::Shape() const
 {
   switch (NumNode())
   {
     case 4:
-      return nurbs4;
+      return CORE::FE::CellType::nurbs4;
     case 9:
-      return nurbs9;
+      return CORE::FE::CellType::nurbs9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-
-  return dis_none;
 }
+
+BACI_NAMESPACE_CLOSE

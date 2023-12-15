@@ -10,16 +10,18 @@
 
 #include "baci_torsion3.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_so3_nullspace.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;
 
 DRT::ELEMENTS::Torsion3Type& DRT::ELEMENTS::Torsion3Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Torsion3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Torsion3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Torsion3* object = new DRT::ELEMENTS::Torsion3(-1, -1);
   object->Unpack(data);
@@ -95,10 +97,6 @@ DRT::Element* DRT::ELEMENTS::Torsion3::Clone() const
   return newelement;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 02/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion3::~Torsion3() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -110,16 +108,16 @@ void DRT::ELEMENTS::Torsion3::Print(std::ostream& os) const { return; }
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 02/10|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion3::Shape() const { return line3; }
+CORE::FE::CellType DRT::ELEMENTS::Torsion3::Shape() const { return CORE::FE::CellType::line3; }
 
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Torsion3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -140,10 +138,9 @@ void DRT::ELEMENTS::Torsion3::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
@@ -162,9 +159,7 @@ void DRT::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Torsion3::Lines()
 {
-  std::vector<Teuchos::RCP<Element>> lines(1);
-  lines[0] = Teuchos::rcp(this, false);
-  return lines;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 /*----------------------------------------------------------------------*
@@ -184,3 +179,5 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Torsion3::ParamsInte
 {
   return interface_ptr_;
 }
+
+BACI_NAMESPACE_CLOSE

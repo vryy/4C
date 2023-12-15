@@ -14,11 +14,14 @@
 #include "baci_contact_interface.H"
 #include "baci_contact_node.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linear_solver_method_linalg.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 ALE::Meshsliding::Meshsliding(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
@@ -26,13 +29,17 @@ ALE::Meshsliding::Meshsliding(Teuchos::RCP<DRT::Discretization> dis, CORE::LINAL
 {
 }
 
+
 /*-------------------------------------------------------*/
 /*  Call the constructor and the setup of the mortar     */
 /*  coupling adapter                         wirtz 02/16 */
 /*-------------------------------------------------------*/
 void ALE::Meshsliding::AdapterMortar(std::vector<int> coupleddof)
 {
-  adaptermeshsliding_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar());
+  adaptermeshsliding_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(
+      DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   // Setup and Output of Nonlinear meshtying adapter
   adaptermeshsliding_->Setup(discret_, discret_, coupleddof, "Mortar");
@@ -408,3 +415,5 @@ int ALE::Meshsliding::SolveMeshtying(CORE::LINALG::Solver& solver,
   }
   return errorcode;
 }
+
+BACI_NAMESPACE_CLOSE

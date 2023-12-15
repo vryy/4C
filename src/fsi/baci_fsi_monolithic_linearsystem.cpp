@@ -34,37 +34,34 @@
 
 #include <typeinfo>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicLinearSystem::MonolithicLinearSystem(Teuchos::ParameterList& printingParams,
     Teuchos::ParameterList& linearSolverParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<Epetra_Operator>& J,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const Teuchos::RCP<Epetra_Operator>& M, const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
-    : NOX::Epetra::LinearSystemAztecOO(
+    const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<Epetra_Operator>& M, const ::NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
+    : ::NOX::Epetra::LinearSystemAztecOO(
           printingParams, linearSolverParams, iJac, J, iPrec, M, cloneVector, scalingObject),
       lsparams_(linearSolverParams)
 {
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FSI::MonolithicLinearSystem::~MonolithicLinearSystem() {}
-
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicLinearSystem::applyJacobianInverse(
-    Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
+bool FSI::MonolithicLinearSystem::applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   // AGS: Rare option, similar to Max Iters=1 but twice as fast.
-  if (p.get("Use Preconditioner as Solver", false))
-    return applyRightPreconditioning(false, p, input, result);
+  if (linearSolverParams.get("Use Preconditioner as Solver", false))
+    return applyRightPreconditioning(false, linearSolverParams, input, result);
 
   // Aztec crashes in reuses because its buggy
   Teuchos::RCP<Epetra_Operator> prec = solvePrecOpPtr;
@@ -80,7 +77,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   // Need non-const version of the input vector
   // Epetra_LinearProblem requires non-const versions so we can perform
   // scaling of the linear problem.
-  NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
+  ::NOX::Epetra::Vector& nonConstInput = const_cast<::NOX::Epetra::Vector&>(input);
 
   // Zero out the delta X of the linear problem if requested by user.
   if (zeroInitialGuess) result.init(0.0);
@@ -108,7 +105,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
 
     scaling->scaleLinearSystem(Problem);
 
-    if (utils.isPrintType(NOX::Utils::Details))
+    if (utils.isPrintType(::NOX::Utils::Details))
     {
       utils.out() << *scaling << std::endl;
     }
@@ -124,8 +121,8 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   }
 
   // Get linear solver convergence parameters
-  int maxit = p.get("Max Iterations", 400);
-  double tol = p.get("Tolerance", 1.0e-6);
+  int maxit = linearSolverParams.get("Max Iterations", 400);
+  double tol = linearSolverParams.get("Tolerance", 1.0e-6);
 
 
   int aztecStatus = -1;
@@ -183,7 +180,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   // Set the output parameters in the "Output" sublist
   if (outputSolveDetails)
   {
-    Teuchos::ParameterList& outputList = p.sublist("Output");
+    Teuchos::ParameterList& outputList = linearSolverParams.sublist("Output");
     int prevLinIters = outputList.get("Total Number of Linear Iterations", 0);
     int curLinIters = 0;
     double achievedTol = -1.0;
@@ -292,3 +289,5 @@ void FSI::MonolithicLinearSystem::softreset(Teuchos::ParameterList& linearSolver
 #endif
 #endif
 }
+
+BACI_NAMESPACE_CLOSE

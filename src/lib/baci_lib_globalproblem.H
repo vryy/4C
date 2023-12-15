@@ -13,10 +13,11 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_H
 #define BACI_LIB_GLOBALPROBLEM_H
 
-#include "baci_lib_function_manager.H"
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils.H"
+#include "baci_utils_function_manager.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
@@ -25,6 +26,8 @@
 #include <memory>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   class OutputControl;
@@ -32,7 +35,7 @@ namespace IO
   class ErrorFileControl;
 }  // namespace IO
 
-namespace COMM_UTILS
+namespace CORE::COMM
 {
   class Communicators;
 }
@@ -235,11 +238,9 @@ namespace DRT
     /// current wall time in seconds with micro second precision
     static double Walltime();
 
-    //! Return string name of the basis function type (polynomial/nurbs)
-    std::string SpatialApproximation() const;
 
     //! Return type of the basis function encoded as enum
-    ShapeFunctionType SpatialApproximationType() const { return shapefuntype_; }
+    CORE::FE::ShapeFunctionType SpatialApproximationType() const { return shapefuntype_; }
 
     //! @}
 
@@ -258,18 +259,11 @@ namespace DRT
     void OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile, std::string prefix,
         const std::string& restartkenner);
 
-    /// error files
-    void OpenErrorFile(
-        const Epetra_Comm& comm, std::string prefix, const bool enforceopening = false);
-
     /// control file for restart read
     Teuchos::RCP<IO::InputControl> InputControlFile() { return inputcontrol_; }
 
     /// control file for normal output
     Teuchos::RCP<IO::OutputControl> OutputControlFile() { return outputcontrol_; }
-
-    /// control error files
-    Teuchos::RCP<IO::ErrorFileControl> ErrorFile() { return errorfilecontrol_; }
 
     /// write parameters read from input file for documentation
     void WriteInputParameters();
@@ -288,10 +282,10 @@ namespace DRT
     /// @name Communicators and their parallel groups
 
     /// set communicators
-    void SetCommunicators(Teuchos::RCP<COMM_UTILS::Communicators> communicators);
+    void SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> communicators);
 
     /// return communicators
-    Teuchos::RCP<COMM_UTILS::Communicators> GetCommunicators() const;
+    Teuchos::RCP<CORE::COMM::Communicators> GetCommunicators() const;
 
     //@}
 
@@ -497,10 +491,6 @@ namespace DRT
     {
       return getParameterList()->sublist("VOLMORTAR COUPLING");
     }
-    const Teuchos::ParameterList& TutorialParams() const
-    {
-      return getParameterList()()->sublist("TUTORIAL DYNAMIC");
-    };
     const Teuchos::ParameterList& MORParams() const
     {
       return getParameterList()()->sublist("MOR");
@@ -598,7 +588,7 @@ namespace DRT
      * @note The parsing of functions must take place before. This calls wants a filled
      * FunctionManager.
      */
-    void SetFunctionManager(UTILS::FunctionManager&& function_manager);
+    void SetFunctionManager(CORE::UTILS::FunctionManager&& function_manager);
 
    private:
     /// private default constructor to disallow creation of instances
@@ -632,7 +622,7 @@ namespace DRT
     ProblemType probtype_;
 
     /// Spatial approximation type
-    ShapeFunctionType shapefuntype_;
+    CORE::FE::ShapeFunctionType shapefuntype_;
 
     /// the restart step (given by command line or input file)
     int restartstep_;
@@ -653,7 +643,7 @@ namespace DRT
     std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>> particles_;
 
     /// basket of spatial function
-    DRT::UTILS::FunctionManager functionmanager_;
+    CORE::UTILS::FunctionManager functionmanager_;
 
     /// all test values we might have
     DRT::ResultTestManager resulttest_;
@@ -663,13 +653,12 @@ namespace DRT
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap_;
 
     /// communicators
-    Teuchos::RCP<COMM_UTILS::Communicators> communicators_;
+    Teuchos::RCP<CORE::COMM::Communicators> communicators_;
 
     /// @name File IO
 
     Teuchos::RCP<IO::InputControl> inputcontrol_;
     Teuchos::RCP<IO::OutputControl> outputcontrol_;
-    Teuchos::RCP<IO::ErrorFileControl> errorfilecontrol_;  ///< error file handles
 
     //@}
 
@@ -681,5 +670,7 @@ namespace DRT
   };
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

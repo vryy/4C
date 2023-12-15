@@ -14,17 +14,14 @@
 #include <iostream>
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 UTILS::Cardiovascular0DDofSet::Cardiovascular0DDofSet() : DRT::DofSet() { return; }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             ukue 04/07|
- *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0DDofSet::~Cardiovascular0DDofSet() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -86,3 +83,5 @@ int UTILS::Cardiovascular0DDofSet::AssignDegreesOfFreedom(
 
   return count;
 }
+
+BACI_NAMESPACE_CLOSE

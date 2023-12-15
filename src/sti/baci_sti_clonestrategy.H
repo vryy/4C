@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -43,7 +45,7 @@ namespace STI
     explicit ScatraThermoCloneStrategy() { return; };
 
     //! destructor
-    virtual ~ScatraThermoCloneStrategy() { return; };
+    virtual ~ScatraThermoCloneStrategy() = default;
 
     //! check material of cloned element
     void CheckMaterialType(const int matid  //! material of cloned element
@@ -68,4 +70,6 @@ namespace STI
     );
   };  // class ScatraThermoCloneStrategy
 }  // namespace STI
+BACI_NAMESPACE_CLOSE
+
 #endif

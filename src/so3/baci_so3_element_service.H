@@ -13,6 +13,8 @@
 #include <Epetra_IntVector.h>
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace UTILS
@@ -24,10 +26,10 @@ namespace DRT
     /*!
      * \brief Assemble nodal element count
      *
-     * \param global_data Add a 1 to all nodes belonging to this element
+     * \param global_count Add a 1 to all nodes belonging to this element
      * \param ele element
      */
-    void AssembleNodalElementCount(Epetra_IntVector& global_data, const DRT::Element& ele);
+    void AssembleNodalElementCount(Epetra_IntVector& global_count, const DRT::Element& ele);
 
     /*!
      * \brief Assemble Gauss point data into an array of global cell data
@@ -48,10 +50,12 @@ namespace DRT
      * @param nodal_quantity  nodal vector of the quantity to be projected
      * @return quantities projected to position xi
      */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     std::vector<double> ProjectNodalQuantityToXi(
         const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_ELEMENT_SERVICE_H

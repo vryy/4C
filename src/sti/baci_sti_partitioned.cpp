@@ -10,8 +10,11 @@
 #include "baci_sti_partitioned.H"
 
 #include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_scatra_timint_implicit.H"
+
+BACI_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------*
  | constructor                                                         fang 09/17 |
@@ -269,7 +272,6 @@ void STI::Partitioned::SolveTwoWay()
         // store current thermo state vector
         if (ThermoField()->PhinpInc()->Update(1., *ThermoField()->Phiafnp(), 0.))
           dserror("Update failed!");
-        ;
 
         // solve thermo field
         ThermoField()->Solve();
@@ -478,3 +480,5 @@ void STI::Partitioned::SolveTwoWay()
 
   return;
 }  // STI::Partitioned::SolveTwoWay()
+
+BACI_NAMESPACE_CLOSE

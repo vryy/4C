@@ -12,6 +12,8 @@
 
 #include "baci_solver_nonlin_nox_direction_modified_newton.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Direction::Factory::Factory()
@@ -21,10 +23,10 @@ NOX::NLN::Direction::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Direction::Generic> NOX::NLN::Direction::Factory::buildDirection(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
+Teuchos::RCP<::NOX::Direction::Generic> NOX::NLN::Direction::Factory::buildDirection(
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
 {
-  Teuchos::RCP<NOX::Direction::Generic> direction;
+  Teuchos::RCP<::NOX::Direction::Generic> direction;
   const std::string method = params.get<std::string>("User Defined Method");
 
   if (method == "Newton")
@@ -47,9 +49,11 @@ Teuchos::RCP<NOX::Direction::Generic> NOX::NLN::Direction::Factory::buildDirecti
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Direction::Generic> NOX::NLN::Direction::BuildDirection(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
+Teuchos::RCP<::NOX::Direction::Generic> NOX::NLN::Direction::BuildDirection(
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   Factory factory;
   return factory.buildDirection(gd, params);
 }
+
+BACI_NAMESPACE_CLOSE

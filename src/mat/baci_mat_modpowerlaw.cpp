@@ -16,6 +16,8 @@ Nonlinear viscosity according to a modified power law
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ModPowerLaw::ModPowerLaw(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -36,7 +38,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ModPowerLaw::CreateMaterial()
 MAT::ModPowerLawType MAT::ModPowerLawType::instance_;
 
 
-DRT::ParObject* MAT::ModPowerLawType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ModPowerLawType::Create(const std::vector<char>& data)
 {
   MAT::ModPowerLaw* powLaw = new MAT::ModPowerLaw();
   powLaw->Unpack(data);
@@ -55,9 +57,9 @@ MAT::ModPowerLaw::ModPowerLaw(MAT::PAR::ModPowerLaw* params) : params_(params) {
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ModPowerLaw::Pack(DRT::PackBuffer& data) const
+void MAT::ModPowerLaw::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -76,10 +78,8 @@ void MAT::ModPowerLaw::Pack(DRT::PackBuffer& data) const
 void MAT::ModPowerLaw::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -100,3 +100,5 @@ void MAT::ModPowerLaw::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

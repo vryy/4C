@@ -12,6 +12,8 @@
 
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -22,9 +24,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit PoroDensityLaw(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata){};
-
-      /// destructor
-      virtual ~PoroDensityLaw() { ; }
 
       //! compute derivative of density w.r.t. pressure
       virtual double ComputeCurDensityDerivative(
@@ -68,56 +67,52 @@ namespace MAT
       explicit PoroDensityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata)
           : PoroDensityLaw(matdata){};
 
-      /// destructor
-      virtual ~PoroDensityLawConstant() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       //! compute derivative of density w.r.t. pressure
-      virtual double ComputeCurDensityDerivative(
+      double ComputeCurDensityDerivative(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
-      )
+          ) override
       {
         return refdensity;
       };
 
       /// compute current density
-      virtual double ComputeCurDensity(
+      double ComputeCurDensity(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
-      )
+          ) override
       {
         return 0.0;
       };
 
       /// compute relation of reference density to current density
-      virtual double ComputeRefDensityToCurDensity(
-          const double& press  ///< (i) pressure at gauss point
-      )
+      double ComputeRefDensityToCurDensity(const double& press  ///< (i) pressure at gauss point
+          ) override
       {
         return 1.0;
       };
 
       /// compute derivative of relation of reference density to current density w.r.t. pressure
-      virtual double ComputeRefDensityToCurDensityDerivative(
+      double ComputeRefDensityToCurDensityDerivative(
           const double& press  ///< (i) pressure at gauss point
-      )
+          ) override
       {
         return 0.0;
       };
       /// compute second derivative of relation of reference density to current density w.r.t.
       /// pressure
-      virtual double ComputeRefDensityToCurDensitySecondDerivative(
+      double ComputeRefDensityToCurDensitySecondDerivative(
           const double& press  ///< (i) pressure at gauss point
-      )
+          ) override
       {
         return 0.0;
       };
 
       /// return inverse bulkmodulus (=compressibility)
-      virtual double InvBulkmodulus() const { return 0.0; };
+      double InvBulkmodulus() const override { return 0.0; };
     };
 
     //! class for exponential density law
@@ -127,41 +122,37 @@ namespace MAT
       /// standard constructor
       explicit PoroDensityLawExp(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~PoroDensityLawExp() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       //! compute derivative of density w.r.t. pressure
-      virtual double ComputeCurDensityDerivative(
+      double ComputeCurDensityDerivative(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
-      );
+          ) override;
 
       /// compute current density
-      virtual double ComputeCurDensity(
+      double ComputeCurDensity(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
-      );
+          ) override;
 
       /// compute relation of reference density to current density
-      virtual double ComputeRefDensityToCurDensity(
-          const double& press  ///< (i) pressure at gauss point
-      );
+      double ComputeRefDensityToCurDensity(const double& press  ///< (i) pressure at gauss point
+          ) override;
 
       /// compute derivative ofrelation of reference density to current density w.r.t. pressure
-      virtual double ComputeRefDensityToCurDensityDerivative(
+      double ComputeRefDensityToCurDensityDerivative(
           const double& press  ///< (i) pressure at gauss point
-      );
+          ) override;
       /// compute second derivative of relation of reference density to current density w.r.t.
       /// pressure
-      virtual double ComputeRefDensityToCurDensitySecondDerivative(
+      double ComputeRefDensityToCurDensitySecondDerivative(
           const double& press  ///< (i) pressure at gauss point
-      );
+          ) override;
 
       /// return inverse bulkmodulus (=compressibility)
-      virtual double InvBulkmodulus() const { return 1.0 / bulkmodulus_; };
+      double InvBulkmodulus() const override { return 1.0 / bulkmodulus_; };
 
      private:
       /// @name material parameters
@@ -175,5 +166,7 @@ namespace MAT
 }  // namespace MAT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_PORO_DENSITY_LAW_H

@@ -26,6 +26,8 @@ MAT 3 MAT_Raghavan_Damage BULK 0.120755 ALPHA 0.068632  BETA 5.799445 EQSTRMIN 0
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -52,7 +54,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAAraghavanvorp_damage::CreateMaterial()
 MAT::AAAraghavanvorp_damageType MAT::AAAraghavanvorp_damageType::instance_;
 
 
-DRT::ParObject* MAT::AAAraghavanvorp_damageType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAAraghavanvorp_damageType::Create(const std::vector<char>& data)
 {
   MAT::AAAraghavanvorp_damage* aaadamage = new MAT::AAAraghavanvorp_damage();
   aaadamage->Unpack(data);
@@ -90,9 +92,9 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage(MAT::PAR::AAAraghavanvorp_da
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::Pack(DRT::PackBuffer& data) const
+void MAT::AAAraghavanvorp_damage::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -129,10 +131,8 @@ void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
   std::cout << "UNPACK \n";
   // isinit_=true; // corretto ore 14:27
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -653,3 +653,5 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const CORE::LINALG::Matrix<3, 3>* def
    */
   return;
 }
+
+BACI_NAMESPACE_CLOSE

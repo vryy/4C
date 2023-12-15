@@ -17,6 +17,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -34,7 +36,7 @@ namespace FLD
         const bool forced);
 
     //! destructor
-    virtual ~TurbulenceStatisticsHit();
+    virtual ~TurbulenceStatisticsHit() = default;
 
     //! store scatra discretization if passive scalar is included
     virtual void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis)
@@ -164,11 +166,9 @@ namespace FLD
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const bool forced);
 
-    //! destructor
-    virtual ~TurbulenceStatisticsHitHDG();
 
     //! store scatra discretization if passive scalar is included
-    void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis)
+    void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis) override
     {
       dserror("not implemented for hdg");
       return;
@@ -176,30 +176,31 @@ namespace FLD
 
     //! space and time (only forced but not decaying case) averaging
     //! get energy spectrum
-    void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
+    void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp) override;
     //! version with scalar field
-    void DoScatraTimeSample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp)
+    void DoScatraTimeSample(
+        Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp) override
     {
       dserror("not implemented for hdg");
       return;
     }
 
     // evaluation of dissipation rate and rbvmm-related quantities
-    void EvaluateResiduals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs)
+    void EvaluateResiduals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs) override
     {
       dserror("not implemented for hdg");
       return;
     };
 
     //! version with scalar field
-    void DumpScatraStatistics(int step, bool multiple_records = false)
+    void DumpScatraStatistics(int step, bool multiple_records = false) override
     {
       dserror("not implemented for hdg");
       return;
     };
 
     //! version with scalar field
-    void ClearScatraStatistics()
+    void ClearScatraStatistics() override
     {
       dserror("not implemented for hdg");
       return;
@@ -209,7 +210,7 @@ namespace FLD
    protected:
     //! calculate the resolved energy for the given discretization
     //! and write to statistics file
-    void CalculateResolvedEnergyDecayingTurbulence()
+    void CalculateResolvedEnergyDecayingTurbulence() override
     {
       dserror("not implemented for hdg");
       return;
@@ -217,5 +218,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

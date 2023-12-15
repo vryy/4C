@@ -16,6 +16,8 @@
 #include <iostream>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*/
 namespace IO
 {
@@ -176,8 +178,11 @@ namespace IO
         std::string word;
         std::getline(sline, word, ',');
 
-        // skip first line of restart file
-        if (word == "step") continue;
+        if (word == "step")
+        {
+          sectionpriorrestart << line << "\n";
+          continue;
+        }
 
         // get time step of current line
         const int timestep = std::stoi(word);
@@ -260,3 +265,5 @@ namespace IO
     header_line_written_ = true;
   }
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE

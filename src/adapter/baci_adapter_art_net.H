@@ -13,7 +13,10 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -32,7 +35,7 @@ namespace ADAPTER
     ArtNet(){};
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ArtNet(){};
+    virtual ~ArtNet() = default;
 
     /// initialization
     virtual void Init(const Teuchos::ParameterList& globaltimeparams,
@@ -104,11 +107,13 @@ namespace ADAPTER
     virtual void SetSolveScatra(const bool solvescatra) = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
 
   };  // class ArtNet
 
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ART_NET_H

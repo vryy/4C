@@ -12,6 +12,8 @@
 
 #include "baci_lib_resulttest.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SSTI
 {
   class SSTIAlgorithm;
@@ -46,4 +48,6 @@ namespace SSTI
     const SSTI::SSTIAlgorithm& ssti_algorithm_;
   };
 }  // namespace SSTI
+BACI_NAMESPACE_CLOSE
+
 #endif

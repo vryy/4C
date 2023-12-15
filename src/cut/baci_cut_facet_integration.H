@@ -15,6 +15,8 @@ equations
 #include "baci_cut_enum.H"
 #include "baci_cut_mesh.H"
 
+BACI_NAMESPACE_OPEN
+
 // #define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
 // #define TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
 
@@ -43,8 +45,6 @@ namespace CORE::GEO
             orderingComputed_(false)  // whether cw or acw ordering of vertices computed
       {
       }
-
-      ~FacetIntegration(){};
 
       /*!
       \brief Select the base function to be integrated
@@ -173,5 +173,7 @@ namespace CORE::GEO
     };
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

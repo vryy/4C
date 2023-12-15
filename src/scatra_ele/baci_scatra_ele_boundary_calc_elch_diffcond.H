@@ -12,6 +12,8 @@
 
 #include "baci_scatra_ele_boundary_calc_elch_electrode.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -21,8 +23,7 @@ namespace DRT
     class ScaTraEleParameterElchDiffCond;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchDiffCond
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
@@ -84,4 +85,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcElchDiffCond
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -11,12 +11,14 @@
 #include "baci_bele_bele3.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -98,7 +100,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
   // set number of nodes
   const size_t iel = this->NumNode();
 
-  const DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
@@ -164,7 +166,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
           if (functnum > 0)
             // evaluate function at current gauss point (3D position vector required!)
             functionfac = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(coordgpref, time, dim);
           else
             functionfac = 1.0;
@@ -182,15 +184,15 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
 }
 
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Bele3Line::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -235,7 +237,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
   const size_t iel = this->NumNode();
 
   // gaussian points
-  const DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
   const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
@@ -294,3 +296,5 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
 
   return;
 }  // DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction
+
+BACI_NAMESPACE_CLOSE

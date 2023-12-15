@@ -16,21 +16,26 @@
 
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
-#include "baci_discretization_geometric_search_params.H"
 #include "baci_io_visualization_manager.H"
 
-// forward declaration ...
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
 }
+namespace CORE::GEOMETRICSEARCH
+{
+  class GeometricSearchParams;
+  class GeometricSearchVisualization;
+}  // namespace CORE::GEOMETRICSEARCH
 namespace BEAMINTERACTION
 {
   class BeamContactParams;
   class BeamContactPair;
   class BeamInteractionConditions;
-  class BeamToSolidVolumeMeshtyingVtkOutputWriter;
-  class BeamToSolidSurfaceVtkOutputWriter;
+  class BeamToSolidVolumeMeshtyingVisualizationOutputWriter;
+  class BeamToSolidSurfaceVisualizationOutputWriter;
 
   namespace SUBMODELEVALUATOR
   {
@@ -42,17 +47,14 @@ namespace BEAMINTERACTION
       //! constructor
       BeamContact();
 
-      //! destructor
-      virtual ~BeamContact(){};
-
       //! setup class variables
-      virtual void Setup();
+      void Setup() override;
 
       //! derived
-      virtual void PostSetup();
+      void PostSetup() override;
 
       //! Returns the type of the current submodel evaluator
-      INPAR::BEAMINTERACTION::SubModelType Type() const
+      INPAR::BEAMINTERACTION::SubModelType Type() const override
       {
         return INPAR::BEAMINTERACTION::submodel_beamcontact;
       }
@@ -61,16 +63,16 @@ namespace BEAMINTERACTION
       //! @{
       //! \brief reset submodel specific variables
       //! derived
-      virtual void Reset();
+      void Reset() override;
 
       //! derived
-      virtual bool EvaluateForce();
+      bool EvaluateForce() override;
 
       //! derived
-      virtual bool EvaluateStiff();
+      bool EvaluateStiff() override;
 
       //! derived
-      virtual bool EvaluateForceStiff();
+      bool EvaluateForceStiff() override;
 
       /**
        * \brief Call PreEvaluate on each pair.
@@ -82,58 +84,58 @@ namespace BEAMINTERACTION
       void PreEvaluate();
 
       //! derived
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      virtual bool PreUpdateStepElement(bool beam_redist);
+      bool PreUpdateStepElement(bool beam_redist) override;
 
       //! derived
-      virtual void UpdateStepElement(bool repartition_was_done);
+      void UpdateStepElement(bool repartition_was_done) override;
 
       //! derived
-      virtual void PostUpdateStepElement();
+      void PostUpdateStepElement() override;
 
       //! derived
       std::map<STR::EnergyType, double> GetEnergy() const override;
 
       //! derived
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      virtual void RuntimeOutputStepState() const;
+      void RuntimeOutputStepState() const override;
 
       //! derived
-      virtual void ResetStepState();
+      void ResetStepState() override;
 
       //! derived
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
-      virtual void PreReadRestart() override;
+      void PreReadRestart() override;
 
       //! derived
-      virtual void ReadRestart(
-          IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader);
+      void ReadRestart(
+          IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader) override;
 
       //! derived
-      virtual void PostReadRestart();
+      void PostReadRestart() override;
 
       //! derived
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver);
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
-      virtual void InitSubmodelDependencies(
-          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap);
+      void InitSubmodelDependencies(
+          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
-      virtual void AddBinsToBinColMap(std::set<int>& colbins);
+      void AddBinsToBinColMap(std::set<int>& colbins) override;
 
       //! derived
-      virtual void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const;
+      void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const override;
 
       //! derived
-      virtual void GetHalfInteractionDistance(double& half_interaction_distance);
+      void GetHalfInteractionDistance(double& half_interaction_distance) override;
 
       /**
        * \brief Return the assembly managers in this submodel evaluator.
@@ -157,8 +159,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the conditions in this submodel evaluator.
        */
-      inline const Teuchos::RCP<const BEAMINTERACTION::BeamInteractionConditions> GetConditions()
-          const
+      inline Teuchos::RCP<const BEAMINTERACTION::BeamInteractionConditions> GetConditions() const
       {
         return beam_interaction_conditions_ptr_;
       }
@@ -202,16 +203,16 @@ namespace BEAMINTERACTION
       //! @{
 
       //! init output for contact forces in VTP format
-      void InitOutputRuntimeVtpBeamContact();
+      void InitOutputRuntimeBeamContact();
 
-      //! writes VTP output for contact forces at the end of a time step
-      void WriteTimeStepOutputRuntimeVtpBeamContact() const;
+      //! writes visualization output for contact forces at the end of a time step
+      void WriteTimeStepOutputRuntimeBeamContact() const;
 
-      //! writes VTP output for contact forces at the end of a nonlinear iteration
-      void WriteIterationOutputRuntimeVtpBeamContact(int iteration_number) const;
+      //! writes visualization output for contact forces at the end of a nonlinear iteration
+      void WriteIterationOutputRuntimeBeamContact(int iteration_number) const;
 
-      //! writes VTP output for contact forces
-      void WriteOutputRuntimeVtpBeamContact(int timestep_number, double time) const;
+      //! writes visualization output for contact forces
+      void WriteOutputRuntimeBeamContact(int timestep_number, double time) const;
 
 
       //! @}
@@ -273,19 +274,25 @@ namespace BEAMINTERACTION
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
       std::map<int, std::set<DRT::Element*>> nearby_elements_map_;
 
-      //! runtime vtp writer for visualization of contact forces
+      //! runtime visualization writer for visualization of contact forces
       Teuchos::RCP<IO::VisualizationManager> visualization_manager_ptr_;
 
       //! This object handles all beam to solid volume related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>
-          beam_to_solid_volume_meshtying_vtk_writer_ptr_;
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>
+          beam_to_solid_volume_meshtying_visualization_output_writer_ptr_;
 
       //! This object handles all beam to solid surface related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>
-          beam_to_solid_surface_vtk_writer_ptr_;
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>
+          beam_to_solid_surface_visualization_output_writer_ptr_;
+
+      //! This object handles all geometric search related visualization output.
+      Teuchos::RCP<CORE::GEOMETRICSEARCH::GeometricSearchVisualization>
+          geometric_search_visualization_ptr_;
     };
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

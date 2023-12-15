@@ -16,7 +16,6 @@
 #include "baci_inpar_thermo.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_plasticelasthyper.H"
@@ -27,75 +26,78 @@
 #include "baci_nurbs_discret.H"
 #include "baci_thermo_ele_action.H"
 #include "baci_thermo_element.H"  // only for visualization of element data
+#include "baci_utils_function.H"
 
 #include <algorithm>
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {
   switch (ele->Shape())
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      return TemperImpl<DRT::Element::hex8>::Instance();
+      return TemperImpl<CORE::FE::CellType::hex8>::Instance();
     }
-    case DRT::Element::hex20:
+    case CORE::FE::CellType::hex20:
     {
-      return TemperImpl<DRT::Element::hex20>::Instance();
+      return TemperImpl<CORE::FE::CellType::hex20>::Instance();
     }
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
     {
-      return TemperImpl<DRT::Element::hex27>::Instance();
+      return TemperImpl<CORE::FE::CellType::hex27>::Instance();
     }
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      return TemperImpl<DRT::Element::tet4>::Instance();
+      return TemperImpl<CORE::FE::CellType::tet4>::Instance();
     }
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
     {
-      return TemperImpl<DRT::Element::tet10>::Instance();
+      return TemperImpl<CORE::FE::CellType::tet10>::Instance();
     }
-    case DRT::Element::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
-      return TemperImpl<DRT::Element::wedge6>::Instance();
+      return TemperImpl<CORE::FE::CellType::wedge6>::Instance();
     }
-    case DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
-      return TemperImpl<DRT::Element::pyramid5>::Instance();
+      return TemperImpl<CORE::FE::CellType::pyramid5>::Instance();
     }
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return TemperImpl<DRT::Element::quad4>::Instance();
+      return TemperImpl<CORE::FE::CellType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return TemperImpl<DRT::Element::quad8>::Instance();
+      return TemperImpl<CORE::FE::CellType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return TemperImpl<DRT::Element::quad9>::Instance();
+      return TemperImpl<CORE::FE::CellType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return TemperImpl<DRT::Element::tri3>::Instance();
+      return TemperImpl<CORE::FE::CellType::tri3>::Instance();
     }
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      return TemperImpl<DRT::Element::line2>::Instance();
+      return TemperImpl<CORE::FE::CellType::line2>::Instance();
     }
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
-      return TemperImpl<DRT::Element::nurbs27>::Instance();
+      return TemperImpl<CORE::FE::CellType::nurbs27>::Instance();
     }
     default:
       dserror("Element shape %s (%d nodes) not activated. Just do it.",
-          DistypeToString(ele->Shape()).c_str(), ele->NumNode());
+          CORE::FE::CellTypeToString(ele->Shape()).c_str(), ele->NumNode());
       break;
   }
   return nullptr;
 
 }  // TemperImperInterface::Impl()
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -109,7 +111,7 @@ DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance
   return singleton_owner.Instance(action);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
     : etempn_(false),
       xyze_(true),
@@ -132,7 +134,7 @@ DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  // Tangent ("stiffness")
@@ -620,7 +622,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   return 0;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -666,7 +668,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
   return 0;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvaluateTangCapaFint(Element* ele, const double& time,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
@@ -724,7 +726,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateTangCapaFint(Element* ele, cons
   }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(DRT::Element* ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
@@ -765,7 +767,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(DRT::Element* ele,
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
     DRT::Element* ele,                                     // the element whose matrix is calculated
     const double& time,                                    // current time
@@ -801,7 +803,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
 /*----------------------------------------------------------------------*
  | calculate system matrix and rhs r_T(T), k_TT(T) (public) g.bau 08/08 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
     DRT::Element* ele,   // the element whose matrix is calculated
     const double& time,  // current time
@@ -907,7 +909,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
  | calculate coupled fraction for the system matrix          dano 05/10 |
  | and rhs: r_T(d), k_TT(d) (public)                                    |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* ele,
     const double& time, std::vector<double>& disp, std::vector<double>& vel,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
@@ -1117,7 +1119,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
   }  // ---------------------------------- end loop over Gauss Points
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
@@ -1277,7 +1279,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
 }  // LinearCoupledTang()
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
     DRT::Element* ele,          // the element whose matrix is calculated
     const double& time,         // current time
@@ -1585,7 +1587,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
   }  // ---------------------------------- end loop over Gauss Points
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
@@ -1979,7 +1981,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
     DRT::Element* ele,  // the element whose matrix is calculated
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
@@ -2074,7 +2076,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
   }  // -------------------------------------------- end loop over Gauss Points
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     DRT::Element* ele,  // the element whose matrix is calculated
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
@@ -2228,7 +2230,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
 #endif  // THRASOUTPUT
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
@@ -2248,7 +2250,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
   DRT::Node** nodes = ele->Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     // (8x3) = (nen_xnsd_)
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
@@ -2345,7 +2347,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
 #endif  // TSIMONOLITHASOUTPUT
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  //!< current displacements
@@ -2461,7 +2463,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
 #endif  // THRASOUTPUT
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(DRT::Element* ele,
     CORE::LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
     CORE::LINALG::Matrix<nquad_, nsd_>* etempgrad   // temperature gradients at Gauss points
@@ -2499,7 +2501,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(DRT::Element* el
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
     DRT::Element* ele,                              // the element whose matrix is calculated
     std::vector<double>& disp,                      // current displacements
@@ -2621,7 +2623,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, std::vector<double>& mydisp, std::vector<double>& myvel) const
 {
@@ -2641,7 +2643,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretizatio
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa)
 {
@@ -2662,7 +2664,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const double time)
 {
   std::vector<DRT::Condition*> myneumcond;
@@ -2697,7 +2699,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     DRT::Node** nodes = ele->Nodes();
     for (int i = 0; i < nen_; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       // (8x3) = (nen_xnsd_)
       xrefe(i, 0) = x[0];
       xrefe(i, 1) = x[1];
@@ -2745,7 +2747,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     const int functnum = (funct) ? (*funct)[0] : -1;
     const double functfac = (functnum > 0)
                                 ? DRT::Problem::Instance()
-                                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                       .Evaluate(xrefegp.A(), time, 0)
                                 : 1.0;
 
@@ -2766,7 +2768,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, const int gp)
 {
   auto material = ele->Material();
@@ -2783,7 +2785,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, co
   dercapa_ = thermoMaterial->CapacityDerivT();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
     const int iquad,                                               // id of current Gauss point
@@ -2845,7 +2847,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   derxy_.Multiply(xij_, deriv_);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::InitialAndCurrentNodalPositionVelocity(
     const DRT::Element* ele, const std::vector<double>& disp, const std::vector<double>& vel,
     CORE::LINALG::Matrix<nen_, nsd_>& xcurr, CORE::LINALG::Matrix<nen_, nsd_>& xcurrrate)
@@ -2863,13 +2865,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::InitialAndCurrentNodalPositionVelocity(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
     DRT::Element* ele,                   // the element whose matrix is calculated
     DRT::Discretization& discretization  // current discretisation
 )
 {
-  if (ele->Shape() != DRT::Element::nurbs27)
+  if (ele->Shape() != CORE::FE::CellType::nurbs27)
   {
     myknots_.resize(0);
     return;
@@ -2889,7 +2891,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
     weights_(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode])->W();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Element* ele,
     CORE::LINALG::SerialDenseVector& elevec1, const CORE::LINALG::IntSerialDenseVector& dofids)
 {
@@ -2920,7 +2922,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Elem
 }  // TemperImpl<distype>::IntegrateShapeFunction
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     DRT::Element* ele,  // the element whose matrix is calculated
     const CORE::LINALG::Matrix<nquad_, nsd_>& gpheatflux,
@@ -2930,9 +2932,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
 {
   // this quick'n'dirty hack functions only for elements which has the same
   // number of gauss points AND same number of nodes
-  if (not((distype == DRT::Element::hex8) or (distype == DRT::Element::hex27) or
-          (distype == DRT::Element::tet4) or (distype == DRT::Element::quad4) or
-          (distype == DRT::Element::line2)))
+  if (not((distype == CORE::FE::CellType::hex8) or (distype == CORE::FE::CellType::hex27) or
+          (distype == CORE::FE::CellType::tet4) or (distype == CORE::FE::CellType::quad4) or
+          (distype == CORE::FE::CellType::line2)))
     dserror("Sorry, not implemented for element shape");
 
   // another check
@@ -2977,7 +2979,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
 {
   // volume of the element (2D: element surface area; 1D: element length)
@@ -2997,7 +2999,7 @@ double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin,
     CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
@@ -3040,7 +3042,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop,
     CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
@@ -3106,7 +3108,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
     CORE::LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd, const double& J,
     const CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ,
@@ -3155,7 +3157,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
   }  // method only implemented for fully three dimensional analysis
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
     CORE::LINALG::Matrix<6, 1>& Cratevct,          // (io) C' in vector notation
     CORE::LINALG::Matrix<6, 1>& Cinvvct,           // (io) C^{-1} in vector notation
@@ -3196,7 +3198,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
   Cinvvct(5) = Cinv(2, 0);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
     DRT::Element* ele  // the element whose matrix is calculated
 )
@@ -3212,7 +3214,7 @@ Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
   return structmat;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
     DRT::Element* ele,  // the element whose matrix is calculated
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,
@@ -3276,15 +3278,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 
         for (int dim = 0; dim < nsd_; ++dim) position[dim] = xyzint(dim);
 
-        const double T_exact = DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                                   .Evaluate(position, t, 0);
+        const double T_exact =
+            DRT::Problem::Instance()
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                .Evaluate(position, t, 0);
 
         T_analytical(0, 0) = T_exact;
 
         std::vector<double> Tder_exact =
             DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 0);
 
         if (Tder_exact.size())
@@ -3328,18 +3331,18 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CopyMatrixIntoCharVector(
     std::vector<char>& data, CORE::LINALG::Matrix<nquad_, nsd_>& stuff)
 {
-  DRT::PackBuffer tempBuffer;
-  DRT::ParObject::AddtoPack(tempBuffer, stuff);
+  CORE::COMM::PackBuffer tempBuffer;
+  CORE::COMM::ParObject::AddtoPack(tempBuffer, stuff);
   tempBuffer.StartPacking();
-  DRT::ParObject::AddtoPack(tempBuffer, stuff);
+  CORE::COMM::ParObject::AddtoPack(tempBuffer, stuff);
   std::copy(tempBuffer().begin(), tempBuffer().end(), std::back_inserter(data));
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCouplNlnFintCondCapa(
     DRT::Element* ele,          //!< the element whose matrix is calculated
     const double& time,         //!< current time
@@ -3420,7 +3423,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCouplNlnFintCondCapa(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
     DRT::Element* ele,          //!< the element whose matrix is calculated
     const double& time,         //!< current time
@@ -3612,7 +3615,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
 /*----------------------------------------------------------------------*
  | get the corresponding structural material                 dano 11/12 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateReactiveTerm(
     CORE::LINALG::Matrix<6, 1>* ctemp,     // temperature-dependent material tangent
     CORE::LINALG::Matrix<6, 1>* strainvel  // strain rate
@@ -3643,3 +3646,5 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateReactiveTerm(
   // -------------------------------------- end reactive term check
 }
 #endif  // CALCSTABILOFREACTTERM
+
+BACI_NAMESPACE_CLOSE

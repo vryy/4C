@@ -11,6 +11,8 @@
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ELASTIC
@@ -30,9 +32,6 @@ namespace MAT
        public:
         /// standard constructor
         GeneralizedGenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata);
-
-        /// destructor
-        ~GeneralizedGenMax() override { ; }
 
         /// @name material parameters
         //@{
@@ -97,9 +96,6 @@ namespace MAT
         /// standard constructor
         ViscoPart(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~ViscoPart() override { ; }
-
         /// @name material parameters
         //@{
 
@@ -140,7 +136,7 @@ namespace MAT
 
       /// @name Access methods
       //@{
-      const std::vector<std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>> GetBranchespotsum() const
+      std::vector<std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>> GetBranchespotsum() const
       {
         return branchespotsum_;
       }
@@ -276,5 +272,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_VISCO_GENERALIZEDGENMAX_H

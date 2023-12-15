@@ -10,17 +10,19 @@
 
 #include "baci_truss3.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_node.H"
 #include "baci_so3_nullspace.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
 
 DRT::ELEMENTS::Truss3Type& DRT::ELEMENTS::Truss3Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Truss3(-1, -1);
   object->Unpack(data);
@@ -126,30 +128,19 @@ DRT::Element* DRT::ELEMENTS::Truss3::Clone() const
   return newelement;
 }
 
-
-/*----------------------------------------------------------------------*
- |  print this element (public)                              cyron 08/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::Print(std::ostream& os) const
-{
-  os << "Truss3 ";
-  Element::Print(os);
-  os << " gaussrule_: " << CORE::DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
-}
-
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 08/08|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Truss3::Shape() const { return line2; }
+CORE::FE::CellType DRT::ELEMENTS::Truss3::Shape() const { return CORE::FE::CellType::line2; }
 
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Truss3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -178,10 +169,9 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -210,9 +200,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Truss3::Lines()
 {
-  std::vector<Teuchos::RCP<Element>> lines(1);
-  lines[0] = Teuchos::rcp(this, false);
-  return lines;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 /*----------------------------------------------------------------------*
@@ -518,3 +506,5 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Truss3::ParamsInterf
 {
   return interface_ptr_;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,8 @@ equations
 #include <cmath>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------------------------------------------------*
  *      Compute normal vector for the line. if normal(0)==0, the line need not be integrated
  *(Divergence theorem)       *
@@ -50,7 +52,7 @@ double LineIntegration::integrate_line()
 
   // 8 is the order of Gauss integration used in the line integration
   // since we integrate 6th order polynomial in volume, 8th order must be used for line
-  CORE::DRT::UTILS::GaussIntegration gi(DRT::Element::line2, (DIRECTDIV_GAUSSRULE + 1));
+  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::line2, (DIRECTDIV_GAUSSRULE + 1));
 
   for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
   {
@@ -91,18 +93,19 @@ double LineIntegration::integrate_line()
 void LineIntegration::Transform(const CORE::LINALG::Matrix<2, 2> &xyze, const double &eta,
     CORE::LINALG::Matrix<2, 1> &x_gp_lin, CORE::LINALG::Matrix<2, 1> &normal, double &drs)
 {
-  const int numnodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::line2>::numNodePerElement;
+  const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::line2>;
   CORE::LINALG::Matrix<numnodes, 1> funct;
   CORE::LINALG::Matrix<1, numnodes> deriv;
   CORE::LINALG::Matrix<1, 1> metrictensor;
 
-  CORE::DRT::UTILS::shape_function_1D(funct, eta, ::DRT::Element::line2);
-  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta, ::DRT::Element::line2);
-  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<::DRT::Element::line2>(
+  CORE::DRT::UTILS::shape_function_1D(funct, eta, CORE::FE::CellType::line2);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta, CORE::FE::CellType::line2);
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::line2>(
       xyze, deriv, metrictensor, drs, &normal);
 
   x_gp_lin.Multiply(xyze, funct);
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

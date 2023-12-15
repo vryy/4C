@@ -10,7 +10,6 @@
 
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_lib_utils_parameter_list.H"
@@ -30,8 +29,11 @@
 #include "baci_scatra_timint_meshtying_strategy_fluid_elch.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
 #include "baci_scatra_timint_meshtying_strategy_std_elch.H"
+#include "baci_utils_function_of_time.H"
 
 #include <unordered_set>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -67,6 +69,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
                             : 0.0),
       adapted_timestep_active_(false),
       dt_adapted_(-1.0),
+      last_dt_change_(0),
       splitter_macro_(Teuchos::null)
 {
   // safety check
@@ -451,6 +454,7 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
           cccv_condition_->ResetPhaseChangeObserver();
           adapted_timestep_active_ = true;
           dt_adapted_ = dt = dt_new;
+          last_dt_change_ = Step();
         }
       }
     }
@@ -458,8 +462,14 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
     {
       // if time step adaptivity is enabled for more than 3 steps after last change of phase:
       // disable, otherwise keep adapted time step
-      if (cccv_condition_->IsStepsFromLastPhaseChange(step_))
+      if (cccv_condition_->ExceedMaxStepsFromLastPhaseChange(step_))
         adapted_timestep_active_ = false;
+      else if (Step() > last_dt_change_ + 3 * std::ceil(static_cast<double>(dt) /
+                                                        static_cast<double>(dt_adapted_)))
+      {
+        adapted_timestep_active_ = false;
+        return;
+      }
       else
         dt = dt_adapted_;
     }
@@ -496,7 +506,7 @@ double SCATRA::ScaTraTimIntElch::ExtrapolateStateAdaptTimeStep(double dt)
 
       const double cellvoltage_new =
           cellvoltage_ + 2.0 * (cellvoltage_ - cellvoltage_old_);  // extrapolate
-      if (cccv_condition_->IsExceedCellVoltage(cellvoltage_new))   // check
+      if (cccv_condition_->ExceedCellVoltage(cellvoltage_new))     // check
       {
         dt_new = cycling_timestep_;  // adapt
         cellvoltage_old_ = -1.0;
@@ -509,7 +519,7 @@ double SCATRA::ScaTraTimIntElch::ExtrapolateStateAdaptTimeStep(double dt)
     {
       if (cellcrate_old_ < 0.0) cellcrate_old_ = cellcrate_;
       const double cellcrate_new = cellcrate_ + 2.0 * (cellcrate_ - cellcrate_old_);  // extrapolate
-      if (cccv_condition_->IsExceedCellCCRate(cellcrate_new))                         // check
+      if (cccv_condition_->ExceedCellCRate(cellcrate_new))                            // check
       {
         dt_new = cycling_timestep_;  // adapt
         cellcrate_old_ = -1.0;
@@ -781,7 +791,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::Update(const int num)
+void SCATRA::ScaTraTimIntElch::Update()
 {
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
@@ -789,17 +799,17 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::Output(const int num)
+void SCATRA::ScaTraTimIntElch::CheckAndWriteOutputAndRestart()
 {
   // evaluate SOC, c-rate and cell voltage for output
   EvaluateElectrodeInfoInterior();
   EvaluateCellVoltage();
 
   // call base class routine
-  ScaTraTimIntImpl::Output(num);
+  ScaTraTimIntImpl::CheckAndWriteOutputAndRestart();
 
   // output electrode interior status information and cell voltage in every time step
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "ELECTRODE_INFO_EVERY_STEP") or DoOutput())
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "ELECTRODE_INFO_EVERY_STEP") or IsResultStep())
   {
     // print electrode domain and boundary status information to screen and files
     OutputElectrodeInfoDomain();
@@ -857,17 +867,11 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
   // applicable
   if (cccvcyclingcondition)
   {
-    // extract cell voltage
     cellvoltage_ = reader.ReadDouble("cellvoltage");
-
-    // extract cell C rate
     cellcrate_ = reader.ReadDouble("cellcrate");
-
-    // is time step adaptivity activated?
     adapted_timestep_active_ = static_cast<bool>(reader.ReadInt("adapted_timestep_active"));
-
-    // adapted time step
     dt_adapted_ = reader.ReadDouble("dt_adapted");
+    last_dt_change_ = reader.ReadInt("last_dt_change");
 
     // read restart of cccv condition
     cccv_condition_->ReadRestart(reader);
@@ -1534,7 +1538,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::OutputRestart() const
+void SCATRA::ScaTraTimIntElch::WriteRestart() const
 {
   // output restart data associated with electrode state of charge conditions if applicable,
   // needed for correct evaluation of cell C rate at the beginning of the first time step after
@@ -1588,6 +1592,8 @@ void SCATRA::ScaTraTimIntElch::OutputRestart() const
 
     // adapted time step
     output_->WriteDouble("dt_adapted", dt_adapted_);
+
+    output_->WriteInt("last_dt_change", last_dt_change_);
 
     // is time step adaptivity activated?
     output_->WriteInt("adapted_timestep_active", adapted_timestep_active_);
@@ -2188,7 +2194,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       ComputeTimeDerivative();
 
       double targetcurrent =
-          problem_->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1).Evaluate(time_);
+          problem_->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1).Evaluate(time_);
       double timefacrhs = 1.0 / ResidualScaling();
 
       double currtangent_anode(0.0);
@@ -2974,7 +2980,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
               constexpr double four_pi = 4.0 * M_PI;
               const double fac =
                   DRT::INPUT::IntegralValue<bool>(*ScatraParameterList(), "SPHERICALCOORDS")
-                      ? *node->X() * *node->X() * four_pi
+                      ? *node->X().data() * *node->X().data() * four_pi
                       : 1.0;
 
               neumann_loads->SumIntoMyValue(dof_lid, 0, neumann_value * fac);
@@ -2991,7 +2997,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntElch::NotFinished()
+bool SCATRA::ScaTraTimIntElch::NotFinished() const
 {
   // call base class routine in case no cell cycling is performed
   if (cccv_condition_ == Teuchos::null)
@@ -3291,7 +3297,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
  *-----------------------------------------------------------------------------*/
 double SCATRA::ScaTraTimIntElch::ComputeTemperatureFromFunction() const
 {
-  return problem_->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+  return problem_->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
       .Evaluate(time_);
 }
 
@@ -3316,3 +3322,4 @@ Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntElch::CreateScaTraFieldTest()
 {
   return Teuchos::rcp(new SCATRA::ElchResultTest(Teuchos::rcp(this, false)));
 }
+BACI_NAMESPACE_CLOSE

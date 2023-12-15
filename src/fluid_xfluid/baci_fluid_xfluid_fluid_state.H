@@ -14,6 +14,8 @@ fluid meshes
 
 #include "baci_fluid_xfluid_state.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -47,9 +49,6 @@ namespace FLD
         const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
         const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap);
 
-    /// dtor
-    virtual ~XFluidFluidState() {}
-
     /// setup map extractors for dirichlet maps & velocity/pressure maps
     void SetupMapExtractors(const Teuchos::RCP<DRT::Discretization>& xfluiddiscret,
         const Teuchos::RCP<DRT::Discretization>& embfluiddiscret, const double& time);
@@ -61,20 +60,23 @@ namespace FLD
     //! @name Accessors
     //@{
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> DBCMapExtractor() { return xffluiddbcmaps_; }
+    Teuchos::RCP<CORE::LINALG::MapExtractor> DBCMapExtractor() override { return xffluiddbcmaps_; }
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() { return xffluidvelpressplitter_; }
+    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() override
+    {
+      return xffluidvelpressplitter_;
+    }
 
-    virtual bool Destroy();
+    bool Destroy() override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
-    Teuchos::RCP<Epetra_Vector>& Residual() { return xffluidresidual_; }
-    Teuchos::RCP<Epetra_Vector>& Zeros() { return xffluidzeros_; }
-    Teuchos::RCP<Epetra_Vector>& IncVel() { return xffluidincvel_; }
-    Teuchos::RCP<Epetra_Vector>& Velnp() { return xffluidvelnp_; }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Epetra_Vector>& Residual() override { return xffluidresidual_; }
+    Teuchos::RCP<Epetra_Vector>& Zeros() override { return xffluidzeros_; }
+    Teuchos::RCP<Epetra_Vector>& IncVel() override { return xffluidincvel_; }
+    Teuchos::RCP<Epetra_Vector>& Velnp() override { return xffluidvelnp_; }
     //@}
 
-    void CompleteCouplingMatricesAndRhs();
+    void CompleteCouplingMatricesAndRhs() override;
 
     //@name Map of the merged system
     //@{
@@ -125,5 +127,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

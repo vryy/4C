@@ -18,6 +18,12 @@ parameter cn
 // forward declarations
 class Epetra_Vector;
 class Epetra_Map;
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
 
 namespace INPAR
 {
@@ -35,11 +41,6 @@ namespace CORE::LINALG
 {
   class SparseMatrix;
 }  // namespace CORE::LINALG
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 namespace CONTACT
 {
@@ -106,7 +107,7 @@ namespace CONTACT
       PenaltyUpdate(const PenaltyUpdate& pu) = default;
 
       /// destructor
-      virtual ~PenaltyUpdate(){};
+      virtual ~PenaltyUpdate() = default;
 
       /// return the type enum
       virtual INPAR::CONTACT::PenaltyUpdate Type() const = 0;
@@ -307,8 +308,6 @@ namespace CONTACT
 
       PenaltyUpdate_Empty(const PenaltyUpdate_Empty& pu) = delete;
 
-      ~PenaltyUpdate_Empty() override{};
-
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
@@ -331,8 +330,6 @@ namespace CONTACT
           : PenaltyUpdate(pu){/* empty */};
 
       PenaltyUpdate_SufficientLinReduction(const PenaltyUpdate_SufficientLinReduction& pu) = delete;
-
-      ~PenaltyUpdate_SufficientLinReduction() override{};
 
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
@@ -366,8 +363,6 @@ namespace CONTACT
 
       PenaltyUpdate_SufficientAngle(const PenaltyUpdate_SufficientAngle& pu) = delete;
 
-      ~PenaltyUpdate_SufficientAngle() override{};
-
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
@@ -384,5 +379,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_PENALTY_UPDATE_H

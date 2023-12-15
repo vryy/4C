@@ -10,10 +10,12 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_wall_result_test.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_particle_wall_datastate.H"
 #include "baci_particle_wall_interface.H"
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -175,3 +177,5 @@ void PARTICLEWALL::WallResultTest::TestSpecial(
   nerr += err;
   test_count++;
 }
+
+BACI_NAMESPACE_CLOSE

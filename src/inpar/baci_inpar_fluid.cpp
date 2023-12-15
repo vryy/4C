@@ -17,6 +17,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -235,7 +237,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",
       &fdyn);
 
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &fdyn);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
@@ -1348,19 +1350,19 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // transfer boundary condition for turbulent inflow
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> tbc_turb_inflow_components;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> tbc_turb_inflow_components;
 
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ID")));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new ::INPUT::IntComponent("id", {0, true})));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("toggle",
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("ID")));
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new INPUT::IntComponent("id", {0, true})));
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new INPUT::SelectionComponent("toggle",
       "master", Teuchos::tuple<std::string>("master", "slave"),
       Teuchos::tuple<std::string>("master", "slave"))));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("DIRECTION")));
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("DIRECTION")));
   tbc_turb_inflow_components.push_back(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("transfer direction", "x",
+      Teuchos::rcp(new INPUT::SelectionComponent("transfer direction", "x",
           Teuchos::tuple<std::string>("x", "y", "z"), Teuchos::tuple<std::string>("x", "y", "z"))));
   tbc_turb_inflow_components.push_back(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("curve", 1, {0, true, true})));
+      Teuchos::rcp(new INPUT::IntVectorComponent("curve", 1, {0, true, true})));
 
   Teuchos::RCP<ConditionDefinition> tbc_turb_inflow = Teuchos::rcp(new ConditionDefinition(
       "DESIGN SURF TURBULENT INFLOW TRANSFER", "TransferTurbulentInflow", "TransferTurbulentInflow",
@@ -1389,36 +1391,34 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow-dependent pressure conditions
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> flowdeppressurecomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> flowdeppressurecomponents;
 
   // flow-dependent pressure conditions can be imposed either based on
   // (out)flow rate or (out)flow volume (e.g., for air-cushion condition)
   flowdeppressurecomponents.push_back(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("type of flow dependence", "flow_rate",
+      Teuchos::rcp(new INPUT::SelectionComponent("type of flow dependence", "flow_rate",
           Teuchos::tuple<std::string>("flow_rate", "flow_volume", "fixed_pressure"),
           Teuchos::tuple<std::string>("flow_rate", "flow_volume", "fixed_pressure"))));
 
   // constant coefficient for (linear) flow-rate-based condition
   // and constant fixed pressure
-  flowdeppressurecomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("ConstCoeff")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("ConstCoeff")));
 
   // linear coefficient for (linear) flow-rate-based condition
-  flowdeppressurecomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("LinCoeff")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("LinCoeff")));
 
   // initial (air-cushion) volume outside of boundary
-  flowdeppressurecomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("InitialVolume")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("InitialVolume")));
 
   // reference pressure outside of boundary
-  flowdeppressurecomponents.push_back(
-      Teuchos::rcp(new ::INPUT::RealComponent("ReferencePressure")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("ReferencePressure")));
 
   // adiabatic exponent
-  flowdeppressurecomponents.push_back(
-      Teuchos::rcp(new ::INPUT::RealComponent("AdiabaticExponent")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("AdiabaticExponent")));
 
   // values for time curve
   flowdeppressurecomponents.push_back(
-      Teuchos::rcp(new ::INPUT::IntComponent("curve", {0, true, true})));
+      Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
 
 
   Teuchos::RCP<ConditionDefinition> lineflowdeppressure = Teuchos::rcp(new ConditionDefinition(
@@ -1444,11 +1444,10 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Slip Supplemental Curved Boundary conditions
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> slipsuppcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> slipsuppcomponents;
 
-  slipsuppcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("USEUPDATEDNODEPOS")));
-  slipsuppcomponents.push_back(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("useupdatednodepos", 1)));
+  slipsuppcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("USEUPDATEDNODEPOS")));
+  slipsuppcomponents.push_back(Teuchos::rcp(new INPUT::IntVectorComponent("useupdatednodepos", 1)));
 
   Teuchos::RCP<ConditionDefinition> lineslipsupp = Teuchos::rcp(new ConditionDefinition(
       "DESIGN LINE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "LineSlipSupp", "LineSlipSupp",
@@ -1470,10 +1469,10 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Navier-slip boundary conditions
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> navierslipcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> navierslipcomponents;
 
-  navierslipcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIPCOEFFICIENT")));
-  navierslipcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("slipcoefficient")));
+  navierslipcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("SLIPCOEFFICIENT")));
+  navierslipcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("slipcoefficient")));
 
   Teuchos::RCP<ConditionDefinition> linenavierslip = Teuchos::rcp(
       new ConditionDefinition("DESIGN LINE NAVIER-SLIP BOUNDARY CONDITIONS", "LineNavierSlip",
@@ -1518,31 +1517,31 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // mixed/hybrid Dirichlet conditions
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> mixhybDirichletcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> mixhybDirichletcomponents;
 
   // we provide a vector of 3 values for velocities
-  mixhybDirichletcomponents.push_back(Teuchos::rcp(new ::INPUT::RealVectorComponent("val", 3)));
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("val", 3)));
 
   // and optional spatial functions
   mixhybDirichletcomponents.push_back(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("funct", 3, {0, false, false, true})));
+      Teuchos::rcp(new INPUT::IntVectorComponent("funct", 3, {0, false, false, true})));
 
   // characteristic velocity
-  mixhybDirichletcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("u_C")));
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("u_C")));
 
   // the penalty parameter could be computed dynamically (using Spaldings
   // law of the wall) or using a fixed value (1)
   mixhybDirichletcomponents.push_back(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("Definition of penalty parameter", "constant",
+      Teuchos::rcp(new INPUT::SelectionComponent("Definition of penalty parameter", "constant",
           Teuchos::tuple<std::string>("constant", "Spalding"),
           Teuchos::tuple<std::string>("constant", "Spalding"))));
 
   // scaling factor for penalty parameter tauB
-  mixhybDirichletcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("hB_divided_by")));
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("hB_divided_by")));
 
   // if Spaldings law is used, this defines the way how the traction at y is computed from utau
-  mixhybDirichletcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent(
-      "utau_computation", "at_wall", Teuchos::tuple<std::string>("at_wall", "viscous_tangent"),
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("utau_computation",
+      "at_wall", Teuchos::tuple<std::string>("at_wall", "viscous_tangent"),
       Teuchos::tuple<std::string>("at_wall", "viscous_tangent"))));
 
 
@@ -1574,33 +1573,33 @@ void INPAR::FLUID::SetValidConditions(
       "SURFACE TENSION CONDITIONS", "SurfaceStress", "Surface Stress (ideal water)",
       DRT::Condition::SurfaceTension, true, DRT::Condition::Surface));
 
-  surftension->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("curve", {0, true, true})));
-  AddNamedReal(surftension, "gamma");
+  surftension->AddComponent(Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
+  INPUT::AddNamedReal(surftension, "gamma");
 
   condlist.push_back(surftension);
 
   /*--------------------------------------------------------------------*/
   // FREESURF
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> freesurfcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> freesurfcomponents;
 
-  freesurfcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("FIELD")));
-  freesurfcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("field", "fluid",
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("FIELD")));
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("field", "fluid",
       Teuchos::tuple<std::string>("fluid", "ale"), Teuchos::tuple<std::string>("fluid", "ale"))));
 
-  freesurfcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLING")));
-  freesurfcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("coupling", "lagrange",
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING")));
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("coupling", "lagrange",
       Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
           "meantangentialvelocity", "meantangentialvelocityscaled"),
       Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
           "meantangentialvelocity", "meantangentialvelocityscaled"),
       true)));
 
-  freesurfcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("VAL")));
-  freesurfcomponents.push_back(Teuchos::rcp(new ::INPUT::RealVectorComponent("val", 1)));
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("val", 1)));
 
-  freesurfcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NODENORMALFUNCT")));
-  freesurfcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("nodenormalfunct")));
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("NODENORMALFUNCT")));
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("nodenormalfunct")));
 
   Teuchos::RCP<ConditionDefinition> linefreesurf = Teuchos::rcp(
       new ConditionDefinition("DESIGN FLUID FREE SURFACE LINE CONDITIONS", "FREESURFCoupling",
@@ -1621,7 +1620,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // fluid stress
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> fluidstresscomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> fluidstresscomponents;
 
   Teuchos::RCP<ConditionDefinition> linefluidstress =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLUID STRESS CALC LINE CONDITIONS",
@@ -1644,15 +1643,14 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // lift & drag
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> liftdragcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> liftdragcomponents;
 
-  liftdragcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("label")));
-  liftdragcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("CENTER")));
-  liftdragcomponents.push_back(Teuchos::rcp(new ::INPUT::RealVectorComponent("centerCoord", 3)));
+  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("label")));
+  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("CENTER")));
+  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("centerCoord", 3)));
   // optional
-  liftdragcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("AXIS", "", true)));
-  liftdragcomponents.push_back(
-      Teuchos::rcp(new ::INPUT::RealVectorComponent("axis", 3, {0, true})));
+  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("AXIS", "", true)));
+  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("axis", 3, {0, true})));
 
   Teuchos::RCP<ConditionDefinition> lineliftdrag =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG", "LIFTDRAG",
@@ -1674,8 +1672,8 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow rate through line
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> lineflowratecomponents;
-  lineflowratecomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> lineflowratecomponents;
+  lineflowratecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
   Teuchos::RCP<ConditionDefinition> lineflowrate =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLOW RATE LINE CONDITIONS", "LineFlowRate",
@@ -1690,8 +1688,8 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow rate through surface
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> flowratecomponents;
-  flowratecomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> flowratecomponents;
+  flowratecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
   Teuchos::RCP<ConditionDefinition> surfflowrate = Teuchos::rcp(new ConditionDefinition(
       "DESIGN FLOW RATE SURF CONDITIONS", "SurfFlowRate", "Surface Flow Rate",
@@ -1706,8 +1704,8 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // impuls rate through surface
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> impulsratecomponents;
-  impulsratecomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> impulsratecomponents;
+  impulsratecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
   Teuchos::RCP<ConditionDefinition> surfimpulsrate = Teuchos::rcp(new ConditionDefinition(
       "DESIGN IMPULS RATE SURF CONDITIONS", "SurfImpulsRate", "Surface Impuls Rate",
@@ -1727,54 +1725,52 @@ void INPAR::FLUID::SetValidConditions(
           "VolumetricSurfaceFlowCond", "volumetric surface flow condition",
           DRT::Condition::VolumetricSurfaceFlowCond, true, DRT::Condition::Surface));
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> inflownormalcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> inflownormalcomponents;
 
-  volumetric_surface_flow_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent(
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
       "ConditionType", "WOMERSLEY", Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"),
       Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"), true)));
 
-  volumetric_surface_flow_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("prebiased", "NOTPREBIASED",
-          Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
-          Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("prebiased",
+      "NOTPREBIASED", Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
+      Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent(
-      "FlowType", "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("FlowType",
+      "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
       Teuchos::tuple<std::string>("InFlow", "OutFlow"), true)));
 
   volumetric_surface_flow_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("CorrectionFlag", "WithOutCorrection",
+      Teuchos::rcp(new INPUT::SelectionComponent("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
-  AddNamedReal(volumetric_surface_flow_cond, "Period");
-  AddNamedInt(volumetric_surface_flow_cond, "Order");
-  AddNamedInt(volumetric_surface_flow_cond, "Harmonics");
-  AddNamedReal(volumetric_surface_flow_cond, "Val");
-  AddNamedInt(volumetric_surface_flow_cond, "Funct");
+  INPUT::AddNamedReal(volumetric_surface_flow_cond, "Period");
+  INPUT::AddNamedInt(volumetric_surface_flow_cond, "Order");
+  INPUT::AddNamedInt(volumetric_surface_flow_cond, "Harmonics");
+  INPUT::AddNamedReal(volumetric_surface_flow_cond, "Val");
+  INPUT::AddNamedInt(volumetric_surface_flow_cond, "Funct");
 
   volumetric_surface_flow_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("NORMAL", "SelfEvaluateNormal",
+      Teuchos::rcp(new INPUT::SelectionComponent("NORMAL", "SelfEvaluateNormal",
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"),
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true)));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("n1")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("n2")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("n3")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n1")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n2")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n3")));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent(
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
       "CenterOfMass", "SelfEvaluateCenterOfMass",
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"),
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true)));
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("c1")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("c2")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("c3")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c1")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c2")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c3")));
 
   condlist.push_back(volumetric_surface_flow_cond);
 
@@ -1788,8 +1784,7 @@ void INPAR::FLUID::SetValidConditions(
           "VolumetricFlowBorderNodesCond", "volumetric flow border nodes condition",
           DRT::Condition::VolumetricFlowBorderNodes, true, DRT::Condition::Line));
 
-  volumetric_border_nodes_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+  volumetric_border_nodes_cond->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
 
   condlist.push_back(volumetric_border_nodes_cond);
@@ -1803,48 +1798,48 @@ void INPAR::FLUID::SetValidConditions(
 
 
   total_traction_correction_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+      Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent(
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
       "ConditionType", "POLYNOMIAL", Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"),
       Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"), true)));
 
   total_traction_correction_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("prebiased", "NOTPREBIASED",
+      Teuchos::rcp(new INPUT::SelectionComponent("prebiased", "NOTPREBIASED",
           Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
           Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent(
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
       "FlowType", "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
       Teuchos::tuple<std::string>("InFlow", "OutFlow"), true)));
 
   total_traction_correction_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("CorrectionFlag", "WithOutCorrection",
+      Teuchos::rcp(new INPUT::SelectionComponent("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
-  AddNamedReal(total_traction_correction_cond, "Period");
-  AddNamedInt(total_traction_correction_cond, "Order");
-  AddNamedInt(total_traction_correction_cond, "Harmonics");
-  AddNamedReal(total_traction_correction_cond, "Val");
-  AddNamedInt(total_traction_correction_cond, "Funct");
+  INPUT::AddNamedReal(total_traction_correction_cond, "Period");
+  INPUT::AddNamedInt(total_traction_correction_cond, "Order");
+  INPUT::AddNamedInt(total_traction_correction_cond, "Harmonics");
+  INPUT::AddNamedReal(total_traction_correction_cond, "Val");
+  INPUT::AddNamedInt(total_traction_correction_cond, "Funct");
 
   total_traction_correction_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("NORMAL", "SelfEvaluateNormal",
+      Teuchos::rcp(new INPUT::SelectionComponent("NORMAL", "SelfEvaluateNormal",
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"),
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("n1")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("n2")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("n3")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n1")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n2")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n3")));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent(
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
       "CenterOfMass", "SelfEvaluateCenterOfMass",
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"),
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("c1")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("c2")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("c3")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c1")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c2")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c3")));
 
   condlist.push_back(total_traction_correction_cond);
 
@@ -1858,7 +1853,7 @@ void INPAR::FLUID::SetValidConditions(
           DRT::Condition::TotalTractionCorrectionBorderNodes, true, DRT::Condition::Line));
 
   traction_corrector_border_nodes_cond->AddComponent(
-      Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+      Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
 
   condlist.push_back(traction_corrector_border_nodes_cond);
@@ -1940,10 +1935,10 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a surface
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> flucthydrostatsurfcomponents;
-  flucthydrostatsurfcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> flucthydrostatsurfcomponents;
+  flucthydrostatsurfcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
   flucthydrostatsurfcomponents.push_back(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("evaluation type", "nodalbased",
+      Teuchos::rcp(new INPUT::SelectionComponent("evaluation type", "nodalbased",
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"),
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"))));
 
@@ -1961,10 +1956,10 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a line
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> flucthydrostatlinecomponents;
-  flucthydrostatlinecomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> flucthydrostatlinecomponents;
+  flucthydrostatlinecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
   flucthydrostatlinecomponents.push_back(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("evaluation type", "nodalbased",
+      Teuchos::rcp(new INPUT::SelectionComponent("evaluation type", "nodalbased",
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"),
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"))));
 
@@ -1978,3 +1973,5 @@ void INPAR::FLUID::SetValidConditions(
 
   condlist.push_back(fluctHydro_statisticsLine);
 }
+
+BACI_NAMESPACE_CLOSE

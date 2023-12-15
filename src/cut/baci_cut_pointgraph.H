@@ -14,6 +14,8 @@
 // necessary due to usage of graph_t, vertex_t etc.
 #include "baci_cut_find_cycles.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::GEO
 {
@@ -64,7 +66,7 @@ namespace CORE::GEO
             // empty
           }
 
-          virtual ~Graph(){};
+          virtual ~Graph() = default;
 
           void AddEdge(int row, int col);
 
@@ -126,7 +128,7 @@ namespace CORE::GEO
         PointGraph(Side *side);
 
         /// destructor
-        virtual ~PointGraph(){};
+        virtual ~PointGraph() = default;
 
         facet_iterator fbegin() { return GetGraph().main_cycles_.begin(); }
 
@@ -177,5 +179,7 @@ namespace CORE::GEO
   }    // namespace CUT
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -15,6 +15,8 @@
 #include "baci_lib_element.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace LARGEROTATIONS
 {
   /**
@@ -39,11 +41,6 @@ namespace LARGEROTATIONS
      *  \date 01/17 */
     TriadInterpolationLocalRotationVectors();
 
-    /** \brief Destructor
-     *
-     *  \author grill
-     *  \date 01/17 */
-    virtual ~TriadInterpolationLocalRotationVectors(){};
     //@}
 
     //! @name Accessors
@@ -69,27 +66,27 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void Reset(std::vector<CORE::LINALG::Matrix<4, 1, T>> const& nodal_quaternions);
+    void Reset(std::vector<CORE::LINALG::Matrix<4, 1, T>> const& nodal_quaternions) override;
 
     /** \brief reset interpolation scheme with nodal triads
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void Reset(std::vector<CORE::LINALG::Matrix<3, 3, T>> const& nodal_triads);
+    void Reset(std::vector<CORE::LINALG::Matrix<3, 3, T>> const& nodal_triads) override;
 
     /** \brief compute the interpolated triad at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void GetInterpolatedTriadAtXi(
-        CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const;
+    void GetInterpolatedTriadAtXi(
+        CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const override;
 
     /** \brief compute the interpolated quaternion at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void GetInterpolatedQuaternionAtXi(
-        CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const;
+    void GetInterpolatedQuaternionAtXi(
+        CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const override;
 
     //@}
 
@@ -194,7 +191,7 @@ namespace LARGEROTATIONS
     void SetNodeIandJ();
 
     //! get the interpolation scheme from the given number of nodes
-    ::DRT::Element::DiscretizationType GetDisType() const;
+    CORE::FE::CellType GetDisType() const;
 
     //! compute quaternion corresponding to reference triad Lambda_r according to (3.9), Jelenic
     //! 1999
@@ -267,7 +264,7 @@ namespace LARGEROTATIONS
     unsigned int nodeJ_;
 
     //! this determines the kind of shape functions which are to be applied
-    ::DRT::Element::DiscretizationType distype_;
+    CORE::FE::CellType distype_;
 
     //! nodal triads stored as quaternions
     std::vector<CORE::LINALG::Matrix<4, 1, T>> Qnode_;
@@ -282,5 +279,7 @@ namespace LARGEROTATIONS
   };
 
 }  // namespace LARGEROTATIONS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

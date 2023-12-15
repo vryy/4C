@@ -38,6 +38,8 @@
 #include "baci_tsi_defines.H"
 #include "baci_tsi_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -71,11 +73,12 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
         Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
     // init coupling adapter projection matrices
-    volcoupl_->Init(structdis, thermodis, nullptr, nullptr, nullptr, nullptr, materialstrategy);
+    volcoupl_->Init(DRT::Problem::Instance()->NDim(), structdis, thermodis, nullptr, nullptr,
+        nullptr, nullptr, materialstrategy);
     // redistribute discretizations to meet needs of volmortar coupling
     volcoupl_->Redistribute();
     // setup projection matrices
-    volcoupl_->Setup();
+    volcoupl_->Setup(DRT::Problem::Instance()->VolmortarParams());
   }
 
   if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
@@ -159,11 +162,6 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 }
 
 
-/*----------------------------------------------------------------------*
- | destructor (public)                                       dano 12/09 |
- *----------------------------------------------------------------------*/
-TSI::Algorithm::~Algorithm() {}
-
 
 /*----------------------------------------------------------------------*
  | update (protected)                                        dano 12/09 |
@@ -209,7 +207,6 @@ void TSI::Algorithm::Output(bool forced_writerestart)
       ((upres != 0 and (Step() % upres == 0)) or ((uprestart != 0) and (Step() % uprestart == 0))))
   {
     // displacement has already been written into thermo field for this step
-    ;
   }
   else if ((upres != 0 and (Step() % upres == 0)) or
            ((uprestart != 0) and (Step() % uprestart == 0)) or forced_writerestart == true)
@@ -529,3 +526,5 @@ void TSI::Algorithm::GetContactStrategy()
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

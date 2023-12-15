@@ -14,6 +14,8 @@
 
 #include "baci_lib_dofset_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -42,29 +44,29 @@ namespace DRT
     explicit DofSetProxy(DofSetInterface* dofset);
 
     /// Destructor
-    virtual ~DofSetProxy();
+    ~DofSetProxy() override;
 
     /// create a copy of this object
     virtual Teuchos::RCP<DofSetProxy> Clone() { return Teuchos::rcp(new DofSetProxy(*this)); }
 
     /// Add Dof Set to list #static_dofsets_
-    virtual void AddDofSettoList();
+    void AddDofSettoList() override;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
-    virtual void ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset)
+    void ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset) override
     {
       dofset_->ReplaceInStaticDofsets(olddofset);
     };
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    virtual int AssignDegreesOfFreedom(
-        const Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const Discretization& dis, const unsigned dspos, const int start) override;
 
     /// returns true if \ref dofset_ is filled
-    virtual bool Filled() const;
+    bool Filled() const override;
 
     /// reset all internal variables
-    virtual void Reset();
+    void Reset() override;
 
     //@}
 
@@ -72,10 +74,10 @@ namespace DRT
     /// The original DofSet sends notifications if it changes.
 
     /// original DofSet has new dofs
-    virtual void NotifyAssigned();
+    void NotifyAssigned() override;
 
     /// our original DofSet dies
-    virtual void Disconnect(DofSetInterface* dofset);
+    void Disconnect(DofSetInterface* dofset) override;
 
     //@}
 
@@ -83,142 +85,143 @@ namespace DRT
     //! @name Access methods
 
     /// Get number of dofs for given node
-    virtual int NumDof(const Node* node  ///< node, for which you want to know the number of dofs
-    ) const
+    int NumDof(const Node* node  ///< node, for which you want to know the number of dofs
+    ) const override
     {
       CheckIsAssigned();
       return dofset_->NumDof(node);
     };
 
     /// Get number of dofs for given element
-    virtual int NumDof(
-        const Element* element  ///< element, for which you want to know the number of dofs
-    ) const
+    int NumDof(const Element* element  ///< element, for which you want to know the number of dofs
+    ) const override
     {
       CheckIsAssigned();
       return dofset_->NumDof(element);
     };
 
     /// get number of nodal dofs
-    virtual int NumDofPerNode(
-        const Node& node  ///< node, for which you want to know the number of dofs
-    ) const
+    int NumDofPerNode(const Node& node  ///< node, for which you want to know the number of dofs
+    ) const override
     {
       CheckIsAssigned();
       return dofset_->NumDofPerNode(node);
     };
 
     /// Get the gid of a dof for given node
-    virtual int Dof(const Node* node, int dof) const
+    int Dof(const Node* node, int dof) const override
     {
       CheckIsAssigned();
       return dofset_->Dof(node, dof);
     };
 
     /// Get the gid of a dof for given element
-    virtual int Dof(const Element* element,  ///< element, for which you want the dof positions
-        int dof) const
+    int Dof(const Element* element,  ///< element, for which you want the dof positions
+        int dof) const override
     {
       CheckIsAssigned();
       return dofset_->Dof(element, dof);
     };
 
     /// Get the gid of all dofs of a node
-    virtual std::vector<int> Dof(const Node* node  ///< node, for which you want the dof positions
-    ) const
+    std::vector<int> Dof(const Node* node  ///< node, for which you want the dof positions
+    ) const override
     {
       CheckIsAssigned();
       return dofset_->Dof(node);
     };
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const Node* node,                    ///< node, for which you want the dof positions
+    void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
+        const Node* node,            ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
-    ) const
+    ) const override
     {
       CheckIsAssigned();
       dofset_->Dof(dof, node, nodaldofset);
     };
 
     /// Get the gid of all dofs of a element
-    virtual std::vector<int> Dof(const Element* element) const
+    std::vector<int> Dof(const Element* element) const override
     {
       CheckIsAssigned();
       return dofset_->Dof(element);
     };
 
     /// Get the gid of all dofs of a node and the location matrix
-    virtual void Dof(const Node* node, std::vector<int>& lm) const
+    void Dof(const Node* node, std::vector<int>& lm) const override
     {
       CheckIsAssigned();
       dofset_->Dof(node, lm);
     };
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const Node* node,  ///< node, for which you want the dof positions
-        const unsigned startindex,      ///< first index of vector at which will be written to end
-        std::vector<int>& lm  ///< already allocated vector to be filled with dof positions
-    ) const
+    void Dof(const Node* node,      ///< node, for which you want the dof positions
+        const unsigned startindex,  ///< first index of vector at which will be written to end
+        std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
+    ) const override
     {
       CheckIsAssigned();
       dofset_->Dof(node, startindex, lm);
     };
 
     /// Get the gid of all dofs of a element and the location matrix
-    virtual void Dof(const Element* element, std::vector<int>& lm) const
+    void Dof(const Element* element, std::vector<int>& lm) const override
     {
       CheckIsAssigned();
       dofset_->Dof(element, lm);
     };
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    virtual void Dof(
+    void Dof(
         const Element* element,  ///< element which provides its expected number of DOFs per node
         const Node* node,        ///< node, for which you want the DOF positions
         std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
-    ) const
+    ) const override
     {
       CheckIsAssigned();
       dofset_->Dof(element, node, lm);
     };
 
     /// Print this class
-    virtual void Print(std::ostream& os) const { dofset_->Print(os); };
+    void Print(std::ostream& os) const override { dofset_->Print(os); };
 
     /// Print the dofsets in the static_dofsets_ list
-    virtual void PrintAllDofsets(const Epetra_Comm& comm) const { dofset_->PrintAllDofsets(comm); };
+    void PrintAllDofsets(const Epetra_Comm& comm) const override
+    {
+      dofset_->PrintAllDofsets(comm);
+    };
 
     /// Get Number of Global Elements of degree of freedom row map
-    virtual int NumGlobalElements() const
+    int NumGlobalElements() const override
     {
       CheckIsAssigned();
       return dofset_->NumGlobalElements();
     };
 
     /// Get degree of freedom row map
-    virtual const Epetra_Map* DofRowMap() const
+    const Epetra_Map* DofRowMap() const override
     {
       CheckIsAssigned();
       return dofset_->DofRowMap();
     };
 
     /// Get degree of freedom column map
-    virtual const Epetra_Map* DofColMap() const
+    const Epetra_Map* DofColMap() const override
     {
       CheckIsAssigned();
       return dofset_->DofColMap();
     };
 
     /// Get maximum GID of degree of freedom row map
-    virtual int MaxAllGID() const
+    int MaxAllGID() const override
     {
       CheckIsAssigned();
       return dofset_->MaxAllGID();
     };
 
     /// Get minimum GID of degree of freedom row map
-    virtual int MinAllGID() const
+    int MinAllGID() const override
     {
       CheckIsAssigned();
       return dofset_->MinAllGID();
@@ -226,14 +229,14 @@ namespace DRT
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    virtual int MaxGIDinList(const Epetra_Comm& comm) const
+    int MaxGIDinList(const Epetra_Comm& comm) const override
     {
       CheckIsAssigned();
       return dofset_->MaxGIDinList(comm);
     };
 
     /// are the dof maps already initialized?
-    virtual bool Initialized() const
+    bool Initialized() const override
     {
       CheckIsAssigned();
       return dofset_->Initialized();
@@ -254,5 +257,7 @@ namespace DRT
 
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

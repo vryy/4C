@@ -11,9 +11,11 @@ quantity (e.g. concentration)
 
 #include "baci_mat_lin_elast_1D.H"
 
-#include "baci_lib_function_library.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function_library.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -35,7 +37,7 @@ MAT::LinElast1DType MAT::LinElast1DType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::LinElast1DType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::LinElast1DType::Create(const std::vector<char>& data)
 {
   auto* stvenantk = new MAT::LinElast1D(nullptr);
   stvenantk->Unpack(data);
@@ -48,9 +50,9 @@ MAT::LinElast1D::LinElast1D(MAT::PAR::LinElast1D* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::LinElast1D::Pack(DRT::PackBuffer& data) const
+void MAT::LinElast1D::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -68,10 +70,8 @@ void MAT::LinElast1D::Pack(DRT::PackBuffer& data) const
 void MAT::LinElast1D::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -121,7 +121,7 @@ MAT::LinElast1DGrowthType MAT::LinElast1DGrowthType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::LinElast1DGrowthType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::LinElast1DGrowthType::Create(const std::vector<char>& data)
 {
   auto* stvk_growth = new MAT::LinElast1DGrowth(nullptr);
   stvk_growth->Unpack(data);
@@ -137,9 +137,9 @@ MAT::LinElast1DGrowth::LinElast1DGrowth(MAT::PAR::LinElast1DGrowth* params)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::LinElast1DGrowth::Pack(DRT::PackBuffer& data) const
+void MAT::LinElast1DGrowth::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -159,10 +159,9 @@ void MAT::LinElast1DGrowth::Pack(DRT::PackBuffer& data) const
 void MAT::LinElast1DGrowth::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -275,3 +274,5 @@ double MAT::LinElast1DGrowth::GetGrowthFactorAoSPropDeriv(
 
   return first_deriv * conc;
 }
+
+BACI_NAMESPACE_CLOSE

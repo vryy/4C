@@ -27,6 +27,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(
@@ -422,3 +424,5 @@ void FSI::ConstrMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
 
   ax = a;
 }
+
+BACI_NAMESPACE_CLOSE

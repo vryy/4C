@@ -13,12 +13,14 @@ concentrations and with advanced reaction terms
 
 #include "baci_scatra_ele_calc_advanced_reaction.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcRefConcReac : public ScaTraEleCalcAdvReac<distype>
     {
      private:
@@ -32,37 +34,34 @@ namespace DRT
       using my::nsd_;
 
      public:
-      virtual ~ScaTraEleCalcRefConcReac() {}
-
       /// Singleton access method
       static ScaTraEleCalcRefConcReac<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
       //! Set reac. body force, reaction coefficient and derivatives
-      virtual void SetAdvancedReactionTerms(const int k,          //!< index of current scalar
+      void SetAdvancedReactionTerms(const int k,                  //!< index of current scalar
           const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
-      );
+          ) override;
 
       //! calculation of convective element matrix: add conservative contributions
-      virtual void CalcMatConvAddCons(
+      void CalcMatConvAddCons(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double vdiv,        //!< velocity divergence
           const double densnp       //!< density at time_(n+1)
-      );
+          ) override;
 
       //! set internal variables
-      virtual void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! calculation of diffusive element matrix
-      virtual void CalcMatDiff(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                            //!< index of current scalar
+      void CalcMatDiff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                         //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
-      );
+          ) override;
 
       //! calculate the Laplacian (weak form)
       void GetLaplacianWeakForm(double& val,                   //!< ?
@@ -83,11 +82,10 @@ namespace DRT
       };
 
       //! standard Galerkin diffusive term on right hand side
-      virtual void CalcRHSDiff(
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                            //!< index of current scalar
+      void CalcRHSDiff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                         //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
-      );
+          ) override;
 
       //! calculate the Laplacian (weak form)
       void GetLaplacianWeakFormRHS(double& val,                //!< ?
@@ -108,7 +106,7 @@ namespace DRT
       };
 
       // add nodal displacements to point coordinates
-      virtual void UpdateNodeCoordinates()
+      void UpdateNodeCoordinates() override
       { /*nothing to to since we want reference coordinates*/
         return;
       };
@@ -130,5 +128,7 @@ namespace DRT
 
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_REFCONC_REAC_H

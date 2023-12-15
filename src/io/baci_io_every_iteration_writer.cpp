@@ -20,6 +20,8 @@
 #include <filesystem>
 #include <iterator>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 IO::EveryIterationWriter::EveryIterationWriter()
@@ -295,3 +297,5 @@ int IO::CountLinesInFile(const std::string& filepath)
 
   return line_count;
 }
+
+BACI_NAMESPACE_CLOSE

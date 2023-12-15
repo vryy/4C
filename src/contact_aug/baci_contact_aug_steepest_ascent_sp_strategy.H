@@ -12,6 +12,8 @@
 
 #include "baci_contact_aug_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -28,7 +30,7 @@ namespace CONTACT
         DataContainer();
 
         /// destructor
-        virtual ~DataContainer(){};
+        virtual ~DataContainer() = default;
 
         void SetPenaltyCorrectionParameter(const double correction_param)
         {
@@ -139,9 +141,6 @@ namespace CONTACT
             const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
-        /// destructor
-        virtual ~Strategy(){};
-
         /// derived
         INPAR::CONTACT::SolvingStrategy Type() const override
         {
@@ -191,5 +190,7 @@ namespace CONTACT
   }    // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H

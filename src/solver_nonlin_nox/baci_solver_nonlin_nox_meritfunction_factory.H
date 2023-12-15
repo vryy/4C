@@ -29,6 +29,12 @@ namespace NOX
   {
     class Generic;
   }  // namespace MeritFunction
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace MeritFunction
@@ -40,21 +46,21 @@ namespace NOX
         Factory();
 
         //! destructor
-        virtual ~Factory(){};
+        virtual ~Factory() = default;
 
         /** \brief get a valid merit function pointer
          *
          *  choose between constraint and unconstraint */
-        Teuchos::RCP<NOX::MeritFunction::Generic> BuildMeritFunction(
+        Teuchos::RCP<::NOX::MeritFunction::Generic> BuildMeritFunction(
             const NOX::NLN::GlobalData& noxNlnGlobalData) const;
 
        private:
         //! unconstraint factory
-        Teuchos::RCP<NOX::MeritFunction::Generic> BuildUnconstrainedMeritFunction(
+        Teuchos::RCP<::NOX::MeritFunction::Generic> BuildUnconstrainedMeritFunction(
             const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const;
 
         //! constraint factory
-        Teuchos::RCP<NOX::MeritFunction::Generic> BuildConstrainedMeritFunction(
+        Teuchos::RCP<::NOX::MeritFunction::Generic> BuildConstrainedMeritFunction(
             const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const;
 
       };  // class Factory
@@ -64,10 +70,12 @@ namespace NOX
       \relates NOX::NLNSOL::Constraint::MeritFunction::Factory
 
       */
-      Teuchos::RCP<NOX::MeritFunction::Generic> BuildMeritFunction(
+      Teuchos::RCP<::NOX::MeritFunction::Generic> BuildMeritFunction(
           const NOX::NLN::GlobalData& noxNlnGlobalData);
     }  // namespace MeritFunction
   }    // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_MERITFUNCTION_FACTORY_H

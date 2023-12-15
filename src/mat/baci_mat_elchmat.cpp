@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElchMat::ElchMat(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -52,7 +54,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ElchMat::CreateMaterial()
 MAT::ElchMatType MAT::ElchMatType::instance_;
 
 
-DRT::ParObject* MAT::ElchMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ElchMatType::Create(const std::vector<char>& data)
 {
   MAT::ElchMat* elchmat = new MAT::ElchMat();
   elchmat->Unpack(data);
@@ -112,9 +114,9 @@ void MAT::ElchMat::Clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchMat::Pack(DRT::PackBuffer& data) const
+void MAT::ElchMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -145,10 +147,8 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
   Clear();
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid(-1);
@@ -195,3 +195,5 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
       dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   }  // if (params_ != nullptr)
 }
+
+BACI_NAMESPACE_CLOSE

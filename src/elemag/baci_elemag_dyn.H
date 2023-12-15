@@ -11,6 +11,10 @@
 #ifndef BACI_ELEMAG_DYN_H
 #define BACI_ELEMAG_DYN_H
 
+BACI_NAMESPACE_OPEN
+
 void electromagnetics_drt();
+
+BACI_NAMESPACE_CLOSE
 
 #endif

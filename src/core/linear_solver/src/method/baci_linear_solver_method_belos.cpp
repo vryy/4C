@@ -38,12 +38,14 @@
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
 CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::BelosSolver(
-    const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
-    : KrylovSolver<MatrixType, VectorType>(comm, params, outfile), numiters_(-1)
+    const Epetra_Comm& comm, Teuchos::ParameterList& params)
+    : KrylovSolver<MatrixType, VectorType>(comm, params), numiters_(-1)
 {
   this->ncall_ = 0;
   this->preconditioner_ = Teuchos::null;
@@ -167,8 +169,8 @@ int CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   if (this->preconditioner_ != Teuchos::null)
   {
     // prepare preconditioner in preconditioner_->PrecOperator() for Belos
-    Teuchos::RCP<Belos::EpetraPrecOp> belosPrec = Teuchos::rcp(
-        new Belos::EpetraPrecOp(Teuchos::rcp(this->preconditioner_->PrecOperator(), false)));
+    Teuchos::RCP<Belos::EpetraPrecOp> belosPrec =
+        Teuchos::rcp(new Belos::EpetraPrecOp(this->preconditioner_->PrecOperator()));
     problem->setRightPrec(belosPrec);
   }
   bool set = problem->setProblem();
@@ -219,50 +221,10 @@ int CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   if (glob_error > 0 and this->comm_.MyPID() == 0)
     std::cout << std::endl << "WARNING: Belos did not converge!" << std::endl;
 
-  GlobalOrdinal rowperm = 0;
-  GlobalOrdinal colperm = 0;
-  GlobalOrdinal lrowperm = 0;
-  GlobalOrdinal lcolperm = 0;
-  int nonDiagDomRows = 0;
-  int nonPermutedZeros = 0;
-  int PermutedZeros = 0;
-  int PermutedNearZeros = 0;
-  int NonPermutedNearZeros = 0;
-
   if (this->bAllowPermutation_ && this->bPermuteLinearSystem_)
   {
     // repermutate solution vector
     this->ReTransformSolution();
-    rowperm = this->data_->template Get<GlobalOrdinal>("#RowPermutations", this->PermFact_.get());
-    colperm = this->data_->template Get<GlobalOrdinal>("#ColPermutations", this->PermFact_.get());
-    lrowperm = this->data_->template Get<GlobalOrdinal>(
-        "#WideRangeRowPermutations", this->PermFact_.get());
-    lcolperm = this->data_->template Get<GlobalOrdinal>(
-        "#WideRangeColPermutations", this->PermFact_.get());
-  }
-  if (this->data_->IsAvailable("nonDiagDomRows"))
-    nonDiagDomRows = this->data_->template Get<int>("nonDiagDomRows");
-  if (this->data_->IsAvailable("NonPermutedZerosOnDiagonal"))
-    nonPermutedZeros = this->data_->template Get<int>("NonPermutedZerosOnDiagonal");
-  if (this->data_->IsAvailable("PermutedZerosOnDiagonal"))
-    PermutedZeros = this->data_->template Get<int>("PermutedZerosOnDiagonal");
-  if (this->data_->IsAvailable("PermutedNearZeros"))
-    PermutedNearZeros = this->data_->template Get<int>("PermutedNearZeros");
-  if (this->data_->IsAvailable("NonPermutedNearZeros"))
-    NonPermutedNearZeros = this->data_->template Get<int>("NonPermutedNearZeros");
-
-  // print some output if desired
-  if (this->comm_.MyPID() == 0 && this->outfile_)
-  {
-    fprintf(this->outfile_,
-        "Belos: "
-        "unknowns/iterations/time/rowpermutations/colpermutations/lrowperm/lcolperm/nonDiagDomRows "
-        "%d  %d  %f %d %d %d %d %d NonPermutedZeros/PermutedZeros %d %d bPermuted %d "
-        "nonPermNearZeros/PermNearZeros %d %d\n",
-        this->A_->OperatorRangeMap().NumGlobalElements(), (int)newSolver->getNumIters(), -1.0,
-        rowperm, colperm, lrowperm, lcolperm, nonDiagDomRows, nonPermutedZeros, PermutedZeros,
-        this->bPermuteLinearSystem_ ? 1 : 0, NonPermutedNearZeros, PermutedNearZeros);
-    fflush(this->outfile_);
   }
 
   this->ncall_ += 1;  // increment counter of solver calls
@@ -276,3 +238,5 @@ int CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
 //----------------------------------------------------------------------------------
 // explicit initialization
 template class CORE::LINEAR_SOLVER::BelosSolver<Epetra_Operator, Epetra_MultiVector>;
+
+BACI_NAMESPACE_CLOSE

@@ -20,10 +20,16 @@
 
 #include <optional>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
+}
+
+namespace DRT
+{
   namespace INPUT
   {
     class LineDefinition;
@@ -67,7 +73,7 @@ namespace MAT
      *
      * @param data (in/out) : data object
      */
-    void PackAnisotropy(DRT::PackBuffer& data) const;
+    void PackAnisotropy(CORE::COMM::PackBuffer& data) const;
 
     /*!
      * Unpack all data from another processor
@@ -256,5 +262,7 @@ namespace MAT
     std::vector<Teuchos::RCP<BaseAnisotropyExtension>> extensions_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_H

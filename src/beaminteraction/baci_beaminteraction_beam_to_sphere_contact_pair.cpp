@@ -23,6 +23,8 @@
 #include "baci_rigidsphere.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*-----------------------------------------------------------------------------------------------*
@@ -901,7 +903,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShap
     CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta)
 {
   // get both discretization types
-  const DRT::Element::DiscretizationType distype1 = BeamElement()->Shape();
+  const CORE::FE::CellType distype1 = BeamElement()->Shape();
 
   if (numnodalvalues == 1)
   {
@@ -914,7 +916,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShap
   {
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
+    const CORE::FE::CellType distype1herm = CORE::FE::CellType::line2;
 
     // get values and derivatives of shape functions
     CORE::DRT::UTILS::shape_function_hermite_1D(N1_i, eta, beamele_reflength_, distype1herm);
@@ -1183,3 +1185,5 @@ template class BEAMINTERACTION::BeamToSphereContactPair<3, 1>;
 template class BEAMINTERACTION::BeamToSphereContactPair<4, 1>;
 template class BEAMINTERACTION::BeamToSphereContactPair<5, 1>;
 template class BEAMINTERACTION::BeamToSphereContactPair<2, 2>;
+
+BACI_NAMESPACE_CLOSE

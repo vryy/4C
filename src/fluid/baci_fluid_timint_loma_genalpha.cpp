@@ -13,6 +13,8 @@
 
 #include "baci_io.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
@@ -42,8 +44,4 @@ void FLD::TimIntLomaGenAlpha::Init()
   return;
 }
 
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntLomaGenAlpha::~TimIntLomaGenAlpha() { return; }
+BACI_NAMESPACE_CLOSE

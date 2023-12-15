@@ -8,11 +8,13 @@
 
 #include "baci_mat_fluidporo_multiphase_singlereaction.H"
 
-#include "baci_lib_get_functionofanything.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *  constructor (public)                               vuong 08/16      |
@@ -60,7 +62,9 @@ template <int dim>
 void MAT::PAR::FluidPoroSingleReaction::InitializeInternal()
 {
   // safety check
-  if (DRT::UTILS::GetFunctionOfAnything(functID_ - 1).NumberComponents() != 1)
+  if (DRT::Problem::Instance()
+          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+          .NumberComponents() != 1)
     dserror("expected only one component for single phase reaction!");
 
   for (int k = 0; k < numscal_; k++)
@@ -192,10 +196,13 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunctionInternal(std::vector<dou
         std::pair<std::string, double>(volfracpressurenames_[k], volfracpressures[k]));
 
   // evaluate the reaction term
-  double curval = DRT::UTILS::GetFunctionOfAnything(functID_ - 1).Evaluate(variables, constants, 0);
+  double curval = DRT::Problem::Instance()
+                      ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+                      .Evaluate(variables, constants, 0);
   // evaluate derivatives
-  std::vector<double> curderivs(
-      DRT::UTILS::GetFunctionOfAnything(functID_ - 1).EvaluateDerivative(variables, constants, 0));
+  std::vector<double> curderivs(DRT::Problem::Instance()
+                                    ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+                                    .EvaluateDerivative(variables, constants, 0));
 
   // fill the output vector
   for (int k = 0; k < totalnummultiphasedof_; k++)
@@ -356,7 +363,7 @@ MAT::FluidPoroSingleReactionType MAT::FluidPoroSingleReactionType::instance_;
  *  Create material from given data                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 
-DRT::ParObject* MAT::FluidPoroSingleReactionType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroSingleReactionType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroSingleReaction* fluid_poro = new MAT::FluidPoroSingleReaction();
   fluid_poro->Unpack(data);
@@ -379,9 +386,9 @@ MAT::FluidPoroSingleReaction::FluidPoroSingleReaction(MAT::PAR::FluidPoroSingleR
 /*----------------------------------------------------------------------*
  * pack material for commuication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSingleReaction::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoroSingleReaction::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -400,10 +407,8 @@ void MAT::FluidPoroSingleReaction::Pack(DRT::PackBuffer& data) const
 void MAT::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -453,3 +458,5 @@ void MAT::FluidPoroSingleReaction::EvaluateReaction(std::vector<double>& reacval
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_coupling_adapter.H"
 #include "baci_poroelast_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROELAST
 {
   //! base class for monolithic approaches, when the system is splitted for some reason
@@ -125,5 +127,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> ddi_;
   };
 }  // namespace POROELAST
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_MONOLITHICSPLIT_H

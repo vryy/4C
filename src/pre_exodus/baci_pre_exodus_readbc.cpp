@@ -16,12 +16,13 @@ Here is everything related with reading a bc file
 #include <fstream>
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>& eledefs,
     std::vector<EXODUS::cond_def>& condefs)
 {
+  using namespace BACI;
+
   // first we read the whole file into one stream/std::string
   std::stringstream bcstream;
   const char* bcfilechar = bcfile.c_str();
@@ -311,6 +312,8 @@ EXODUS::elem_def EXODUS::ReadEdef(
 EXODUS::cond_def EXODUS::ReadCdef(
     const std::string& mesh_entity, const int id, const std::string& actcond)
 {
+  using namespace BACI;
+
   EXODUS::cond_def cdef;
   cdef.id = id;
   if (mesh_entity.compare(1, 2, "eb") == 0)

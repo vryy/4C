@@ -13,6 +13,8 @@ St. Venant-Kirchhoff material
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -34,7 +36,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::StVenantKirchhoff::CreateMaterial()
 MAT::StVenantKirchhoffType MAT::StVenantKirchhoffType::instance_;
 
 
-DRT::ParObject* MAT::StVenantKirchhoffType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::StVenantKirchhoffType::Create(const std::vector<char>& data)
 {
   auto* stvenantk = new MAT::StVenantKirchhoff();
   stvenantk->Unpack(data);
@@ -57,9 +59,9 @@ MAT::StVenantKirchhoff::StVenantKirchhoff(MAT::PAR::StVenantKirchhoff* params) :
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Pack(DRT::PackBuffer& data) const
+void MAT::StVenantKirchhoff::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -79,10 +81,8 @@ void MAT::StVenantKirchhoff::Pack(DRT::PackBuffer& data) const
 void MAT::StVenantKirchhoff::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -264,3 +264,4 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3
   //**********************************************************************
   //**********************************************************************
 }
+BACI_NAMESPACE_CLOSE

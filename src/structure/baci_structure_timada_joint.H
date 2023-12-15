@@ -20,6 +20,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -135,9 +136,6 @@ namespace STR
       return;
     }
 
-    //! Destructor
-    virtual ~TimAdaJoint() { ; }
-
     //@}
 
     //! @name Actions
@@ -148,7 +146,7 @@ namespace STR
      * and Setup() have been called on both the marching time integrator
      * and the auxiliary time integrator (popp 01/2017).
      */
-    void Init(Teuchos::RCP<TimInt>& sti)
+    void Init(Teuchos::RCP<TimInt>& sti) override
     {
       // merge
       sta_->Merge(*sti);
@@ -166,7 +164,7 @@ namespace STR
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    void IntegrateStepAuxiliar()
+    void IntegrateStepAuxiliar() override
     {
       // integrate the auxiliary time integrator one step in time
       sta_->IntegrateStep();
@@ -187,25 +185,25 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName() const
+    enum INPAR::STR::TimAdaKind MethodName() const override
     {
       return MapNameTimIntToTimAda(sti_->MethodName());
     }
 
     //! Provide local order of accuracy of displacements
-    int MethodOrderOfAccuracyDis() const { return sta_->MethodOrderOfAccuracyDis(); }
+    int MethodOrderOfAccuracyDis() const override { return sta_->MethodOrderOfAccuracyDis(); }
 
     //! Provide local order of accuracy of velocities
-    int MethodOrderOfAccuracyVel() const { return sta_->MethodOrderOfAccuracyVel(); }
+    int MethodOrderOfAccuracyVel() const override { return sta_->MethodOrderOfAccuracyVel(); }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const { return sta_->MethodLinErrCoeffDis(); }
+    double MethodLinErrCoeffDis() const override { return sta_->MethodLinErrCoeffDis(); }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const { return sta_->MethodLinErrCoeffVel(); }
+    double MethodLinErrCoeffVel() const override { return sta_->MethodLinErrCoeffVel(); }
 
     //! Provide type of algorithm
-    enum AdaEnum MethodAdaptDis() const { return ada_; }
+    enum AdaEnum MethodAdaptDis() const override { return ada_; }
 
     //@}
 
@@ -228,4 +226,6 @@ namespace STR
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMADA_JOINT_H

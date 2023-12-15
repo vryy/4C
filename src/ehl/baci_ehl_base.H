@@ -19,6 +19,8 @@ algorithms
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -44,9 +46,6 @@ namespace EHL
         const std::string struct_disname,
         const std::string lubrication_disname);  // Problem builder
 
-    /// virtual destructor
-    virtual ~Base(){};
-
     /// setup
     virtual void SetupSystem() = 0;
 
@@ -57,10 +56,10 @@ namespace EHL
     void TestResults(const Epetra_Comm& comm);
 
     /// read restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     /// read restart from given time
-    void ReadRestartfromTime(double restarttime);
+    void ReadRestartfromTime(double restarttime) override;
 
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
@@ -85,7 +84,7 @@ namespace EHL
         Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
     /// underlying structure of the EHL problem
-    Teuchos::RCP<::ADAPTER::Structure> structure_;
+    Teuchos::RCP<ADAPTER::Structure> structure_;
 
     /// underlying lubrication problem of the EHL problem
     Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm> lubrication_;
@@ -128,7 +127,7 @@ namespace EHL
         const std::string struct_disname, const std::string lubrication_disname);
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! write output
     virtual void Output(bool forced_writerestart = false);
@@ -164,5 +163,7 @@ namespace EHL
   };
 }  // namespace EHL
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // EHL_BASE_H

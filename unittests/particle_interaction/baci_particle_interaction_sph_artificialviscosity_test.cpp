@@ -15,6 +15,8 @@ interactions
 
 namespace
 {
+  using namespace BACI;
+
   class SPHArtificialViscosityTest : public ::testing::Test
   {
    protected:

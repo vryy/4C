@@ -16,6 +16,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communicator
@@ -53,16 +55,10 @@ void SCATRA::ScaTraAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
+void SCATRA::ScaTraAlgorithm::Init()
 {
   // call init in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
 }
 
 /*----------------------------------------------------------------------*
@@ -364,7 +360,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
 
   Teuchos::RCP<IO::OutputControl> myoutputcontrol =
       Teuchos::rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(), probtype,
-          ShapeFunctionType::shapefunction_polynomial, "myinput", outname, numdim, 0, 1000));
+          CORE::FE::ShapeFunctionType::polynomial, "myinput", outname, numdim, 0, 1000));
   // create discretization writer with my own control settings
   Teuchos::RCP<IO::DiscretizationWriter> myoutput = ScaTraField().Discretization()->Writer();
   myoutput->SetOutput(myoutputcontrol);
@@ -416,10 +412,10 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::Update(const int num)
+void SCATRA::ScaTraAlgorithm::Update()
 {
   FluidField()->Update();
-  ScaTraField()->Update(num);
+  ScaTraField()->Update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -451,7 +447,7 @@ void SCATRA::ScaTraAlgorithm::Output()
   }
 
   FluidField()->StatisticsAndOutput();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 
   // we have to call the output of averaged fields for scatra separately
   if (FluidField()->TurbulenceStatisticManager() != Teuchos::null)
@@ -612,3 +608,4 @@ void SCATRA::ScaTraAlgorithm::TestResults()
   DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
   DRT::Problem::Instance()->TestAll(Comm());
 }
+BACI_NAMESPACE_CLOSE

@@ -3,7 +3,6 @@ baci_auto_define_module()
 set(_pasi_dependencies
     # cmake-format: sortable
     adapter
-    comm
     inpar
     io
     lib

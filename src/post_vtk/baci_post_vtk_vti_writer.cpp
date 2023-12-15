@@ -133,6 +133,8 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
@@ -226,6 +228,8 @@ void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
@@ -308,6 +312,8 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
 
@@ -379,13 +385,15 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
 
 void PostVtiWriter::WriterPrepTimestep()
 {
+  using namespace BACI;
+
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   // collect all possible values of the x-, y- and z-coordinate
   typedef std::set<double, less_tol<double>> set_tol;
   set_tol collected_coords[3];
   for (int n = 0; n < dis->NumMyColNodes(); ++n)
   {
-    const double* coord = dis->lColNode(n)->X();
+    const auto& coord = dis->lColNode(n)->X();
     for (int i = 0; i < 3; ++i) collected_coords[i].insert(coord[i]);
   }
 
@@ -430,7 +438,7 @@ void PostVtiWriter::WriterPrepTimestep()
   idmapping_.clear();
   for (int n = 0; n < dis->NumMyColNodes(); ++n)
   {
-    const double* coord = dis->lColNode(n)->X();
+    const auto& coord = dis->lColNode(n)->X();
     int i = round((coord[0] - lorigin[0]) / spacing_[0]);
     int j = round((coord[1] - lorigin[1]) / spacing_[1]);
     int k = round((coord[2] - lorigin[2]) / spacing_[2]);
@@ -448,7 +456,7 @@ void PostVtiWriter::WriterPrepTimestep()
         std::numeric_limits<double>::max()};
     for (int n = 0; n < ele->NumNode(); ++n)
     {
-      const double* coord = ele->Nodes()[n]->X();
+      const auto& coord = ele->Nodes()[n]->X();
       mincoord[0] = std::min(mincoord[0], coord[0]);
       mincoord[1] = std::min(mincoord[1], coord[1]);
       mincoord[2] = std::min(mincoord[2], coord[2]);

@@ -16,6 +16,8 @@
 #include "baci_io.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -57,10 +59,6 @@ void FLD::TimIntOneStepTheta::Init()
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     bk 11/13 |
-*-----------------------------------------------------------------------*/
-FLD::TimIntOneStepTheta::~TimIntOneStepTheta() { return; }
 
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen          bk 11/13 |
@@ -375,3 +373,5 @@ double FLD::TimIntOneStepTheta::MethodLinErrCoeffVel() const
 
   return fac;
 }
+
+BACI_NAMESPACE_CLOSE

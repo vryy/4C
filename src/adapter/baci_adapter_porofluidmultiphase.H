@@ -16,6 +16,13 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -26,11 +33,6 @@ namespace DRT
 namespace POROFLUIDMULTIPHASE
 {
   class TimIntImpl;
-}
-
-namespace Teuchos
-{
-  class ParameterList;
 }
 
 namespace ADAPTER
@@ -46,7 +48,7 @@ namespace ADAPTER
     PoroFluidMultiphase(){};
 
     /// virtual destructor to support polymorph destruction
-    virtual ~PoroFluidMultiphase(){};
+    virtual ~PoroFluidMultiphase() = default;
 
     /// initialization
     virtual void Init(const bool isale,  ///< ALE flag
@@ -135,7 +137,7 @@ namespace ADAPTER
     virtual int GetDofSetNumberOfSolidPressure() const = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
 
     //! right-hand side alias the dynamic force residual
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
@@ -177,5 +179,7 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_POROFLUIDMULTIPHASE_H

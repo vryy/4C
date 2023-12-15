@@ -17,6 +17,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -78,5 +79,7 @@ namespace IO
       const int iteration_number = 0);
 }  // namespace IO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

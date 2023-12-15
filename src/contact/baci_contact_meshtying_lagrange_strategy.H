@@ -12,6 +12,8 @@
 
 #include "baci_contact_meshtying_abstract_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CONTACT
 {
@@ -44,11 +46,7 @@ namespace CONTACT
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
-    /*!
-    \brief Destructor
 
-    */
-    virtual ~MtLagrangeStrategy() = default;
 
     /*!
     \brief Do mortar coupling in reference configuration
@@ -90,7 +88,7 @@ namespace CONTACT
 
     */
     void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
+        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!
     \brief Build 2x2 saddle point system
@@ -143,17 +141,17 @@ namespace CONTACT
      * thus they are defined as dserror here in the case of Lagrange meshtying.
      */
 
-    double ConstraintNorm() const { return 0.0; }
-    void InitializeUzawa(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    double ConstraintNorm() const override { return 0.0; }
+    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
-    double InitialPenalty() { return 0.0; }
-    void ResetPenalty() {}
-    void ModifyPenalty() {}
-    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
-    void UpdateUzawaAugmentedLagrange() {}
-    void UpdateConstraintNorm(int uzawaiter = 0) {}
+    double InitialPenalty() override { return 0.0; }
+    void ResetPenalty() override {}
+    void ModifyPenalty() override {}
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override {}
+    void UpdateUzawaAugmentedLagrange() override {}
+    void UpdateConstraintNorm(int uzawaiter = 0) override {}
     bool IsPenalty() const override { return false; };
 
     //@}
@@ -184,11 +182,11 @@ namespace CONTACT
 
     //! Return the desired right-hand-side block pointer (read-only) [derived]
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const override;
+        const enum CONTACT::MatBlockType& bt) const override;
 
     /*! \brief Modify system before linear solve
      *
@@ -204,10 +202,10 @@ namespace CONTACT
      *
      * \todo Is this really the right-hand side vector or the residual?
      */
-    virtual void RunPreApplyJacobianInverse(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
+    void RunPreApplyJacobianInverse(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs) override;
 
-    virtual void RunPostApplyJacobianInverse(Epetra_Vector& result);
+    void RunPostApplyJacobianInverse(Epetra_Vector& result) override;
 
     void RunPostComputeX(
         const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
@@ -270,5 +268,7 @@ namespace CONTACT
   };  // class MtLagrangeStrategy
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_MESHTYING_LAGRANGE_STRATEGY_H

@@ -11,9 +11,11 @@ materials
 
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
@@ -288,7 +290,7 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
 {
   CORE::LINALG::Matrix<6, 1> structural_tensor_stress;
   SetupStructuralTensor(fiber_vector, structural_tensor_stress);
-  UTILS::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
@@ -313,7 +315,7 @@ void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::Setup
 {
   CORE::LINALG::Matrix<6, 1> structural_tensor_stress;
   SetupStructuralTensor(fiber_vector, structural_tensor_stress);
-  UTILS::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
 double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
@@ -324,3 +326,4 @@ double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
 
   return restol;
 }
+BACI_NAMESPACE_CLOSE

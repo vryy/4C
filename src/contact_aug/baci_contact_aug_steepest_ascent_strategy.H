@@ -13,6 +13,8 @@
 
 #include "baci_contact_aug_steepest_ascent_sp_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -28,7 +30,7 @@ namespace CONTACT
       /** \brief Condensed variant of the modified Newton approach.
        *
        * \author hiermeier \date 03/17 */
-      class Strategy : public ::CONTACT::AUG::STEEPESTASCENT_SP::Strategy
+      class Strategy : public CONTACT::AUG::STEEPESTASCENT_SP::Strategy
       {
         /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
          *  strategies and needs access to all methods. */
@@ -41,9 +43,6 @@ namespace CONTACT
             const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
-        /// destructor
-        virtual ~Strategy(){};
-
         INPAR::CONTACT::SolvingStrategy Type() const override
         {
           return INPAR::CONTACT::solution_steepest_ascent;
@@ -55,14 +54,14 @@ namespace CONTACT
 
         /// derived
         Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
-            const enum DRT::UTILS::VecBlockType& bt) const override;
+            const enum CONTACT::VecBlockType& bt) const override;
 
         /// derived
         void AddContributionsToConstrRHS(Epetra_Vector& augConstrRhs) const override;
 
         /// derived
         Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-            const enum DRT::UTILS::MatBlockType& bt,
+            const enum CONTACT::MatBlockType& bt,
             const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
         /// derived
@@ -95,5 +94,7 @@ namespace CONTACT
   }    // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_STEEPEST_ASCENT_STRATEGY_H

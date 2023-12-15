@@ -13,6 +13,8 @@
 
 #include "baci_so3_poro.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -26,7 +28,7 @@ namespace DRT
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    template <class so3_ele, CORE::FE::CellType distype>
     class So3_Poro_P1 : public So3_Poro<so3_ele, distype>
     {
       //! @name Friends
@@ -87,7 +89,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -108,12 +110,6 @@ namespace DRT
 
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       //! @name Access methods
 
@@ -271,7 +267,7 @@ namespace DRT
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
           const CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
           const CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
-          CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& estiff_p1,
+          CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& ecoupl_p1,
           CORE::LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>* sub_stiff);
 
       Teuchos::RCP<CORE::LINALG::Matrix<Base::numnod_, 1>> init_porosity_;
@@ -280,4 +276,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif  // SO3_PORO_P1_H

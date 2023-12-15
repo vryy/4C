@@ -12,6 +12,8 @@
 
 #include "baci_utils_any_data_container.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   //! Actions to be performed by mortar/contact framework
@@ -33,8 +35,8 @@ namespace MORTAR
                  */
     eval_run_pre_compute_x, /*!< augment the solution direction at the very beginning of a ComputeX
                              */
-    eval_run_post_iterate,  /*!< run in the end of a NOX::Solver::Step() call */
-    eval_run_pre_solve,     /*!< run at the beginning of a NOX::Solver::solve() call */
+    eval_run_post_iterate,  /*!< run in the end of a ::NOX::Solver::Step() call */
+    eval_run_pre_solve,     /*!< run at the beginning of a ::NOX::Solver::solve() call */
     eval_contact_potential, /*!< Evaluate the contact potential */
     eval_wgap_gradient_error,   /*!< Evaluate the error of the weighted gap gradient */
     eval_static_constraint_rhs, /*!< Evaluate only the contributions to the constraint rhs. The
@@ -51,7 +53,7 @@ namespace MORTAR
    * @param[in] act ActionType encoded as enum
    * @return String describing the action type
    */
-  static inline const std::string ActionType2String(const enum ActionType& act)
+  static inline std::string ActionType2String(const enum ActionType& act)
   {
     switch (act)
     {
@@ -102,7 +104,7 @@ namespace MORTAR
   {
    public:
     //! destructor
-    virtual ~ParamsInterface(){};
+    virtual ~ParamsInterface() = default;
 
     //! Return the mortar/contact action type
     virtual enum ActionType GetActionType() const = 0;
@@ -122,5 +124,7 @@ namespace MORTAR
   };  // class ParamsInterface
 }  // namespace MORTAR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_PARAMSINTERFACE_H

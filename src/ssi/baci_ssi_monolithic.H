@@ -15,6 +15,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CONTACT
 {
@@ -305,4 +307,6 @@ namespace SSI
     Teuchos::RCP<Teuchos::Time> timer_;
   };
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif

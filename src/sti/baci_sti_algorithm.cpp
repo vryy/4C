@@ -11,11 +11,14 @@
 
 #include "baci_coupling_adapter.H"
 #include "baci_io_control.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
+
+BACI_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
@@ -41,18 +44,22 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
     dserror("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  scatra_->Init(*fieldparameters_, *fieldparameters_, solverparams_scatra);
+  scatra_ = Teuchos::rcp(
+      new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_, *fieldparameters_, solverparams_scatra));
+  scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  scatra_->ScaTraField()->SetNumberOfDofSetThermo(2);
   scatra_->Setup();
 
   // modify field parameters for thermo field
   ModifyFieldParametersForThermoField();
 
   // initialize thermo time integrator
-  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  thermo_->Init(*fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo");
+  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+      *fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo"));
+  thermo_->Init();
   thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  thermo_->ScaTraField()->SetNumberOfDofSetScaTra(2);
   thermo_->Setup();
 
   // check maps from scatra and thermo discretizations
@@ -135,7 +142,6 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       default:
       {
         dserror("Invalid type of scatra-scatra interface coupling!");
-        break;
       }
     }
   }
@@ -196,10 +202,10 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
 void STI::Algorithm::Output()
 {
   // output scatra field
-  scatra_->ScaTraField()->Output();
+  scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
 
   // output thermo field
-  thermo_->ScaTraField()->Output();
+  thermo_->ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*--------------------------------------------------------------------------------*
@@ -337,7 +343,6 @@ void STI::Algorithm::TransferScatraToThermo(const Teuchos::RCP<const Epetra_Vect
       default:
       {
         dserror("You must be kidding me...");
-        break;
       }
     }
   }
@@ -397,3 +402,5 @@ void STI::Algorithm::Update()
   // compare thermo field to analytical solution if applicable
   thermo_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 }  // STI::Algorithm::Update()
+
+BACI_NAMESPACE_CLOSE

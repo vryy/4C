@@ -19,6 +19,8 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_elemag_ele.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -29,28 +31,29 @@ namespace DRT
     {
      public:
       /// Type name
-      std::string Name() const { return "ElemagDiffType"; }
+      std::string Name() const override { return "ElemagDiffType"; }
 
       // Instance
       static ElemagDiffType& Instance();
       /// Create
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
       /// Create
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
       /// Create
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
       /// Nodal block information
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       /// Null space computation
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       /// Element definition
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       /// Instance
@@ -88,28 +91,23 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volume of this element
-      */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get Teuchos::RCP to the internal face adjacent to this element as master element and
       the parent_slave element
       */
-      virtual Teuchos::RCP<DRT::Element> CreateFaceElement(
+      Teuchos::RCP<DRT::Element> CreateFaceElement(
           DRT::Element* parent_slave,  //!< parent slave element
           int nnode,                   //!< number of surface nodes
           const int* nodeids,          //!< node ids of surface element
@@ -117,7 +115,7 @@ namespace DRT
           const int lsurface_master,   //!< local surface number w.r.t master parent element
           const int lsurface_slave,    //!< local surface number w.r.t slave parent element
           const std::vector<int>& localtrafomap  //! local trafo map
-      );
+          ) override;
 
       /*!
       \brief Return unique ParObject id
@@ -125,7 +123,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ElemagDiffType::Instance().UniqueParObjectId();
       }
@@ -141,9 +139,9 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return ElemagDiffType::Instance(); }
+      DRT::ElementType& ElementType() const override { return ElemagDiffType::Instance(); }
 
       /// Element location data
       LocationData lm_;
@@ -159,11 +157,11 @@ namespace DRT
     {
      public:
       /// Type name
-      std::string Name() const { return "ElemagDiffBoundaryType"; }
+      std::string Name() const override { return "ElemagDiffBoundaryType"; }
       // Instance
       static ElemagDiffBoundaryType& Instance();
       // Create
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
      private:
       /// Instance
@@ -206,7 +204,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -214,7 +212,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ElemagDiffBoundaryType::Instance().UniqueParObjectId();
       }
@@ -225,7 +223,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -233,7 +231,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //@}
 
@@ -249,7 +247,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         return ParentElement()->NumDofPerNode(node);
       }
@@ -257,10 +255,10 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       /// Return the instance of the element type
-      virtual DRT::ElementType& ElementType() const { return ElemagDiffBoundaryType::Instance(); }
+      DRT::ElementType& ElementType() const override { return ElemagDiffBoundaryType::Instance(); }
 
       //@}
 
@@ -291,7 +289,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -325,8 +324,8 @@ namespace DRT
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
-          const std::string& condstring, Teuchos::ParameterList& params) const;
+      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+          const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:
       // don't want = operator
@@ -339,21 +338,21 @@ namespace DRT
     {
      public:
       /// Name of the element type
-      std::string Name() const { return "ElemagDiffIntFaceType"; }
+      std::string Name() const override { return "ElemagDiffIntFaceType"; }
 
       /// Instance
       static ElemagDiffIntFaceType& Instance();
 
       /// Create
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
       /// Nodal block information
-      virtual void NodalBlockInformation(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np){};
+      void NodalBlockInformation(
+          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override{};
 
       /// Null space
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
@@ -407,7 +406,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -415,7 +414,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ElemagDiffIntFaceType::Instance().UniqueParObjectId();
       }
@@ -448,9 +447,9 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return ElemagDiffIntFaceType::Instance(); }
+      DRT::ElementType& ElementType() const override { return ElemagDiffIntFaceType::Instance(); }
 
       //@}
 
@@ -490,5 +489,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_DIFF_ELE_H

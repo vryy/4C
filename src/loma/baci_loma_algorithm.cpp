@@ -24,6 +24,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_timint_loma.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 LOMA::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn,
@@ -48,43 +50,32 @@ LOMA::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList
       numinflowsteps_(-1),
       probdyn_(prbdyn)
 {
-  // constructor is supposed to stay empty!
-  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LOMA::Algorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
+void LOMA::Algorithm::Init()
 {
   // call Init() in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
-
-  // set problem dynamic parameters
-  probdyn_ = prbdyn;
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
 
   // flag for monolithic solver
-  monolithic_ = (DRT::INPUT::IntegralValue<int>(prbdyn, "MONOLITHIC"));
+  monolithic_ = (DRT::INPUT::IntegralValue<int>(probdyn_, "MONOLITHIC"));
 
   // time-step length, maximum time and maximum number of steps
-  dt_ = prbdyn.get<double>("TIMESTEP");
-  maxtime_ = prbdyn.get<double>("MAXTIME");
-  stepmax_ = prbdyn.get<int>("NUMSTEP");
+  dt_ = probdyn_.get<double>("TIMESTEP");
+  maxtime_ = probdyn_.get<double>("MAXTIME");
+  stepmax_ = probdyn_.get<int>("NUMSTEP");
 
   // (preliminary) maximum number of iterations and tolerance for outer iteration
-  ittol_ = prbdyn.get<double>("CONVTOL");
-  itmaxpre_ = prbdyn.get<int>("ITEMAX");
+  ittol_ = probdyn_.get<double>("CONVTOL");
+  itmaxpre_ = probdyn_.get<int>("ITEMAX");
   // maximum number of iterations before sampling (turbulent flow only)
-  itmaxbs_ = prbdyn.get<int>("ITEMAX_BEFORE_SAMPLING");
+  itmaxbs_ = probdyn_.get<int>("ITEMAX_BEFORE_SAMPLING");
 
   // flag for constant thermodynamic pressure
-  consthermpress_ = prbdyn.get<std::string>("CONSTHERMPRESS");
+  consthermpress_ = probdyn_.get<std::string>("CONSTHERMPRESS");
 
   // flag for special flow and start of sampling period from fluid parameter list
   const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
@@ -92,7 +83,7 @@ void LOMA::Algorithm::Init(
   samstart_ = fluiddyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START");
 
   // check scatra solver type, which should be incremental, for the time being
-  if (ScaTraField()->IsIncremental() == false)
+  if (not ScaTraField()->IsIncremental())
     dserror("Incremental ScaTra formulation required for low-Mach-number flow");
 
   // flag for turbulent inflow
@@ -104,15 +95,15 @@ void LOMA::Algorithm::Init(
   {
     if (Comm().MyPID() == 0)
     {
-      std::cout << "##############################################################" << std::endl;
-      std::cout << "#                     TURBULENT INFLOW                       #" << std::endl;
-      std::cout << "# Caution!                                                   #" << std::endl;
-      std::cout << "# Assumptions: - constant thermodynamic pressure in main     #" << std::endl;
-      std::cout << "#                problem domain                              #" << std::endl;
-      std::cout << "#              - inflow domain is closed system without in-/ #" << std::endl;
-      std::cout << "#                outflow and heating                         #" << std::endl;
-      std::cout << "#                -> constant thermodynamic pressure          #" << std::endl;
-      std::cout << "##############################################################" << std::endl;
+      std::cout << "##############################################################" << '\n';
+      std::cout << "#                     TURBULENT INFLOW                       #" << '\n';
+      std::cout << "# Caution!                                                   #" << '\n';
+      std::cout << "# Assumptions: - constant thermodynamic pressure in main     #" << '\n';
+      std::cout << "#                problem domain                              #" << '\n';
+      std::cout << "#              - inflow domain is closed system without in-/ #" << '\n';
+      std::cout << "#                outflow and heating                         #" << '\n';
+      std::cout << "#                -> constant thermodynamic pressure          #" << '\n';
+      std::cout << "##############################################################" << '\n';
     }
 
     if (special_flow_ != "loma_backward_facing_step")
@@ -120,9 +111,6 @@ void LOMA::Algorithm::Init(
     if (consthermpress_ != "Yes")
       dserror("Constant thermodynamic pressure in main problem domain!");
   }
-
-
-  return;
 }
 
 
@@ -209,8 +197,8 @@ void LOMA::Algorithm::Setup()
           linsolvernumber);
 
     // use loma solver object
-    lomasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(lomasolverparams,
-        FluidField()->Discretization()->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    lomasolver_ = Teuchos::rcp(
+        new CORE::LINALG::Solver(lomasolverparams, FluidField()->Discretization()->Comm()));
 
     // todo extract ScalarTransportFluidSolver
     const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");
@@ -264,10 +252,6 @@ void LOMA::Algorithm::Setup()
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-LOMA::Algorithm::~Algorithm() { return; }
 
 
 /*----------------------------------------------------------------------*/
@@ -881,7 +865,7 @@ void LOMA::Algorithm::Output()
   // discretizations.
   FluidField()->StatisticsAndOutput();
 
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 
   return;
 }
@@ -907,3 +891,5 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
   ScaTraField()->SetTimeStep(FluidField()->Time(), FluidField()->Step());
   return;
 }
+
+BACI_NAMESPACE_CLOSE

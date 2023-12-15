@@ -12,6 +12,8 @@
 
 #include "baci_linear_solver_preconditioner_type.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// ml preconditioners
@@ -21,20 +23,16 @@ namespace CORE::LINEAR_SOLVER
   class MLPreconditioner : public PreconditionerType
   {
    public:
-    MLPreconditioner(FILE* outfile, Teuchos::ParameterList& mllist);
+    MLPreconditioner(Teuchos::ParameterList& mllist);
 
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    Epetra_Operator* PrecOperator() const override { return &*P_; }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return P_; }
-
-    void Print(std::ostream& stream) const override { stream << "ML"; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "ML Parameters"; }
+    std::string getParameterListName() const override { return "ML Parameters"; }
 
    private:
     Teuchos::ParameterList& mllist_;
@@ -46,5 +44,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> P_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

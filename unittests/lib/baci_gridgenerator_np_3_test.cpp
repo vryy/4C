@@ -19,6 +19,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   void CreateMaterialInGlobalProblem()
   {
     const auto mat_stvenant = Teuchos::rcp(new MAT::PAR::Material(
@@ -70,7 +72,7 @@ namespace
     testdis_->FillComplete(false, false, false);
 
     DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const double* nodePosition = lastNode->X();
+    const auto nodePosition = lastNode->X();
 
     if (comm_->MyPID() == 0)
     {
@@ -119,7 +121,7 @@ namespace
     testdis_->FillComplete(false, false, false);
 
     DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const double* nodePosition = lastNode->X();
+    const auto nodePosition = lastNode->X();
 
     if (comm_->MyPID() == 0)
     {

@@ -16,6 +16,8 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -30,119 +32,119 @@ namespace DRT
 
     //! Template Meta Programming version of switch over discretization type
     //! get optimal Gauss rule
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     struct DisTypeToOptGaussRule
     {
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::hex8>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::hex8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
     };
 
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::hex18>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::hex18>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_18point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::hex20>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::hex20>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::hex27>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::hex27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::tet4>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::tet4>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::tet10>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::tet10>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::tet_11point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::wedge6>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::wedge6>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::wedge15>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::wedge15>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::wedge_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::pyramid5>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::pyramid5>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule =
           CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs8>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs27>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::quad4>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::quad4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::quad8>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::quad8>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::quad9>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::quad9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::tri3>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::tri3>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::tri6>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::tri6>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs4>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs9>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::line2>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::line2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::line3>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::line3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs2>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs3>
+    struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
     };
@@ -151,113 +153,113 @@ namespace DRT
     //! Otherwise, it is assumed as an accurate enough approximation
 
     //! Template Meta Programming version of switch over discretization type
-    template <DRT::Element::DiscretizationType DISTYPE>
+    template <CORE::FE::CellType DISTYPE>
     struct DisTypeToStabGaussRule
     {
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::hex8>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::hex8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::hex20>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::hex20>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::hex27>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::hex27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::hex16>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::hex16>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::hex18>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::hex18>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::tet4>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::tet4>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::tet_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::tet10>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::tet10>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::tet_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::wedge6>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::wedge6>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::wedge_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::wedge15>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::wedge15>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::wedge_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::pyramid5>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::pyramid5>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule =
           CORE::DRT::UTILS::GaussRule3D::pyramid_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::nurbs8>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::nurbs8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::nurbs27>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::nurbs27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::quad4>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::quad4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::quad8>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::quad8>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::quad9>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::quad9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::tri3>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::tri3>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::tri6>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::tri6>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::nurbs4>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::nurbs4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::nurbs9>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::nurbs9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::line2>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::line2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_1point;
     };
     template <>
-    struct DisTypeToStabGaussRule<DRT::Element::line3>
+    struct DisTypeToStabGaussRule<CORE::FE::CellType::line3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_1point;
     };
@@ -265,358 +267,360 @@ namespace DRT
     //! wedge6 and pyramid5 have nonzero 2nd mixed derivatives, but they are neglected
     //! quad4 and hex8 are pseudo higherOrder elements
     //! Template Meta Programming version of switch over discretization type
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     struct IsHigherOrder
     {
     };
     template <>
-    struct IsHigherOrder<DRT::Element::hex8>
+    struct IsHigherOrder<CORE::FE::CellType::hex8>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::hex20>
+    struct IsHigherOrder<CORE::FE::CellType::hex20>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::hex27>
+    struct IsHigherOrder<CORE::FE::CellType::hex27>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::tet4>
+    struct IsHigherOrder<CORE::FE::CellType::tet4>
     {
       static const bool ishigherorder = false;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::tet10>
+    struct IsHigherOrder<CORE::FE::CellType::tet10>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::wedge6>
+    struct IsHigherOrder<CORE::FE::CellType::wedge6>
     {
       static const bool ishigherorder = false;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::wedge15>
+    struct IsHigherOrder<CORE::FE::CellType::wedge15>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::pyramid5>
+    struct IsHigherOrder<CORE::FE::CellType::pyramid5>
     {
       static const bool ishigherorder = false;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::quad4>
+    struct IsHigherOrder<CORE::FE::CellType::quad4>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::quad8>
+    struct IsHigherOrder<CORE::FE::CellType::quad8>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::quad9>
+    struct IsHigherOrder<CORE::FE::CellType::quad9>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::tri3>
+    struct IsHigherOrder<CORE::FE::CellType::tri3>
     {
       static const bool ishigherorder = false;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::tri6>
+    struct IsHigherOrder<CORE::FE::CellType::tri6>
     {
       static const bool ishigherorder = true;
     };
-    // template<> struct IsHigherOrder<DRT::Element::line2>   {static const bool ishigherorder =
-    // false; }; template<> struct IsHigherOrder<DRT::Element::line3>   {static const bool
-    // ishigherorder = false; }; template<> struct IsHigherOrder<DRT::Element::nurbs2>  {static
-    // const bool ishigherorder = true; }; template<> struct IsHigherOrder<DRT::Element::nurbs3>
-    // {static const bool ishigherorder = true; };
+    // template<> struct IsHigherOrder<CORE::FE::CellType::line2>   {static const bool
+    // ishigherorder = false; }; template<> struct
+    // IsHigherOrder<CORE::FE::CellType::line3>   {static const bool ishigherorder =
+    // false; }; template<> struct IsHigherOrder<CORE::FE::CellType::nurbs2> {static
+    // const bool ishigherorder = true; }; template<> struct
+    // IsHigherOrder<CORE::FE::CellType::nurbs3> {static const bool ishigherorder =
+    // true; };
     template <>
-    struct IsHigherOrder<DRT::Element::nurbs4>
-    {
-      static const bool ishigherorder = true;
-    };
-    template <>
-    struct IsHigherOrder<DRT::Element::nurbs9>
-    {
-      static const bool ishigherorder = true;
-    };
-    template <>
-    struct IsHigherOrder<DRT::Element::nurbs8>
+    struct IsHigherOrder<CORE::FE::CellType::nurbs4>
     {
       static const bool ishigherorder = true;
     };
     template <>
-    struct IsHigherOrder<DRT::Element::nurbs27>
+    struct IsHigherOrder<CORE::FE::CellType::nurbs9>
+    {
+      static const bool ishigherorder = true;
+    };
+    template <>
+    struct IsHigherOrder<CORE::FE::CellType::nurbs8>
+    {
+      static const bool ishigherorder = true;
+    };
+    template <>
+    struct IsHigherOrder<CORE::FE::CellType::nurbs27>
     {
       static const bool ishigherorder = true;
     };
 
 
     //! Template Meta Programming version of switch over discretization type
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     struct IsNurbs
     {
     };
     template <>
-    struct IsNurbs<DRT::Element::hex8>
+    struct IsNurbs<CORE::FE::CellType::hex8>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::hex20>
+    struct IsNurbs<CORE::FE::CellType::hex20>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::hex27>
+    struct IsNurbs<CORE::FE::CellType::hex27>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::tet4>
+    struct IsNurbs<CORE::FE::CellType::tet4>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::tet10>
+    struct IsNurbs<CORE::FE::CellType::tet10>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::wedge6>
+    struct IsNurbs<CORE::FE::CellType::wedge6>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::wedge15>
+    struct IsNurbs<CORE::FE::CellType::wedge15>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::pyramid5>
+    struct IsNurbs<CORE::FE::CellType::pyramid5>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::quad4>
+    struct IsNurbs<CORE::FE::CellType::quad4>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::quad8>
+    struct IsNurbs<CORE::FE::CellType::quad8>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::quad9>
+    struct IsNurbs<CORE::FE::CellType::quad9>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::tri3>
+    struct IsNurbs<CORE::FE::CellType::tri3>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::tri6>
+    struct IsNurbs<CORE::FE::CellType::tri6>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::line2>
+    struct IsNurbs<CORE::FE::CellType::line2>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::line3>
+    struct IsNurbs<CORE::FE::CellType::line3>
     {
       static const bool isnurbs = false;
     };
     template <>
-    struct IsNurbs<DRT::Element::nurbs2>
+    struct IsNurbs<CORE::FE::CellType::nurbs2>
     {
       static const bool isnurbs = true;
     };
     template <>
-    struct IsNurbs<DRT::Element::nurbs3>
+    struct IsNurbs<CORE::FE::CellType::nurbs3>
     {
       static const bool isnurbs = true;
     };
     template <>
-    struct IsNurbs<DRT::Element::nurbs4>
+    struct IsNurbs<CORE::FE::CellType::nurbs4>
     {
       static const bool isnurbs = true;
     };
     template <>
-    struct IsNurbs<DRT::Element::nurbs9>
+    struct IsNurbs<CORE::FE::CellType::nurbs9>
     {
       static const bool isnurbs = true;
     };
     template <>
-    struct IsNurbs<DRT::Element::nurbs8>
+    struct IsNurbs<CORE::FE::CellType::nurbs8>
     {
       static const bool isnurbs = true;
     };
     template <>
-    struct IsNurbs<DRT::Element::nurbs27>
+    struct IsNurbs<CORE::FE::CellType::nurbs27>
     {
       static const bool isnurbs = true;
     };
 
 
-    template <DRT::Element::DiscretizationType DISTYPE>
+    template <CORE::FE::CellType DISTYPE>
     struct DisTypeToGaussRuleForExactSol
     {
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::hex8>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::hex8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::hex20>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::hex20>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::hex27>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::hex27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::tet4>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tet4>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::tet10>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tet10>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::wedge6>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::wedge6>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::pyramid5>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::pyramid5>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs8>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::nurbs8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs27>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::nurbs27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::quad4>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::quad8>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad8>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::quad9>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::tri3>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tri3>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::tri6>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tri6>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs4>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::nurbs4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs9>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::nurbs9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::line2>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::line2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::line3>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::line3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs2>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::nurbs2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs3>
+    struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::nurbs3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
     };
     //! provide parameter m_k for each distype required for certain stabilization parameter
     //! definitions
-    template <DRT::Element::DiscretizationType DISTYPE>
+    template <CORE::FE::CellType DISTYPE>
     inline double MK()
     {
       switch (DISTYPE)
       {
-        case DRT::Element::tet4:
-        case DRT::Element::pyramid5:
-        case DRT::Element::hex8:
-        case DRT::Element::wedge6:
-        case DRT::Element::nurbs8:
+        case CORE::FE::CellType::tet4:
+        case CORE::FE::CellType::pyramid5:
+        case CORE::FE::CellType::hex8:
+        case CORE::FE::CellType::wedge6:
+        case CORE::FE::CellType::nurbs8:
           return 0.333333333333333333333;
           break;
-        case DRT::Element::hex20:
-        case DRT::Element::hex27:
-        case DRT::Element::tet10:
-        case DRT::Element::wedge15:
-        case DRT::Element::nurbs27:
+        case CORE::FE::CellType::hex20:
+        case CORE::FE::CellType::hex27:
+        case CORE::FE::CellType::tet10:
+        case CORE::FE::CellType::wedge15:
+        case CORE::FE::CellType::nurbs27:
           return 0.083333333333333333333;
           break;
           // do the 2D case after the more usual 3D case
-        case DRT::Element::tri3:
-        case DRT::Element::quad4:
-        case DRT::Element::nurbs4:
+        case CORE::FE::CellType::tri3:
+        case CORE::FE::CellType::quad4:
+        case CORE::FE::CellType::nurbs4:
           return 0.333333333333333333333;
           break;
-        case DRT::Element::tri6:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
-        case DRT::Element::nurbs9:
+        case CORE::FE::CellType::tri6:
+        case CORE::FE::CellType::quad8:
+        case CORE::FE::CellType::quad9:
+        case CORE::FE::CellType::nurbs9:
           return 0.083333333333333333333;
           break;
           // finally, do the 1D case
-        case DRT::Element::line2:
-        case DRT::Element::nurbs2:
+        case CORE::FE::CellType::line2:
+        case CORE::FE::CellType::nurbs2:
           return 0.333333333333333333333;
           break;
-        case DRT::Element::line3:
-        case DRT::Element::nurbs3:
+        case CORE::FE::CellType::line3:
+        case CORE::FE::CellType::nurbs3:
           return 0.083333333333333333333;
           break;
 
@@ -630,5 +634,7 @@ namespace DRT
   }  // namespace ELEMENTS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -18,6 +18,8 @@ coupling matrices M and D first.
 
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declaration.
 namespace BEAMINTERACTION
@@ -47,14 +49,9 @@ namespace BEAMINTERACTION
       BeamContactAssemblyManagerInDirect(
           const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
               assembly_contact_elepairs,
-          const Teuchos::RCP<const ::DRT::Discretization>& discret,
-          const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>&
-              beam_contact_params_ptr);
+          const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
+          const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params);
 
-      /**
-       * \brief Destructor.
-       */
-      virtual ~BeamContactAssemblyManagerInDirect(){};
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
@@ -63,7 +60,7 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      void EvaluateForceStiff(Teuchos::RCP<::DRT::Discretization> discret,
+      void EvaluateForceStiff(Teuchos::RCP<BACI::DRT::Discretization> discret,
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat) override;
@@ -85,5 +82,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

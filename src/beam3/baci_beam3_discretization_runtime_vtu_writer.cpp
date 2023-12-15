@@ -16,7 +16,7 @@
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_periodic_boundingbox.H"
 #include "baci_io_control.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_visualization_manager.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
@@ -26,6 +26,7 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -504,7 +505,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
 void BeamDiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
 {
   constexpr bool is_beam = true;
-  IO::AppendElementGhostingInformation(discretization_, visualization_manager_, is_beam);
+  IO::AppendElementGhostingInformation(*discretization_, *visualization_manager_, is_beam);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1588,9 +1589,9 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRefLength()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeVtuWriter::WriteToDisk(
-    const double visualziation_time, const int visualization_step)
+    const double visualization_time, const int visualization_step)
 {
-  visualization_manager_->WriteToDisk(visualziation_time, visualization_step);
+  visualization_manager_->WriteToDisk(visualization_time, visualization_step);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1789,3 +1790,5 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
   for (std::size_t i = 0; i < 6; i++)
     visualization_data.SetPointDataVector(field_names[i], stress_strain_vector[i], 1);
 }
+
+BACI_NAMESPACE_CLOSE

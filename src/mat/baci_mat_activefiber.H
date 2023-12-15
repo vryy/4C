@@ -29,12 +29,14 @@ SIGMAX 3.9E-03 EPSNULL 2.8E-04
 #define BACI_MAT_ACTIVEFIBER_H
 
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
 #define numbgp 10
 #define twice 20
+
+BACI_NAMESPACE_OPEN
 
 
 namespace MAT
@@ -49,8 +51,6 @@ namespace MAT
       /// standard constructor
       ActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ActiveFiber() override = default;
 
       /// @name material parameters
       //@{
@@ -81,14 +81,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ActiveFiberType : public DRT::ParObjectType
+  class ActiveFiberType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "ActiveFiberType"; }
 
     static ActiveFiberType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ActiveFiberType instance_;
@@ -129,7 +129,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -294,5 +294,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ACTIVEFIBER_H

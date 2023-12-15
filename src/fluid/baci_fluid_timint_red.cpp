@@ -19,6 +19,8 @@
 #include "baci_lib_locsys.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
@@ -131,10 +133,6 @@ void FLD::TimIntRedModels::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                    bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntRedModels::~TimIntRedModels() { return; }
 
 /*----------------------------------------------------------------------*
  | evaluate special boundary conditions                        bk 12/13 |
@@ -521,3 +519,5 @@ void FLD::TimIntRedModels::ApplyDirichletToSystem()
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

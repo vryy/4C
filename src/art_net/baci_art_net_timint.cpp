@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linear_solver_method_linalg.H"
 
+BACI_NAMESPACE_OPEN
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -28,12 +30,11 @@
 
 ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-    FILE* errfile, IO::DiscretizationWriter& output)
+    IO::DiscretizationWriter& output)
     : discret_(actdis),
       solver_(Teuchos::null),
       params_(probparams),
       output_(output),
-      errfile_(errfile),
       dtele_(0.0),
       dtsolve_(0.0),
       time_(0.0),
@@ -64,10 +65,6 @@ ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolve
   if (linsolvernumber_ == -1) dserror("Set a valid linear solver for arterial network");
 }
 
-/*----------------------------------------------------------------------*
- | Destructor dtor                            (public) kremheller 03/18 |
- *----------------------------------------------------------------------*/
-ART::TimInt::~TimInt() { return; }
 
 
 /*------------------------------------------------------------------------*
@@ -77,7 +74,7 @@ void ART::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm(), errfile_));
+      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
@@ -234,3 +231,5 @@ void ART::TimInt::PrepareTimeStep()
   step_ += 1;
   time_ += dta_;
 }
+
+BACI_NAMESPACE_CLOSE

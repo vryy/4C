@@ -11,6 +11,7 @@ Here is everything related with writing a dat-file
 /*----------------------------------------------------------------------*/
 #include "baci_pre_exodus_writedat.H"
 
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_lib_conditiondefinition.H"
 #include "baci_pre_exodus_reader.H"
@@ -138,6 +139,8 @@ void EXODUS::RemoveDatSection(const std::string& secname, std::string& headstrin
 void EXODUS::WriteDatConditions(
     const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
+  using namespace BACI;
+
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> condlist =
       DRT::INPUT::ValidConditions();
 
@@ -306,6 +309,8 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
 void EXODUS::WriteDatDesignTopology(
     const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
+  using namespace BACI;
+
   // sort baciconds w.r.t. underlying topology
   std::map<int, EXODUS::cond_def> dpoints;
   std::map<int, EXODUS::cond_def> dlines;
@@ -382,7 +387,7 @@ void EXODUS::WriteDatDesignTopology(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
+std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
 {
   if (e.me == EXODUS::bcns)
   {
@@ -557,7 +562,8 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
 /*----------------------------------------------------------------------*/
 void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte,
     int& startele, std::ostream& datfile,
-    const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elescli, const int eb_id)
+    const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo,
+    const int eb_id)
 {
   auto eles = eb->GetEleConn();
   for (const auto& ele : *eles)
@@ -567,18 +573,18 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLIDH8"
-    dat << " " << DistypeToString(PreShapeToDrt(eb->GetShape()));
+    dat << " " << BACI::CORE::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"
-    if (elescli.size() != 0)
+    if (elecenterlineinfo.size() != 0)
     {
       // quick check wether elements in ele Block have a fiber direction
-      if (elescli.find(eb_id) != elescli.end())
+      if (elecenterlineinfo.find(eb_id) != elecenterlineinfo.end())
       {
         // write local cosy from centerline to each element
         std::vector<std::vector<double>> ecli =
-            (elescli.find(eb_id)->second).find(ele.first)->second;
+            (elecenterlineinfo.find(eb_id)->second).find(ele.first)->second;
         dat << " RAD " << std::fixed << std::setprecision(8) << ecli[0][0] << " " << ecli[0][1]
             << " " << ecli[0][2];
         dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];

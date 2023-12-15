@@ -14,6 +14,8 @@
 #include "baci_lib_conditiondefinition.H"
 #include "baci_linalg_sparseoperator.H"
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
@@ -111,3 +113,5 @@ void INPAR::STI::SetValidConditions(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

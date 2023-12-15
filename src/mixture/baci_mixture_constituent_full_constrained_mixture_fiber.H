@@ -18,6 +18,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class MixtureConstituent;
@@ -31,9 +33,6 @@ namespace MIXTURE
      public:
       explicit MixtureConstituent_FullConstrainedMixtureFiber(
           const Teuchos::RCP<MAT::PAR::Material>& matdata);
-
-      ~MixtureConstituent_FullConstrainedMixtureFiber() override = default;
-
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
@@ -50,7 +49,7 @@ namespace MIXTURE
       const double deposition_stretch_;
       const int initial_deposition_stretch_timefunc_num_;
 
-      const bool adaptive_history_;
+      const HistoryAdaptionStrategy adaptive_history_strategy_;
       const double adaptive_history_tolerance_;
     };
   }  // namespace PAR
@@ -66,7 +65,7 @@ namespace MIXTURE
 
     [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override;
 
-    void PackConstituent(DRT::PackBuffer& data) const override;
+    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
@@ -92,10 +91,10 @@ namespace MIXTURE
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
     [[nodiscard]] CORE::LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
@@ -122,5 +121,7 @@ namespace MIXTURE
     MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_FULL_CONSTRAINED_MIXTURE_FIBER_H

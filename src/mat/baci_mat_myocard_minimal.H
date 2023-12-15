@@ -15,13 +15,15 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_material.H"
 #include "baci_mat_myocard_general.H"
 #include "baci_mat_myocard_tools.H"
 #include "baci_mat_par_parameter.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /// Myocard material according to [1]
@@ -50,50 +52,47 @@ class Myocard_Minimal : public Myocard_General
   /// construct empty material object
   explicit Myocard_Minimal(const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
-  /// destructor
-  virtual ~Myocard_Minimal() { ; }
-
   /// compute reaction coefficient
-  double ReaCoeff(const double phi, const double dt);
+  double ReaCoeff(const double phi, const double dt) override;
 
   /// compute reaction coefficient for multiple points per element
-  double ReaCoeff(const double phi, const double dt, int gp);
+  double ReaCoeff(const double phi, const double dt, int gp) override;
 
   /// compute reaction coefficient for multiple points per element at timestep n
-  double ReaCoeffN(const double phi, const double dt, int gp);
+  double ReaCoeffN(const double phi, const double dt, int gp) override;
 
   ///  returns number of internal state variables of the material
-  int GetNumberOfInternalStateVariables() const;
+  int GetNumberOfInternalStateVariables() const override;
 
   ///  returns current internal state of the material
-  double GetInternalState(const int k) const;
+  double GetInternalState(const int k) const override;
 
   ///  returns current internal state of the material for multiple points per element
-  double GetInternalState(const int k, int gp) const;
+  double GetInternalState(const int k, int gp) const override;
 
   ///  set internal state of the material
-  void SetInternalState(const int k, const double val);
+  void SetInternalState(const int k, const double val) override;
 
   ///  set internal state of the material for multiple points per element
-  void SetInternalState(const int k, const double val, int gp);
+  void SetInternalState(const int k, const double val, int gp) override;
 
   ///  return number of ionic currents
-  int GetNumberOfIonicCurrents() const;
+  int GetNumberOfIonicCurrents() const override;
 
   ///  return ionic currents
-  double GetIonicCurrents(const int k) const;
+  double GetIonicCurrents(const int k) const override;
 
   ///  return ionic currents for multiple points per element
-  double GetIonicCurrents(const int k, int gp) const;
+  double GetIonicCurrents(const int k, int gp) const override;
 
   /// time update for this material
-  void Update(const double phi, const double dt);
+  void Update(const double phi, const double dt) override;
 
   /// resize internal state variables if number of Gauss point changes
-  void ResizeInternalStateVariables(int gp);
+  void ResizeInternalStateVariables(int gp) override;
 
   /// get number of Gauss points
-  int GetNumberOfGP() const;
+  int GetNumberOfGP() const override;
 
 
  private:
@@ -152,5 +151,7 @@ class Myocard_Minimal : public Myocard_General
 
 };  // Myocard_Minimal
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

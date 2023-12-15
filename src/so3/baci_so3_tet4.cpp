@@ -10,24 +10,26 @@
 
 #include "baci_so3_tet4.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_fiber_nodal_fiber_holder.H"
 #include "baci_fiber_node.H"
 #include "baci_fiber_utils.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_prestress_service.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::So_tet4Type DRT::ELEMENTS::So_tet4Type::instance_;
@@ -35,7 +37,7 @@ DRT::ELEMENTS::So_tet4Type DRT::ELEMENTS::So_tet4Type::instance_;
 DRT::ELEMENTS::So_tet4Type& DRT::ELEMENTS::So_tet4Type::Instance() { return instance_; }
 
 //------------------------------------------------------------------------
-DRT::ParObject* DRT::ELEMENTS::So_tet4Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_tet4(-1, -1);
   object->Unpack(data);
@@ -116,13 +118,13 @@ DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+    pstype_ = BACI::UTILS::PRESTRESS::GetType();
+    pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
         DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
 }
 
@@ -139,7 +141,7 @@ DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old)
       pstime_(old.pstime_),
       time_(old.time_)
 {
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 }
 
@@ -157,15 +159,15 @@ DRT::Element* DRT::ELEMENTS::So_tet4::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet4::Shape() const { return tet4; }
+CORE::FE::CellType DRT::ELEMENTS::So_tet4::Shape() const { return CORE::FE::CellType::tet4; }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_tet4::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -189,9 +191,9 @@ void DRT::ELEMENTS::So_tet4::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
-    DRT::ParObject::AddtoPack(data, *prestress_);
+    CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
 }
 
@@ -203,10 +205,9 @@ void DRT::ELEMENTS::So_tet4::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -226,7 +227,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -280,16 +281,6 @@ void DRT::ELEMENTS::So_tet4::Print(std::ostream& os) const
  */
 /*====================================================================*/
 
-/*----------------------------------------------------------------------***
- |  get vector of volumes (length 1) (public)                  maf 04/07|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet4::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
 
 /*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                             maf 04/07|
@@ -297,15 +288,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet4::Volumes()
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet4::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 //-----------------------------------------------------------------------
@@ -318,12 +302,12 @@ std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
   CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOTET4, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
   CORE::DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
@@ -342,15 +326,8 @@ std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet4::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -379,7 +356,7 @@ bool DRT::ELEMENTS::So_tet4::VisData(const std::string& name, std::vector<double
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
 {
-  if (DRT::FIBER::UTILS::HaveNodalFibers<tet4>(Nodes()))
+  if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::tet4>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -394,7 +371,7 @@ void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
     DRT::FIBER::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::tet4>(
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::tet4>(
         Nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);
@@ -407,3 +384,5 @@ void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
   // do not throw an error if key does not exist.
   params.remove("fiberholder", false);
 }
+
+BACI_NAMESPACE_CLOSE

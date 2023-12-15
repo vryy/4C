@@ -13,13 +13,15 @@
 
 #include "baci_contact_aug_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
   {
     namespace LAGRANGE
     {
-      class Interface : public ::CONTACT::AUG::Interface
+      class Interface : public CONTACT::AUG::Interface
       {
        public:
         /** \brief Alternative constructor
@@ -31,15 +33,12 @@ namespace CONTACT
          *                          data container object
          *
          *  \author hiermeier \date 03/17 */
-        Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr);
+        Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& idata_ptr);
 
         /// constructor
         Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
             const int id, const Epetra_Comm& comm, const int dim,
             const Teuchos::ParameterList& icontact, const bool selfcontact);
-
-        /// destructor
-        virtual ~Interface(){};
 
        protected:
         /** \brief Assemble the linearization matrix contributions for the
@@ -48,8 +47,8 @@ namespace CONTACT
          *  This term vanishes in the standard Lagrange formulation.
          *
          *  \author hiermeier \date 03/17 */
-        virtual void AssembleDGGLinMatrix(
-            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
+        void AssembleDGGLinMatrix(
+            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override{};
 
       };  // class Interface
     }     // namespace LAGRANGE
@@ -57,5 +56,7 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_LAGRANGE_INTERFACE_H

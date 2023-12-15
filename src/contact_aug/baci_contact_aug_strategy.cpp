@@ -23,7 +23,6 @@
 #include "baci_inpar_contact.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
@@ -31,10 +30,13 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_matrix_transform.H"
 #include "baci_mortar_utils.H"
+#include "baci_utils_epetra_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <unordered_map>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -86,29 +88,29 @@ CONTACT::AUG::DataContainer::DataContainer()
 void CONTACT::AUG::DataContainer::InitMatrixRowColTransformer()
 {
   MORTAR::MatrixRowColTransformer::plain_block_map_pairs redistributed_row(4);
-  redistributed_row[DRT::UTILS::MatBlockType::displ_displ] = &GSlMaDofRowMapPtr();
-  redistributed_row[DRT::UTILS::MatBlockType::displ_lm] = &GDispDofRowMapPtr();
-  redistributed_row[DRT::UTILS::MatBlockType::lm_displ] = &GLmDofRowMapPtr();
-  redistributed_row[DRT::UTILS::MatBlockType::lm_lm] = &GLmDofRowMapPtr();
+  redistributed_row[CONTACT::MatBlockType::displ_displ] = &GSlMaDofRowMapPtr();
+  redistributed_row[CONTACT::MatBlockType::displ_lm] = &GDispDofRowMapPtr();
+  redistributed_row[CONTACT::MatBlockType::lm_displ] = &GLmDofRowMapPtr();
+  redistributed_row[CONTACT::MatBlockType::lm_lm] = &GLmDofRowMapPtr();
 
   MORTAR::MatrixRowColTransformer::plain_block_map_pairs redistributed_col(4);
-  redistributed_col[DRT::UTILS::MatBlockType::displ_displ] = &GSlMaDofRowMapPtr();
-  redistributed_col[DRT::UTILS::MatBlockType::displ_lm] = &GLmDofRowMapPtr();
-  redistributed_col[DRT::UTILS::MatBlockType::lm_displ] = &GDispDofRowMapPtr();
-  redistributed_col[DRT::UTILS::MatBlockType::lm_lm] = &GLmDofRowMapPtr();
+  redistributed_col[CONTACT::MatBlockType::displ_displ] = &GSlMaDofRowMapPtr();
+  redistributed_col[CONTACT::MatBlockType::displ_lm] = &GLmDofRowMapPtr();
+  redistributed_col[CONTACT::MatBlockType::lm_displ] = &GDispDofRowMapPtr();
+  redistributed_col[CONTACT::MatBlockType::lm_lm] = &GLmDofRowMapPtr();
 
   MORTAR::MatrixRowColTransformer::plain_block_map_pairs unredistributed_row(4);
-  unredistributed_row[DRT::UTILS::MatBlockType::displ_displ] = &PGSlMaDofRowMapPtr();
-  unredistributed_row[DRT::UTILS::MatBlockType::displ_lm] = &ProbDofsPtr();
-  unredistributed_row[DRT::UTILS::MatBlockType::lm_displ] = &PGLmDofRowMapPtr();
-  unredistributed_row[DRT::UTILS::MatBlockType::lm_lm] = &PGLmDofRowMapPtr();
+  unredistributed_row[CONTACT::MatBlockType::displ_displ] = &PGSlMaDofRowMapPtr();
+  unredistributed_row[CONTACT::MatBlockType::displ_lm] = &ProbDofsPtr();
+  unredistributed_row[CONTACT::MatBlockType::lm_displ] = &PGLmDofRowMapPtr();
+  unredistributed_row[CONTACT::MatBlockType::lm_lm] = &PGLmDofRowMapPtr();
 
 
   MORTAR::MatrixRowColTransformer::plain_block_map_pairs unredistributed_col(4);
-  unredistributed_col[DRT::UTILS::MatBlockType::displ_displ] = &PGSlMaDofRowMapPtr();
-  unredistributed_col[DRT::UTILS::MatBlockType::displ_lm] = &PGLmDofRowMapPtr();
-  unredistributed_col[DRT::UTILS::MatBlockType::lm_displ] = &ProbDofsPtr();
-  unredistributed_col[DRT::UTILS::MatBlockType::lm_lm] = &PGLmDofRowMapPtr();
+  unredistributed_col[CONTACT::MatBlockType::displ_displ] = &PGSlMaDofRowMapPtr();
+  unredistributed_col[CONTACT::MatBlockType::displ_lm] = &PGLmDofRowMapPtr();
+  unredistributed_col[CONTACT::MatBlockType::lm_displ] = &ProbDofsPtr();
+  unredistributed_col[CONTACT::MatBlockType::lm_lm] = &PGLmDofRowMapPtr();
 
   mat_row_col_transformer_->Init(
       redistributed_row, redistributed_col, unredistributed_row, unredistributed_col);
@@ -143,8 +145,7 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
     const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
     const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
     int maxdof)
-    : ::CONTACT::CoAbstractStrategy(
-          data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
+    : CONTACT::CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
       augDataPtr_(Teuchos::rcp_dynamic_cast<CONTACT::AUG::DataContainer>(data_ptr, true)),
       augData_(*augDataPtr_)
 {
@@ -507,8 +508,8 @@ void CONTACT::AUG::Strategy::Initialize(enum MORTAR::ActionType actiontype)
         CreateStiffnessState(*gAugInactiveSlaveDofs);
         Data().SetMatrixMapsValid(true);
       }
+      [[fallthrough]];
     }
-    // no break
     case MORTAR::eval_force:
     case MORTAR::eval_static_constraint_rhs:
     {
@@ -1500,7 +1501,7 @@ void CONTACT::AUG::Strategy::WriteOutput(IO::DiscretizationWriter& writer) const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
@@ -1509,7 +1510,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
     {
       vec_ptr = Data().StrContactRhsPtr();
 
@@ -1517,19 +1518,19 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
       {
         double vec_nrm2 = 0.0;
         vec_ptr->Norm2(&vec_nrm2);
-        IO::cout << __FUNCTION__ << " [DRT::UTILS::VecBlockType::displ] = " << vec_nrm2 << IO::endl;
+        IO::cout << __FUNCTION__ << " [CONTACT::VecBlockType::displ] = " << vec_nrm2 << IO::endl;
       }
 
       break;
     }
-    case DRT::UTILS::VecBlockType::constraint:
+    case CONTACT::VecBlockType::constraint:
     {
       vec_ptr = Data().ConstrRhsPtr();
       if (IO::cout.RequestedOutputLevel() >= IO::debug)
       {
         double vec_nrm2 = 0.0;
         vec_ptr->Norm2(&vec_nrm2);
-        IO::cout << __FUNCTION__ << " [DRT::UTILS::VecBlockType::constraint] = " << vec_nrm2
+        IO::cout << __FUNCTION__ << " [CONTACT::VecBlockType::constraint] = " << vec_nrm2
                  << IO::endl;
       }
 
@@ -1537,7 +1538,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
     }
     default:
     {
-      dserror("Unknown DRT::UTILS::VecBlockType!");
+      dserror("Unknown CONTACT::VecBlockType!");
       break;
     }
   }
@@ -1548,7 +1549,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
@@ -1558,7 +1559,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockP
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
     {
       Teuchos::RCP<CORE::LINALG::SparseMatrix>& kdd_ptr = mat_ptr;
       kdd_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
@@ -1569,7 +1570,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockP
 
       break;
     }
-    case DRT::UTILS::MatBlockType::displ_lm:
+    case CONTACT::MatBlockType::displ_lm:
     {
       Teuchos::RCP<CORE::LINALG::SparseMatrix>& kdz_ptr = mat_ptr;
       kdz_ptr = Teuchos::rcp(
@@ -1585,7 +1586,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockP
 
       break;
     }
-    case DRT::UTILS::MatBlockType::lm_displ:
+    case CONTACT::MatBlockType::lm_displ:
     {
       Teuchos::RCP<CORE::LINALG::SparseMatrix>& kzd_ptr = mat_ptr;
       kzd_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(SlDoFRowMap(true), 100, false, true));
@@ -1599,7 +1600,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockP
 
       break;
     }
-    case DRT::UTILS::MatBlockType::lm_lm:
+    case CONTACT::MatBlockType::lm_lm:
     {
       Teuchos::RCP<CORE::LINALG::SparseMatrix>& kzz_ptr = mat_ptr;
       kzz_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(SlDoFRowMap(true), 100, false, true));
@@ -2189,3 +2190,5 @@ void CONTACT::AUG::Strategy::EvaluateReferenceState()
 {
   // do nothing for the augmented strategy
 }
+
+BACI_NAMESPACE_CLOSE

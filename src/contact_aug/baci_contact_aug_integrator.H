@@ -16,6 +16,8 @@
 #include "baci_contact_integrator.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   enum ActionType : int;
@@ -39,37 +41,35 @@ namespace CONTACT
 
      public:
       /// constructor
-      IntegrationWrapper(Teuchos::ParameterList& params, DRT::Element::DiscretizationType slavetype,
-          const Epetra_Comm& comm);
-
-      /// destructor
-      virtual ~IntegrationWrapper(){};
+      IntegrationWrapper(
+          Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
       //! @name 2D augmented Lagrange integration methods
       //! @{
       //! [derived]
-      virtual void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
+      void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
           MORTAR::MortarElement& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! [derived]
-      virtual void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
+      void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
           std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
-          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! @}
 
       //! @name 3D augmented Lagrange integration methods
       //! @{
       //! [derived]
-      virtual void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
-          MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-          const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+      void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+          Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! [derived]
-      virtual void IntegrateDerivEle3D(MORTAR::MortarElement& sele,
+      void IntegrateDerivEle3D(MORTAR::MortarElement& sele,
           std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
-          const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+          const Epetra_Comm& comm,
+          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! @}
 
@@ -90,34 +90,32 @@ namespace CONTACT
     class IntegratorGeneric
     {
      public:
-      static CONTACT::AUG::IntegratorGeneric* Create(int probdim,
-          DRT::Element::DiscretizationType slavetype, DRT::Element::DiscretizationType mastertype,
-          CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-
-     private:
-      static CONTACT::AUG::IntegratorGeneric* Create2D(DRT::Element::DiscretizationType slavetype,
-          DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
+      static CONTACT::AUG::IntegratorGeneric* Create(int probdim, CORE::FE::CellType slavetype,
+          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::CoIntegrator* wrapper);
 
-      template <DRT::Element::DiscretizationType slavetype>
-      static CONTACT::AUG::IntegratorGeneric* Create2D(DRT::Element::DiscretizationType mastertype,
+     private:
+      static CONTACT::AUG::IntegratorGeneric* Create2D(CORE::FE::CellType slavetype,
+          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+          CONTACT::CoIntegrator* wrapper);
+
+      template <CORE::FE::CellType slavetype>
+      static CONTACT::AUG::IntegratorGeneric* Create2D(CORE::FE::CellType mastertype,
           CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
-      template <DRT::Element::DiscretizationType slavetype,
-          DRT::Element::DiscretizationType mastertype>
+      template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
       static CONTACT::AUG::IntegratorGeneric* Create2D(
           CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
-      static CONTACT::AUG::IntegratorGeneric* Create3D(DRT::Element::DiscretizationType slavetype,
-          DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
+      static CONTACT::AUG::IntegratorGeneric* Create3D(CORE::FE::CellType slavetype,
+          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::CoIntegrator* wrapper);
 
-      template <DRT::Element::DiscretizationType slavetype>
-      static CONTACT::AUG::IntegratorGeneric* Create3D(DRT::Element::DiscretizationType mastertype,
+      template <CORE::FE::CellType slavetype>
+      static CONTACT::AUG::IntegratorGeneric* Create3D(CORE::FE::CellType mastertype,
           CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
-      template <DRT::Element::DiscretizationType slavetype,
-          DRT::Element::DiscretizationType mastertype>
+      template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
       static CONTACT::AUG::IntegratorGeneric* Create3D(
           CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
@@ -144,7 +142,7 @@ namespace CONTACT
       IntegratorGeneric(CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator& wrapper)
           : cparams_(&cparams), wrapper_(dynamic_cast<IntegrationWrapper*>(&wrapper)){};
 
-      virtual ~IntegratorGeneric(){};
+      virtual ~IntegratorGeneric() = default;
 
       //! @name segment based integration methods
       //! @{
@@ -195,8 +193,8 @@ namespace CONTACT
     };  //
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype, class IntPolicy>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+        class IntPolicy>
     class Integrator : public IntegratorGeneric, public IntPolicy
     {
       // used for static const declarations
@@ -393,8 +391,8 @@ namespace CONTACT
     };  // class AugmentedIntegrator
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype, class IntPolicy>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+        class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluator
     {
      protected:
@@ -414,7 +412,7 @@ namespace CONTACT
 
       Evaluator(const class_type& source) = delete;
 
-      virtual ~Evaluator(){};
+      virtual ~Evaluator() = default;
 
       virtual Type GetType() const = 0;
 
@@ -438,8 +436,8 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype, class IntPolicy>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+        class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorDeriv1stOnly
         : public Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluator
     {
@@ -454,8 +452,6 @@ namespace CONTACT
       EvaluatorDeriv1stOnly(parent_type& parent) : base_type(parent){};
 
       EvaluatorDeriv1stOnly(const class_type& source) = delete;
-
-      virtual ~EvaluatorDeriv1stOnly(){};
 
      protected:
       typename base_type::Type GetType() const override { return base_type::Type::deriv1st_only; };
@@ -491,8 +487,8 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype, class IntPolicy>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+        class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorFull
         : public Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorDeriv1stOnly
     {
@@ -508,8 +504,6 @@ namespace CONTACT
       EvaluatorFull(parent_type& parent) : base_type(parent){};
 
       EvaluatorFull(const class_type& source) = delete;
-
-      virtual ~EvaluatorFull(){};
 
      private:
       typename base_type::Type GetType() const override { return base_type::Type::full; };
@@ -532,5 +526,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_INTEGRATOR_H

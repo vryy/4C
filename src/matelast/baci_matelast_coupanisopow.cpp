@@ -8,9 +8,11 @@
 
 #include "baci_matelast_coupanisopow.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_par_material.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
+
+BACI_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
@@ -29,7 +31,7 @@ MAT::ELASTIC::CoupAnisoPow::CoupAnisoPow(MAT::ELASTIC::PAR::CoupAnisoPow* params
 {
 }
 
-void MAT::ELASTIC::CoupAnisoPow::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoPow::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
@@ -184,3 +186,4 @@ void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(const double newgamma,
 
   params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
 }
+BACI_NAMESPACE_CLOSE

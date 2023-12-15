@@ -23,13 +23,15 @@ E1_LIN 0 TAU 0
 
 #include "baci_mat_maxwell_0d_acinus_Exponential.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_red_airways_elem_params.h"
 #include "baci_red_airways_elementbase.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -50,7 +52,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_Exponential::CreateMater
 MAT::Maxwell_0d_acinusExponentialType MAT::Maxwell_0d_acinusExponentialType::instance_;
 
 
-DRT::ParObject* MAT::Maxwell_0d_acinusExponentialType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell_0d_acinusExponentialType::Create(const std::vector<char>& data)
 {
   MAT::Maxwell_0d_acinus_Exponential* mxwll_0d_acin = new MAT::Maxwell_0d_acinus_Exponential();
   mxwll_0d_acin->Unpack(data);
@@ -74,9 +76,9 @@ MAT::Maxwell_0d_acinus_Exponential::Maxwell_0d_acinus_Exponential(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Exponential::Pack(DRT::PackBuffer& data) const
+void MAT::Maxwell_0d_acinus_Exponential::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject
@@ -100,11 +102,8 @@ void MAT::Maxwell_0d_acinus_Exponential::Pack(DRT::PackBuffer& data) const
 void MAT::Maxwell_0d_acinus_Exponential::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // Extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  ;
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract e1_0_, e1_lin_, e1_exp_, tau_
   ExtractfromPack(position, data, e1_0_);
@@ -232,3 +231,5 @@ void MAT::Maxwell_0d_acinus_Exponential::Evaluate(CORE::LINALG::SerialDenseVecto
   rhs(0) = -1.0 * (-(kp_n * (p1n - p2n) - term_nonlin) * NumOfAcini / kq_np + (kq_n * qn) / kq_np);
   rhs(1) = 1.0 * (-(kp_n * (p1n - p2n) - term_nonlin) * NumOfAcini / kq_np + (kq_n * qn) / kq_np);
 }
+
+BACI_NAMESPACE_CLOSE

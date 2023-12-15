@@ -16,6 +16,8 @@
 #include "baci_fpsi_monolithic.H"
 #include "baci_inpar_fpsi.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace ADAPTER
 {
@@ -53,7 +55,7 @@ namespace FPSI
 
 
     */
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! @name Apply current field state to system
 
@@ -61,16 +63,19 @@ namespace FPSI
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override
+    {
+      return systemmatrix_;
+    }
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(bool firstcall = false);
+    void SetupRHS(bool firstcall = false) override;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
+    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
-    virtual void RecoverLagrangeMultiplier();
+    void RecoverLagrangeMultiplier() override;
 
 
    protected:
@@ -90,7 +95,7 @@ namespace FPSI
         Teuchos::RCP<const Epetra_Vector>& fx,   ///< fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector>& ax,   ///< ale displacements
         bool firstiter_                          ///< firstiteration?
-    );
+        ) override;
 
    private:
     /// build block vector from field vectors
@@ -230,5 +235,7 @@ namespace FPSI
 
   };  // class monolithic_plain
 }  // namespace FPSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

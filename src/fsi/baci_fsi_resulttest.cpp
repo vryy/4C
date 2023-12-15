@@ -22,10 +22,12 @@
 #include "baci_fsi_mortarmonolithic_structuresplit.H"
 #include "baci_fsi_slidingmonolithic_fluidsplit.H"
 #include "baci_fsi_slidingmonolithic_structuresplit.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 
 #include <string>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -311,3 +313,5 @@ void FSI::FSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

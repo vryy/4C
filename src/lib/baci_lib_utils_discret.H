@@ -18,14 +18,20 @@
 #include "baci_lib_condition.H"
 
 class Epetra_Vector;
+namespace Teuchos
+{
+  class ParameterList;
+
+  template <class T>
+  class RCP;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class MapExtractor;
 }  // namespace CORE::LINALG
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 namespace DRT
 {
   class AssembleStrategy;
@@ -72,7 +78,7 @@ namespace DRT
      *
      *  \author hiermeier \date 12/16 */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrix,
+        std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrices,
         std::vector<Teuchos::RCP<Epetra_Vector>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
 
@@ -226,7 +232,7 @@ namespace DRT
       Dbc(){};
 
       /// destructor
-      virtual ~Dbc(){};
+      virtual ~Dbc() = default;
 
       /** \brief Extract parameters and setup some temporal variables, before the actual
        *  evaluation process can start
@@ -438,5 +444,7 @@ namespace DRT
   }     // namespace UTILS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_DISCRET_H

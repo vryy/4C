@@ -26,7 +26,6 @@
 #include "baci_contact_meshtying_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_contact_meshtying_manager.H"
-#include "baci_discsh3.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_wear.H"
@@ -55,7 +54,8 @@
 #include "baci_structure_timint.H"
 #include "baci_structure_timint_impl.H"
 #include "baci_structure_timint_noxgroup.H"
-#include "baci_surfstress_manager.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -324,17 +324,6 @@ void STR::TimIntImpl::Output(const bool forced_writerestart)
 
   // write Gmsh output
   WriteGmshStrucOutputStep();
-}
-
-/*----------------------------------------------------------------------------*
- | Create Edges of for discrete shell elements       mukherjee (public)  04/15|
- *-----------------------------------------------------------------------------*/
-void STR::TimIntImpl::InitializeEdgeElements()
-{
-  facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-  facediscret_->CreateInternalFacesExtension(true);
-  facediscret_->FillCompleteFaces();
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -809,8 +798,7 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
   std::vector<int> modeids = projector_->Modes();
 
   Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->DofRowMap()));
-  Teuchos::RCP<Epetra_MultiVector> nullspace =
-      ::DRT::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
+  Teuchos::RCP<Epetra_MultiVector> nullspace = DRT::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) dserror("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
@@ -907,17 +895,9 @@ void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt
   discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
   discret_->ClearState();
 
-  if (HaveFaceDiscret())
-  {
-    AssembleEdgeBasedMatandRHS(params, fint, dis, vel);
-  }
-
   // *********** time measurement ***********
   dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
-
-  // that's it
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -971,28 +951,6 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial(const double time, cons
 
   return;
 };
-
-/*----------------------------------------------------------------------*/
-/* evaluate _certain_ surface stresses and stiffness
- * evaluation happens internal-force like */
-void STR::TimIntImpl::ApplyForceStiffSurfstress(const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector>& fint,
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff)
-{
-  // surface stress loads (but on internal force vector side)
-  if (surfstressman_->HaveSurfStress())
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList p;
-    p.set("surfstr_man", surfstressman_);
-    p.set("total time", time);
-    p.set("delta time", dt);
-    surfstressman_->EvaluateSurfStress(p, disn, fint, stiff);
-  }
-  // bye bye
-  return;
-}
-
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces due to constraints */
@@ -2066,12 +2024,6 @@ int STR::TimIntImpl::NewtonLS()
         std::string dashline;
         dashline.assign(64, '-');
         oss << dashline;
-        // print to screen (could be done differently...)
-        if (printerrfile_)
-        {
-          fprintf(errfile_, "%s\n", oss.str().c_str());
-          fflush(errfile_);
-        }
 
         fprintf(stdout, "%s\n", oss.str().c_str());
         fflush(stdout);
@@ -2335,13 +2287,6 @@ void STR::TimIntImpl::LsPrintLineSearchIter(double* mf_value, int iter_ls, doubl
     // finish oss
     oss << std::ends;
 
-    // print to screen (could be done differently...)
-    if (printerrfile_)
-    {
-      fprintf(errfile_, "%s\n", oss.str().c_str());
-      fflush(errfile_);
-    }
-
     fprintf(stdout, "%s\n", oss.str().c_str());
     fflush(stdout);
   }
@@ -2472,13 +2417,6 @@ void STR::TimIntImpl::UpdateStepSpringDashpot()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateStepSurfstress()
-{
-  if (surfstressman_->HaveSurfStress()) surfstressman_->Update();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 bool STR::TimIntImpl::HaveConstraint() { return conman_->HaveConstraintLagr(); }
 
 /*----------------------------------------------------------------------*/
@@ -2589,7 +2527,6 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         if (stcscale_ == INPAR::STR::stc_currsym)
         {
           constr = CORE::LINALG::MLMultiply(*stcmat_, true, *constr, false, false, false, true);
-          ;
         }
       }
       // Call constraint solver to solve system with zeros on diagonal
@@ -3675,16 +3612,6 @@ void STR::TimIntImpl::PrintNewtonIter()
     if (iter_ == 1) PrintNewtonIterHeader(stdout);
     PrintNewtonIterText(stdout);
   }
-
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  // see you
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -4131,15 +4058,6 @@ void STR::TimIntImpl::PrintStep()
   {
     PrintStepText(stdout);
   }
-
-  // print to error file (on every CPU involved)
-  if (printerrfile_)
-  {
-    PrintStepText(errfile_);
-  }
-
-  // fall asleep
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -4731,3 +4649,5 @@ void STR::TimIntImpl::CheckFor3D0DPTCReset(INPAR::STR::ConvergenceStatus& status
     return;
   }
 }
+
+BACI_NAMESPACE_CLOSE

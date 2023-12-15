@@ -13,6 +13,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -69,7 +71,7 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   DoubleParameter("CONVTOL", 1e-13, "Tolerance for convergence check", &lubricationdyn);
 
   // convergence criteria adaptivity
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &lubricationdyn);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,
@@ -117,3 +119,5 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   /// Flag for considering the pure Reynolds Equation
   BoolParameter("PURE_LUB", "No", "the problem is pure lubrication", &lubricationdyn);
 }
+
+BACI_NAMESPACE_CLOSE

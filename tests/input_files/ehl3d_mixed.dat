@@ -81,8 +81,6 @@ LINEAR_SOLVER                   1
 ITEMAX                          10
 ABSTOLRES                       1.0e-8
 CONVTOL                         1.0e-6
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 PENALTY_CAVITATION              1e8
 GAP_OFFSET                      0.0025
 ADD_SQUEEZE_TERM                yes
@@ -111,8 +109,6 @@ ITERNORM                        L2
 NLNSOL                          fullnewton
 PTCDT                           0.1
 LINEAR_SOLVER                   1
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  yes
 MERGE_EHL_BLOCK_MATRIX          yes
 --------------------------------------------------------------------SOLVER 1

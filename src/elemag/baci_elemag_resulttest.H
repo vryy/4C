@@ -16,6 +16,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -39,7 +41,7 @@ namespace ELEMAG
     /*!
       Possible position flags is only "pressure"
      */
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to elemagstical discretization
@@ -52,5 +54,7 @@ namespace ELEMAG
   };  // class ElemagResultTest
 
 }  // namespace ELEMAG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_RESULTTEST_H

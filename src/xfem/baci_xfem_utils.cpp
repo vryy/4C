@@ -20,6 +20,8 @@
 #include "baci_mat_material.H"
 #include "baci_mat_newtonianfluid.H"
 
+BACI_NAMESPACE_OPEN
+
 void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
     std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
 {
@@ -182,3 +184,5 @@ void XFEM::UTILS::ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& e
   // copy local to nvec....
   CORE::LINALG::copy(local_vector.data(), element_vector);
 }
+
+BACI_NAMESPACE_CLOSE

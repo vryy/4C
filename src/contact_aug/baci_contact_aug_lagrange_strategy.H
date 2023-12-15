@@ -13,6 +13,8 @@
 
 #include "baci_contact_aug_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -24,7 +26,7 @@ namespace CONTACT
        *  strategy.
        *
        *  \author hiermeier \date 03/17 */
-      class Strategy : public ::CONTACT::AUG::Strategy
+      class Strategy : public CONTACT::AUG::Strategy
       {
        public:
         /// constructor
@@ -32,9 +34,6 @@ namespace CONTACT
             const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
             const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
-
-        /// destructor
-        virtual ~Strategy(){};
 
         /// return the current solving strategy type
         INPAR::CONTACT::SolvingStrategy Type() const override
@@ -58,5 +57,7 @@ namespace CONTACT
   }       // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_LAGRANGE_STRATEGY_H

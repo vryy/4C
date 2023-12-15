@@ -12,6 +12,8 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -44,15 +46,15 @@ int DRT::ELEMENTS::Vele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
  |  Optimal Gauss rule (public)                              u.may 04/09|
  *----------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Vele3Line::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -60,3 +62,5 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Vele3Line::getOptimalGaussrule(
   }
   return rule;
 }
+
+BACI_NAMESPACE_CLOSE

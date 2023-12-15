@@ -21,6 +21,8 @@
 #include <unordered_map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -135,8 +137,7 @@ namespace CORE::GEO
 
       virtual void Free(void* ptr) {}
 
-      virtual ~MemoryAllocator() {}
-      // Free free requests, etc
+      virtual ~MemoryAllocator() = default;  // Free free requests, etc
       virtual void Finalize(){};
       // Free container
       virtual void Delete(){};
@@ -147,8 +148,8 @@ namespace CORE::GEO
     struct NormalMemoryAllocator : public MemoryAllocator
     {
      public:
-      void* Allocate(size_t size) { return malloc(size); }
-      void Free(void* ptr) { free(ptr); }
+      void* Allocate(size_t size) override { return malloc(size); }
+      void Free(void* ptr) override { free(ptr); }
     };
 
     // Generic memory allocator that consist of small memory pools of constant size
@@ -205,18 +206,18 @@ namespace CORE::GEO
       // unify allocation of all containers in a single memory chunk
       void AllInOneAllocation(const std::unordered_map<size_t, int>& mem_pattern);
 
-      void* Allocate(size_t size);
+      void* Allocate(size_t size) override;
 
-      void Free(void* ptr);
+      void Free(void* ptr) override;
 
       // Free all "queueed to free" elements in non-reusable container, or reset alll constainers to
       // point to the their first elements in non reusable container.
-      virtual void Finalize();
+      void Finalize() override;
 
       // Frees memory of the underlying const memory container
-      void Delete();
+      void Delete() override;
 
-      ~GenericMemoryPool();
+      ~GenericMemoryPool() override;
     };
 
 
@@ -390,5 +391,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

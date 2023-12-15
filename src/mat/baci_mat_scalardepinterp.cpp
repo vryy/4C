@@ -20,9 +20,11 @@ MAT 1 MAT_ScalarDepInterp IDMATZEROSC 2 IDMATUNITSC 3
 
 #include "baci_mat_scalardepinterp.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_par_bundle.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -44,7 +46,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScalarDepInterp::CreateMaterial()
 MAT::ScalarDepInterpType MAT::ScalarDepInterpType::instance_;
 
 
-DRT::ParObject* MAT::ScalarDepInterpType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScalarDepInterpType::Create(const std::vector<char>& data)
 {
   MAT::ScalarDepInterp* ScalarDepInterp = new MAT::ScalarDepInterp();
   ScalarDepInterp->Unpack(data);
@@ -193,9 +195,9 @@ void MAT::ScalarDepInterp::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::Pack(DRT::PackBuffer& data) const
+void MAT::ScalarDepInterp::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -236,10 +238,8 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -277,7 +277,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataelastic);
   if (dataelastic.size() > 0)
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic);  // Unpack is done here
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel == nullptr) dserror("failed to unpack elastic material");
     lambda_zero_mat_ = Teuchos::rcp(matel);
@@ -290,7 +290,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataelastic2);
   if (dataelastic2.size() > 0)
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(dataelastic2);  // Unpack is done here
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic2);  // Unpack is done here
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel == nullptr) dserror("failed to unpack elastic material");
     lambda_unit_mat_ = Teuchos::rcp(matel);
@@ -379,3 +379,5 @@ void MAT::ScalarDepInterp::StrainEnergy(
   psi += (1 - lambda) * psi_lambda_zero + lambda * psi_lambda_unit;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

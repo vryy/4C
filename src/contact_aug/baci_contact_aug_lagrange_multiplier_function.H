@@ -21,6 +21,8 @@ class Epetra_MultiVector;
 class Epetra_Vector;
 class Epetra_Comm;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class Solver;
@@ -43,8 +45,6 @@ namespace CONTACT
       /// constructor
       LagrangeMultiplierFunction();
 
-      /// destructor
-      ~LagrangeMultiplierFunction(){};
 
       void Init(const Strategy* const strategy, CONTACT::AUG::DataContainer& data);
 
@@ -107,5 +107,7 @@ namespace CONTACT
   }     // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H

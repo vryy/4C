@@ -12,8 +12,8 @@
 #define BACI_CREATE_RTDFILES_UTILS_H
 #include "baci_contact_constitutivelaw_constitutivelaw_definition.H"
 #include "baci_inpar_validparameters.H"
+#include "baci_io_materialdefinition.H"
 #include "baci_lib_conditiondefinition.H"
-#include "baci_lib_materialdefinition.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -21,6 +21,8 @@
 #include <map>
 #include <string>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -137,7 +139,7 @@ namespace DRT
       \param[in] indent: Optional indentation of the paragraph (default 0)
 
     */
-    void WriteParagraph(std::ostream& stream, std::string& line, size_t indent = 0);
+    void WriteParagraph(std::ostream& stream, std::string& paragraph, size_t indent = 0);
     /*----------------------------------------------------------------------*/
     /*!
       \brief Write a code block to the restructuredText stream
@@ -156,6 +158,13 @@ namespace DRT
 
     */
     void WriteNote(std::ostream& stream, const std::string& paragraph);
+
+    /*!
+     *  \brief write the information for all available cell types for readthedocs
+     *
+     *  \param[in] stream: stream for the restructuredText file
+     */
+    void WriteCelltypeReference(std::ostream& stream);
 
     /*!
      *  \brief write all known material sections for readthedocs
@@ -213,7 +222,7 @@ namespace DRT
      *  @param[in] coconstlaw Single contact law to be written to that file
      */
     void WriteSingleContactLawReadTheDocs(std::ostream& stream,
-        const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> coconstlaw);
+        const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw);
 
     /*!
      *  write all known contact laws including explanations (if available) to a .rst file for
@@ -235,5 +244,7 @@ namespace DRT
 
 std::ostream& operator<<(std::ostream& os, const DRT::RTD::Table& table);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CREATE_RTDFILES_UTILS_H

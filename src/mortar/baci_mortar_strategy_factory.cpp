@@ -19,6 +19,8 @@
 #include "baci_nurbs_discret_knotvector.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MORTAR::STRATEGY::Factory::Factory()
@@ -434,3 +436,5 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

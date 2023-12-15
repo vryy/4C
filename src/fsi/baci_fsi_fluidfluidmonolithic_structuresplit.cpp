@@ -24,6 +24,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
@@ -110,3 +112,5 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupDBCMapExtractor()
     dserror("Creation of Dirichlet map extractor failed.");
   }
 }
+
+BACI_NAMESPACE_CLOSE

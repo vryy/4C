@@ -18,9 +18,11 @@
 #include "baci_scatra_ele_boundary_interface.H"
 #include "baci_scatra_ele_calc_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
-  template <DRT::Element::DiscretizationType distype, int numdofpernode,
+  template <CORE::FE::CellType distype, int numdofpernode,
       DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
   class RotationallySymmetricPeriodicBC;
 }
@@ -67,31 +69,28 @@ namespace DRT
       \author gjb
       \date 08/08
     */
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalc : public ScaTraBoundaryInterface
     {
      public:
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of boundary(!) space dimensions
       static const int nsd_ = probdim;
-      static const int nsd_ele_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ele_ = CORE::FE::dim<distype>;
 
       // schott
       /*----------------------------------------------------------------------*/
       /*----------------------------------------------------------------------*/
       //! compute largest element diameter for reinitialization pseudo time step size
-      template <DRT::Element::DiscretizationType pdistype, class M1>
+      template <CORE::FE::CellType pdistype, class M1>
       double GetEleDiameter(const M1& xyze)
       {
         double elediam = 0.0;
 
         // number of nodes of this element
-        //  const size_t numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::;
-        const size_t numnode =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+        const size_t numnode = CORE::FE::num_nodes<pdistype>;
 
         // check all possible connections between nodes of an element
         // node 1 to 2
@@ -145,7 +144,7 @@ namespace DRT
        * @param[in] discretization  discretization
        * @param[in] la              location array
        */
-      template <DRT::Element::DiscretizationType parentdistype>
+      template <CORE::FE::CellType parentdistype>
       void ExtractDisplacementValues(DRT::FaceElement* ele,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
@@ -202,20 +201,15 @@ namespace DRT
        *
        * \tparam distype_master This method is templated on the master-side discretization type.
        */
-      template <DRT::Element::DiscretizationType distype_master>
+      template <CORE::FE::CellType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              funct_master,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
           const CORE::LINALG::Matrix<nen_, 1>& test_slave,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              test_master,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& test_master,
           int numscal,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, CORE::LINALG::SerialDenseMatrix& k_ss,
@@ -244,9 +238,9 @@ namespace DRT
        *                        element
        * @return determinant of the deformation gradient of the parent element
        */
-      template <DRT::Element::DiscretizationType parentdistype>
+      template <CORE::FE::CellType parentdistype>
       double CalculateDetFOfParentElement(
-          const DRT::FaceElement* faceele, const double* faceele_xsi);
+          const DRT::FaceElement* faceele, const double* faceele_xi);
 
       /*!
        * @brief Method that calculates the prefactor indicating if interface at current gauss point
@@ -508,8 +502,7 @@ namespace DRT
       \param elevec1 (out)      : vector to be filled by element.
 
       */
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
       void WeakDirichlet(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, Teuchos::RCP<const MAT::Material> material,
           CORE::LINALG::SerialDenseMatrix& elemat_epetra,
@@ -518,8 +511,8 @@ namespace DRT
 
       //! calculate boundary conditions for impl. Characteristic Galerkin time integration, just for
       //! the reinitialization equation
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype,
+          CORE::FE::CellType pdistype>
       void ReinitCharacteristicGalerkinBoundary(DRT::FaceElement* ele,  //!< transport element
           Teuchos::ParameterList& params,                               //!< parameter list
           DRT::Discretization& discretization,                          //!< discretization
@@ -596,5 +589,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

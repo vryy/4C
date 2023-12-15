@@ -10,9 +10,7 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_fiber_node.H"
 #include "baci_lib_element.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -20,13 +18,17 @@
 #include "baci_mat_so3_material.H"
 #include "baci_so3_element_service.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_tet10.H"
 #include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_gauss_point_data_output_manager.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -232,14 +234,14 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         so_tet10_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
             nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -251,12 +253,12 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
             true)
         {
           CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> R;
-          DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(this, mydisp, R);
+          DRT::ELEMENTS::UTILS::CalcR<CORE::FE::CellType::tet10>(this, mydisp, R);
 
           Teuchos::RCP<std::vector<char>> rotdata =
               params.get<Teuchos::RCP<std::vector<char>>>("rotation", Teuchos::null);
 
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, R);
           data.StartPacking();
           AddtoPack(data, R);
@@ -359,9 +361,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
       CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
       CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-      UTILS::EvaluateNodalCoordinates<DRT::Element::tet10, 3>(Nodes(), xrefe);
-      UTILS::EvaluateNodalDisplacements<DRT::Element::tet10, 3>(mydisp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10, 3>(xrefe, xdisp, xcurr);
+      UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet10, 3>(Nodes(), xrefe);
+      UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::tet10, 3>(mydisp, xdisp);
+      UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
       /* =========================================================================*/
       /* ================================================= Loop over Gauss Points */
@@ -384,7 +386,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * gpweights_4gp[gp];
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           CORE::LINALG::Matrix<3, 3> invJdef;
@@ -497,7 +499,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
         // reference geometry (nodal positions)
         CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-        UTILS::EvaluateNodalCoordinates<DRT::Element::tet10, 3>(Nodes(), xrefe);
+        UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet10, 3>(Nodes(), xrefe);
 
         // deformation gradient = identity tensor (geometrically linear case!)
         CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> defgrd(false);
@@ -726,7 +728,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         (*gpstrainmap)[gid] = gpstrain;
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -734,7 +736,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -756,7 +758,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       std::unordered_map<std::string, int> quantities_map{};
 
       // Ask material for the output quantity names and sizes
-      SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
+      SolidMaterial()->RegisterOutputDataNames(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
       StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
@@ -776,7 +778,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
         // Step 1: Collect the data for each Gauss point for the material
         CORE::LINALG::SerialDenseMatrix gp_data(NUMGPT_SOTET10, quantity_size, true);
-        bool data_available = SolidMaterial()->EvaluateVtkOutputData(quantity_name, gp_data);
+        bool data_available = SolidMaterial()->EvaluateOutputData(quantity_name, gp_data);
 
         // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
         // point)
@@ -803,11 +805,10 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
                   *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
                       quantity_name);
 
-              static auto gauss_integration =
-                  CORE::DRT::UTILS::IntegrationPoints3D(CORE::DRT::UTILS::NumGaussPointsToGaussRule<
-                      DRT::Element::DiscretizationType::tet10>(NUMGPT_SOTET10));
-              CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-                  DRT::Element::DiscretizationType::tet10>(
+              static auto gauss_integration = CORE::DRT::UTILS::IntegrationPoints3D(
+                  CORE::DRT::UTILS::NumGaussPointsToGaussRule<CORE::FE::CellType::tet10>(
+                      NUMGPT_SOTET10));
+              CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet10>(
                   *this, gp_data, *global_data, false, gauss_integration);
               DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
               break;
@@ -855,7 +856,14 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return StrParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOTET10)
@@ -887,7 +895,7 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<DRT::Element::tet10, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet10, 3>(Nodes(), xrefe);
 
   /* ================================================= Loop over Gauss Points */
   for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
@@ -925,7 +933,7 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -953,7 +961,7 @@ void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
       so_tet10_11gp_derivs();
 
   CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<DRT::Element::tet10, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet10, 3>(Nodes(), xrefe);
 
   // Initialize for stiffness integration with 4 GPs
   invJ_.resize(NUMGPT_SOTET10);
@@ -967,12 +975,12 @@ void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
     else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 
   // Initialize for mass integration with 10 GPs
 
@@ -1024,9 +1032,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
   CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  UTILS::EvaluateNodalCoordinates<DRT::Element::tet10, 3>(Nodes(), xrefe);
-  UTILS::EvaluateNodalDisplacements<DRT::Element::tet10, 3>(disp, xdisp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10, 3>(xrefe, xdisp, xcurr);
+  UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet10, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::tet10, 3>(disp, xdisp);
+  UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1047,7 +1055,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     N_XYZ.Multiply(invJ_[gp], derivs_4gp[gp]);
     double detJ = detJ_[gp];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1199,7 +1207,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
       params.set("gprefecoord", point);
     }
 
-    UTILS::GetTemperatureForStructuralMaterial<tet10>(shapefcts_4gp[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::tet10>(
+        shapefcts_4gp[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1502,7 +1511,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fcts at 4 Gauss Points                         |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>>
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>>
 DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
 {
   static std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>> shapefcts(NUMGPT_SOTET10);
@@ -1517,7 +1526,7 @@ DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
     const double s = intpoints.qxg[gp][1];
     const double t = intpoints.qxg[gp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(shapefcts[gp], r, s, t, DRT::Element::tet10);
+    CORE::DRT::UTILS::shape_function_3D(shapefcts[gp], r, s, t, CORE::FE::CellType::tet10);
   }
   shapefcts_done = true;
 
@@ -1553,7 +1562,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_derivs(
   const double s = intpoints.qxg[gp][1];
   const double t = intpoints.qxg[gp][2];
 
-  CORE::DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, DRT::Element::tet10);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, CORE::FE::CellType::tet10);
 }
 
 /*----------------------------------------------------------------------*
@@ -1592,7 +1601,7 @@ DRT::ELEMENTS::So_tet10::so_tet10_11gp_shapefcts()
     const double s = intpoints.qxg[gp][1];
     const double t = intpoints.qxg[gp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(shapefcts[gp], r, s, t, DRT::Element::tet10);
+    CORE::DRT::UTILS::shape_function_3D(shapefcts[gp], r, s, t, CORE::FE::CellType::tet10);
   }
   shapefcts_done = true;
 
@@ -1662,7 +1671,7 @@ void DRT::ELEMENTS::So_tet10::DefGradient(const std::vector<double>& disp,
       so_tet10_4gp_derivs();
 
   CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  UTILS::EvaluateNodalDisplacements<DRT::Element::tet10, 3>(disp, xdisp);
+  UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::tet10, 3>(disp, xdisp);
   // update element geometry
 
   for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
@@ -1699,7 +1708,7 @@ void DRT::ELEMENTS::So_tet10::UpdateJacobianMapping(
 
   // get incremental disp
   CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  UTILS::EvaluateNodalDisplacements<DRT::Element::tet10, 3>(disp, xdisp);
+  UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::tet10, 3>(disp, xdisp);
 
   CORE::LINALG::Matrix<3, 3> invJhist;
   CORE::LINALG::Matrix<3, 3> invJ;
@@ -1748,9 +1757,9 @@ void DRT::ELEMENTS::So_tet10::Update_element(std::vector<double>& disp,
     CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
     CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
     CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-    UTILS::EvaluateNodalCoordinates<DRT::Element::tet10, 3>(Nodes(), xrefe);
-    UTILS::EvaluateNodalDisplacements<DRT::Element::tet10, 3>(disp, xdisp);
-    UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10, 3>(xrefe, xdisp, xcurr);
+    UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet10, 3>(Nodes(), xrefe);
+    UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::tet10, 3>(disp, xdisp);
+    UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
@@ -1767,7 +1776,7 @@ void DRT::ELEMENTS::So_tet10::Update_element(std::vector<double>& disp,
       CORE::LINALG::Matrix<3, 10> derivs(false);
       so_tet10_derivs<CORE::DRT::UTILS::GaussRule3D::tet_4point>(derivs, gp);
 
-      UTILS::ComputeDeformationGradient<DRT::Element::tet10>(
+      UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet10>(
           defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
 
 
@@ -1782,3 +1791,5 @@ void DRT::ELEMENTS::So_tet10::Update_element(std::vector<double>& disp,
   // Update of history for materials
   SolidMaterial()->Update();
 }
+
+BACI_NAMESPACE_CLOSE

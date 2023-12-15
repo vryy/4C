@@ -15,6 +15,8 @@
 #include "baci_porofluidmultiphase_ele_calc_utils.H"
 #include "baci_porofluidmultiphase_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -46,7 +48,7 @@ namespace DRT
 
     \author vuong
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class PoroFluidMultiPhaseEleCalc : public PoroFluidMultiPhaseEleInterface
     {
      protected:
@@ -56,9 +58,6 @@ namespace DRT
       PoroFluidMultiPhaseEleCalc(const int numdofpernode, const std::string& disname);
 
      public:
-      /// virtual destructor
-      virtual ~PoroFluidMultiPhaseEleCalc(){};
-
       //! Singleton access method
       static PoroFluidMultiPhaseEleCalc<distype>* Instance(
           const int numdofpernode, const std::string& disname);
@@ -68,10 +67,10 @@ namespace DRT
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       //! number of components necessary to store second derivatives
       // 1 component  for nsd=1:  (N,xx)
@@ -86,10 +85,10 @@ namespace DRT
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec) override;
 
      protected:
       /*========================================================================*/
@@ -279,5 +278,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_ELE_CALC_H

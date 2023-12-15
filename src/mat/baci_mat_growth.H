@@ -14,6 +14,8 @@ growth laws.
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------*/
 /* forward declarations */
 
@@ -36,8 +38,6 @@ namespace MAT
       /// standard constructor
       Growth(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Growth() override = default;
 
       /// @name material parameters
       //@{
@@ -91,22 +91,22 @@ namespace MAT
     /*!
       \brief Return unique ParObject id
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
     */
     int UniqueParObjectId() const override = 0;
 
     /*!
       \brief Pack this class so it can be communicated
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
@@ -244,7 +244,7 @@ namespace MAT
     MAT::PAR::Growth* Parameter() const override { return params_; }
 
     /// access to the elastic material
-    const Teuchos::RCP<MAT::So3Material> Matelastic() const { return matelastic_; }
+    Teuchos::RCP<MAT::So3Material> Matelastic() const { return matelastic_; }
 
     // read access to thetaold_
     Teuchos::RCP<const std::vector<double>> ThetaOld() const { return thetaold_; }
@@ -286,19 +286,19 @@ namespace MAT
   /*! \class GrowthVolumetricType
        \brief ParObjectType instance
 
-       \sa DRT::ParObjectType
+       \sa CORE::COMM::ParObjectType
 
     \author kehl
     \date 6/2015
   */
-  class GrowthVolumetricType : public DRT::ParObjectType
+  class GrowthVolumetricType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "GrowthVolumetricType"; }
 
     static GrowthVolumetricType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static GrowthVolumetricType instance_;
@@ -333,7 +333,7 @@ namespace MAT
     /*!
       \brief Return unique ParObject id
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
     */
     int UniqueParObjectId() const override
     {
@@ -343,15 +343,15 @@ namespace MAT
     /*!
       \brief Pack this class so it can be communicated
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
@@ -510,5 +510,7 @@ namespace MAT
   };  // class GrowthVolumetric
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_GROWTH_H

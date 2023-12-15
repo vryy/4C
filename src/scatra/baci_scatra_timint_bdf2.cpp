@@ -19,6 +19,8 @@
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -262,17 +264,17 @@ void SCATRA::TimIntBDF2::ComputeTimeDerivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::Update(const int num)
+void SCATRA::TimIntBDF2::Update()
 {
   // call base class routine
-  ScaTraTimIntImpl::Update(num);
+  ScaTraTimIntImpl::Update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (DoOutput() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
+    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
   }
 
   // solution of this step becomes most recent solution of the last step
@@ -285,10 +287,10 @@ void SCATRA::TimIntBDF2::Update(const int num)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::OutputRestart() const
+void SCATRA::TimIntBDF2::WriteRestart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::OutputRestart();
+  ScaTraTimIntImpl::WriteRestart();
 
   // additional state vectors that are needed for BDF2 restart
   output_->WriteVector("phin", phin_);
@@ -325,3 +327,5 @@ void SCATRA::TimIntBDF2::ReadRestart(const int step, Teuchos::RCP<IO::InputContr
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     AVM3Preparation();
 }
+
+BACI_NAMESPACE_CLOSE

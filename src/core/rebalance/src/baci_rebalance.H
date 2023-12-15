@@ -11,11 +11,15 @@
 #ifndef BACI_REBALANCE_H
 #define BACI_REBALANCE_H
 
+#include "baci_discretization_geometric_search_params.H"
+
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -97,7 +101,7 @@ namespace CORE::REBALANCE
   @return Node and edge weights to be used for repartitioning
   */
   std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> BuildWeights(
-      const ::DRT::Discretization& dis);
+      const BACI::DRT::Discretization& dis);
 
   /*!
   \brief Build node graph of a given  discretization
@@ -110,8 +114,26 @@ namespace CORE::REBALANCE
   @return Uncompleted node graph of input discretization
   */
   Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
-      Teuchos::RCP<::DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
+      Teuchos::RCP<BACI::DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
+
+  /*!
+  \brief Build monolithic node graph of a given discretization
+
+  The monolithic graph is build by using a global collision search on the reference configuration,
+  to obtain information about close elements. Based on this information, additional edges are
+  build into the graph.
+
+  \pre Discretization has to be FillComplete()!
+
+  @param[in] dis Discretization whose monolithic node graph will be build
+
+  @return Completed monolithic node graph of input discretization
+  */
+  Teuchos::RCP<const Epetra_CrsGraph> BuildMonolithicNodeGraph(const BACI::DRT::Discretization& dis,
+      const CORE::GEOMETRICSEARCH::GeometricSearchParams& params);
 
 }  // namespace CORE::REBALANCE
+
+BACI_NAMESPACE_CLOSE
 
 #endif

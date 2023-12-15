@@ -10,7 +10,11 @@
 /*----------------------------------------------------------------------*/
 #include "baci_fluid_turbulence_statistics_bfda.H"
 
+#include "baci_comm_exporter.H"
+
 #include <fstream>
+
+BACI_NAMESPACE_OPEN
 
 
 // #define COMBINE_SAMPLES
@@ -110,23 +114,23 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   std::vector<char> rblock;
 
   // create an exporter for point to point communication
-  DRT::Exporter exporter(discret_->Comm());
+  CORE::COMM::Exporter exporter(discret_->Comm());
 
   // first, communicate coordinates in x1-direction
   for (int np = 0; np < numprocs; ++np)
   {
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
 
     for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
          zline != zavcoords.end(); ++zline)
     {
-      DRT::ParObject::AddtoPack(data, *zline);
+      CORE::COMM::ParObject::AddtoPack(data, *zline);
     }
     data.StartPacking();
     for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
          zline != zavcoords.end(); ++zline)
     {
-      DRT::ParObject::AddtoPack(data, *zline);
+      CORE::COMM::ParObject::AddtoPack(data, *zline);
     }
     std::swap(sblock, data());
 
@@ -169,7 +173,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
       while (index < rblock.size())
       {
         double onecoord;
-        DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+        CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
         zavcoords.insert(onecoord);
       }
     }
@@ -278,23 +282,23 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    DRT::Exporter exporter(discret_->Comm());
+    CORE::COMM::Exporter exporter(discret_->Comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
            zline != ravcoords.end(); ++zline)
       {
-        DRT::ParObject::AddtoPack(data, *zline);
+        CORE::COMM::ParObject::AddtoPack(data, *zline);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
            zline != ravcoords.end(); ++zline)
       {
-        DRT::ParObject::AddtoPack(data, *zline);
+        CORE::COMM::ParObject::AddtoPack(data, *zline);
       }
       std::swap(sblock, data());
 
@@ -339,7 +343,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
         while (index < rblock.size())
         {
           double onecoord;
-          DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
           ravcoords.insert(onecoord);
         }
       }
@@ -432,14 +436,6 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   return;
 }  // TurbulenceStatisticsBfda::TurbulenceStatisticsBfda
 
-
-/*----------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsBfda::~TurbulenceStatisticsBfda()
-{
-  return;
-}  // TurbulenceStatisticsBfda::~TurbulenceStatisticsBfda()
 
 
 void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
@@ -688,3 +684,5 @@ void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
   }
   return;
 }  // TurbulenceStatisticsBfda::DumpStatistics
+
+BACI_NAMESPACE_CLOSE

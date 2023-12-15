@@ -12,14 +12,17 @@
 
 #include "baci_beam3_base.H"
 #include "baci_bele_bele3.H"
+#include "baci_comm_exporter.H"
 #include "baci_fluid_ele.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_rebalance_utils.H"
 #include "baci_rigidsphere.H"
 #include "baci_scatra_ele.H"
 #include "baci_so3_base.H"
 #include "baci_solid_ele.H"
+
+BACI_NAMESPACE_OPEN
+
 namespace BINSTRATEGY
 {
   namespace UTILS
@@ -115,7 +118,7 @@ namespace BINSTRATEGY
         std::map<int, std::vector<DRT::Element*>> const& toranktosendeles)
     {
       // build exporter
-      DRT::Exporter exporter(discret->Comm());
+      CORE::COMM::Exporter exporter(discret->Comm());
       int const numproc = discret->Comm().NumProc();
 
       // -----------------------------------------------------------------------
@@ -130,7 +133,7 @@ namespace BINSTRATEGY
         std::vector<DRT::Element*>::const_iterator iter;
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           (*iter)->Pack(data);
           data.StartPacking();
           (*iter)->Pack(data);
@@ -178,9 +181,10 @@ namespace BINSTRATEGY
           while (index < rdata.size())
           {
             std::vector<char> data;
-            DRT::ParObject::ExtractfromPack(index, rdata, data);
+            CORE::COMM::ParObject::ExtractfromPack(index, rdata, data);
             // this Teuchos::rcp holds the memory of the node
-            Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+            Teuchos::RCP<CORE::COMM::ParObject> object =
+                Teuchos::rcp(CORE::COMM::Factory(data), true);
             Teuchos::RCP<DRT::Element> element = Teuchos::rcp_dynamic_cast<DRT::Element>(object);
             if (element == Teuchos::null) dserror("Received object is not a element");
 
@@ -215,7 +219,7 @@ namespace BINSTRATEGY
         std::map<int, std::set<int>>& bintorowelemap)
     {
       // build exporter
-      DRT::Exporter exporter(discret->Comm());
+      CORE::COMM::Exporter exporter(discret->Comm());
       int const numproc = discret->Comm().NumProc();
 
       // -----------------------------------------------------------------------
@@ -230,10 +234,10 @@ namespace BINSTRATEGY
         std::vector<std::pair<int, std::vector<int>>>::const_iterator iter;
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
-          DRT::PackBuffer data;
-          DRT::ParObject::AddtoPack(data, *iter);
+          CORE::COMM::PackBuffer data;
+          CORE::COMM::ParObject::AddtoPack(data, *iter);
           data.StartPacking();
-          DRT::ParObject::AddtoPack(data, *iter);
+          CORE::COMM::ParObject::AddtoPack(data, *iter);
           sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
         }
         targetprocs[p->first] = 1;
@@ -278,7 +282,7 @@ namespace BINSTRATEGY
           while (index < rdata.size())
           {
             std::pair<int, std::vector<int>> pair;
-            DRT::ParObject::ExtractfromPack(index, rdata, pair);
+            CORE::COMM::ParObject::ExtractfromPack(index, rdata, pair);
             std::vector<int>::const_iterator j;
             for (j = pair.second.begin(); j != pair.second.end(); ++j)
               bintorowelemap[*j].insert(pair.first);
@@ -344,3 +348,5 @@ namespace BINSTRATEGY
 
   }  // namespace UTILS
 }  // namespace BINSTRATEGY
+
+BACI_NAMESPACE_CLOSE

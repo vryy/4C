@@ -5,9 +5,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_pyramid5fbar.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -47,3 +49,5 @@ bool DRT::ELEMENTS::So_pyramid5fbar::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

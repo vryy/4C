@@ -17,15 +17,18 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_global_legacy_module.H"
 #include "baci_io_control.H"  //for writing to the error file
+#include "baci_io_inputreader.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_inputreader.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_pre_exodus_soshextrusion.H"  //just temporarly for gmsh-plot
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
 {
+  using namespace BACI;
+
   // read and check the provided header file
   // std::cout << "checking BACI input file       --> "<<datfile<< std::endl;
 
@@ -52,7 +55,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
 
   std::cout << "...";
   {
-    DRT::UTILS::FunctionManager function_manager;
+    CORE::UTILS::FunctionManager function_manager;
     BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
     function_manager.ReadInput(reader);
   }
@@ -89,7 +92,7 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
   for (i_eb = myebs.begin(); i_eb != myebs.end(); ++i_eb)
   {
     Teuchos::RCP<ElementBlock> eb = i_eb->second;
-    const DRT::Element::DiscretizationType distype = PreShapeToDrt(eb->GetShape());
+    const BACI::CORE::FE::CellType distype = PreShapeToDrt(eb->GetShape());
     // check and rewind if necessary
     ValidateElementJacobian(mymesh, distype, eb);
     // full check at all gausspoints
@@ -104,40 +107,42 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateElementJacobian(
-    Mesh& mymesh, const DRT::Element::DiscretizationType distype, Teuchos::RCP<ElementBlock> eb)
+    Mesh& mymesh, const BACI::CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
+  using namespace BACI;
+
   // use one point gauss rule to calculate jacobian at element center
   CORE::DRT::UTILS::GaussRule3D integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex20:
       integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::hex_1point;
       break;
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       integrationrule_1point =
           CORE::DRT::UTILS::GaussRule3D::hex_27point;  // one point is not enough for hex27!!
       break;
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
       integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::tet_1point;
       break;
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
       integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::wedge_1point;
       break;
-    case DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::pyramid_1point;
       break;
     // do nothing for 2D, 1D and 0D elements
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-    case DRT::Element::line2:
-    case DRT::Element::line3:
-    case DRT::Element::point1:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::point1:
       return;
     default:
       dserror("Unknown element type, validation failed!");
@@ -166,10 +171,6 @@ void EXODUS::ValidateElementJacobian(
         if (rewcount == 0)
         {
           i_ele->second = RewindEle(i_ele->second, distype);
-          // write info to error file
-          FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
-          fprintf(errfile, "GAUSS POINT %d: REWINDED ELEMENT %d\n", igp, i_ele->first);
-          fflush(errfile);
           numrewindedeles++;
         }
         // double check
@@ -189,42 +190,44 @@ void EXODUS::ValidateElementJacobian(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int EXODUS::ValidateElementJacobian_fullgp(
-    Mesh& mymesh, const DRT::Element::DiscretizationType distype, Teuchos::RCP<ElementBlock> eb)
+    Mesh& mymesh, const BACI::CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
+  using namespace BACI;
+
   CORE::DRT::UTILS::GaussRule3D integrationrule = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
-    case DRT::Element::hex20:
+    case CORE::FE::CellType::hex20:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::tet_10point;
       break;
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
       break;
-    case DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
       break;
     // do nothing for 2D, 1D and 0D elements
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-    case DRT::Element::line2:
-    case DRT::Element::line3:
-    case DRT::Element::point1:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::point1:
       return 0;
     default:
       dserror("Unknown element type, validation failed!");
@@ -259,8 +262,10 @@ int EXODUS::ValidateElementJacobian_fullgp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const Mesh& mymesh,
-    const CORE::LINALG::SerialDenseMatrix& deriv)
+    const BACI::CORE::LINALG::SerialDenseMatrix& deriv)
 {
+  using namespace BACI;
+
   const int iel = deriv.numCols();
   const int NSD = deriv.numRows();
   CORE::LINALG::SerialDenseMatrix xyze(deriv.numRows(), iel);
@@ -284,11 +289,6 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
 
     if (det < 0.0)
     {
-      // write info to the error log file
-      FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
-      fprintf(errfile, "NEGATIVE JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f -> REWIND\n", eleid,
-          det);
-      fflush(errfile);
       return false;
     }
   }
@@ -300,10 +300,12 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
 int EXODUS::EleSaneSign(
     const std::vector<int>& nodes, const std::map<int, std::vector<double>>& nodecoords)
 {
+  using namespace BACI;
+
   const int iel = nodes.size();
   // to be even stricter we test the Jacobian at every Node, not just at the gausspoints
   CORE::LINALG::SerialDenseMatrix local_nodecoords(iel, 3);
-  DRT::Element::DiscretizationType distype;
+  CORE::FE::CellType distype;
   switch (iel)
   {
     case 8:  // hex8
@@ -331,7 +333,7 @@ int EXODUS::EleSaneSign(
       local_nodecoords(7, 0) = -1.;
       local_nodecoords(7, 1) = 1.;
       local_nodecoords(7, 2) = 1.;
-      distype = DRT::Element::hex8;
+      distype = CORE::FE::CellType::hex8;
       break;
     case 6:  // wedge6
       local_nodecoords(0, 0) = 0.;
@@ -352,7 +354,7 @@ int EXODUS::EleSaneSign(
       local_nodecoords(5, 0) = 0.;
       local_nodecoords(5, 1) = 1.;
       local_nodecoords(5, 2) = 1.;
-      distype = DRT::Element::wedge6;
+      distype = CORE::FE::CellType::wedge6;
       break;
     default:
       dserror("No Element Sanity Check for this distype");
@@ -406,13 +408,15 @@ int EXODUS::EleSaneSign(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<int> EXODUS::RewindEle(
-    std::vector<int> old_nodeids, const DRT::Element::DiscretizationType distype)
+    std::vector<int> old_nodeids, const BACI::CORE::FE::CellType distype)
 {
+  using namespace BACI;
+
   std::vector<int> new_nodeids(old_nodeids.size());
   // rewinding of nodes to arrive at mathematically positive element
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
     {
       new_nodeids[0] = old_nodeids[0];
       new_nodeids[1] = old_nodeids[2];
@@ -420,7 +424,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[3] = old_nodeids[3];
       break;
     }
-    case DRT::Element::tet10:
+    case CORE::FE::CellType::tet10:
     {
       new_nodeids[0] = old_nodeids[0];
       new_nodeids[1] = old_nodeids[2];
@@ -434,7 +438,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[9] = old_nodeids[9];
       break;
     }
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
       new_nodeids[0] = old_nodeids[4];
       new_nodeids[1] = old_nodeids[5];
@@ -446,7 +450,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[7] = old_nodeids[3];
       break;
     }
-    case DRT::Element::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
       new_nodeids[0] = old_nodeids[3];
       new_nodeids[1] = old_nodeids[4];
@@ -456,7 +460,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[5] = old_nodeids[2];
       break;
     }
-    case DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       new_nodeids[1] = old_nodeids[3];
       new_nodeids[3] = old_nodeids[1];
@@ -466,7 +470,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[4] = old_nodeids[4];
       break;
     }
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
     {
       // nodes 1 - 20 can stay the same (no rewinding for hex20)
       for (int i = 0; i < 20; i++)

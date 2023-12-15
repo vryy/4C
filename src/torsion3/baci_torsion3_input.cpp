@@ -8,8 +8,10 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_torsion3.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -38,3 +40,5 @@ bool DRT::ELEMENTS::Torsion3::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

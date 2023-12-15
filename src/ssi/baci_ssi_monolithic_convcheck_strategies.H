@@ -20,6 +20,8 @@ derived from an abstract, purely virtual interface class.
 
 #include "baci_ssi_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SSI
 {
   enum class L2norm
@@ -47,6 +49,11 @@ namespace SSI
   class SSIMono::ConvCheckStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ConvCheckStrategyBase() = default;
+
     ConvCheckStrategyBase(const Teuchos::ParameterList& global_time_parameters);
 
     //! Check, if Newton-Raphson has converged and print residuals and increments to screen
@@ -202,4 +209,6 @@ namespace SSI
         const bool exit, const std::map<L2norm, double>& norms) const override;
   };
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSI_MONOLITHIC_CONVCHECK_STRATEGIES_H

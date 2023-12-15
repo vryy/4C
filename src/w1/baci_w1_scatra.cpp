@@ -10,14 +10,16 @@
 
 #include "baci_w1_scatra.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Wall1ScatraType DRT::ELEMENTS::Wall1ScatraType::instance_;
 
 DRT::ELEMENTS::Wall1ScatraType& DRT::ELEMENTS::Wall1ScatraType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Wall1ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Wall1ScatraType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_Scatra* object = new DRT::ELEMENTS::Wall1_Scatra(-1, -1);
   object->Unpack(data);
@@ -91,9 +93,9 @@ DRT::Element* DRT::ELEMENTS::Wall1_Scatra::Clone() const
  |  Pack data                                                  (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1_Scatra::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1_Scatra::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -116,10 +118,9 @@ void DRT::ELEMENTS::Wall1_Scatra::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Wall1_Scatra::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract scalar transport impltype
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
 
@@ -173,3 +174,5 @@ bool DRT::ELEMENTS::Wall1_Scatra::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

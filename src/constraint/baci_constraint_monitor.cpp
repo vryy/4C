@@ -14,6 +14,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
@@ -28,7 +30,6 @@ UTILS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr, const std::stri
     montype_ = GetMoniType(conditionname);
     for (unsigned int i = 0; i < moncond_.size(); i++)
     {
-      // moncond_[i]->Print(std::cout);
       int condID = (*(moncond_[i]->Get<std::vector<int>>("ConditionID")))[0];
       if (condID > maxID)
       {
@@ -162,3 +163,5 @@ void UTILS::Monitor::SetState(const std::string& state,  ///< name of state to s
 {
   actdisc_->SetState(state, V);
 }
+
+BACI_NAMESPACE_CLOSE

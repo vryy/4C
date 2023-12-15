@@ -12,6 +12,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -31,3 +33,5 @@ void ADAPTER::AdapterScatraWrapper::EvaluateAdditionalSolutionDependingModels(
   // do nothing so far
   return;
 }
+
+BACI_NAMESPACE_CLOSE

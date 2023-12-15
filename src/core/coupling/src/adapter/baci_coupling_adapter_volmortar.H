@@ -18,7 +18,10 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/13 |
@@ -57,17 +60,18 @@ namespace CORE::ADAPTER
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void Init(Teuchos::RCP<::DRT::Discretization> dis1, Teuchos::RCP<::DRT::Discretization> dis2,
-        std::vector<int>* coupleddof12 = nullptr, std::vector<int>* coupleddof21 = nullptr,
-        std::pair<int, int>* dofsets12 = nullptr, std::pair<int, int>* dofsets21 = nullptr,
+    void Init(int spatial_dimension, Teuchos::RCP<BACI::DRT::Discretization> dis1,
+        Teuchos::RCP<BACI::DRT::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
+        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
+        std::pair<int, int>* dofsets21 = nullptr,
         Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
         bool createauxdofs = true);
 
     /*!
-    \brief Setup this class
+    \brief Setup this class based on the @p params.
 
     */
-    void Setup();
+    void Setup(const Teuchos::ParameterList& params);
 
     /*!
     \brief Redistribute discretizations to meet needs of volmortar coupling
@@ -111,8 +115,8 @@ namespace CORE::ADAPTER
     //@}
 
     //! assign materials
-    void AssignMaterials(Teuchos::RCP<::DRT::Discretization> dis1,
-        Teuchos::RCP<::DRT::Discretization> dis2,
+    void AssignMaterials(Teuchos::RCP<BACI::DRT::Discretization> dis1,
+        Teuchos::RCP<BACI::DRT::Discretization> dis2,
         Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
 
@@ -122,50 +126,52 @@ namespace CORE::ADAPTER
     /// idea is the same for all of them.
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const
+    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const override
     {
       return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_Vector>(mv));
     }
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const override
     {
       return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_Vector>(sv));
     }
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<Epetra_MultiVector> mv) const
+    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+        Teuchos::RCP<Epetra_MultiVector> mv) const override
     {
       return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_MultiVector>(mv));
     }
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<Epetra_MultiVector> sv) const
+    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+        Teuchos::RCP<Epetra_MultiVector> sv) const override
     {
       return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_MultiVector>(sv));
     }
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const;
+    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const override;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const;
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const override;
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
-        Teuchos::RCP<const Epetra_MultiVector> mv) const;
+    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+        Teuchos::RCP<const Epetra_MultiVector> mv) const override;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
-        Teuchos::RCP<const Epetra_MultiVector> sv) const;
+    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+        Teuchos::RCP<const Epetra_MultiVector> sv) const override;
 
     /// transfer a dof vector from master to slave
-    virtual void MasterToSlave(
-        Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const;
+    void MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv,
+        Teuchos::RCP<Epetra_MultiVector> sv) const override;
 
     /// transfer a dof vector from slave to master
-    virtual void SlaveToMaster(
-        Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const;
+    void SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv,
+        Teuchos::RCP<Epetra_MultiVector> mv) const override;
 
     //@}
 
@@ -173,10 +179,10 @@ namespace CORE::ADAPTER
     //@{
 
     /// the interface dof map of the master side
-    virtual Teuchos::RCP<const Epetra_Map> MasterDofMap() const;
+    Teuchos::RCP<const Epetra_Map> MasterDofMap() const override;
 
     /// the interface dof map of the slave side
-    virtual Teuchos::RCP<const Epetra_Map> SlaveDofMap() const;
+    Teuchos::RCP<const Epetra_Map> SlaveDofMap() const override;
 
     //@}
 
@@ -185,8 +191,8 @@ namespace CORE::ADAPTER
     \brief Create auxiliary dofsets for multiphysics if necessary
 
     */
-    void CreateAuxDofsets(Teuchos::RCP<::DRT::Discretization> dis1,
-        Teuchos::RCP<::DRT::Discretization> dis2, std::vector<int>* coupleddof12,
+    void CreateAuxDofsets(Teuchos::RCP<BACI::DRT::Discretization> dis1,
+        Teuchos::RCP<BACI::DRT::Discretization> dis2, std::vector<int>* coupleddof12,
         std::vector<int>* coupleddof21);
 
     /// check setup call
@@ -219,15 +225,19 @@ namespace CORE::ADAPTER
     Teuchos::RCP<CORE::LINALG::SparseMatrix>
         P21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
-    Teuchos::RCP<::DRT::Discretization> masterdis_;
-    Teuchos::RCP<::DRT::Discretization> slavedis_;
+    Teuchos::RCP<BACI::DRT::Discretization> masterdis_;
+    Teuchos::RCP<BACI::DRT::Discretization> slavedis_;
 
     std::vector<int>* coupleddof12_;
     std::vector<int>* coupleddof21_;
     std::pair<int, int>* dofsets12_;
     std::pair<int, int>* dofsets21_;
     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
+
+    int spatial_dimension_{};
   };
 }  // namespace CORE::ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // COUPLING_ADAPTER_VOLMORTAR_H

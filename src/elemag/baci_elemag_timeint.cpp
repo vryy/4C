@@ -26,6 +26,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
@@ -62,10 +64,6 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
 
 }  // ElemagTimeInt
 
-/*----------------------------------------------------------------------*
- |  Desctructor (public)                               gravemeier 06/17 |
- *----------------------------------------------------------------------*/
-ELEMAG::ElemagTimeInt::~ElemagTimeInt() {}
 
 
 /*----------------------------------------------------------------------*
@@ -1130,3 +1128,5 @@ Teuchos::RCP<DRT::ResultTest> ELEMAG::ElemagTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new ElemagResultTest(*this));
 }  // CreateFieldTest
+
+BACI_NAMESPACE_CLOSE

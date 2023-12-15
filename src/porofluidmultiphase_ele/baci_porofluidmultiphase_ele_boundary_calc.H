@@ -16,6 +16,8 @@
 #include "baci_porofluidmultiphase_ele_calc_utils.H"
 #include "baci_porofluidmultiphase_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -32,7 +34,7 @@ namespace DRT
 
     \author vuong
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class PoroFluidMultiPhaseEleBoundaryCalc : public PoroFluidMultiPhaseEleInterface
     {
      public:
@@ -40,20 +42,18 @@ namespace DRT
       static PoroFluidMultiPhaseEleBoundaryCalc<distype>* Instance(
           const int numdofpernode, const std::string& disname);
 
-      /// Empty destructor
-      virtual ~PoroFluidMultiPhaseEleBoundaryCalc() { return; };
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of boundary(!) space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       //! Evaluate the element (using location array)
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec) override;
 
      protected:
       //! setup element evaluation
@@ -117,5 +117,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H

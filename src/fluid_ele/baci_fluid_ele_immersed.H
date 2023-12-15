@@ -14,6 +14,8 @@
 #ifndef BACI_FLUID_ELE_IMMERSED_H
 #define BACI_FLUID_ELE_IMMERSED_H
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -21,16 +23,17 @@ namespace DRT
     class FluidTypeImmersed : public FluidTypeImmersedBase
     {
      public:
-      std::string Name() const { return "FluidTypeImmersed"; }
+      std::string Name() const override { return "FluidTypeImmersed"; }
 
       static FluidTypeImmersed& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
 
      private:
@@ -66,7 +69,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      virtual DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -74,7 +77,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return FluidTypeImmersed::Instance().UniqueParObjectId();
       }
@@ -82,7 +85,7 @@ namespace DRT
       /*!
       \brief Each element whose nodes are all covered by an immersed dis. are set IsImmersed
       */
-      virtual void SetIsImmersed(int isimmersed) { is_immersed_ = isimmersed; };
+      void SetIsImmersed(int isimmersed) override { is_immersed_ = isimmersed; };
 
       /*!
       \brief Each element which has nodes covered by the immersed dis. but at least one node that is
@@ -92,7 +95,7 @@ namespace DRT
       surface lies in this element.
 
       */
-      virtual void SetBoundaryIsImmersed(int IsBoundaryImmersed)
+      void SetBoundaryIsImmersed(int IsBoundaryImmersed) override
       {
         is_immersed_bdry_ = IsBoundaryImmersed;
       };
@@ -101,7 +104,7 @@ namespace DRT
       \brief Each element, which is either Immersed or BoundaryImmersed is also set
       HasProjectedDirichlet
       */
-      virtual void SetHasProjectedDirichlet(int has_projected_dirichletvalues)
+      void SetHasProjectedDirichlet(int has_projected_dirichletvalues) override
       {
         has_projected_dirichletvalues_ = has_projected_dirichletvalues;
       };
@@ -109,7 +112,7 @@ namespace DRT
       /*!
       \brief set if divergence needs to be projected to an integration point
       */
-      virtual void SetIntPointHasProjectedDivergence(int gp, int intpoint_has_projected_divergence)
+      void SetIntPointHasProjectedDivergence(int gp, int intpoint_has_projected_divergence) override
       {
         intpoint_has_projected_divergence_->at(gp) = intpoint_has_projected_divergence;
       };
@@ -117,7 +120,7 @@ namespace DRT
       /*!
       \brief store the projected divergence
       */
-      virtual void StoreProjectedIntPointDivergence(int gp, double projected_intpoint_divergence)
+      void StoreProjectedIntPointDivergence(int gp, double projected_intpoint_divergence) override
       {
         stored_projected_intpoint_divergence_->at(gp) = projected_intpoint_divergence;
       };
@@ -125,23 +128,23 @@ namespace DRT
       /*!
       \brief returns true if element was set IsImmersed
       */
-      virtual int IsImmersed() { return is_immersed_; };
+      int IsImmersed() override { return is_immersed_; };
 
       /*!
       \brief returns true if element was set IsBundaryImmersed
       */
-      virtual int IsBoundaryImmersed() { return is_immersed_bdry_; };
+      int IsBoundaryImmersed() override { return is_immersed_bdry_; };
 
       /*!
       \brief returns true if element needs to get projected Dirichlet values
       */
-      virtual int HasProjectedDirichlet() { return has_projected_dirichletvalues_; };
+      int HasProjectedDirichlet() override { return has_projected_dirichletvalues_; };
 
       /*!
       \brief returns true if element needs to get projected divergence at integration point
 
       */
-      virtual int IntPointHasProjectedDivergence(int gp)
+      int IntPointHasProjectedDivergence(int gp) override
       {
         return intpoint_has_projected_divergence_->at(gp);
       };
@@ -149,7 +152,7 @@ namespace DRT
       /*!
       \brief returns projected divergence at integration point
       */
-      virtual double ProjectedIntPointDivergence(int gp)
+      double ProjectedIntPointDivergence(int gp) override
       {
         return stored_projected_intpoint_divergence_->at(gp);
       };
@@ -157,7 +160,7 @@ namespace DRT
       /*!
       \brief returns rcp to vector containing gps with projected divergence
       */
-      virtual Teuchos::RCP<std::vector<int>> GetRCPIntPointHasProjectedDivergence()
+      Teuchos::RCP<std::vector<int>> GetRCPIntPointHasProjectedDivergence() override
       {
         return intpoint_has_projected_divergence_;
       };
@@ -165,7 +168,7 @@ namespace DRT
       /*!
       \brief returns rcp to vector containing projected divergence values
       */
-      virtual Teuchos::RCP<std::vector<double>> GetRCPProjectedIntPointDivergence()
+      Teuchos::RCP<std::vector<double>> GetRCPProjectedIntPointDivergence() override
       {
         return stored_projected_intpoint_divergence_;
       };
@@ -173,7 +176,7 @@ namespace DRT
       /*!
       \brief construct rcp to vector for divergence projection handling
       */
-      virtual void ConstructElementRCP(int size)
+      void ConstructElementRCP(int size) override
       {
         if (intpoint_has_projected_divergence_ == Teuchos::null)
           intpoint_has_projected_divergence_ = Teuchos::rcp(new std::vector<int>(size, 0));
@@ -189,7 +192,7 @@ namespace DRT
       /*!
       \brief Clean up the element rcp
       */
-      virtual void DestroyElementRCP()
+      void DestroyElementRCP() override
       {
         intpoint_has_projected_divergence_->clear();
         stored_projected_intpoint_divergence_->clear();
@@ -204,7 +207,7 @@ namespace DRT
       /*!
       \brief related to output of IsImmersed information
       */
-      virtual void VisIsImmersed(std::map<std::string, int>& names)
+      void VisIsImmersed(std::map<std::string, int>& names) override
       {
         names.insert(std::pair<std::string, int>("IsImmersed", 1));
         return;
@@ -213,7 +216,7 @@ namespace DRT
       /*!
       \brief related to output of IsBoundaryImmersed information
       */
-      virtual void VisIsBoundaryImmersed(std::map<std::string, int>& names)
+      void VisIsBoundaryImmersed(std::map<std::string, int>& names) override
       {
         names.insert(std::pair<std::string, int>("IsBoundaryImmersed", 1));
         return;
@@ -234,7 +237,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if it recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data)
+      bool VisData(const std::string& name, std::vector<double>& data) override
       {
         if (name == "Owner")
         {
@@ -269,20 +272,16 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
 
-      */
-      ~FluidImmersed() { return; }
 
      private:
       int is_immersed_;       //!< true if all nodes of this element are covered by immersed
@@ -296,5 +295,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

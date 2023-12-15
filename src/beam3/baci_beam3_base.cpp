@@ -22,6 +22,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
@@ -49,9 +51,9 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Beam3Base::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -74,10 +76,9 @@ void DRT::ELEMENTS::Beam3Base::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -423,14 +424,13 @@ void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(CORE::LINALG::Matrix<3, 3>&
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolume(
-    const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
 {
   // Get the centerline dof values of the beam.
   std::vector<double> element_posdofvec;
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
-      discret, this, result_data_dofbased, element_posdofvec);
+      discret, this, Teuchos::rcpFromRef(result_data_dofbased), element_posdofvec);
   CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
 
   CORE::LINALG::Matrix<3, 1, double> point;
@@ -446,7 +446,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolum
   }
 
   // Add the radius times a safety factor.
-  const double safety_factor = params->GetBeamBoundingVolumeScaling();
+  const double safety_factor = params.GetBeamBoundingVolumeScaling();
   const double radius = GetCircularCrossSectionRadiusForInteractions();
   bounding_volume.ExtendBoundaries(radius * safety_factor);
 
@@ -480,3 +480,5 @@ template MAT::BeamMaterialTemplated<double>&
 DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<double>() const;
 template MAT::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
 DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<Sacado::Fad::DFad<double>>() const;
+
+BACI_NAMESPACE_CLOSE

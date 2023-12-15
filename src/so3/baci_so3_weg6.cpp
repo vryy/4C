@@ -10,27 +10,29 @@
 
 #include "baci_so3_weg6.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_prestress_service.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::So_weg6Type DRT::ELEMENTS::So_weg6Type::instance_;
 
 DRT::ELEMENTS::So_weg6Type& DRT::ELEMENTS::So_weg6Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_weg6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_weg6Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_weg6(-1, -1);
   object->Unpack(data);
@@ -109,13 +111,13 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+    pstype_ = BACI::UTILS::PRESTRESS::GetType();
+    pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
         DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
 }
 
@@ -137,7 +139,7 @@ DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 }
 
@@ -155,15 +157,15 @@ DRT::Element* DRT::ELEMENTS::So_weg6::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_weg6::Shape() const { return wedge6; }
+CORE::FE::CellType DRT::ELEMENTS::So_weg6::Shape() const { return CORE::FE::CellType::wedge6; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_weg6::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -178,9 +180,9 @@ void DRT::ELEMENTS::So_weg6::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
-    DRT::ParObject::AddtoPack(data, *prestress_);
+    CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
 
   // detJ_
@@ -202,10 +204,9 @@ void DRT::ELEMENTS::So_weg6::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -219,7 +220,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -246,11 +247,6 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_weg6::~So_weg6() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
@@ -272,12 +268,12 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
   CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct;
   // Element midpoint at r=s=1/3, t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
@@ -313,30 +309,13 @@ bool DRT::ELEMENTS::So_weg6::VisData(const std::string& name, std::vector<double
 
 
 /*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                  maf 04/07|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_weg6::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
-/*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_weg6::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -344,13 +323,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_weg6::Surfaces()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_weg6::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
+
+BACI_NAMESPACE_CLOSE

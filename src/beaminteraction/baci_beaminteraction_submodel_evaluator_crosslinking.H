@@ -13,14 +13,25 @@
 
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
+#include "baci_comm_exporter.H"
 #include "baci_inpar_beaminteraction.H"
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Epetra_MpiComm.h>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declaration
-class DiscretizationRuntimeVtpWriter;
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
+
+namespace IO
+{
+  class DiscretizationVisualizationWriterNodes;
+}
 
 namespace MAT
 {
@@ -28,9 +39,7 @@ namespace MAT
 }
 namespace DRT
 {
-  class Exporter;
   class Element;
-  class PackBuffer;
   class Node;
 }  // namespace DRT
 namespace CROSSLINKING
@@ -58,89 +67,86 @@ namespace BEAMINTERACTION
       //! constructor
       Crosslinking();
 
-      //! destructor
-      virtual ~Crosslinking(){};
-
       //! setup class variables
-      virtual void Setup();
+      void Setup() override;
 
       //! derive
-      virtual bool PostPartitionProblem();
+      bool PostPartitionProblem() override;
 
       //! derive
-      virtual void PostSetup();
+      void PostSetup() override;
 
       //! Returns the type of the current model evaluator
-      INPAR::BEAMINTERACTION::SubModelType Type() const
+      INPAR::BEAMINTERACTION::SubModelType Type() const override
       {
         return INPAR::BEAMINTERACTION::submodel_crosslinking;
       }
 
       //! derived
-      virtual void Reset();
+      void Reset() override;
 
       //! derived
-      virtual bool EvaluateForce();
+      bool EvaluateForce() override;
 
       //! derived
-      virtual bool EvaluateStiff();
+      bool EvaluateStiff() override;
 
       //! derived
-      virtual bool EvaluateForceStiff();
+      bool EvaluateForceStiff() override;
 
       //! derived
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      virtual bool PreUpdateStepElement(bool beam_redist);
+      bool PreUpdateStepElement(bool beam_redist) override;
 
       //! derived
-      virtual void UpdateStepElement(bool repartition_was_done);
+      void UpdateStepElement(bool repartition_was_done) override;
 
       //! derived
-      virtual void PostUpdateStepElement();
+      void PostUpdateStepElement() override;
 
       //! derived
       std::map<STR::EnergyType, double> GetEnergy() const override;
 
       //! derived
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      virtual void RuntimeOutputStepState() const;
+      void RuntimeOutputStepState() const override;
 
       //! derived
-      virtual void ResetStepState();
+      void ResetStepState() override;
 
       //! derived
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
-      virtual void PreReadRestart() override;
+      void PreReadRestart() override;
 
       //! derived
-      virtual void ReadRestart(
-          IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader);
+      void ReadRestart(
+          IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader) override;
 
       //! derived
-      virtual void PostReadRestart();
+      void PostReadRestart() override;
 
       //! derived
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver){/*empty*/};
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override{/*empty*/};
 
       //! derived
-      virtual void InitSubmodelDependencies(
-          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap);
+      void InitSubmodelDependencies(
+          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
-      virtual void AddBinsToBinColMap(std::set<int>& colbins);
+      void AddBinsToBinColMap(std::set<int>& colbins) override;
 
       //! derived
-      virtual void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const;
+      void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const override;
 
       //! derived
-      virtual void GetHalfInteractionDistance(double& half_interaction_distance);
+      void GetHalfInteractionDistance(double& half_interaction_distance) override;
 
       //! @}
 
@@ -168,10 +174,10 @@ namespace BEAMINTERACTION
 
      private:
       //! writes output for discretization structure in VTP format
-      void WriteOutputRuntimeVtpStructure() const;
+      void WriteOutputRuntimeStructure() const;
 
       //! init output for discretization structure in VTP format
-      void InitOutputRuntimeVtpStructure();
+      void InitOutputRuntimeStructure();
 
       //! @name Small data structs for faster access and better structure
       //! @{
@@ -345,7 +351,7 @@ namespace BEAMINTERACTION
       /// this is necessary to avoid setting crosslinker more than once per time step
       void ManageBindingInParallel(
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>&
-              mysetbonds,  // clgid to cldata
+              mybonds,  // clgid to cldata
           std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>>&
               undecidedbonds,  // owner of cldatas in vector to be requested
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& myelebonds) const;
@@ -389,7 +395,7 @@ namespace BEAMINTERACTION
                                                                               */
       int UpdateMyCrosslinkerAndElementBindingStates(
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& mybonds,
-          std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& myelbonds);
+          std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& myelebonds);
 
       /// bind row linker of myrank
       void UpdateMyCrosslinkerBindingStates(
@@ -448,7 +454,7 @@ namespace BEAMINTERACTION
 
       /// send data T to rank= mapkey
       template <typename T>
-      void ISend(DRT::Exporter& exporter, std::vector<MPI_Request>& request,
+      void ISend(CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request,
           std::map<int, std::vector<Teuchos::RCP<T>>> const& send) const;
 
       /// get number of request for each proc
@@ -458,8 +464,8 @@ namespace BEAMINTERACTION
 
       /// recieve "receivesize" number of T and store in vector recv
       template <typename T>
-      void RecvAny(
-          DRT::Exporter& exporter, int receivesize, std::vector<Teuchos::RCP<T>>& recv) const;
+      void RecvAny(CORE::COMM::Exporter& exporter, int receivesize,
+          std::vector<Teuchos::RCP<T>>& recv) const;
 
       /// unblocking send and blocking recvany
       template <typename T>
@@ -467,7 +473,8 @@ namespace BEAMINTERACTION
           std::vector<Teuchos::RCP<T>>& recv) const;
 
       // wait for all communication to finish
-      void Wait(DRT::Exporter& exporter, std::vector<MPI_Request>& request, int length) const;
+      void Wait(
+          CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request, int length) const;
 
       /// debug feature to check bindevent structs
       void PrintAndCheckBindEventData(
@@ -487,10 +494,10 @@ namespace BEAMINTERACTION
       std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData>> crosslinker_data_;
 
       //! crosslinker exporter for crosslinker data container
-      Teuchos::RCP<DRT::Exporter> cl_exporter_;
+      Teuchos::RCP<CORE::COMM::Exporter> cl_exporter_;
 
       //! beam exporter for beam data container
-      Teuchos::RCP<DRT::Exporter> beam_exporter_;
+      Teuchos::RCP<CORE::COMM::Exporter> beam_exporter_;
 
       //! temporary storage for all relevant beam data during crosslinking
       //  (vector index is col lid of beamele)
@@ -500,7 +507,7 @@ namespace BEAMINTERACTION
       std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink>> doublebondcl_;
 
       //! linker, i.e. crosslinker molecule discretization runtime vtp writer
-      Teuchos::RCP<DiscretizationRuntimeVtpWriter> vtp_writer_ptr_;
+      Teuchos::RCP<IO::DiscretizationVisualizationWriterNodes> visualization_output_writer_ptr_;
 
       //! current linker displacement
       Teuchos::RCP<Epetra_Vector> linker_disnp_;
@@ -528,5 +535,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -16,10 +16,12 @@ passive-scalar transport
 #include <fftw3.h>
 #endif
 
-#include "baci_lib_exporter.H"
+#include "baci_comm_exporter.H"
 #include "baci_scatra_timint_genalpha.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
+
+BACI_NAMESPACE_OPEN
 
 #define USE_TRAGET_SPECTRUM
 // #define TIME_UPDATE_FORCING_SPECTRUM
@@ -121,23 +123,23 @@ namespace SCATRA
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      DRT::Exporter exporter(discret_->Comm());
+      CORE::COMM::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          DRT::ParObject::AddtoPack(data, *x1line);
+          CORE::COMM::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          DRT::ParObject::AddtoPack(data, *x1line);
+          CORE::COMM::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -179,7 +181,7 @@ namespace SCATRA
           while (index < rblock.size())
           {
             double onecoord;
-            DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }
@@ -840,3 +842,5 @@ namespace SCATRA
 
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE

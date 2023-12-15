@@ -23,6 +23,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   /*!
@@ -47,7 +49,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Destructor
     */
-    virtual ~BeamToBeamContactVariables(){};
+    virtual ~BeamToBeamContactVariables() = default;
     //@}
 
 
@@ -256,5 +258,7 @@ namespace BEAMINTERACTION
     //@}
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

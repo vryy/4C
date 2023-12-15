@@ -15,6 +15,8 @@
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_unittest_utils_assertions_test.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   /*
@@ -432,3 +434,5 @@ namespace
     AssertEigenProblem(A, S, V, eigenvalues);
   }
 }  // namespace
+
+BACI_NAMESPACE_CLOSE

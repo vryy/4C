@@ -15,6 +15,8 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -74,11 +76,6 @@ namespace MORTAR
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& sleafsmap,
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mleafsmap);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~BinaryTreeNode(){};
 
     //! @name Evaluation methods
 
@@ -86,13 +83,13 @@ namespace MORTAR
     \brief Update slabs of current treenode in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& eps) final;
+    void UpdateSlabsBottomUp(double& enlarge) final;
 
     /*!
     \brief Initialize Tree
 
     */
-    void InitializeTree(double& eps);
+    void InitializeTree(double& enlarge);
 
     /*!
     \brief Divide a TreeNode into two child nodes
@@ -196,11 +193,6 @@ namespace MORTAR
         Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
         INPAR::MORTAR::BinaryTreeUpdateType updatetype, bool useauxpos);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~BinaryTree(){};
 
     //! @name Query methods
 
@@ -364,5 +356,7 @@ namespace MORTAR
     bool useauxpos_;
   };  // class BinaryTree
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_BINARYTREE_H

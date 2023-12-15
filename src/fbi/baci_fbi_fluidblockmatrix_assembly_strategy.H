@@ -21,6 +21,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FBI
 {
@@ -37,27 +39,24 @@ namespace FBI
     {
      public:
       /**
-       * \brief Destructor.
-       */
-      ~FBIBlockAssemblyStrategy() override = default;
-
-      /**
        * \brief Calls the correct assembly method for the used global fluid matrix depending on the
        * fluid problem
        *
        * \param[in, out] cff fluid coupling matrix
-       * \param[in] eid element gid
-       * \param[in] Aele dense matrix to be assembled
+       * \param[in] elegid element gid
+       * \param[in] elemat dense matrix to be assembled
        * \param[in] lmrow vector with row gids
        * \param[in] lmrowowner vector with owner procs of row gids
        * \param[in] lmcol vector with column gids
        */
-      void AssembleFluidMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> cff, int eid,
-          const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
+      void AssembleFluidMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> cff, int elegid,
+          const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& elemat,
           const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
           const std::vector<int>& lmcol) override;
     };
   }  // namespace UTILS
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

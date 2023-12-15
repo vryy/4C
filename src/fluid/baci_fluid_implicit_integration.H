@@ -40,6 +40,7 @@
 #include <ctime>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -113,18 +114,11 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~FluidImplicitTimeInt();
-
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief initialization of nonlinear BCs
@@ -136,7 +130,7 @@ namespace FLD
     \brief start time loop for starting algorithm, normal problems and restarts
 
     */
-    virtual void Integrate();
+    void Integrate() override;
 
     /*!
     \brief Do time integration (time loop)
@@ -370,56 +364,56 @@ namespace FLD
     virtual void ExplicitPredictor();
 
     /// setup the variables to do a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /*!
     \brief (multiple) corrector
 
     */
-    virtual void Solve();
+    void Solve() override;
 
     /*!
   \brief solve linearised fluid
 
   */
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return solver_; };
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; };
 
     /*!
     \brief preparatives for solver
 
     */
-    virtual void PrepareSolve();
+    void PrepareSolve() override;
 
     /*!
     \brief preparations for Krylov space projection
 
     */
     virtual void InitKrylovSpaceProjection();
-    virtual void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
-    virtual void UpdateKrylovSpaceProjection();
-    virtual void CheckMatrixNullspace();
+    void SetupKrylovSpaceProjection(DRT::Condition* kspcond) override;
+    void UpdateKrylovSpaceProjection() override;
+    void CheckMatrixNullspace() override;
 
     /*!
     \brief update within iteration
 
     */
-    virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment);
+    void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) override;
 
     /*!
    \brief convergence check
 
     */
-    virtual bool ConvergenceCheck(int itnum, int itmax, const double velrestol,
-        const double velinctol, const double presrestol, const double presinctol) override;
+    bool ConvergenceCheck(int itnum, int itmax, const double velrestol, const double velinctol,
+        const double presrestol, const double presinctol) override;
 
     /*!
       \brief build linear system matrix and rhs
 
       Monolithic FSI needs to access the linear fluid problem.
     */
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
+    void Evaluate(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
-    );
+        ) override;
 
 
     /*!
@@ -443,7 +437,7 @@ namespace FLD
     virtual void TimeUpdateExternalForces();
 
     /// Implement ADAPTER::Fluid
-    virtual void Update() { TimeUpdate(); }
+    void Update() override { TimeUpdate(); }
 
     //! @name Time step size adaptivity in monolithic FSI
     //@{
@@ -452,11 +446,11 @@ namespace FLD
     virtual double DtPrevious() const { return dtp_; }
 
     //! set time step size
-    virtual void SetDt(const double dtnew);
+    void SetDt(const double dtnew) override;
 
     //! set time and step
-    virtual void SetTimeStep(const double time,  ///< time to set
-        const int step);                         ///< time step number to set
+    void SetTimeStep(const double time,  ///< time to set
+        const int step) override;        ///< time step number to set
 
     /*!
     \brief Reset time step
@@ -468,7 +462,7 @@ namespace FLD
     \author mayr.mt
     \date 08/2013
     */
-    virtual void ResetStep()
+    void ResetStep() override
     {
       accnp_->Update(1.0, *accn_, 0.0);
       velnp_->Update(1.0, *veln_, 0.0);
@@ -488,7 +482,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 08/2013
      */
-    virtual void ResetTime(const double dtold) { SetTimeStep(Time() - dtold, Step() - 1); }
+    void ResetTime(const double dtold) override { SetTimeStep(Time() - dtold, Step() - 1); }
 
     //! Give order of accuracy
     virtual int MethodOrderOfAccuracy() const
@@ -523,20 +517,20 @@ namespace FLD
            output of solution and statistics
 
     */
-    virtual void StatisticsAndOutput();
+    void StatisticsAndOutput() override;
 
     /*!
     \brief statistics time sample and
            output of statistics
 
     */
-    virtual void StatisticsOutput();
+    void StatisticsOutput() override;
 
     /*!
     \brief update configuration and output to file/screen
 
     */
-    virtual void Output();
+    void Output() override;
 
     /*
      * \brief Write fluid runtime output
@@ -557,7 +551,7 @@ namespace FLD
     \brief get access to map extractor for velocity and pressure
 
     */
-    virtual const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter()
+    Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
     {
       return velpressplitter_;
     };
@@ -566,19 +560,19 @@ namespace FLD
     \brief set initial flow field for analytical test problems
 
     */
-    virtual void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno);
+    void SetInitialFlowField(
+        const INPAR::FLUID::InitialField initfield, const int startfuncno) override;
 
     /// Implement ADAPTER::Fluid
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(
-        Teuchos::RCP<const Epetra_Vector> velpres);
+    Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(
+        Teuchos::RCP<const Epetra_Vector> velpres) override;
 
     /// Implement ADAPTER::Fluid
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(
-        Teuchos::RCP<const Epetra_Vector> velpres);
+    Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(
+        Teuchos::RCP<const Epetra_Vector> velpres) override;
 
     /// Reset state vectors
-    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1);
+    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     /*!
     \brief calculate error between a analytical solution and the
@@ -603,49 +597,49 @@ namespace FLD
     \brief read restart data
 
     */
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /*!
     \brief get restart data in case of turbulent inflow computation
 
     */
-    virtual void SetRestart(const int step, const double time,
-        Teuchos::RCP<const Epetra_Vector> readvelnp, Teuchos::RCP<const Epetra_Vector> readveln,
-        Teuchos::RCP<const Epetra_Vector> readvelnm, Teuchos::RCP<const Epetra_Vector> readaccnp,
-        Teuchos::RCP<const Epetra_Vector> readaccn);
+    void SetRestart(const int step, const double time, Teuchos::RCP<const Epetra_Vector> readvelnp,
+        Teuchos::RCP<const Epetra_Vector> readveln, Teuchos::RCP<const Epetra_Vector> readvelnm,
+        Teuchos::RCP<const Epetra_Vector> readaccnp,
+        Teuchos::RCP<const Epetra_Vector> readaccn) override;
 
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
 
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() { return incvel_; }
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return incvel_; }
 
     /// return implemented residual (is not an actual force in Newton [N])
     virtual Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
 
     /// implement adapter fluid
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() { return Residual(); }
+    Teuchos::RCP<const Epetra_Vector> RHS() override { return Residual(); }
 
     /// Return true residual, ie the actual force in Newton [N]
-    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
+    Teuchos::RCP<const Epetra_Vector> TrueResidual() override { return trueresidual_; }
 
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return velnp_; }
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() { return velnp_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Velaf() { return velaf_; }
+    Teuchos::RCP<const Epetra_Vector> Velnp() override { return velnp_; }
+    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() override { return velnp_; }
+    Teuchos::RCP<const Epetra_Vector> Velaf() override { return velaf_; }
     virtual Teuchos::RCP<const Epetra_Vector> Velam() { return velam_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() { return veln_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm() { return velnm_; }
+    Teuchos::RCP<const Epetra_Vector> Veln() override { return veln_; }
+    Teuchos::RCP<const Epetra_Vector> Velnm() override { return velnm_; }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp() { return accnp_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return accnp_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Accn() { return accn_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Accnm() { return accnm_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Accam() { return accam_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Scaaf() { return scaaf_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Scaam() { return scaam_; }
-    virtual Teuchos::RCP<const Epetra_Vector> Hist() { return hist_; }
-    virtual Teuchos::RCP<const Epetra_Vector> GridVel() { return gridv_; }
-    virtual Teuchos::RCP<const Epetra_Vector> GridVeln() { return gridvn_; }
+    Teuchos::RCP<const Epetra_Vector> Accnp() override { return accnp_; }
+    Teuchos::RCP<const Epetra_Vector> Accn() override { return accn_; }
+    Teuchos::RCP<const Epetra_Vector> Accnm() override { return accnm_; }
+    Teuchos::RCP<const Epetra_Vector> Accam() override { return accam_; }
+    Teuchos::RCP<const Epetra_Vector> Scaaf() override { return scaaf_; }
+    Teuchos::RCP<const Epetra_Vector> Scaam() override { return scaam_; }
+    Teuchos::RCP<const Epetra_Vector> Hist() override { return hist_; }
+    Teuchos::RCP<const Epetra_Vector> GridVel() override { return gridv_; }
+    Teuchos::RCP<const Epetra_Vector> GridVeln() override { return gridvn_; }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessGridVel() { return gridv_; }
-    virtual Teuchos::RCP<const Epetra_Vector> FsVel()
+    Teuchos::RCP<const Epetra_Vector> FsVel() override
     {
       // get fine-scale part of velocity at time n+alpha_F or n+1
       if (Sep_ != Teuchos::null)
@@ -664,7 +658,10 @@ namespace FLD
     }
 
     /// access to Dirichlet maps
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    {
+      return dbcmaps_;
+    }
 
     /// Expand the Dirichlet DOF set
     ///
@@ -672,7 +669,7 @@ namespace FLD
     /// subjected to Dirichlet boundary conditions. For instance, the method is
     /// called by the staggered FSI in which the velocities on the FSI
     /// interface are prescribed by the other fields.
-    virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
 
     /// Contract the Dirichlet DOF set
     ///
@@ -683,21 +680,21 @@ namespace FLD
     /// subjected to Dirichlet boundary conditions. This method is
     /// called solely by immersed FSI to remove the Dirichlet values from
     /// the previous solution step before a new set is prescribed.
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    virtual const Teuchos::RCP<const Epetra_Vector> Dirichlet();
+    virtual Teuchos::RCP<const Epetra_Vector> Dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    virtual const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
+    virtual Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
     //! Return locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() { return locsysman_; }
@@ -723,7 +720,7 @@ namespace FLD
                                                      //!< have been changed.
     );
 
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() override { return dispnp_; }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() { return dispnp_; }
 
     //! Create mesh displacement at time level t_{n+1}
@@ -734,7 +731,7 @@ namespace FLD
       return dispnp_;
     }
 
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() { return dispn_; }
+    Teuchos::RCP<const Epetra_Vector> Dispn() override { return dispn_; }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() { return dispn_; }
 
     //! Create mesh displacement at time level t_{n}
@@ -744,26 +741,26 @@ namespace FLD
       dispn_ = CORE::LINALG::CreateVector(*aledofrowmap, true);
       return dispn_;
     }
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
     }
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix() override
     {
       return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_)->Merge();
     }
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_);
     }
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() override
     {
       return shapederivatives_;
     }
 
     virtual Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() { return velpressplitter_; };
-    virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap();
-    virtual Teuchos::RCP<const Epetra_Map> PressureRowMap();
+    Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
+    Teuchos::RCP<const Epetra_Map> PressureRowMap() override;
     //  virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
     //  double TimeScaling() const;
 
@@ -778,13 +775,13 @@ namespace FLD
      *  \sa trueresidual_
      *  \sa TrueResidual()
      */
-    virtual double ResidualScaling() const = 0;
+    double ResidualScaling() const override = 0;
 
     /*!
     \brief return scheme-specific time integration parameter
 
     */
-    virtual double TimIntParam() const = 0;
+    double TimIntParam() const override = 0;
 
     /*!
     \brief compute values at intermediate time steps for gen.-alpha
@@ -799,44 +796,44 @@ namespace FLD
     }
 
     /// update velocity increment after Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel);
+    void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) override;
 
     //  int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
-    virtual void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
+    void SetItemax(int itemax) override { params_->set<int>("max nonlin iter steps", itemax); }
 
 
     /*!
     \brief set scalar fields within outer iteration loop
 
     */
-    virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<DRT::Discretization> scatradis, int dofset);
+        Teuchos::RCP<DRT::Discretization> scatradis, int dofset) override;
 
     /*!
     \brief set scalar fields
 
     */
-    virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
-        const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1);
+    void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
+        Teuchos::RCP<const Epetra_Vector> scatraresidual,
+        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) override;
 
     /*!
     \brief set velocity field obtained by separate computation
 
     */
-    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> setvelnp)
+    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> setvelnp) override
     {
       velnp_->Update(1.0, *setvelnp, 0.0);
       return;
     }
 
     /// provide access to turbulence statistics manager
-    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
+    Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() override;
     /// provide access to the box filter for dynamic Smagorinsky model
-    virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter();
+    Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() override;
     /// provide access to the box filter for Vreman model
-    virtual Teuchos::RCP<FLD::Vreman> Vreman();
+    Teuchos::RCP<FLD::Vreman> Vreman() override;
 
     /// introduce surface split extractor object
     /*!
@@ -908,11 +905,11 @@ namespace FLD
     //@}
 
     /// set the initial porosity field
-    virtual void SetInitialPorosityField(
-        const INPAR::POROELAST::InitialField,  ///< type of initial field
-        // const int,                                ///< type of initial field
+    void SetInitialPorosityField(const INPAR::POROELAST::InitialField,  ///< type of initial field
+                                                                        // const int, ///< type of
+                                                                        // initial field
         const int startfuncno  ///< number of spatial function
-    )
+        ) override
     {
       dserror("not implemented in base class");
     }
@@ -930,12 +927,12 @@ namespace FLD
     //@}
 
     /// apply external forces to the fluid
-    virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext);
+    void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) override;
 
     /// create field test
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
-    virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
+    Teuchos::RCP<const Epetra_Vector> ConvectiveVel() override;
 
     /*! \brief Calculate a integrated divergence operator in vector form
      *
@@ -948,7 +945,7 @@ namespace FLD
     //@{
 
     // set fluid displacement vector due to biofilm growth
-    virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp);
+    void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) override;
     //@}
 
     /*!
@@ -962,7 +959,7 @@ namespace FLD
 
     ///< Add contribution to external load vector ( add possibly pre-existing external_loads_);
     void AddContributionToExternalLoads(
-        const Teuchos::RCP<const Epetra_Vector> contributing_vector);
+        const Teuchos::RCP<const Epetra_Vector> contributing_vector) override;
 
     ///< Update slave dofs for multifield simulations with fluid mesh tying
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
@@ -995,7 +992,7 @@ namespace FLD
     \brief  increment time and step value
 
     */
-    virtual void IncrementTimeAndStep()
+    void IncrementTimeAndStep() override
     {
       step_ += 1;
       time_ += dta_;
@@ -1017,7 +1014,7 @@ namespace FLD
     \brief calculate intermediate solution
 
     */
-    virtual void CalcIntermediateSolution();
+    void CalcIntermediateSolution() override;
 
     /*!
     \brief apply Dirichlet boundary conditions to system of equations
@@ -1102,7 +1099,7 @@ namespace FLD
     \brief calculate lift&drag forces and angular momenta
 
     */
-    virtual void LiftDrag() const;
+    void LiftDrag() const override;
 
     /**
      * \brief Here, the coupling contributions collected in the linear matrix couplingcontributions_
@@ -1452,5 +1449,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_IMPLICIT_INTEGRATION_H

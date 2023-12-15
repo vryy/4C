@@ -11,6 +11,7 @@
 
 #include "baci_lib_dofset.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -36,14 +37,10 @@ namespace MORTAR
     */
     MortarDofSet();
 
-    /*!
-    \brief Destructor
 
-    */
-    virtual ~MortarDofSet() = default;
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new MortarDofSet(*this)); }
+    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new MortarDofSet(*this)); }
 
     //! @}
 
@@ -62,13 +59,15 @@ namespace MORTAR
 
     @return Maximum dof number of this dofset
     */
-    virtual int AssignDegreesOfFreedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! @}
 
    protected:
   };  // class MortarDofSet
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_DOFSET_H

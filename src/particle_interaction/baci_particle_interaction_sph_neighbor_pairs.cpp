@@ -21,6 +21,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -456,3 +458,5 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticleWallPairs()
     ++particlewallpairindex;
   }
 }
+
+BACI_NAMESPACE_CLOSE

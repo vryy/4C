@@ -16,6 +16,8 @@
 #include "baci_inpar_cut.H"
 #include "baci_inpar_xfem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -24,8 +26,6 @@ namespace DRT
     class FluidEleParameterXFEM : public FluidEleParameterStd
     {
      public:
-      virtual ~FluidEleParameterXFEM() {}
-
       /// Singleton access method
       static FluidEleParameterXFEM* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
@@ -279,5 +279,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

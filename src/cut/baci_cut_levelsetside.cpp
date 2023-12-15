@@ -16,6 +16,8 @@ levelset
 #include "baci_cut_pointgraph.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
@@ -62,10 +64,10 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
 
   switch (side.Shape())
   {
-    case ::DRT::Element::line2:
-    case ::DRT::Element::tri3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::tri3:
       return false;
-    case ::DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
       switch (cut.size())
       {
@@ -148,7 +150,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           // find levelset value at side center
           CORE::LINALG::Matrix<4, 1> lsv;
           CORE::LINALG::Matrix<4, 1> funct;
-          CORE::DRT::UTILS::shape_function_2D(funct, 0., 0., ::DRT::Element::quad4);
+          CORE::DRT::UTILS::shape_function_2D(funct, 0., 0., CORE::FE::CellType::quad4);
           const std::vector<Node*>& nodes = side.Nodes();
           std::vector<int> zero_positions;
           for (unsigned i = 0; i < 4; ++i)
@@ -289,10 +291,10 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           return false;
       }
       break;
-    }  // case ::DRT::Element::quad4:
+    }  // case CORE::FE::CellType::quad4:
     default:
       dserror("Unsupported side shape! (shape = %d | %s )", side.Shape(),
-          ::DRT::DistypeToString(side.Shape()).c_str());
+          CORE::FE::CellTypeToString(side.Shape()).c_str());
       break;
   }
   return false;
@@ -300,3 +302,5 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
 
 template class CORE::GEO::CUT::LevelSetSide<2>;
 template class CORE::GEO::CUT::LevelSetSide<3>;
+
+BACI_NAMESPACE_CLOSE

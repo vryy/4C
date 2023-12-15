@@ -10,16 +10,18 @@
 
 #include "baci_fluid_xfluid_functions.H"
 
-#include "baci_lib_function_manager.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
+#include "baci_utils_function_manager.H"
 
 #include <utility>
+
+BACI_NAMESPACE_OPEN
 
 namespace
 {
   using namespace DRT::UTILS;
 
-  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreateXfluidFunction(
+  Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateXfluidFunction(
       const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -101,7 +103,7 @@ namespace
       else
       {
         dserror("How did you end up here :)?");
-        return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
+        return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
       }
     }
     else if (function_lin_def.HaveNamed("TAYLORCOUETTEFLOW"))
@@ -220,12 +222,12 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
+      return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
 
-void DRT::UTILS::AddValidXfluidFunctions(DRT::UTILS::FunctionManager& function_manager)
+void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
   DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep =
       DRT::INPUT::LineDefinition::Builder().AddTag("FORWARDFACINGSTEP").Build();
@@ -1729,3 +1731,5 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
 
   return 0.0;
 }
+
+BACI_NAMESPACE_CLOSE

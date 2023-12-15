@@ -19,12 +19,14 @@ rY_13 0.7
 #include "baci_mat_plasticelasthyper.H"
 
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -90,7 +92,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::PlasticElastHyper::CreateMaterial()
 MAT::PlasticElastHyperType MAT::PlasticElastHyperType::instance_;
 
 
-DRT::ParObject* MAT::PlasticElastHyperType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::PlasticElastHyperType::Create(const std::vector<char>& data)
 {
   MAT::PlasticElastHyper* elhy = new MAT::PlasticElastHyper();
   elhy->Unpack(data);
@@ -166,9 +168,9 @@ MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::PlasticElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -232,10 +234,8 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   potsum_.clear();
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover MatParams()
   int matid;
@@ -626,7 +626,7 @@ double MAT::PlasticElastHyper::StrainEnergyTSI(
   elRCGv(4) = elRCG(2, 1) + elRCG(1, 2);
   elRCGv(5) = elRCG(0, 2) + elRCG(2, 0);
   CORE::LINALG::Matrix<3, 1> prinv;
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, elRCGv);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, elRCGv);
   CORE::LINALG::Matrix<3, 1> modinv;
   InvariantsModified(modinv, prinv);
 
@@ -925,7 +925,6 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
   tmp61.Multiply(PlAniso_full_, eta_v);
   double absHeta = NormStressLike(tmp61);
   double abseta_H = tmp61.Dot(eta_v_strainlike);
-  ;
   if (abseta_H < -1.e-16)
     dserror("this should not happen. eta : H : eta =%f < 0", abseta_H);
   else if (abseta_H >= 0.)
@@ -1059,13 +1058,13 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
         for (int b = 0; b < 3; b++)
           for (int i = 0; i < 6; i++)
             if (i <= 2)
-              dFpiDdeltaDp(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
+              dFpiDdeltaDp(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
                   last_plastic_defgrd_inverse_[gp](A, b) *
-                  Dexp(UTILS::VOIGT::IndexMappings::SymToVoigt6(b, a), i);
+                  Dexp(CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(b, a), i);
             else
-              dFpiDdeltaDp(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
+              dFpiDdeltaDp(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
                   2. * last_plastic_defgrd_inverse_[gp](A, b) *
-                  Dexp(UTILS::VOIGT::IndexMappings::SymToVoigt6(b, a), i);
+                  Dexp(CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(b, a), i);
 
     // derivative of mandel stress
     // we spare the deviatoric projection of the mandel stress derivative to get the effective
@@ -1559,9 +1558,9 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(const CORE::LINALG::Matrix<3, 3>
       for (int a = 0; a < 3; a++)
         for (int b = 0; b < 3; b++)
           for (int i = 0; i < 9; i++)
-            dFpiDdeltaLp(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
+            dFpiDdeltaLp(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
                 last_plastic_defgrd_inverse_[gp](A, b) *
-                Dexp(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(b, a), i);
+                Dexp(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(b, a), i);
 
     // derivative of mandel stress
     CORE::LINALG::Matrix<6, 9> dMdLp;
@@ -2050,7 +2049,7 @@ void MAT::PlasticElastHyper::EvaluateKinQuantElast(const CORE::LINALG::Matrix<3,
   elasticRCGv(5) = (CeM(0, 2) + CeM(2, 0));
 
   // principal invariants of elastic Cauchy-Green strain
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
 
   return;
 }
@@ -2113,7 +2112,7 @@ int MAT::PlasticElastHyper::EvaluateKinQuantPlast(const CORE::LINALG::Matrix<3, 
   Ce2_(5) = (tmp(0, 2) + tmp(2, 0)) / 2.;
 
   // principal invariants of elastic Cauchy-Green strain
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
 
   // inverse plastic right Cauchy-Green
   CORE::LINALG::Matrix<3, 3> CpiM;
@@ -2154,9 +2153,9 @@ int MAT::PlasticElastHyper::EvaluateKinQuantPlast(const CORE::LINALG::Matrix<3, 
   CeFpiTC_.Multiply(CeM_, FpiTC_);
 
   tmp.Multiply(RCG, invpldefgrd_);
-  UTILS::VOIGT::Matrix3x3to9x1(tmp, CFpi_);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp, CFpi_);
   tmp33.Multiply(tmp, CeM_);
-  UTILS::VOIGT::Matrix3x3to9x1(tmp33, CFpiCe_);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp33, CFpiCe_);
 
   double det = CeM_.Determinant();
   if (det > -1e-30 and det < 1e-30)
@@ -2170,7 +2169,7 @@ int MAT::PlasticElastHyper::EvaluateKinQuantPlast(const CORE::LINALG::Matrix<3, 
   tmp.Invert(CeM_);
   tmp33.Multiply(invpldefgrd_, tmp);
   tmp.Multiply(RCG, tmp33);
-  UTILS::VOIGT::Matrix3x3to9x1(tmp, CFpiCei_);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp, CFpiCei_);
 
   return 0;
 }
@@ -2372,7 +2371,7 @@ bool MAT::PlasticElastHyper::VisData(
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::RegisterVtkOutputDataNames(
+void MAT::PlasticElastHyper::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   names_and_size["accumulated_plastic_strain"] = 1;  // scalar
@@ -2383,7 +2382,7 @@ void MAT::PlasticElastHyper::RegisterVtkOutputDataNames(
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-bool MAT::PlasticElastHyper::EvaluateVtkOutputData(
+bool MAT::PlasticElastHyper::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")
@@ -2715,3 +2714,5 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivative3x3(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

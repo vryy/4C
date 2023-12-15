@@ -18,7 +18,10 @@
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "baci_geometry_pair_line_to_volume_segmentation.H"
 #include "baci_geometry_pair_scalar_types.H"
+#include "baci_geometry_pair_utility_functions.H"
+#include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -54,7 +57,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
   n_projections_valid = 0;
   n_projections = 0;
 
-  // Loop over points and check if they project to this other geomety.
+  // Loop over points and check if they project to this other geometry.
   for (auto& point : projection_points)
   {
     // Project the point.
@@ -99,9 +102,11 @@ template <typename... optional_type>
 void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
     const pair_type* pair, const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
     const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-    const CORE::DRT::UTILS::IntegrationPoints1D& gauss_points, LineSegment<scalar_type>& segment,
-    optional_type... optional_args)
+    LineSegment<scalar_type>& segment, optional_type... optional_args)
 {
+  const auto& evaluation_data = *(pair->GetEvaluationData());
+  const CORE::DRT::UTILS::IntegrationPoints1D& gauss_points = evaluation_data.GetGaussPoints();
+
   // Set up the vector with the projection points.
   std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
       segment.GetProjectionPoints();
@@ -122,12 +127,54 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
   ProjectPointsOnLineToOther(
       pair, q_line, q_other, projection_points, n_valid_projections, optional_args...);
 
-  // Check if all points could be projected.
-  if (n_valid_projections != (unsigned int)gauss_points.nquad)
-    dserror(
-        "All Gauss points need to have a valid projection. The number of Gauss points is %d, but "
-        "the number of valid projections is %d!",
-        gauss_points.nquad, n_valid_projections);
+  if ((n_valid_projections != (unsigned int)gauss_points.nquad) and
+      evaluation_data.GetNotAllGaussPointsProjectValidAction() !=
+          INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::proceed)
+  {
+    // Add detailed output that allows for a reconstruction of the failed projection
+    std::stringstream error_message;
+
+    // Get the geometry information of the line and other geometry
+    PrintPairInformation(error_message, pair, q_line, q_other, optional_args...);
+
+    // Print a projection point
+    auto print_projection_point = [&error_message](const auto& projection_point)
+    {
+      error_message << "\n  line parameter coordinate: "
+                    << CORE::FADUTILS::CastToDouble(projection_point.GetEta());
+      error_message << "\n  other parameter coordinate: ";
+      CORE::FADUTILS::CastToDouble(projection_point.GetXi()).Print(error_message);
+      error_message << "  projection result: " << (int)projection_point.GetProjectionResult();
+    };
+
+    // Print the segment information
+    error_message << "\nSegment start point:";
+    print_projection_point(segment.GetStartPoint());
+    error_message << "\nSegment end point:";
+    print_projection_point(segment.GetEndPoint());
+
+    // Print the projection result for each Gauss point on the segment
+    for (unsigned int i_point = 0; i_point < projection_points.size(); i_point++)
+    {
+      error_message << "\nGauss point " << i_point;
+      print_projection_point(projection_points[i_point]);
+    }
+
+    // Depending on the input file, print a warning or fail
+    if (evaluation_data.GetNotAllGaussPointsProjectValidAction() ==
+        INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning)
+    {
+      std::cout << error_message.str();
+    }
+    else
+    {
+      dserror(
+          error_message.str() +
+              "\n\nAll Gauss points need to have a valid projection. The number of Gauss points "
+              "is %d, but the number of valid projections is %d!",
+          gauss_points.nquad, n_valid_projections);
+    }
+  }
 }
 
 
@@ -274,8 +321,8 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
 
       // Reproject the Gauss points on the segmented line.
       segments[0] = LineSegment<scalar_type>(eta_a, eta_b);
-      LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(pair, q_line, q_other,
-          pair->GetEvaluationData()->GetGaussPoints(), segments[0], optional_args...);
+      LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
+          pair, q_line, q_other, segments[0], optional_args...);
     }
   }
 }
@@ -449,9 +496,9 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
               segments.push_back(LineSegment<scalar_type>(segment_start, start_point));
               segment_tracker.insert(new_segment_double);
 
-              // Project the Gauss points on the segment. All points have to project valid.
-              LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(pair, q_line, q_other,
-                  pair->GetEvaluationData()->GetGaussPoints(), segments.back(), optional_args...);
+              // Project the Gauss points on the segment.
+              LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
+                  pair, q_line, q_other, segments.back(), optional_args...);
             }
 
             // Deactivate the current segment.
@@ -674,3 +721,5 @@ namespace GEOMETRYPAIR
   initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_tri3);
   initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_tri6);
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE

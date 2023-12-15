@@ -20,6 +20,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -56,9 +58,6 @@ namespace PARTICLERIGIDBODY
      * \param[in] comm communicator
      */
     explicit RigidBodyRuntimeVtpWriter(const Epetra_Comm& comm);
-
-    //! destructor
-    ~RigidBodyRuntimeVtpWriter() = default;
 
     /*!
      * \brief init rigid body runtime vtp writer
@@ -111,4 +110,6 @@ namespace PARTICLERIGIDBODY
 }  // namespace PARTICLERIGIDBODY
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

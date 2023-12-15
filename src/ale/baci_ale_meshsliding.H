@@ -12,6 +12,8 @@
 
 #include "baci_ale_meshtying.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class CouplingNonLinMortar;
@@ -29,31 +31,29 @@ namespace ALE
         int nsd,                                                ///> number space dimensions
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
-    virtual ~Meshsliding() { return; };
-
     //! Set up mesh sliding framework
     Teuchos::RCP<CORE::LINALG::SparseOperator> Setup(
-        std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp);
+        std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp) override;
 
    private:
     //! Call the constructor and the setup of the mortar coupling adapter
-    void AdapterMortar(std::vector<int> coupleddof);
+    void AdapterMortar(std::vector<int> coupleddof) override;
 
     //! Compare the size of the slave and master dof row map
-    void CompareNumDof();
+    void CompareNumDof() override;
 
     //! Get function for the slave and master dof row map
-    void DofRowMaps();
+    void DofRowMaps() override;
 
     //! Get function for the P matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixP();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixP() override;
 
     //! Condensation operation for a block matrix
     void CondensationOperationBlockMatrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator>&
             sysmat,                             ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>& residual,  ///> residual established by the element routine
-        Teuchos::RCP<Epetra_Vector>& dispnp);   ///> current displacement vector
+        Teuchos::RCP<Epetra_Vector>& dispnp) override;  ///> current displacement vector
 
     //! Get functions for the mortar matrices
     void GetMortarMatrices(Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_mm,
@@ -70,15 +70,16 @@ namespace ALE
         Teuchos::RCP<const Epetra_Map>& dofrowmap);
 
     //! Compute and update the increments of the slave node (do nothing in the mesh sliding case)
-    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& inc, Teuchos::RCP<Epetra_Vector>& dispnp){};
+    void UpdateSlaveDOF(
+        Teuchos::RCP<Epetra_Vector>& inc, Teuchos::RCP<Epetra_Vector>& dispnp) override{};
 
     //! Recover method for Lagrange multipliers
-    void Recover(Teuchos::RCP<Epetra_Vector>& inc);
+    void Recover(Teuchos::RCP<Epetra_Vector>& inc) override;
 
     //! Solve ALE mesh sliding problem
     int SolveMeshtying(CORE::LINALG::Solver& solver,
         Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector>& disi,
-        Teuchos::RCP<Epetra_Vector> residual, Teuchos::RCP<Epetra_Vector>& dispnp);
+        Teuchos::RCP<Epetra_Vector> residual, Teuchos::RCP<Epetra_Vector>& dispnp) override;
 
     //! adapter to nonlinear mortar coupling framework
     Teuchos::RCP<ADAPTER::CouplingNonLinMortar> adaptermeshsliding_;
@@ -93,5 +94,7 @@ namespace ALE
   };
 
 }  // namespace ALE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_MESHSLIDING_H

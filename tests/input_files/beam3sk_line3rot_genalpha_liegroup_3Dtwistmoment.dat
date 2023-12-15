@@ -43,8 +43,6 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 TOLRES                          1.0E-6
 TOLDISP                         1.0E-11
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 MAXITER                         80
 LOADLIN                         Yes
 MASSLIN                         rotations

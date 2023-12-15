@@ -16,10 +16,15 @@
 
 #include <Teuchos_RCP.hpp>
 
+class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration
-class DiscretizationRuntimeVtuWriter;
-class Epetra_Vector;
+namespace IO
+{
+  class DiscretizationVisualizationWriterMesh;
+}
 namespace DRT
 {
   class Discretization;
@@ -37,7 +42,7 @@ namespace CORE::GEO
      public:
       BoundingBox();
 
-      virtual ~BoundingBox(){};
+      virtual ~BoundingBox() = default;
 
       /// initialize bounding box object
       void Init();
@@ -58,7 +63,7 @@ namespace CORE::GEO
       bool HavePBC() const { return haveperiodicbc_; }
 
       /// get const bounding box discretization
-      ::DRT::Discretization const& BoundingBoxDiscret() const { return *boxdiscret_; }
+      BACI::DRT::Discretization const& BoundingBoxDiscret() const { return *boxdiscret_; }
 
       /// get corner points
       double operator()(int i, int j) const { return box_(i, j); }
@@ -150,7 +155,7 @@ namespace CORE::GEO
       /*!
        \brief Get the outmost point of the boundingbox
        */
-      void UndeformedBoxCornerPointPosition(int i, double* x) const;
+      void UndeformedBoxCornerPointPosition(int i, std::vector<double>& x) const;
       CORE::LINALG::Matrix<3, 1> UndeformedBoxCornerPointPosition(int i) const;
       /*!
        \brief get reference position of corner point i
@@ -264,7 +269,7 @@ namespace CORE::GEO
 
      private:
       /// discretization with one volume element representing the box ( used e.g. for output)
-      Teuchos::RCP<::DRT::Discretization> boxdiscret_;
+      Teuchos::RCP<BACI::DRT::Discretization> boxdiscret_;
       /// box displacement vector
       Teuchos::RCP<Epetra_Vector> disn_row_;
       Teuchos::RCP<Epetra_Vector> disn_col_;
@@ -281,11 +286,13 @@ namespace CORE::GEO
       ///< box edge lengths in x, y, z direction
       double edgelength_[3];
 
-      //! bounding box discretization runtime vtu writer
-      Teuchos::RCP<DiscretizationRuntimeVtuWriter> vtu_writer_ptr_;
+      //! bounding box discretization runtime visualization writer
+      Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> visualization_output_writer_ptr_;
     };
 
   }  // namespace MESHFREE
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

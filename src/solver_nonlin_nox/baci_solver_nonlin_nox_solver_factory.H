@@ -15,7 +15,6 @@
 
 #include <Teuchos_RCP.hpp>
 
-// forward declaration
 namespace NOX
 {
   namespace Abstract
@@ -32,7 +31,13 @@ namespace NOX
   {
     class Generic;
   }  // namespace Solver
+}  // namespace NOX
 
+BACI_NAMESPACE_OPEN
+
+// forward declaration
+namespace NOX
+{
   namespace NLN
   {
     class GlobalData;
@@ -47,7 +52,7 @@ namespace NOX
     namespace Solver
     {
       /*! \brief %Modified Factory class to control the creation of solvers derived from the
-      NOX::Solver::Generic object.
+      ::NOX::Solver::Generic object.
 
       \author Michael Hiermeier
       */
@@ -59,13 +64,13 @@ namespace NOX
         Factory();
 
         //! Destructor.
-        virtual ~Factory(){};
+        virtual ~Factory() = default;
 
-        Teuchos::RCP<NOX::Solver::Generic> BuildSolver(
-            const Teuchos::RCP<NOX::Abstract::Group>& grp,
-            const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+        Teuchos::RCP<::NOX::Solver::Generic> BuildSolver(
+            const Teuchos::RCP<::NOX::Abstract::Group>& grp,
+            const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-            const Teuchos::RCP<NOX::NLN::GlobalData>& params);
+            const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData);
       };
 
       /*! \brief Nonmember helper function for the NOX::Constraint::Solver::Factory.
@@ -74,14 +79,17 @@ namespace NOX
 
       */
 
-      Teuchos::RCP<NOX::Solver::Generic> BuildSolver(const Teuchos::RCP<NOX::Abstract::Group>& grp,
-          const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+      Teuchos::RCP<::NOX::Solver::Generic> BuildSolver(
+          const Teuchos::RCP<::NOX::Abstract::Group>& grp,
+          const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
           const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-          const Teuchos::RCP<NOX::NLN::GlobalData>& params);
+          const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData);
 
     }  // namespace Solver
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_SOLVER_FACTORY_H

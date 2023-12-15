@@ -10,8 +10,10 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_gravity.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -47,9 +49,11 @@ void PARTICLEALGORITHM::GravityHandler::GetGravityAcceleration(
   if (gravityrampfctnumber_ > 0)
   {
     const double fac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfTime>(gravityrampfctnumber_ - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfTime>(gravityrampfctnumber_ - 1)
                            .Evaluate(time);
 
     for (int dim = 0; dim < 3; ++dim) scaled_gravity[dim] *= fac;
   }
 }
+
+BACI_NAMESPACE_CLOSE

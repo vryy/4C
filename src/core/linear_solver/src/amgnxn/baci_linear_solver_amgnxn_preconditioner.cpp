@@ -26,24 +26,20 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::AMGnxn_Preconditioner(
-    FILE* outfile, Teuchos::ParameterList& params)
-    : CORE::LINEAR_SOLVER::PreconditionerType(outfile), params_(params)
+CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::AMGnxn_Preconditioner(Teuchos::ParameterList& params)
+    : params_(params)
 {
 }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Epetra_Operator* CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::PrecOperator() const { return &*P_; }
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-Teuchos::RCP<Epetra_Operator> CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::PrecOperatorRCP() const
+Teuchos::RCP<Epetra_Operator> CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::PrecOperator() const
 {
   return P_;
 }
@@ -1249,3 +1245,5 @@ void CORE::LINEAR_SOLVER::PrintMap(const Epetra_Map& Map, std::string prefix)
   for (int LID = 0; LID < NumLID; LID++) ofile << LID << " " << Map.GID(LID) << std::endl;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -23,6 +23,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseOperator;
@@ -52,27 +54,11 @@ namespace DRT
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /// Destruct
-    virtual ~AssembleStrategy();
+    virtual ~AssembleStrategy() = default;
 
     int FirstDofSet() const { return firstdofset_; }
 
     int SecondDofSet() const { return seconddofset_; }
-
-    /// Create matrix graph to create a filled matrix
-    /*!
-      The graph will already include the Dirichlet lines. That is there will
-      be just the diagonal entry on each line that is a Dirichlet line.
-      CORE::LINALG::SparseMatrix can assemble to filled matrices with ready made
-      Dirichlet lines. Thus the idea is to explicitly create a graph and
-      creating filled matrices from it. It will never be required to assemble
-      to unfilled matrices or reallocate any matrices as long as the mesh
-      remains the same.
-
-      \note It is much more expensive to assemble to an unfilled matrix than a
-      filled one.
-     */
-    virtual Teuchos::RCP<Epetra_CrsGraph> MatrixGraph(
-        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Map> dbcmap);
 
     //! @name Assembly Flags
     /// Tell which matrix and vector is available to be assembled.
@@ -213,5 +199,7 @@ namespace DRT
   };
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

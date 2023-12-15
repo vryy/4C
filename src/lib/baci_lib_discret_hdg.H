@@ -22,6 +22,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -46,12 +48,6 @@ namespace DRT
     \param comm (in): An epetra comm object associated with this discretization
     */
     DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~DiscretizationHDG() { return; };
 
 
     /*!
@@ -94,7 +90,7 @@ namespace DRT
     \note Sets Filled()=true
     */
     int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
-        bool doboundaryconditions = true);
+        bool doboundaryconditions = true) override;
 
     /*!
      * this function has the same functionality as the function in the base class,
@@ -104,9 +100,9 @@ namespace DRT
      *
      *  schoeder 06/14
      */
-    virtual void AssignGlobalIDs(const Epetra_Comm& comm,
+    void AssignGlobalIDs(const Epetra_Comm& comm,
         const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<DRT::Element>>& finalelements);
+        std::map<int, Teuchos::RCP<DRT::Element>>& finalelements) override;
 
     /*!
      * this function computes a slightly modified layer for ghosting around the elements:
@@ -132,9 +128,6 @@ namespace DRT
      public:
       /// constructor
       DbcHDG(){};
-
-      /// destructor
-      virtual ~DbcHDG(){};
 
      protected:
       /** \brief Determine Dirichlet condition
@@ -165,9 +158,10 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      virtual void DoDirichletCondition(const DRT::Discretization& discret,
-          const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
+      void DoDirichletCondition(const DRT::Discretization& discret, const DRT::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle,
+          const Teuchos::RCP<std::set<int>>* dbcgids) const override;
       void DoDirichletCondition(const DRT::DiscretizationFaces& discret, const DRT::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle) const;
@@ -178,5 +172,7 @@ namespace DRT
 /// << operator
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_HDG_H

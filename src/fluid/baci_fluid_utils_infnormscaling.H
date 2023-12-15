@@ -16,6 +16,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -34,7 +36,7 @@ namespace FLD
       FluidInfNormScaling(CORE::LINALG::MapExtractor& mapextractor);
 
       //! destructor
-      virtual ~FluidInfNormScaling(){};
+      virtual ~FluidInfNormScaling() = default;
 
       //! perform infnorm-scaling of linear system
       void ScaleSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& b);
@@ -63,5 +65,7 @@ namespace FLD
 
   }  // namespace UTILS
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_UTILS_INFNORMSCALING_H

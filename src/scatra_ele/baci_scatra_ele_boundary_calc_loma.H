@@ -12,13 +12,14 @@
 
 #include "baci_scatra_ele_boundary_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcLoma : public ScaTraEleBoundaryCalc<distype, probdim>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
@@ -39,7 +40,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      private:
       //! private constructor for singletons
@@ -53,11 +54,11 @@ namespace DRT
       //! calculate Neumann inflow boundary conditions
       void NeumannInflow(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs);
+          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs) override;
 
       //! get density at integration point
       double GetDensity(Teuchos::RCP<const MAT::Material> material,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k) override;
 
       //! integral of normal diffusive flux and velocity over boundary surface
       void NormDiffFluxAndVelIntegral(const DRT::Element* ele, Teuchos::ParameterList& params,
@@ -68,4 +69,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

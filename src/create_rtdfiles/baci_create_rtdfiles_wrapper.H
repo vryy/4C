@@ -14,6 +14,8 @@
 #define BACI_CREATE_RTDFILES_WRAPPER_H
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace RTD
@@ -25,6 +27,16 @@ namespace DRT
 
     */
     void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename);
+
+    /*!
+      \brief Create a restructuredText file containing the cell type section
+        including node numbers, etc.
+        TODO face IDs, etc.
+
+      \param[in] string: filename for the the header parameters, should be celltypereference.rst
+
+    */
+    void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename);
 
     /*!
       \brief WCreate a restructuredText file containing all material models and parameters
@@ -56,5 +68,7 @@ namespace DRT
 
   }  // namespace RTD
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CREATE_RTDFILES_WRAPPER_H

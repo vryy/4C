@@ -23,6 +23,8 @@
 #include "baci_mortar_projector.H"
 #include "baci_mortar_shape_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/14|
  *----------------------------------------------------------------------*/
@@ -181,12 +183,12 @@ void NTS::CoInterpolator::Interpolate2D(
       //**************************************************************
       std::array<double, 2> sxi = {0.0, 0.0};
 
-      if (sele->Shape() == DRT::Element::line2)
+      if (sele->Shape() == CORE::FE::CellType::line2)
       {
         if (lid == 0) sxi[0] = -1;
         if (lid == 1) sxi[0] = 1;
       }
-      else if (sele->Shape() == DRT::Element::line3)
+      else if (sele->Shape() == CORE::FE::CellType::line3)
       {
         if (lid == 0) sxi[0] = -1;
         if (lid == 1) sxi[0] = 1;
@@ -272,8 +274,8 @@ bool NTS::CoInterpolator::Interpolate3D(
 
   double sxi[2] = {0.0, 0.0};
 
-  if (sele->Shape() == DRT::Element::quad4 or sele->Shape() == DRT::Element::quad8 or
-      sele->Shape() == DRT::Element::quad9)
+  if (sele->Shape() == CORE::FE::CellType::quad4 or sele->Shape() == CORE::FE::CellType::quad8 or
+      sele->Shape() == CORE::FE::CellType::quad9)
   {
     if (lid == 0)
     {
@@ -323,7 +325,7 @@ bool NTS::CoInterpolator::Interpolate3D(
     else
       dserror("ERORR: wrong node LID");
   }
-  else if (sele->Shape() == DRT::Element::tri3 or sele->Shape() == DRT::Element::tri6)
+  else if (sele->Shape() == CORE::FE::CellType::tri3 or sele->Shape() == CORE::FE::CellType::tri6)
   {
     if (lid == 0)
     {
@@ -377,9 +379,10 @@ bool NTS::CoInterpolator::Interpolate3D(
     bool is_on_mele = true;
 
     // check GP projection
-    DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
+    CORE::FE::CellType dt = meles[nummaster]->Shape();
     const double tol = 1e-8;
-    if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+    if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+        dt == CORE::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -479,8 +482,8 @@ void NTS::CoInterpolator::InterpolateMasterTemp3D(
 
     double sxi[2] = {0.0, 0.0};
 
-    if (sele.Shape() == DRT::Element::quad4 or sele.Shape() == DRT::Element::quad8 or
-        sele.Shape() == DRT::Element::quad9)
+    if (sele.Shape() == CORE::FE::CellType::quad4 or sele.Shape() == CORE::FE::CellType::quad8 or
+        sele.Shape() == CORE::FE::CellType::quad9)
     {
       if (snodes == 0)
       {
@@ -530,7 +533,7 @@ void NTS::CoInterpolator::InterpolateMasterTemp3D(
       else
         dserror("ERORR: wrong node LID");
     }
-    else if (sele.Shape() == DRT::Element::tri3 or sele.Shape() == DRT::Element::tri6)
+    else if (sele.Shape() == CORE::FE::CellType::tri3 or sele.Shape() == CORE::FE::CellType::tri6)
     {
       if (snodes == 0)
       {
@@ -584,9 +587,10 @@ void NTS::CoInterpolator::InterpolateMasterTemp3D(
       bool is_on_mele = true;
 
       // check GP projection
-      DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
+      CORE::FE::CellType dt = meles[nummaster]->Shape();
       const double tol = 0.00;
-      if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+      if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+          dt == CORE::FE::CellType::quad9)
       {
         if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
         {
@@ -1735,38 +1739,40 @@ NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<MORTAR::MortarElement
   switch (meles[0]->Shape())
   {
     // 2D surface elements
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return MTInterpolatorCalc<DRT::Element::quad4>::Instance(
+      return MTInterpolatorCalc<CORE::FE::CellType::quad4>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return MTInterpolatorCalc<DRT::Element::quad8>::Instance(
+      return MTInterpolatorCalc<CORE::FE::CellType::quad8>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return MTInterpolatorCalc<DRT::Element::quad9>::Instance(
+      return MTInterpolatorCalc<CORE::FE::CellType::quad9>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return MTInterpolatorCalc<DRT::Element::tri3>::Instance(CORE::UTILS::SingletonAction::create);
+      return MTInterpolatorCalc<CORE::FE::CellType::tri3>::Instance(
+          CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return MTInterpolatorCalc<DRT::Element::tri6>::Instance(CORE::UTILS::SingletonAction::create);
+      return MTInterpolatorCalc<CORE::FE::CellType::tri6>::Instance(
+          CORE::UTILS::SingletonAction::create);
     }
       // 1D surface elements
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      return MTInterpolatorCalc<DRT::Element::line2>::Instance(
+      return MTInterpolatorCalc<CORE::FE::CellType::line2>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      return MTInterpolatorCalc<DRT::Element::line3>::Instance(
+      return MTInterpolatorCalc<CORE::FE::CellType::line3>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
     default:
@@ -1780,13 +1786,13 @@ NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<MORTAR::MortarElement
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeM>
 NTS::MTInterpolatorCalc<distypeM>::MTInterpolatorCalc()
 {
   //...
 }
 
-template <DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeM>
 NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -1804,7 +1810,7 @@ NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
     MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
 {
@@ -1822,7 +1828,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
     MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
 {
@@ -1885,7 +1891,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
     MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
 {
@@ -1915,8 +1921,8 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
     }
   }
 
-  if (sele->Shape() == DRT::Element::quad4 or sele->Shape() == DRT::Element::quad8 or
-      sele->Shape() == DRT::Element::quad9)
+  if (sele->Shape() == CORE::FE::CellType::quad4 or sele->Shape() == CORE::FE::CellType::quad8 or
+      sele->Shape() == CORE::FE::CellType::quad9)
   {
     if (lid == 0)
     {
@@ -1966,7 +1972,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
     else
       dserror("ERORR: wrong node LID");
   }
-  else if (sele->Shape() == DRT::Element::tri3 or sele->Shape() == DRT::Element::tri6)
+  else if (sele->Shape() == CORE::FE::CellType::tri3 or sele->Shape() == CORE::FE::CellType::tri6)
   {
     if (lid == 0)
     {
@@ -2021,8 +2027,8 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
 
     // check GP projection
     const double tol = 0.00;
-    if (distypeM == DRT::Element::quad4 || distypeM == DRT::Element::quad8 ||
-        distypeM == DRT::Element::quad9)
+    if (distypeM == CORE::FE::CellType::quad4 || distypeM == CORE::FE::CellType::quad8 ||
+        distypeM == CORE::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -2071,10 +2077,12 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
 }
 
 
-template class NTS::MTInterpolatorCalc<DRT::Element::line2>;
-template class NTS::MTInterpolatorCalc<DRT::Element::line3>;
-template class NTS::MTInterpolatorCalc<DRT::Element::quad4>;
-template class NTS::MTInterpolatorCalc<DRT::Element::quad8>;
-template class NTS::MTInterpolatorCalc<DRT::Element::quad9>;
-template class NTS::MTInterpolatorCalc<DRT::Element::tri3>;
-template class NTS::MTInterpolatorCalc<DRT::Element::tri6>;
+template class NTS::MTInterpolatorCalc<CORE::FE::CellType::line2>;
+template class NTS::MTInterpolatorCalc<CORE::FE::CellType::line3>;
+template class NTS::MTInterpolatorCalc<CORE::FE::CellType::quad4>;
+template class NTS::MTInterpolatorCalc<CORE::FE::CellType::quad8>;
+template class NTS::MTInterpolatorCalc<CORE::FE::CellType::quad9>;
+template class NTS::MTInterpolatorCalc<CORE::FE::CellType::tri3>;
+template class NTS::MTInterpolatorCalc<CORE::FE::CellType::tri6>;
+
+BACI_NAMESPACE_CLOSE

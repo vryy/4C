@@ -10,11 +10,14 @@
 #include "baci_scatra_timint_stat.H"
 
 #include "baci_io.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
@@ -71,11 +74,6 @@ void SCATRA::TimIntStationary::Init()
   return;
 }
 
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   gjb 08/08 |
-*----------------------------------------------------------------------*/
-SCATRA::TimIntStationary::~TimIntStationary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -215,31 +213,27 @@ void SCATRA::TimIntStationary::ReadRestart(const int step, Teuchos::RCP<IO::Inpu
 
 
 /*----------------------------------------------------------------------*
- | update of solution at end of time step                     gjb 12/10 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::Update(const int num)
+void SCATRA::TimIntStationary::Update()
 {
   // call base class routine
-  ScaTraTimIntImpl::Update(num);
+  ScaTraTimIntImpl::Update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (DoOutput() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
+    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
   }
-
-  return;
-};
+}
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 10/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::OutputRestart() const
+void SCATRA::TimIntStationary::WriteRestart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::OutputRestart();
+  ScaTraTimIntImpl::WriteRestart();
 
   // This feature enables starting a time-dependent simulation from
   // a non-trivial steady-state solution that was calculated before.
@@ -249,3 +243,5 @@ void SCATRA::TimIntStationary::OutputRestart() const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

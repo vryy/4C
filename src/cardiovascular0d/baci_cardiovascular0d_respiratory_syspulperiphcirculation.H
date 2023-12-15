@@ -83,6 +83,7 @@ for gas exchange in the human lungs", J Theor biol (2006)
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -110,31 +111,27 @@ namespace UTILS
 
     CardiovascularRespiratory0DSysPulPeriphCirculation(
         Teuchos::RCP<DRT::Discretization>
-            discr,                    ///< Discretization where Cardiovascular0D lives on
-        const std::string& CondName,  ///< Name of condition to create Cardiovascular0D from
-        std::vector<int>& curID       ///< current ID
+            discr,                         ///< Discretization where Cardiovascular0D lives on
+        const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
+        std::vector<int>& curID            ///< current ID
     );
 
-    /*!
-        \brief Destructor
 
-     */
-    virtual ~CardiovascularRespiratory0DSysPulPeriphCirculation() { return; };
 
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning
-    virtual void Initialize(
+    void Initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vector that may be filled by assembly
                                               ///< of element contributions
         Teuchos::RCP<Epetra_Vector>
             sysvec2  ///< distributed vector that may be filled by assembly of element contributions
-    );
+        ) override;
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #EvaluateCardiovascular0D routine is called
-    virtual void Evaluate(
+    void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
@@ -145,7 +142,7 @@ namespace UTILS
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by
                                               ///< assembly of element contributions
         Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
-        const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5);
+        const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5) override;
 
     // cbO2 and its derivatives
     double cbO2(double ppCO2, double ppO2);
@@ -357,5 +354,7 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CARDIOVASCULAR0D_RESPIRATORY_SYSPULPERIPHCIRCULATION_H

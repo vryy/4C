@@ -14,10 +14,12 @@ is just a "control instance".
 #ifndef BACI_MAT_LIST_CHEMOTAXIS_H
 #define BACI_MAT_LIST_CHEMOTAXIS_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_list.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -31,11 +33,8 @@ namespace MAT
       /// standard constructor
       MatListChemotaxis(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~MatListChemotaxis() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -55,14 +54,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class MatListChemotaxisType : public DRT::ParObjectType
+  class MatListChemotaxisType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "MatListChemotaxisType"; }
+    std::string Name() const override { return "MatListChemotaxisType"; }
 
     static MatListChemotaxisType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MatListChemotaxisType instance_;
@@ -87,7 +86,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return MatListChemotaxisType::Instance().UniqueParObjectId();
     }
@@ -102,7 +101,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -116,18 +115,18 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_matlist_chemotaxis;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new MatListChemotaxis(*this));
     }
@@ -139,7 +138,7 @@ namespace MAT
     int PairID(const unsigned index) const;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::MatListChemotaxis* Parameter() const { return paramschemo_; }
+    MAT::PAR::MatListChemotaxis* Parameter() const override { return paramschemo_; }
 
    protected:
     /// setup of material map
@@ -155,5 +154,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_LIST_CHEMOTAXIS_H

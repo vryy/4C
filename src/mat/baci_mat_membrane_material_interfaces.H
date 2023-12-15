@@ -14,6 +14,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   /*!
@@ -27,6 +29,11 @@ namespace MAT
   class MembraneMaterialLocalCoordinates
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MembraneMaterialLocalCoordinates() = default;
+
     /*!
      * @brief Update material in local coordinates
      *
@@ -70,6 +77,11 @@ namespace MAT
   class MembraneMaterialGlobalCoordinates
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MembraneMaterialGlobalCoordinates() = default;
+
     /*!
      * @brief Evaluate stress response plus elasticity tensor for membranes assuming
      * incompressibility and plane stress
@@ -98,6 +110,11 @@ namespace MAT
   class MembraneMaterialInelasticThickness
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MembraneMaterialInelasticThickness() = default;
+
     /*!
      * @brief Evaluate membrane thickness stretch (mostly such that the elastic deformation is
      * incompressible)
@@ -114,5 +131,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

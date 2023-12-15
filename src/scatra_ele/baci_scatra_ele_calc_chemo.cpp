@@ -18,6 +18,8 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 //! note for chemotaxis in BACI:
 //! assume the following situation: scalar A does follow the gradient of scalar B (i.e. B is the
 //! attractant and scalar A the chemotractant) with chemotactic coefficient 3.0
@@ -35,7 +37,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -55,7 +57,7 @@ DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  *  constructor---------------------------                              |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
     const int numdofpernode, const int numscal, const std::string& disname)
     : my::ScaTraEleCalc(numdofpernode, numscal, disname),
@@ -68,7 +70,7 @@ DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
 /*--------------------------------------------------------------------------- *
  |  calculation of chemotactic element matrix                     thon 06/ 15 |
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double timetaufac, const double densnp, const double scatrares,
@@ -136,7 +138,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
 /*--------------------------------------------------------------------------- *
  |  calculation of chemotactic RHS                                thon 06/ 15 |
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
     const double scatrares, const double densnp)
@@ -182,7 +184,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
 /*----------------------------------------------------------------------*
  |  get the attractant id                                   thon 06/ 15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetPartner(const std::vector<int> pair)
 {
   int partner = 0;
@@ -203,7 +205,7 @@ int DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetPartner(const std::v
 /*----------------------------------------------------------------------*
  |  get the material constants  (private)                   thon 06/ 15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
@@ -262,7 +264,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
 /*-----------------------------------------------------------------------------------*
  |  Clear all chemotaxtis related class variable (i.e. set them to zero)  thon 06/15 |
  *-----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ClearChemotaxisTerms()
 {
   numcondchemo_ = 0;
@@ -275,7 +277,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ClearChemotaxisTerms()
 /*-----------------------------------------------------------------------------------------*
  |  get numcond, pairing list, chemotaxis coefficient from material            thon 06/ 15 |
  *-----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetChemotaxisCoefficients(
     const Teuchos::RCP<const MAT::Material> material  //!< pointer to current material
 )
@@ -305,7 +307,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetChemotaxisCoefficie
  |  calculation of strong residual for stabilization                             |
  | (depending on respective stationary or time-integration scheme)   thon 06/ 15 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
     const int k,           //!< index of current scalar
     double& scatrares,     //!< residual of convection-diffusion-reaction eq
@@ -339,7 +341,6 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         CORE::LINALG::Matrix<nen_, 1> laplace(true);
-        ;
         my::GetLaplacianStrongForm(laplace);
         laplattractant = laplace.Dot(my::ephinp_[partner]);
       }
@@ -362,27 +363,29 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::line3, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::quad4, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemo<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::hex8, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::tet10, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::pyramid5, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

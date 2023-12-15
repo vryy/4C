@@ -7,20 +7,21 @@ equations
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_constituent_full_constrained_mixture_fiber.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_parobject.H"
 #include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_mixture_constituent_remodelfiber_lib.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
+#include "baci_utils_function_of_time.H"
 
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
 #include <numeric>
+
+BACI_NAMESPACE_OPEN
 
 // anonymous namespace for helper classes and functions
 namespace
@@ -39,6 +40,35 @@ namespace
     if (time < 0) return 0.0;  // Time has not been set by the time integrator during setup
     return time;
   }
+
+  [[nodiscard]] static inline double GetDeltaTime(const Teuchos::ParameterList& params)
+  {
+    return params.get<double>("delta time");
+  }
+
+  MIXTURE::HistoryAdaptionStrategy GetHistoryAdaptionStrategyFromInput(const std::string& input)
+  {
+    if (input == "none")
+    {
+      return MIXTURE::HistoryAdaptionStrategy::none;
+    }
+    else if (input == "window")
+    {
+      return MIXTURE::HistoryAdaptionStrategy::window;
+    }
+    else if (input == "model_equation")
+    {
+      return MIXTURE::HistoryAdaptionStrategy::model_equation;
+    }
+    else if (input == "higher_order")
+    {
+      return MIXTURE::HistoryAdaptionStrategy::higher_order_integration;
+    }
+    else
+    {
+      dserror("Unknown history adaption strategy %s!", input.c_str());
+    }
+  }
 }  // namespace
 
 MIXTURE::PAR::MixtureConstituent_FullConstrainedMixtureFiber::
@@ -54,7 +84,8 @@ MIXTURE::PAR::MixtureConstituent_FullConstrainedMixtureFiber::
       deposition_stretch_(matdata->GetDouble("DEPOSITION_STRETCH")),
       initial_deposition_stretch_timefunc_num_(
           matdata->GetInt("INITIAL_DEPOSITION_STRETCH_TIMEFUNCT")),
-      adaptive_history_(matdata->GetInt("ADAPTIVE_HISTORY")),
+      adaptive_history_strategy_(GetHistoryAdaptionStrategyFromInput(
+          *matdata->Get<std::string>("ADAPTIVE_HISTORY_STRATEGY"))),
       adaptive_history_tolerance_(matdata->GetDouble("ADAPTIVE_HISTORY_TOLERANCE"))
 {
 }
@@ -87,7 +118,7 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::PackConstituent(
-    DRT::PackBuffer& data) const
+    CORE::COMM::PackBuffer& data) const
 {
   MIXTURE::MixtureConstituent::PackConstituent(data);
   anisotropy_extension_.PackAnisotropy(data);
@@ -95,7 +126,7 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::PackConstituent(
   for (const FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.Pack(data);
 
-  DRT::ParObject::AddtoPack(data, last_lambda_f_);
+  CORE::COMM::ParObject::AddtoPack(data, last_lambda_f_);
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::UnpackConstituent(
@@ -109,7 +140,7 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::UnpackConstituent(
   for (FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.Unpack(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, last_lambda_f_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, last_lambda_f_);
 
   if (params_->growth_enabled_)
   {
@@ -140,7 +171,7 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Initialize()
     LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
         params_->growth_constant_, params_->poisson_decay_time_);
     full_constrained_mixture_fiber_.emplace_back(material, growth_evolution,
-        EvaluateInitialDepositionStretch(0.0), params_->adaptive_history_,
+        EvaluateInitialDepositionStretch(0.0), params_->adaptive_history_strategy_,
         params_->growth_enabled_);
     full_constrained_mixture_fiber_[gp].adaptive_tolerance_ = params_->adaptive_history_tolerance_;
   }
@@ -182,17 +213,17 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Update(
   full_constrained_mixture_fiber_[gp].Update();
 }
 
-void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::RegisterVtkOutputDataNames(
+void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  MixtureConstituent::RegisterVtkOutputDataNames(names_and_size);
+  MixtureConstituent::RegisterOutputDataNames(names_and_size);
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig_h"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_growth_scalar"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_history_size"] = 1;
 }
 
-bool MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateVtkOutputData(
+bool MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig_h")
@@ -226,11 +257,11 @@ bool MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateVtkOutputD
       data(gp, 0) = std::accumulate(full_constrained_mixture_fiber_[gp].history_.begin(),
           full_constrained_mixture_fiber_[gp].history_.end(), 0,
           [](std::size_t number, const DepositionHistoryInterval<double>& item)
-          { return number + item.size(); });
+          { return number + item.timesteps.size(); });
     }
     return true;
   }
-  return MixtureConstituent::EvaluateVtkOutputData(name, data);
+  return MixtureConstituent::EvaluateOutputData(name, data);
 }
 
 CORE::LINALG::Matrix<1, 6>
@@ -274,11 +305,12 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Evaluate(
     CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   const double time = GetTotalTime(params);
+  const double delta_time = GetDeltaTime(params);
 
   CORE::LINALG::Matrix<3, 3> C = EvaluateC(F);
 
   const double lambda_f = EvaluateLambdaf(C, gp, eleGID);
-  full_constrained_mixture_fiber_[gp].RecomputeState(lambda_f, time);
+  full_constrained_mixture_fiber_[gp].RecomputeState(lambda_f, time, delta_time);
 
   S_stress.Update(EvaluateCurrentPK2(gp, eleGID));
   cmat.Update(EvaluateCurrentCmat(gp, eleGID));
@@ -319,7 +351,7 @@ double MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateInitialD
   }
 
   return DRT::Problem::Instance()
-      ->FunctionById<DRT::UTILS::FunctionOfTime>(
+      ->FunctionById<CORE::UTILS::FunctionOfTime>(
           params_->initial_deposition_stretch_timefunc_num_ - 1)
       .Evaluate(time);
 }
@@ -329,3 +361,4 @@ double MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateLambdaf(
 {
   return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }
+BACI_NAMESPACE_CLOSE

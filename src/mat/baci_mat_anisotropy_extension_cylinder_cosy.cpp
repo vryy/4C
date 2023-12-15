@@ -12,24 +12,27 @@ materials with @MAT::Anisotropy
 
 #include "baci_mat_anisotropy_extension_cylinder_cosy.H"
 
-#include "baci_lib_parobject.H"
+#include "baci_comm_parobject.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_coordinate_system_provider.H"
+
+BACI_NAMESPACE_OPEN
 
 MAT::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisotropyExtension()
     : cosyLocation_(CosyLocation::None)
 {
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::PackAnisotropy(DRT::PackBuffer& data) const
+void MAT::CylinderCoordinateSystemAnisotropyExtension::PackAnisotropy(
+    CORE::COMM::PackBuffer& data) const
 {
-  DRT::ParObject::AddtoPack(data, static_cast<int>(cosyLocation_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(cosyLocation_));
 }
 
 void MAT::CylinderCoordinateSystemAnisotropyExtension::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  cosyLocation_ = static_cast<CosyLocation>(DRT::ParObject::ExtractInt(position, data));
+  cosyLocation_ = static_cast<CosyLocation>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
 void MAT::CylinderCoordinateSystemAnisotropyExtension::OnGlobalDataInitialized()
@@ -74,7 +77,7 @@ MAT::CylinderCoordinateSystemAnisotropyExtension::GetCylinderCoordinateSystem(in
   return GetAnisotropy()->GetGPCylinderCoordinateSystem(gp);
 }
 
-const Teuchos::RCP<MAT::CoordinateSystemProvider>
+Teuchos::RCP<MAT::CoordinateSystemProvider>
 MAT::CylinderCoordinateSystemAnisotropyExtension::GetCoordinateSystemProvider(int gp) const
 {
   auto cosy = Teuchos::rcp(new CoordinateSystemHolder());
@@ -84,3 +87,4 @@ MAT::CylinderCoordinateSystemAnisotropyExtension::GetCoordinateSystemProvider(in
 
   return cosy;
 }
+BACI_NAMESPACE_CLOSE

@@ -20,6 +20,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -53,9 +55,6 @@ namespace PARTICLEENGINE
      * \param[in] comm communicator
      */
     explicit ParticleRuntimeVtpWriter(const Epetra_Comm& comm);
-
-    //! destructor
-    ~ParticleRuntimeVtpWriter() = default;
 
     /*!
      * \brief init particle runtime vtp writer
@@ -127,4 +126,6 @@ namespace PARTICLEENGINE
 }  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

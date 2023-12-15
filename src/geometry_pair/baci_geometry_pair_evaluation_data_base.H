@@ -14,6 +14,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -33,7 +34,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    virtual ~GeometryEvaluationDataBase(){};
+    virtual ~GeometryEvaluationDataBase() = default;
 
     /**
      * \brief Clear data in this evaluation container.
@@ -41,5 +42,7 @@ namespace GEOMETRYPAIR
     virtual void Clear(){};
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

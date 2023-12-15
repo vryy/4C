@@ -14,6 +14,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -58,7 +60,7 @@ namespace SSTI
   {
    public:
     /// create using a Epetra_Comm
-    explicit SSTIAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams);
+    explicit SSTIAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! Setup of algorithm
     //! Clone Discretizations, init and setup subproblems, setup coupling adapters at interfaces,
@@ -98,12 +100,9 @@ namespace SSTI
 
     //! return subproblems
     //@{
-    const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const
-    {
-      return structure_;
-    };
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const;
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> StructureField() const { return structure_; };
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const;
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> ThermoFieldBase() { return thermo_; };
     //@}
@@ -151,7 +150,7 @@ namespace SSTI
     //! Pointers to subproblems
     //@{
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_;
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
     //@}
@@ -177,4 +176,6 @@ namespace SSTI
   Teuchos::RCP<SSTI::SSTIAlgorithm> BuildSSTI(INPAR::SSTI::SolutionScheme coupling,
       const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams);
 }  // namespace SSTI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSTI_ALGORITHM_H

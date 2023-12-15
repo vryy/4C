@@ -12,15 +12,17 @@
 
 #include "baci_fluid_ele_poro.H"
 
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
 DRT::ELEMENTS::FluidPoroEleType& DRT::ELEMENTS::FluidPoroEleType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::FluidPoro(-1, -1);
   object->Unpack(data);
@@ -95,9 +97,9 @@ DRT::Element* DRT::ELEMENTS::FluidPoro::Clone() const
   return newelement;
 }
 
-void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidPoro::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -124,10 +126,8 @@ void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // kintype_
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
@@ -157,82 +157,18 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumLine() > 1)  // 1D boundary element and 2D/3D parent element
-  {
-    return DRT::UTILS::ElementBoundaryFactory<FluidPoroBoundary, FluidPoro>(
-        DRT::UTILS::buildLines, this);
-  }
-  else if (NumLine() ==
-           1)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementLines<FluidPoroBoundary, FluidPoro>(*this);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumSurface() > 1)
-  {  // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<FluidPoroBoundary, FluidPoro>(
-        DRT::UTILS::buildSurfaces, this);
-  }
-  else if (NumSurface() ==
-           1)  // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else  // 1D elements
-  {
-    dserror("Surfaces() does not exist for 1D-element ");
-    return DRT::Element::Surfaces();
-  }
-}
-
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Volumes()
-{
-  if (NumVolume() ==
-      1)  // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
-  {
-    std::vector<Teuchos::RCP<Element>> volumes(1);
-    volumes[0] = Teuchos::rcp(this, false);
-    return volumes;
-  }
-  else  //
-  {
-    dserror("Volumes() does not exist for 1D/2D-elements");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
 }
 
 void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
 {
-  os << "FluidPoro " << (DistypeToString(distype_)).c_str();
+  os << "FluidPoro " << (CORE::FE::CellTypeToString(distype_)).c_str();
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

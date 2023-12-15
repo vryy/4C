@@ -12,6 +12,8 @@
 
 #include "baci_mat_structporo.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -27,11 +29,8 @@ namespace MAT
       /// standard constructor
       StructPoroReaction(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~StructPoroReaction() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -43,14 +42,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class StructPoroReactionType : public DRT::ParObjectType
+  class StructPoroReactionType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "StructPoroReactionType"; }
+    std::string Name() const override { return "StructPoroReactionType"; }
 
     static StructPoroReactionType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static StructPoroReactionType instance_;
@@ -77,7 +76,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return StructPoroReactionType::Instance().UniqueParObjectId();
     }
@@ -92,7 +91,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -106,18 +105,18 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_structpororeaction;
     }
 
     /// return initial porosity
-    double RefPorosityTimeDeriv() const { return dphiDphiref_ * refporositydot_; }
+    double RefPorosityTimeDeriv() const override { return dphiDphiref_ * refporositydot_; }
 
     /// compute current porosity and save it
     void ComputePorosity(Teuchos::ParameterList& params,  ///< (i) element parameter list
@@ -131,10 +130,10 @@ namespace MAT
             dphi_dJdp,  ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
         double* dphi_dJJ,  ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
         double* dphi_dpp,  ///< (o) second derivative of porosity w.r.t. pressure at gauss point
-        bool save = true);
+        bool save = true) override;
 
     //! evaluate constitutive relation for porosity and compute derivatives
-    virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,  ///< (i) parameter list
+    void ConstitutiveDerivatives(Teuchos::ParameterList& params,  ///< (i) parameter list
         double press,        ///< (i) fluid pressure at gauss point
         double J,            ///< (i) Jacobian determinant at gauss point
         double porosity,     ///< (i) porosity at gauss point
@@ -143,20 +142,20 @@ namespace MAT
         double* dW_dJ,       ///< (o) derivative of potential w.r.t. jacobian
         double* dW_dphiref,  ///< (o) derivative of potential w.r.t. jacobian
         double* W            ///< (o) inner potential
-    );
+        ) override;
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new StructPoroReaction(*this));
     }
 
     /// Initialize internal variables
     void Setup(int numgp,  ///< number of Gauss points
-        DRT::INPUT::LineDefinition* linedef);
+        DRT::INPUT::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return reference porosity average
     double RefPorosityAv() const;
@@ -164,23 +163,23 @@ namespace MAT
     //! @name Evaluation methods
 
     /// evaluate material law
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< (i) green lagrange strain
-        Teuchos::ParameterList& params,                              ///< (i) parameter list
-        CORE::LINALG::Matrix<6, 1>* stress,  ///< (o) second piola kirchhoff stress
-        CORE::LINALG::Matrix<6, 6>* cmat,    ///< (o) constitutive matrix
-        int gp,                              ///< (i) Gauss point
-        int eleGID);
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< (i) green lagrange strain
+        Teuchos::ParameterList& params,                      ///< (i) parameter list
+        CORE::LINALG::Matrix<6, 1>* stress,                  ///< (o) second piola kirchhoff stress
+        CORE::LINALG::Matrix<6, 6>* cmat,                    ///< (o) constitutive matrix
+        int gp,                                              ///< (i) Gauss point
+        int eleGID) override;
 
     //@}
 
     //! @name Visualization methods
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //@}
 
@@ -203,5 +202,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_STRUCTPORO_REACTION_H

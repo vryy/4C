@@ -12,6 +12,8 @@
 
 #include "baci_linear_solver_preconditioner_type.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// SIMPLE(R) block preconditioner
@@ -22,20 +24,16 @@ namespace CORE::LINEAR_SOLVER
   class SimplePreconditioner : public PreconditionerType
   {
    public:
-    SimplePreconditioner(FILE* outfile, Teuchos::ParameterList& params);
+    SimplePreconditioner(Teuchos::ParameterList& params);
 
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    Epetra_Operator* PrecOperator() const override { return &*P_; }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return P_; }
-
-    void Print(std::ostream& stream) const override { stream << "CheapSimple"; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "CheapSIMPLE Parameters"; }
+    std::string getParameterListName() const override { return "CheapSIMPLE Parameters"; }
 
    private:
     Teuchos::ParameterList& params_;
@@ -49,21 +47,16 @@ namespace CORE::LINEAR_SOLVER
   class BGSPreconditioner : public PreconditionerType
   {
    public:
-    BGSPreconditioner(
-        FILE* outfile, Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist);
+    BGSPreconditioner(Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist);
 
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    Epetra_Operator* PrecOperator() const override { return &*P_; }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return P_; }
-
-    void Print(std::ostream& stream) const override { stream << "BGS"; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "BGS Parameters"; }
+    std::string getParameterListName() const override { return "BGS Parameters"; }
 
    private:
     Teuchos::ParameterList& params_;
@@ -71,5 +64,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> P_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

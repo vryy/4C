@@ -16,6 +16,8 @@ within thermodynamic electrodes
 #include "baci_scatra_ele_calc_sti_electrode.H"
 #include "baci_scatra_ele_sti_thermo.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -25,7 +27,7 @@ namespace DRT
     class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcElchElectrodeSTIThermo : public ScaTraEleCalcElchElectrode<distype>,
                                                 public ScaTraEleSTIThermo<distype>
     {
@@ -59,14 +61,14 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! extract quantities for element evaluation
       void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                  //!< parameter list
           DRT::Discretization& discretization,             //!< discretization
           DRT::Element::LocationArray& la                  //!< location array
-      );
+          ) override;
 
       //! get material parameters
       void GetMaterialParams(const DRT::Element* ele,  //!< current element
@@ -75,7 +77,7 @@ namespace DRT
           std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
           double& visc,                                //!< fluid viscosity
           const int iquad                              //!< ID of current integration point
-      );
+          ) override;
 
       //! calculate element matrix and element right-hand side vector
       void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
@@ -92,7 +94,7 @@ namespace DRT
           CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
-      );
+          ) override;
 
       //! fill element matrix with linearizations of discrete scatra residuals w.r.t. thermo dofs
       void SysmatODScatraThermo(DRT::Element* ele,  //!< current element
@@ -100,7 +102,7 @@ namespace DRT
       );
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! get internal variable manager for thermodynamic electrodes
       Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>> VarManager()
@@ -136,8 +138,6 @@ namespace DRT
             ScaTraEleInternalVariableManagerElchElectrode<NSD, NEN>(numscal, elchpara),
             ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>(){};
 
-      //! destructor
-      ~ScaTraEleInternalVariableManagerElchElectrodeSTIThermo() override = default;
 
       //! set internal variables for element evaluation
       void SetInternalVariables(const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
@@ -164,7 +164,7 @@ namespace DRT
       }
 
       //! set factor F/RT
-      void SetFRT()
+      void SetFRT() override
       {
         const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
         const double gasconstant =
@@ -178,4 +178,6 @@ namespace DRT
     };  // class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

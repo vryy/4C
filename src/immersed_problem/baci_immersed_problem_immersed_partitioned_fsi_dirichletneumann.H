@@ -14,6 +14,12 @@
 #include "baci_immersed_problem_fsi_partitioned_immersed.H"
 #include "baci_immersed_problem_immersed_base.H"
 
+namespace Teuchos
+{
+  class Time;
+}
+
+BACI_NAMESPACE_OPEN
 
 namespace FLD
 {
@@ -23,11 +29,6 @@ namespace FLD
 namespace CORE::GEO
 {
   class SearchTree;
-}
-
-namespace Teuchos
-{
-  class Time;
 }
 
 namespace ADAPTER
@@ -50,7 +51,7 @@ namespace IMMERSED
     \return int
     \date 08/16
     \author rauch  */
-    virtual int Init(const Teuchos::ParameterList& params);
+    int Init(const Teuchos::ParameterList& params) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -58,13 +59,13 @@ namespace IMMERSED
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    void Setup() override;
 
     /// initialize search tree for structure discretization
     void SetupStructuralDiscretization();
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
    protected:
     /*!
@@ -80,17 +81,17 @@ namespace IMMERSED
     This does not seem to work properly. For force coupled immersed fsi, everything works fine.
 
     */
-    virtual void FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
+    void FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
     /// interface fluid operator
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
-        Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity, const FillType fillFlag);
+    Teuchos::RCP<Epetra_Vector> FluidOp(
+        Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity, const FillType fillFlag) override;
 
     /// interface structural operator
-    virtual Teuchos::RCP<Epetra_Vector> StructOp(
-        Teuchos::RCP<Epetra_Vector> struct_bdry_traction, const FillType fillFlag);
+    Teuchos::RCP<Epetra_Vector> StructOp(
+        Teuchos::RCP<Epetra_Vector> struct_bdry_traction, const FillType fillFlag) override;
     /// initial guess
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
+    Teuchos::RCP<Epetra_Vector> InitialGuess() override;
 
     /// get immersed nodes and determine their dofs
     void BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis,
@@ -235,5 +236,7 @@ namespace IMMERSED
 
   };  // class ImmersedFSI
 }  // namespace IMMERSED
+
+BACI_NAMESPACE_CLOSE
 
 #endif

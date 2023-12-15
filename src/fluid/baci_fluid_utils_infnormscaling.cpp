@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::UTILS::FluidInfNormScaling::FluidInfNormScaling(CORE::LINALG::MapExtractor& mapextractor)
@@ -240,3 +242,5 @@ void FLD::UTILS::FluidInfNormScaling::UnscaleSolution(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

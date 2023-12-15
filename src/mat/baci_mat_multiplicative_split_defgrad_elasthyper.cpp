@@ -20,6 +20,8 @@ multiplicatively into elastic and inelastic parts
 #include "baci_mat_service.H"
 #include "baci_structure_new_enum_lists.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper(
@@ -53,7 +55,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::Cre
 MAT::MultiplicativeSplitDefgrad_ElastHyperType
     MAT::MultiplicativeSplitDefgrad_ElastHyperType::instance_;
 
-DRT::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
+CORE::COMM::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
     const std::vector<char>& data)
 {
   auto* splitdefgrad_elhy = new MAT::MultiplicativeSplitDefgrad_ElastHyper();
@@ -95,9 +97,9 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -126,10 +128,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
   potsumel_.clear();
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -287,11 +287,11 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
   static CORE::LINALG::Matrix<3, 3> beM(true);
   beM.MultiplyNT(1.0, FeM, FeM, 0.0);
   static CORE::LINALG::Matrix<6, 1> beV_strain(true);
-  UTILS::VOIGT::Strains::MatrixToVector(beM, beV_strain);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(beM, beV_strain);
   static CORE::LINALG::Matrix<3, 1> prinv(true);
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, beV_strain);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, beV_strain);
   static CORE::LINALG::Matrix<6, 1> beV_stress(true);
-  UTILS::VOIGT::Stresses::MatrixToVector(beM, beV_stress);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(beM, beV_stress);
 
   static CORE::LINALG::Matrix<3, 1> beMdn(true);
   beMdn.Multiply(1.0, beM, n, 0.0);
@@ -302,7 +302,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
   static CORE::LINALG::Matrix<3, 3> ibeM(true);
   ibeM.Invert(beM);
   static CORE::LINALG::Matrix<6, 1> ibeV_stress(true);
-  UTILS::VOIGT::Stresses::MatrixToVector(ibeM, ibeV_stress);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(ibeM, ibeV_stress);
   static CORE::LINALG::Matrix<3, 1> ibeMdn(true);
   ibeMdn.Multiply(1.0, ibeM, n, 0.0);
   const double ibeMdnddir = ibeMdn.Dot(dir);
@@ -388,7 +388,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
     iFeM.Invert(FeM);
     iFeTM.UpdateT(1.0, iFeM, 0.0);
     static CORE::LINALG::Matrix<9, 1> iFeTV(true);
-    UTILS::VOIGT::Matrix3x3to9x1(iFeTM, iFeTV);
+    CORE::LINALG::VOIGT::Matrix3x3to9x1(iFeTM, iFeTV);
     static CORE::LINALG::Matrix<1, 9> d_iJe_dFV(true);
     d_iJe_dFV.MultiplyTN(1.0, iFeTV, d_Fe_dF, 0.0);
     d_cauchyndir_dF->UpdateT(-cauchy_n_dir, d_iJe_dFV, 1.0);
@@ -404,7 +404,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
     tempvec.MultiplyTN(1.0, FeMiFinTM, dir, 0.0);
     d_bednddir_dF.MultiplyNT(1.0, n, tempvec, 1.0);
     static CORE::LINALG::Matrix<9, 1> d_bednddir_dFV(true);
-    UTILS::VOIGT::Matrix3x3to9x1(d_bednddir_dF, d_bednddir_dFV);
+    CORE::LINALG::VOIGT::Matrix3x3to9x1(d_bednddir_dF, d_bednddir_dFV);
     d_cauchyndir_dF->Update(prefac * dPI(0), d_bednddir_dFV, 1.0);
 
     // third part is term arising from \partial b_el^{-1} * n * v / \partial F
@@ -421,7 +421,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
     d_ibednddir_dFM.MultiplyNT(1.0, tempvec, tempvec2, 1.0);
     d_ibednddir_dFM.Scale(-1.0);
     static CORE::LINALG::Matrix<9, 1> d_ibednddir_dFV(true);
-    UTILS::VOIGT::Matrix3x3to9x1(d_ibednddir_dFM, d_ibednddir_dFV);
+    CORE::LINALG::VOIGT::Matrix3x3to9x1(d_ibednddir_dFM, d_ibednddir_dFV);
     d_cauchyndir_dF->Update(-prefac * prinv(2) * dPI(1), d_ibednddir_dFV, 1.0);
   }
 }
@@ -514,29 +514,29 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   // inverse inelastic right Cauchy-Green
   static CORE::LINALG::Matrix<3, 3> iCinM(true);
   iCinM.MultiplyNT(1.0, iFinM, iFinM, 0.0);
-  UTILS::VOIGT::Stresses::MatrixToVector(iCinM, iCinV);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(iCinM, iCinV);
 
   // inverse right Cauchy-Green
   static CORE::LINALG::Matrix<3, 3> iCM(true);
   static CORE::LINALG::Matrix<3, 3> CM(true);
   CM.MultiplyTN(1.0, *defgrad, *defgrad, 0.0);
   iCM.Invert(CM);
-  UTILS::VOIGT::Stresses::MatrixToVector(iCM, iCV);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(iCM, iCV);
 
   // C_{in}^{-1} * C * C_{in}^{-1}
   static CORE::LINALG::Matrix<3, 3> tmp(true);
   static CORE::LINALG::Matrix<3, 3> iCinCiCinM;
   MAT::EvaluateiCinCiCin(CM, iCinM, iCinCiCinM);
-  UTILS::VOIGT::Stresses::MatrixToVector(iCinCiCinM, iCinCiCinV);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(iCinCiCinM, iCinCiCinV);
 
   // elastic right Cauchy-Green in strain-like Voigt notation.
   static CORE::LINALG::Matrix<3, 3> CeM(true);
   MAT::EvaluateCe(*defgrad, iFinM, CeM);
   static CORE::LINALG::Matrix<6, 1> CeV_strain(true);
-  UTILS::VOIGT::Strains::MatrixToVector(CeM, CeV_strain);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(CeM, CeV_strain);
 
   // principal invariants of elastic right Cauchy-Green strain
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, CeV_strain);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, CeV_strain);
 
   // C_{in}^{-1} * C
   iCinCM.MultiplyNN(1.0, iCinM, CM, 0.0);
@@ -547,13 +547,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   // C * F_{in}^{-1}
   static CORE::LINALG::Matrix<3, 3> CiFinM(true);
   CiFinM.MultiplyNN(1.0, CM, iFinM, 0.0);
-  UTILS::VOIGT::Matrix3x3to9x1(CiFinM, CiFin9x1);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(CiFinM, CiFin9x1);
 
   // C * F_{in}^{-1} * C_e
   static CORE::LINALG::Matrix<3, 3> CiFinCeM(true);
   tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
   CiFinCeM.MultiplyNN(1.0, tmp, CeM, 0.0);
-  UTILS::VOIGT::Matrix3x3to9x1(CiFinCeM, CiFinCe9x1);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(CiFinCeM, CiFinCe9x1);
 
   // C * F_{in}^{-1} * C_e^{-1}
   static CORE::LINALG::Matrix<3, 3> CiFiniCeM(true);
@@ -561,7 +561,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   iCeM.Invert(CeM);
   tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
   CiFiniCeM.MultiplyNN(1.0, tmp, iCeM, 0.0);
-  UTILS::VOIGT::Matrix3x3to9x1(CiFiniCeM, CiFiniCe9x1);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(CiFiniCeM, CiFiniCe9x1);
 }
 
 /*--------------------------------------------------------------------*
@@ -631,7 +631,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
   CORE::LINALG::Matrix<3, 3> FinM(true);
   FinM.Invert(iFinM);
   ddetFindiFinM.UpdateT((-1.0) * detFin, FinM);
-  UTILS::VOIGT::Matrix3x3to9x1(ddetFindiFinM, ddetFindiFinV);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(ddetFindiFinM, ddetFindiFinV);
 
   // chain rule to get dS/d(det(Fin)) * d(det(Fin))/diFin
   dSdiFin.MultiplyNT(1.0, dSddetFin, ddetFindiFinV, 1.0);
@@ -914,3 +914,5 @@ void MAT::InelasticFactorsHandler::EvaluateInverseInelasticDefGrad(
     iFin_init_store.Update(1.0, iFinM, 0.0);
   }
 }
+
+BACI_NAMESPACE_CLOSE

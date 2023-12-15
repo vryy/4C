@@ -34,6 +34,8 @@ overhead as possible from the time integration method.
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   /*----------------------------------------------------------------------
@@ -144,8 +146,7 @@ namespace FLD
 
       // do the time integration independent setup
       Setup();
-      if (DRT::Problem::Instance()->SpatialApproximationType() ==
-          ShapeFunctionType::shapefunction_hdg)
+      if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
       {
         TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&fluid);
         if (hdgfluid == nullptr) dserror("this should be a hdg time integer");
@@ -403,10 +404,6 @@ namespace FLD
   }
 
 
-  /*
-    Destructor
-  */
-  TurbulenceStatisticManager::~TurbulenceStatisticManager() { return; }
 
   /*----------------------------------------------------------------------
 
@@ -1611,3 +1608,5 @@ namespace FLD
 
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE

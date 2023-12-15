@@ -17,6 +17,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace LOMA
 {
   /// LOMA algorithm base
@@ -37,8 +39,6 @@ namespace LOMA
     Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn,
         const Teuchos::ParameterList& solverparams);
 
-    /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
 
     /*! \brief Initialize this object
 
@@ -61,13 +61,7 @@ namespace LOMA
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
-        const Teuchos::ParameterList&
-            scatradyn,  ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-        const std::string& disname = "scatra",       ///< name of scalar transport discretization
-        const bool isale = false                     ///< ALE flag
-    );
+    void Init() override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -87,10 +81,10 @@ namespace LOMA
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    void Setup() override;
 
     /// LOMA time loop
-    void TimeLoop();
+    void TimeLoop() override;
 
     /// read restart for preceding turbulent inflow simulation
     void ReadInflowRestart(int restart);
@@ -100,7 +94,7 @@ namespace LOMA
     void InitialCalculations();
 
     /// prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// do (partitioned) outer iteration loop
     void OuterLoop();
@@ -139,7 +133,7 @@ namespace LOMA
     void TimeUpdate();
 
     /// write output
-    void Output();
+    void Output() override;
 
     /// flag for monolithic solver
     bool monolithic_;
@@ -197,5 +191,7 @@ namespace LOMA
   };
 
 }  // namespace LOMA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LOMA_ALGORITHM_H

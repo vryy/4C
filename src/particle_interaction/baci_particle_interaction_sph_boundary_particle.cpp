@@ -18,6 +18,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -239,3 +241,5 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
   // refresh modified states of ghosted boundary particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(boundarystatestorefresh_);
 }
+
+BACI_NAMESPACE_CLOSE

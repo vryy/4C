@@ -41,6 +41,8 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -84,8 +86,6 @@ namespace CORE::GEO
       }
 
       sorted_vector(const Myt_& x) : less_(x.less_), vec_(x.vec_) {}
-
-      ~sorted_vector() {}
 
       Myt_& operator=(const Myt_& x)
       {
@@ -327,5 +327,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

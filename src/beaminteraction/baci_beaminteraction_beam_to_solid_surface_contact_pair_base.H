@@ -17,8 +17,14 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declarations.
+namespace DRT
+{
+  class Element;
+}
 namespace CORE::LINALG
 {
   class SerialDenseVector;
@@ -36,7 +42,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVtuOutputWriterVisualization;
+  class BeamToSolidOutputWriterVisualization;
 }  // namespace BEAMINTERACTION
 
 
@@ -62,10 +68,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceContactPairBase();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidSurfaceContactPairBase(){};
 
     /**
      * \brief Update state of translational nodal DoFs (absolute positions and tangents) of the beam
@@ -89,9 +91,11 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Create the geometry pair for this contact pair.
+     * @param element1 Pointer to the first element
+     * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(
+    void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -114,7 +118,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Discretization.
      * @return Vector with the GIDs of this pair.
      */
-    std::vector<int> GetPairGID(const ::DRT::Discretization& discret) const;
+    std::vector<int> GetPairGID(const BACI::DRT::Discretization& discret) const;
 
    protected:
     //! Pointer to the face element object which manages the positions on the surface, including the
@@ -122,5 +126,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>> face_element_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

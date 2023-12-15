@@ -19,7 +19,6 @@
 
 #include <NOX_StatusTest_Generic.H>
 
-// forward declaration
 namespace NOX
 {
   class Utils;
@@ -31,7 +30,13 @@ namespace NOX
   {
     class Generic;
   }
+}  // namespace NOX
 
+BACI_NAMESPACE_OPEN
+
+// forward declaration
+namespace NOX
+{
   namespace NLN
   {
     namespace INNER
@@ -47,25 +52,23 @@ namespace NOX
       {
        public:
         //! Constructor
-        Backtrack(const Teuchos::RCP<NOX::GlobalData>& gd,
-            const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
+        Backtrack(const Teuchos::RCP<::NOX::GlobalData>& gd,
+            const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
             Teuchos::ParameterList& params);
 
-        //! Destructor
-        virtual ~Backtrack(){};
-
         /// hard reset
-        bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+        bool reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
         /// weak reset
         void reset();
 
-        bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
-            const NOX::Solver::Generic& s) override;
+        bool compute(::NOX::Abstract::Group& newgrp, double& step,
+            const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s) override;
 
-        NOX::NLN::INNER::StatusTest::StatusType CheckInnerStatus(const NOX::Solver::Generic& solver,
-            const NOX::Abstract::Group& grp, NOX::StatusTest::CheckType checkType) const override;
+        NOX::NLN::INNER::StatusTest::StatusType CheckInnerStatus(
+            const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+            ::NOX::StatusTest::CheckType checkType) const override;
 
         //! @name Access functionality
         //@{
@@ -73,10 +76,10 @@ namespace NOX
         int GetNumIterations() const override;
 
         //! get the merit function
-        const NOX::MeritFunction::Generic& GetMeritFunction() const override;
+        const ::NOX::MeritFunction::Generic& GetMeritFunction() const override;
 
         //! get the current search direction
-        const NOX::Abstract::Vector& GetSearchDirection() const override;
+        const ::NOX::Abstract::Vector& GetSearchDirection() const override;
 
         //! get current step length
         double GetStepLength() const override;
@@ -105,10 +108,10 @@ namespace NOX
         int lsIters_;
 
         //! Printing Utilities
-        Teuchos::RCP<NOX::Utils> utils_;
+        Teuchos::RCP<::NOX::Utils> utils_;
 
         //! Merit function
-        Teuchos::RCP<NOX::MeritFunction::Generic> meritFunctionPtr_;
+        Teuchos::RCP<::NOX::MeritFunction::Generic> meritFunctionPtr_;
 
         //! Current step pointer, points to the step variable of the
         //! NOX::NLN::Solver::LineSearchBased class
@@ -121,16 +124,16 @@ namespace NOX
         double reductionFactor_;
 
         //! inner status test checktype
-        NOX::StatusTest::CheckType checkType_;
+        ::NOX::StatusTest::CheckType checkType_;
 
         //! inner status type
         NOX::NLN::INNER::StatusTest::StatusType status_;
 
         //! search direction
-        Teuchos::RCP<const NOX::Abstract::Vector> searchDirectionPtr_;
+        Teuchos::RCP<const ::NOX::Abstract::Vector> searchDirectionPtr_;
 
         //! outer convergence tests
-        Teuchos::RCP<NOX::StatusTest::Generic> outerTestsPtr_;
+        Teuchos::RCP<::NOX::StatusTest::Generic> outerTestsPtr_;
 
         //! line search stopping tests
         Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTestsPtr_;
@@ -139,5 +142,7 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_LINESEARCH_BACKTRACK_H

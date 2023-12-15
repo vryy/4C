@@ -14,7 +14,7 @@
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
@@ -22,6 +22,8 @@
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
@@ -56,18 +58,16 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
   bool output_fluid =
       (bool)DRT::INPUT::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
 
-  // create and initialize parameter container object for fluid specific runtime vtk output
+  // create and initialize parameter container object for fluid specific runtime output
   if (output_fluid)
   {
     runtime_output_params_.Init(*fluid_runtime_output_list);
     runtime_output_params_.Setup();
-    runtime_output_writer_ = Teuchos::rcp(new DiscretizationRuntimeVtuWriter(
+    runtime_output_writer_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
         discret_, IO::VisualizationParametersFactory(
                       DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
   }
 }
-
-FLD::TimInt::~TimInt() {}
 
 Teuchos::RCP<const Epetra_Map> FLD::TimInt::DofRowMap(unsigned nds)
 {
@@ -82,3 +82,5 @@ void FLD::TimInt::IncrementTimeAndStep()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

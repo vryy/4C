@@ -49,8 +49,6 @@ LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      Statics

@@ -24,6 +24,8 @@
 #define NUMNOD_SOTET4_FACE 3  ///< number of nodes on a TET4 face (which is a TRI3)
 #define NUMGPT_SOTET4_FACE 1  ///< number of GP on a TET4 face (which is a TRI3)
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -41,7 +43,7 @@ namespace DRT
 
       static So_tet4Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(
           std::string eletype, std::string eledistype, int id, int owner) override;
@@ -112,7 +114,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element
@@ -141,12 +143,6 @@ namespace DRT
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
       virtual std::vector<double> ElementCenterRefeCoords();
 
       /*!
@@ -163,7 +159,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -449,20 +445,18 @@ namespace DRT
           const Teuchos::RCP<MAT::Material>& mat);  // material
 
       //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();
       //! Evaluate Tet4 Derivs at 1 gausspoint to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
-      so_tet4_1gp_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> so_tet4_1gp_derivs();
       //! Evaluate Tet4 Weights at 1 gausspoint to keep them static
-      const std::vector<double> so_tet4_1gp_weights();
+      std::vector<double> so_tet4_1gp_weights();
 
       //! Evaluate Tet4 Shapefcts at 4 gausspoints to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_4gp_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_4gp_shapefcts();
       //! Evaluate Tet4 Derivs at 4 gausspoints to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
-      so_tet4_4gp_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> so_tet4_4gp_derivs();
       //! Evaluate Tet4 Weights at 4 gausspoints to keep them static
-      const std::vector<double> so_tet4_4gp_weights();
+      std::vector<double> so_tet4_4gp_weights();
 
       //! @name Multi-scale related stuff
 
@@ -490,5 +484,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_TET4_H

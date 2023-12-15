@@ -33,6 +33,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 
 BINSTRATEGY::BinningStrategy::BinningStrategy()
@@ -694,13 +695,13 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 
       nids[corner_i] = (bingid * numcorner) + corner_i;
       Teuchos::RCP<DRT::Node> newnode =
-          Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos.data(), myrank_));
+          Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos, myrank_));
       visbindis_->AddNode(newnode);
     }
 
     // assign nodes to elements
     Teuchos::RCP<DRT::Element> newele =
-        DRT::UTILS::Factory("VELE3", "Polynomial", ele->Id(), myrank_);
+        CORE::COMM::Factory("VELE3", "Polynomial", ele->Id(), myrank_);
     newele->SetNodeIds(nids.size(), nids.data());
     visbindis_->AddElement(newele);
   }
@@ -742,13 +743,13 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 
         nids[corner_i] = (newelegid * numcorner) + corner_i;
         Teuchos::RCP<DRT::Node> newnode =
-            Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos.data(), myrank_));
+            Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos, myrank_));
         visbindis_->AddNode(newnode);
       }
 
       // assign nodes to elements
       Teuchos::RCP<DRT::Element> newele =
-          DRT::UTILS::Factory("VELE3", "Polynomial", newelegid, myrank_);
+          CORE::COMM::Factory("VELE3", "Polynomial", newelegid, myrank_);
       newele->SetNodeIds(nids.size(), nids.data());
       visbindis_->AddElement(newele);
     }
@@ -816,7 +817,7 @@ void BINSTRATEGY::BinningStrategy::FillBinsIntoBinDiscretization(
   for (int i = 0; i < rowbins->NumMyElements(); ++i)
   {
     const int gid = rowbins->GID(i);
-    Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
+    Teuchos::RCP<DRT::Element> bin = CORE::COMM::Factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
     bindis_->AddElement(bin);
   }
 }
@@ -1513,7 +1514,7 @@ void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(
 
     for (int iparticle = 0; iparticle < bindis_->lColElement(k)->NumNode(); ++iparticle)
     {
-      double const* pos = particles[iparticle]->X();
+      double const* pos = particles[iparticle]->X().data();
       std::array ijk = {-1, -1, -1};
       ConvertPosToijk(pos, ijk.data());
 
@@ -2057,3 +2058,5 @@ void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
   BINSTRATEGY::UTILS::CommunicateDistributionOfTransferredElementsToBins(
       discret, toranktosendbinids, bintorowelemap);
 }
+
+BACI_NAMESPACE_CLOSE

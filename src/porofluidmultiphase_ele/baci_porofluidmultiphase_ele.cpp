@@ -9,11 +9,13 @@
 
 #include "baci_porofluidmultiphase_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_fluid_ele_nullspace.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_fluidporo_multiphase.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*
@@ -37,7 +39,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseType& DRT::ELEMENTS::PoroFluidMultiPhaseType::
 /*----------------------------------------------------------------------*
  | create an element from data                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::PoroFluidMultiPhase* object = new DRT::ELEMENTS::PoroFluidMultiPhase(-1, -1);
   object->Unpack(data);
@@ -193,7 +195,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
  |  create an empty element                                vuong 08/16 |
  *------------------------------------------------------ ----------------*/
 DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(int id, int owner)
-    : DRT::Element(id, owner), distype_(dis_none), numdofpernode_(-1)
+    : DRT::Element(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
 {
   return;
 }
@@ -222,10 +224,7 @@ DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhase::Clone() const
  |  Return the shape of a PoroFluidMultiPhase element          (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::PoroFluidMultiPhase::Shape() const
-{
-  return distype_;
-}
+CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhase::Shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Initialize element                                      (protected) |
@@ -244,9 +243,9 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Initialize()
  |  Pack data                                                  (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::PoroFluidMultiPhase::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -271,10 +270,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -282,7 +279,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // extract internal data
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   ExtractfromPack(position, data, numdofpernode_);
 
   if (position != data.size())
@@ -318,11 +315,6 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::NumVolume() const
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           vuong 08/16 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhase::~PoroFluidMultiPhase() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                             vuong 08/16 |
@@ -332,7 +324,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
   os << "PoroFluidMultiPhase element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << DRT::DistypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
 
@@ -345,23 +337,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  if (NumLine() > 1)  // 3D and 2D
-    return DRT::UTILS::ElementBoundaryFactory<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(
-        DRT::UTILS::buildLines, this);
-  else
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> lines(1);
-    lines[0] = Teuchos::rcp(this, false);
-    return lines;
-  }
+  return CORE::COMM::GetElementLines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
 }
 
 
@@ -370,41 +346,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Line
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
-  if (NumSurface() > 1)  // 3D
-    return DRT::UTILS::ElementBoundaryFactory<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(
-        DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() == 1)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    // 1D
-    dserror("Surfaces() for 1D-PoroFluidMultiPhase element not implemented");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementSurfaces<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
 }
-
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)               vuong 08/16 |
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Volumes()
-{
-  dserror("Volumes() for 1D-/2D-PoroFluidMultiPhase element not implemented");
-  return DRT::Element::Volumes();
-}
-
 
 /*----------------------------------------------------------------------*
  | read element input                                       vuong 08/16 |
@@ -418,7 +361,7 @@ bool DRT::ELEMENTS::PoroFluidMultiPhase::ReadElement(
   SetMaterial(material);
 
   // set discretization type
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   return true;
 }
@@ -460,12 +403,12 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(int matnum)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, int owner,
     int nnode, const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::PoroFluidMultiPhase* parent,
-    const int lbeleid)
+    const int lsurface)
     : DRT::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lbeleid);
+  SetParentMasterElement(parent, lsurface);
   return;
 }
 
@@ -492,7 +435,7 @@ DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Clone() const
 /*----------------------------------------------------------------------*
  |  Return shape of this element                   (public) vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
@@ -500,7 +443,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Sha
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
   // boundary elements are rebuild by their parent element for each condition
   // after redistribution. This way we make sure, that the node ids always match.
@@ -521,10 +464,6 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Unpack(const std::vector<char>&
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           vuong 08/16 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::~PoroFluidMultiPhaseBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -535,7 +474,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Print(std::ostream& os) const
   os << "PoroFluidMultiPhaseBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Shape() << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(Shape()) << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -561,10 +500,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::NumSurface() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Lines()
 {
-  // we (probably?) do not need a boundary of a boundary element
   dserror("Lines of PoroFluidMultiPhaseBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }
 
 /*----------------------------------------------------------------------*
@@ -572,8 +508,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBounda
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Surfaces()
 {
-  // we (probably?) do not need a boundary of a boundary element
   dserror("Surfaces of PoroFluidMultiPhaseBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }
+
+BACI_NAMESPACE_CLOSE

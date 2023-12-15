@@ -17,6 +17,8 @@
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// krylov projection for undefined pressure value in incompressible fluids
@@ -27,7 +29,7 @@ namespace CORE::LINEAR_SOLVER
   class KrylovProjectionPreconditioner : public PreconditionerType
   {
    public:
-    KrylovProjectionPreconditioner(FILE* outfile, Teuchos::RCP<PreconditionerType> preconditioner,
+    KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
     // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
@@ -37,21 +39,11 @@ namespace CORE::LINEAR_SOLVER
 
     void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) override;
 
-    /// return the projecting operator
-    Epetra_Operator* PrecOperator() const override { return &*P_; }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return P_; }
-
-    void Print(std::ostream& stream) const override
-    {
-      stream << "krylov projection(";
-      preconditioner_->Print(stream);
-      stream << ")";
-    }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "unknown"; }
+    std::string getParameterListName() const override { return "unknown"; }
 
    private:
     Teuchos::RCP<PreconditionerType> preconditioner_;
@@ -66,5 +58,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> P_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

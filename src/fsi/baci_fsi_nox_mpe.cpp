@@ -28,8 +28,10 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 NOX::FSI::MinimalPolynomial::MinimalPolynomial(
-    const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params)
+    const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)
 {
   Teuchos::ParameterList& mpeparams = params.sublist("Extrapolation");
@@ -40,11 +42,9 @@ NOX::FSI::MinimalPolynomial::MinimalPolynomial(
 }
 
 
-NOX::FSI::MinimalPolynomial::~MinimalPolynomial() {}
-
 
 bool NOX::FSI::MinimalPolynomial::reset(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
   return true;
@@ -52,15 +52,15 @@ bool NOX::FSI::MinimalPolynomial::reset(
 
 
 bool NOX::FSI::MinimalPolynomial::compute(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln, const NOX::Solver::Generic& solver)
+    ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   // We work in a local copy of the group so that we do not spoil the
   // current state.
-  NOX::Epetra::Group grp(dynamic_cast<NOX::Epetra::Group&>(soln));
+  ::NOX::Epetra::Group group(dynamic_cast<::NOX::Epetra::Group&>(grp));
 
-  const NOX::Abstract::Vector& x = soln.getX();
+  const ::NOX::Abstract::Vector& x = group.getX();
 
-  std::vector<Teuchos::RCP<NOX::Epetra::Vector>> q;
+  std::vector<Teuchos::RCP<::NOX::Epetra::Vector>> q;
   CORE::LINALG::SerialDenseMatrix r(kmax_ + 1, kmax_ + 1, true);
   CORE::LINALG::SerialDenseVector c(kmax_ + 1, true);
   CORE::LINALG::SerialDenseVector gamma(kmax_ + 1, true);
@@ -69,17 +69,17 @@ bool NOX::FSI::MinimalPolynomial::compute(
   for (k = 0; k < kmax_; ++k)
   {
     Teuchos::Time t("", true);
-    NOX::Abstract::Group::ReturnType status;
+    ::NOX::Abstract::Group::ReturnType status;
 
     // Compute F at current solution
-    status = grp.computeF();
-    if (status != NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
+    status = group.computeF();
+    if (status != ::NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
 
     // get f = d(k+1) - d(k)
-    const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
+    const ::NOX::Epetra::Vector& f = dynamic_cast<const ::NOX::Epetra::Vector&>(group.getF());
 
     // We have to work on the scaled residual here.
-    Teuchos::RCP<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
+    Teuchos::RCP<::NOX::Epetra::Vector> y = Teuchos::rcp(new ::NOX::Epetra::Vector(f));
     y->scale(omega_);
 
     // modified Gram-Schmidt
@@ -98,7 +98,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
     }
     else if (r(k, k) <= 1e-32 * r(0, 0))
     {
-      if (utils_->isPrintType(NOX::Utils::Error))
+      if (utils_->isPrintType(::NOX::Utils::Error))
         utils_->err() << "r(" << k << "," << k << ") <= " << 1e-32 << "*r(0,0)\n";
       break;
     }
@@ -131,7 +131,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
       CORE::LINALG::Update(1 / sc, c, 0.0, gamma);
       res = r(k, k) * fabs(gamma(k));
 
-      if (utils_->isPrintType(NOX::Utils::InnerIteration))
+      if (utils_->isPrintType(::NOX::Utils::InnerIteration))
       {
         utils_->out() << "MPE:  k=" << k << "  res=" << res << "  eps*r(0,0)=" << eps_ * r(0, 0)
                       << "  r(k,k)=" << r(k, k) << std::endl;
@@ -166,7 +166,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
       gamma.scale(1 / sc);
       res = 1. / sqrt(fabs(sc));
 
-      if (utils_->isPrintType(NOX::Utils::InnerIteration))
+      if (utils_->isPrintType(::NOX::Utils::InnerIteration))
       {
         utils_->out() << "RRE:  k=" << std::setw(2) << k << "  res=" << std::scientific << res
                       << "  eps*r(0,0)=" << std::scientific << eps_ * r(0, 0)
@@ -186,7 +186,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
     // Note: We do not use any extrapolated vector here but simply go
     // on with the series of vectors. The fixed relaxation is needed
     // to keep the iteration from diverging.
-    grp.computeX(grp, f, omega_);
+    group.computeX(group, f, omega_);
   }
 
   // calc extrapolated vector
@@ -197,7 +197,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
     xi(j) = xi(j - 1) - gamma(j);
   }
 
-  NOX::Epetra::Vector s(dynamic_cast<const NOX::Epetra::Vector&>(x));
+  ::NOX::Epetra::Vector s(dynamic_cast<const ::NOX::Epetra::Vector&>(x));
   for (int j = 0; j < k; ++j)
   {
     double hp = 0.;
@@ -215,17 +215,19 @@ bool NOX::FSI::MinimalPolynomial::compute(
 }
 
 
-bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln,
-    const NOX::Solver::LineSearchBased& solver)
+bool NOX::FSI::MinimalPolynomial::compute(::NOX::Abstract::Vector& dir,
+    ::NOX::Abstract::Group& group, const ::NOX::Solver::LineSearchBased& solver)
 {
-  return NOX::Direction::Generic::compute(dir, soln, solver);
+  return ::NOX::Direction::Generic::compute(dir, group, solver);
 }
 
 
 void NOX::FSI::MinimalPolynomial::throwError(
     const std::string& functionName, const std::string& errorMsg)
 {
-  if (utils_->isPrintType(NOX::Utils::Error))
+  if (utils_->isPrintType(::NOX::Utils::Error))
     utils_->err() << "MinimalPolynomial::" << functionName << " - " << errorMsg << std::endl;
   throw "NOX Error";
 }
+
+BACI_NAMESPACE_CLOSE

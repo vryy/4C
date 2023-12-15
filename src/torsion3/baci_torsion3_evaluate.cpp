@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_inpar_browniandyn.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
@@ -18,6 +19,8 @@
 #include "baci_utils_exceptions.H"
 
 #include <cmath>
+
+BACI_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -641,7 +644,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] +=
-  //            shearamplitude*DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
+  //            shearamplitude*DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
   //        }
   //
   //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) -
@@ -659,7 +662,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] -=
-  //            shearamplitude*DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
+  //            shearamplitude*DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
   //        }
   //      }
   //    }
@@ -668,3 +671,5 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   return;
 
 }  // DRT::ELEMENTS::Torsion3::NodeShift
+
+BACI_NAMESPACE_CLOSE

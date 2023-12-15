@@ -17,6 +17,8 @@
 #include "baci_lib_dofset_interface.H"
 #include "baci_lib_dofset_proxy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   class XFEMDofSet;
@@ -37,12 +39,6 @@ namespace DRT
     \param comm (in): An epetra comm object associated with this discretization
     */
     DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~DiscretizationXFEM() { return; };
 
     /*!
     \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
@@ -237,7 +233,7 @@ namespace DRT
      *  \param node (in) : the node those number of dofs are requested
      *
      *  \author hiermeier \date 10/16 */
-    virtual int NumStandardDof(const unsigned& nds, const Node* node) const
+    int NumStandardDof(const unsigned& nds, const Node* node) const override
     {
       std::vector<int> dofs(0);
       // get the first dofs of the node (not enriched)
@@ -278,5 +274,7 @@ namespace DRT
 
   };  // class DiscretizationXFEM
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_XFEM_H

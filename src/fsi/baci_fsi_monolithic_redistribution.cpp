@@ -35,6 +35,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::RedistributeMonolithicGraph(
     const FSI_COUPLING coupling, const Epetra_Comm& comm)
@@ -1982,3 +1984,5 @@ Teuchos::RCP<Epetra_Map> FSI::BlockMonolithic::GetRedistRowMap(const Epetra_Map&
 
   return redistRowmap;
 }
+
+BACI_NAMESPACE_CLOSE

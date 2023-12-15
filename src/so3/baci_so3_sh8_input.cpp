@@ -6,9 +6,11 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_sh8.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -111,3 +113,5 @@ bool DRT::ELEMENTS::So_sh8::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

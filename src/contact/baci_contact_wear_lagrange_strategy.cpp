@@ -33,6 +33,8 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
@@ -4200,7 +4202,7 @@ void WEAR::WearLagrangeStrategy::OutputWear()
         const int lNumActiveDOFs = wear2_vectori->MyLength();
 
         // extract diagonal of d2ii
-        Teuchos::RCP<Epetra_Vector> diagD = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+        Teuchos::RCP<Epetra_Vector> diagD = Teuchos::rcp(new Epetra_Vector(*wear2_vectori));
         d2ii->EpetraMatrix()->ExtractDiagonalCopy(*diagD);
 
         // solve by dividing through diagonal elements of daa. Do not divide by 0.
@@ -5222,3 +5224,5 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

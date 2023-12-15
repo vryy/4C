@@ -19,6 +19,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_scatra_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 09/08|
  *----------------------------------------------------------------------*/
@@ -123,12 +125,6 @@ FLD::DynSmagFilter::DynSmagFilter(
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- | Destructor (public)                                                  |
- |                                                           gammi 09/08|
- *----------------------------------------------------------------------*/
-FLD::DynSmagFilter::~DynSmagFilter() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -1023,3 +1019,5 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
 
   return;
 }  // end FLD::DynSmagFilter::DynSmagComputePrt
+
+BACI_NAMESPACE_CLOSE

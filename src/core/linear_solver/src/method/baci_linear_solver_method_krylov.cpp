@@ -36,6 +36,8 @@
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 
+BACI_NAMESPACE_OPEN
+
 using Map = Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>;
 using Matrix = Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
 using CrsMatrix = Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
@@ -59,10 +61,9 @@ using NO = Node;
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
 CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::KrylovSolver(
-    const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
+    const Epetra_Comm& comm, Teuchos::ParameterList& params)
     : comm_(comm),
       params_(params),
-      outfile_(outfile),
       ncall_(0),
       activeDofMap_(Teuchos::null),
       bAllowPermutation_(false),
@@ -72,15 +73,6 @@ CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::KrylovSolver(
       PermFact_(Teuchos::null)
 {
   data_ = Teuchos::rcp(new MueLu::Level());
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-int CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::ApplyInverse(
-    const VectorType& X, VectorType& Y)
-{
-  return preconditioner_->ApplyInverse(X, Y);
 }
 
 //----------------------------------------------------------------------------------
@@ -173,7 +165,7 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CheckReuseStatus
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
 void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
-    Teuchos::ParameterList& azlist, const bool isCrsMatrix,
+    Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1.1)   CreatePreconditioner");
@@ -188,23 +180,23 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
     if (Params().isSublist("IFPACK Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(
-          outfile_, Params().sublist("IFPACK Parameters"), azlist));
+          Params().sublist("IFPACK Parameters"), solverlist));
     }
     else if (Params().isSublist("ML Parameters"))
     {
       preconditioner_ = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::MLPreconditioner(outfile_, Params().sublist("ML Parameters")));
+          new CORE::LINEAR_SOLVER::MLPreconditioner(Params().sublist("ML Parameters")));
     }
     else if (Params().isSublist("MueLu Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuPreconditioner(
-          outfile_, Params().sublist("MueLu Parameters")));
+      preconditioner_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::MueLuPreconditioner(Params().sublist("MueLu Parameters")));
     }
     else if (Params().isSublist("MueLu (BeamSolid) Parameters"))
     {
 #ifdef BACI_WITH_TRILINOS_DEVELOP
-      preconditioner_ = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner(outfile_, Params()));
+      preconditioner_ =
+          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner(Params()));
 #else
       dserror("MueLu (BeamSolid) preconditioner only available in Trilinos_Develop.");
 #endif
@@ -215,7 +207,7 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
     }
 
     // decide whether we do what kind of scaling
-    std::string scaling = azlist.get("scaling", "none");
+    std::string scaling = solverlist.get("scaling", "none");
     if (scaling == "none")
     {
     }
@@ -234,8 +226,8 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
 
     if (projector != Teuchos::null)
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner(
-          outfile_, preconditioner_, projector));
+      preconditioner_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner(preconditioner_, projector));
     }
   }
   else
@@ -246,43 +238,41 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
             "SIMPLER"))  // old BACI::(Cheap)SIMPLER preconditioner TODO: remove/replace me
     {
       dserror("SIMPLER sublist not supported any more.");
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(
-          outfile_, Params()));  // Michael's SIMPLE for Fluid
+      preconditioner_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::SimplePreconditioner(Params()));  // Michael's SIMPLE for Fluid
     }
     else if (Params().isSublist("CheapSIMPLE Parameters"))
     {
-      preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(outfile_, Params()));
+      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(Params()));
     }
     else if (Params().isSublist("BGS Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::BGSPreconditioner(
-          outfile_, Params(), Params().sublist("BGS Parameters")));
+      preconditioner_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::BGSPreconditioner(Params(), Params().sublist("BGS Parameters")));
     }
     else if (Params().isSublist("MueLu (Fluid) Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner(
-          outfile_, Params().sublist("MueLu (Fluid) Parameters")));
+          Params().sublist("MueLu (Fluid) Parameters")));
     }
     else if (Params().isSublist("MueLu (TSI) Parameters"))
     {
       preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner(outfile_, Params()));
+          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner(Params()));
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner(
-          outfile_, Params().sublist("MueLu (Contact) Parameters")));
+          Params().sublist("MueLu (Contact) Parameters")));
     }
     else if (Params().isSublist("MueLu (FSI) Parameters"))
     {
       preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner(outfile_, Params()));
+          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner(Params()));
     }
     else if (Params().isSublist("AMGnxn Parameters"))
     {
-      preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::AMGnxn_Preconditioner(outfile_, Params()));
+      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::AMGnxn_Preconditioner(Params()));
     }
     else
     {
@@ -867,3 +857,5 @@ CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::GetOperatorNonConst(
 //----------------------------------------------------------------------------------
 // explicit initialization
 template class CORE::LINEAR_SOLVER::KrylovSolver<Epetra_Operator, Epetra_MultiVector>;
+
+BACI_NAMESPACE_CLOSE

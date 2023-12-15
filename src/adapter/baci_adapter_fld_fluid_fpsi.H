@@ -12,6 +12,8 @@
 
 #include "baci_adapter_fld_fluid_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FPSI
 {
   namespace UTILS
@@ -36,17 +38,17 @@ namespace ADAPTER
         Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
-    virtual void Init();
+    void Init() override;
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const override
     {
       return fpsiinterface_;
     }
 
-    virtual void SetupInterface(const int nds_master = 0);
+    void SetupInterface(const int nds_master = 0) override;
 
-    virtual void UseBlockMatrix(bool splitmatrix);
+    void UseBlockMatrix(bool splitmatrix) override;
     virtual void UseBlockMatrix(
         bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter);
 
@@ -56,5 +58,7 @@ namespace ADAPTER
 
   };  // class FluidFPSI
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

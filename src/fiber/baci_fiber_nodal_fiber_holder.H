@@ -18,9 +18,15 @@
 #include <unordered_map>
 #include <vector>
 
-namespace DRT
+BACI_NAMESPACE_OPEN
+
+namespace CORE::COMM
 {
   class PackBuffer;
+}
+
+namespace DRT
+{
   namespace FIBER
   {
     /*!
@@ -179,4 +185,6 @@ namespace DRT
     };
   }  // namespace FIBER
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif  // FIBER_NODAL_FIBER_HOLDER_H

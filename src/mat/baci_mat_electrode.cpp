@@ -14,6 +14,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -236,7 +238,7 @@ MAT::ElectrodeType MAT::ElectrodeType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ElectrodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ElectrodeType::Create(const std::vector<char>& data)
 {
   auto* electrode = new MAT::Electrode();
   electrode->Unpack(data);
@@ -249,9 +251,9 @@ MAT::Electrode::Electrode(MAT::PAR::Electrode* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::Electrode::Pack(DRT::PackBuffer& data) const
+void MAT::Electrode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -269,10 +271,7 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("Wrong instance type data!");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -696,3 +695,5 @@ double MAT::Electrode::ComputeDOpenCircuitPotentialDTemperature(
   }
   return ocpderiv;
 }
+
+BACI_NAMESPACE_CLOSE

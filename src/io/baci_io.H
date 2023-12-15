@@ -13,6 +13,7 @@
 #define BACI_IO_H
 
 
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_io_hdf.H"
 #include "baci_linalg_serialdensematrix.H"
 
@@ -27,12 +28,13 @@ extern "C"
 #include "baci_io_legacy_types.h"  // typedef struct MAP etc.
 }
 
-
 class Epetra_Vector;
 class Epetra_MultiVector;
 class Epetra_Map;
 class Epetra_BlockMap;
-class Epetra_BlockMapData;
+
+BACI_NAMESPACE_OPEN
+
 namespace LINALG
 {
   class SerialDenseMatrix;
@@ -86,7 +88,7 @@ namespace IO
     DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step);
 
     /// destructor
-    virtual ~DiscretizationReader(){};
+    virtual ~DiscretizationReader() = default;
 
     /**
      * \brief read in and return vector
@@ -257,7 +259,7 @@ namespace IO
      *
      *  \author hiermeier \date 08/17 */
     DiscretizationWriter(const IO::DiscretizationWriter& writer,
-        const Teuchos::RCP<OutputControl>& output, enum CopyType type);
+        const Teuchos::RCP<OutputControl>& control, enum CopyType type);
 
     /// cleanup, close hdf5 files
     virtual ~DiscretizationWriter();
@@ -356,7 +358,7 @@ namespace IO
     virtual void WriteNodeData(bool writeowner);
 
     //! write a non discretisation based vector of chars
-    virtual void WriteCharVector(const std::string name, Teuchos::RCP<std::vector<char>> doublevec);
+    virtual void WriteCharVector(const std::string name, Teuchos::RCP<std::vector<char>> charvec);
 
     //! write a non discretisation based vector of doubles
     /*!
@@ -374,7 +376,7 @@ namespace IO
       communicated to all present procs.
      */
     virtual void WriteRedundantIntVector(
-        const std::string name, Teuchos::RCP<std::vector<int>> setint);
+        const std::string name, Teuchos::RCP<std::vector<int>> vectorint);
 
 
     /// overwrite result files
@@ -462,10 +464,12 @@ namespace IO
     //! do we want binary output
     bool binio_;
 
-    ShapeFunctionType spatial_approx_;
+    CORE::FE::ShapeFunctionType spatial_approx_;
   };
 
 
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

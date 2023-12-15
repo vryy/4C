@@ -10,13 +10,15 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_EIGEN_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_EIGEN_H
 
-#include "baci_lib_exporter.H"
 #include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -51,13 +53,13 @@ namespace CORE::LINALG
 
    \param A (in/out):    Matrix to be analysed, if eigv=true stores eigenvectors
    \param L (in/out):    Vector of eigenvalues in ascending order
-   \param eigv (in):     flag to evaluate also eigenvectors ('N'=no, 'V'=yes)
+   \param eval_eigenvectors (in):     flag to evaluate also eigenvectors
    \param postproc (in): flag indicating whether we are using this
    routine for postprocessing only (in that
    case dserror is replaced with a warning)
    */
   void SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
-      const char eigv, const bool postproc = false);
+      bool eval_eigenvectors, bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues the generalized Eigenvalue problem
@@ -110,5 +112,7 @@ namespace CORE::LINALG
   }
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_DENSEMATRIX_EIGEN_H

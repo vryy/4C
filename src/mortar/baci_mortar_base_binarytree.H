@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -60,11 +62,6 @@ namespace MORTAR
         const CORE::LINALG::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
         const bool& useauxpos, const int layer);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~BaseBinaryTreeNode(){};
 
     //! @name Evaluation methods
 
@@ -72,19 +69,19 @@ namespace MORTAR
     \brief Calculate slabs of dop
 
     */
-    virtual void CalculateSlabsDop();
+    void CalculateSlabsDop() override;
 
     /*!
     \brief Update slabs of current tree node in bottom up way
 
     */
-    virtual void UpdateSlabsBottomUp(double& eps) = 0;
+    void UpdateSlabsBottomUp(double& eps) override = 0;
 
     /*!
     \brief Enlarge geometry of a tree node by an offset, dependent on size
 
     */
-    virtual void EnlargeGeometry(double& eps);
+    void EnlargeGeometry(double& enlarge) override;
     //@}
 
     //! @name Print methods
@@ -228,11 +225,6 @@ namespace MORTAR
     */
     BaseBinaryTree(DRT::Discretization& discret, int dim, double eps);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~BaseBinaryTree(){};
 
     //! @name Evaluation methods
 
@@ -240,7 +232,7 @@ namespace MORTAR
     \brief Evaluate search tree
 
     */
-    virtual void EvaluateSearch() = 0;
+    void EvaluateSearch() override = 0;
 
     /*!
     \brief Initialize the base binary tree
@@ -315,5 +307,7 @@ namespace MORTAR
     int kdop_;
   };  // class BaseBinaryTree
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_BASE_BINARYTREE_H

@@ -41,6 +41,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 
 /*-------------------------------------------------------------------------------*
@@ -70,8 +71,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Setup()
   BEAMINTERACTION::UTILS::SetFilamentBindingSpotPositions(
       DiscretPtr(), spherebeamlinking_params_ptr_);
 
-  // build runtime vtp writer
-  if (GInOutput().GetRuntimeVtpOutputParams() != Teuchos::null) InitOutputRuntimeVtp();
+  // build runtime visualization output writer
+  if (GInOutput().GetRuntimeVtpOutputParams() != Teuchos::null) InitOutputRuntime();
 
   // set flag
   issetup_ = true;
@@ -477,7 +478,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::RuntimeOutputStepSta
 {
   CheckInitSetup();
 
-  if (visualization_manager_ptr_ != Teuchos::null) WriteOutputRuntimeVtp();
+  if (visualization_manager_ptr_ != Teuchos::null) WriteOutputRuntime();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -589,7 +590,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::GetHalfInteractionDi
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntimeVtp()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntime()
 {
   CheckInit();
 
@@ -600,7 +601,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntimeVtp
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVtp() const
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntime() const
 {
   CheckInitSetup();
 
@@ -629,7 +630,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
   std::vector<double> currlength(num_row_points, 0.0);
   std::vector<double> orientation(num_row_points * num_spatial_dimensions, 0.0);
   std::vector<double> force(num_row_points * num_spatial_dimensions, 0.0);
-  CORE::LINALG::SerialDenseVector bspotforce(true);
+  CORE::LINALG::SerialDenseVector bspotforce(num_spatial_dimensions);
 
   // set position of spherebeamlinks
   unsigned int bond_i = 0;
@@ -1153,3 +1154,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

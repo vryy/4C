@@ -14,7 +14,6 @@
 #include "baci_io_pstream.H"
 #include "baci_levelset_algorithm.H"
 #include "baci_levelset_intersection_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_utils_densematrix_communication.H"
@@ -23,6 +22,9 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc_utils.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -254,8 +256,8 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
             int doflid = dofrowmap->LID(dofgid);
             // evaluate component k of spatial function
             double initialval =
-                problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                    .Evaluate(lnode->X(), time_, k);
+                problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                    .Evaluate(lnode->X().data(), time_, k);
             int err = phiref->ReplaceMyValues(1, &initialval, &doflid);
             if (err != 0) dserror("dof not on proc");
           }
@@ -357,16 +359,16 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
           for (int iele = 0; iele < actnode->NumElement(); iele++)
           {
             // get discretization type
-            if ((adjelements[iele])->Shape() != DRT::Element::hex8)
+            if ((adjelements[iele])->Shape() != CORE::FE::CellType::hex8)
               dserror("Currently only hex8 supported");
-            const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
+            const CORE::FE::CellType distype = CORE::FE::CellType::hex8;
 
             // in case of further distypes, move the following block to a templated function
             {
               // get number of element nodes
-              const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+              const int nen = CORE::FE::num_nodes<distype>;
               // get number of space dimensions
-              const int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+              const int nsd = CORE::FE::dim<distype>;
 
               // get nodal values of velocity field from secondary dofset
               DRT::Element::LocationArray la(discret_->NumDofSets());
@@ -545,7 +547,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
         const int lid = discret_->NodeRowMap()->LID(gid);
         if (lid < 0) continue;
         const DRT::Node* lnode = discret_->lRowNode(lid);
-        const double* coord = lnode->X();
+        const auto& coord = lnode->X();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
       }
@@ -725,7 +727,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     {
       std::vector<int> nodedofs = discret_->Dof(NdsVel(), node);
       CORE::LINALG::Matrix<3, 2> coordandvel;
-      const double* coord = node->X();
+      const auto& coord = node->X();
       for (int i = 0; i < 3; ++i)
       {
         // get global and local dof IDs
@@ -777,7 +779,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
       CORE::LINALG::Matrix<3, 2> closestnodedata(true);
       {
         CORE::LINALG::Matrix<3, 1> nodecoord;
-        const double* coord = lnode->X();
+        auto& coord = lnode->X();
         for (int i = 0; i < 3; ++i) nodecoord(i) = coord[i];
         double mindist = 1.0e19;
 
@@ -898,69 +900,6 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
   return;
 }
-
-
-/*----------------------------------------------------------------------------*
- | access routine for nodal curvature                         rasthofer 01/15 |
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetAlgorithm::GetNodalCurvature(
-    const Teuchos::RCP<const Epetra_Vector> phi,
-    const Teuchos::RCP<const Epetra_MultiVector> gradphi)
-{
-  // Currently, only a nodal curvature reconstruction based on an L_2-projection is supported.
-  // Other reconstruction types, for instance, a mean value computation using the values
-  // of the adjacent elements (applied, e.g., by Florian Henke and implemented in the old combustion
-  // module), should be added here as well.
-
-  Teuchos::RCP<Epetra_Vector> nodalCurvature =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-  ReconstructedNodalCurvature(nodalCurvature, phi, gradphi);
-
-  return nodalCurvature;
-};
-
-
-/*----------------------------------------------------------------------------*
- | Reconstruct nodal curvature                                   winter 04/14 |
- *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature(Teuchos::RCP<Epetra_Vector> curvature,
-    const Teuchos::RCP<const Epetra_Vector> phi,
-    const Teuchos::RCP<const Epetra_MultiVector> gradPhi)
-{
-  // zero out matrix entries
-  sysmat_->Zero();
-
-  // zeroed residual
-  residual_->PutScalar(0.0);
-
-  // create the parameters for the discretization
-  Teuchos::ParameterList eleparams;
-
-  // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::recon_curvature_at_nodes, eleparams);
-
-  if (nsd_ != 3) dserror("check functionality for nsd!=3");
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp", phi);
-  discret_->SetState("gradphinp_x", Teuchos::rcp((*gradPhi)(0), false));
-  discret_->SetState("gradphinp_y", Teuchos::rcp((*gradPhi)(1), false));
-  discret_->SetState("gradphinp_z", Teuchos::rcp((*gradPhi)(2), false));
-
-  discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
-
-  discret_->ClearState();
-
-  // finalize the complete matrix
-  sysmat_->Complete();
-
-  solver_->Solve(sysmat_->EpetraOperator(), curvature, residual_, true, true);
-
-  return;
-
-}  // SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature
 
 
 /*----------------------------------------------------------------------------*
@@ -1191,3 +1130,5 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
 
   return;
 }  // SCATRA::ScaTraTimIntImpl::Redistribute
+
+BACI_NAMESPACE_CLOSE

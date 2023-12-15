@@ -12,22 +12,24 @@
 #ifndef BACI_MAT_ANISOTROPY_UTILS_H
 #define BACI_MAT_ANISOTROPY_UTILS_H
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCPDecl.hpp>
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
+}
+namespace DRT::INPUT
+{
+  class LineDefinition;
+}
 
 namespace MAT
 {
@@ -72,7 +74,7 @@ namespace MAT
    * \param vct vector
    */
   template <typename T>
-  void PackFiberVector(DRT::PackBuffer& buffer, const std::vector<std::vector<T>>& vct);
+  void PackFiberVector(CORE::COMM::PackBuffer& buffer, const std::vector<std::vector<T>>& vct);
 
   /*!
    * \brief Pack 2D vector of fibers and structural tensors
@@ -83,7 +85,8 @@ namespace MAT
    * \param vct vector
    */
   template <typename T, unsigned int numfib>
-  void PackFiberArray(DRT::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct);
+  void PackFiberArray(
+      CORE::COMM::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct);
 
   /*!
    * \brief Unpack 2D vector of fibers and structural tensors
@@ -110,5 +113,7 @@ namespace MAT
   void UnpackFiberArray(std::vector<char>::size_type& position, const std::vector<char>& data,
       std::vector<std::array<T, numfib>>& vct);
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_UTILS_H

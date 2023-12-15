@@ -25,6 +25,7 @@ namespace Teuchos
   class RCP;
 }  // namespace Teuchos
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -37,8 +38,6 @@ namespace CORE::GEO
     {
      public:
       QuadratureCompression();
-
-      ~QuadratureCompression(){};
 
       bool PerformCompressionOfQuadrature(
           CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
@@ -101,4 +100,6 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+BACI_NAMESPACE_CLOSE
+
 #endif  // CUT_QUADRATURE_COMPRESSION_H

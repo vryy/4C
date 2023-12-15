@@ -64,8 +64,6 @@ THETA                           1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
-ADAPTCONV                       Yes
-ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 LINEAR_SOLVER                   1
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
@@ -90,8 +88,6 @@ NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-08
 TOLRES                          1.0E-10
 TOLCONSTR                       1.0E-06
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 MAXITER                         100
 LINEAR_SOLVER                   1
 --------------------------------------------------------STRUCT NOX/Printing

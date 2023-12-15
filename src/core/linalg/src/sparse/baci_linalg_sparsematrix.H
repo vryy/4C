@@ -18,6 +18,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FECrsMatrix.h>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -517,7 +518,7 @@ namespace CORE::LINALG
     /*!
        Used by public Split, does not call Complete() on output matrix.
      */
-    void SplitMxN(BlockSparseMatrixBase& Abase) const;
+    void SplitMxN(BlockSparseMatrixBase& ABlock) const;
 
     /// saved graph (if any)
     Teuchos::RCP<Epetra_CrsGraph> graph_;
@@ -604,5 +605,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<Strategy>> CORE::LINALG::SparseMatr
   // return resulting BlockSparseMatrix
   return blockA;
 }
+
+BACI_NAMESPACE_CLOSE
 
 #endif

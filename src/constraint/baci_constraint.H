@@ -16,6 +16,8 @@ Thomas Kloeppel
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -56,9 +58,9 @@ namespace UTILS
     */
 
     Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-        const std::string& CondName,  ///< Name of condition to creat constraint from
-        int& minID,                   ///< minimum constraint or monitor ID so far
-        int& maxID                    ///< maximum constraint or monitor ID so far
+        const std::string& conditionname,  ///< Name of condition to creat constraint from
+        int& minID,                        ///< minimum constraint or monitor ID so far
+        int& maxID                         ///< maximum constraint or monitor ID so far
     );
 
     /*!
@@ -66,25 +68,14 @@ namespace UTILS
     */
 
     Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-        const std::string& CondName  ///< Name of condition to create constraints from
+        const std::string& conditionname  ///< Name of condition to create constraints from
     );
 
-    /*!
-        \brief Destructor
-
-     */
-    ~Constraint() { return; };
 
     /*!
      \brief Return if there are constraints
     */
     bool HaveConstraint() { return constrtype_ != none; };
-
-    /// Set state of the underlying discretization
-    void SetState(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<Epetra_Vector> V        ///< values to set
-    );
-
 
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning
@@ -170,5 +161,7 @@ namespace UTILS
     );
   };  // class
 }  // namespace UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_H

@@ -9,10 +9,11 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_config_mpi.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <execinfo.h>
-#include <mpi.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -70,9 +71,13 @@ extern "C" void cpp_dslatest(const char* file, const int line)
  *----------------------------------------------------------------------*/
 extern "C" [[noreturn]] void cpp_dserror_func(const char* text, ...)
 {
-  int myrank, nprocs;
-  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+  int initialized;
+  MPI_Initialized(&initialized);
+  int myrank = 0;
+  if (initialized > 0)
+  {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+  }
 
   const std::size_t BUFLEN = 8192;
   char errbuf[BUFLEN];

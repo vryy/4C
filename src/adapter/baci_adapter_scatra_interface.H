@@ -13,6 +13,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -45,7 +46,7 @@ namespace ADAPTER
     ScatraInterface(){};
 
     //! virtual to get polymorph destruction
-    virtual ~ScatraInterface(){};
+    virtual ~ScatraInterface() = default;
 
     //! return discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() const = 0;
@@ -68,5 +69,7 @@ namespace ADAPTER
   };  // class ScatraInterface
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_SCATRA_INTERFACE_H

@@ -21,6 +21,8 @@ general static parameters required for scalar transport element evaluation.
 #include "baci_scatra_ele_parameter_base.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -35,8 +37,6 @@ namespace DRT
       );
 
      public:
-      virtual ~ScaTraEleParameterLsReinit() {}
-
       /// Singleton access method
       static ScaTraEleParameterLsReinit* Instance(
           const std::string& disname  //!< name of discretization
@@ -48,7 +48,7 @@ namespace DRT
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+          ) override;
 
       /*========================================================================*/
       //! @name access-routines
@@ -105,4 +105,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

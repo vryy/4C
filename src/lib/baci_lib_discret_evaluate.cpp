@@ -9,20 +9,22 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elements_paramsinterface.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        mwgee 12/06|
@@ -74,7 +76,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
   // for each type of element
   // for most element types, just the base class dummy is called
   // that does nothing
-  ParObjectFactory::Instance().PreEvaluate(*this, params, strategy.Systemmatrix1(),
+  CORE::COMM::ParObjectFactory::Instance().PreEvaluate(*this, params, strategy.Systemmatrix1(),
       strategy.Systemmatrix2(), strategy.Systemvector1(), strategy.Systemvector2(),
       strategy.Systemvector3());
 
@@ -209,7 +211,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
               if (tmp_funct && (*tmp_funct)[j] > 0)
               {
                 return DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfTime>((*tmp_funct)[j] - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfTime>((*tmp_funct)[j] - 1)
                     .Evaluate(time);
               }
               else
@@ -392,7 +394,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
         if (curvenum >= 0)
         {
           curvefac =
-              Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+              Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
                   time);
         }
 
@@ -649,3 +651,5 @@ void DRT::Discretization::EvaluateInitialField(const std::string& fieldstring,
 {
   DRT::UTILS::EvaluateInitialField(*this, fieldstring, fieldvector, locids);
 }  // DRT::Discretization::EvaluateIntialField
+
+BACI_NAMESPACE_CLOSE

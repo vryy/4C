@@ -16,13 +16,14 @@
 #include "baci_scatra_ele_calc_hdg.H"
 #include "baci_scatra_ele_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     /// Scatra HDG element implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcHDGCardiacMonodomain : public ScaTraEleCalcHDG<distype, probdim>
     {
      protected:
@@ -41,9 +42,6 @@ namespace DRT
       std::vector<double> gp_mat_alpha_;
 
      public:
-      virtual ~ScaTraEleCalcHDGCardiacMonodomain() {}
-
-
       /// Singleton access method
       static ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname, bool create = true);
@@ -66,10 +64,10 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate material
-      virtual void PrepareMaterials(DRT::Element* ele,       //!< the element we are dealing with
+      void PrepareMaterials(DRT::Element* ele,               //!< the element we are dealing with
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
-          Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor);
+          Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor) override;
 
       //! evaluate material
       virtual void PrepareMaterialsAll(DRT::Element* ele,    //!< the element we are dealing with
@@ -85,11 +83,12 @@ namespace DRT
 
 
       //! evaluate material
-      virtual void Materials(
+      void Materials(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
           CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
-          CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv);
+          CORE::LINALG::SerialDenseVector& ivecnp,
+          CORE::LINALG::SerialDenseMatrix& ivecnpderiv) override;
 
       //! material ScaTra
       void MatMyocard(
@@ -100,18 +99,18 @@ namespace DRT
 
       //! update time dependent material
       void TimeUpdateMaterial(const DRT::Element* ele  //!< the element we are dealing with
-      );
+          ) override;
 
       //! get material internal state for output
       void GetMaterialInternalState(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization);
+          DRT::Discretization& discretization) override;
 
       //! set material internal state after restart
       void SetMaterialInternalState(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization);
+          DRT::Discretization& discretization) override;
 
       //! project material field
-      int ProjectMaterialField(const DRT::Element* ele);
+      int ProjectMaterialField(const DRT::Element* ele) override;
 
       //! project material field
       int ProjectMaterialFieldAll(const DRT::Element* ele);
@@ -127,5 +126,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_HDG_H

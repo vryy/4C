@@ -13,6 +13,8 @@
 #include "baci_scatra_timint_elch.H"
 #include "baci_scatra_timint_meshtying_strategy_std.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /*!
@@ -35,8 +37,6 @@ namespace SCATRA
     //! constructor
     explicit MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint);
 
-    // destructor
-    ~MeshtyingStrategyStdElch() override = default;
 
     bool SystemMatrixInitializationNeeded() const override { return true; }
 
@@ -57,5 +57,7 @@ namespace SCATRA
     void InitConvCheckStrategy() override;
   };  // class MeshtyingStrategyStdElch
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_H

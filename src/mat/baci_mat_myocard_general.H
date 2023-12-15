@@ -13,6 +13,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 class Myocard_General
 
 {
@@ -24,8 +26,7 @@ class Myocard_General
   explicit Myocard_General(const double eps_deriv_myocard, const std::string tissue);
 
   /// destructor
-  virtual ~Myocard_General() { ; }
-
+  virtual ~Myocard_General() = default;
   /// compute reaction coefficient for multiple Gauss points
   virtual double ReaCoeff(const double phi, const double dt, int gp)
   {
@@ -118,5 +119,7 @@ class Myocard_General
 
 };  // Myocard_general
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

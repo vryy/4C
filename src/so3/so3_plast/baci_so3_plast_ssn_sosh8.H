@@ -17,6 +17,8 @@
 #include "baci_so3_plast_ssn.H"
 #include "baci_so3_plast_ssn_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -32,7 +34,7 @@ namespace DRT
 
       static So_sh8PlastType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -51,7 +53,7 @@ namespace DRT
       std::string GetElementTypeString() const { return "SOLIDSH8PLAST"; }
     };  // class So_sh8PlastType
 
-    class So_sh8Plast : public virtual So3_Plast<DRT::Element::hex8>
+    class So_sh8Plast : public virtual So3_Plast<CORE::FE::CellType::hex8>
     {
      public:
       //! @name Friends
@@ -73,8 +75,6 @@ namespace DRT
       //! where the type of the derived class is unknown and a copy-ctor is needed
       DRT::Element* Clone() const override;
 
-      //! Destructor
-      ~So_sh8Plast() override;
 
       //! Return unique ParObject id
       //!
@@ -87,7 +87,7 @@ namespace DRT
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
@@ -197,15 +197,15 @@ namespace DRT
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
       ThicknessDirection enfthickdir(CORE::LINALG::Matrix<nsd_, 1>&
-              glothickdir  ///< global direction of enforced thickness direction
+              thickdirglo  ///< global direction of enforced thickness direction
       );
 
       //! Re-initialize EAS data, needed for sosh8 morphing
       void ReInitEas(const DRT::ELEMENTS::So3Plast_EASType EASType);
 
-      virtual void InvalidGpData()
+      void InvalidGpData() override
       {
-        So3_Plast<DRT::Element::hex8>::InvalidGpData();
+        So3_Plast<CORE::FE::CellType::hex8>::InvalidGpData();
         jac_refe_.first = false;
         jac_curr_.first = false;
         TinvT_.first = false;
@@ -213,7 +213,7 @@ namespace DRT
 
       void InvalidEleData()
       {
-        So3_Plast<DRT::Element::hex8>::InvalidEleData();
+        So3_Plast<CORE::FE::CellType::hex8>::InvalidEleData();
         B_ans_loc_.first = false;
       }
 
@@ -265,5 +265,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

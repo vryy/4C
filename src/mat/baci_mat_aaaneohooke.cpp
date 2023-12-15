@@ -22,6 +22,9 @@ the input line should read
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -48,7 +51,7 @@ MAT::AAAneohookeType MAT::AAAneohookeType::instance_;
 
 
 
-DRT::ParObject* MAT::AAAneohookeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAAneohookeType::Create(const std::vector<char>& data)
 {
   MAT::AAAneohooke* aaa = new MAT::AAAneohooke();
   aaa->Unpack(data);
@@ -69,9 +72,9 @@ MAT::AAAneohooke::AAAneohooke(MAT::PAR::AAAneohooke* params) : params_(params) {
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke::Pack(DRT::PackBuffer& data) const
+void MAT::AAAneohooke::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -90,10 +93,8 @@ void MAT::AAAneohooke::Pack(DRT::PackBuffer& data) const
 void MAT::AAAneohooke::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -401,7 +402,6 @@ bool MAT::AAAneohooke::VisData(
   else if (name == "youngs")
   {
     if ((int)data.size() != 1) dserror("size mismatch");
-    ;
     data[0] = params_->GetParameter(params_->young, eleGID);
   }
   else if (name == "BaciEleId")
@@ -417,3 +417,5 @@ bool MAT::AAAneohooke::VisData(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

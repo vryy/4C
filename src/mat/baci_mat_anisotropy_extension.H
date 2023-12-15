@@ -12,8 +12,8 @@
 #ifndef BACI_MAT_ANISOTROPY_EXTENSION_H
 #define BACI_MAT_ANISOTROPY_EXTENSION_H
 
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_pack_buffer.H"
+#include "baci_comm_pack_buffer.H"
+#include "baci_io_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_base.H"
@@ -22,6 +22,8 @@
 
 #include <functional>
 #include <utility>
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -92,7 +94,7 @@ namespace MAT
      *
      * \param data
      */
-    void PackAnisotropy(DRT::PackBuffer& data) const override;
+    void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
@@ -306,5 +308,7 @@ namespace MAT
         Teuchos::null;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_EXTENSION_H

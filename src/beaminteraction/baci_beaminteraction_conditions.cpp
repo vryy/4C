@@ -25,6 +25,8 @@
 #include "baci_lib_discret.H"
 #include "baci_so3_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -39,7 +41,7 @@ BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets(
-    const Teuchos::RCP<const ::DRT::Discretization>& discretization)
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discretization)
 {
   // Set the IDs of the line elements.
   std::vector<int> line_ids;
@@ -51,7 +53,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditionBase::Setup(
-    const Teuchos::RCP<const ::DRT::Discretization>& discret)
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret)
 {
 }
 
@@ -69,7 +71,7 @@ BEAMINTERACTION::BeamInteractionConditions::BeamInteractionConditions() {}
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
-    const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
     const Teuchos::RCP<const BeamContactParams>& params_ptr)
 {
   condition_map_.clear();
@@ -233,7 +235,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets(
-    Teuchos::RCP<::DRT::Discretization> discretization)
+    Teuchos::RCP<BACI::DRT::Discretization> discretization)
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second) condition->BuildIdSets(discretization);
@@ -243,7 +245,7 @@ void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::SetState(
-    const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {
@@ -256,7 +258,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetState(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::Setup(
-    const Teuchos::RCP<const ::DRT::Discretization>& discret)
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret)
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second) condition->Setup(discret);
@@ -296,7 +298,7 @@ BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::CreateIndirectAssemblyManagers(
-    const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
     std::vector<Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>>& assembly_managers)
 {
   Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
@@ -355,3 +357,5 @@ void BEAMINTERACTION::ConditionToElementIds(
   if (condition->Geometry().size() != element_ids.size())
     dserror("Could not find the IDs of all elements!");
 }
+
+BACI_NAMESPACE_CLOSE

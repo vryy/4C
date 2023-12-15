@@ -15,18 +15,20 @@
 #include "baci_fluid_ele_action.H"
 #include "baci_io_control.H"
 #include "baci_lib_assemblestrategy.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linear_solver_method_linalg.H"
-#include "baci_poroelast_base.H"
 #include "baci_poroelast_scatra_utils.H"
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_timint_implicit.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -35,10 +37,8 @@
 POROELASTSCATRA::PoroScatraMono::PoroScatraMono(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraBase(comm, timeparams),
-      printscreen_(true),   // ADD INPUT PARAMETER
-      printiter_(true),     // ADD INPUT PARAMETER
-      printerrfile_(true),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
+      printscreen_(true),  // ADD INPUT PARAMETER
+      printiter_(true),    // ADD INPUT PARAMETER
       timer_("PoroScatraMonoSolve", true),
       iterinc_(Teuchos::null),
       zeros_(Teuchos::null),
@@ -169,7 +169,7 @@ void POROELASTSCATRA::PoroScatraMono::PrepareOutput()
 void POROELASTSCATRA::PoroScatraMono::Output()
 {
   PoroField()->Output();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*
@@ -279,7 +279,7 @@ void POROELASTSCATRA::PoroScatraMono::Solve()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                              vuong 01/12   |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void POROELASTSCATRA::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroScatraMono::Monolithic::Evaluate");
 
@@ -289,14 +289,14 @@ void POROELASTSCATRA::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector>
   Teuchos::RCP<const Epetra_Vector> scatrainc;
 
   // if an increment vector exists
-  if (x != Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
     // process structure unknowns of the first field
-    porostructinc = Extractor()->ExtractVector(x, 0);
-    porofluidinc = Extractor()->ExtractVector(x, 1);
+    porostructinc = Extractor()->ExtractVector(stepinc, 0);
+    porofluidinc = Extractor()->ExtractVector(stepinc, 1);
 
     // process fluid unknowns of the second field
-    scatrainc = Extractor()->ExtractVector(x, 2);
+    scatrainc = Extractor()->ExtractVector(stepinc, 2);
   }
 
   // Newton update of the fluid field
@@ -569,8 +569,7 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
   }
   else
     // create a linear solver
@@ -684,14 +683,6 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  return;
 }  // PrintNewtonIter()
 
 
@@ -1461,3 +1452,5 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

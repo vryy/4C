@@ -13,6 +13,8 @@
 
 #include "baci_so3_nullspace.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::NURBS::Ale3_NurbsType DRT::ELEMENTS::NURBS::Ale3_NurbsType::instance_;
 
 DRT::ELEMENTS::NURBS::Ale3_NurbsType& DRT::ELEMENTS::NURBS::Ale3_NurbsType::Instance()
@@ -22,7 +24,7 @@ DRT::ELEMENTS::NURBS::Ale3_NurbsType& DRT::ELEMENTS::NURBS::Ale3_NurbsType::Inst
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::NURBS::Ale3Nurbs* object = new DRT::ELEMENTS::NURBS::Ale3Nurbs(-1, -1);
   object->Unpack(data);
@@ -87,10 +89,6 @@ DRT::ELEMENTS::NURBS::Ale3Nurbs::Ale3Nurbs(const DRT::ELEMENTS::NURBS::Ale3Nurbs
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Ale3Nurbs::~Ale3Nurbs() { return; }
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::NURBS::Ale3Nurbs::Print(std::ostream& os) const
 {
   os << "Ale3Nurbs ";
@@ -100,18 +98,18 @@ void DRT::ELEMENTS::NURBS::Ale3Nurbs::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Ale3Nurbs::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::NURBS::Ale3Nurbs::Shape() const
 {
   switch (NumNode())
   {
     case 8:
-      return nurbs8;
+      return CORE::FE::CellType::nurbs8;
     case 27:
-      return nurbs27;
+      return CORE::FE::CellType::nurbs27;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-
-  return dis_none;
 }
+
+BACI_NAMESPACE_CLOSE

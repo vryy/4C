@@ -11,6 +11,7 @@
 
 #include "baci_mortar_manager_base.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -53,11 +54,7 @@ namespace CONTACT
     */
     MtManager(DRT::Discretization& discret, double alphaf = 0.0);
 
-    /*!
-    \brief Destructor
 
-    */
-    virtual ~MtManager() = default;
 
     //!@}
 
@@ -142,5 +139,7 @@ namespace CONTACT
 
   };  // class MtManager
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_MESHTYING_MANAGER_H

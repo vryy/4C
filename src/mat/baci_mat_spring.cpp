@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -33,7 +35,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Spring::CreateMaterial()
 MAT::SpringType MAT::SpringType::instance_;
 
 
-DRT::ParObject* MAT::SpringType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::SpringType::Create(const std::vector<char>& data)
 {
   MAT::Spring* spring = new MAT::Spring();
   spring->Unpack(data);
@@ -52,9 +54,9 @@ MAT::Spring::Spring(MAT::PAR::Spring* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Spring::Pack(DRT::PackBuffer& data) const
+void MAT::Spring::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -73,10 +75,8 @@ void MAT::Spring::Pack(DRT::PackBuffer& data) const
 void MAT::Spring::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -97,3 +97,5 @@ void MAT::Spring::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

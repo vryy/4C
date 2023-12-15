@@ -16,6 +16,8 @@
 #include "baci_mat_so3_material.H"
 #include "baci_mixture_constituent.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MIXTURE
 {
@@ -27,9 +29,6 @@ namespace MIXTURE
     {
      public:
       explicit MixtureConstituent_SolidMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata);
-
-      ~MixtureConstituent_SolidMaterial() override = default;
-
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
@@ -54,7 +53,7 @@ namespace MIXTURE
     explicit MixtureConstituent_SolidMaterial(
         MIXTURE::PAR::MixtureConstituent_SolidMaterial* params, int id);
 
-    void PackConstituent(DRT::PackBuffer& data) const override;
+    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
@@ -70,10 +69,10 @@ namespace MIXTURE
         Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
         CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
@@ -85,5 +84,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_SOLIDMATERIAL_H

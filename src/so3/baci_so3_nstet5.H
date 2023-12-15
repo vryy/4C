@@ -17,7 +17,7 @@
 // #define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
 #define ALPHA_NSTET5 0.1  ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 
-
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -51,7 +51,7 @@ namespace DRT
 
       static NStet5Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -231,7 +231,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      inline DiscretizationType Shape() const override { return tet4; }
+      inline CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tet4; }
 
       /*!
       \brief Return number of volumes of this element
@@ -261,12 +261,6 @@ namespace DRT
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
-      /*!
       \brief Return unique ParObject id
 
       every class implementing ParObject needs a unique id defined at the
@@ -280,7 +274,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -290,11 +284,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~NStet5() override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -544,5 +533,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_NSTET5_H

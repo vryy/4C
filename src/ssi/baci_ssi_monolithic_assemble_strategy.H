@@ -16,6 +16,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class MultiMapExtractor;
@@ -46,6 +48,11 @@ namespace SSI
   class AssembleStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~AssembleStrategyBase() = default;
+
     //! constructor
     explicit AssembleStrategyBase(
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
@@ -276,4 +283,6 @@ namespace SSI
       CORE::LINALG::MatrixType matrixtype_ssi, CORE::LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H

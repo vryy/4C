@@ -19,6 +19,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -69,7 +71,6 @@ namespace POROFLUIDMULTIPHASE
         const int linsolvernumber,                     //!< number of linear solver
         const Teuchos::ParameterList& probparams,      //!< parameter list of global problem
         const Teuchos::ParameterList& poroparams,      //!< paramter list of poro problem
-        FILE* errfile,                                 //!< error file
         Teuchos::RCP<IO::DiscretizationWriter> output  //!< output writer
     );
 
@@ -148,5 +149,7 @@ namespace POROFLUIDMULTIPHASE
   void PrintLogo();
 }  // namespace POROFLUIDMULTIPHASE
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_UTILS_H

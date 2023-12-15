@@ -22,6 +22,8 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Operator.h>
 
+BACI_NAMESPACE_OPEN
+
 void CONTACT::CoNitscheStrategyTsi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
@@ -121,11 +123,11 @@ void CONTACT::CoNitscheStrategyTsi::UpdateTraceIneqEtimates()
 }
 
 Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyTsi::SetupRhsBlockVec(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::temp:
+    case CONTACT::VecBlockType::temp:
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()));
     default:
@@ -134,13 +136,13 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyTsi::SetupRhsBlockVec(
 }
 
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::temp:
+    case CONTACT::VecBlockType::temp:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(ft_), 0));
     default:
       return CONTACT::CoNitscheStrategy::GetRhsBlockPtr(bt);
@@ -148,17 +150,17 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::SetupMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt)
+    const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_temp:
+    case CONTACT::MatBlockType::displ_temp:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-    case DRT::UTILS::MatBlockType::temp_displ:
-    case DRT::UTILS::MatBlockType::temp_temp:
+    case CONTACT::MatBlockType::temp_displ:
+    case CONTACT::MatBlockType::temp_temp:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()),
@@ -169,18 +171,18 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::SetupMat
 }
 
 void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
+    const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_temp:
+    case CONTACT::MatBlockType::displ_temp:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(*DRT::Problem::Instance()->GetDis("thermo")->DofRowMap(),  // col map
                   *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),           // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
-    case DRT::UTILS::MatBlockType::temp_displ:
+    case CONTACT::MatBlockType::temp_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
                   *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
@@ -188,7 +190,7 @@ void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
-    case DRT::UTILS::MatBlockType::temp_temp:
+    case CONTACT::MatBlockType::temp_temp:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
@@ -199,17 +201,17 @@ void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::temp_temp:
+    case CONTACT::MatBlockType::temp_temp:
       return ktt_;
-    case DRT::UTILS::MatBlockType::temp_displ:
+    case CONTACT::MatBlockType::temp_displ:
       return ktd_;
-    case DRT::UTILS::MatBlockType::displ_temp:
+    case CONTACT::MatBlockType::displ_temp:
       return kdt_;
     default:
       return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bt, cparams);
@@ -221,8 +223,10 @@ void CONTACT::CoNitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cp
 {
   CONTACT::CoNitscheStrategy::Integrate(cparams);
 
-  ft_ = CreateRhsBlockPtr(DRT::UTILS::VecBlockType::temp);
-  ktt_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_temp);
-  ktd_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_displ);
-  kdt_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_temp);
+  ft_ = CreateRhsBlockPtr(CONTACT::VecBlockType::temp);
+  ktt_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::temp_temp);
+  ktd_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::temp_displ);
+  kdt_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_temp);
 }
+
+BACI_NAMESPACE_CLOSE

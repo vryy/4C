@@ -6,12 +6,11 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_config_compile_settings.H"
+#include "baci_config.H"
+#include "baci_config_revision.H"
 
 #include "baci_io_control.H"
 
-#include "baci_config_revision.H"
-#include "baci_inpar_problemtype.H"
 #include "baci_io_legacy_table_cpp.h"  // access to legacy parser module
 #include "baci_io_pstream.H"
 
@@ -25,11 +24,13 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    ShapeFunctionType spatial_approx, std::string inputfile, const std::string& outputname,
-    int ndim, int restart, int filesteps, int create_controlfile)
+    CORE::FE::ShapeFunctionType spatial_approx, std::string inputfile,
+    const std::string& outputname, int ndim, int restart, int filesteps, int create_controlfile)
     : problemtype_(std::move(problemtype)),
       inputfile_(std::move(inputfile)),
       ndim_(ndim),
@@ -91,9 +92,9 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    ShapeFunctionType spatial_approx, std::string inputfile, const std::string& restartname,
-    std::string outputname, int ndim, int restart, int filesteps, int create_controlfile,
-    bool adaptname)
+    CORE::FE::ShapeFunctionType spatial_approx, std::string inputfile,
+    const std::string& restartname, std::string outputname, int ndim, int restart, int filesteps,
+    int create_controlfile, bool adaptname)
     : problemtype_(std::move(problemtype)),
       inputfile_(std::move(inputfile)),
       ndim_(ndim),
@@ -213,7 +214,7 @@ IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char* new_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::OverwriteResultFile(const ShapeFunctionType& spatial_approx)
+void IO::OutputControl::OverwriteResultFile(const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << filename_ << ".control";
@@ -224,7 +225,8 @@ void IO::OutputControl::OverwriteResultFile(const ShapeFunctionType& spatial_app
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(int numb_run, const ShapeFunctionType& spatial_approx)
+void IO::OutputControl::NewResultFile(
+    int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   if (filename_.rfind("_run_") != std::string::npos)
   {
@@ -244,8 +246,8 @@ void IO::OutputControl::NewResultFile(int numb_run, const ShapeFunctionType& spa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(
-    const std::string& name_appendix, int numb_run, const ShapeFunctionType& spatial_approx)
+void IO::OutputControl::NewResultFile(const std::string& name_appendix, int numb_run,
+    const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << name_appendix;
@@ -256,7 +258,8 @@ void IO::OutputControl::NewResultFile(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(std::string name, const ShapeFunctionType& spatial_approx)
+void IO::OutputControl::NewResultFile(
+    std::string name, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   filename_ = name;
   name += ".control";
@@ -267,7 +270,7 @@ void IO::OutputControl::NewResultFile(std::string name, const ShapeFunctionType&
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void IO::OutputControl::WriteHeader(
-    const std::string& control_file_name, const ShapeFunctionType& spatial_approx)
+    const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   if (myrank_ == 0)
   {
@@ -292,7 +295,7 @@ void IO::OutputControl::WriteHeader(
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
                  << "spatial_approximation = \""
-                 << INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(spatial_approx) << "\"\n"
+                 << CORE::FE::ShapeFunctionTypeToString(spatial_approx) << "\"\n"
                  << "ndim = " << ndim_ << "\n"
                  << "\n";
 
@@ -376,75 +379,6 @@ IO::InputControl::InputControl(const std::string& filename, const Epetra_Comm& c
 /*----------------------------------------------------------------------*/
 IO::InputControl::~InputControl() { destroy_map(&table_); }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-IO::ErrorFileControl::ErrorFileControl(
-    const Epetra_Comm& comm, std::string outputname, int restart, int create_errorfiles)
-    : filename_(std::move(outputname)), errfile_(nullptr)
-{
-  // create error file name
-  {
-    // standard mode, no restart
-    std::ostringstream mypid;
-    mypid << comm.MyPID();
-    errname_ = filename_ + mypid.str() + ".err";
-
-    if (restart)
-    {
-      // check whether filename_ includes a dash and in case separate the number at the end
-      int number = 0;
-      size_t pos = RestartFinder(filename_);
-      if (pos != std::string::npos)
-      {
-        number = atoi(filename_.substr(pos + 1).c_str());
-        filename_ = filename_.substr(0, pos);
-      }
-
-      // either add or increase the number in the end or just set the new name for the error file
-      for (;;)
-      {
-        // if no number is found and the error file name does not yet exist -> create it
-        if (number == 0)
-        {
-          errname_ = filename_ + mypid.str() + ".err";
-          std::ifstream file(errname_.c_str());
-          if (not file)
-          {
-            break;
-          }
-        }
-        // a number was found or the file does already exist -> set number correctly and add it
-        number += 1;
-        std::stringstream name;
-        name << "-" << number << "_";
-        errname_ = filename_ + name.str() + mypid.str() + ".err";
-        std::ifstream file(errname_.c_str());
-        if (not file)
-        {
-          break;
-        }
-      }
-    }
-  }
-
-  // open error files (one per processor)
-  // int create_errorfiles =0;
-  if (create_errorfiles)
-  {
-    errfile_ = fopen(errname_.c_str(), "w");
-    if (errfile_ == nullptr) dserror("Opening of output file %s failed\n", errname_.c_str());
-  }
-
-  // inform user
-  if (comm.MyPID() == 0) IO::cout << "errors are reported to " << errname_.c_str() << IO::endl;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-IO::ErrorFileControl::~ErrorFileControl()
-{
-  if (errfile_ != nullptr) fclose(errfile_);
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -459,3 +393,5 @@ size_t IO::RestartFinder(const std::string& filename)
   }
   return std::string::npos;
 }
+
+BACI_NAMESPACE_CLOSE

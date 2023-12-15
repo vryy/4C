@@ -11,6 +11,7 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -23,6 +24,8 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
       integration_points_circumference_(-1),
       gauss_point_projection_tracker_(),
       n_search_points_(0),
+      not_all_gauss_points_project_valid_action_(
+          INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::fail),
       segment_tracker_()
 {
   // Get parameters from the input file.
@@ -30,7 +33,11 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
     strategy_ = Teuchos::getIntegralValue<INPAR::GEOMETRYPAIR::LineTo3DStrategy>(
         input_parameter_list, "GEOMETRY_PAIR_STRATEGY");
 
-    n_search_points_ = input_parameter_list.get<int>("GEOMETRY_PAIR_SEARCH_POINTS");
+    n_search_points_ = input_parameter_list.get<int>("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS");
+    not_all_gauss_points_project_valid_action_ =
+        Teuchos::getIntegralValue<INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction>(
+            input_parameter_list,
+            "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION");
 
     gauss_rule_ =
         INPAR::GEOMETRYPAIR::IntToGaussRule1D(input_parameter_list.get<int>("GAUSS_POINTS"));
@@ -71,3 +78,5 @@ void GEOMETRYPAIR::LineTo3DEvaluationData::ResetTracker()
 
   for (auto& data : segment_tracker_) data.second.clear();
 }
+
+BACI_NAMESPACE_CLOSE

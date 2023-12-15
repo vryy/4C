@@ -18,6 +18,8 @@
 #include "baci_particle_engine_typedefs.H"
 #include "baci_particle_interaction_sph_neighbor_pair_struct.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -58,9 +60,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHNeighborPairs();
-
-    //! destructor
-    ~SPHNeighborPairs() = default;
 
     //! init neighbor pair handler
     void Init();
@@ -134,4 +133,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

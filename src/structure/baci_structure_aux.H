@@ -14,6 +14,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_linalg_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -65,5 +67,7 @@ namespace STR
     };
   }  // namespace AUX
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

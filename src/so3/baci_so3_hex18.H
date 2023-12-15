@@ -15,6 +15,8 @@
 #include "baci_mat_material.H"
 #include "baci_so3_base.H"
 
+BACI_NAMESPACE_OPEN
+
 // Several parameters which are fixed for Solid Hex18
 const int NUMNOD_SOH18 = 18;         ///< number of nodes
 const int NODDOF_SOH18 = 3;          ///< number of dofs per node
@@ -37,7 +39,7 @@ namespace DRT
 
       static So_hex18Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -100,7 +102,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override { return hex18; };
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::hex18; };
 
       /*!
       \brief Return number of volumes of this element
@@ -130,12 +132,6 @@ namespace DRT
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
-      /*!
       \brief Return unique ParObject id
 
       every class implementing ParObject needs a unique id defined at the
@@ -152,7 +148,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -162,11 +158,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
 
-      */
-      ~So_hex18() override { return; };
 
       //@}
 
@@ -417,5 +409,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_HEX18_H

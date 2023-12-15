@@ -408,10 +408,7 @@ EXODUS::Centerline::Centerline(
   }
 }
 
-/*------------------------------------------------------------------------*
- |Dtor                                                            SP 06/08|
- *------------------------------------------------------------------------*/
-EXODUS::Centerline::~Centerline() {}
+
 
 /*------------------------------------------------------------------------*
  |displays points_ on console                                      SP 06/08|
@@ -572,7 +569,6 @@ std::map<int, std::map<int, std::vector<std::vector<double>>>> EXODUS::element_c
       {
         ele_surf_nodes.insert(counter_ele_surfnodes, (mymesh.GetNode(*it_3)));
         counter_ele_surfnodes = ele_surf_nodes.begin();
-        ;
       }
     }  // loop over element
 

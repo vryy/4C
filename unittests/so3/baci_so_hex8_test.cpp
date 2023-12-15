@@ -19,6 +19,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class SoHex8Test : public ::testing::Test
   {
    protected:
@@ -29,15 +31,16 @@ namespace
           Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm)));
 
       // create 8 nodes
-      const int nodeids[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-      std::array<double, 24> coords = {-0.1, -0.2, -0.5, 1.25, 0.23, 0.66, 1.20, 0.99, 0.5, -0.11,
-          1.20, 0.66, -0.10, -0.2, 1.9, 1.00, 0.00, 1.90, 1.20, 0.99, 1.50, -0.11, -0.20, 1.66};
+      const std::array<int, 8> nodeids = {0, 1, 2, 3, 4, 5, 6, 7};
+      std::vector<std::vector<double>> coords = {{-0.1, -0.2, -0.5}, {1.25, 0.23, 0.66},
+          {1.20, 0.99, 0.5}, {-0.11, 1.20, 0.66}, {-0.10, -0.2, 1.9}, {1.00, 0.00, 1.90},
+          {1.20, 0.99, 1.50}, {-0.11, -0.20, 1.66}};
       for (int lid = 0; lid < 8; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, &coords[3 * lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, coords[lid], 0)));
 
       // create 1 element
       testele_ = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(0, 0));
-      testele_->SetNodeIds(8, nodeids);
+      testele_->SetNodeIds(8, nodeids.data());
       testdis_->AddElement(testele_);
       testdis_->FillComplete(false, false, false);
 
@@ -78,7 +81,7 @@ namespace
    */
   TEST_F(SoHex8Test, TestNumDofPerNode)
   {
-    double pd[3] = {1, 2, 3};
+    std::vector<double> pd = {1, 2, 3};
     DRT::Node node_dummy(0, pd, false);
     EXPECT_EQ(testele_->NumDofPerNode(node_dummy), 3);
     EXPECT_EQ(copytestele_->NumDofPerNode(node_dummy), 3);

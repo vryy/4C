@@ -14,6 +14,7 @@
 
 #include "baci_geometry_pair_line_to_surface.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -43,20 +44,11 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurfaceGaussPointProjection(
+    GeometryPairLineToSurfaceGaussPointProjection(const DRT::Element* element1,
+        const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
-            line_to_surface_evaluation_data)
-        : GeometryPairLineToSurface<scalar_type, line, surface>(line_to_surface_evaluation_data){};
+            line_to_surface_evaluation_data);
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToSurfaceGaussPointProjection(){};
-
-    /**
-     * \brief Setup the projection tracker for this line element.
-     */
-    void Setup() override;
 
     /**
      * \brief Try to project all Gauss points to the surface.
@@ -103,5 +95,7 @@ namespace GEOMETRYPAIR
     std::vector<bool>& GetLineProjectionVector() const;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -40,6 +40,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
@@ -57,7 +59,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       solver_(Teuchos::rcp(new CORE::LINALG::Solver(
           DRT::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
-          comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
+          comm))),
       timer_(Teuchos::rcp(new Teuchos::Time("SSI_Mono", true)))
 {
 }
@@ -551,11 +553,11 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 void SSI::SSIMono::Output()
 {
   // output scalar transport field
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
   if (IsScaTraManifold())
   {
     // domain output
-    ScaTraManifold()->Output();
+    ScaTraManifold()->CheckAndWriteOutputAndRestart();
     // coupling output
     if (manifoldscatraflux_->DoOutput()) manifoldscatraflux_->Output();
   }
@@ -609,8 +611,8 @@ void SSI::SSIMono::PrepareTimeLoop()
   // calculate initial time derivatives
   CalcInitialTimeDerivative();
 
-  ScaTraField()->Output();
-  if (IsScaTraManifold()) ScaTraManifold()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
+  if (IsScaTraManifold()) ScaTraManifold()->CheckAndWriteOutputAndRestart();
 }
 
 /*--------------------------------------------------------------------------*
@@ -1702,3 +1704,4 @@ void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> p
   }
   ScaTraField()->Discretization()->SetState(0, "manifold_on_scatra", manifold_on_scatra);
 }
+BACI_NAMESPACE_CLOSE

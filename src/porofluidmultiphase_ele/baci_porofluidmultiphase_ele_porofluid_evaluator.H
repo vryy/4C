@@ -17,19 +17,23 @@
 
 #include <vector>
 
-namespace CORE::LINALG
+BACI_NAMESPACE_OPEN
+
+namespace CORE
 {
-  class SerialDenseMatrix;
-  class SerialDenseVector;
-}  // namespace CORE::LINALG
+  namespace LINALG
+  {
+    class SerialDenseMatrix;
+    class SerialDenseVector;
+  }  // namespace LINALG
+  namespace UTILS
+  {
+    class FunctionOfAnything;
+  }
+}  // namespace CORE
 
 namespace DRT
 {
-  namespace UTILS
-  {
-    // forward declaration
-    class FunctionOfAnything;
-  }  // namespace UTILS
   namespace ELEMENTS
   {
     class PoroFluidMultiPhaseEleParameter;
@@ -78,7 +82,7 @@ namespace DRT
         AssembleInterface(const bool inittimederiv) : inittimederiv_(inittimederiv){};
 
         //! destructor
-        virtual ~AssembleInterface(){};
+        virtual ~AssembleInterface() = default;
 
         virtual int NumPhasesToAssembleInto() const = 0;
 
@@ -102,12 +106,12 @@ namespace DRT
         AssembleStandard(int curphase, const bool inittimederiv)
             : AssembleInterface(inittimederiv), curphase_(curphase){};
 
-        //! destructor
-        virtual ~AssembleStandard(){};
+        int NumPhasesToAssembleInto() const override { return 1; };
 
-        int NumPhasesToAssembleInto() const { return 1; };
-
-        int PhaseToAssembleInto(int iassemble, int numdofpernode) const { return curphase_; };
+        int PhaseToAssembleInto(int iassemble, int numdofpernode) const override
+        {
+          return curphase_;
+        };
 
        private:
         const int curphase_;
@@ -128,12 +132,9 @@ namespace DRT
           phasestoassemble_[1] = otherphase;
         };
 
-        //! destructor
-        virtual ~AssembleAlsoIntoOtherPhase(){};
+        int NumPhasesToAssembleInto() const override { return 2; };
 
-        int NumPhasesToAssembleInto() const { return 2; };
-
-        int PhaseToAssembleInto(int iassemble, int numdofpernode) const
+        int PhaseToAssembleInto(int iassemble, int numdofpernode) const override
         {
           return phasestoassemble_[iassemble];
         };
@@ -172,7 +173,7 @@ namespace DRT
         EvaluatorInterface(){};
 
         //! destructor
-        virtual ~EvaluatorInterface(){};
+        virtual ~EvaluatorInterface() = default;
 
         //! factory method
         static Teuchos::RCP<EvaluatorInterface<nsd, nen>> CreateEvaluator(
@@ -259,9 +260,6 @@ namespace DRT
         //! constructor
         MultiEvaluator(){};
 
-        //! destructor
-        virtual ~MultiEvaluator(){};
-
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
@@ -274,7 +272,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        )
+            ) override
         {
           // loop over the evaluators
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
@@ -296,7 +294,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor
-        )
+            ) override
         {
           // loop over the evaluators
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
@@ -320,7 +318,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det)
+            double det) override
         {
           // loop over the evaluators
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
@@ -343,7 +341,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        )
+            ) override
         {
           // loop over the evaluators
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
@@ -387,9 +385,6 @@ namespace DRT
         EvaluatorBase(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : assembler_(assembler), myphase_(curphase){};
 
-        //! destructor
-        virtual ~EvaluatorBase(){};
-
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
@@ -402,7 +397,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        )
+            ) override
         {
           // the assembler class decides, where the terms are assembled into
           for (int iassemble = 0; iassemble < assembler_->NumPhasesToAssembleInto(); iassemble++)
@@ -428,7 +423,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor
-        )
+            ) override
         {
           // the assembler class decides, where the terms are assembled into
           for (int iassemble = 0; iassemble < assembler_->NumPhasesToAssembleInto(); iassemble++)
@@ -456,7 +451,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det)
+            double det) override
         {
           // the assembler class decides, where the terms are assembled into
           for (int iassemble = 0; iassemble < assembler_->NumPhasesToAssembleInto(); iassemble++)
@@ -481,7 +476,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        )
+            ) override
         {
           // the assembler class decides, where the terms are assembled into
           for (int iassemble = 0; iassemble < assembler_->NumPhasesToAssembleInto(); iassemble++)
@@ -635,7 +630,7 @@ namespace DRT
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
         //! destructor
-        virtual ~EvaluatorConv(){};
+        virtual ~EvaluatorConv() = default;
 
        protected:
         //! evaluate element matrix
@@ -727,9 +722,6 @@ namespace DRT
         EvaluatorDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorDivVel(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -746,7 +738,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -764,7 +756,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -783,7 +775,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -799,7 +791,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -820,9 +812,6 @@ namespace DRT
         EvaluatorSatDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorDivVel<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorSatDivVel(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -839,7 +828,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -857,7 +846,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -876,7 +865,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -892,7 +881,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -913,9 +902,6 @@ namespace DRT
         EvaluatorBiotStab(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorBiotStab(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -932,7 +918,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -950,7 +936,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -969,7 +955,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -985,7 +971,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
 
@@ -1007,9 +993,6 @@ namespace DRT
         EvaluatorDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorDiff(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1026,7 +1009,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1044,7 +1027,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1063,7 +1046,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1079,7 +1062,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -1100,9 +1083,6 @@ namespace DRT
         EvaluatorReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorReac(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1119,7 +1099,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1137,7 +1117,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1156,7 +1136,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1172,7 +1152,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -1193,9 +1173,6 @@ namespace DRT
         EvaluatorMassPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorMassPressure(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1212,7 +1189,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1230,7 +1207,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1249,7 +1226,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1265,7 +1242,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
 
         //! get transient term for rhs and OD
         double GetRhsTrans(int curphase,  //!< index of current phase
@@ -1298,9 +1275,6 @@ namespace DRT
         EvaluatorMassSolidPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorMassSolidPressure(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1317,7 +1291,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1335,7 +1309,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1354,7 +1328,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1370,7 +1344,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
 
         //! get transient term for rhs and OD
         double GetRhsTrans(int curphase,  //!< index of current phase
@@ -1405,9 +1379,6 @@ namespace DRT
         EvaluatorMassSolidPressureSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorMassSolidPressure<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorMassSolidPressureSat(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1424,7 +1395,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1442,7 +1413,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1461,7 +1432,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1477,7 +1448,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -1498,9 +1469,6 @@ namespace DRT
         EvaluatorMassSaturation(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorMassSaturation(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1517,7 +1485,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1535,7 +1503,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1554,7 +1522,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1570,7 +1538,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
 
         //! get transient term for rhs and OD
         double GetRhsTrans(int curphase,  //!< index of current phase
@@ -1603,9 +1571,6 @@ namespace DRT
         EvaluatorPressureAndSaturation(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorPressureAndSaturation(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1622,7 +1587,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1640,7 +1605,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1659,7 +1624,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1675,7 +1640,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -1696,9 +1661,6 @@ namespace DRT
         EvaluatorSolidPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorSolidPressure(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1715,7 +1677,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1733,7 +1695,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1752,7 +1714,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1768,7 +1730,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -1792,9 +1754,6 @@ namespace DRT
         EvaluatorValidVolFracPressures(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorValidVolFracPressures(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1811,7 +1770,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1829,7 +1788,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1848,7 +1807,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1864,7 +1823,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -1885,9 +1844,6 @@ namespace DRT
         EvaluatorPorosity(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorPorosity(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1904,7 +1860,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -1922,7 +1878,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -1941,7 +1897,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -1957,7 +1913,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -1981,9 +1937,6 @@ namespace DRT
               domainint_funct_(domainint_funct),
               numscal_(numscal){};
 
-        //! destructor
-        virtual ~EvaluatorDomainIntegrals(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2000,7 +1953,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2018,7 +1971,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2037,7 +1990,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2053,10 +2006,10 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
 
         //! cast to VarExp-function
-        [[nodiscard]] const DRT::UTILS::FunctionOfAnything& Function(int functnum) const;
+        [[nodiscard]] const CORE::UTILS::FunctionOfAnything& Function(int functnum) const;
 
         //! vector holding the functions to be integrated
         std::vector<int> domainint_funct_;
@@ -2084,9 +2037,6 @@ namespace DRT
         ReconstructFluxLinearization(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~ReconstructFluxLinearization(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2103,7 +2053,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2121,7 +2071,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2140,7 +2090,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2156,7 +2106,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -2178,9 +2128,6 @@ namespace DRT
         ReconstructFluxRHS(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~ReconstructFluxRHS(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2197,7 +2144,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2215,7 +2162,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2234,7 +2181,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2250,7 +2197,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -2274,9 +2221,6 @@ namespace DRT
         EvaluatorVolFracAddInstatTerms(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracAddInstatTerms(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2293,7 +2237,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2311,7 +2255,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2330,7 +2274,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2346,7 +2290,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
 
         //! get transient term for rhs and OD
         double GetRhs(int curphase,  //!< index of current phase
@@ -2380,9 +2324,6 @@ namespace DRT
         EvaluatorVolFracAddDivVelTerm(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracAddDivVelTerm(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2399,7 +2340,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2417,7 +2358,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2436,7 +2377,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2452,7 +2393,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -2476,9 +2417,6 @@ namespace DRT
         EvaluatorVolFracAddDivVelTermSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorVolFracAddDivVelTerm<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracAddDivVelTermSat(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2495,7 +2433,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2513,7 +2451,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2532,7 +2470,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2548,7 +2486,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -2572,9 +2510,6 @@ namespace DRT
         EvaluatorVolFracAddInstatTermsSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorVolFracAddInstatTerms<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracAddInstatTermsSat(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2591,7 +2526,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2609,7 +2544,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2628,7 +2563,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2644,7 +2579,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -2666,9 +2601,6 @@ namespace DRT
         EvaluatorVolFracInstat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracInstat(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2685,7 +2617,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2703,7 +2635,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2722,7 +2654,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2738,7 +2670,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -2760,9 +2692,6 @@ namespace DRT
         EvaluatorVolFracDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracDivVel(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2779,7 +2708,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2797,7 +2726,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2816,7 +2745,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2832,7 +2761,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -2853,9 +2782,6 @@ namespace DRT
         EvaluatorVolFracDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracDiff(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2872,7 +2798,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2890,7 +2816,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -2909,7 +2835,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -2925,7 +2851,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -2946,9 +2872,6 @@ namespace DRT
         EvaluatorVolFracReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracReac(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2965,7 +2888,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -2983,7 +2906,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -3002,7 +2925,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -3018,7 +2941,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -3039,9 +2962,6 @@ namespace DRT
         EvaluatorVolFracAddFlux(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracAddFlux(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -3058,7 +2978,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -3076,7 +2996,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -3095,7 +3015,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -3111,7 +3031,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -3132,9 +3052,6 @@ namespace DRT
         EvaluatorVolFracPressureDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracPressureDiff(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -3151,7 +3068,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -3169,7 +3086,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -3188,7 +3105,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -3204,7 +3121,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
       /*----------------------------------------------------------------------*
@@ -3226,9 +3143,6 @@ namespace DRT
         EvaluatorVolFracPressureReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        virtual ~EvaluatorVolFracPressureReac(){};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -3245,7 +3159,7 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
@@ -3263,7 +3177,7 @@ namespace DRT
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
             bool inittimederiv  //!< calculate only parts for initial time derivative
-        );
+            ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
@@ -3282,7 +3196,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det);
+            double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
@@ -3298,7 +3212,7 @@ namespace DRT
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-        );
+            ) override;
       };
 
     }  // namespace POROFLUIDEVALUATOR
@@ -3306,5 +3220,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H

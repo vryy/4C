@@ -26,12 +26,14 @@
 class Epetra_Comm;
 class Epetra_Map;
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace FSI
   {
     /// Matrix Free Newton Krylov based on an approximation of the residuum derivatives
-    class FSIMatrixFree : public Epetra_Operator, public virtual NOX::Epetra::Interface::Jacobian
+    class FSIMatrixFree : public Epetra_Operator, public virtual ::NOX::Epetra::Interface::Jacobian
     {
      public:
       /*! \brief Constructor
@@ -39,11 +41,9 @@ namespace NOX
         The vector \c x is used to clone the solution vector.
       */
       FSIMatrixFree(Teuchos::ParameterList& printParams,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-          const NOX::Epetra::Vector& cloneVector);
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i,
+          const ::NOX::Epetra::Vector& x);
 
-      //! Pure virtual destructor
-      virtual ~FSIMatrixFree();
 
       //! If set true, transpose of this operator will be applied.
       /*! This flag allows the transpose of the given operator to be used implicitly.  Setting this
@@ -54,7 +54,7 @@ namespace NOX
         \return Integer error code, set to 0 if successful.  Set to -1 if this implementation does
         not support transpose.
       */
-      virtual int SetUseTranspose(bool UseTranspose);
+      int SetUseTranspose(bool UseTranspose) override;
 
       //! Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
       /*!
@@ -63,7 +63,7 @@ namespace NOX
 
         \return Integer error code, set to 0 if successful.
       */
-      virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+      int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
       //! Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
       /*!
@@ -75,60 +75,60 @@ namespace NOX
         \warning In order to work with AztecOO, any implementation of this method must
         support the case where X and Y are the same object.
       */
-      virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
       //! Returns the infinity norm of the global matrix.
       /* Returns the quantity \f$ \| A \|_\infty\f$ such that
          \f[\| A \|_\infty = \max_{1\lei\lem} \sum_{j=1}^n |a_{ij}| \f].
 
          \warning This method must not be called unless HasNormInf() returns true.    */
-      virtual double NormInf() const;
+      double NormInf() const override;
 
       //! Returns a character string describing the operator
-      virtual const char* Label() const;
+      const char* Label() const override;
 
       //! Returns the current UseTranspose setting.
-      virtual bool UseTranspose() const;
+      bool UseTranspose() const override;
 
       //! Returns true if the \e this object can provide an approximate Inf-norm, false otherwise.
-      virtual bool HasNormInf() const;
+      bool HasNormInf() const override;
 
       //! Returns a reference to the Epetra_Comm communicator associated with this operator.
-      virtual const Epetra_Comm& Comm() const;
+      const Epetra_Comm& Comm() const override;
 
       //! Returns the Epetra_BlockMap object associated with the domain of this matrix operator.
-      virtual const Epetra_Map& OperatorDomainMap() const;
+      const Epetra_Map& OperatorDomainMap() const override;
 
       //! Returns the Epetra_BlockMap object associated with the range of this matrix operator.
-      virtual const Epetra_Map& OperatorRangeMap() const;
+      const Epetra_Map& OperatorRangeMap() const override;
 
       //! Compute Jacobian given the specified input vector, x.  Returns true if computation was
       //! successful.
-      virtual bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+      bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
-      //! Clone a NOX::Abstract::Group derived object and use the computeF() method of that group
-      //! for the perturbation instead of the NOX::Epetra::Interface::Required::computeF() method.
+      //! Clone a ::NOX::Abstract::Group derived object and use the computeF() method of that group
+      //! for the perturbation instead of the ::NOX::Epetra::Interface::Required::computeF() method.
       //! This is required for LOCA to get the operators correct during homotopy.
-      void setGroupForComputeF(const NOX::Abstract::Group& group);
+      void setGroupForComputeF(const ::NOX::Abstract::Group& group);
 
      protected:
       //! Label for matrix
       std::string label;
 
       //! User provided interface function
-      Teuchos::RCP<NOX::Epetra::Interface::Required> interface;
+      Teuchos::RCP<::NOX::Epetra::Interface::Required> interface;
 
       //! The current solution vector
-      NOX::Epetra::Vector currentX;
+      ::NOX::Epetra::Vector currentX;
 
       //! Perturbed solution vector
-      mutable NOX::Epetra::Vector perturbX;
+      mutable ::NOX::Epetra::Vector perturbX;
 
       //! Perturbed solution vector
-      mutable NOX::Epetra::Vector perturbY;
+      mutable ::NOX::Epetra::Vector perturbY;
 
       //! Epetra_Map object used in the returns of the Epetra_Operator derived methods.
-      /*! If the user is using Epetra_BlockMaps, then NOX::Epetra::MatrixFree must create an
+      /*! If the user is using Epetra_BlockMaps, then ::NOX::Epetra::MatrixFree must create an
        * equivalent Epetra_Map from the Epetra_BlockMap that can be used as the return object of the
        * OperatorDomainMap() and OperatorRangeMap() methods.
        */
@@ -139,13 +139,15 @@ namespace NOX
       bool useGroupForComputeF;
 
       //! Pointer to the group for possible use in computeF() calls.
-      Teuchos::RCP<NOX::Abstract::Group> groupPtr;
+      Teuchos::RCP<::NOX::Abstract::Group> groupPtr;
 
       //! Printing utilities.
-      NOX::Utils utils;
+      ::NOX::Utils utils;
     };
 
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
 namespace CORE::ADAPTER
@@ -33,7 +35,7 @@ namespace CORE::ADAPTER
     CouplingBase(){};
 
     /// virtual destructor
-    virtual ~CouplingBase(){};
+    virtual ~CouplingBase() = default;
 
     /// @name Conversion between master and slave
     //!@{
@@ -104,5 +106,7 @@ namespace CORE::ADAPTER
     //!@}
   };
 }  // namespace CORE::ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // COUPLING_ADAPTER_BASE_H

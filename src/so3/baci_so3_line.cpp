@@ -11,6 +11,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::StructuralLineType DRT::ELEMENTS::StructuralLineType::instance_;
 
@@ -39,10 +41,10 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, cons
   // type of gaussian integration
   switch (Shape())
   {
-    case line2:
+    case CORE::FE::CellType::line2:
       gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case CORE::FE::CellType::line3:
       gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -72,24 +74,23 @@ DRT::Element* DRT::ELEMENTS::StructuralLine::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::StructuralLine::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::StructuralLine::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::StructuralLine::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("StructuralLine element does not support communication");
   return;
@@ -114,3 +115,5 @@ void DRT::ELEMENTS::StructuralLine::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

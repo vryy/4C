@@ -19,13 +19,15 @@
 #include "baci_lib_periodicbc.H"
 
 #include "baci_comm_utils.H"
+#include "baci_coupling_matchingoctree.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_pbc.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_print.H"
 #include "baci_rebalance.H"
+
+BACI_NAMESPACE_OPEN
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -132,7 +134,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     if (verbose_)
     {
       Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-          COMM_UTILS::toTeuchosComm<int>(discret_->Comm());
+          CORE::COMM::toTeuchosComm<int>(discret_->Comm());
       Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
     }
 
@@ -216,20 +218,6 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
 }  // UpdateDofsForPeriodicBoundaryConditions()
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Destructor dtor  (public)                                 gammi 05/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-PeriodicBoundaryConditions::~PeriodicBoundaryConditions()
-{
-  return;
-}  // ~PeriodicBoundaryConditions()
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -545,7 +533,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                 }
                 if (not found)
                 {
-                  const double* x = discret_->gNode(mid)->X();
+                  const auto& x = discret_->gNode(mid)->X();
                   std::cout << "\nmaster node not found in midtosid list: " << mid
                             << "  coord: x=" << x[0] << " y=" << x[1] << " z=" << x[2];
                 }
@@ -641,7 +629,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   tm2_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidoct_));
 
   // build processor local octree
-  DRT::UTILS::NodeMatchingOctree nodematchingoctree = DRT::UTILS::NodeMatchingOctree();
+  auto nodematchingoctree = CORE::COUPLING::NodeMatchingOctree();
 
   nodematchingoctree.Init(*discret_, masternodeids, maxnodeperleaf, tol);
   nodematchingoctree.Setup();
@@ -808,7 +796,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
         const int torank = (myrank + 1) % numproc;              // to
         const int fromrank = (myrank + numproc - 1) % numproc;  // from
 
-        DRT::Exporter exporter(discret_->Comm());
+        CORE::COMM::Exporter exporter(discret_->Comm());
 
 
         for (int irobin = 0; irobin < numproc; ++irobin)
@@ -818,24 +806,24 @@ void PeriodicBoundaryConditions::AddConnectivity(
 
           // ---- pack data for sending -----
           {
-            DRT::PackBuffer data;
+            CORE::COMM::PackBuffer data;
 
             std::vector<int> mids;
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
               mids.push_back(iter->first);
 
-            DRT::ParObject::AddtoPack(data, mids);
+            CORE::COMM::ParObject::AddtoPack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              DRT::ParObject::AddtoPack(data, iter->second);
+              CORE::COMM::ParObject::AddtoPack(data, iter->second);
 
             data.StartPacking();
 
-            DRT::ParObject::AddtoPack(data, mids);
+            CORE::COMM::ParObject::AddtoPack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              DRT::ParObject::AddtoPack(data, iter->second);
+              CORE::COMM::ParObject::AddtoPack(data, iter->second);
 
             std::swap(sdata, data());
           }
@@ -858,12 +846,12 @@ void PeriodicBoundaryConditions::AddConnectivity(
             multiplecouplings.clear();
             size_t pos = 0;
             std::vector<int> mids;
-            DRT::ParObject::ExtractfromPack(pos, rdata, mids);
+            CORE::COMM::ParObject::ExtractfromPack(pos, rdata, mids);
 
             for (std::vector<int>::const_iterator iter = mids.begin(); iter != mids.end(); ++iter)
             {
               std::vector<int> slvs;
-              DRT::ParObject::ExtractfromPack(pos, rdata, slvs);
+              CORE::COMM::ParObject::ExtractfromPack(pos, rdata, slvs);
               multiplecouplings[*iter] = slvs;
             }
           }
@@ -1198,7 +1186,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
     *allcoupledcolnodes_ = (*allcoupledrownodes_);
     {
       // create an exporter
-      DRT::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+      CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
 
       // export information on all master->slave couplings (with multiple
       // couplings)
@@ -1250,7 +1238,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
         *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
         // create an exporter
-        DRT::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+        CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
 
         // export information on all master->slave couplings (with multiple
         // couplings)
@@ -1293,7 +1281,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       // connectivity
       {
         // create an exporter
-        DRT::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+        CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
         // export information on all slave->master couplings (with multiple
         // couplings)
         exportconnectivity.Export(*allcoupledcolnodes_);
@@ -1614,3 +1602,5 @@ void PeriodicBoundaryConditions::BalanceLoad()
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

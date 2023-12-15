@@ -14,6 +14,8 @@
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_parameter_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -22,12 +24,11 @@ namespace DRT
     class ScaTraEleDiffManagerElch;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElch;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElch;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcElch : public ScaTraEleCalc<distype, probdim>
     {
      protected:
@@ -52,16 +53,16 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
-      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       /*========================================================================*/
@@ -69,11 +70,11 @@ namespace DRT
       /*========================================================================*/
 
       //! Prepare everything what is needed in CallMatAndRhs() to calculate the sysmat and the rhs
-      virtual void Sysmat(DRT::Element* ele,          //!< the element we are dealing with
+      void Sysmat(DRT::Element* ele,                  //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
           CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
-      );
+          ) override;
 
       //! calculate contributions to matrix and rhs (inside of loop over all scalars)
       virtual void CalcMatAndRhs(
@@ -115,16 +116,16 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
           CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
-      );
+          ) override;
 
       //! get material parameters
-      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                          //!< density at t_(n)
-          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-          double& visc,                 //!< fluid viscosity
-          const int iquad = -1          //!< id of current gauss point (default = -1)
-          ) = 0;
+      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                  //!< density at t_(n)
+          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< id of current gauss point (default = -1)
+          ) override = 0;
 
       /*========================================================================*/
       //! @name stabilization and related functions
@@ -227,10 +228,10 @@ namespace DRT
       ){};
 
       //! calculate error of numerical solution with respect to analytical solution
-      virtual void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
-          Teuchos::ParameterList& params,                                     //!< parameter list
+      void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
+          Teuchos::ParameterList& params,                             //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
-      );
+          ) override;
 
       //! calculate conductivity of electrolyte solution
       void CalculateConductivity(const DRT::Element* ele,  //!< the element we are dealing with
@@ -252,7 +253,7 @@ namespace DRT
           bool effCond) = 0;
 
       //! set internal variables
-      virtual void SetInternalVariablesForMatAndRHS() = 0;
+      void SetInternalVariablesForMatAndRHS() override = 0;
 
       //! get elch diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElch> DiffManager()
@@ -279,14 +280,11 @@ namespace DRT
       ScaTraEleDiffManagerElch(int numscal) : ScaTraEleDiffManager(numscal), valence_(numscal, 0.0)
       {
       }
-
-      ~ScaTraEleDiffManagerElch() override = default;
-
       //! Set valence of the single ionic species
       virtual void SetValence(const double valence, const int k) { valence_[k] = valence; };
 
       //! Access routine for valence of all ionic species or of single ionic species k
-      const std::vector<double> GetValence() { return valence_; };
+      std::vector<double> GetValence() { return valence_; };
       double GetValence(const int k) { return valence_[k]; };
 
       //! the length of the vector containing the diffusion coefficients is increased by 1
@@ -332,9 +330,6 @@ namespace DRT
             sgconv_(true)
       {
       }
-
-      ~ScaTraEleInternalVariableManagerElch() override = default;
-
       // compute and set internal variables used by Nernst-Planck formulation and the
       // Diffusion-Conduction formulation
 
@@ -432,4 +427,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

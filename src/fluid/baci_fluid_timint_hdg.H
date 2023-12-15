@@ -16,6 +16,8 @@
 
 #include "baci_fluid_timint_genalpha.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -32,44 +34,41 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntHDG() {}
-
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
 
     */
-    virtual void SetTheta();
+    void SetTheta() override;
 
     /*!
     \brief do explicit predictor step to start nonlinear iteration from
            a better initial value
     */
-    virtual void ExplicitPredictor();
+    void ExplicitPredictor() override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Set states in the time integration schemes: additional vectors for HDG
 
     */
-    virtual void SetStateTimInt();
+    void SetStateTimInt() override;
 
     /*!
     \brief Call discret_->ClearState() after assembly (HDG needs to read from state vectors...)
 
     */
-    virtual void ClearStateAssembleMatAndRHS();
+    void ClearStateAssembleMatAndRHS() override;
 
     /*!
     \brief Set the part of the right hand side belonging to the last
@@ -95,39 +94,39 @@ namespace FLD
 
 
     */
-    virtual void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /*!
     \brief Update the solution after convergence of the nonlinear
            iteration. Current solution becomes old solution of next
            time step.
     */
-    virtual void TimeUpdate();
+    void TimeUpdate() override;
 
     /*!
     \brief set initial flow field for analytical test problems
 
     */
-    virtual void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno);
+    void SetInitialFlowField(
+        const INPAR::FLUID::InitialField initfield, const int startfuncno) override;
 
     /*!
     \brief calculate error between a analytical solution and the
            numerical solution of a test problems
 
     */
-    virtual Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol();
+    Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol() override;
 
     /*!
     \brief Reset state vectors
      */
-    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1);
+    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     /*!
     \brief update configuration and output to file/screen
 
     */
-    virtual void Output();
+    void Output() override;
 
     /*!
     \brief accessor to interior velocity
@@ -146,13 +145,13 @@ namespace FLD
     \brief update acceleration for generalized-alpha time integration
 
     */
-    virtual void GenAlphaUpdateAcceleration();
+    void GenAlphaUpdateAcceleration() override;
 
     /*!
     \brief compute values at intermediate time steps for gen.-alpha
 
     */
-    virtual void GenAlphaIntermediateValues();
+    void GenAlphaIntermediateValues() override;
 
     //! @name velocity gradient, velocity and pressure at time n+1, n, n-1
     //!  and n+alpha_F for element interior in HDG
@@ -180,17 +179,17 @@ namespace FLD
     \brief calculate intermediate solution
 
     */
-    virtual void CalcIntermediateSolution();
+    void CalcIntermediateSolution() override;
 
     /*!
     \brief Initialize forcing
 
     */
-    virtual void InitForcing();
+    void InitForcing() override;
 
    private:
     ///< Print stabilization details to screen. Do nothing here because we do not use stabilization
-    virtual void PrintStabilizationDetails() const {}
+    void PrintStabilizationDetails() const override {}
 
     ///< time algorithm flag actually set (we internally reset it)
     INPAR::FLUID::TimeIntegrationScheme timealgoset_;
@@ -203,5 +202,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_HDG_H

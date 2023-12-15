@@ -14,6 +14,7 @@
 #include "baci_io_visualization_writer_base.H"
 #include "baci_io_vtu_writer.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -74,5 +75,7 @@ namespace IO
     VtuWriter vtu_writer_;
   };
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

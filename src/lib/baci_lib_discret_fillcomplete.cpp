@@ -9,12 +9,13 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -148,7 +149,7 @@ void DRT::Discretization::InitializeElements()
 {
   if (!Filled()) dserror("FillComplete was not called");
 
-  ParObjectFactory::Instance().InitializeElements(*this);
+  CORE::COMM::ParObjectFactory::Instance().InitializeElements(*this);
 
   return;
 }
@@ -324,3 +325,5 @@ int DRT::Discretization::AssignDegreesOfFreedom(int start)
     start = dofsets_[i]->AssignDegreesOfFreedom(*this, i, start);
   return start;
 }
+
+BACI_NAMESPACE_CLOSE

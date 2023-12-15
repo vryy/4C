@@ -36,6 +36,7 @@
 #include <optional>
 #include <set>
 
+BACI_NAMESPACE_OPEN
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -102,7 +103,7 @@ namespace SCATRA
    * \brief implicit time integration for scalar transport problems
    */
 
-  class ScaTraTimIntImpl : public ::ADAPTER::ScatraInterface
+  class ScaTraTimIntImpl : public ADAPTER::ScatraInterface
   {
     friend class HomIsoTurbInitialScalarField;
     friend class HomIsoTurbScalarForcing;
@@ -255,28 +256,70 @@ namespace SCATRA
     virtual void SetupNatConv();
 
     //! set number of dofset to write displacement values on
-    void SetNumberOfDofSetDisplacement(int nds_disp) { nds_disp_ = nds_disp; }
+    void SetNumberOfDofSetDisplacement(int nds_disp)
+    {
+      dsassert(nds_disp_ == -1, "Don't set 'nds_disp_' twice!");
+      nds_disp_ = nds_disp;
+    }
+
+    //! set number of dofset to write interface growth values on
+    void SetNumberOfDofSetGrowth(int nds_growth)
+    {
+      dsassert(nds_growth_ == -1, "Don't set 'nds_growth_' twice!");
+      nds_growth_ = nds_growth;
+    }
 
     //! set number of dofset to write micro scale values on
-    void SetNumberOfDofSetMicroScale(int nds_micro) { nds_micro_ = nds_micro; }
+    void SetNumberOfDofSetMicroScale(int nds_micro)
+    {
+      dsassert(nds_micro_ == -1, "Don't set 'nds_micro_' twice!");
+      nds_micro_ = nds_micro;
+    }
 
     //! set number of dofset to write pressure values on
-    void SetNumberOfDofSetPressure(int nds_pressure) { nds_pres_ = nds_pressure; }
+    void SetNumberOfDofSetPressure(int nds_pressure)
+    {
+      dsassert(nds_pres_ == -1, "Don't set 'nds_pres_' twice!");
+      nds_pres_ = nds_pressure;
+    }
+
+    //! set number of dofset to write scalar transport values on
+    void SetNumberOfDofSetScaTra(int nds_scatra)
+    {
+      dsassert(nds_scatra_ == -1, "Don't set 'nds_scatra_' twice!");
+      nds_scatra_ = nds_scatra;
+    }
+
+    //! set number of dofset to write thermo values on
+    void SetNumberOfDofSetThermo(int nds_thermo)
+    {
+      dsassert(nds_thermo_ == -1, "Don't set 'nds_thermo_' twice!");
+      nds_thermo_ = nds_thermo;
+    }
 
     //! set number of dofset to write two-tensor quantities on, e.g. stresses, strains
     void SetNumberOfDofSetTwoTensorQuantity(int nds_two_tensor_quantitiy)
     {
+      dsassert(nds_two_tensor_quantitiy_ == -1, "Don't set 'nds_two_tensor_quantitiy_' twice!");
       nds_two_tensor_quantitiy_ = nds_two_tensor_quantitiy;
     }
 
-    //! set number of dofset to write vbelocity values on
-    void SetNumberOfDofSetVelocity(int nds_velocity) { nds_vel_ = nds_velocity; }
+    //! set number of dofset to write velocity values on
+    void SetNumberOfDofSetVelocity(int nds_velocity)
+    {
+      dsassert(nds_vel_ == -1, "Don't set 'nds_vel_' twice!");
+      nds_vel_ = nds_velocity;
+    }
 
     //! set number of dofset to write wall shear stress values on
     void SetNumberOfDofSetWallShearStress(int nds_wall_shear_stress)
     {
+      dsassert(nds_wss_ == -1, "Don't set 'nds_wss_' twice!");
       nds_wss_ = nds_wall_shear_stress;
     }
+
+    //! returns the maximum dofset number that is set
+    [[nodiscard]] int GetMaxDofSetNumber() const;
 
     //! store reaction coefficient for macro-micro coupling with deforming macro dis
     void SetMacroMicroReaCoeff(const double macro_micro_rea_coeff)
@@ -305,8 +348,7 @@ namespace SCATRA
     virtual void PostSolve(){};
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    virtual void Update(const int num = 0  //!< field number
-    );
+    virtual void Update();
 
     /*!
      * @brief apply moving mesh data
@@ -316,17 +358,15 @@ namespace SCATRA
     void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp);
 
     //! calculate fluxes inside domain and/or on boundary
-    void CalcFlux(const bool writetofile,  //!< flag for writing flux info to file
-        const int num = 0                  //!< field number
+    void CalcFlux(const bool writetofile  //!< flag for writing flux info to file
     );
 
     //! calculate flux vector field inside computational domain
     Teuchos::RCP<Epetra_MultiVector> CalcFluxInDomain();
 
-    //! calculate mass/heat normal flux at specified boundaries
-    Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(const bool writetofile,  //!< ?
-        const int num = 0                                                        //!< field number
-    );
+    //! calculate mass/heat normal flux at specified boundaries and write result to file if @p
+    //! writetofile is true
+    Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(const bool writetofile);
 
     //! calculation of relative error with reference to analytical solution
     virtual void EvaluateErrorComparedToAnalyticalSol();
@@ -347,7 +387,7 @@ namespace SCATRA
 
     //! Calculate the reconstructed nodal gradient of phi from node mean averaging
     Teuchos::RCP<Epetra_MultiVector> ReconstructGradientAtNodesMeanAverage(
-        Teuchos::RCP<const Epetra_Vector> state,
+        Teuchos::RCP<const Epetra_Vector> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
@@ -433,11 +473,20 @@ namespace SCATRA
     //! return number of dofset associated with displacement dofs
     int NdsDisp() const override { return nds_disp_; }
 
+    //! return number of dofset associated with interface growth dofs
+    int NdsGrowth() const { return nds_growth_; }
+
     //! return number of dofset to store nodal micro quantities on macro dis
     int NdsMicro() const { return nds_micro_; }
 
     //! return number of dofset associated with pressure dofs
     int NdsPressure() const { return nds_pres_; }
+
+    //! return number of dofset associated with scalar transport dofs
+    int NdsScaTra() const { return nds_scatra_; }
+
+    //! return number of dofset associated with thermo dofs
+    int NdsThermo() const { return nds_thermo_; }
 
     //! return number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
     int NdsTwoTensorQuantity() const { return nds_two_tensor_quantitiy_; }
@@ -455,7 +504,7 @@ namespace SCATRA
     Teuchos::RCP<const Epetra_MultiVector> FluxBoundary() const { return flux_boundary_; };
 
     //! return Dirichlet map
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     //! add dirichlet dofs to dbcmaps_
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
@@ -483,8 +532,14 @@ namespace SCATRA
     //! returns map extractor used for convergence check either in ELCH or LOMA case
     Teuchos::RCP<CORE::LINALG::MapExtractor> Splitter() const { return splitter_; }
 
-    //! output solution and restart data to file
-    virtual void Output(const int num = 0);
+    //! Checks if output of results or restart information is required and writes data to disk
+    virtual void CheckAndWriteOutputAndRestart();
+
+    //! write restart data to disk
+    virtual void WriteRestart() const;
+
+    //! write results to disk
+    void WriteResult();
 
     //! Convergence check for two way coupled ScaTra problems.
     bool ConvergenceCheck(int itnum, int itmax, const double ittol);
@@ -535,7 +590,10 @@ namespace SCATRA
     /*--- calculate and update -----------------------------------------------*/
 
     //! determine whether there are still time steps to be evaluated
-    virtual bool NotFinished() { return step_ < stepmax_ and time_ + 1.e-12 < maxtime_; };
+    [[nodiscard]] virtual bool NotFinished() const
+    {
+      return step_ < stepmax_ and time_ + 1.e-12 < maxtime_;
+    }
 
     /*--- query and output ---------------------------------------------------*/
 
@@ -741,8 +799,17 @@ namespace SCATRA
     //! return rcp ptr to neumann loads vector
     Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() override { return neumann_loads_; };
 
-    //! write restart output at current step
-    bool DoOutputRestart() const { return (step_ % uprestart_ == 0 and step_ != 0); }
+    //! returns if restart information is needed for the current time step
+    [[nodiscard]] bool IsRestartStep() const
+    {
+      // write restart info if the simulation ends
+      const bool is_finished = not NotFinished();
+
+      return (step_ % uprestart_ == 0 and step_ != 0) or is_finished;
+    }
+
+    //! returns if output of results is needed for the current time step
+    [[nodiscard]] bool IsResultStep() const { return ((step_ % upres_ == 0) or IsRestartStep()); }
 
     /*========================================================================*/
     //! @name turbulence and related
@@ -965,17 +1032,11 @@ namespace SCATRA
                   (calcflux_boundary_ == INPAR::SCATRA::flux_convective)));
     };
 
-    //! is output needed for the current time step?
-    bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); }
-
     //! write state vectors (phinp and convective velocity) to BINIO
     virtual void OutputState();
 
     //! write state vectors (phinp and convective velocity) to Gmsh postprocessing files
     void OutputToGmsh(const int step, const double time) const;
-
-    //! write additional data required for restart
-    virtual void OutputRestart() const;
 
     //! write flux vectors to BINIO
     virtual void OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
@@ -1063,7 +1124,7 @@ namespace SCATRA
      * be removed.
      * note: VM3 solver still needs an explicit toggle vector for construction
      */
-    const Teuchos::RCP<const Epetra_Vector> DirichletToggle();
+    Teuchos::RCP<const Epetra_Vector> DirichletToggle();
 
     /*========================================================================*/
 
@@ -1091,9 +1152,6 @@ namespace SCATRA
 
     //! Extractor used for convergence check either in ELCH or LOMA case
     Teuchos::RCP<CORE::LINALG::MapExtractor> splitter_;
-
-    //! error file handle
-    FILE* errfile_;
 
     //! meshtying strategy (includes standard case without meshtying)
     Teuchos::RCP<SCATRA::MeshtyingStrategyBase> strategy_;
@@ -1311,11 +1369,20 @@ namespace SCATRA
     //! number of dofset associated with displacement dofs
     int nds_disp_;
 
+    //! number of dofset associated with interface growth dofs
+    int nds_growth_;
+
     //! number of dofset to write micro scale values on
     int nds_micro_;
 
     //! number of dofset associated with pressure dofs
     int nds_pres_;
+
+    //! number of dofset associated with scatra dofs
+    int nds_scatra_;
+
+    //! number of dofset associated with thermo dofs
+    int nds_thermo_;
 
     //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
     int nds_two_tensor_quantitiy_;
@@ -1520,6 +1587,11 @@ namespace SCATRA
     //! Standard Constructor
     ScalarHandler() : numdofpernode_(), equalnumdof_(true), issetup_(false){};
 
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ScalarHandler() = default;
+
     //! set up scalar handler
     virtual void Setup(const ScaTraTimIntImpl* const scatratimint);
 
@@ -1579,6 +1651,11 @@ namespace SCATRA
   class OutputScalarsStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~OutputScalarsStrategyBase() = default;
+
     //! initialize time integration
     void Init(const ScaTraTimIntImpl* const scatratimint);
 
@@ -1771,4 +1848,6 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
-#endif  // SCATRA_TIMINT_IMPLICIT_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_SCATRA_TIMINT_IMPLICIT_H

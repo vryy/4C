@@ -13,6 +13,8 @@
 
 #include "baci_cut_point.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -59,7 +61,7 @@ namespace CORE::GEO
       /// constructor for CompositeNodalDofSet
       explicit NodalDofSet(bool is_std_dofset, CORE::GEO::CUT::Point::PointPosition pos);
 
-      virtual ~NodalDofSet(){};
+      virtual ~NodalDofSet() = default;
 
       /// return the composite of all connected volumecells between elements and the element's
       /// sub-elements
@@ -131,7 +133,7 @@ namespace CORE::GEO
       }
 
       /// does one of the nodal dofset's contain the point?
-      bool Contains(CORE::GEO::CUT::Point* p)
+      bool Contains(CORE::GEO::CUT::Point* p) override
       {
         for (unsigned int i = 0; i < nodal_dofsets_.size(); i++)
           if (nodal_dofsets_[i]->Contains(p)) return true;
@@ -139,7 +141,7 @@ namespace CORE::GEO
         return false;
       }
 
-      void Print();
+      void Print() override;
 
      private:
       std::vector<Teuchos::RCP<NodalDofSet>>
@@ -306,8 +308,9 @@ namespace CORE::GEO
      private:
       /// build sets of connected volumecells in a 1-ring around the node
       void BuildDOFCellSets(Point* p, const std::vector<plain_volumecell_set>& cell_sets,
-          const plain_volumecell_set& cells, const std::vector<plain_volumecell_set>& nodal_cells,
-          plain_volumecell_set& done, bool isnodalcellset = false);
+          const plain_volumecell_set& cells,
+          const std::vector<plain_volumecell_set>& nodal_cell_sets, plain_volumecell_set& done,
+          bool isnodalcellset = false);
 
       /// build sets of connected volumecells in a 1-ring around the node (old unused version)
       void BuildDOFCellSets(Point* p, const plain_volumecell_set& cells,
@@ -318,7 +321,7 @@ namespace CORE::GEO
       //! @name private class variables
       /*========================================================================*/
 
-      int nid_;       ///< node's id (the same as in  ::DRT::Discretization)
+      int nid_;       ///< node's id (the same as in  BACI::DRT::Discretization)
       Point* point_;  ///< pointer to the CORE::GEO::CUT::Point which defines the node
       double lsv_;    ///< levelset value if it is a levelset cut
 
@@ -357,5 +360,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

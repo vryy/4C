@@ -16,6 +16,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor BinaryTreeNode for self contact (public)             popp 11/09|
  *----------------------------------------------------------------------*/
@@ -101,14 +103,15 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
   CoElement* celement = dynamic_cast<CoElement*>(Discret().gElement(Elelist()[0]));
   double loccenter[2];
 
-  DRT::Element::DiscretizationType dt = celement->Shape();
-  if (dt == CoElement::tri3 || dt == CoElement::tri6)
+  CORE::FE::CellType dt = celement->Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
     loccenter[1] = 1.0 / 3.0;
   }
-  else if (dt == CoElement::line2 || dt == CoElement::line3 || dt == CoElement::quad4 ||
-           dt == CoElement::quad8 || dt == CoElement::quad9)
+  else if (dt == CORE::FE::CellType::line2 || dt == CORE::FE::CellType::line3 ||
+           dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -617,21 +620,21 @@ int CONTACT::SelfBinaryTree::GetEleSpecificNumNodes(DRT::Element* element)
 
   switch (mele->Shape())
   {
-    case DRT::Element::line2:
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
     {
       numnode = 2;
       break;
     }
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       numnode = 3;
       break;
     }
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
     {
       numnode = 4;
       break;
@@ -1611,7 +1614,7 @@ void CONTACT::SelfBinaryTree::SearchContact()
   Teuchos::RCP<Epetra_Map> mymap =
       Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), locdata.data(), 0, Comm()));
   Teuchos::RCP<Epetra_Map> redmap = CORE::LINALG::AllreduceEMap(*mymap);
-  DRT::Exporter ex(*mymap, *redmap, Comm());
+  CORE::COMM::Exporter ex(*mymap, *redmap, Comm());
   ex.Export(contactpairs_);
 
   // now do new slave and master sorting
@@ -2000,3 +2003,5 @@ void CONTACT::SelfBinaryTree::PlotRootsAndTree()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

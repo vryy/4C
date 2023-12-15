@@ -16,10 +16,12 @@
 #include "baci_fluid_ele_interface.H"
 #include "baci_inpar_fluid.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace FLD
 {
-  template <DRT::Element::DiscretizationType distype, int numdofpernode,
+  template <CORE::FE::CellType distype, int numdofpernode,
       DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none>
   class RotationallySymmetricPeriodicBC;
 
@@ -73,20 +75,17 @@ namespace DRT
       \date 07/07
     */
 
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none>
     class FluidEleCalc : public FluidEleInterface
     {
      public:
-      /// dtor
-      virtual ~FluidEleCalc() {}
-
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const int nen_ = DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode *
-                              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ =
+          DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       static const int numdofpernode_ = nsd_ + 1;
 
@@ -696,7 +695,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
           const CORE::LINALG::Matrix<nen_, 1>& escabofoaf, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          const double vol, double& densam, double& densaf, double& densan, double& visc,
+          const double vol, double& densam, double& densaf, double& densn, double& visc,
           double& viscn, double& gamma);
 
       //! return constant mk for stabilization parameters
@@ -1056,7 +1055,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>& escaam,     ///< scalar at time n+alpha_m / n
           const double thermpressaf,  ///< thermodynamic pressure at time n+alpha_f / n+1
           const double thermpressam,  ///< thermodynamic pressure at time n+alpha_m / n
-          const double scsca          ///< subgrid scalar at integration point
+          const double sgsca          ///< subgrid scalar at integration point
       );
 
       //! compute additional Galerkin terms on right-hand side of continuity equation
@@ -1619,11 +1618,13 @@ namespace DRT
       // protected:
       // static std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > instances_;
     };
-    // template<DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType
+    // template<CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType
     // enrtype = DRT::ELEMENTS::Fluid::none>
     // std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* >
     // FluidEleCalc<distype>::instances_;
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -17,6 +17,8 @@
 #include "baci_so3_tet4.H"
 #include "baci_so3_weg6.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -34,7 +36,7 @@ namespace DRT
 
       static So_hex8ScatraType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -64,7 +66,7 @@ namespace DRT
 
       static So_hex8fbarScatraType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -94,7 +96,7 @@ namespace DRT
 
       static So_hex27ScatraType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -123,7 +125,7 @@ namespace DRT
 
       static So_tet4ScatraType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -152,7 +154,7 @@ namespace DRT
 
       static So_tet10ScatraType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -181,7 +183,7 @@ namespace DRT
 
       static So_weg6ScatraType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -199,43 +201,9 @@ namespace DRT
 
       std::string GetElementTypeString() const { return "SOLIDW6SCATRA"; }
     };
-
-
-
-    /*----------------------------------------------------------------------*
-     |  NSTET 5 Element                                       |
-     *----------------------------------------------------------------------*/
-
-    /*
-
-    class NStet5ScatraType : public NStet5Type
-    {
-    public:
-
-      std::string Name() const { return "NStet5ScatraType"; }
-
-      static NStet5ScatraType & Instance() { return instance_; };
-
-      virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-      virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                                 const std::string eledistype,
-                                                 const int id,
-                                                 const int owner );
-
-      virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
-
-      virtual int Initialize(DRT::Discretization& dis);
-
-      virtual void SetupElementDefinition(
-    std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
-
-    private:
-
-      static NStet5ScatraType instance_;
-    };
-    */
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_SCATRA_ELETYPES_H

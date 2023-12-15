@@ -10,13 +10,15 @@
 #ifndef BACI_MAT_BEAM_MATERIAL_GENERIC_H
 #define BACI_MAT_BEAM_MATERIAL_GENERIC_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_material.H"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 // forward declaration
@@ -78,5 +80,7 @@ namespace MAT
     virtual void Reset() = 0;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -26,6 +26,9 @@
 
 #include <set>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
@@ -96,7 +99,7 @@ double ADAPTER::XFluidFSI::TimeScaling() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidFSI::BoundaryDiscretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidFSI::BoundaryDiscretization()
 {
   return mesh_coupling_fsi_->GetCutterDis();
 }
@@ -137,13 +140,14 @@ void ADAPTER::XFluidFSI::ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------*/
 //  apply the interface displacements to the fluid
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_Vector> idisp)
+void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(
+    Teuchos::RCP<const Epetra_Vector> interface_disp)
 {
   // update last increment, before we set new idispnp
   mesh_coupling_fsi_->UpdateDisplacementIterationVectors();
 
   // set new idispnp
-  structinterface_->InsertFSICondVector(idisp, mesh_coupling_fsi_->IDispnp());
+  structinterface_->InsertFSICondVector(interface_disp, mesh_coupling_fsi_->IDispnp());
 }
 
 /*----------------------------------------------------------------------*
@@ -239,3 +243,5 @@ void ADAPTER::XFluidFSI::GmshOutput(const std::string& name,  ///< name for outp
   // xfluid_->GmshOutput(name, step, count, vel, acc);
   dserror("Gmsh output for XFSI during Newton currently not available.");
 }
+
+BACI_NAMESPACE_CLOSE

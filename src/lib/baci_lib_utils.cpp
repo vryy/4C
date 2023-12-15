@@ -14,6 +14,7 @@
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_gauss.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
@@ -30,6 +31,8 @@
 #include <set>
 #include <string>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -186,26 +189,6 @@ void DRT::UTILS::ExtractMyNodeBasedValues(const DRT::Node* node,
   return;
 }
 
-
-
-/*----------------------------------------------------------------------*
- | extract location vector based on numdof of dis      winklmaier 12/12 |
- *----------------------------------------------------------------------*/
-void DRT::UTILS::DisBasedLocationVector(
-    const DRT::Discretization& dis, const DRT::Element& ele, std::vector<int>& lm, const int num)
-{
-  lm.clear();
-  std::vector<int> giddofs;
-  const int numnodes = ele.NumNode();
-  for (int i = 0; i < numnodes; i++)
-  {
-    giddofs.clear();
-    giddofs = dis.Dof(ele.Nodes()[i]);
-    for (int j = 0; j < num; j++) lm.push_back(giddofs[j]);
-  }
-}
-
-
 /*----------------------------------------------------------------------*
  | compute node based L2 projection originating from a dof based        |
  | state vector                                                         |
@@ -215,9 +198,8 @@ void DRT::UTILS::DisBasedLocationVector(
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretization& dis,
     const Epetra_Map& noderowmap, const Epetra_Map& elecolmap, const std::string& statename,
     const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-    const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-    const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap,
-    Epetra_Vector* const sys_mat_diagonal_ptr)
+    const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap,
+    const std::map<int, int>* slavetomastercolnodesmap, Epetra_Vector* const sys_mat_diagonal_ptr)
 {
   // extract the desired element pointers
   std::vector<DRT::Element*> coleles(elecolmap.NumMyElements(), nullptr);
@@ -233,13 +215,9 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretization& dis,
     const Epetra_Map& noderowmap, const unsigned& numcolele, const std::string& statename,
     const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-    const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-    const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap,
-    Epetra_Vector* const sys_mat_diagonal_ptr)
+    const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap,
+    const std::map<int, int>* slavetomastercolnodesmap, Epetra_Vector* const sys_mat_diagonal_ptr)
 {
-  // set l2-projection type
-  params.set<INPAR::SCATRA::L2ProjectionSystemType>("l2 proj system", l2_proj_type);
-
   // create empty matrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(noderowmap, 108, false, true));
@@ -318,7 +296,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
   // finalize the matrix
   massmatrix->Complete();
 
-  if (l2_proj_type != INPAR::SCATRA::l2_proj_system_std)
+  if (l2_proj_type != L2ProjectionSystemType::l2_proj_system_std)
     return SolveDiagonalNodalL2Projection(*massmatrix, *rhs, numvec, noderowmap, fullnoderowmap,
         slavetomastercolnodesmap, sys_mat_diagonal_ptr);
 
@@ -335,7 +313,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
     Teuchos::RCP<DRT::Discretization> dis, const std::string& statename, const int& numvec,
     Teuchos::ParameterList& params, const int& solvernumber,
-    const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type)
+    const enum L2ProjectionSystemType& l2_proj_type)
 {
   // check if the statename has been set
   if (!dis->HasState(statename))
@@ -429,8 +407,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm));
 
   // skip setup of preconditioner in case of a direct solver
   if (solvertype != INPAR::SOLVER::SolverType::umfpack and
@@ -883,7 +861,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
             // continue with next node in case the neighbor is also on the boundary
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
 
-            const double* pos = adjacentnodes[n]->X(); /* + ALE DISP */
+            const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
             static CORE::LINALG::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
             const double tmp = dist.Norm2();
@@ -977,7 +955,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
             // continue with next node in case the neighbor is also on the boundary
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
 
-            const double* pos = adjacentnodes[n]->X(); /* + ALE DISP */
+            const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
             static CORE::LINALG::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
             const double tmp = dist.Norm2();
@@ -1209,8 +1187,6 @@ DRT::UTILS::RestartManager::RestartManager()
     dserror("signal handler for action SIGUSR2 could not be registered");
 }
 
-DRT::UTILS::RestartManager::~RestartManager() {}
-
 /// set the time interval to enforce restart writing
 void DRT::UTILS::RestartManager::SetupRestartManager(
     const double restartinterval, const int restartevry)
@@ -1280,7 +1256,7 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
     double var = 0.0;
     for (int j = 0; j < numnodes; ++j)
     {
-      const double* x = nodes[j]->X();
+      const auto& x = nodes[j]->X();
       var += x[i];
     }
     centercoords[i] = var * invnumnodes;
@@ -1288,27 +1264,8 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
 
   return centercoords;
 }
-/*-----------------------------------------------------------------------------*
- *------------------------------------------------------------------------------*/
-void DRT::UTILS::Checkfgets(char* output, FILE* stream, std::string filename)
-{
-  if (output == nullptr)
-  {
-    if (ferror(stream))
-    {
-      dserror("Error while reading %s.\n", filename.c_str());
-    }
-#ifdef DEBUG
-    else if (feof(stream))
-    {
-      printf(
-          "Error while reading %s. End-of-File encountered before reading the first character. You "
-          "might want to check that.\n",
-          filename.c_str());
-    }
-#endif
-  }
-}
+
+
 /*-----------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
 void DRT::UTILS::Checkscanf(int output)
@@ -1318,3 +1275,5 @@ void DRT::UTILS::Checkscanf(int output)
     dserror("Error while reading input.\n");
   }
 }
+
+BACI_NAMESPACE_CLOSE

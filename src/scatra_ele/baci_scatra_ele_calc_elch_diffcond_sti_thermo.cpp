@@ -13,10 +13,12 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>*
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -36,7 +38,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
 /*----------------------------------------------------------------------*
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ExtractElementAndNodeValues(
     DRT::Element* ele,                    //!< current element
     Teuchos::ParameterList& params,       //!< parameter list
@@ -55,7 +57,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ExtractElementA
 /*----------------------------------------------------------------------*
  | get material parameters                                   fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialParams(
     const DRT::Element* ele,      //!< current element
     std::vector<double>& densn,   //!< density at t_(n)
@@ -78,7 +80,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialPara
 /*--------------------------------------------------------------------------*
  | calculate element matrix and element right-hand side vector   fang 11/15 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
@@ -168,7 +170,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
 /*----------------------------------------------------------------------*
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::EvaluateActionOD(
     DRT::Element* ele,                                //!< current element
     Teuchos::ParameterList& params,                   //!< parameter list
@@ -210,7 +212,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::EvaluateActionOD
  | fill element matrix with linearizations of discrete scatra residuals w.r.t. thermo dofs   fang
  11/15 |
  *------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraThermo(
     DRT::Element* ele,                     //!< current element
     CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix
@@ -306,7 +308,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
 /*------------------------------------------------------------------------------*
  | set internal variables for element evaluation                     fang 11/15 |
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SetInternalVariablesForMatAndRHS()
 {
   // set internal variables for element evaluation
@@ -318,7 +320,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SetInternalVari
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElchDiffCondSTIThermo(
     const int numdofpernode, const int numscal, const std::string& disname)
     :  // constructors of base classes
@@ -339,23 +341,29 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElchDif
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::quad4>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::hex8>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::tet10>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::pyramid5>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

@@ -21,6 +21,7 @@
 #include "baci_adapter_str_redairway.H"
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_structalewrapper.H"
+#include "baci_adapter_str_timeada.H"
 #include "baci_adapter_str_timeloop.H"
 #include "baci_adapter_str_timint_adaptive.H"
 #include "baci_adapter_str_wrapper.H"
@@ -61,6 +62,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -120,25 +123,21 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
   }
 
   issetup_ = true;
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::RegisterModelEvaluator(
-    const std::string name, Teuchos::RCP<::STR::MODELEVALUATOR::Generic> me)
+    const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me)
 {
   // safety checks
   if (not IsInit()) dserror("Init(...) must be called before RegisterModelEvaluator(...) !");
   if (IsSetup()) dserror("RegisterModelEvaluator(...) must be called before Setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
-  const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<::STR::MODELEVALUATOR::Generic>>(
+  const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
       name, me);
-
-  return;
 }
 
 
@@ -199,10 +198,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
-  Teuchos::RCP<Teuchos::ParameterList> taflags =
+  Teuchos::RCP<Teuchos::ParameterList> time_adaptivity_params =
       Teuchos::rcp(new Teuchos::ParameterList(sdyn_->sublist("TIMEADAPTIVITY")));
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
-  SetParams(*ioflags, *xparams, *taflags);
+  SetParams(*ioflags, *xparams, *time_adaptivity_params);
 
   // ---------------------------------------------------------------------------
   // Setup and create model specific linear solvers
@@ -295,10 +294,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   // Create wrapper for the time integration strategy
   // ---------------------------------------------------------------------------
-  SetStructureWrapper(*ioflags, *sdyn_, *xparams, *taflags, ti_strategy);
-
-  // see you
-  return;
+  SetStructureWrapper(*ioflags, *sdyn_, *xparams, *time_adaptivity_params, ti_strategy);
 }
 
 
@@ -537,10 +533,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ---------------------------------------------------------------------------
   // TODO: insert the conditions related to INPAR::STR::model_constraints:
   // embedded mesh method and periodic boundary conditions for rves
-
-
-  // hopefully we haven't forgotten anything
-  return;
 }
 
 
@@ -630,15 +622,13 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
   // rotation vector DOFs - sum over all processors
   actdis_->Comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
   if (isrotvec_global > 0) eletechs.insert(INPAR::STR::EleTech::rotvec);
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& ioflags,
-    Teuchos::ParameterList& xparams, Teuchos::ParameterList& taflags)
+    Teuchos::ParameterList& xparams, Teuchos::ParameterList& time_adaptivity_params)
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -658,8 +648,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
       Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
   Teuchos::ParameterList& nox = xparams.sublist("NOX");
   nox = *snox;
-  // add extra parameters (a kind of work-around)
-  xparams.set<FILE*>("err file", problem->ErrorFile()->Handle());
 
   /* overrule certain parameters
    *
@@ -729,14 +717,14 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
       if (DRT::INPUT::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
       {
         // overrule time step size adaptivity control parameters
-        if (taflags.get<std::string>("KIND") != "NONE")
+        if (time_adaptivity_params.get<std::string>("KIND") != "NONE")
         {
-          taflags.set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
-          taflags.set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));
-          taflags.set<double>("STEPSIZEMIN", fsiada.get<double>("DTMIN"));
-          taflags.set<double>("SIZERATIOMAX", fsiada.get<double>("SIZERATIOMAX"));
-          taflags.set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
-          taflags.set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
+          time_adaptivity_params.set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
+          time_adaptivity_params.set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));
+          time_adaptivity_params.set<double>("STEPSIZEMIN", fsiada.get<double>("DTMIN"));
+          time_adaptivity_params.set<double>("SIZERATIOMAX", fsiada.get<double>("SIZERATIOMAX"));
+          time_adaptivity_params.set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
+          time_adaptivity_params.set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
 
           if (actdis_->Comm().MyPID() == 0)
           {
@@ -758,8 +746,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
       break;
     }
   }
-
-  return;
 }
 
 
@@ -797,14 +783,17 @@ void ADAPTER::StructureBaseAlgorithmNew::SetTimeIntegrationStrategy(
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::ParameterList& ioflags,
     const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
-    const Teuchos::ParameterList& taflags, Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
+    const Teuchos::ParameterList& time_adaptivity_params,
+    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
+  // try to firstly create the adaptive wrapper
+  if (str_wrapper_.is_null())
+    str_wrapper_ = ADAPTER::StructureTimeAda::Create(time_adaptivity_params, ti_strategy);
+
   // if no adaptive wrapper was found, we try to create a standard one
   if (str_wrapper_.is_null()) CreateWrapper(ti_strategy);
 
   if (str_wrapper_.is_null()) dserror("No proper time integration found!");
-
-  return;
 }
 
 
@@ -932,6 +921,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       str_wrapper_ = (Teuchos::rcp(new StructureTimeLoop(ti_strategy)));
       break;
   }
-
-  return;
 }
+
+BACI_NAMESPACE_CLOSE

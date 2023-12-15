@@ -18,6 +18,8 @@
 #include "baci_scatra_timint_cardiac_monodomain.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIPart(comm, globaltimeparams), isscatrafromfile_(false)
 {
@@ -139,7 +141,7 @@ void SSI::SSIPart1WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 
   // cleanup
   ScaTraField()->Discretization()->ClearState();
@@ -339,3 +341,5 @@ bool SSI::SSIPart1WCScatraToSolid::Finished() const
   else
     return !(NotFinished() and ScaTraField()->NotFinished());
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,7 +13,9 @@
 #include "baci_fluid_ele_factory.H"
 #include "baci_fluid_ele_interface.H"
 #include "baci_inpar_fluid.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
+
+BACI_NAMESPACE_OPEN
 
 
 // initialize static variable
@@ -26,7 +28,7 @@ DRT::ELEMENTS::FluidHDGWeakCompType& DRT::ELEMENTS::FluidHDGWeakCompType::Instan
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::FluidHDGWeakCompType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGWeakCompType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::FluidHDGWeakComp* object = new DRT::ELEMENTS::FluidHDGWeakComp(-1, -1);
   object->Unpack(data);
@@ -127,18 +129,11 @@ DRT::Element* DRT::ELEMENTS::FluidHDGWeakComp::Clone() const
 }
 
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidHDGWeakComp::~FluidHDGWeakComp() {}
-
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakComp::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidHDGWeakComp::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -161,10 +156,8 @@ void DRT::ELEMENTS::FluidHDGWeakComp::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -272,3 +265,5 @@ void DRT::ELEMENTS::FluidHDGWeakComp::Print(std::ostream& os) const
   os << "FluidHDGWeakComp ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

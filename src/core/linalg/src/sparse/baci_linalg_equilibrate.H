@@ -13,6 +13,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   enum class MatrixType;
@@ -161,9 +163,6 @@ namespace CORE::LINALG
   {
    public:
     EquilibrationUniversal(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-
-    ~EquilibrationUniversal() override = default;
-
     //! return equilibration method
     EquilibrationMethod Method() const { return method_; }
 
@@ -182,9 +181,6 @@ namespace CORE::LINALG
   {
    public:
     EquilibrationSparse(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-
-    ~EquilibrationSparse() override = default;
-
     void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
 
@@ -203,9 +199,6 @@ namespace CORE::LINALG
   {
    public:
     EquilibrationBlock(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-
-    ~EquilibrationBlock() override = default;
-
     void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
   };
@@ -218,9 +211,6 @@ namespace CORE::LINALG
    public:
     EquilibrationBlockSpecific(
         const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-
-    ~EquilibrationBlockSpecific() override = default;
-
     void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
 
@@ -239,9 +229,6 @@ namespace CORE::LINALG
   {
    public:
     EquilibrationNone(Teuchos::RCP<const Epetra_Map> dofrowmap) : Equilibration(dofrowmap) {}
-
-    ~EquilibrationNone() override = default;
-
     void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override
     {
@@ -265,4 +252,6 @@ namespace CORE::LINALG
   Teuchos::RCP<CORE::LINALG::Equilibration> BuildEquilibration(MatrixType type,
       const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
 }  // namespace CORE::LINALG
+BACI_NAMESPACE_CLOSE
+
 #endif

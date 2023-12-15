@@ -21,18 +21,24 @@
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizematrix.H"
 
-
 class Epetra_Map;
 class Epetra_Vector;
+namespace Teuchos
+{
+  class ParameterList;
+}
 
+BACI_NAMESPACE_OPEN
 
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
 
 namespace DRT
 {
   class Discretization;
   class Element;
-  class PackBuffer;
-  class Exporter;
   class Node;
 }  // namespace DRT
 
@@ -49,11 +55,6 @@ namespace CORE::GEO
 namespace CORE::LINALG
 {
   class MapExtractor;
-}
-
-namespace Teuchos
-{
-  class ParameterList;
 }
 
 namespace XFEM
@@ -87,9 +88,6 @@ namespace XFEM
         const bool xfluid_timint_check_interfacetips,      /// check interfacetips?
         const bool xfluid_timint_check_sliding_on_surface  /// check sliding on surface?
     );
-
-    //! destructor
-    ~XFluidTimeInt() { return; }
 
     /// set and print reconstruction status for nodes
     void SetAndPrintStatus(const bool screenout);
@@ -232,15 +230,15 @@ namespace XFEM
     );
 
     /// check if the node is within the space time side
-    template <DRT::Element::DiscretizationType side_distype,
-        DRT::Element::DiscretizationType space_time_distype>
+    template <CORE::FE::CellType side_distype,
+        CORE::FE::CellType space_time_distype>
     bool WithinSpaceTimeSide(bool& within_space_time_side,  /// within the space time side
         DRT::Element* side, const int coup_sid,
         const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
     );
 
     /// check the volume of the space time side, distorted space-time side ?
-    template <DRT::Element::DiscretizationType space_time_distype, const int numnode_space_time>
+    template <CORE::FE::CellType space_time_distype, const int numnode_space_time>
     bool CheckSTSideVolume(const CORE::LINALG::Matrix<3, numnode_space_time>& xyze_st);
 
     /// export data about reconstruction method to neighbor proc and receive data from previous proc
@@ -254,10 +252,10 @@ namespace XFEM
     /*!
     \brief Basic function sending data to destination and receiving data from source
      */
-    void sendData(DRT::PackBuffer& dataSend,  //!< pack buffer
-        int& dest,                            //!< destination proc
-        int& source,                          //!< source proc
-        std::vector<char>& dataRecv           //!< received data
+    void sendData(CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
+        int& dest,                                   //!< destination proc
+        int& source,                                 //!< source proc
+        std::vector<char>& dataRecv                  //!< received data
     ) const;
 
     const bool is_newton_increment_transfer_;  /// monolithic newton increment transfer or time step
@@ -310,5 +308,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFLUID_TIMEINT_H

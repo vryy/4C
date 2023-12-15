@@ -9,24 +9,25 @@
 #ifndef BACI_MATELAST_SUMMAND_H
 #define BACI_MATELAST_SUMMAND_H
 
+#include "baci_comm_parobject.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_parobject.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Epetra_Vector.h>
 
-// forward declarations
+BACI_NAMESPACE_OPEN
 
-namespace DRT
+// forward declarations
+namespace CORE::COMM
 {
   class PackBuffer;
+}
 
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
+namespace DRT::INPUT
+{
+  class LineDefinition;
+}
 
 
 namespace MAT
@@ -64,7 +65,7 @@ namespace MAT
      * and the case of anisotropy", European Journal of Mechanics 2007
      * </ul>
      */
-    class Summand : public DRT::ParObject
+    class Summand : public CORE::COMM::ParObject
     {
      public:
       /// standard constructor
@@ -73,13 +74,13 @@ namespace MAT
       ///@name Packing and Unpacking (dummy routines)
       //@{
 
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      virtual void PackSummand(DRT::PackBuffer& data) const { return; };
+      virtual void PackSummand(CORE::COMM::PackBuffer& data) const { return; };
 
       virtual void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position)
@@ -719,7 +720,7 @@ namespace MAT
       };
 
       //! Read FIBERn
-      void ReadFiber(DRT::INPUT::LineDefinition* linedef, const std::string& kenner,
+      void ReadFiber(DRT::INPUT::LineDefinition* linedef, const std::string& specifier,
           CORE::LINALG::Matrix<3, 1>& fiber_vector);
 
       //! Read RAD-AXI-CIR
@@ -765,5 +766,7 @@ namespace MAT
   }  // namespace ELASTIC
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

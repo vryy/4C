@@ -22,6 +22,8 @@
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mortar_element.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
  *----------------------------------------------------------------------*/
@@ -75,31 +77,31 @@ namespace MORTAR
     template <class V>
     void mortar_nurbs_shape_function_1D(V& funct,  ///< to be filled with shape function values
         MORTAR::MortarElement& ele,
-        const double& xi0,                             ///< xi0 coordinate
-        const DRT::Element::DiscretizationType& shape  ///< distinguish between shape
+        const double& xi0,               ///< xi0 coordinate
+        const CORE::FE::CellType& shape  ///< distinguish between shape
     );
 
     template <class V>
     void mortar_nurbs_shape_function_2D(V& funct,  ///< to be filled with shape function values
         MORTAR::MortarElement& ele,
-        const double& xi0,                             ///< xi0 coordinate
-        const double& xi1,                             ///< xi0 coordinate
-        const DRT::Element::DiscretizationType& shape  ///< distinguish between shape
+        const double& xi0,               ///< xi0 coordinate
+        const double& xi1,               ///< xi0 coordinate
+        const CORE::FE::CellType& shape  ///< distinguish between shape
     );
 
     template <class V>
     void mortar_nurbs_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
         MORTAR::MortarElement& ele,
-        const double& xi0,                             ///< xi0 coordinate
-        const DRT::Element::DiscretizationType& shape  ///< distinguish between shape
+        const double& xi0,               ///< xi0 coordinate
+        const CORE::FE::CellType& shape  ///< distinguish between shape
     );
 
     template <class V>
     void mortar_nurbs_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
         MORTAR::MortarElement& ele,
-        const double& xi0,                             ///< xi0 coordinate
-        const double& xi1,                             ///< xi1 coordinate
-        const DRT::Element::DiscretizationType& shape  ///< distinguish between shape
+        const double& xi0,               ///< xi0 coordinate
+        const double& xi1,               ///< xi1 coordinate
+        const CORE::FE::CellType& shape  ///< distinguish between shape
     );
 
     // ----------------------------------------------------------------------
@@ -141,14 +143,14 @@ namespace MORTAR
       switch (ele.Shape())
       {
         // 2D linear case (2noded line element)
-        case DRT::Element::line2:
+        case CORE::FE::CellType::line2:
         {
           if (nnode != 2) dserror("Inconsistency in EvaluateShape");
           mortar_shape_function_1D(val, xi[0], MortarElement::lin1D);
           break;
         }
         // 2D quadratic case (3noded line element)
-        case DRT::Element::line3:
+        case CORE::FE::CellType::line3:
         {
           if (nnode != 3) dserror("Inconsistency in EvaluateShape");
           if (dualquad && !bound)
@@ -162,21 +164,21 @@ namespace MORTAR
           break;
         }
         // 3D linear case (3noded triangular element)
-        case DRT::Element::tri3:
+        case CORE::FE::CellType::tri3:
         {
           if (nnode != 3) dserror("Inconsistency in EvaluateShape");
           mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::lin2D);
           break;
         }
         // 3D bilinear case (4noded quadrilateral element)
-        case DRT::Element::quad4:
+        case CORE::FE::CellType::quad4:
         {
           if (nnode != 4) dserror("Inconsistency in EvaluateShape");
           mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::bilin2D);
           break;
         }
         // 3D quadratic case (6noded triangular element)
-        case DRT::Element::tri6:
+        case CORE::FE::CellType::tri6:
         {
           if (nnode != 6) dserror("Inconsistency in EvaluateShape");
           if (dualquad && !bound)
@@ -188,7 +190,7 @@ namespace MORTAR
           break;
         }
         // 3D serendipity case (8noded quadrilateral element)
-        case DRT::Element::quad8:
+        case CORE::FE::CellType::quad8:
         {
           if (nnode != 8) dserror("Inconsistency in EvaluateShape");
           if (dualquad && !bound)
@@ -200,7 +202,7 @@ namespace MORTAR
           break;
         }
         // 3D biquadratic case (9noded quadrilateral element)
-        case DRT::Element::quad9:
+        case CORE::FE::CellType::quad9:
         {
           if (nnode != 9) dserror("Inconsistency in EvaluateShape");
           if (dualquad && !bound)
@@ -214,24 +216,24 @@ namespace MORTAR
         //==================================================
         //                     NURBS
         //==================================================
-        case DRT::Element::nurbs2:
+        case CORE::FE::CellType::nurbs2:
         {
           if (nnode != 2) dserror("Inconsistency in EvaluateShape");
-          mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs2);
+          mortar_nurbs_shape_function_1D(val, ele, xi[0], CORE::FE::CellType::nurbs2);
           break;
         }
-        case DRT::Element::nurbs3:
+        case CORE::FE::CellType::nurbs3:
         {
           if (nnode != 3) dserror("Inconsistency in EvaluateShape");
-          mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
+          mortar_nurbs_shape_function_1D(val, ele, xi[0], CORE::FE::CellType::nurbs3);
           break;
         }
 
         // 2D -- nurbs9
-        case DRT::Element::nurbs9:
+        case CORE::FE::CellType::nurbs9:
         {
           if (nnode != 9) dserror("Inconsistency in EvaluateShape");
-          mortar_nurbs_shape_function_2D(val, ele, xi[0], xi[1], DRT::Element::nurbs9);
+          mortar_nurbs_shape_function_2D(val, ele, xi[0], xi[1], CORE::FE::CellType::nurbs9);
           break;
         }
         // unknown case
@@ -274,7 +276,7 @@ namespace MORTAR
       switch (ele.Shape())
       {
         // 2D linear case (2noded line element)
-        case DRT::Element::line2:
+        case CORE::FE::CellType::line2:
         {
           if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
@@ -287,7 +289,7 @@ namespace MORTAR
         }
 
         // 2D quadratic case (3noded line element)
-        case DRT::Element::line3:
+        case CORE::FE::CellType::line3:
         {
           if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
@@ -299,22 +301,22 @@ namespace MORTAR
         }
 
         // 3D cases
-        case DRT::Element::tri3:
-        case DRT::Element::quad4:
-        case DRT::Element::tri6:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
+        case CORE::FE::CellType::tri3:
+        case CORE::FE::CellType::quad4:
+        case CORE::FE::CellType::tri6:
+        case CORE::FE::CellType::quad8:
+        case CORE::FE::CellType::quad9:
         {
           // dual Lagrange multipliers
           if (dual)
           {
-            if (ele.Shape() == DRT::Element::tri3)
+            if (ele.Shape() == CORE::FE::CellType::tri3)
               mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MortarElement::lindual2D);
-            else if (ele.Shape() == DRT::Element::quad4)
+            else if (ele.Shape() == CORE::FE::CellType::quad4)
               mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MortarElement::bilindual2D);
-            else if (ele.Shape() == DRT::Element::tri6)
+            else if (ele.Shape() == CORE::FE::CellType::tri6)
               mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MortarElement::quaddual2D);
-            else if (ele.Shape() == DRT::Element::quad8)
+            else if (ele.Shape() == CORE::FE::CellType::quad8)
               mortar_dualshape_function_2D(
                   val, ele, xi[0], xi[1], MortarElement::serendipitydual2D);
             else /*Shape()==quad9*/
@@ -324,13 +326,13 @@ namespace MORTAR
           // standard Lagrange multipliers
           else
           {
-            if (ele.Shape() == DRT::Element::tri3)
+            if (ele.Shape() == CORE::FE::CellType::tri3)
               mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::lin2D);
-            else if (ele.Shape() == DRT::Element::quad4)
+            else if (ele.Shape() == CORE::FE::CellType::quad4)
               mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::bilin2D);
-            else if (ele.Shape() == DRT::Element::tri6)
+            else if (ele.Shape() == CORE::FE::CellType::tri6)
               mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::quad2D);
-            else if (ele.Shape() == DRT::Element::quad8)
+            else if (ele.Shape() == CORE::FE::CellType::quad8)
               mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::serendipity2D);
             else /*Shape()==quad9*/
               mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::biquad2D);
@@ -344,40 +346,40 @@ namespace MORTAR
         //==================================================
 
         // 1D -- nurbs2
-        case DRT::Element::nurbs2:
+        case CORE::FE::CellType::nurbs2:
         {
           if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
           if (dual)
             dserror("no dual shape functions provided for nurbs!");
           else
-            mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs2);
+            mortar_nurbs_shape_function_1D(val, ele, xi[0], CORE::FE::CellType::nurbs2);
 
           break;
         }
 
         // 1D -- nurbs3
-        case DRT::Element::nurbs3:
+        case CORE::FE::CellType::nurbs3:
         {
           if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
           if (dual)
-            mortar_nurbs_dualshape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
+            mortar_nurbs_dualshape_function_1D(val, ele, xi[0], CORE::FE::CellType::nurbs3);
           else
-            mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
+            mortar_nurbs_shape_function_1D(val, ele, xi[0], CORE::FE::CellType::nurbs3);
 
           break;
         }
 
         // 2D -- nurbs9
-        case DRT::Element::nurbs9:
+        case CORE::FE::CellType::nurbs9:
         {
           if (valdim != 9) dserror("Inconsistency in EvaluateShape");
 
           if (dual)
-            mortar_nurbs_dualshape_function_2D(val, ele, xi[0], xi[1], DRT::Element::nurbs9);
+            mortar_nurbs_dualshape_function_2D(val, ele, xi[0], xi[1], CORE::FE::CellType::nurbs9);
           else
-            mortar_nurbs_shape_function_2D(val, ele, xi[0], xi[1], DRT::Element::nurbs9);
+            mortar_nurbs_shape_function_2D(val, ele, xi[0], xi[1], CORE::FE::CellType::nurbs9);
 
           break;
         }
@@ -403,11 +405,11 @@ namespace MORTAR
     {
       switch (ele.Shape())
       {
-        case DRT::Element::line3:
+        case CORE::FE::CellType::line3:
           val(0) = val(1) = 0.;
           val(2) = 1.;
           break;
-        case DRT::Element::quad9:
+        case CORE::FE::CellType::quad9:
           val(0) = val(1) = val(2) = val(3) = val(4) = val(5) = val(6) = val(7) = 0.;
           val(8) = 1.;
           break;
@@ -428,8 +430,8 @@ namespace MORTAR
       if (!ele.IsSlave()) dserror("EvaluateShapeLagMultLin called for master element");
 
       // check for feasible element types (line3,tri6, quad8 or quad9)
-      if (ele.Shape() != DRT::Element::line3 && ele.Shape() != DRT::Element::tri6 &&
-          ele.Shape() != DRT::Element::quad8 && ele.Shape() != DRT::Element::quad9)
+      if (ele.Shape() != CORE::FE::CellType::line3 && ele.Shape() != CORE::FE::CellType::tri6 &&
+          ele.Shape() != CORE::FE::CellType::quad8 && ele.Shape() != CORE::FE::CellType::quad9)
         dserror("Linear LM interpolation only for quadratic finite elements");
 
       // dual shape functions or not
@@ -459,7 +461,7 @@ namespace MORTAR
       switch (ele.Shape())
       {
         // 2D quadratic case (quadratic line)
-        case DRT::Element::line3:
+        case CORE::FE::CellType::line3:
         {
           // the middle node is defined as slave boundary (=master)
           // dual Lagrange multipliers
@@ -473,9 +475,9 @@ namespace MORTAR
         }
 
         // 3D quadratic cases (quadratic triangle, biquadratic and serendipity quad)
-        case DRT::Element::tri6:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
+        case CORE::FE::CellType::tri6:
+        case CORE::FE::CellType::quad8:
+        case CORE::FE::CellType::quad9:
         {
           // the edge nodes are defined as slave boundary (=master)
           // dual Lagrange multipliers
@@ -483,10 +485,10 @@ namespace MORTAR
           {
             // dserror("Quad->Lin modification of dual LM shape functions not yet
             // implemented");
-            if (ele.Shape() == DRT::Element::tri6)
+            if (ele.Shape() == CORE::FE::CellType::tri6)
               mortar_dualshape_function_2D(
                   val, ele, xi[0], xi[1], MortarElement::quaddual2D_only_lin);
-            else if (ele.Shape() == DRT::Element::quad8)
+            else if (ele.Shape() == CORE::FE::CellType::quad8)
               mortar_dualshape_function_2D(
                   val, ele, xi[0], xi[1], MortarElement::serendipitydual2D_only_lin);
             else /*Shape()==quad9*/
@@ -497,9 +499,9 @@ namespace MORTAR
           // standard Lagrange multipliers
           else
           {
-            if (ele.Shape() == DRT::Element::tri6)
+            if (ele.Shape() == CORE::FE::CellType::tri6)
               mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::quad2D_only_lin);
-            else if (ele.Shape() == DRT::Element::quad8)
+            else if (ele.Shape() == CORE::FE::CellType::quad8)
               mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::serendipity2D_only_lin);
             else /*Shape()==quad9*/
               mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::biquad2D_only_lin);
@@ -1890,8 +1892,8 @@ namespace MORTAR
     template <class V>
     void mortar_nurbs_shape_function_1D(V& funct,  ///< to be filled with shape function values
         MORTAR::MortarElement& ele,
-        const double& xi0,                             ///< xi0 coordinate
-        const DRT::Element::DiscretizationType& shape  ///< distinguish between shape
+        const double& xi0,               ///< xi0 coordinate
+        const CORE::FE::CellType& shape  ///< distinguish between shape
     )
     {
       switch (shape)
@@ -1899,7 +1901,7 @@ namespace MORTAR
         //*********************************************
         // 1D -- nurbs2
         //*********************************************
-        case DRT::Element::nurbs2:
+        case CORE::FE::CellType::nurbs2:
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
@@ -1907,13 +1909,13 @@ namespace MORTAR
 
           CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
           CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
-              funct, auxderiv, xi0, ele.Knots()[0], weights, DRT::Element::nurbs2);
+              funct, auxderiv, xi0, ele.Knots()[0], weights, CORE::FE::CellType::nurbs2);
           break;
         }
         //*********************************************
         // 1D -- nurbs3
         //*********************************************
-        case DRT::Element::nurbs3:
+        case CORE::FE::CellType::nurbs3:
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
@@ -1921,7 +1923,7 @@ namespace MORTAR
 
           CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
           CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
-              funct, auxderiv, xi0, ele.Knots()[0], weights, DRT::Element::nurbs3);
+              funct, auxderiv, xi0, ele.Knots()[0], weights, CORE::FE::CellType::nurbs3);
           break;
         }
         default:
@@ -1941,9 +1943,9 @@ namespace MORTAR
     template <class V>
     void mortar_nurbs_shape_function_2D(V& funct,  ///< to be filled with shape function values
         MORTAR::MortarElement& ele,
-        const double& xi0,                             ///< xi0 coordinate
-        const double& xi1,                             ///< xi0 coordinate
-        const DRT::Element::DiscretizationType& shape  ///< distinguish between shape
+        const double& xi0,               ///< xi0 coordinate
+        const double& xi1,               ///< xi0 coordinate
+        const CORE::FE::CellType& shape  ///< distinguish between shape
     )
     {
       switch (shape)
@@ -1951,7 +1953,7 @@ namespace MORTAR
         //*********************************************
         // 1D -- nurbs2
         //*********************************************
-        case DRT::Element::nurbs4:
+        case CORE::FE::CellType::nurbs4:
         {
           dserror("stop");
           break;
@@ -1959,7 +1961,7 @@ namespace MORTAR
         //*********************************************
         // 1D -- nurbs3
         //*********************************************
-        case DRT::Element::nurbs9:
+        case CORE::FE::CellType::nurbs9:
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
@@ -1971,13 +1973,12 @@ namespace MORTAR
 
           CORE::LINALG::SerialDenseMatrix auxderiv(2, ele.NumNode());
           CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-              funct, auxderiv, uv, ele.Knots(), weights, DRT::Element::nurbs9);
+              funct, auxderiv, uv, ele.Knots(), weights, CORE::FE::CellType::nurbs9);
           break;
         }
         default:
         {
-          std::cout << "shape: " << shape << std::endl;
-          dserror("shape unknown\n");
+          dserror("shape unknown: %d\n", shape);
           break;
         }
       }
@@ -1991,13 +1992,13 @@ namespace MORTAR
     template <class V>
     void mortar_nurbs_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
         MORTAR::MortarElement& ele,
-        const double& xi0,                             ///< xi0 coordinate
-        const DRT::Element::DiscretizationType& shape  ///< distinguish between shape
+        const double& xi0,               ///< xi0 coordinate
+        const CORE::FE::CellType& shape  ///< distinguish between shape
     )
     {
       switch (shape)
       {
-        case DRT::Element::nurbs3:
+        case CORE::FE::CellType::nurbs3:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -2013,7 +2014,7 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            mortar_nurbs_shape_function_1D(funct, ele, gpc[0], DRT::Element::nurbs3);
+            mortar_nurbs_shape_function_1D(funct, ele, gpc[0], CORE::FE::CellType::nurbs3);
             detg = ele.Jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -2031,7 +2032,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
-          mortar_nurbs_shape_function_1D(funct, ele, xi0, DRT::Element::nurbs3);
+          mortar_nurbs_shape_function_1D(funct, ele, xi0, CORE::FE::CellType::nurbs3);
 
           // evaluate dual shape functions
           CORE::LINALG::Matrix<nnodes, 1> valtemp(true);
@@ -2061,14 +2062,14 @@ namespace MORTAR
     template <class V>
     void mortar_nurbs_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
         MORTAR::MortarElement& ele,
-        const double& xi0,                             ///< xi0 coordinate
-        const double& xi1,                             ///< xi1 coordinate
-        const DRT::Element::DiscretizationType& shape  ///< distinguish between shape
+        const double& xi0,               ///< xi0 coordinate
+        const double& xi1,               ///< xi1 coordinate
+        const CORE::FE::CellType& shape  ///< distinguish between shape
     )
     {
       switch (shape)
       {
-        case DRT::Element::nurbs9:
+        case CORE::FE::CellType::nurbs9:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -2105,7 +2106,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
-          mortar_nurbs_shape_function_2D(funct, ele, xi0, xi1, DRT::Element::nurbs9);
+          mortar_nurbs_shape_function_2D(funct, ele, xi0, xi1, CORE::FE::CellType::nurbs9);
 
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j) valtemp(i) += ae(i, j) * funct(j);
@@ -2122,5 +2123,7 @@ namespace MORTAR
 
   }  // namespace UTILS
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_SHAPE_UTILS_H

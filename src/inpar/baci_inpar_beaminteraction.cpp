@@ -17,6 +17,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void INPAR::BEAMINTERACTION::BeamInteractionConditionsGetAll(
     std::vector<INPAR::BEAMINTERACTION::BeamInteractionConditions>& interactions)
@@ -180,12 +182,12 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
           "BeamLineFilamentCondition", "Beam_Line_Filament_Condition",
           DRT::Condition::FilamentBeamLineCondition, false, DRT::Condition::Line));
 
-  beam_filament_condition->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("ID")));
-  beam_filament_condition->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("FilamentId")));
+  beam_filament_condition->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("ID")));
+  beam_filament_condition->AddComponent(Teuchos::rcp(new INPUT::IntComponent("FilamentId")));
   beam_filament_condition->AddComponent(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("TYPE", "", true)));
+      Teuchos::rcp(new INPUT::SeparatorComponent("TYPE", "", true)));
   beam_filament_condition->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("Type", "Arbitrary",
+      Teuchos::rcp(new INPUT::SelectionComponent("Type", "Arbitrary",
           Teuchos::tuple<std::string>(
               "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen"),
           Teuchos::tuple<std::string>(
@@ -200,8 +202,8 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
           "PenaltyPointCouplingCondition", "Couples beam nodes that lie on the same position",
           DRT::Condition::PenaltyPointCouplingCondition, false, DRT::Condition::Point));
 
-  AddNamedReal(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
-  AddNamedReal(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");
+  INPUT::AddNamedReal(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
+  INPUT::AddNamedReal(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");
 
   condlist.push_back(penalty_coupling_condition);
 
@@ -211,3 +213,5 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
   // beam-to-solid interactions
   INPAR::BEAMTOSOLID::SetValidConditions(condlist);
 }
+
+BACI_NAMESPACE_CLOSE

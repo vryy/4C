@@ -14,6 +14,8 @@
 #include "baci_contact_nitsche_integrator.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   class XFluid_Contact_Comm;
@@ -37,11 +39,8 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitscheFsi(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm);
-
-    ~CoIntegratorNitscheFsi() override = default;
-
+    CoIntegratorNitscheFsi(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
     //! @name Derived functions
     //! @{
 
@@ -149,4 +148,6 @@ namespace CONTACT
     );
   }  // namespace UTILS
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_FSI_H

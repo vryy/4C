@@ -25,6 +25,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration ...
 namespace CORE::LINALG
 {
@@ -58,13 +60,10 @@ namespace BEAMINTERACTION
     */
     BeamToSphereContactPair();
 
-    /*!
-    \brief Destructor
-    */
-    virtual ~BeamToSphereContactPair(){};
+
 
     //! Setup
-    virtual void Setup();
+    void Setup() override;
 
     //@}
 
@@ -79,30 +78,30 @@ namespace BEAMINTERACTION
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
            i.e. non-zero values for force and stiffmat are returned
     */
-    virtual bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
         CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
         CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
-        CORE::LINALG::SerialDenseMatrix* stiffmat22);
+        CORE::LINALG::SerialDenseMatrix* stiffmat22) override;
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions (and tangents)) of both
     elements
     */
-    virtual void ResetState(const std::vector<double>& centerline_dofvec_ele1,
-        const std::vector<double>& centerline_dofvec_ele2);
+    void ResetState(const std::vector<double>& centerline_dofvec_ele1,
+        const std::vector<double>& centerline_dofvec_ele2) override;
 
     /** \brief print information about this beam contact element pair to screen
      *
      *  \author grill
      *  \date 05/16 */
-    virtual void Print(std::ostream& out) const;
+    void Print(std::ostream& out) const override;
 
 
     /** \brief print this beam contact element pair to screen
      *
      *  \author grill
      *  \date 12/16 */
-    virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const;
+    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
     //@}
 
     //! @name Access methods
@@ -120,7 +119,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    virtual inline bool GetContactFlag() const
+    inline bool GetContactFlag() const override
     {
       return (contactflag_ or nodalcontactflag_[0] or nodalcontactflag_[1]);
     };
@@ -128,20 +127,20 @@ namespace BEAMINTERACTION
     /*!
     \brief Get number of active contact point pairs on this element pair
     */
-    virtual unsigned int GetNumAllActiveContactPointPairs() const { return 1; }
+    unsigned int GetNumAllActiveContactPointPairs() const override { return 1; }
 
 
     /*!
     \brief Get coordinates of all active contact points on element1 and element2
     */
-    virtual inline void GetAllActiveContactPointCoordsElement1(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const
+    inline void GetAllActiveContactPointCoordsElement1(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("not implemented yet!");
     }
 
-    virtual inline void GetAllActiveContactPointCoordsElement2(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const
+    inline void GetAllActiveContactPointCoordsElement2(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("not implemented yet!");
     }
@@ -149,7 +148,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get all (scalar) contact forces of this contact pair
     */
-    virtual inline void GetAllActiveContactForces(std::vector<double>& forces) const
+    inline void GetAllActiveContactForces(std::vector<double>& forces) const override
     {
       dserror("not implemented yet!");
     }
@@ -157,7 +156,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get all (scalar) gap values of this contact pair
     */
-    virtual void GetAllActiveContactGaps(std::vector<double>& gaps) const
+    void GetAllActiveContactGaps(std::vector<double>& gaps) const override
     {
       dserror("not implemented yet!");
     }
@@ -248,7 +247,7 @@ namespace BEAMINTERACTION
     */
     void GetShapeFunctions(CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
-        CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& xi);
+        CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta);
 
     /*!
     \brief Compute linearizations of contact point
@@ -342,5 +341,7 @@ namespace BEAMINTERACTION
     //@}
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

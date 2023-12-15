@@ -17,6 +17,8 @@
 #include "baci_fluid_timint_ac.H"
 #include "baci_fluid_timint_ost.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class TimIntACOst : public TimIntOneStepTheta, public TimIntAC
@@ -28,11 +30,9 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntACOst();
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
    protected:
    private:
@@ -40,5 +40,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_AC_OST_H

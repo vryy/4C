@@ -8,13 +8,13 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_fluid_ele_nullspace.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_elchmat.H"
 #include "baci_mat_list.H"
@@ -27,12 +27,14 @@
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
 
 DRT::ELEMENTS::TransportType& DRT::ELEMENTS::TransportType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::TransportType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::TransportType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Transport* object = new DRT::ELEMENTS::Transport(-1, -1);
   object->Unpack(data);
@@ -271,7 +273,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Transport::Transport(int id, int owner)
     : DRT::Element(id, owner),
-      distype_(dis_none),
+      distype_(CORE::FE::CellType::dis_none),
       data_(),
       numdofpernode_(-1),
       impltype_(INPAR::SCATRA::impltype_undefined)
@@ -576,15 +578,15 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
  |  Return the shape of a Transport element                      (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Transport::Shape() const { return distype_; }
+CORE::FE::CellType DRT::ELEMENTS::Transport::Shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Transport::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -611,10 +613,8 @@ void DRT::ELEMENTS::Transport::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -626,7 +626,7 @@ void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, tmp);
   data_.Unpack(tmp);
   ExtractfromPack(position, data, numdofpernode_);
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
 
   if (position != data.size())
@@ -662,11 +662,6 @@ int DRT::ELEMENTS::Transport::NumVolume() const
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             gjb 05/08 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Transport::~Transport() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 05/08 |
@@ -676,7 +671,7 @@ void DRT::ELEMENTS::Transport::Print(std::ostream& os) const
   os << "Transport element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << DRT::DistypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
   std::cout << std::endl;
@@ -693,23 +688,7 @@ void DRT::ELEMENTS::Transport::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  if (NumLine() > 1)  // 3D and 2D
-    return DRT::UTILS::ElementBoundaryFactory<TransportBoundary, Transport>(
-        DRT::UTILS::buildLines, this);
-  else
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> lines(1);
-    lines[0] = Teuchos::rcp(this, false);
-    return lines;
-  }
+  return CORE::COMM::GetElementLines<TransportBoundary, Transport>(*this);
 }
 
 
@@ -718,48 +697,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
-  if (NumSurface() > 1)  // 3D
-    return DRT::UTILS::ElementBoundaryFactory<TransportBoundary, Transport>(
-        DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() == 1)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    // 1D
-    dserror("Surfaces() for 1D-Transport element not implemented");
-    return DRT::Element::Surfaces();
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                g.bau 03/07|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Volumes()
-{
-  if (NumVolume() == 1)
-  {
-    std::vector<Teuchos::RCP<Element>> volumes(1);
-    volumes[0] = Teuchos::rcp(this, false);
-    return volumes;
-  }
-  else
-  {
-    dserror("Volumes() for 1D-/2D-Transport element not implemented");
-    return DRT::Element::Volumes();
-  }
+  return CORE::COMM::GetElementSurfaces<TransportBoundary, Transport>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -886,12 +824,12 @@ int DRT::ELEMENTS::Transport::Initialize()
  |  ctor (public)                                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Transport* parent, const int lbeleid)
+    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Transport* parent, const int lsurface)
     : DRT::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lbeleid);
+  SetParentMasterElement(parent, lsurface);
   return;
 }
 
@@ -916,7 +854,7 @@ DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
 /*----------------------------------------------------------------------*
  |  Return shape of this element                    (public)  gjb 01/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::TransportBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
@@ -924,7 +862,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TransportBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::TransportBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("This TransportBoundary element does not support communication");
 
@@ -940,10 +878,6 @@ void DRT::ELEMENTS::TransportBoundary::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             gjb 01/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::TransportBoundary::~TransportBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -954,7 +888,7 @@ void DRT::ELEMENTS::TransportBoundary::Print(std::ostream& os) const
   os << "TransportBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Shape() << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(Shape()) << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -980,16 +914,7 @@ int DRT::ELEMENTS::TransportBoundary::NumSurface() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   dserror("Lines of TransportBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }
 
 /*----------------------------------------------------------------------*
@@ -997,14 +922,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Lines(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   dserror("Surfaces of TransportBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }
+
+BACI_NAMESPACE_CLOSE

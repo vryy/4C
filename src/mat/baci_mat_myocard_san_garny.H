@@ -15,13 +15,15 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_material.H"
 #include "baci_mat_myocard_general.H"
 #include "baci_mat_myocard_tools.H"
 #include "baci_mat_par_parameter.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /// Myocard material according to [1]
@@ -50,29 +52,26 @@ class Myocard_SAN_Garny : public Myocard_General
   /// construct empty material object
   explicit Myocard_SAN_Garny(const double eps_deriv_myocard, const std::string tissue);
 
-  /// destructor
-  virtual ~Myocard_SAN_Garny() { ; }
-
   /// compute reaction coefficient
-  double ReaCoeff(const double phi, const double dt);
+  double ReaCoeff(const double phi, const double dt) override;
 
   ///  returns number of internal state variables of the material
-  int GetNumberOfInternalStateVariables() const;
+  int GetNumberOfInternalStateVariables() const override;
 
   ///  returns current internal state of the material
-  double GetInternalState(const int k) const;
+  double GetInternalState(const int k) const override;
 
   ///  set internal state of the material
-  void SetInternalState(const int k, const double val);
+  void SetInternalState(const int k, const double val) override;
 
   ///  return number of ionic currents
-  int GetNumberOfIonicCurrents() const;
+  int GetNumberOfIonicCurrents() const override;
 
   ///  return ionic currents
-  double GetIonicCurrents(const int k) const;
+  double GetIonicCurrents(const int k) const override;
 
   /// time update for this material
-  void Update(const double phi, const double dt);
+  void Update(const double phi, const double dt) override;
 
  private:
   Myocard_Tools tools_;
@@ -89,5 +88,7 @@ class Myocard_SAN_Garny : public Myocard_General
 
 };  // Myocard_SAN_Garny
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

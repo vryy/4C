@@ -13,6 +13,8 @@
 
 #include "baci_w1_poro_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -25,11 +27,11 @@ namespace DRT
     class WallQuad4PoroP1Type : public DRT::ELEMENTS::WallQuad4PoroType
     {
      public:
-      std::string Name() const { return "WallQuad4PoroP1Type"; }
+      std::string Name() const override { return "WallQuad4PoroP1Type"; }
 
       static WallQuad4PoroP1Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -62,7 +64,7 @@ namespace DRT
 
       static WallQuad9PoroP1Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -95,7 +97,7 @@ namespace DRT
 
       static WallTri3PoroP1Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -121,5 +123,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_PORO_P1_ELETYPES_H

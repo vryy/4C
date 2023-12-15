@@ -39,6 +39,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | timeloop for small time scales                            Thon 07/15 |
  *----------------------------------------------------------------------*/
@@ -451,7 +453,6 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
   const int GID = structuredis->ElementColMap()->GID(0);  // global element ID
 
   Teuchos::RCP<MAT::Material> structurematerial = structuredis->gElement(GID)->Material();
-  ;
 
   if (structurematerial->MaterialType() != INPAR::MAT::m_growth_volumetric)
   {
@@ -602,7 +603,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //----------------------------------------------------------------------
   // finish present structure scatra time step (no output)
   //----------------------------------------------------------------------
-  structurescatra->Update(1);
+  structurescatra->Update();
 
   //----------------------------------------------------------------------
   // Switch time step of scatra fields
@@ -658,8 +659,8 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   fsi_->Update();
   FsiOutput();
   // fluid scatra update. Structure scatra is done later
-  fluidscatra->Update(0);
-  fluidscatra->Output(0);
+  fluidscatra->Update();
+  fluidscatra->CheckAndWriteOutputAndRestart();
 
   //----------------------------------------------------------------------
   // Switch back time steps and set mean values in scatra fields
@@ -749,17 +750,11 @@ void FS3I::ACFSI::LargeTimeScaleUpdateAndOutput()
   scatravec_[0]->ScaTraField()->SetTimeStep(time_, step_);
 
   // NOTE: fsi output is already updated and written in LargeTimeScaleDoGrowthUpdate()
-  //  fsi_->PrepareOutput();
-  //  fsi_->Update();
-  //  FsiOutput();
-
   // NOTE: fluid scatra is already updated and written in LargeTimeScaleDoGrowthUpdate()
-  //  scatravec_[0]->ScaTraField()->Update(0);
-  //  scatravec_[0]->ScaTraField()->Output(0);
 
   // now update and output the structure scatra field
-  scatravec_[1]->ScaTraField()->Update(1);
-  scatravec_[1]->ScaTraField()->Output(1);
+  scatravec_[1]->ScaTraField()->Update();
+  scatravec_[1]->ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*
@@ -1013,3 +1008,5 @@ void FS3I::MeanManager::ReadRestart(IO::DiscretizationReader& fluidreader)
   SumDtPhi_ = SumDtWss_;
   SumDtPres_ = SumDtWss_;
 }
+
+BACI_NAMESPACE_CLOSE

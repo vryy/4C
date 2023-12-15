@@ -8,8 +8,10 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_truss3.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -41,3 +43,5 @@ bool DRT::ELEMENTS::Truss3::ReadElement(
  | Set cross section area                           (public) mueller 03/12|
  *------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::SetCrossSec(const double& crosssec) { crosssec_ = crosssec; }
+
+BACI_NAMESPACE_CLOSE

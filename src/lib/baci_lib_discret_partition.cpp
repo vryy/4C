@@ -9,13 +9,15 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_pbc.H"
-#include "baci_lib_exporter.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_FECrsGraph.h>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -40,7 +42,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
   const Epetra_Map& oldmap = *noderowmap_;
 
   // create an exporter object that will figure out the communication pattern
-  DRT::Exporter exporter(oldmap, newmap, Comm());
+  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
 
   // Do the communication
   exporter.Export(node_);
@@ -81,7 +83,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
   }
 
   // create an exporter object that will figure out the communication pattern
-  DRT::Exporter exporter(oldmap, newmap, Comm());
+  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
   // Do the communication
   exporter.Export(node_);
 
@@ -105,7 +107,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
   std::map<int, std::vector<char>> sendmap;  // proc to send a set of elements to
   if (!myrank)
   {
-    std::map<int, DRT::PackBuffer> sendpb;  // proc to send a set of elements to
+    std::map<int, CORE::COMM::PackBuffer> sendpb;  // proc to send a set of elements to
     for (int i = 0; i < size; ++i)
     {
       if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
@@ -113,8 +115,8 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
       if (!actele) dserror("Cannot find global element %d", gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
     }
-    for (std::map<int, DRT::PackBuffer>::iterator fool = sendpb.begin(); fool != sendpb.end();
-         ++fool)
+    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+         fool != sendpb.end(); ++fool)
       fool->second.StartPacking();
     for (int i = 0; i < size; ++i)
     {
@@ -123,8 +125,8 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
       actele->Pack(sendpb[pidlist[i]]);
       element_.erase(actele->Id());
     }
-    for (std::map<int, DRT::PackBuffer>::iterator fool = sendpb.begin(); fool != sendpb.end();
-         ++fool)
+    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+         fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first], fool->second());
   }
 
@@ -149,7 +151,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
 
   // proc 0 sends out messages
   int tag = 0;
-  DRT::Exporter exporter(Comm());
+  CORE::COMM::Exporter exporter(Comm());
   std::vector<MPI_Request> request(size);
   if (!myrank)
   {
@@ -178,8 +180,8 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      ParObject::ExtractfromPack(index, recvdata, data);
-      DRT::ParObject* object = DRT::UTILS::Factory(data);
+      CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
+      CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
       DRT::Element* ele = dynamic_cast<DRT::Element*>(object);
       if (!ele) dserror("Received object is not an element");
       ele->SetOwner(myrank);
@@ -218,7 +220,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   std::map<int, std::vector<char>> sendmap;
   if (!myrank)
   {
-    std::map<int, DRT::PackBuffer> sendpb;
+    std::map<int, CORE::COMM::PackBuffer> sendpb;
     for (int i = 0; i < size; ++i)
     {
       // proc 0 does not send to itself
@@ -227,8 +229,8 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       if (!node) dserror("Proc 0 cannot find global node %d", oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
     }
-    for (std::map<int, DRT::PackBuffer>::iterator fool = sendpb.begin(); fool != sendpb.end();
-         ++fool)
+    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+         fool != sendpb.end(); ++fool)
       fool->second.StartPacking();
     for (int i = 0; i < size; ++i)
     {
@@ -238,8 +240,8 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       node->Pack(sendpb[pidlist[i]]);
       node_.erase(node->Id());
     }
-    for (std::map<int, DRT::PackBuffer>::iterator fool = sendpb.begin(); fool != sendpb.end();
-         ++fool)
+    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+         fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first], fool->second());
   }
 
@@ -263,7 +265,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 
   // proc 0 sends out messages
   int tag = 0;
-  DRT::Exporter exporter(Comm());
+  CORE::COMM::Exporter exporter(Comm());
   std::vector<MPI_Request> request(size);
   if (!myrank)
   {
@@ -293,8 +295,8 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      ParObject::ExtractfromPack(index, recvdata, data);
-      DRT::ParObject* object = DRT::UTILS::Factory(data);
+      CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
+      CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
       DRT::Node* node = dynamic_cast<DRT::Node*>(object);
       if (!node) dserror("Received object is not a node");
       node->SetOwner(myrank);
@@ -335,7 +337,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
   const Epetra_Map& oldmap = *elerowmap_;
 
   // create an exporter object that will figure out the communication pattern
-  DRT::Exporter exporter(oldmap, newmap, Comm());
+  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
 
   exporter.Export(element_);
 
@@ -376,7 +378,7 @@ void DRT::Discretization::ExportColumnElements(
   }
 
   // create an exporter object that will figure out the communication pattern
-  DRT::Exporter exporter(oldmap, newmap, Comm());
+  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
   exporter.Export(element_);
 
   // maps and pointers are no longer correct and need rebuilding
@@ -887,3 +889,5 @@ void DRT::Discretization::SetupGhosting(
   Redistribute(
       *noderowmap, *nodecolmap, assigndegreesoffreedom, initelements, doboundaryconditions);
 }
+
+BACI_NAMESPACE_CLOSE

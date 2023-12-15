@@ -15,11 +15,13 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ContainerType DRT::ContainerType::instance_;
 
 
-DRT::ParObject* DRT::ContainerType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ContainerType::Create(const std::vector<char>& data)
 {
   DRT::Container* object = new DRT::Container();
   object->Unpack(data);
@@ -69,10 +71,6 @@ DRT::Container::Container(const DRT::Container& old) : ParObject(old), stringdat
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Container::~Container() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -89,9 +87,9 @@ std::ostream& operator<<(std::ostream& os, const DRT::Container& cont)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Pack(DRT::PackBuffer& data) const
+void DRT::Container::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // no. of objects in maps
@@ -163,10 +161,9 @@ void DRT::Container::Pack(DRT::PackBuffer& data) const
 void DRT::Container::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract no. objects in intdata_
   int intdatasize = 0;
   ExtractfromPack(position, data, intdatasize);
@@ -719,3 +716,5 @@ int DRT::Container::UniqueParObjectId() const
 {
   return ContainerType::Instance().UniqueParObjectId();
 }
+
+BACI_NAMESPACE_CLOSE

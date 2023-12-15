@@ -14,6 +14,8 @@
 #include "baci_levelset_algorithm.H"
 #include "baci_scatra_timint_ost.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace SCATRA
 {
@@ -27,17 +29,15 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// destructor
-    virtual ~LevelSetTimIntOneStepTheta();
 
     /// initialize time-integration scheme
-    virtual void Init();
+    void Init() override;
 
     /// setup time-integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     /// read restart data
-    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
@@ -50,31 +50,33 @@ namespace SCATRA
 
    protected:
     /// Print information about current time step to screen (reimplementation for OST)
-    void PrintTimeStepInfo();
+    void PrintTimeStepInfo() override;
 
     /// calculate consistent initial scalar time derivatives in compliance with initial scalar field
-    void CalcInitialTimeDerivative();
+    void CalcInitialTimeDerivative() override;
 
     /// additional predictor not intended for level-set methods
-    void ExplicitPredictor() const { return; };
+    void ExplicitPredictor() const override { return; };
 
     /// Set the part of the righthandside belonging to the last timestep.
-    void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /// update state vectors
     /// current solution becomes old solution of next time step
-    void UpdateState();
+    void UpdateState() override;
 
     /// update the solution after Solve()
     /// extended version for coupled level-set problems including reinitialization
-    void Update(const int num = 0);
+    void Update() override;
 
     /// update phi within the reinitialization loop
-    void UpdateReinit();
+    void UpdateReinit() override;
 
    private:
   };  // class LevelSetTimIntOneStepTheta
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LEVELSET_TIMINT_OST_H

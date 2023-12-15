@@ -14,6 +14,8 @@
 #include <array>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -68,4 +70,6 @@ namespace DRT
 
   }  // namespace GRIDGENERATOR
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

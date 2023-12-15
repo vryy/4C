@@ -18,8 +18,6 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_elements.H"
@@ -32,10 +30,13 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_enum_lists.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 #include "baci_w1.H"
 
 #include <Teuchos_BLAS.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 
@@ -104,7 +105,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
   // Now do the nurbs specific stuff
   std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
 
-  if (Shape() == DRT::Element::nurbs4 or Shape() == DRT::Element::nurbs9)
+  if (Shape() == CORE::FE::CellType::nurbs4 or Shape() == CORE::FE::CellType::nurbs9)
   {
     switch (act)
     {
@@ -215,7 +216,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        ;
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -254,7 +254,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        ;
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -386,7 +385,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
         const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
@@ -407,7 +405,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -415,7 +413,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -504,9 +502,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         }
 
         /*------------------------- get node weights for nurbs elements */
-        const DiscretizationType distype = Shape();
+        const CORE::FE::CellType distype = Shape();
         CORE::LINALG::SerialDenseVector weights(numnode);
-        if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+        if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
         {
           for (int inode = 0; inode < numnode; ++inode)
           {
@@ -525,7 +523,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           const double wgt = intpoints.qwgt[ip];
 
           // get values of shape functions and derivatives in the gausspoint
-          if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+          if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
           {
             // shape functions and their derivatives for polynomials
             CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -589,7 +587,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             for (unsigned int d = 0; d < 2; ++d)
               uanalyt(d, 0) =
                   DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                       .Evaluate(xgp.A(), finaltime, d);
 
             // set strains to zero
@@ -772,9 +770,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       }
 
       /*------------------------- get node weights for nurbs elements */
-      const DiscretizationType distype = Shape();
+      const CORE::FE::CellType distype = Shape();
       CORE::LINALG::SerialDenseVector weights(numnode);
-      if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+      if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
       {
         for (int inode = 0; inode < numnode; ++inode)
         {
@@ -793,7 +791,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         const double wgt = intpoints.qwgt[ip];
 
         // get values of shape functions and derivatives in the gausspoint
-        if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+        if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
         {
           // shape functions and their derivatives for polynomials
           CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -897,7 +895,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       }
 
       const double min_detj =
-          DRT::UTILS::GetMinimalJacDeterminantAtNodes<DRT::Element::quad4>(xcurr);
+          DRT::UTILS::GetMinimalJacDeterminantAtNodes<CORE::FE::CellType::quad4>(xcurr);
 
       if (min_detj < 0.0)
         ErrorHandling(min_detj, params, __LINE__, STR::ELEMENTS::ele_error_determinant_analysis);
@@ -969,7 +967,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
   std::vector<CORE::LINALG::SerialDenseVector> myknots(numdim_);
   CORE::LINALG::SerialDenseVector weights(iel);
 
-  if (Shape() == DRT::Element::nurbs4 || Shape() == DRT::Element::nurbs9)
+  if (Shape() == CORE::FE::CellType::nurbs4 || Shape() == CORE::FE::CellType::nurbs9)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
@@ -995,7 +993,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
   double det = 0.0;                                       // determinant of iso-parametric Jacobian
 
   // quad, tri, etc
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
@@ -1028,7 +1026,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
     const double wgt = intpoints.qwgt[ip];
 
     /*-------------------- shape functions at gp e1,e2 on mid surface */
-    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+    if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_2D(shapefcts, e1, e2, distype);
@@ -1075,7 +1073,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
 
         // evaluate function at current gauss point
         functfac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                        .Evaluate(coordgpref, time, i);
       }
 
@@ -1261,7 +1259,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   if (massmatrix) density = material->Density();
 
   /*------- get integraton data ---------------------------------------- */
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
@@ -1284,7 +1282,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
   /*--------------------------------- get node weights for nurbs elements */
   CORE::LINALG::SerialDenseVector weights(numnode);
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
@@ -1359,7 +1357,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     const double wgt = intpoints.qwgt[ip];
 
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+    if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -1507,7 +1505,6 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
           (*elestrain)(ip, 1) = strain(1);
           (*elestrain)(ip, 2) = 0.0;
           (*elestrain)(ip, 3) = strain(3);
-          ;
         }
         break;
         case INPAR::STR::strain_none:
@@ -1643,7 +1640,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   if (massmatrix) density = material->Density();
 
   /*------- get integraton data ---------------------------------------- */
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
@@ -1659,7 +1656,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
 
   /*--------------------------------- get node weights for nurbs elements */
   CORE::LINALG::SerialDenseVector weights(numnode);
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
@@ -1678,7 +1675,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     const double wgt = intpoints.qwgt[ip];
 
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+    if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -1740,7 +1737,6 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
         (*elestrain)(ip, 1) = strain(1);
         (*elestrain)(ip, 2) = 0.0;
         (*elestrain)(ip, 3) = strain(3);
-        ;
       }
       break;
       case INPAR::STR::strain_none:
@@ -2156,7 +2152,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   // element porperties
   const int numnode = NumNode();
   const int edof = numnode * Wall1::noddof_;
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   // Gaussian points
   const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
@@ -2287,3 +2283,5 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   // bye
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include <map>
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace DRT
@@ -45,7 +47,7 @@ namespace BEAMINTERACTION
     BeamInteractionParams();
 
     //! destructor
-    virtual ~BeamInteractionParams(){};
+    virtual ~BeamInteractionParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();
@@ -109,7 +111,7 @@ namespace BEAMINTERACTION
       CrosslinkerData();
 
       //! destructor
-      virtual ~CrosslinkerData(){};
+      virtual ~CrosslinkerData() = default;
 
 
       //!@name data access functions
@@ -140,7 +142,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -177,7 +179,7 @@ namespace BEAMINTERACTION
       BeamData();
 
       //! destructor
-      virtual ~BeamData(){};
+      virtual ~BeamData() = default;
 
 
       //!@name data access functions
@@ -285,7 +287,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -321,7 +323,7 @@ namespace BEAMINTERACTION
       BindEventData();
 
       //! destructor
-      virtual ~BindEventData(){};
+      virtual ~BindEventData() = default;
 
       //! Init
       void Init(int clgid, int elegid, int bspotlocn, int requestproc, int permission);
@@ -358,7 +360,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -395,7 +397,7 @@ namespace BEAMINTERACTION
       UnBindEventData();
 
       //! destructor
-      virtual ~UnBindEventData(){};
+      virtual ~UnBindEventData() = default;
 
       //!@name data access functions
       //! @{
@@ -426,7 +428,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -458,7 +460,7 @@ namespace BEAMINTERACTION
       BspotLinkerData();
 
       //! destructor
-      virtual ~BspotLinkerData(){};
+      virtual ~BspotLinkerData() = default;
 
       //!@name data access functions
       //! @{
@@ -531,5 +533,7 @@ namespace BEAMINTERACTION
 
   }  // namespace DATA
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

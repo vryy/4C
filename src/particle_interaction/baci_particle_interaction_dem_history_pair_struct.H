@@ -14,7 +14,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_lib_parobject.H"
+#include "baci_comm_parobject.H"
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -31,7 +33,7 @@ namespace PARTICLEINTERACTION
     double gap_t_[3] = {0.0, 0.0, 0.0};
 
     //! pack history pair data
-    void Pack(DRT::PackBuffer& data) const
+    void Pack(CORE::COMM::PackBuffer& data) const
     {
       data.AddtoPack(stick_);
 
@@ -41,9 +43,9 @@ namespace PARTICLEINTERACTION
     //! unpack history pair data
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
-      DRT::ParObject::ExtractfromPack(position, data, stick_);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, stick_);
 
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, data, gap_t_[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, data, gap_t_[i]);
     }
   };
 
@@ -57,7 +59,7 @@ namespace PARTICLEINTERACTION
     double gap_r_[3] = {0.0, 0.0, 0.0};
 
     //! pack history pair data
-    void Pack(DRT::PackBuffer& data) const
+    void Pack(CORE::COMM::PackBuffer& data) const
     {
       data.AddtoPack(stick_);
 
@@ -67,9 +69,9 @@ namespace PARTICLEINTERACTION
     //! unpack history pair data
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
-      DRT::ParObject::ExtractfromPack(position, data, stick_);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, stick_);
 
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, data, gap_r_[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, data, gap_r_[i]);
     }
   };
 
@@ -83,7 +85,7 @@ namespace PARTICLEINTERACTION
     double adhesion_force_ = 0.0;
 
     //! pack history pair data
-    void Pack(DRT::PackBuffer& data) const
+    void Pack(CORE::COMM::PackBuffer& data) const
     {
       data.AddtoPack(surface_energy_);
 
@@ -93,12 +95,14 @@ namespace PARTICLEINTERACTION
     //! unpack history pair data
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
-      DRT::ParObject::ExtractfromPack(position, data, surface_energy_);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, surface_energy_);
 
-      DRT::ParObject::ExtractfromPack(position, data, adhesion_force_);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, adhesion_force_);
     }
   };
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

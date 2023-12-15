@@ -6,11 +6,9 @@
 #include "baci_contact_analytical.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
@@ -22,13 +20,17 @@
 #include "baci_mat_thermoplastichyperelast.H"
 #include "baci_mat_thermostvenantkirchhoff.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_tet4.H"
 #include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // #define PRINT_DEBUG
 #ifdef PRINT_DEBUG
@@ -36,6 +38,7 @@
 #include <string>
 
 #include <cstd::string>
+
 template <class T>
 void writeArray(const T& mat, std::string name = "unnamed")
 {
@@ -58,7 +61,7 @@ void writeComment(const std::string v)
 }
 #endif  // PRINT_DEBUG
 
-using VoigtMapping = UTILS::VOIGT::IndexMappings;
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
@@ -258,14 +261,14 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
             INPAR::STR::strain_none);
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -362,7 +365,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       DRT::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_SOTET4; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(i, 0) = x[0];
         xrefe(i, 1) = x[1];
         xrefe(i, 2) = x[2];
@@ -406,7 +409,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ * gpweights[gp];
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get derivatives wrt to last spatial configuration
           CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
@@ -513,7 +516,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (::UTILS::PRESTRESS::IsAny(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsAny(pstype_))
       {
       }
 
@@ -532,7 +535,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (::UTILS::PRESTRESS::IsAny(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsAny(pstype_))
       {
       }
 
@@ -878,7 +881,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         (*gpstrainmap)[gid] = gpstrain;
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -886,7 +889,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -920,7 +923,14 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return StrParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOTET4)
@@ -959,7 +969,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1012,7 +1022,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -1039,7 +1049,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1101,14 +1111,14 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     **             [    dX       dY       dZ    ]
     */
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     {
       if (!(prestress_->IsInit())) prestress_->MatrixtoStorage(gp, nxyz_, prestress_->JHistory());
     }
 
   }  // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 }
 
 
@@ -1162,7 +1172,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1451,7 +1461,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
       params.set("gprefecoord", point);
     }
 
-    UTILS::GetTemperatureForStructuralMaterial<tet4>(shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::tet4>(shapefcts[gp], params);
 
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
 
@@ -1787,8 +1797,7 @@ int DRT::ELEMENTS::So_tet4Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fcts at 1 Gauss Point                           |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>>
-DRT::ELEMENTS::So_tet4::so_tet4_1gp_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_tet4_1gp_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts(NUMGPT_SOTET4);
 
@@ -1808,7 +1817,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_1gp_shapefcts()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fct derivs at 1 Gauss Point                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
 DRT::ELEMENTS::So_tet4::so_tet4_1gp_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> derivs(NUMGPT_SOTET4);
@@ -1841,7 +1850,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_1gp_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Weights at 1 Gauss Point                              |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
+std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
 {
   std::vector<double> weights(NUMGPT_SOTET4);
   // There is only one gausspoint, so the loop (and the vector) is not really needed.
@@ -1852,8 +1861,7 @@ const std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fcts at 4 Gauss Points                          |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>>
-DRT::ELEMENTS::So_tet4::so_tet4_4gp_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_tet4_4gp_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts(4);
 
@@ -1881,7 +1889,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_4gp_shapefcts()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fct derivs at 4 Gauss Points                    |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
 DRT::ELEMENTS::So_tet4::so_tet4_4gp_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> derivs(4);
@@ -1914,7 +1922,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_4gp_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Weights at 4 Gauss Points                             |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
+std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
 {
   std::vector<double> weights(4);
   for (int i = 0; i < 4; ++i)
@@ -2107,7 +2115,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
       // size is 3x3
       CORE::LINALG::Matrix<3, 3> defgrd(false);
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         // get derivatives wrt to last spatial configuration
         CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
@@ -2248,7 +2256,7 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int d = 0; d < NUMDIM_SOTET4; ++d)
     {
       xrefe(i, d) = x[d];
@@ -2258,7 +2266,7 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   static CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> deriv(true);
   deriv.Clear();
-  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xi, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::tet4>(xi, deriv);
 
   static CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ(true);
   static CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> invJ(true);
@@ -2331,8 +2339,8 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
   }
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
-  static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
-      NUMNOD_SOTET4>
+  static CORE::LINALG::Matrix<
+      CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::tet4>::numderiv2, NUMNOD_SOTET4>
       deriv2(true);
   static CORE::LINALG::Matrix<9, NUMDIM_SOTET4> d_F_dxi(true);
   deriv2.Clear();
@@ -2340,11 +2348,11 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
-    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::tet4>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<CORE::FE::CellType::tet4>(xi, deriv2);
 
     static CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xXF(true);
     static CORE::LINALG::Matrix<NUMDIM_SOTET4,
-        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::tet4>::numderiv2>
         xXFsec(true);
     xXF.Update(1.0, xcurr, 0.0);
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
@@ -2375,11 +2383,11 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dxi_mat(
         d2_cauchyndir_dd_dxi->values(), true);
 
-    static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
-        NUMDIM_SOTET4>
+    static CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::tet4>::numderiv2, NUMDIM_SOTET4>
         Xsec(true);
     static CORE::LINALG::Matrix<NUMNOD_SOTET4,
-        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<CORE::FE::CellType::tet4>::numderiv2>
         N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);
@@ -2433,3 +2441,5 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
     *d_cauchyndir_dc = d_cauchyndir_dF.Dot(d_F_dc);
   }
 }
+
+BACI_NAMESPACE_CLOSE

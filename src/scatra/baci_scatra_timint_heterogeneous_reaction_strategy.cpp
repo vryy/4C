@@ -22,6 +22,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_utils_clonestrategy.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |
  *----------------------------------------------------------------------*/
@@ -232,7 +234,7 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
 
     DRT::Element* ele = scatratimint_->Discretization()->gElement(gid);
     DRT::Node** nodes = ele->Nodes();
-    if (ele->Shape() == DRT::Element::quad4 or ele->Shape() == DRT::Element::tri3)
+    if (ele->Shape() == CORE::FE::CellType::quad4 or ele->Shape() == CORE::FE::CellType::tri3)
     {
       for (int node = 0; node < ele->NumNode(); node++)
       {
@@ -254,7 +256,7 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
       if (valid_slave) break;
     }  // if surface transport element
 
-    else if (ele->Shape() == DRT::Element::hex8 or ele->Shape() == DRT::Element::tet4)
+    else if (ele->Shape() == CORE::FE::CellType::hex8 or ele->Shape() == CORE::FE::CellType::tet4)
     {
       // no check so far
     }  // if volume transport element
@@ -274,3 +276,5 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

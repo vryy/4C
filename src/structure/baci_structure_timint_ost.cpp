@@ -17,6 +17,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::VerifyCoeff()
 {
@@ -619,9 +621,6 @@ void STR::TimIntOneStepTheta::UpdateStepState()
   //    F_{inert;n} := F_{inert;n+1}
   finert_->Update(1.0, *finertn_, 0.0);
 
-  // update surface stress
-  UpdateStepSurfstress();
-
   // update constraints
   UpdateStepConstraint();
 
@@ -721,3 +720,5 @@ void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<IO::DiscretizationW
   output->WriteVector("finert", finert_);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

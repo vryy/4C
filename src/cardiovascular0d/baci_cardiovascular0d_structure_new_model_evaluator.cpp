@@ -14,6 +14,7 @@
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_sparseoperator.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
@@ -26,6 +27,8 @@
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -53,7 +56,11 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   stiff_cardio_ptr_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
-  Teuchos::RCP<CORE::LINALG::Solver> dummysolver(new CORE::LINALG::Solver(disnp_ptr_->Comm()));
+  Teuchos::ParameterList solvparams;
+  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+  Teuchos::RCP<CORE::LINALG::Solver> dummysolver(
+      new CORE::LINALG::Solver(solvparams, disnp_ptr_->Comm()));
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
@@ -181,19 +188,19 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
   block_ptr = cardvasc0dman_->GetMatDstructDcv0ddof();
   // scale with str time-integrator dependent value
   block_ptr->Scale(timefac_np);
-  GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::displ_lm);
+  GState().AssignModelBlock(jac, *block_ptr, Type(), MatBlockType::displ_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
   // --- Kzd - block - already scaled correctly by 0D model !-----------
   block_ptr = cardvasc0dman_->GetMatDcardvasc0dDd()->Transpose();
-  GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_displ);
+  GState().AssignModelBlock(jac, *block_ptr, Type(), MatBlockType::lm_displ);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
   // --- Kzz - block - already scaled with 0D theta by 0D model !-------
   block_ptr = cardvasc0dman_->GetCardiovascular0DStiffness();
-  GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_lm);
+  GState().AssignModelBlock(jac, *block_ptr, Type(), MatBlockType::lm_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
@@ -350,3 +357,5 @@ void STR::MODELEVALUATOR::Cardiovascular0D::PostOutput()
 
   return;
 }  // PostOutput()
+
+BACI_NAMESPACE_CLOSE

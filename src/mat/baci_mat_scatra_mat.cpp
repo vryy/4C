@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -48,7 +50,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
 MAT::ScatraMatType MAT::ScatraMatType::instance_;
 
 
-DRT::ParObject* MAT::ScatraMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMat* scatra_mat = new MAT::ScatraMat();
   scatra_mat->Unpack(data);
@@ -68,9 +70,9 @@ MAT::ScatraMat::ScatraMat(MAT::PAR::ScatraMat* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMat::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -89,12 +91,8 @@ void MAT::ScatraMat::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "wrong instance type data. type = %d, UniqueParObjectId()=%d", type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -115,3 +113,5 @@ void MAT::ScatraMat::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

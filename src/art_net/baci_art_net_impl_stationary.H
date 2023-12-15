@@ -12,6 +12,8 @@
 
 #include "baci_art_net_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
@@ -33,26 +35,24 @@ namespace ART
     */
     ArtNetImplStationary(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        FILE* errfile, IO::DiscretizationWriter& output);
+        IO::DiscretizationWriter& output);
 
-    // destructor
-    virtual ~ArtNetImplStationary();
 
     // initialization
     void Init(const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname);
+        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // test results
-    void TestResults();
+    void TestResults() override;
 
     // create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
     /// setup the variables to do a new time step
-    void TimeUpdate();
+    void TimeUpdate() override;
 
     /// prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// setup Dirichlet Boundary conditions
     void ApplyDirichletBC();
@@ -68,18 +68,21 @@ namespace ART
     void AddNeumannToResidual();
 
     /// initialization
-    void InitSaveState() { dserror("InitSaveState() not available for stationary formulation"); }
+    void InitSaveState() override
+    {
+      dserror("InitSaveState() not available for stationary formulation");
+    }
 
     // restart
-    void ReadRestart(int step, bool CoupledTo3D = false);
+    void ReadRestart(int step, bool CoupledTo3D = false) override;
 
     /// save state
-    void SaveState() { dserror("SaveState() not available for stationary formulation"); }
+    void SaveState() override { dserror("SaveState() not available for stationary formulation"); }
 
-    void LoadState() { dserror("LoadState() not available for stationary formulation"); }
+    void LoadState() override { dserror("LoadState() not available for stationary formulation"); }
 
     // output
-    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     //! output of element radius
     void OutputRadius();
@@ -88,30 +91,30 @@ namespace ART
     void OutputFlow();
 
     //! set the initial field on the artery discretization
-    virtual void SetInitialField(const INPAR::ARTDYN::InitialField init,  //!< type of initial field
-        const int startfuncno  //!< number of spatial function
-    );
+    void SetInitialField(const INPAR::ARTDYN::InitialField init,  //!< type of initial field
+        const int startfuncno                                     //!< number of spatial function
+        ) override;
 
     // prepare the loop
-    virtual void PrepareTimeLoop();
+    void PrepareTimeLoop() override;
 
     // solve artery system of equation
-    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
 
     // prepare linear solve (apply DBC)
-    void PrepareLinearSolve();
+    void PrepareLinearSolve() override;
 
     // Assembling of the RHS Vector and the LHS Matrix
-    void AssembleMatAndRHS();
+    void AssembleMatAndRHS() override;
 
     // Solve the Linear System of equations
     void LinearSolve();
 
     // Solve Scatra equations
-    void SolveScatra();
+    void SolveScatra() override;
 
     // get solution vector = pressure
-    Teuchos::RCP<const Epetra_Vector> Pressurenp() const { return pressurenp_; }
+    Teuchos::RCP<const Epetra_Vector> Pressurenp() const override { return pressurenp_; }
 
     //! get element volume flow
     Teuchos::RCP<const Epetra_Vector> EleVolflow() const { return ele_volflow_; }
@@ -120,7 +123,7 @@ namespace ART
     Teuchos::RCP<const Epetra_Vector> EleRadius() const { return ele_radius_; }
 
     //! iterative update of primary variable
-    virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
+    void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) override
     {
       pressurenp_->Update(1.0, *inc, 1.0);
       return;
@@ -146,5 +149,7 @@ namespace ART
   };  // class ArtNetImplStationary
 }  // namespace ART
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_IMPL_STATIONARY_H

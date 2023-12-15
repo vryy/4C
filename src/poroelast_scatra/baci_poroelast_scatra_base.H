@@ -16,6 +16,8 @@
 #include "baci_poroelast_base.H"
 #include "baci_scatra_algorithm.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
@@ -45,9 +47,6 @@ namespace POROELASTSCATRA
     explicit PoroScatraBase(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);  // Problem builder
 
-    /// virtual destructor
-    virtual ~PoroScatraBase(){};
-
     //! Main time loop.
     virtual void Timeloop() = 0;
 
@@ -59,25 +58,21 @@ namespace POROELASTSCATRA
 
     //! perform iteration loop between fields
     virtual void Solve() { dserror("not implemented in base class. override in subclass."); };
-    ;
 
     //! prepare output
     virtual void PrepareOutput()
     {
       dserror("not implemented in base class. override in subclass.");
     };
-    ;
 
     //! update time step
-    virtual void Update() { dserror("not implemented in base class. override in subclass."); };
-    ;
+    void Update() override { dserror("not implemented in base class. override in subclass."); };
 
     //! write output print to screen
-    virtual void Output() { dserror("not implemented in base class. override in subclass."); };
-    ;
+    void Output() override { dserror("not implemented in base class. override in subclass."); };
 
     //! read and set fields needed for restart
-    virtual void ReadRestart(int restart) = 0;
+    void ReadRestart(int restart) override = 0;
 
     //! setup for single fields
     virtual void SetupSystem();
@@ -147,5 +142,7 @@ namespace POROELASTSCATRA
   };
 }  // namespace POROELASTSCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_SCATRA_BASE_H

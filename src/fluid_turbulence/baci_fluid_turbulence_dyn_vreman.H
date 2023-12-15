@@ -43,6 +43,8 @@ Reference:
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace FLD
@@ -62,7 +64,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~Vreman();
+    virtual ~Vreman() = default;
 
 
 
@@ -131,5 +133,7 @@ namespace FLD
   };  // end class Vreman
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TURBULENCE_DYN_VREMAN_H

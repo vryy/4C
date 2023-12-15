@@ -12,11 +12,13 @@
 
 #include "baci_mat_myocard_san_garny.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_mat_par_bundle.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  variables                                                ljag 09/13 |
@@ -781,3 +783,5 @@ void Myocard_SAN_Garny::Update(const double phi, const double dt)
   // update initial values for next time step
   for (int i = 0; i < 16; i++) s0_[i] = s_[i];
 }
+
+BACI_NAMESPACE_CLOSE

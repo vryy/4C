@@ -26,6 +26,8 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*/
@@ -48,7 +50,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus::CreateMaterial()
 MAT::Maxwell_0d_acinusType MAT::Maxwell_0d_acinusType::instance_;
 
 
-DRT::ParObject* MAT::Maxwell_0d_acinusType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell_0d_acinusType::Create(const std::vector<char>& data)
 {
   MAT::Maxwell_0d_acinus* mxwll_0d_acin = new MAT::Maxwell_0d_acinus();
   mxwll_0d_acin->Unpack(data);
@@ -68,9 +70,9 @@ MAT::Maxwell_0d_acinus::Maxwell_0d_acinus(MAT::PAR::Maxwell_0d_acinus* params) :
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus::Pack(DRT::PackBuffer& data) const
+void MAT::Maxwell_0d_acinus::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -89,10 +91,8 @@ void MAT::Maxwell_0d_acinus::Pack(DRT::PackBuffer& data) const
 void MAT::Maxwell_0d_acinus::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -128,3 +128,5 @@ void MAT::Maxwell_0d_acinus::SetParams(std::string parametername, double new_val
 {
   dserror("SetParams not implemented yet for this material!");
 }
+
+BACI_NAMESPACE_CLOSE

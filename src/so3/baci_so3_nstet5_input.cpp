@@ -8,9 +8,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_so3_nstet5.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -47,3 +49,5 @@ bool DRT::ELEMENTS::NStet5::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

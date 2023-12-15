@@ -16,6 +16,8 @@ distributions
 #include <Epetra_Distributor.h>
 #include <Epetra_Export.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 MORTAR::MatrixRowColTransformer::MatrixRowColTransformer(const unsigned num_transformer)
@@ -86,7 +88,7 @@ void MORTAR::MatrixRowColTransformer::Setup()
   for (plain_block_map_pairs::const_iterator cit = slave_row_.begin(); cit != slave_row_.end();
        ++cit)
   {
-    const DRT::UTILS::MatBlockType bt = cit->first;
+    const CONTACT::MatBlockType bt = cit->first;
 
     Teuchos::RCP<Epetra_Export>& slave_to_master = slave_to_master_[bt];
     slave_to_master = Teuchos::null;
@@ -104,7 +106,7 @@ void MORTAR::MatrixRowColTransformer::Setup()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix>
 MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
-    const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
+    const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
 {
   ThrowIfNotInitAndSetup();
 
@@ -119,9 +121,8 @@ MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
-    const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat,
-    CORE::LINALG::SparseMatrix& dst_mat)
+void MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(const CONTACT::MatBlockType bt,
+    const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat)
 {
   ThrowIfNotInitAndSetup();
 
@@ -138,7 +139,7 @@ void MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix>
 MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(
-    const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
+    const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
 {
   ThrowIfNotInitAndSetup();
 
@@ -153,9 +154,8 @@ MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(
-    const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat,
-    CORE::LINALG::SparseMatrix& dst_mat)
+void MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(const CONTACT::MatBlockType bt,
+    const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat)
 {
   ThrowIfNotInitAndSetup();
 
@@ -174,3 +174,5 @@ void MORTAR::MatrixRowColTransformer::ResetExporter(Teuchos::RCP<Epetra_Export>&
 {
   exporter = Teuchos::rcp(new Epetra_Export(*exporter));
 }
+
+BACI_NAMESPACE_CLOSE

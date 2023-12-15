@@ -31,6 +31,8 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Operator.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
@@ -931,7 +933,7 @@ void CONTACT::CoPenaltyStrategy::Assemble()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
@@ -939,12 +941,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetRhsBlockPtr(
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
     {
       vec_ptr = fc_;
       break;
     }
-    case DRT::UTILS::VecBlockType::constraint:
+    case CONTACT::VecBlockType::constraint:
       return Teuchos::null;
       break;
     default:
@@ -1041,7 +1043,7 @@ void CONTACT::CoPenaltyStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoPenaltyStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
@@ -1049,7 +1051,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoPenaltyStrategy::GetMatrixBl
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
     {
       mat_ptr = kc_;
       break;
@@ -1105,3 +1107,5 @@ Teuchos::RCP<const Epetra_Map> CONTACT::CoPenaltyStrategy::LMDoFRowMapPtr(const 
   else
     return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

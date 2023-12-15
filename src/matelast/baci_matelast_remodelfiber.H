@@ -16,6 +16,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   /// Growth evolution equation
@@ -351,7 +353,7 @@ namespace MAT
       ///@name Packing and Unpacking
       //@{
 
-      void PackSummand(DRT::PackBuffer& data) const override;
+      void PackSummand(CORE::COMM::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -853,5 +855,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_REMODELFIBER_H

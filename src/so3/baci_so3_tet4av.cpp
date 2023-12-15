@@ -6,11 +6,11 @@
 
 #include "baci_so3_tet4av.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
@@ -20,6 +20,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 DRT::ELEMENTS::So_tet4avType DRT::ELEMENTS::So_tet4avType::instance_;
@@ -27,7 +29,7 @@ DRT::ELEMENTS::So_tet4avType DRT::ELEMENTS::So_tet4avType::instance_;
 DRT::ELEMENTS::So_tet4avType& DRT::ELEMENTS::So_tet4avType::Instance() { return instance_; }
 
 //------------------------------------------------------------------------
-DRT::ParObject* DRT::ELEMENTS::So_tet4avType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4avType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_tet4av(-1, -1);
   object->Unpack(data);
@@ -127,15 +129,15 @@ DRT::Element* DRT::ELEMENTS::So_tet4av::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet4av::Shape() const { return tet4; }
+CORE::FE::CellType DRT::ELEMENTS::So_tet4av::Shape() const { return CORE::FE::CellType::tet4; }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4av::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_tet4av::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -155,10 +157,9 @@ void DRT::ELEMENTS::So_tet4av::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_tet4av::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -168,12 +169,6 @@ void DRT::ELEMENTS::So_tet4av::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
-
-
-/*----------------------------------------------------------------------***
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet4av::~So_tet4av() { return; }
 
 
 /*----------------------------------------------------------------------***
@@ -215,32 +210,14 @@ void DRT::ELEMENTS::So_tet4av::Print(std::ostream& os) const
  */
 /*====================================================================*/
 
-/*----------------------------------------------------------------------***
- |  get vector of volumes (length 1) (public)                  maf 04/07|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet4av::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
-
 /*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet4av::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------***++
@@ -248,15 +225,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet4av::Surfaces()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet4av::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -279,3 +249,5 @@ bool DRT::ELEMENTS::So_tet4av::VisData(const std::string& name, std::vector<doub
 
   return SolidMaterial()->VisData(name, data, NUMGPT_SOTET4av, this->Id());
 }
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,8 @@
 
 #include "baci_fs3i.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace FPSI
@@ -61,36 +63,33 @@ namespace FS3I
     //! constructor of base class for partitioned FPS3I
     PartFPS3I(const Epetra_Comm& comm);
 
-    //! destructor of base class for partitioned FPS3I
-    virtual ~PartFPS3I(){};
-
     //! initialize this class
-    virtual void Init();
+    void Init() override;
 
     //! setup this class
-    virtual void Setup();
+    void Setup() override;
 
     //! time loop to be defined in inherited classes (structure depends on
     //! considered coupling, i.e. one-way or two-way)
-    virtual void Timeloop() = 0;
+    void Timeloop() override = 0;
 
     //! flag whether time loop should be finished
     bool NotFinished() { return step_ < numstep_ and time_ <= timemax_; };
 
     //! read and set fields needed for restart
-    virtual void ReadRestart();
+    void ReadRestart() override;
 
     /// redistribute FPS3I interface, if running on parallel
-    void RedistributeInterface();
+    void RedistributeInterface() override;
 
     //! set-up of FPSI and ScaTra systems
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! test results for individual fields
-    virtual void TestResults(const Epetra_Comm& comm);
+    void TestResults(const Epetra_Comm& comm) override;
 
     //! evaluate ScaTra fields
-    virtual void EvaluateScatraFields();
+    void EvaluateScatraFields() override;
 
     //! information transfer FPSI -> ScaTra
     void SetFPSISolution();
@@ -140,5 +139,7 @@ namespace FS3I
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

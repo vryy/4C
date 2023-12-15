@@ -11,16 +11,17 @@
 
 #include "baci_lib_dofset.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_FECrsGraph.h>
 
 #include <algorithm>
 #include <iostream>
-#include <numeric>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
@@ -30,11 +31,6 @@ DRT::DofSet::DofSet() : DRT::DofSetBase(), filled_(false), dspos_(0), pccdofhand
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             ukue 04/07|
- *----------------------------------------------------------------------*/
-DRT::DofSet::~DofSet() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -492,15 +488,15 @@ int DRT::DofSet::AssignDegreesOfFreedom(
     // printf("\n");
   }
 
-  Exporter nodeexporter(*dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm());
+  CORE::COMM::Exporter nodeexporter(*dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm());
   nodeexporter.Export(nodedofset);
 
-  Exporter elementexporter(*dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
+  CORE::COMM::Exporter elementexporter(*dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
   elementexporter.Export(elementdofset);
 
   if (facedis != Teuchos::null && facedis->FaceRowMap() != nullptr)
   {
-    Exporter faceexporter(*facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
+    CORE::COMM::Exporter faceexporter(*facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
     faceexporter.Export(facedofset);
   }
 
@@ -642,3 +638,5 @@ int DRT::DofSet::GetMinimalNodeGIDIfRelevant(const Discretization& dis) const
 {
   return dis.NodeRowMap()->MinAllGID();
 }
+
+BACI_NAMESPACE_CLOSE

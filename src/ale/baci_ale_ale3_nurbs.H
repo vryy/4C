@@ -16,6 +16,8 @@
 /* header inclusions */
 #include "baci_ale_ale3.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -25,25 +27,26 @@ namespace DRT
       class Ale3_NurbsType : public DRT::ElementType
       {
        public:
-        std::string Name() const { return "Ale3_NurbsType"; }
+        std::string Name() const override { return "Ale3_NurbsType"; }
 
         static Ale3_NurbsType& Instance();
 
-        virtual DRT::ParObject* Create(const std::vector<char>& data);
+        CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-        virtual Teuchos::RCP<DRT::Element> Create(
-            const std::string eletype, const std::string eledistype, const int id, const int owner);
+        Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+            const int id, const int owner) override;
 
-        virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+        Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-        virtual void NodalBlockInformation(
-            DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+        void NodalBlockInformation(
+            DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-            DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+        CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+            DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-        virtual void SetupElementDefinition(
+        void SetupElementDefinition(
             std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+            override
         {
           // do nothing. Definition inserted by normal wall element.
         }
@@ -73,11 +76,6 @@ namespace DRT
         */
         Ale3Nurbs(const Ale3Nurbs& old);
 
-        /*!
-        \brief Destructor
-
-        */
-        virtual ~Ale3Nurbs();
 
 
         /*!
@@ -88,7 +86,7 @@ namespace DRT
 
         \return my parobject id
         */
-        virtual int UniqueParObjectId() const
+        int UniqueParObjectId() const override
         {
           return Ale3_NurbsType::Instance().UniqueParObjectId();
         }
@@ -96,7 +94,7 @@ namespace DRT
         virtual DRT::ElementType& ElementType() { return Ale3_NurbsType::Instance(); }
 
         /// Print this element
-        void Print(std::ostream& os) const;
+        void Print(std::ostream& os) const override;
 
 
         /*!
@@ -105,13 +103,13 @@ namespace DRT
         \return nurbs4 or nurbs9
 
         */
-        virtual DiscretizationType Shape() const;
+        CORE::FE::CellType Shape() const override;
 
 
         /*!
         \brief Return number of lines of this element.
         */
-        virtual int NumLine() const
+        int NumLine() const override
         {
           return (0);
           /*
@@ -130,7 +128,7 @@ namespace DRT
         /*!
         \brief Return number of surfaces of this element
         */
-        virtual int NumSurface() const
+        int NumSurface() const override
         {
           if (NumNode() == 27 || NumNode() == 8)
           {
@@ -150,5 +148,7 @@ namespace DRT
   }    // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_ALE3_NURBS_H

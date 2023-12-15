@@ -8,13 +8,16 @@
 #ifndef BACI_SHELL7P_UTILS_H
 #define BACI_SHELL7P_UTILS_H
 
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace STR::ELEMENTS
 {
@@ -51,14 +54,13 @@ namespace STR::ELEMENTS
 
 namespace DRT::ELEMENTS::SHELL::DETAIL
 {
-  template <DRT::Element::DiscretizationType distype>
-  inline static constexpr int num_node =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  template <CORE::FE::CellType distype>
+  inline static constexpr int num_node = CORE::FE::num_nodes<distype>;
   inline static constexpr int num_dim = 3;
   inline static constexpr int node_dof = 6;
   inline static constexpr int num_internal_variables = 12;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int numdofperelement = num_node<distype>* node_dof;
 }  // namespace DRT::ELEMENTS::SHELL::DETAIL
 
@@ -151,13 +153,15 @@ namespace STR::UTILS::SHELL
   {
     int ReadAndSetElementMaterial(DRT::INPUT::LineDefinition* linedef);
 
-    void ReadAndSetLockingTypes(const DRT::Element::DiscretizationType& distype,
+    void ReadAndSetLockingTypes(const CORE::FE::CellType& distype,
         DRT::INPUT::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types);
 
-    int ReadAndSetNumANS(const DRT::Element::DiscretizationType& distype);
+    int ReadAndSetNumANS(const CORE::FE::CellType& distype);
 
   }  // namespace READELEMENT
 
 }  // namespace STR::UTILS::SHELL
+
+BACI_NAMESPACE_CLOSE
 
 #endif

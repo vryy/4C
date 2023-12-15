@@ -18,6 +18,8 @@
 /* header inclusions */
 #include "baci_adapter_ale_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace ALE
@@ -50,9 +52,6 @@ namespace ADAPTER
     //! constructor
     explicit AleFsiWrapper(Teuchos::RCP<Ale> ale);
 
-    //! Destructor
-    virtual ~AleFsiWrapper() {}
-
     //@}
 
     //! communicate object at the interface
@@ -65,7 +64,7 @@ namespace ADAPTER
     }
 
     //! get Dirichlet map extractor
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return AleWrapper::GetDBCMapExtractor();
     }
@@ -75,5 +74,7 @@ namespace ADAPTER
 
   };  // class AleFsiWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_FSI_H

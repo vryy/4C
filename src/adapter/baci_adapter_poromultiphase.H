@@ -12,7 +12,10 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace ADAPTER
@@ -35,7 +38,7 @@ namespace ADAPTER
     PoroMultiPhase(){};
 
     /// virtual destructor
-    virtual ~PoroMultiPhase(){};
+    virtual ~PoroMultiPhase() = default;
 
     /// initialization
     virtual void Init(const Teuchos::ParameterList& globaltimeparams,
@@ -154,5 +157,7 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_POROMULTIPHASE_H

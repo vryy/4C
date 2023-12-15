@@ -10,10 +10,12 @@ multiplicatively into elastic and inelastic parts
 #ifndef BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
 #define BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 
 
 // forward declaration
@@ -64,14 +66,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class MultiplicativeSplitDefgrad_ElastHyperType : public DRT::ParObjectType
+  class MultiplicativeSplitDefgrad_ElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "MultiplicativeSplitDefgrad_ElastHyperType"; }
 
     static MultiplicativeSplitDefgrad_ElastHyperType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MultiplicativeSplitDefgrad_ElastHyperType instance_;
@@ -153,7 +155,7 @@ namespace MAT
       return MultiplicativeSplitDefgrad_ElastHyperType::Instance().UniqueParObjectId();
     }
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
@@ -403,4 +405,6 @@ namespace MAT
   };
 
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

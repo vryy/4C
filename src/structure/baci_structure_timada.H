@@ -18,13 +18,15 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
   class Discretization;
 }
-
-class Epetra_Vector;
 
 namespace CORE::LINALG
 {
@@ -107,14 +109,13 @@ namespace STR
     };
 
     //! Constructor
-    TimAda(const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
-        const Teuchos::ParameterList& tap,      //!< adaptive input flags
-        Teuchos::RCP<TimInt> tis                //!< marching time integrator
+    TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
+        const Teuchos::ParameterList& tap,            //!< adaptive input flags
+        Teuchos::RCP<TimInt> tis                      //!< marching time integrator
     );
 
     //! Destructor
-    virtual ~TimAda() { ; }
-
+    virtual ~TimAda() = default;
     //! @name Actions
     //@{
 
@@ -242,7 +243,7 @@ namespace STR
     virtual void UpdateStepSize();
 
     //! Update step size
-    virtual void UpdateStepSize(const double stpsiznew);
+    virtual void UpdateStepSize(const double dtnew);
 
     //! Access to current time step size
     virtual double Dt() const { return stepsize_; }
@@ -399,4 +400,6 @@ std::ostream& operator<<(std::ostream& str, const STR::TimAda& ta);
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMADA_H

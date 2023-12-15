@@ -12,10 +12,10 @@
 #ifndef BACI_LIB_CONDITIONDEFINITION_H
 #define BACI_LIB_CONDITIONDEFINITION_H
 
+#include "baci_io_inputreader.H"
+#include "baci_io_linecomponent.H"
 #include "baci_lib_condition.H"
 #include "baci_lib_container.H"
-#include "baci_lib_inputreader.H"
-#include "baci_lib_linecomponent.H"
 
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
@@ -26,6 +26,7 @@
 #include <variant>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -83,7 +84,7 @@ namespace DRT
         right. The order is important! On reading we try and read component
         after component.
        */
-      void AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c);
+      void AddComponent(const Teuchos::RCP<BACI::INPUT::LineComponent>& c);
 
       /// read all conditions from my input file section
       /*!
@@ -107,7 +108,7 @@ namespace DRT
       std::string Description() const { return description_; }
 
       /// my condition inputline
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> Inputline() const { return inputline_; }
+      std::vector<Teuchos::RCP<BACI::INPUT::LineComponent>> Inputline() const { return inputline_; }
 
       /// my GeometryType
       Condition::GeometryType GeometryType() const { return gtype_; }
@@ -121,44 +122,13 @@ namespace DRT
       Condition::GeometryType gtype_;
 
       ///
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> inputline_;
+      std::vector<Teuchos::RCP<BACI::INPUT::LineComponent>> inputline_;
     };
 
-
-    /// add a separator followed by a single integer value
-    /*!
-      The name on the input line becomes the name used to put the int value into DRT::Condition.
-     */
-    inline void AddNamedInt(
-        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name)
-    {
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name)));
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent(name)));
-    }
-
-    /// add a separator followed by a single real value
-    /*!
-      The name on the input line becomes the name used to put the value into DRT::Condition.
-     */
-    inline void AddNamedReal(
-        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name)
-    {
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name)));
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent(name)));
-    }
-
-    /// add a separator followed by a single real value
-    /*!
-      The name on the input line becomes the name used to put the value into DRT::Condition.
-     */
-    inline void AddNamedVector(
-        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name, const int size)
-    {
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name)));
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::RealVectorComponent(name, size)));
-    }
   }  // namespace INPUT
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

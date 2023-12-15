@@ -18,6 +18,8 @@
 #include <list>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace UTILS
 {
   /*!
@@ -39,25 +41,14 @@ namespace UTILS
 
   There are two possible states in this class: Reset and setup. To
   change back and forth use AssignDegreesOfFreedom() and Reset().
-
-
-  \author tk
   */
   class ConstraintDofSet : public DRT::DofSet
   {
    public:
     /*!
     \brief Standard Constructor
-
     */
-    ConstraintDofSet();
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~ConstraintDofSet();
-
+    ConstraintDofSet() = default;
 
     //! @name Access methods
 
@@ -76,10 +67,7 @@ namespace UTILS
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(
-        const Teuchos::RCP<DRT::Discretization> dis, const int numdofs, const int start);
-
-    /// reset all internal variables
-    virtual void Reset();
+        const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start);
 
     //@}
 
@@ -91,5 +79,7 @@ namespace UTILS
 // << operator
 std::ostream& operator<<(std::ostream& os, const UTILS::ConstraintDofSet& dofset);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_DOFSET_H

@@ -12,16 +12,18 @@
 
 #include "baci_contact_nitsche_strategy_tsi.H"
 #include "baci_io_control.H"
-#include "baci_lib_function.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_thermo_ele_action.H"
 #include "baci_thermo_resulttest.H"
 #include "baci_timestepping_mstep.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | print thermal time logo                                   dano 08/09 |
@@ -52,9 +54,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       output_(output),
       printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
-      errfile_(xparams.get<FILE*>("err file")),
-      printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
-      printiter_(true),                  // ADD INPUT PARAMETER
+      printiter_(true),  // ADD INPUT PARAMETER
       writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
       writeglob_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "THERM_TEMPERATURE")),
       writeglobevery_(tdynparams.get<int>("RESULTSEVRY")),
@@ -422,19 +422,6 @@ void THR::TimInt::OutputRestart(bool& datawritten)
     fflush(stdout);
   }
 
-  // info dedicated to processor error file
-  if (printerrfile_)
-  {
-    fprintf(errfile_, "====== Restart written in step %d\n", step_);
-    fprintf(errfile_,
-        "--------------------------------------------------------------"
-        "------------------\n");
-    fflush(errfile_);
-  }
-
-  // we will say what we did
-  return;
-
 }  // OutputRestart()
 
 
@@ -482,20 +469,6 @@ void THR::TimInt::AddRestartToOutputState()
         "------------------\n");
     fflush(stdout);
   }
-
-  // info dedicated to processor error file
-  if (printerrfile_)
-  {
-    fprintf(errfile_, "====== Restart written in step %d\n", step_);
-    fprintf(errfile_,
-        "--------------------------------------------------------------"
-        "------------------\n");
-    fflush(errfile_);
-  }
-
-  // we will say what we did
-  return;
-
 }  // AddRestartToOutputState()
 
 
@@ -757,10 +730,10 @@ void THR::TimInt::ApplyForceTangInternal(
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     if (fint->Update(
-            1., *contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::VecBlockType::temp), 1.))
+            1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.))
       dserror("update failed");
     tang->UnComplete();
-    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_temp),
+    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
         false, p.get<double>("timefac"), 1.);
     tang->Complete();
   }
@@ -817,10 +790,9 @@ void THR::TimInt::ApplyForceTangInternal(
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
-    fint->Update(
-        1., *contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::VecBlockType::temp), 1.);
+    fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
     tang->UnComplete();
-    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_temp),
+    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
         false, p.get<double>("timefac"), 1.);
     tang->Complete();
   }
@@ -862,8 +834,7 @@ void THR::TimInt::ApplyForceInternal(Teuchos::ParameterList& p, const double tim
 
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
-    fint->Update(
-        1., *contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::VecBlockType::temp), 1.);
+    fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
 
   // where the fun starts
   return;
@@ -906,8 +877,8 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), 0.0, k);
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  .Evaluate(lnode->X().data(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
           int err1 = (*temp_)(0)->ReplaceMyValues(1, &initialval, &doflid);
@@ -1072,3 +1043,5 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::EvaluateErrorComparedToAnalytical
   }
 }  // end EvaluateErrorComparedToAnalyticalSol
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -27,11 +28,13 @@ namespace DRT
   namespace UTILS
   {
     //! send data to rank map key and recv data
-    void ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& discret,
+    void ISendReceiveAny(Teuchos::RCP<BACI::DRT::Discretization> const& discret,
         std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
         std::vector<std::pair<int, std::vector<int>>>& recvdata);
 
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

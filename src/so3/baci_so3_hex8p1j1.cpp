@@ -9,18 +9,20 @@
 
 #include "baci_so3_hex8p1j1.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_so3_hex8.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_Hex8P1J1Type DRT::ELEMENTS::So_Hex8P1J1Type::instance_;
 
 DRT::ELEMENTS::So_Hex8P1J1Type& DRT::ELEMENTS::So_Hex8P1J1Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_Hex8P1J1(-1, -1);
   object->Unpack(data);
@@ -158,9 +160,9 @@ DRT::Element* DRT::ELEMENTS::So_Hex8P1J1::Clone() const
  |  Pack data                                                  (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_Hex8P1J1::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -179,10 +181,9 @@ void DRT::ELEMENTS::So_Hex8P1J1::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_Hex8P1J1::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -193,10 +194,6 @@ void DRT::ELEMENTS::So_Hex8P1J1::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                               lw 12/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_Hex8P1J1::~So_Hex8P1J1() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -210,3 +207,5 @@ void DRT::ELEMENTS::So_Hex8P1J1::Print(std::ostream& os) const
   std::cout << data_;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

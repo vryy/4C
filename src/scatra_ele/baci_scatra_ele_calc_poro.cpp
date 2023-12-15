@@ -23,10 +23,12 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcPoro<distype>* DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
@@ -44,7 +46,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>* DRT::ELEMENTS::ScaTraEleCalcPoro<dist
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
@@ -61,7 +63,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 // /*----------------------------------------------------------------------*
 // * Action type: Evaluate                                    vuong 07/14 |
 // *----------------------------------------------------------------------*/
-// template <DRT::Element::DiscretizationType distype>
+// template <CORE::FE::CellType distype>
 // int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Evaluate(
 //  DRT::Element*              ele,
 //  Teuchos::ParameterList&    params,
@@ -132,7 +134,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 /*----------------------------------------------------------------------*
  | evaluate action                                          vuong 07/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -175,7 +177,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
 /*----------------------------------------------------------------------*
  | read element coordinates                                 vuong 10/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinates(const DRT::Element* ele)
 {
   // call base class
@@ -190,7 +192,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinates(const DRT
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -205,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(DRT:
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -266,7 +268,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
 /*----------------------------------------------------------------------*
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
@@ -306,7 +308,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -349,7 +351,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
     const Teuchos::RCP<const MAT::ScatraMat>& material, const int k, const double scale)
 {
@@ -361,7 +363,7 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
     double porosity, double& densn, double& densnp, double& densam)
 {
@@ -376,7 +378,7 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
 /*----------------------------------------------------------------------*
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
     const DRT::Element* ele  //!< the element we are dealing with
 )
@@ -446,7 +448,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
 /*----------------------------------------------------------------------*
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorePressure()
 {
   return my::eprenp_.Dot(my::funct_);
@@ -456,7 +458,7 @@ double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorePressure()
 |  calculate scalar(s) and domain integral                  vuong 07/15|
 | (overwrites method in ScaTraEleCalc)                                 |
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Element* ele,
     CORE::LINALG::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi)
 {
@@ -499,7 +501,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Elem
         {
           const double porosity = DiffManager()->GetPorosity(k);
           scalars[k] += fac_funct_i * my::ephinp_[k](i, 0) * porosity;
-          ;
         }
         // for domain volume
         scalars[my::numscal_] += fac_funct_i;
@@ -513,23 +514,25 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Elem
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::quad9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::nurbs9>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::nurbs9>;
+// template class DRT::ELEMENTS::ScaTraEleCalcPoro<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

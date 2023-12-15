@@ -22,18 +22,20 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
   {
     namespace StatusTest
     {
-      class NormWRMS : public NOX::StatusTest::Generic
+      class NormWRMS : public ::NOX::StatusTest::Generic
       {
        public:
         /*! \brief Constructor
          *  At the moment we support only scalar \c ATOL input values for each quantity.
-         *  Extensions to a vector-based ATOL are possible. See \c NOX::StatusTest::NormWRMS
+         *  Extensions to a vector-based ATOL are possible. See \c ::NOX::StatusTest::NormWRMS
          *  for more information. */
         NormWRMS(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
             const std::vector<double>& rtol, const std::vector<double>& atol,
@@ -41,16 +43,13 @@ namespace NOX
             const double& alpha, const double& beta,
             const std::vector<bool>& disable_implicit_weighting);
 
-        //! Destructor
-        virtual ~NormWRMS(){};
-
-        NOX::StatusTest::StatusType checkStatus(
-            const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
+        ::NOX::StatusTest::StatusType checkStatus(
+            const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
         //! Check for the given quantity
         bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
-        NOX::StatusTest::StatusType getStatus() const override;
+        ::NOX::StatusTest::StatusType getStatus() const override;
 
         //! returns the absolute tolerance of the given quantity
         double GetAbsoluteTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
@@ -95,10 +94,10 @@ namespace NOX
         double achievedTol_;
 
         //! Global status
-        NOX::StatusTest::StatusType gStatus_;
+        ::NOX::StatusTest::StatusType gStatus_;
 
         //! Status of each quantity
-        std::vector<NOX::StatusTest::StatusType> status_;
+        std::vector<::NOX::StatusTest::StatusType> status_;
 
         //! Flag that tells the print method whether to print the criteria 2 information.
         bool printCriteria2Info_;
@@ -113,5 +112,7 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_H

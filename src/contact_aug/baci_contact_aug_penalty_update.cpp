@@ -18,12 +18,14 @@ parameter cn
 #include "baci_inpar_contact.H"
 #include "baci_inpar_structure.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_model_evaluator_contact.H"
+#include "baci_utils_epetra_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -327,7 +329,7 @@ CONTACT::AUG::PenaltyUpdate::GetStructuralStiffnessMatrix(
 
   // access the full stiffness matrix
   Teuchos::RCP<const CORE::LINALG::SparseMatrix> full_stiff_ptr =
-      cmodel.GetJacobianBlock(DRT::UTILS::MatBlockType::displ_displ);
+      cmodel.GetJacobianBlock(STR::MatBlockType::displ_displ);
   return full_stiff_ptr;
 }
 
@@ -541,3 +543,5 @@ double CONTACT::AUG::PenaltyUpdate_SufficientAngle::BetaAngle() const
 {
   return Data().SaData().GetPenaltyCorrectionParameter();
 }
+
+BACI_NAMESPACE_CLOSE

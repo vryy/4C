@@ -13,6 +13,8 @@
 #include "baci_fsi_xfem_coupling_comm_manager.H"
 #include "baci_fsi_xfem_coupling_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class XFluid;
@@ -41,38 +43,35 @@ namespace XFEM
     //! @name Destruction
     //@{
 
-    /// virtual to get polymorph destruction
-    virtual ~XFSCoupling_Manager() {}
-
     //! predict states in the coupling object
-    virtual void PredictCouplingStates(){};
+    void PredictCouplingStates() override{};
 
     //! init...
-    virtual void InitCouplingStates();
+    void InitCouplingStates() override;
 
     //! Set required displacement & velocity states in the coupling object
-    virtual void SetCouplingStates();
+    void SetCouplingStates() override;
 
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
-    virtual void AddCouplingMatrix(
-        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
+    void AddCouplingMatrix(
+        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    virtual void AddCouplingRHS(
-        Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling);
+    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me,
+        double scaling) override;
 
     //! Update (Perform after Each Timestep)
-    virtual void Update(double scaling);
+    void Update(double scaling) override;
 
     //! Write Output (For restart or write results on the interface)
-    virtual void Output(IO::DiscretizationWriter& writer);
+    void Output(IO::DiscretizationWriter& writer) override;
 
     //! Read Restart (For lambda_)
-    virtual void ReadRestart(IO::DiscretizationReader& reader);
+    void ReadRestart(IO::DiscretizationReader& reader) override;
 
    private:
     //! Get Timeface on the interface (for OST this is 1/(theta dt))
@@ -103,4 +102,6 @@ namespace XFEM
     Teuchos::RCP<Epetra_Vector> lambda_;
   };
 }  // namespace XFEM
+BACI_NAMESPACE_CLOSE
+
 #endif

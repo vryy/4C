@@ -17,6 +17,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -46,11 +47,6 @@ namespace UTILS
       \brief Constructor
     */
     SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis);
-
-    /*!
-    \brief Destructor
-     */
-    ~SpringDashpotManager() { return; };
 
     /*!
      \brief Return if there are spring dashpots
@@ -89,4 +85,6 @@ namespace UTILS
     int n_conds_;             ///< number of spring dashpot conditions
   };                          // class
 }  // namespace UTILS
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONSTRAINT_SPRINGDASHPOT_MANAGER_H

@@ -28,9 +28,10 @@
 #include "baci_so3_shw6.H"
 #include "baci_structure_aux.H"
 #include "baci_structure_timint_impl.H"
-#include "baci_surfstress_manager.H"
 
 #include <Epetra_LinearProblem.h>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -72,9 +73,8 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver_ = Teuchos::rcp(
-      new CORE::LINALG::Solver(DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber),
-          discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
   INPAR::STR::PredEnum pred =
@@ -322,12 +322,6 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
 
-    if (surf_stress_man_->HaveSurfStress())
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p, disn_, fintn_, stiff_);
-    }
-
     // complete stiffness matrix
     stiff_->Complete();
 
@@ -407,12 +401,6 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
-
-    if (surf_stress_man_->HaveSurfStress())
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p, disn_, fintn_, stiff_);
-    }
   }
 
   stiff_->Complete();
@@ -495,12 +483,6 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
-
-    if (surf_stress_man_->HaveSurfStress())
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p, disn_, fintn_, stiff_);
-    }
   }
 
   //-------------------------------------------- compute residual forces
@@ -588,12 +570,6 @@ void STRUMULTI::MicroStatic::FullNewton()
 
       discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
       discret_->ClearState();
-
-      if (surf_stress_man_->HaveSurfStress())
-      {
-        p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p, disn_, fintn_, stiff_);
-      }
     }
 
     // complete stiffness matrix
@@ -679,22 +655,20 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     output->WriteVector("displacement", dis_);
     isdatawritten = true;
 
-    if (surf_stress_man_->HaveSurfStress()) surf_stress_man_->WriteRestart(step, time);
-
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> emptyalpha =
         Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(1, 1));
 
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
 
     for (int i = 0; i < discret_->ElementColMap()->NumMyElements(); ++i)
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        DRT::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+        CORE::COMM::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        DRT::ParObject::AddtoPack(data, *emptyalpha);
+        CORE::COMM::ParObject::AddtoPack(data, *emptyalpha);
       }
     }
     data.StartPacking();
@@ -702,11 +676,11 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        DRT::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+        CORE::COMM::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        DRT::ParObject::AddtoPack(data, *emptyalpha);
+        CORE::COMM::ParObject::AddtoPack(data, *emptyalpha);
       }
     }
     output->WriteVector("alpha", data(), *discret_->ElementColMap());
@@ -718,9 +692,6 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     output->NewStep(step, time);
     output->WriteVector("displacement", dis_);
     isdatawritten = true;
-
-    if (surf_stress_man_->HaveSurfStress() && iosurfactant_)
-      surf_stress_man_->WriteResults(step, time);
   }
 
   //------------------------------------- stress/strain output
@@ -787,7 +758,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
-    Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man, std::string name)
+    std::string name)
 {
   Teuchos::RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name, true));
   IO::DiscretizationReader reader(discret_, inputcontrol, step);
@@ -807,14 +778,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> d
   step_ = rstep;
   stepn_ = step_ + 1;
 
-  if (surf_stress_man->HaveSurfStress())
-  {
-    surf_stress_man->ReadRestart(rstep, name, true);
-  }
-
   reader.ReadSerialDenseMatrix(lastalpha, "alpha");
-
-  return;
 }
 
 
@@ -837,7 +801,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
       if (!actnode) dserror("Cannot find global node %d", (*nodeids)[j]);
 
       // nodal coordinates
-      const double* x = actnode->X();
+      const auto& x = actnode->X();
 
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
@@ -876,9 +840,8 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
 }
 
 void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<UTILS::SurfStressManager> surfman,
-    Teuchos::RCP<std::vector<char>> stress, Teuchos::RCP<std::vector<char>> strain,
-    Teuchos::RCP<std::vector<char>> plstrain,
+    Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<std::vector<char>> stress,
+    Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas,
@@ -887,7 +850,6 @@ void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
 {
   dis_ = dis;
   disn_ = disn;
-  surf_stress_man_ = surfman;
 
   stress_ = stress;
   strain_ = strain;
@@ -1059,8 +1021,8 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
     // create solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<CORE::LINALG::Solver> solver =
+        Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret_->Comm()));
 
     // prescribe rigid body modes
     discret_->ComputeNullSpaceIfNecessary(solver->Params());
@@ -1157,3 +1119,5 @@ void STRUMULTI::stop_np_multiscale()
   subcomm->Broadcast(task, 2, 0);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

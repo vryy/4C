@@ -15,6 +15,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace WEAR
 {
   class WearInterface : public CONTACT::CoInterface
@@ -27,12 +29,6 @@ namespace WEAR
     WearInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact);
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~WearInterface() {}
 
     /*!
     \brief Assemble second mortar D matrix for both-sided wear
@@ -99,7 +95,7 @@ namespace WEAR
     nodal normals and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleS(CORE::LINALG::SparseMatrix& sglobal);
+    void AssembleS(CORE::LINALG::SparseMatrix& sglobal) override;
 
     /*!
     \brief Assemble matrix S containing linearizations w
@@ -116,8 +112,8 @@ namespace WEAR
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
-        CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
+    void AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
+        CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal) override;
     /*!
     \brief Assemble matrix LinSlip containing linearizations
 
@@ -127,8 +123,8 @@ namespace WEAR
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
-        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
+    void AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
+        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal) override;
 
     /*!
     \brief Assemble matrix LinSlip containing w linearizations
@@ -162,7 +158,7 @@ namespace WEAR
     according to the contact initialization defined in the input file.
 
     */
-    virtual bool BuildActiveSet(bool init = false);
+    bool BuildActiveSet(bool init = false) override;
 
     /*!
     \brief Build corresponding active set for master side
@@ -287,9 +283,9 @@ namespace WEAR
     \brief Returning dofs for both-sided wear mapping
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> InvolvedDofs() const { return involveddofs_; }
+    virtual Teuchos::RCP<Epetra_Map> InvolvedDofs() const { return involveddofs_; }
 
-    virtual const Teuchos::RCP<Epetra_Map> InvolvedNodes() const { return involvednodes_; }
+    virtual Teuchos::RCP<Epetra_Map> InvolvedNodes() const { return involvednodes_; }
 
     /*!
     \brief Set element areas
@@ -334,7 +330,7 @@ namespace WEAR
     \brief Get map of slave wear dofs (Filled()==true is prerequisite)
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> WDofs() const
+    virtual Teuchos::RCP<Epetra_Map> WDofs() const
     {
       if (Filled())
         return wdofmap_;
@@ -347,7 +343,7 @@ namespace WEAR
     \brief Get map of master wear dofs (Filled()==true is prerequisite)
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> WMDofs() const
+    virtual Teuchos::RCP<Epetra_Map> WMDofs() const
     {
       if (Filled())
         return wmdofmap_;
@@ -360,7 +356,7 @@ namespace WEAR
     \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SNDofs() const
+    virtual Teuchos::RCP<Epetra_Map> SNDofs() const
     {
       if (Filled())
         return sndofmap_;
@@ -373,7 +369,7 @@ namespace WEAR
     \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> MNDofs() const
+    virtual Teuchos::RCP<Epetra_Map> MNDofs() const
     {
       if (Filled())
         return mndofmap_;
@@ -386,7 +382,7 @@ namespace WEAR
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> ActiveMasterNodes() const
+    virtual Teuchos::RCP<Epetra_Map> ActiveMasterNodes() const
     {
       if (Filled())
         return activmasternodes_;
@@ -399,7 +395,7 @@ namespace WEAR
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SlipMasterNodes() const
+    virtual Teuchos::RCP<Epetra_Map> SlipMasterNodes() const
     {
       if (Filled())
         return slipmasternodes_;
@@ -412,7 +408,7 @@ namespace WEAR
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SlipMasterNDofs() const
+    virtual Teuchos::RCP<Epetra_Map> SlipMasterNDofs() const
     {
       if (Filled())
         return slipmn_;
@@ -467,5 +463,7 @@ namespace WEAR
 
 
 }  // namespace WEAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_WEAR_INTERFACE_H

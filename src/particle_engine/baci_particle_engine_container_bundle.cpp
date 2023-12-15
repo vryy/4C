@@ -12,6 +12,8 @@
 
 #include "baci_particle_engine_object.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -91,7 +93,7 @@ void PARTICLEENGINE::ParticleContainerBundle::GetPackedParticleObjectsOfAllConta
       ParticleObjShrdPtr particleobject = std::make_shared<ParticleObject>(type, globalid, states);
 
       // pack data for writing
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       particleobject->Pack(data);
       data.StartPacking();
       particleobject->Pack(data);
@@ -120,3 +122,5 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

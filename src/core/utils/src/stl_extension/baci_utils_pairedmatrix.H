@@ -15,6 +15,8 @@
 
 #include "baci_utils_pairedvector.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEN
 {
   /// struct containing the base type of the pairedmatrix class
@@ -94,14 +96,6 @@ namespace CORE::GEN
           break;
       }
     }
-
-    /**
-     *  The dtor only erases the elements, and note that if the
-     *  elements themselves are pointers, the pointed-to memory is
-     *  not touched in any way.  Managing the pointer is the user's
-     *  responsibility.
-     */
-    ~pairedmatrix() {}
 
     /**
      * @brief  clear the %pairedmatrix content
@@ -501,5 +495,7 @@ namespace CORE::GEN
       quick_insert_policy<Key, quick_pairedvector<Key, T>>>;
 }  // namespace CORE::GEN
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

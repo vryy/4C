@@ -14,11 +14,13 @@
 #include "baci_contact_node.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
     const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr)
-    : ::CONTACT::AUG::Interface(interfaceData_ptr)
+    : CONTACT::AUG::Interface(interfaceData_ptr)
 {
   /* do nothing */
 }
@@ -28,7 +30,7 @@ CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
 CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
     const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact, bool selfcontact)
-    : ::CONTACT::AUG::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
+    : CONTACT::AUG::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
   /* left blank, nothing to do here */
 }
@@ -64,3 +66,5 @@ CONTACT::AUG::STEEPESTASCENT::Interface::CreateNodeBasedAssembleStrategy()
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

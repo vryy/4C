@@ -18,6 +18,8 @@
 class Epetra_Map;
 class Epetra_MultiVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -115,10 +117,10 @@ namespace STI
     void FDCheck();
 
     //! prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! evaluate time step using Newton-Raphson iteration
-    void Solve();
+    void Solve() override;
 
     //! absolute tolerance for residual vectors
     const double restol_;
@@ -198,4 +200,6 @@ namespace STI
     Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -13,12 +13,13 @@
 #define BACI_LIB_NODE_H
 
 
+#include "baci_comm_parobject.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_condition.H"
-#include "baci_lib_parobject.H"
-#include "baci_lib_parobjectfactory.H"
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -26,14 +27,14 @@ namespace DRT
   class Element;
   class Discretization;
 
-  class NodeType : public DRT::ParObjectType
+  class NodeType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "NodeType"; }
+    std::string Name() const override { return "NodeType"; }
 
     static NodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static NodeType instance_;
@@ -43,7 +44,7 @@ namespace DRT
   \brief A virtual class all nodes that are used in DRT have to implement
 
   */
-  class Node : public DRT::ParObject
+  class Node : public CORE::COMM::ParObject
   {
    public:
     //! @name Enums and Friends
@@ -61,10 +62,10 @@ namespace DRT
     \brief Standard Constructor
 
     \param id     (in): A globally unique node id
-    \param coords (in): vector of nodal coordinates, length 3
+    \param coords (in): vector of nodal coordinates
     \param owner  (in): Owner of this node.
     */
-    Node(int id, const double* coords, const int owner, const bool iscosserat = false);
+    Node(int id, const std::vector<double>& coords, int owner);
 
     /*!
     \brief Copy Constructor
@@ -74,17 +75,14 @@ namespace DRT
     */
     Node(const DRT::Node& old);
 
+    Node& operator=(const DRT::Node&) = default;
+
     /*!
     \brief Deep copy the derived class and return pointer to it
 
     */
     virtual DRT::Node* Clone() const;
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~Node();
 
     /*!
     \brief Return unique ParObject id
@@ -92,7 +90,7 @@ namespace DRT
     every class imploementing ParObject needs a unique id defined at the
     top of this file.
     */
-    virtual int UniqueParObjectId() const { return NodeType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return NodeType::Instance().UniqueParObjectId(); }
 
     /*!
     \brief Pack this class so it can be communicated
@@ -100,7 +98,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -108,7 +106,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -117,37 +115,37 @@ namespace DRT
     /*!
     \brief Return global id
     */
-    virtual inline int Id() const { return id_; }
+    inline int Id() const { return id_; }
 
     /*!
     \brief Return processor local col map id
     */
-    virtual inline int LID() const { return lid_; }
+    inline int LID() const { return lid_; }
 
     /*!
     \brief Return owner of this node
     */
-    virtual inline int Owner() const { return owner_; }
+    inline int Owner() const { return owner_; }
 
     /*!
-    \brief Return coordinates (length 3 or 6 for a Cosserat node)
+    \brief Return coordinates vector
     */
-    virtual inline const double* X() const { return x_.data(); }
+    inline const std::vector<double>& X() const { return x_; }
 
     /*!
     \brief return spatial dimension of node coordinates
     */
-    virtual inline int Dim() const { return x_.size(); }
+    inline int Dim() const { return x_.size(); }
 
     /*!
     \brief Return processor-local number of elements adjacent to this node
     */
-    virtual inline int NumElement() const { return element_.size(); }
+    inline int NumElement() const { return element_.size(); }
 
     /*!
     \brief Return ptr to vector of element ptrs
     */
-    virtual inline DRT::Element** Elements()
+    inline DRT::Element** Elements()
     {
       if (NumElement())
         return element_.data();
@@ -158,7 +156,7 @@ namespace DRT
     /*!
     \brief Return const ptr to vector of const element ptrs
     */
-    virtual inline const DRT::Element* const* Elements() const
+    inline const DRT::Element* const* Elements() const
     {
       if (NumElement())
         return (const DRT::Element* const*)(element_.data());
@@ -180,18 +178,14 @@ namespace DRT
       \brief Set processor local col id
       \param lid: processor local col id
      */
-    virtual inline void SetLID(int lid) { lid_ = lid; }
+    inline void SetLID(int lid) { lid_ = lid; }
 
     /*!
     \brief Set ownership
 
     \param owner: Proc owning this node
     */
-    virtual inline void SetOwner(const int owner)
-    {
-      owner_ = owner;
-      return;
-    }
+    inline void SetOwner(const int owner) { owner_ = owner; }
 
     /*!
     \brief Set a condition with a certain name
@@ -214,10 +208,9 @@ namespace DRT
              NOT be overwritten but stored twice in the element
 
     */
-    virtual void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
+    void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
     {
       condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, cond));
-      return;
     }
 
     /*!
@@ -231,7 +224,7 @@ namespace DRT
     \param out  (out): vector of pointers to all conditions with that name
 
     */
-    virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
+    void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
 
     /*!
     \brief Get a condition with a certain name
@@ -245,26 +238,22 @@ namespace DRT
 
     \return Returns nullptr if condition with that name does not exist
     */
-    virtual DRT::Condition* GetCondition(const std::string& name) const;
+    DRT::Condition* GetCondition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this node
     */
-    virtual void ClearConditions()
-    {
-      condition_.clear();
-      return;
-    }
+    void ClearConditions() { condition_.clear(); }
 
     /*!
     \brief Change reference position by adding input vector to position
     */
-    virtual void ChangePos(std::vector<double> nvector);
+    void ChangePos(std::vector<double> nvector);
 
     /*!
     \brief Change reference position by setting input vector to position
     */
-    virtual void SetPos(std::vector<double> nvector);
+    void SetPos(std::vector<double> nvector);
 
     //@}
 
@@ -283,11 +272,9 @@ namespace DRT
      *
      *  \param names (out): Owner is added to the key names
      */
-    virtual void VisOwner(std::map<std::string, int>& names)
+    void VisOwner(std::map<std::string, int>& names)
     {
       names.insert(std::pair<std::string, int>("Nodeowner", 1));
-      // names.insert(std::pair<string,int>("EleGId",1));
-      return;
     }
 
     /*! \brief Query data to be visualized using BINIO of a given name
@@ -311,23 +298,18 @@ namespace DRT
     \brief Clear vector of pointers to my elements
 
     */
-    virtual inline void ClearMyElementTopology()
-    {
-      element_.clear();
-      return;
-    }
+    inline void ClearMyElementTopology() { element_.clear(); }
 
     /*!
     \brief Add an element to my vector of pointers to elements
 
     Resizes the element ptr vector and adds ptr at the end of vector
     */
-    virtual inline void AddElementPtr(DRT::Element* eleptr)
+    inline void AddElementPtr(DRT::Element* eleptr)
     {
       const int size = element_.size();
       element_.resize(size + 1);
       element_[size] = eleptr;
-      return;
     }
 
    protected:
@@ -353,4 +335,6 @@ std::ostream& operator<<(std::ostream& os, const DRT::Node& node);
 
 
 
-#endif  // LIB_NODE_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_LIB_NODE_H

@@ -4,7 +4,6 @@ set(_lib_dependencies
     # cmake-format: sortable
     beaminteraction
     binstrategy
-    comm
     contact_constitutivelaw
     core
     fiber

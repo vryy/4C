@@ -20,6 +20,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -44,23 +46,13 @@ XFLUIDLEVELSET::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::Par
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-XFLUIDLEVELSET::Algorithm::~Algorithm() { return; }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void XFLUIDLEVELSET::Algorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
+void XFLUIDLEVELSET::Algorithm::Init()
 {
   // call Setup() in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
 
 
   // TODO: Combine TWOPHASE and XFLUIDLEVELSET. Create a Parent class, TWOFLUIDCOUPLING or use the
@@ -89,8 +81,6 @@ void XFLUIDLEVELSET::Algorithm::Init(
   fsvelincnorm_.reserve(itmax_);
   fspressincnorm_.reserve(itmax_);
   fsphiincnorm_.reserve(itmax_);
-
-  return;
 }
 
 void XFLUIDLEVELSET::Algorithm::DoAlgorithmSpecificInit()
@@ -233,7 +223,7 @@ void XFLUIDLEVELSET::Algorithm::SolveStationaryProblem()
     dserror("Scatra time integration scheme is not stationary");
 
   // write Scatra output (fluid output has been already called in FluidField()->Integrate();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 
   // Give Scatra Values to fluid.
   // Needed for curvature etc..
@@ -621,7 +611,7 @@ void XFLUIDLEVELSET::Algorithm::Output()
       0)  // Only perform output for given RESULTSEVRY in Control Algo section of input.
   {
     FluidField()->Output();
-    ScaTraField()->Output();
+    ScaTraField()->CheckAndWriteOutputAndRestart();
   }
 
   if (write_center_of_mass_)
@@ -643,7 +633,8 @@ void XFLUIDLEVELSET::Algorithm::OutputInitialField()
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary) FluidField()->Output();
 
     // output Levelset function initial state
-    if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary) ScaTraField()->Output();
+    if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary)
+      ScaTraField()->CheckAndWriteOutputAndRestart();
   }
 
   if (write_center_of_mass_)
@@ -806,3 +797,5 @@ void XFLUIDLEVELSET::Algorithm::GetOuterLoopIncScaTra(double& fsphiincnorm, int 
 
   phinpi_->Update(1.0, *phinpip, 0.0);
 }
+
+BACI_NAMESPACE_CLOSE

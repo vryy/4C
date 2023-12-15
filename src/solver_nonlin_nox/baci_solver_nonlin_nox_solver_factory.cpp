@@ -21,6 +21,8 @@
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Solver::Factory::Factory()
@@ -32,13 +34,13 @@ NOX::NLN::Solver::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
-    const Teuchos::RCP<NOX::Abstract::Group>& grp,
-    const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
+    const Teuchos::RCP<::NOX::Abstract::Group>& grp,
+    const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
     const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData)
 {
-  Teuchos::RCP<NOX::Solver::Generic> solver;
+  Teuchos::RCP<::NOX::Solver::Generic> solver;
   Teuchos::RCP<Teuchos::ParameterList> params = nlnGlobalData->GetNlnParameterListPtr();
 
   std::string method = params->get<std::string>("Nonlinear Solver", "Line Search Based");
@@ -60,7 +62,7 @@ Teuchos::RCP<NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
   else if (not nlnGlobalData->GetIsConstrained())
   {
     // unconstrained problems are able to call the standard nox factory
-    solver = NOX::Solver::buildSolver(grp, outerTests, params);
+    solver = ::NOX::Solver::buildSolver(grp, outerTests, params);
   }
   else
   {
@@ -77,12 +79,14 @@ Teuchos::RCP<NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Solver::Generic> NOX::NLN::Solver::BuildSolver(
-    const Teuchos::RCP<NOX::Abstract::Group>& grp,
-    const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::BuildSolver(
+    const Teuchos::RCP<::NOX::Abstract::Group>& grp,
+    const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
     const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData)
 {
   Factory factory;
   return factory.BuildSolver(grp, outerTests, innerTests, nlnGlobalData);
 }
+
+BACI_NAMESPACE_CLOSE

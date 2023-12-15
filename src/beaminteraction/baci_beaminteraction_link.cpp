@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 BEAMINTERACTION::BeamLinkType BEAMINTERACTION::BeamLinkType::instance_;
 
 
@@ -91,9 +93,9 @@ void BEAMINTERACTION::BeamLink::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLink::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -127,15 +129,13 @@ void BEAMINTERACTION::BeamLink::Pack(DRT::PackBuffer& data) const
 void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // isinit_
-  isinit_ = DRT::ParObject::ExtractInt(position, data);
+  isinit_ = CORE::COMM::ParObject::ExtractInt(position, data);
   // issetup
-  issetup_ = DRT::ParObject::ExtractInt(position, data);
+  issetup_ = CORE::COMM::ParObject::ExtractInt(position, data);
   // id_
   ExtractfromPack(position, data, id_);
 
@@ -190,3 +190,5 @@ void BEAMINTERACTION::BeamLink::Print(std::ostream& out) const
 
   out << "\n";
 }
+
+BACI_NAMESPACE_CLOSE

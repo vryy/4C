@@ -13,6 +13,8 @@
 
 #include "baci_scatra_ele_calc_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -21,12 +23,10 @@ namespace DRT
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchNP;
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcElchNP : public ScaTraEleCalcElch<distype>
     {
      public:
-      ~ScaTraEleCalcElchNP() override = default;
-
       /// Singleton access method
       static ScaTraEleCalcElchNP<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
@@ -59,7 +59,7 @@ namespace DRT
           CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
-      );
+          ) override;
 
       //! calculate contributions to matrix and rhs (outside loop over all scalars)
       void CalcMatAndRhsOutsideScalarLoop(
@@ -68,14 +68,14 @@ namespace DRT
           const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
-      );
+          ) override;
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
       void CorrectionForFluxAcrossDC(DRT::Discretization& discretization,  //!< discretization
           const std::vector<int>& lm,                                      //!< location vector
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
-      );
+          ) override;
 
       /*========================================================================*/
       //! @name material and related functions
@@ -88,7 +88,7 @@ namespace DRT
           std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
           double& visc,                                //!< fluid viscosity
           const int iquad = -1                         //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
 
       //! evaluate material
@@ -100,7 +100,7 @@ namespace DRT
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
       /*========================================================================*/
       //! @name stabilization and related functions
@@ -113,7 +113,7 @@ namespace DRT
               tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
           const std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_f)
           const double vol                    //!< element volume
-      );
+          ) override;
 
       //! Calculate derivative of tau w.r.t. electric potential according to Taylor, Hughes and
       //! Zarins
@@ -284,7 +284,7 @@ namespace DRT
       //! validity check with respect to input parameters, degrees of freedom, number of scalars
       //! etc.
       void CheckElchElementParameter(DRT::Element* ele  //!< current element
-      );
+          ) override;
 
       //! evaluate an electrode boundary kinetics point condition
       void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
@@ -303,7 +303,7 @@ namespace DRT
           const double frt,                   ///< factor F/RT
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
-      );
+          ) override;
 
       // Get conductivity from material
       void GetConductivity(const enum INPAR::ELCH::EquPot
@@ -312,7 +312,7 @@ namespace DRT
           std::vector<double>&
               sigma,    //!< conductivity of a single ion + overall electrolyte solution
           bool effCond  //!< flag if effective conductivity should be calculated
-      );
+          ) override;
 
       //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
       void CalculateFlux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
@@ -325,10 +325,10 @@ namespace DRT
           const DRT::Element* ele,                 //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
-      );
+          ) override;
 
       //! set internal variables for Nernst-Planck formulation
-      void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! get internal variable manager for Nernst-Planck formulation
       Teuchos::RCP<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>> VarManager()
@@ -377,12 +377,7 @@ namespace DRT
 
             //! internal variables evaluated at the Gauss point
             migvelint_(true),
-            migconv_(true)
-      {
-      }
-
-      ~ScaTraEleInternalVariableManagerElchNP() override = default;
-      ;
+            migconv_(true){};
 
       //! compute and set internal variables for the Nernst-Planck formulation
       void SetInternalVariablesElchNP(
@@ -425,7 +420,7 @@ namespace DRT
 
       //! return convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} *
       //! \grad{N}
-      const CORE::LINALG::Matrix<NEN, 1> MigConv() { return migconv_; };
+      CORE::LINALG::Matrix<NEN, 1> MigConv() { return migconv_; };
 
      private:
       /*========================================================================*/
@@ -448,5 +443,7 @@ namespace DRT
   }  // namespace ELEMENTS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

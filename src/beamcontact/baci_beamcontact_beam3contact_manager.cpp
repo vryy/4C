@@ -35,6 +35,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
@@ -704,10 +706,10 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
 
       if (!node) dserror("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(), node->X(),
-          node->Owner(), ProblemDiscret().NumDof(0, node), ProblemDiscret().Dof(0, node),
-          false,    // all solid elements are master elements
-          false));  // no "initially active" decision necessary for beam to solid contact
+      Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+          new CONTACT::CoNode(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
+              false,    // all solid elements are master elements
+              false));  // no "initially active" decision necessary for beam to solid contact
 
       // note that we do not have to worry about double entries
       // as the AddNode function can deal with this case!
@@ -783,7 +785,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
       if (!node) dserror("Cannot find node with gid %", gid);
 
       Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
-          node->X(), node->Owner(), ProblemDiscret().NumDof(0, node), ProblemDiscret().Dof(0, node),
+          node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
           false));  // all solid elements are master elements
 
       // note that we do not have to worry about double entries
@@ -918,7 +920,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   BTSolDiscret().FillComplete(true, false, false);
 
   // communicate the map nodedofs to all proccs
-  DRT::Exporter ex(*(ProblemDiscret().NodeColMap()), *(BTSolDiscret().NodeColMap()), Comm());
+  CORE::COMM::Exporter ex(*(ProblemDiscret().NodeColMap()), *(BTSolDiscret().NodeColMap()), Comm());
   ex.Export(nodedofs);
 
   // Determine offset between the IDs of problem discretization and BTSol discretization
@@ -2268,7 +2270,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     // gmshfileheader <<"View.Light = 0;\n";
 
     // write content into file and close it
-    fprintf(fp, gmshfileheader.str().c_str());
+    fprintf(fp, "%s", gmshfileheader.str().c_str());
     fclose(fp);
 
     // fp = fopen(filename.str().c_str(), "w");
@@ -2284,7 +2286,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     gmshfilecontent << " \" {" << std::endl;
 
     // write content into file and close
-    fprintf(fp, gmshfilecontent.str().c_str());
+    fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
 
@@ -2733,19 +2735,19 @@ void CONTACT::Beam3cmanager::GmshOutput(
 
         switch (element2->Shape())
         {
-          case DRT::Element::tri3:
+          case CORE::FE::CellType::tri3:
             shape2 = "tri3";
             break;
-          case DRT::Element::tri6:
+          case CORE::FE::CellType::tri6:
             shape2 = "tri6";
             break;
-          case DRT::Element::quad4:
+          case CORE::FE::CellType::quad4:
             shape2 = "quad4";
             break;
-          case DRT::Element::quad8:
+          case CORE::FE::CellType::quad8:
             shape2 = "quad8";
             break;
-          case DRT::Element::quad9:
+          case CORE::FE::CellType::quad9:
             shape2 = "quad9";
             break;
           default:
@@ -2879,7 +2881,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // visualization*************************************************************
 
       // write content into file and close
-      fprintf(fp, gmshfilecontent.str().c_str());
+      fprintf(fp, "%s", gmshfilecontent.str().c_str());
       fclose(fp);
     }
     Comm().Barrier();
@@ -2898,7 +2900,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     gmshfilecontent << "};" << std::endl;
 
     // write content into file and close
-    fprintf(fp, gmshfilecontent.str().c_str());
+    fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
   Comm().Barrier();
@@ -4716,7 +4718,7 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
   switch (element->Shape())
   {
     // 8-noded hexahedron
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
     {
       const int n_surfNodes = 4;
       GMSH_GetSurfColor(element, n_surfNodes, surfNodes, surfColor);
@@ -4739,7 +4741,7 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
       break;
     }
     // 20-noded hexahedron
-    case DRT::Element::hex20:
+    case CORE::FE::CellType::hex20:
     {
       const int n_surfNodes = 8;
       GMSH_GetSurfColor(element, n_surfNodes, surfNodes, surfColor);
@@ -5089,3 +5091,5 @@ void CONTACT::Beam3cmanager::WriteRestart(IO::DiscretizationWriter& output)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 #include <cmath>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace internal
 {
@@ -21,11 +23,11 @@ namespace internal
   {
     // compute 3D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
-    void fillquadrature(const CORE::DRT::UTILS::GaussRule1D gaussrule, double (&qxg)[1000][3],
+    void fillquadrature(const CORE::DRT::UTILS::GaussRule1D intrule, double (&qxg)[1000][3],
         double (&qwgt)[1000], int &nquad)
     {
       nquad = 0;
-      CORE::DRT::UTILS::IntegrationPoints1D rule1d(gaussrule);
+      CORE::DRT::UTILS::IntegrationPoints1D rule1d(intrule);
       for (int i = 0; i < rule1d.nquad; ++i)
         for (int j = 0; j < rule1d.nquad; ++j)
           for (int k = 0; k < rule1d.nquad; ++k, ++nquad)
@@ -39,11 +41,11 @@ namespace internal
 
     // compute 2D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
-    void fillquadrature(const CORE::DRT::UTILS::GaussRule1D gaussrule, double (&qxg)[1024][2],
+    void fillquadrature(const CORE::DRT::UTILS::GaussRule1D intrule, double (&qxg)[1024][2],
         double (&qwgt)[1024], int &nquad)
     {
       nquad = 0;
-      CORE::DRT::UTILS::IntegrationPoints1D rule1d(gaussrule);
+      CORE::DRT::UTILS::IntegrationPoints1D rule1d(intrule);
       for (int j = 0; j < rule1d.nquad; ++j)
         for (int k = 0; k < rule1d.nquad; ++k, ++nquad)
         {
@@ -56,15 +58,15 @@ namespace internal
 }  // namespace internal
 
 
-CORE::DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule)
-    : intrule_(gaussrule)
+CORE::DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule)
+    : intrule_(intrule)
 {
   const double Q12 = 1.0 / 2.0;
   const double Q14 = 1.0 / 4.0;
   const double Q16 = 1.0 / 6.0;
   const double Q124 = 1.0 / 6.0 / 4.0;
 
-  switch (gaussrule)
+  switch (intrule_)
   {
     case GaussRule3D::hex_1point:
     {
@@ -6094,10 +6096,10 @@ CORE::DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gau
 }
 
 
-CORE::DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule)
-    : intrule_(gaussrule)
+CORE::DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D intrule)
+    : intrule_(intrule)
 {
-  switch (gaussrule)
+  switch (intrule)
   {
     case GaussRule2D::quad_1point:
     {
@@ -6877,21 +6879,21 @@ CORE::DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gau
     }
     case GaussRule2D::undefined:
     {
-      dserror("trying to use uninitialised 2D gaussrule");
+      dserror("trying to use uninitialised 2D intrule");
       break;
     }
     default:
-      dserror("unknown 2D integration rule, GaussRule2D: %d", gaussrule);
+      dserror("unknown 2D integration rule, GaussRule2D: %d", intrule);
       break;
   }
   dsassert(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
 }
 
 
-CORE::DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule)
-    : intrule_(gaussrule)
+CORE::DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D intrule)
+    : intrule_(intrule)
 {
-  switch (gaussrule)
+  switch (intrule)
   {
     case GaussRule1D::line_1point:
     {
@@ -7578,3 +7580,5 @@ CORE::DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gau
   }
   dsassert(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
 }
+
+BACI_NAMESPACE_CLOSE

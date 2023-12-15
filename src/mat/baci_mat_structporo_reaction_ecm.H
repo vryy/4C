@@ -11,6 +11,8 @@
 
 #include "baci_mat_structporo_reaction.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -26,11 +28,8 @@ namespace MAT
       /// standard constructor
       StructPoroReactionECM(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~StructPoroReactionECM(){};
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -43,14 +42,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class StructPoroReactionECMType : public DRT::ParObjectType
+  class StructPoroReactionECMType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "StructPoroReactionECMType"; }
+    std::string Name() const override { return "StructPoroReactionECMType"; }
 
     static StructPoroReactionECMType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static StructPoroReactionECMType instance_;
@@ -77,7 +76,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return StructPoroReactionECMType::Instance().UniqueParObjectId();
     }
@@ -92,7 +91,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -106,28 +105,28 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_structpororeactionECM;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new StructPoroReactionECM(*this));
     }
 
     /// Initialize internal variables
     void Setup(int numgp,  ///< number of Gauss points
-        DRT::INPUT::LineDefinition* linedef);
+        DRT::INPUT::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// evaluate chemical potential
     virtual void ChemPotential(
@@ -136,23 +135,23 @@ namespace MAT
         const double press,                          ///< (i) pressure at gauss point
         const double J,                              ///< (i) determinant of jacobian at gauss point
         int EleID,                                   ///< (i) element GID
-        double& psi,                                 ///< (o) chemical potential
+        double& pot,                                 ///< (o) chemical potential
         const int gp);
 
     /// Update of GP data (e.g., history variables)
-    virtual void Update();
+    void Update() override;
 
     //! @name Visualization methods
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    protected:
-    virtual void Reaction(const double porosity, const double J,
-        Teuchos::RCP<std::vector<double>> scalars, Teuchos::ParameterList& params);
+    void Reaction(const double porosity, const double J, Teuchos::RCP<std::vector<double>> scalars,
+        Teuchos::ParameterList& params) override;
 
     /// reference porosity at time step n
     double refporosity_old_;
@@ -170,5 +169,7 @@ namespace MAT
     MAT::PAR::StructPoroReactionECM* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_STRUCTPORO_REACTION_ECM_H

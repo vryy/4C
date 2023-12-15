@@ -23,6 +23,8 @@
 
 #include <unordered_set>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -42,86 +44,83 @@ namespace BEAMINTERACTION
       //! constructor
       SphereBeamLinking();
 
-      //! destructor
-      virtual ~SphereBeamLinking(){};
-
       //! setup class variables
-      virtual void Setup();
+      void Setup() override;
 
       //! derived
-      virtual void PostSetup();
+      void PostSetup() override;
 
       //! Returns the type of the current model evaluator
-      INPAR::BEAMINTERACTION::SubModelType Type() const
+      INPAR::BEAMINTERACTION::SubModelType Type() const override
       {
         return INPAR::BEAMINTERACTION::submodel_spherebeamlink;
       }
 
       //! derived
-      virtual void Reset();
+      void Reset() override;
 
       //! derived
-      virtual bool EvaluateForce();
+      bool EvaluateForce() override;
 
       //! derived
-      virtual bool EvaluateStiff();
+      bool EvaluateStiff() override;
 
       //! derived
-      virtual bool EvaluateForceStiff();
+      bool EvaluateForceStiff() override;
 
       //! derived
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      virtual bool PreUpdateStepElement(bool beam_redist);
+      bool PreUpdateStepElement(bool beam_redist) override;
 
       //! derived
-      virtual void UpdateStepElement(bool repartition_was_done);
+      void UpdateStepElement(bool repartition_was_done) override;
 
       //! derived
-      virtual void PostUpdateStepElement();
+      void PostUpdateStepElement() override;
 
       //! derived
       std::map<STR::EnergyType, double> GetEnergy() const override;
 
       //! derived
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      virtual void RuntimeOutputStepState() const;
+      void RuntimeOutputStepState() const override;
 
       //! derived
-      virtual void ResetStepState();
+      void ResetStepState() override;
 
       //! derived
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
-      virtual void PreReadRestart() override;
+      void PreReadRestart() override;
 
       //! derived
-      virtual void ReadRestart(
-          IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader);
+      void ReadRestart(
+          IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader) override;
 
       //! derived
-      virtual void PostReadRestart();
+      void PostReadRestart() override;
 
       //! derived
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver){/*empty*/};
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override{/*empty*/};
 
       //! derived
-      virtual void InitSubmodelDependencies(
-          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap);
+      void InitSubmodelDependencies(
+          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
-      virtual void AddBinsToBinColMap(std::set<int>& colbins);
+      void AddBinsToBinColMap(std::set<int>& colbins) override;
 
       //! derived
-      virtual void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const;
+      void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const override;
 
       //! derived
-      virtual void GetHalfInteractionDistance(double& half_interaction_distance);
+      void GetHalfInteractionDistance(double& half_interaction_distance) override;
 
       //! @}
 
@@ -130,10 +129,10 @@ namespace BEAMINTERACTION
       //! @{
 
       //! init output in VTP format
-      void InitOutputRuntimeVtp();
+      void InitOutputRuntime();
 
       //! writes output for discretization structure in VTP format
-      void WriteOutputRuntimeVtp() const;
+      void WriteOutputRuntime() const;
 
       /// get neighboring eles in discret
       virtual void FindAndStoreNeighboringElements(
@@ -152,7 +151,7 @@ namespace BEAMINTERACTION
       virtual void UpdateLinkerLength();
 
       /// check if bond needs to be dissolved
-      virtual void UnbindSphereBeamBonds(int& num_disolved);
+      virtual void UnbindSphereBeamBonds(int& num_dissolved);
 
       /// compute force dependent off rate for a catch-slip bond
       virtual void CalcForceDependentCatchSlipBondUnbindProbability(
@@ -176,5 +175,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

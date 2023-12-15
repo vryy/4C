@@ -14,17 +14,17 @@
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
 #include "baci_geometry_pair_utility_classes.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::CreateGeometryPair(
+    const DRT::Element* element1, const DRT::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  // Call the method of the base class.
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
-
   // Cast the geometry evaluation data to the correct format.
   auto line_to_3d_evaluation_data = Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(
       geometry_evaluation_data_ptr, true);
@@ -38,7 +38,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::Creat
         "geometry pair. This has to be specified in the input file.");
   this->geometry_pair_ = Teuchos::rcp(
       new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam,
-          solid>(line_to_3d_evaluation_data));
+          solid>(element1, element2, line_to_3d_evaluation_data));
 }
 
 /**
@@ -84,3 +84,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_tet4>;
   template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_tet10>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

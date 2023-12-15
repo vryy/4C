@@ -23,6 +23,12 @@ namespace NOX
   {
     class Group;
   }  // namespace Abstract
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace LineSearch
@@ -40,29 +46,26 @@ namespace NOX
           Armijo(
               const double& c_1, const bool& isMonotone = true, const std::size_t& maxHistSize = 1);
 
-          //! destructor
-          virtual ~Armijo(){};
-
           //! %Test the line search stopping criterion
           /*!
             The test can (and should, if possible) be skipped if
             checkType is NOX::StatusType::None. If the test is skipped, then
-            the status should be set to NOX::StatusTest::Unevaluated.
+            the status should be set to ::NOX::StatusTest::Unevaluated.
           */
-          virtual NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
+          NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
               const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType);
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent checkStatus call
-          virtual NOX::NLN::INNER::StatusTest::StatusType GetStatus() const;
+          NOX::NLN::INNER::StatusTest::StatusType GetStatus() const override;
 
           ///! Output formatted description of stopping test to output stream.
-          virtual std::ostream& Print(std::ostream& stream, int indent = 0) const;
+          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          protected:
           bool Setup(
-              const NOX::NLN::LineSearch::Generic& linesearch, const NOX::Abstract::Group& grp);
+              const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp);
 
          private:
           void throwError(const std::string& functionName, const std::string& errorMsg) const;
@@ -101,5 +104,7 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_ARMIJO_H

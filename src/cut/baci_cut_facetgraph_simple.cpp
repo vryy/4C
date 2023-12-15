@@ -16,6 +16,8 @@
 #include "baci_cut_pointgraph_simple.H"
 #include "baci_cut_side.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -75,7 +77,7 @@ void CORE::GEO::CUT::SimpleFacetGraph_1D::SortFacets(
        ++cit)
   {
     Facet* f = *cit;
-    if (not f->Equals(::DRT::Element::point1))
+    if (not f->Equals(CORE::FE::CellType::point1))
       dserror("The given facets are supposed to be points!");
 
     Point* p = f->Points()[0];
@@ -178,3 +180,5 @@ void CORE::GEO::CUT::SimpleFacetGraph_2D::CreateVolumeCells(
   // finally add the volumes to volume cells set
   AddToVolumeCells(mesh, element, volumes, cells);
 }
+
+BACI_NAMESPACE_CLOSE

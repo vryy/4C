@@ -14,12 +14,15 @@
 
 #include "baci_fsi_str_model_evaluator_partitioned.H"
 #include "baci_io.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_structure_aux.H"
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_timint_implicit.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -284,3 +287,5 @@ void ADAPTER::FSIStructureWrapperImmersed::SetState(const Teuchos::RCP<Epetra_Ve
 {
   return Teuchos::rcp_dynamic_cast<STR::TIMINT::Implicit>(structure_, true)->SetState(x);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,12 +12,13 @@ concentrations and with advanced reaction terms
 
 #include "baci_scatra_ele_boundary_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcRefConcReac : public ScaTraEleBoundaryCalc<distype, probdim>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
@@ -32,19 +33,19 @@ namespace DRT
 
      protected:
       //! Factor needed for the calculation of reference concentrations
-      virtual double FacForRefConc(const int iquad,  ///< current boundary integration point
-          const DRT::FaceElement* bele,              ///< current boundary element
-          Teuchos::ParameterList& params,            ///< parameter list
-          DRT::Discretization& discretization        ///< discretization
-      );
+      double FacForRefConc(const int iquad,    ///< current boundary integration point
+          const DRT::FaceElement* bele,        ///< current boundary element
+          Teuchos::ParameterList& params,      ///< parameter list
+          DRT::Discretization& discretization  ///< discretization
+          ) override;
 
      private:
       /// private constructor since we are singleton
       ScaTraEleBoundaryCalcRefConcReac(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype,
+          CORE::FE::CellType pdistype>
       double CalcJatIntPoint(const int iquad,  ///< current boundary integration point
           const DRT::FaceElement* bele,        ///< current boundary element
           const DRT::Element* pele,            ///< current parent element
@@ -57,4 +58,6 @@ namespace DRT
   }  // namespace ELEMENTS
 
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

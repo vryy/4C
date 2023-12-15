@@ -9,10 +9,13 @@
 
 #include "baci_porofluidmultiphase_ele_porofluid_evaluator.H"
 
-#include "baci_lib_get_functionofanything.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_porofluidmultiphase_ele_parameter.H"
 #include "baci_porofluidmultiphase_ele_porofluid_phasemanager.H"
 #include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
@@ -2955,10 +2958,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-inline const DRT::UTILS::FunctionOfAnything&
+inline const CORE::UTILS::FunctionOfAnything&
 DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(int functnum) const
 {
-  const auto& funct = DRT::UTILS::GetFunctionOfAnything(functnum);
+  const auto& funct =
+      DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(functnum);
   if (funct.NumberComponents() != 1)
     dserror("only one component allowed for domain integral functions");
   return funct;
@@ -5480,3 +5484,5 @@ template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 4>;
 template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 10>;
 // pyramid5
 template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 5>;
+
+BACI_NAMESPACE_CLOSE

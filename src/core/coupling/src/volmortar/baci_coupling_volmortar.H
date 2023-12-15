@@ -19,6 +19,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
  *---------------------------------------------------------------------*/
@@ -76,10 +78,10 @@ namespace CORE::VOLMORTAR
      \brief Constructor
 
      */
-    VolMortarCoupl(int dim, Teuchos::RCP<::DRT::Discretization> dis1,
-        Teuchos::RCP<::DRT::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
-        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
-        std::pair<int, int>* dofsets21 = nullptr,
+    VolMortarCoupl(int dim, Teuchos::RCP<BACI::DRT::Discretization> dis1,
+        Teuchos::RCP<BACI::DRT::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
+        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofset12 = nullptr,
+        std::pair<int, int>* dofset21 = nullptr,
         Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
             Teuchos::null);
 
@@ -87,8 +89,7 @@ namespace CORE::VOLMORTAR
      \brief Destructor
 
      */
-    virtual ~VolMortarCoupl() {}
-
+    virtual ~VolMortarCoupl() = default;
     /*!
      \brief Evaluate volmortar coupling (basic routine)
 
@@ -125,14 +126,14 @@ namespace CORE::VOLMORTAR
 
      */
     virtual void AssembleConsistentInterpolation_P12(
-        ::DRT::Node* node, std::vector<int>& foundeles);
+        BACI::DRT::Node* node, std::vector<int>& foundeles);
 
     /*!
      \brief Assemble p matrix for cons. interpolation approach
 
      */
     virtual void AssembleConsistentInterpolation_P21(
-        ::DRT::Node* node, std::vector<int>& foundeles);
+        BACI::DRT::Node* node, std::vector<int>& foundeles);
 
     /*!
      \brief get auxiliary plane normal (2D)
@@ -144,7 +145,7 @@ namespace CORE::VOLMORTAR
      \brief Build maps based n coupling dofs
 
      */
-    virtual void BuildMaps(Teuchos::RCP<::DRT::Discretization>& dis,
+    virtual void BuildMaps(Teuchos::RCP<BACI::DRT::Discretization>& dis,
         Teuchos::RCP<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof,
         const int* nodes, int numnode, int dofset);
 
@@ -153,13 +154,13 @@ namespace CORE::VOLMORTAR
 
      */
     virtual std::map<int, CORE::LINALG::Matrix<9, 2>> CalcBackgroundDops(
-        Teuchos::RCP<::DRT::Discretization> searchdis);
+        Teuchos::RCP<BACI::DRT::Discretization> searchdis);
 
     /*!
      \brief calc dops for one element
 
      */
-    virtual CORE::LINALG::Matrix<9, 2> CalcDop(::DRT::Element& ele);
+    virtual CORE::LINALG::Matrix<9, 2> CalcDop(BACI::DRT::Element& ele);
 
     /*!
      \brief center triangulation (if delaunay fails)
@@ -172,13 +173,13 @@ namespace CORE::VOLMORTAR
      \brief check if we need cut (3D)
 
      */
-    virtual bool CheckCut(::DRT::Element& sele, ::DRT::Element& mele);
+    virtual bool CheckCut(BACI::DRT::Element& sele, BACI::DRT::Element& mele);
 
     /*!
      \brief check if we can integrate element-wise (3D)
 
      */
-    virtual bool CheckEleIntegration(::DRT::Element& sele, ::DRT::Element& mele);
+    virtual bool CheckEleIntegration(BACI::DRT::Element& sele, BACI::DRT::Element& mele);
 
     /*!
      \brief check initial coupling constraint
@@ -202,22 +203,22 @@ namespace CORE::VOLMORTAR
      \brief compute trafo operator
 
      */
-    virtual void CreateTrafoOperator(::DRT::Element& ele,
-        Teuchos::RCP<::DRT::Discretization> searchdis, bool dis, std::set<int>& donebefore);
+    virtual void CreateTrafoOperator(BACI::DRT::Element& ele,
+        Teuchos::RCP<BACI::DRT::Discretization> searchdis, bool dis, std::set<int>& donebefore);
 
     /*!
      \brief define vertices for 2D polygon clipping (master)
 
      */
     virtual void DefineVerticesMaster(
-        ::DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices);
+        BACI::DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices);
 
     /*!
      \brief define vertices for 2D polygon clipping (slave)
 
      */
     virtual void DefineVerticesSlave(
-        ::DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices);
+        BACI::DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices);
 
     /*!
      \brief create integration cells for 2D volmortar
@@ -230,13 +231,13 @@ namespace CORE::VOLMORTAR
      \brief Get discretization of Omega_1
 
      */
-    virtual Teuchos::RCP<const ::DRT::Discretization> Discret1() const { return dis1_; }
+    virtual Teuchos::RCP<const BACI::DRT::Discretization> Discret1() const { return dis1_; }
 
     /*!
      \brief Get discretization of Omega_2
 
      */
-    virtual Teuchos::RCP<::DRT::Discretization> Discret2() const { return dis2_; }
+    virtual Teuchos::RCP<BACI::DRT::Discretization> Discret2() const { return dis2_; }
 
     /*!
      \brief Evaluate element-based
@@ -254,19 +255,19 @@ namespace CORE::VOLMORTAR
      \brief Evaluate segment-based for 2D problems
 
      */
-    virtual void EvaluateSegments2D(::DRT::Element& Aele, ::DRT::Element& Bele);
+    virtual void EvaluateSegments2D(BACI::DRT::Element& Aele, BACI::DRT::Element& Bele);
 
     /*!
      \brief Evaluate segment-based for 3D problems
 
      */
-    virtual void EvaluateSegments3D(::DRT::Element* Aele, ::DRT::Element* Bele);
+    virtual void EvaluateSegments3D(BACI::DRT::Element* Aele, BACI::DRT::Element* Bele);
 
     /*!
      \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
 
      */
-    std::vector<int> GetAdjacentNodes(::DRT::Element::DiscretizationType shape, int& lid);
+    std::vector<int> GetAdjacentNodes(CORE::FE::CellType shape, int& lid);
 
     /*!
      \brief Initialize / reset volmortar coupling
@@ -285,59 +286,59 @@ namespace CORE::VOLMORTAR
 
      */
     virtual Teuchos::RCP<CORE::GEO::SearchTree> InitSearch(
-        Teuchos::RCP<::DRT::Discretization> searchdis);
+        Teuchos::RCP<BACI::DRT::Discretization> searchdis);
 
     /*!
      \brief perform 2D integration
 
      */
-    virtual void Integrate2D(::DRT::Element& sele, ::DRT::Element& mele,
+    virtual void Integrate2D(BACI::DRT::Element& sele, BACI::DRT::Element& mele,
         std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells);
 
     /*!
      \brief perform 3D element-wise integration
 
      */
-    virtual void Integrate3D(::DRT::Element& sele, ::DRT::Element& mele, int domain);
+    virtual void Integrate3D(BACI::DRT::Element& sele, BACI::DRT::Element& mele, int domain);
 
     /*!
      \brief perform 3D element-wise integration for P12
 
      */
-    virtual void Integrate3DEleBased_P12(::DRT::Element& sele, std::vector<int>& foundeles);
+    virtual void Integrate3DEleBased_P12(BACI::DRT::Element& Aele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for BDis
 
      */
-    virtual void Integrate3DEleBased_P21(::DRT::Element& sele, std::vector<int>& foundeles);
+    virtual void Integrate3DEleBased_P21(BACI::DRT::Element& Bele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for ADis for meshinit
 
      */
     virtual void Integrate3DEleBased_ADis_MeshInit(
-        ::DRT::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb);
+        BACI::DRT::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb);
 
     /*!
      \brief perform 3D element-wise integration for BDis for meshinit
 
      */
     virtual void Integrate3DEleBased_BDis_MeshInit(
-        ::DRT::Element& Bele, std::vector<int>& foundeles, int dofseta, int dofsetb);
+        BACI::DRT::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta);
     /*!
      \brief perform 3D integration of created cells
 
      */
     virtual void Integrate3DCell(
-        ::DRT::Element& sele, ::DRT::Element& mele, std::vector<Teuchos::RCP<Cell>>& cells);
+        BACI::DRT::Element& sele, BACI::DRT::Element& mele, std::vector<Teuchos::RCP<Cell>>& cells);
 
     /*!
      \brief perform 3D integration of created cells
 
      */
     virtual void Integrate3DCell_DirectDivergence(
-        ::DRT::Element& sele, ::DRT::Element& mele, bool switched_conf = false);
+        BACI::DRT::Element& sele, BACI::DRT::Element& mele, bool switched_conf = false);
     /*!
      \brief perform mesh init procedure
 
@@ -354,7 +355,8 @@ namespace CORE::VOLMORTAR
      \brief perform cut and create integration cells (3D)
 
      */
-    virtual void PerformCut(::DRT::Element* sele, ::DRT::Element* mele, bool switched_conf = false);
+    virtual void PerformCut(
+        BACI::DRT::Element* sele, BACI::DRT::Element* mele, bool switched_conf = false);
 
     /*!
      \brief perform 2D polygon clipping
@@ -362,7 +364,7 @@ namespace CORE::VOLMORTAR
      */
     virtual bool PolygonClippingConvexHull(std::vector<MORTAR::Vertex>& poly1,
         std::vector<MORTAR::Vertex>& poly2, std::vector<MORTAR::Vertex>& respoly,
-        ::DRT::Element& sele, ::DRT::Element& mele, double& tol);
+        BACI::DRT::Element& sele, BACI::DRT::Element& mele, double& tol);
 
     /*!
      \brief Output for evaluation status -- progress
@@ -380,7 +382,7 @@ namespace CORE::VOLMORTAR
      \brief search algorithm
 
      */
-    virtual std::vector<int> Search(::DRT::Element& ele,
+    virtual std::vector<int> Search(BACI::DRT::Element& ele,
         Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
         std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 
@@ -402,8 +404,8 @@ namespace CORE::VOLMORTAR
     //@}
 
     //! @name discretizations
-    Teuchos::RCP<::DRT::Discretization> dis1_;  /// the discretization Omega_1
-    Teuchos::RCP<::DRT::Discretization> dis2_;  /// the discretization Omega_2
+    Teuchos::RCP<BACI::DRT::Discretization> dis1_;  /// the discretization Omega_1
+    Teuchos::RCP<BACI::DRT::Discretization> dis2_;  /// the discretization Omega_2
     //@}
 
     //! @name mortar matrices and projector
@@ -480,5 +482,7 @@ namespace CORE::VOLMORTAR
 
 }  // namespace CORE::VOLMORTAR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // COUPLING_VOLMORTAR_H

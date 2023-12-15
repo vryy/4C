@@ -24,6 +24,7 @@ mesh
 #include "baci_cut_node.H"
 #endif
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -87,12 +88,10 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// creates a new element, dependent on distype
-      Element* CreateElement(
-          int eid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype);
+      Element* CreateElement(int eid, const std::vector<int>& nids, CORE::FE::CellType distype);
 
       /// creates a new side, dependent on distype
-      Side* CreateSide(
-          int sid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype);
+      Side* CreateSide(int sid, const std::vector<int>& nids, CORE::FE::CellType distype);
 
       /*========================================================================*/
       //! @name Create-routines for elements
@@ -342,8 +341,8 @@ namespace CORE::GEO
       \brief Find the difference between the volume of background element and the sum of volume of
       all integration cells. There should be no difference between these two
        */
-      void TestElementVolume(::DRT::Element::DiscretizationType shape, Element& e, bool fatal,
-          INPAR::CUT::VCellGaussPts VCellGP);
+      void TestElementVolume(
+          CORE::FE::CellType shape, Element& e, bool fatal, INPAR::CUT::VCellGaussPts VCellGP);
 
 
       /*========================================================================*/
@@ -682,5 +681,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

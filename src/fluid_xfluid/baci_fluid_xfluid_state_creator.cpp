@@ -18,16 +18,17 @@
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_xfem.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_xfem_condition_manager.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Perform the cut and fill state container               schott 01/15 |
@@ -212,3 +213,5 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   // REMARK: this has to be done after replacing the discret' dofset (via discret_->ReplaceDofSet)
   xdiscret->ComputeNullSpaceIfNecessary(solver_params, true);
 }
+
+BACI_NAMESPACE_CLOSE

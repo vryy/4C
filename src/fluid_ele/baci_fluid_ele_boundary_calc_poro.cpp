@@ -24,7 +24,9 @@
 #include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_poroelast_utils.H"
 
-template <DRT::Element::DiscretizationType distype>
+BACI_NAMESPACE_OPEN
+
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
@@ -39,7 +41,7 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(CORE::UTILS::Singleto
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
     : DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
@@ -47,7 +49,7 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
   Base::fldpara_ = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(
     DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -124,7 +126,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
@@ -133,11 +135,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   switch (distype)
   {
     // 2D:
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        this->FPSICoupling<DRT::Element::quad4>(ele, params, discretization, plm, elemat1, elevec1);
+        this->FPSICoupling<CORE::FE::CellType::quad4>(
+            ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -146,11 +149,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        this->FPSICoupling<DRT::Element::hex8>(ele, params, discretization, plm, elemat1, elevec1);
+        this->FPSICoupling<CORE::FE::CellType::hex8>(
+            ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -158,11 +162,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       }
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        this->FPSICoupling<DRT::Element::tet4>(ele, params, discretization, plm, elemat1, elevec1);
+        this->FPSICoupling<CORE::FE::CellType::tet4>(
+            ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -178,8 +183,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
-template <DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype>
+template <CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
@@ -237,8 +242,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
@@ -442,7 +446,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     {
       for (int idof = 0; idof < nsd_; ++idof)
       {
-        const double* x = nodes[inode]->X();
+        const auto& x = nodes[inode]->X();
         xrefe(idof, inode) = x[idof];
         xcurr(idof, inode) =
             xrefe(idof, inode) + my_parentdisp_np[inode * Base::numdofpernode_ + idof];
@@ -1682,7 +1686,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
@@ -1691,11 +1695,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   switch (distype)
   {
     // 2D:
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        this->ComputeFlowRate<DRT::Element::quad4>(ele, params, discretization, plm, elevec1);
+        this->ComputeFlowRate<CORE::FE::CellType::quad4>(ele, params, discretization, plm, elevec1);
       }
       else
       {
@@ -1703,11 +1707,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       break;
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad9)
       {
-        this->ComputeFlowRate<DRT::Element::quad9>(ele, params, discretization, plm, elevec1);
+        this->ComputeFlowRate<CORE::FE::CellType::quad9>(ele, params, discretization, plm, elevec1);
       }
       else
       {
@@ -1715,11 +1719,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::nurbs9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::nurbs9)
       {
-        this->ComputeFlowRate<DRT::Element::nurbs9>(ele, params, discretization, plm, elevec1);
+        this->ComputeFlowRate<CORE::FE::CellType::nurbs9>(
+            ele, params, discretization, plm, elevec1);
       }
       else
       {
@@ -1728,11 +1733,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        this->ComputeFlowRate<DRT::Element::hex8>(ele, params, discretization, plm, elevec1);
+        this->ComputeFlowRate<CORE::FE::CellType::hex8>(ele, params, discretization, plm, elevec1);
       }
       else
       {
@@ -1740,11 +1745,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        this->ComputeFlowRate<DRT::Element::tet4>(ele, params, discretization, plm, elevec1);
+        this->ComputeFlowRate<CORE::FE::CellType::tet4>(ele, params, discretization, plm, elevec1);
       }
       else
       {
@@ -1752,11 +1757,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       break;
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet10)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet10)
       {
-        this->ComputeFlowRate<DRT::Element::tet10>(ele, params, discretization, plm, elevec1);
+        this->ComputeFlowRate<CORE::FE::CellType::tet10>(ele, params, discretization, plm, elevec1);
       }
       else
       {
@@ -1764,11 +1769,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex27)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
       {
-        this->ComputeFlowRate<DRT::Element::hex27>(ele, params, discretization, plm, elevec1);
+        this->ComputeFlowRate<CORE::FE::CellType::hex27>(ele, params, discretization, plm, elevec1);
       }
       else
       {
@@ -1784,8 +1789,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
-template <DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype>
+template <CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
@@ -1802,8 +1807,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
@@ -1845,7 +1849,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     DRT::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       for (int j = 0; j < nsd_; ++j)
       {
         xrefe(j, i) = x[j];
@@ -2035,7 +2039,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -2268,7 +2272,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     dserror("unknown coupling type for no penetration boundary condition");
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
@@ -2357,7 +2361,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
@@ -2366,15 +2370,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   switch (distype)
   {
     // 2D:
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        PoroBoundary<DRT::Element::quad4>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::quad4>(ele, params, discretization, plm, elemat1, elevec1);
       }
-      else if (ele->ParentElement()->Shape() == DRT::Element::tri3)
+      else if (ele->ParentElement()->Shape() == CORE::FE::CellType::tri3)
       {
-        PoroBoundary<DRT::Element::tri3>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::tri3>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2382,11 +2386,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       break;
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad9)
       {
-        PoroBoundary<DRT::Element::quad9>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::quad9>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2394,11 +2398,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::nurbs9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::nurbs9)
       {
-        PoroBoundary<DRT::Element::nurbs9>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::nurbs9>(
+            ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2407,11 +2412,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        PoroBoundary<DRT::Element::hex8>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::hex8>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2419,11 +2424,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        PoroBoundary<DRT::Element::tet4>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::tet4>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2431,11 +2436,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       break;
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet10)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet10)
       {
-        PoroBoundary<DRT::Element::tet10>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::tet10>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2443,11 +2448,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex27)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
       {
-        PoroBoundary<DRT::Element::hex27>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::hex27>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2455,11 +2460,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       break;
     }
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::nurbs27)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::nurbs27)
       {
-        PoroBoundary<DRT::Element::nurbs27>(ele, params, discretization, plm, elemat1, elevec1);
+        PoroBoundary<CORE::FE::CellType::nurbs27>(
+            ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2475,8 +2481,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
-template <DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype>
+template <CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
@@ -2505,8 +2511,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
@@ -2550,7 +2555,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -2848,7 +2853,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -3036,7 +3041,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputePorosityAtGP(
     Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
     const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
@@ -3053,7 +3058,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputePorosityAtGP(
       save);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -3062,15 +3067,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   switch (distype)
   {
     // 2D:
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        NoPenetrationMatAndRHS<DRT::Element::quad4>(ele, params, discretization, lm, k_fluid, rhs);
+        NoPenetrationMatAndRHS<CORE::FE::CellType::quad4>(
+            ele, params, discretization, lm, k_fluid, rhs);
       }
-      else if (ele->ParentElement()->Shape() == DRT::Element::tri3)
+      else if (ele->ParentElement()->Shape() == CORE::FE::CellType::tri3)
       {
-        NoPenetrationMatAndRHS<DRT::Element::tri3>(ele, params, discretization, lm, k_fluid, rhs);
+        NoPenetrationMatAndRHS<CORE::FE::CellType::tri3>(
+            ele, params, discretization, lm, k_fluid, rhs);
       }
       else
       {
@@ -3078,11 +3085,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       break;
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad9)
       {
-        NoPenetrationMatAndRHS<DRT::Element::quad9>(ele, params, discretization, lm, k_fluid, rhs);
+        NoPenetrationMatAndRHS<CORE::FE::CellType::quad9>(
+            ele, params, discretization, lm, k_fluid, rhs);
       }
       else
       {
@@ -3090,11 +3098,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::nurbs9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::nurbs9)
       {
-        NoPenetrationMatAndRHS<DRT::Element::nurbs9>(ele, params, discretization, lm, k_fluid, rhs);
+        NoPenetrationMatAndRHS<CORE::FE::CellType::nurbs9>(
+            ele, params, discretization, lm, k_fluid, rhs);
       }
       else
       {
@@ -3103,11 +3112,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        NoPenetrationMatAndRHS<DRT::Element::hex8>(ele, params, discretization, lm, k_fluid, rhs);
+        NoPenetrationMatAndRHS<CORE::FE::CellType::hex8>(
+            ele, params, discretization, lm, k_fluid, rhs);
       }
       else
       {
@@ -3115,11 +3125,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        NoPenetrationMatAndRHS<DRT::Element::tet4>(ele, params, discretization, lm, k_fluid, rhs);
+        NoPenetrationMatAndRHS<CORE::FE::CellType::tet4>(
+            ele, params, discretization, lm, k_fluid, rhs);
       }
       else
       {
@@ -3127,11 +3138,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       break;
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet10)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet10)
       {
-        NoPenetrationMatAndRHS<DRT::Element::tet10>(ele, params, discretization, lm, k_fluid, rhs);
+        NoPenetrationMatAndRHS<CORE::FE::CellType::tet10>(
+            ele, params, discretization, lm, k_fluid, rhs);
       }
       else
       {
@@ -3139,11 +3151,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex27)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
       {
-        NoPenetrationMatAndRHS<DRT::Element::hex27>(ele, params, discretization, lm, k_fluid, rhs);
+        NoPenetrationMatAndRHS<CORE::FE::CellType::hex27>(
+            ele, params, discretization, lm, k_fluid, rhs);
       }
       else
       {
@@ -3159,8 +3172,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
-template <DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype>
+template <CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -3243,8 +3256,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
@@ -3264,7 +3276,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -3413,7 +3425,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -3422,16 +3434,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   switch (distype)
   {
     // 2D:
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        NoPenetrationMatOD<DRT::Element::quad4>(
+        NoPenetrationMatOD<CORE::FE::CellType::quad4>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
-      else if (ele->ParentElement()->Shape() == DRT::Element::tri3)
+      else if (ele->ParentElement()->Shape() == CORE::FE::CellType::tri3)
       {
-        NoPenetrationMatOD<DRT::Element::tri3>(ele, params, discretization, lm, k_struct, k_lambda);
+        NoPenetrationMatOD<CORE::FE::CellType::tri3>(
+            ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
       {
@@ -3439,11 +3452,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       break;
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad9)
       {
-        NoPenetrationMatOD<DRT::Element::quad9>(
+        NoPenetrationMatOD<CORE::FE::CellType::quad9>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3452,11 +3465,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::nurbs9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::nurbs9)
       {
-        NoPenetrationMatOD<DRT::Element::nurbs9>(
+        NoPenetrationMatOD<CORE::FE::CellType::nurbs9>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3466,11 +3479,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        NoPenetrationMatOD<DRT::Element::hex8>(ele, params, discretization, lm, k_struct, k_lambda);
+        NoPenetrationMatOD<CORE::FE::CellType::hex8>(
+            ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
       {
@@ -3478,11 +3492,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        NoPenetrationMatOD<DRT::Element::tet4>(ele, params, discretization, lm, k_struct, k_lambda);
+        NoPenetrationMatOD<CORE::FE::CellType::tet4>(
+            ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
       {
@@ -3490,11 +3505,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       break;
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet10)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet10)
       {
-        NoPenetrationMatOD<DRT::Element::tet10>(
+        NoPenetrationMatOD<CORE::FE::CellType::tet10>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3503,11 +3518,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex27)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
       {
-        NoPenetrationMatOD<DRT::Element::hex27>(
+        NoPenetrationMatOD<CORE::FE::CellType::hex27>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3524,8 +3539,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
-template <DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype>
+template <CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -3634,8 +3649,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
@@ -3655,7 +3669,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -3924,7 +3938,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       {
         tangent1deriv(0, nsd_ * node) = -normalderiv(1, nsd_ * node);
         tangent1deriv(0, nsd_ * node + 1) = -normalderiv(1, nsd_ * node + 1);
-        ;
 
         tangent1deriv(1, nsd_ * node) = normalderiv(0, nsd_ * node);
         tangent1deriv(1, nsd_ * node + 1) = normalderiv(0, nsd_ * node + 1);
@@ -4026,7 +4039,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPres(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -4035,15 +4048,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   switch (distype)
   {
     // 2D:
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        NoPenetrationMatODPoroPres<DRT::Element::quad4>(ele, params, discretization, lm, k_pres);
+        NoPenetrationMatODPoroPres<CORE::FE::CellType::quad4>(
+            ele, params, discretization, lm, k_pres);
       }
-      else if (ele->ParentElement()->Shape() == DRT::Element::tri3)
+      else if (ele->ParentElement()->Shape() == CORE::FE::CellType::tri3)
       {
-        NoPenetrationMatODPoroPres<DRT::Element::tri3>(ele, params, discretization, lm, k_pres);
+        NoPenetrationMatODPoroPres<CORE::FE::CellType::tri3>(
+            ele, params, discretization, lm, k_pres);
       }
       else
       {
@@ -4051,11 +4066,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       break;
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad9)
       {
-        NoPenetrationMatODPoroPres<DRT::Element::quad9>(ele, params, discretization, lm, k_pres);
+        NoPenetrationMatODPoroPres<CORE::FE::CellType::quad9>(
+            ele, params, discretization, lm, k_pres);
       }
       else
       {
@@ -4063,11 +4079,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::nurbs9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::nurbs9)
       {
-        NoPenetrationMatODPoroPres<DRT::Element::nurbs9>(ele, params, discretization, lm, k_pres);
+        NoPenetrationMatODPoroPres<CORE::FE::CellType::nurbs9>(
+            ele, params, discretization, lm, k_pres);
       }
       else
       {
@@ -4076,11 +4093,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        NoPenetrationMatODPoroPres<DRT::Element::hex8>(ele, params, discretization, lm, k_pres);
+        NoPenetrationMatODPoroPres<CORE::FE::CellType::hex8>(
+            ele, params, discretization, lm, k_pres);
       }
       else
       {
@@ -4088,11 +4106,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        NoPenetrationMatODPoroPres<DRT::Element::tet4>(ele, params, discretization, lm, k_pres);
+        NoPenetrationMatODPoroPres<CORE::FE::CellType::tet4>(
+            ele, params, discretization, lm, k_pres);
       }
       else
       {
@@ -4100,11 +4119,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       break;
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet10)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet10)
       {
-        NoPenetrationMatODPoroPres<DRT::Element::tet10>(ele, params, discretization, lm, k_pres);
+        NoPenetrationMatODPoroPres<CORE::FE::CellType::tet10>(
+            ele, params, discretization, lm, k_pres);
       }
       else
       {
@@ -4112,11 +4132,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex27)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
       {
-        NoPenetrationMatODPoroPres<DRT::Element::hex27>(ele, params, discretization, lm, k_pres);
+        NoPenetrationMatODPoroPres<CORE::FE::CellType::hex27>(
+            ele, params, discretization, lm, k_pres);
       }
       else
       {
@@ -4132,8 +4153,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
-template <DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype>
+template <CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPres(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -4217,8 +4238,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
@@ -4238,7 +4258,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -4380,7 +4400,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDisp(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
@@ -4389,15 +4409,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   switch (distype)
   {
     // 2D:
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        NoPenetrationMatODPoroDisp<DRT::Element::quad4>(ele, params, discretization, plm, k_disp);
+        NoPenetrationMatODPoroDisp<CORE::FE::CellType::quad4>(
+            ele, params, discretization, plm, k_disp);
       }
-      else if (ele->ParentElement()->Shape() == DRT::Element::tri3)
+      else if (ele->ParentElement()->Shape() == CORE::FE::CellType::tri3)
       {
-        NoPenetrationMatODPoroDisp<DRT::Element::tri3>(ele, params, discretization, plm, k_disp);
+        NoPenetrationMatODPoroDisp<CORE::FE::CellType::tri3>(
+            ele, params, discretization, plm, k_disp);
       }
       else
       {
@@ -4405,11 +4427,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       break;
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::quad9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad9)
       {
-        NoPenetrationMatODPoroDisp<DRT::Element::quad9>(ele, params, discretization, plm, k_disp);
+        NoPenetrationMatODPoroDisp<CORE::FE::CellType::quad9>(
+            ele, params, discretization, plm, k_disp);
       }
       else
       {
@@ -4417,11 +4440,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       break;
     }
-    case DRT::Element::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::nurbs9)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::nurbs9)
       {
-        NoPenetrationMatODPoroDisp<DRT::Element::nurbs9>(ele, params, discretization, plm, k_disp);
+        NoPenetrationMatODPoroDisp<CORE::FE::CellType::nurbs9>(
+            ele, params, discretization, plm, k_disp);
       }
       else
       {
@@ -4430,11 +4454,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        NoPenetrationMatODPoroDisp<DRT::Element::hex8>(ele, params, discretization, plm, k_disp);
+        NoPenetrationMatODPoroDisp<CORE::FE::CellType::hex8>(
+            ele, params, discretization, plm, k_disp);
       }
       else
       {
@@ -4442,11 +4467,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       break;
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet4)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        NoPenetrationMatODPoroDisp<DRT::Element::tet4>(ele, params, discretization, plm, k_disp);
+        NoPenetrationMatODPoroDisp<CORE::FE::CellType::tet4>(
+            ele, params, discretization, plm, k_disp);
       }
       else
       {
@@ -4454,11 +4480,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       break;
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::tet10)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::tet10)
       {
-        NoPenetrationMatODPoroDisp<DRT::Element::tet10>(ele, params, discretization, plm, k_disp);
+        NoPenetrationMatODPoroDisp<CORE::FE::CellType::tet10>(
+            ele, params, discretization, plm, k_disp);
       }
       else
       {
@@ -4466,11 +4493,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       break;
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      if (ele->ParentElement()->Shape() == DRT::Element::hex27)
+      if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
       {
-        NoPenetrationMatODPoroDisp<DRT::Element::hex27>(ele, params, discretization, plm, k_disp);
+        NoPenetrationMatODPoroDisp<CORE::FE::CellType::hex27>(
+            ele, params, discretization, plm, k_disp);
       }
       else
       {
@@ -4486,8 +4514,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
-template <DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype>
+template <CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDisp(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
@@ -4577,8 +4605,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   std::vector<double> parentdispnp;
   DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
@@ -4592,7 +4619,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -4748,7 +4775,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
@@ -4764,7 +4791,7 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance(CORE::UTILS::Single
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputeNodalPorosity(
     DRT::ELEMENTS::FluidBoundary* ele, const std::vector<double>& mydispnp,
     CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity)
@@ -4775,7 +4802,7 @@ bool DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputeNodalPorosity(
   return true;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputePorosityAtGP(
     Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
     const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
@@ -4787,26 +4814,28 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputePorosityAtGP(
   dphi_dJ = 0.0;
 }
 
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::line2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::line3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::nurbs2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::nurbs4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::line3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::nurbs2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::nurbs3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::nurbs4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::nurbs9>;
 
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::line2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::line3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::nurbs2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::nurbs4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::line3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs9>;
+
+BACI_NAMESPACE_CLOSE

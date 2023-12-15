@@ -9,14 +9,16 @@
 #ifndef BACI_SO3_PRESTRESS_H
 #define BACI_SO3_PRESTRESS_H
 
-#include "baci_lib_parobject.H"
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobject.H"
+#include "baci_comm_parobjectfactory.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
   namespace ELEMENTS
   {
-    class PreStressType : public DRT::ParObjectType
+    class PreStressType : public CORE::COMM::ParObjectType
     {
      public:
       std::string Name() const override { return "PreStressType"; }
@@ -31,7 +33,7 @@ namespace DRT
     \brief A class for handling the prestressing in finite deformations
 
     */
-    class PreStress : public DRT::ParObject
+    class PreStress : public CORE::COMM::ParObject
     {
      public:
       /*!
@@ -43,12 +45,6 @@ namespace DRT
       \brief Copy Constructor
       */
       PreStress(const DRT::ELEMENTS::PreStress& old);
-
-      /*!
-      \brief Destructor
-
-      */
-      ~PreStress() override = default;
 
       /*!
       \brief Return unique ParObject id
@@ -63,7 +59,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this node
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -137,5 +133,7 @@ namespace DRT
   }     // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_PRESTRESS_H

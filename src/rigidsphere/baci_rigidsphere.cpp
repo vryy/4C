@@ -11,19 +11,21 @@
 #include "baci_rigidsphere.H"
 
 #include "baci_beaminteraction_link_pinjointed.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_browniandyn.H"
 #include "baci_inpar_validparameters.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::RigidsphereType DRT::ELEMENTS::RigidsphereType::instance_;
@@ -34,7 +36,7 @@ DRT::ELEMENTS::RigidsphereType& DRT::ELEMENTS::RigidsphereType::Instance() { ret
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::RigidsphereType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RigidsphereType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Rigidsphere* object = new DRT::ELEMENTS::Rigidsphere(-1, -1);
   object->Unpack(data);
@@ -134,10 +136,6 @@ DRT::Element* DRT::ELEMENTS::Rigidsphere::Clone() const
   return (newelement);
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            meier 05/12 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Rigidsphere::~Rigidsphere() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -150,15 +148,18 @@ void DRT::ELEMENTS::Rigidsphere::Print(std::ostream& os) const { return; }
  |                                                             (public) |
  |                                                          meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Rigidsphere::Shape() const { return (point1); }
+CORE::FE::CellType DRT::ELEMENTS::Rigidsphere::Shape() const
+{
+  return (CORE::FE::CellType::point1);
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           meier 05/12/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Rigidsphere::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -184,10 +185,9 @@ void DRT::ELEMENTS::Rigidsphere::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -203,7 +203,7 @@ void DRT::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
   {
     std::vector<char> tmp;
     ExtractfromPack(position, data, tmp);
-    Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(tmp), true);
+    Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(tmp), true);
     Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
     if (link == Teuchos::null) dserror("Received object is not a beam to beam linkage");
@@ -220,9 +220,7 @@ void DRT::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Rigidsphere::Lines()
 {
-  std::vector<Teuchos::RCP<Element>> lines(1);
-  lines[0] = Teuchos::rcp(this, false);
-  return (lines);
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 
@@ -248,3 +246,5 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Rigidsphere::ParamsI
 {
   return interface_ptr_;
 }
+
+BACI_NAMESPACE_CLOSE

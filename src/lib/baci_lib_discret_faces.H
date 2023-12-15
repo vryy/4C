@@ -22,6 +22,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -31,7 +33,7 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  class DiscretizationFaces : public Discretization
+  class DiscretizationFaces : public BACI::DRT::Discretization
   {
    public:
     /*!
@@ -124,12 +126,6 @@ namespace DRT
     */
     DiscretizationFaces(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~DiscretizationFaces() { return; };
-
 
 
     /*!
@@ -145,8 +141,8 @@ namespace DRT
     \param solveparams (in): List of parameters
     \param recompute (in)  : force method to recompute the nullspace
     */
-    virtual void ComputeNullSpaceIfNecessary(
-        Teuchos::ParameterList& solveparams, bool recompute = false)
+    void ComputeNullSpaceIfNecessary(
+        Teuchos::ParameterList& solveparams, bool recompute = false) override
     {
       // remark: the null space is not computed correctly for XFEM discretizations, since the number
       // of
@@ -285,35 +281,9 @@ namespace DRT
     }
 
     /*!
-    \brief Query whether a Face with global id gid is stored on this proc
-           (Filled()==true NOT prerequisite)
-
-    */
-    virtual bool HaveGlobalFace(int gid) const;
-
-    /*!
-    \brief Get the face with global row id gid (Filled()==true NOT prerequisite)
-
-    Returns the face with global row id gid if node is on this proc.
-    Will return row or column face, ghosted or not.
-    This is an individual call
-
-    \return Address of face if face is stored on calling proc
-    */
-    virtual DRT::FaceElement* gFace(int gid) const;
-
-    /*!
     \brief Build internal faces extension
     */
     void CreateInternalFacesExtension(const bool verbose = false);
-
-    /*!
-    \brief Evaluate edge-based integrals
-    */
-    void EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Epetra_Vector> systemvector1,
-        Teuchos::ParameterList edgebasedparams = Teuchos::ParameterList());
-
 
     /*!
     \brief Complete construction of a face elements
@@ -373,5 +343,7 @@ namespace DRT
 /// << operator
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_FACES_H

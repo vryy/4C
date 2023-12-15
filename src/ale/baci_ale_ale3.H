@@ -25,6 +25,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 const int NUMDIM_ALE3 = 3;  ///< number of dimensions
 const int NODDOF_ALE3 = 3;  ///< number of dofs per node
 
@@ -37,57 +39,57 @@ namespace DRT
   namespace ELEMENTS
   {
     // where should that be put?
-    template <DRT::Element::DiscretizationType dtype>
+    template <CORE::FE::CellType dtype>
     struct DisTypeToNumCornerNodes
     {
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::tet4>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::tet4>
     {
       static const int numCornerNodes = 4;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::tet10>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::tet10>
     {
       static const int numCornerNodes = 4;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::hex8>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex8>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::hex20>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex20>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::hex27>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex27>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::pyramid5>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::pyramid5>
     {
       static const int numCornerNodes = 5;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::wedge6>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::wedge6>
     {
       static const int numCornerNodes = 6;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::wedge15>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::wedge15>
     {
       static const int numCornerNodes = 6;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::nurbs8>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::nurbs8>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::nurbs27>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::nurbs27>
     {
       static const int numCornerNodes = 8;
     };
@@ -97,35 +99,36 @@ namespace DRT
     /*----------------------------------------------------------------------------*/
     class Ale3Surface;
     class Ale3_Impl_Interface;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Ale3_Impl;
     class Ale3Surface_Impl_Interface;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Ale3Surface_Impl;
 
 
     class Ale3Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Ale3Type"; }
+      std::string Name() const override { return "Ale3Type"; }
 
       static Ale3Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static Ale3Type instance_;
@@ -169,22 +172,22 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return 0; }
+      int NumLine() const override { return 0; }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const
+      int NumSurface() const override
       {
         switch (NumNode())
         {
@@ -208,19 +211,13 @@ namespace DRT
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual inline int NumVolume() const { return 1; }
+      inline int NumVolume() const override { return 1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volume of this element
-
-      */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -228,7 +225,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return Ale3Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return Ale3Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -236,7 +233,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -244,13 +241,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~Ale3();
 
       //@}
 
@@ -266,7 +258,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -279,14 +271,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return Ale3Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return Ale3Type::Instance(); }
 
       //@}
 
@@ -296,7 +288,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -329,7 +321,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -346,10 +339,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
       //@}
@@ -432,7 +424,7 @@ namespace DRT
           Ale3* ele, CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& my_dispnp) = 0;
     };
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Ale3_Impl : public Ale3_Impl_Interface
     {
      public:
@@ -448,7 +440,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material> material,       ///< material law
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
-      );
+          ) override;
 
       void static_ke_spring(Ale3* ele,  ///< pointer to element
           CORE::LINALG::SerialDenseMatrix&
@@ -458,7 +450,7 @@ namespace DRT
           const std::vector<double>& displacements,  ///< nodal displacements
           const bool spatialconfiguration            ///< use spatial configuration (true), material
                                                      ///< configuration (false)
-      );
+          ) override;
 
       void static_ke_nonlinear(Ale3* ele,             ///< pointer to element
           DRT::Discretization& discretization,        ///< discretization
@@ -469,12 +461,12 @@ namespace DRT
           Teuchos::ParameterList& params,             ///< parameter list
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
-      );
+          ) override;
 
       void ElementNodeNormal(Ale3* ele,              ///< pointer to element
           CORE::LINALG::SerialDenseVector& elevec1,  ///< normal vector (to be filled)
           std::vector<double>& my_dispnp             ///< nodal displacements
-      );
+          ) override;
 
       //! Calculate Jacobian matrix and its determinant
       void CalcJacobian(Ale3* ele,  ///< pointer to element
@@ -483,7 +475,7 @@ namespace DRT
 
      private:
       Ale3_Impl() = default;
-      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::FE::num_nodes<distype>;
       static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
       inline void ale3_edge_geometry(int i, int j, const CORE::LINALG::Matrix<3, iel>& xyze,
@@ -553,19 +545,19 @@ namespace DRT
     class Ale3SurfaceType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Ale3SurfaceType"; }
+      std::string Name() const override { return "Ale3SurfaceType"; }
 
       static Ale3SurfaceType& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
@@ -620,12 +612,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -633,7 +625,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return Ale3SurfaceType::Instance().UniqueParObjectId();
       }
@@ -644,7 +636,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -652,13 +644,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~Ale3Surface();
 
       //@}
 
@@ -674,7 +661,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -687,14 +674,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return Ale3SurfaceType::Instance(); }
+      DRT::ElementType& ElementType() const override { return Ale3SurfaceType::Instance(); }
 
       //@}
 
@@ -722,10 +709,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
 
 
@@ -743,10 +731,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -768,8 +755,7 @@ namespace DRT
       /// Empty constructor
       Ale3Surface_Impl_Interface() {}
 
-      virtual ~Ale3Surface_Impl_Interface() {}
-
+      virtual ~Ale3Surface_Impl_Interface() = default;
       /// Internal implementation class for ale surface element
       static Ale3Surface_Impl_Interface* Impl(DRT::ELEMENTS::Ale3Surface* ele);
 
@@ -778,24 +764,21 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp) = 0;
     };
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Ale3Surface_Impl : public Ale3Surface_Impl_Interface
     {
       Ale3Surface_Impl() {}
 
      public:
-      ~Ale3Surface_Impl() {}
-
       /// Singleton access method
       static Ale3Surface_Impl<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of element nodes
-      static const int bdrynen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ = CORE::FE::num_nodes<distype>;
 
       //! number of spatial dimensions of boundary element
-      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::FE::dim<distype>;
 
       //! number of spatial dimensions of parent element
       static const int nsd_ = bdrynsd_ + 1;
@@ -805,11 +788,11 @@ namespace DRT
 
       void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp);
+          CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp) override;
 
      private:
       //  static const int iel =
-      //  CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; static const int
+      //  CORE::FE::num_nodes<distype>; static const int
       //  numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
       //  inline void ale3_edge_geometry(int i, int j, const CORE::LINALG::Matrix<3, iel>& xyze,
@@ -897,5 +880,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

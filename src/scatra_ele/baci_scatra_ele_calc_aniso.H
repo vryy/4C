@@ -13,6 +13,8 @@
 
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -20,8 +22,7 @@ namespace DRT
     template <int NSD>
     class ScaTraEleDiffManagerAniso;
 
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcAniso : public virtual ScaTraEleCalc<distype, probdim>
     {
      protected:
@@ -41,9 +42,6 @@ namespace DRT
       using varmanager = ScaTraEleInternalVariableManager<nsd_, nen_>;
 
      public:
-      virtual ~ScaTraEleCalcAniso() {}
-
-
       /// Singleton access method
       static ScaTraEleCalcAniso<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
@@ -54,7 +52,7 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate material
-      virtual void Materials(
+      void Materials(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
           double& densn,                                     //!< density at t_(n)
@@ -62,7 +60,7 @@ namespace DRT
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
       //! material ScaTra
       void MatScaTraAniso(
@@ -127,18 +125,16 @@ namespace DRT
       };
 
       //! calculation of diffusive element matrix
-      virtual void CalcMatDiff(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                            //!< index of current scalar
+      void CalcMatDiff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                         //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
-      );
+          ) override;
 
       //! standard Galerkin diffusive term on right hand side
-      virtual void CalcRHSDiff(
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                            //!< index of current scalar
+      void CalcRHSDiff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                         //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
-      );
+          ) override;
     };
 
 
@@ -156,8 +152,6 @@ namespace DRT
       {
         return;
       }
-
-      virtual ~ScaTraEleDiffManagerAniso(){};
 
       //! Set the anisotropic diffusion coefficient
       virtual void SetAnisotropicDiff(const CORE::LINALG::Matrix<NSD, NSD> difftensor, const int k)
@@ -180,5 +174,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_ANISO_H

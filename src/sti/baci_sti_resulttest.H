@@ -12,6 +12,8 @@
 
 #include "baci_lib_resulttest.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STI
 {
   // forward declaration
@@ -39,11 +41,11 @@ namespace STI
     );
 
     //! test special quantity not associated with a particular element or node
-    virtual void TestSpecial(
+    void TestSpecial(
         DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
         int& nerr,                        //!< number of failed result tests
         int& test_count                   ///< number of result tests
-    );
+        ) override;
 
    private:
     //! get special result to be tested
@@ -57,4 +59,6 @@ namespace STI
     const Teuchos::RCP<const STI::Algorithm> sti_algorithm_;
   };
 }  // namespace STI
+BACI_NAMESPACE_CLOSE
+
 #endif

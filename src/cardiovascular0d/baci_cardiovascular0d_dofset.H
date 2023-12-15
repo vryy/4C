@@ -21,6 +21,8 @@
 #include <list>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace UTILS
 {
   /*!
@@ -56,11 +58,6 @@ namespace UTILS
     */
     Cardiovascular0DDofSet();
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~Cardiovascular0DDofSet();
 
 
     //! @name Access methods
@@ -79,11 +76,11 @@ namespace UTILS
     //! @name Construction
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    virtual int AssignDegreesOfFreedom(const Teuchos::RCP<DRT::Discretization> dis,
-        const int numdofs, const int start, const Teuchos::RCP<UTILS::MOR> mor);
+    virtual int AssignDegreesOfFreedom(const Teuchos::RCP<DRT::Discretization> dis, const int ndofs,
+        const int start, const Teuchos::RCP<UTILS::MOR> mor);
 
     /// reset all internal variables
-    virtual void Reset();
+    void Reset() override;
 
     //@}
 
@@ -95,5 +92,7 @@ namespace UTILS
 // << operator
 std::ostream& operator<<(std::ostream& os, const UTILS::Cardiovascular0DDofSet& dofset);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CARDIOVASCULAR0D_DOFSET_H

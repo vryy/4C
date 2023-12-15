@@ -12,6 +12,7 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -58,7 +59,7 @@ namespace CORE::LINALG
     this allows for higher precision when used on a bigger matrix. Long double is also used for
     output, therefore it has to be expicitly casted to a double if used in a "double only" context.
     */
-  long double Det_long(const SerialDenseMatrix& mat);
+  long double Det_long(const SerialDenseMatrix& matrix);
 
   /*!
    * \brief Utility function to copy the data to SerialDenseMatrix
@@ -72,5 +73,7 @@ namespace CORE::LINALG
     return out;
   }
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LINALG_SERIALDENSEMATRIX_H

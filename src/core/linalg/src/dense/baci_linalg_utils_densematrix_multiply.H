@@ -14,6 +14,8 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG::INTERNAL
 {
   /*!
@@ -284,5 +286,7 @@ namespace CORE::LINALG
     return err;
   }
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LINALG_UTILS_DENSEMATRIX_MULTIPLY_H

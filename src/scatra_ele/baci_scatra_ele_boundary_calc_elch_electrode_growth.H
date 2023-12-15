@@ -13,29 +13,20 @@ growth, e.g., lithium plating
 
 #include "baci_scatra_ele_boundary_calc_elch_electrode.H"
 
-// forward declaration
-namespace DRT
-{
-  namespace ELEMENTS
-  {
-    class ScaTraEleBoundaryCalcElchElectrodeGrowthUtils;
-  }
-}  // namespace DRT
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchElectrodeGrowth
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim> myelch;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim> myelectrode;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils myelectrodegrowthutils;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -44,10 +35,6 @@ namespace DRT
       //! singleton access method
       static ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
-
-      //! destructor
-      virtual ~ScaTraEleBoundaryCalcElchElectrodeGrowth() { return; };
-
 
 
      private:
@@ -130,9 +117,37 @@ namespace DRT
           DRT::Element::LocationArray& la                                //!< location array
           ) override;
 
+      /*!
+       * @brief Fill the rhs vector and the linearization matrix
+       *
+       * @param[in] numelectrons     number of electrons involved in charge transfer at
+       *                             electrode-electrolyte interface
+       * @param[in] timefacfac       time and domain integration factor for linearization terms
+       * @param[in] timefacrhsfac    time and domain integration factor for RHS terms
+       * @param[in] j                Butler-Volmer mass flux density
+       * @param[in] dj_dc_slave      linearization of Butler-Volmer mass flux density w.r.t.
+       *                             concentration on slave-side
+       * @param[in] dj_dc_master     linearization of Butler-Volmer mass flux density w.r.t.
+       *                             concentration on master-side
+       * @param[in] dj_dpot_slave    linearization of Butler-Volmer mass flux density w.r.t.
+       *                             electric potential on slave-side
+       * @param[in] dj_dpot_master   linearization of Butler-Volmer mass flux density w.r.t.
+       *                             electric potential on master-side
+       * @param[out] eslavematrix    linearizations of slave-side residuals w.r.t. slave-side dofs
+       * @param[out] emastermatrix   linearizations of slave-side residuals w.r.t. master-side dofs
+       * @param[out] eslaveresidual  slave-side residual vector
+       */
+      void CalculateRHSAndLinearization(int numelectrons, double timefacfac, double timefacrhsfac,
+          double j, double dj_dc_slave, double dj_dc_master, double dj_dpot_slave,
+          double dj_dpot_master, CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,
+          CORE::LINALG::SerialDenseVector& eslaveresidual) const;
+
       //! nodal growth variables
       CORE::LINALG::Matrix<nen_, 1> egrowth_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeGrowth
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -19,7 +19,6 @@
 #include "baci_contact_utils.H"
 #include "baci_inpar_contact.H"
 #include "baci_io.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -27,9 +26,12 @@
 #include "baci_mortar_defines.H"
 #include "baci_mortar_utils.H"
 #include "baci_structure_new_model_evaluator_contact.H"
+#include "baci_utils_epetra_exceptions.H"
 
 #include <Epetra_FEVector.h>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -1538,7 +1540,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
         int nodeIds[2] = {0, 0};
         int nodeLIds[2] = {0, 0};
 
-        if (selement->Shape() == DRT::Element::quad4)
+        if (selement->Shape() == CORE::FE::CellType::quad4)
         {
           if (k == 0)
           {
@@ -1575,7 +1577,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
           else
             dserror("loop counter and edge number do not match!");
         }
-        else if (selement->Shape() == DRT::Element::tri3)
+        else if (selement->Shape() == CORE::FE::CellType::tri3)
         {
           if (k == 0)
           {
@@ -1630,7 +1632,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
 
           // create line ele:
           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
+              j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT::Node*, 2> nodes = {
@@ -4125,12 +4127,12 @@ void CONTACT::CoLagrangeStrategy::EvalForceStiff(CONTACT::ParamsInterface& cpara
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active LM contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
-    if (nonSmoothContact_ && bt == DRT::UTILS::MatBlockType::displ_displ)
+    if (nonSmoothContact_ && bt == CONTACT::MatBlockType::displ_displ)
       return nonsmooth_Penalty_stiff_;
     else
       return Teuchos::null;
@@ -4141,7 +4143,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixB
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
     {
       mat_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
 
@@ -4170,7 +4172,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixB
 
       break;
     }
-    case DRT::UTILS::MatBlockType::displ_lm:
+    case CONTACT::MatBlockType::displ_lm:
     {
       // build constraint matrix kdz
       Teuchos::RCP<CORE::LINALG::SparseMatrix> kdz_ptr =
@@ -4190,7 +4192,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixB
 
       break;
     }
-    case DRT::UTILS::MatBlockType::lm_displ:
+    case CONTACT::MatBlockType::lm_displ:
     {
       // build constraint matrix kzd
       Teuchos::RCP<CORE::LINALG::SparseMatrix> kzd_ptr =
@@ -4224,7 +4226,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixB
         mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr, LinSystemLMDoFRowMapPtr(), ProblemDofs());
       break;
     }
-    case DRT::UTILS::MatBlockType::lm_lm:
+    case CONTACT::MatBlockType::lm_lm:
     {
       // build constraint matrix kzz
       Teuchos::RCP<CORE::LINALG::SparseMatrix> kzz_ptr = Teuchos::null;
@@ -4326,12 +4328,12 @@ void CONTACT::CoLagrangeStrategy::RunPostComputeX(const CONTACT::ParamsInterface
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   // if there are no active LM contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
-    if (nonSmoothContact_ && bt == DRT::UTILS::VecBlockType::displ)
+    if (nonSmoothContact_ && bt == CONTACT::VecBlockType::displ)
     {
       return nonsmooth_Penalty_force_;
     }
@@ -4342,7 +4344,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
     {
       if (nonSmoothContact_ && nonsmooth_Penalty_force_ != Teuchos::null)
       {
@@ -4364,7 +4366,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
 
       break;
     }
-    case DRT::UTILS::VecBlockType::constraint:
+    case CONTACT::VecBlockType::constraint:
     {
       vec_ptr = constrrhs_;
       if (IsSelfContact() && !IsCondensedSystem())
@@ -6993,3 +6995,5 @@ void CONTACT::CoLagrangeStrategy::RunPostApplyJacobianInverse(
   }
   disi->Scale(-1.);
 }
+
+BACI_NAMESPACE_CLOSE

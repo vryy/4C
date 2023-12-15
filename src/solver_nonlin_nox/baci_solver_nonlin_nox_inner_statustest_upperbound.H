@@ -24,6 +24,12 @@ namespace NOX
     class Group;
     class Vector;
   }  // namespace Abstract
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace StatusTest
@@ -42,27 +48,24 @@ namespace NOX
         {
          public:
           //! constructor
-          UpperBound(const double& upperboundval, const NOX::Abstract::Vector::NormType normtype,
+          UpperBound(const double& upperboundval, const ::NOX::Abstract::Vector::NormType normtype,
               const NOX::NLN::StatusTest::QuantityType qtype);
 
-          //! destructor
-          virtual ~UpperBound(){};
-
           //! Test the line search stopping criterion
-          virtual NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
+          NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
               const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType);
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent checkStatus call
-          virtual NOX::NLN::INNER::StatusTest::StatusType GetStatus() const;
+          NOX::NLN::INNER::StatusTest::StatusType GetStatus() const override;
 
           ///! Output formatted description of stopping test to output stream.
-          virtual std::ostream& Print(std::ostream& stream, int indent = 0) const;
+          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          protected:
           double GetSearchDirectionLength(const NOX::NLN::LineSearch::Generic& linesearch,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp) const;
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp) const;
 
          private:
           void throwError(const std::string& functionName, const std::string& errorMsg) const;
@@ -72,7 +75,7 @@ namespace NOX
           NOX::NLN::INNER::StatusTest::StatusType status_;
 
           //! norm type
-          NOX::Abstract::Vector::NormType normtype_;
+          ::NOX::Abstract::Vector::NormType normtype_;
 
           //! degree of freedom type
           NOX::NLN::StatusTest::QuantityType qtype_;
@@ -89,5 +92,7 @@ namespace NOX
     }    // namespace INNER
   }      // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_UPPERBOUND_H

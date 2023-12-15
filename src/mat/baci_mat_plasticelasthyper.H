@@ -20,13 +20,15 @@ rY_13 0.7
 
 
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_tsi.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
 #define AS_CONVERGENCE_TOL 1.e-12
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -55,9 +57,6 @@ namespace MAT
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
       PlasticElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      virtual ~PlasticElastHyper() { ; }
 
       /// @name material parameters
       //@{
@@ -111,21 +110,21 @@ namespace MAT
 
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
       //@}
 
     };  // class PlasticElastHyper
 
   }  // namespace PAR
 
-  class PlasticElastHyperType : public DRT::ParObjectType
+  class PlasticElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "PlasticElastHyperType"; }
+    std::string Name() const override { return "PlasticElastHyperType"; }
 
     static PlasticElastHyperType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static PlasticElastHyperType instance_;
@@ -152,7 +151,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return PlasticElastHyperType::Instance().UniqueParObjectId();
     }
@@ -165,7 +164,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -177,28 +176,28 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_plelasthyper; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_plelasthyper; }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new PlasticElastHyper(*this));
     }
 
     /// material mass density
-    virtual double Density() const { return MatParams()->density_; }
+    double Density() const override { return MatParams()->density_; }
 
     /// initial yield stress
     virtual double Inityield() const { return MatParams()->inityield_; }
@@ -368,13 +367,13 @@ namespace MAT
 
     /// hyperelastic stress response plus elasticity tensor
     /// (pure virtual in material base class. Not allowed here)
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
         Teuchos::ParameterList& params,      ///< Container for additional information
         CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
         CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
         int gp,                              ///< Gauss point
-        int eleGID)                          ///< Element GID
+        int eleGID) override                 ///< Element GID
     {
       ElastHyper::Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
       return;
@@ -389,7 +388,7 @@ namespace MAT
         const int eleGID, const double temp);
 
     /// setup material data
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine, will be called after the complete inout is already befire the
@@ -408,7 +407,7 @@ namespace MAT
     virtual void SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef);
 
     /// update sumands
-    virtual void Update()
+    void Update() override
     {
       dserror(
           "Elastic summands in PlasticHyperElast are not allowed to have internal variables"
@@ -419,13 +418,13 @@ namespace MAT
     virtual void UpdateGP(const int gp, const CORE::LINALG::Matrix<3, 3>* deltaDp);
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return MatParams(); }
+    MAT::PAR::Parameter* Parameter() const override { return MatParams(); }
 
     /// Access to material params
     virtual MAT::PAR::PlasticElastHyper* MatParams() const { return params_; }
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    virtual bool NeedsDefgrd() { return true; };
+    bool NeedsDefgrd() override { return true; };
 
     /// get plastic algorithm parameters
     virtual void GetParams(double s, double cpl)
@@ -461,12 +460,12 @@ namespace MAT
     virtual void VisNames(std::map<std::string, int>& names) const;
 
     //! return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
     //! purely elastic material (input via negative initial yield stress
@@ -631,5 +630,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

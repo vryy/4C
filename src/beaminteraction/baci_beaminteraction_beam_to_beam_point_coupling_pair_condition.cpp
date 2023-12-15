@@ -14,6 +14,8 @@
 #include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -57,7 +59,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingCondition::CreateContactPair(
  *
  */
 void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
-    const Teuchos::RCP<const ::DRT::Discretization>& discretization)
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discretization)
 {
   // Set the IDs of the nodes to be coupled
   const std::vector<int> node_ids = *(condition_line_->Nodes());
@@ -90,3 +92,5 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
   line_ids_ = std::set<int>(element_ids.begin(), element_ids.end());
   local_parameter_coordinates_ = {position_in_parameter_space[0], position_in_parameter_space[1]};
 }
+
+BACI_NAMESPACE_CLOSE

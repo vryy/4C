@@ -14,6 +14,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace STR
 {
@@ -34,7 +36,7 @@ namespace BEAMINTERACTION
     CrosslinkingParams();
 
     //! destructor
-    virtual ~CrosslinkingParams(){};
+    virtual ~CrosslinkingParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init(STR::TIMINT::BaseDataGlobalState const& gstate);
@@ -130,7 +132,6 @@ namespace BEAMINTERACTION
     {
       CheckInitSetup();
       return init_box_;
-      ;
     };
 
     // distance between two binding spots on a filament
@@ -206,5 +207,7 @@ namespace BEAMINTERACTION
         filamentbspotrangelocal_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

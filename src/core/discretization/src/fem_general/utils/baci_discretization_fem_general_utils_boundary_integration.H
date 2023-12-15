@@ -25,6 +25,8 @@
 #include "baci_lib_element_integration_select.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   struct IntegrationPoints1D;
@@ -52,11 +54,10 @@ namespace CORE::DRT::UTILS
     -----------------------------------------------------------------*/
   template <class V, class W, typename IntegrationPoints>
   void SurfaceGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
   {
-    if ((distype == ::DRT::Element::quad4 && pdistype == ::DRT::Element::hex8) or
-        (distype == ::DRT::Element::quad9 && pdistype == ::DRT::Element::hex27))
+    if ((distype == CORE::FE::CellType::quad4 && pdistype == CORE::FE::CellType::hex8) or
+        (distype == CORE::FE::CellType::quad9 && pdistype == CORE::FE::CellType::hex27))
     {
       switch (surfaceid)
       {
@@ -227,7 +228,7 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if (distype == ::DRT::Element::nurbs9 && pdistype == ::DRT::Element::nurbs27)
+    else if (distype == CORE::FE::CellType::nurbs9 && pdistype == CORE::FE::CellType::nurbs27)
     {
       switch (surfaceid)
       {
@@ -392,8 +393,8 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == ::DRT::Element::tri3 && pdistype == ::DRT::Element::tet4) or
-             (distype == ::DRT::Element::tri6 && pdistype == ::DRT::Element::tet10))
+    else if ((distype == CORE::FE::CellType::tri3 && pdistype == CORE::FE::CellType::tet4) or
+             (distype == CORE::FE::CellType::tri6 && pdistype == CORE::FE::CellType::tet10))
     {
       switch (surfaceid)
       {
@@ -492,8 +493,7 @@ namespace CORE::DRT::UTILS
     -----------------------------------------------------------------*/
   template <class V, class W, typename IntegrationPoints>
   void LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int lineid);
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int lineid);
 
   /*-----------------------------------------------------------------
 
@@ -515,92 +515,80 @@ namespace CORE::DRT::UTILS
   template <const int NSD>
   void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const ::CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
   void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
   void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::CellType distype, const int surfaceid);
 
 
 
   template <const int NSD>
   void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::Matrix<NSD, NSD>& derivtrafo,
-      const ::CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
   void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::Matrix<3, 3>& derivtrafo,
-      const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
   void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::Matrix<2, 2>& derivtrafo,
-      const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::CellType distype, const int surfaceid);
 
 
 
   template <const int NSD>
   void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
   void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
   void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   template <const int NSD>
   void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::Matrix<NSD, NSD>& derivtrafo, const GaussPoints& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
   void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::Matrix<3, 3>& derivtrafo, const GaussPoints& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
   void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::Matrix<2, 2>& derivtrafo, const GaussPoints& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int surfaceid);
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -616,7 +604,7 @@ namespace CORE::DRT::UTILS
    */
   template <int parent_ele_dim>
   CORE::LINALG::Matrix<parent_ele_dim, 1> CalculateParentGPFromFaceElementData(
-      const double* faceele_xi, const ::DRT::FaceElement* faceele);
+      const double* faceele_xi, const BACI::DRT::FaceElement* faceele);
 
   //! compute covariant metric tensor for surface element
   void ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatrix& xyze,
@@ -625,14 +613,12 @@ namespace CORE::DRT::UTILS
 
   //! compute covariant metric tensor for surface/line element and optionally, the normalized
   //! normal vector at the Gauss-point (template)
-  template <::DRT::Element::DiscretizationType DISTYPE, int probdim, typename valueType = double>
+  template <CORE::FE::CellType DISTYPE, int probdim, typename valueType = double>
   void ComputeMetricTensorForBoundaryEle(
-      const CORE::LINALG::Matrix<probdim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& xyze,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& deriv,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, valueType>& metrictensor,
+      const CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<DISTYPE>, valueType>& xyze,
+      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::num_nodes<DISTYPE>, valueType>&
+          deriv,
+      CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::dim<DISTYPE>, valueType>& metrictensor,
       valueType& sqrtdetg, const bool throw_error,
       CORE::LINALG::Matrix<probdim, 1, valueType>* normalvec = nullptr,
       const bool unit_normal = true)
@@ -668,8 +654,7 @@ namespace CORE::DRT::UTILS
     |
     |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
      */
-    CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, probdim, valueType>
-        dxyzdrs;
+    CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, probdim, valueType> dxyzdrs;
     dxyzdrs.MultiplyNT(deriv, xyze);
 
     /* 2D boundary Element
@@ -715,18 +700,18 @@ namespace CORE::DRT::UTILS
     // Calculate outward pointing normal vector
     if (normalvec)
     {
-      if (probdim == 3 and ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 2)
+      if (probdim == 3 and CORE::FE::dim<DISTYPE> == 2)
       {
         (*normalvec)(0) = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(1, 1) * dxyzdrs(0, 2);
         (*normalvec)(1) = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(1, 2) * dxyzdrs(0, 0);
         (*normalvec)(2) = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(1, 0) * dxyzdrs(0, 1);
       }
-      else if (probdim == 2 and ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
+      else if (probdim == 2 and CORE::FE::dim<DISTYPE> == 1)
       {
         (*normalvec)(0) = dxyzdrs(0, 1);
         (*normalvec)(1) = -dxyzdrs(0, 0);
       }
-      else if (probdim == 3 and ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
+      else if (probdim == 3 and CORE::FE::dim<DISTYPE> == 1)
       {
         // handle small normal vectors with dxyzdrs(0,0), dxyzdrs(0,1) < 1e-6
         // and other components = 0.0
@@ -763,21 +748,15 @@ namespace CORE::DRT::UTILS
 
   //! compute kovariant metric tensor for surface/line element and optionally, the normalized
   //! normal vector at the Gausspoint (template)
-  template <::DRT::Element::DiscretizationType DISTYPE>
+  template <CORE::FE::CellType DISTYPE>
   void ComputeMetricTensorForBoundaryEle(
-      const CORE::LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim),
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& deriv,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& metrictensor,
-      double& sqrtdetg,
-      CORE::LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim), 1>* normalvec =
-          nullptr)
+      const CORE::LINALG::Matrix<(1 + CORE::FE::dim<DISTYPE>), CORE::FE::num_nodes<DISTYPE>>& xyze,
+      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::num_nodes<DISTYPE>>& deriv,
+      CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::dim<DISTYPE>>& metrictensor,
+      double& sqrtdetg, CORE::LINALG::Matrix<(1 + CORE::FE::dim<DISTYPE>), 1>* normalvec = nullptr)
   {
     const bool throw_error_if_negative_determinant(true);
-    ComputeMetricTensorForBoundaryEle<DISTYPE,
-        (1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim)>(
+    ComputeMetricTensorForBoundaryEle<DISTYPE, (1 + CORE::FE::dim<DISTYPE>)>(
         xyze, deriv, metrictensor, sqrtdetg, throw_error_if_negative_determinant, normalvec);
   }
 
@@ -790,16 +769,15 @@ namespace CORE::DRT::UTILS
          2D-version
     -----------------------------------------------------------------*/
   inline void BoundaryGPToParentGP2(CORE::LINALG::SerialDenseMatrix& pqxg,
-      const CORE::LINALG::SerialDenseMatrix& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int beleid)
+      const CORE::LINALG::SerialDenseMatrix& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::CellType distype, const int beleid)
   {
     // resize output array
     pqxg.shape(intpoints.numRows(), 2);
 
-    if ((distype == ::DRT::Element::line2 && pdistype == ::DRT::Element::quad4) or
-        (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::quad8) or
-        (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::quad9))
+    if ((distype == CORE::FE::CellType::line2 && pdistype == CORE::FE::CellType::quad4) or
+        (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::quad8) or
+        (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::quad9))
     {
       switch (beleid)
       {
@@ -963,8 +941,8 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of lines, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == ::DRT::Element::line2 && pdistype == ::DRT::Element::tri3) or
-             (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::tri6))
+    else if ((distype == CORE::FE::CellType::line2 && pdistype == CORE::FE::CellType::tri3) or
+             (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::tri6))
     {
       switch (beleid)
       {
@@ -999,7 +977,7 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of lines, unable to determine intpoint in parent");
       }
     }
-    else if (distype == ::DRT::Element::nurbs3 && pdistype == ::DRT::Element::nurbs9)
+    else if (distype == CORE::FE::CellType::nurbs3 && pdistype == CORE::FE::CellType::nurbs9)
     {
       switch (beleid)
       {
@@ -1105,16 +1083,15 @@ namespace CORE::DRT::UTILS
          3D-version
     -----------------------------------------------------------------*/
   inline void BoundaryGPToParentGP3(CORE::LINALG::SerialDenseMatrix& pqxg,
-      const CORE::LINALG::SerialDenseMatrix& intpoints,
-      const ::DRT::Element::DiscretizationType pdistype,
-      const ::DRT::Element::DiscretizationType distype, const int beleid)
+      const CORE::LINALG::SerialDenseMatrix& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::CellType distype, const int beleid)
   {
     // resize output array
     pqxg.shape(intpoints.numRows(), 3);
 
-    if ((distype == ::DRT::Element::quad4 && pdistype == ::DRT::Element::hex8) or
-        (distype == ::DRT::Element::quad8 && pdistype == ::DRT::Element::hex20) or
-        (distype == ::DRT::Element::quad9 && pdistype == ::DRT::Element::hex27))
+    if ((distype == CORE::FE::CellType::quad4 && pdistype == CORE::FE::CellType::hex8) or
+        (distype == CORE::FE::CellType::quad8 && pdistype == CORE::FE::CellType::hex20) or
+        (distype == CORE::FE::CellType::quad9 && pdistype == CORE::FE::CellType::hex27))
     {
       switch (beleid)
       {
@@ -1266,8 +1243,8 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == ::DRT::Element::tri3 && pdistype == ::DRT::Element::tet4) or
-             (distype == ::DRT::Element::tri6 && pdistype == ::DRT::Element::tet10))
+    else if ((distype == CORE::FE::CellType::tri3 && pdistype == CORE::FE::CellType::tet4) or
+             (distype == CORE::FE::CellType::tri6 && pdistype == CORE::FE::CellType::tet10))
     {
       switch (beleid)
       {
@@ -1315,8 +1292,8 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == ::DRT::Element::quad4 && pdistype == ::DRT::Element::wedge6) or
-             (distype == ::DRT::Element::quad8 && pdistype == ::DRT::Element::wedge15))
+    else if ((distype == CORE::FE::CellType::quad4 && pdistype == CORE::FE::CellType::wedge6) or
+             (distype == CORE::FE::CellType::quad8 && pdistype == CORE::FE::CellType::wedge15))
     {
       switch (beleid)
       {
@@ -1398,8 +1375,8 @@ namespace CORE::DRT::UTILS
               "in parent");
       }
     }
-    else if ((distype == ::DRT::Element::tri3 && pdistype == ::DRT::Element::wedge6) or
-             (distype == ::DRT::Element::tri6 && pdistype == ::DRT::Element::wedge15))
+    else if ((distype == CORE::FE::CellType::tri3 && pdistype == CORE::FE::CellType::wedge6) or
+             (distype == CORE::FE::CellType::tri6 && pdistype == CORE::FE::CellType::wedge15))
     {
       switch (beleid)
       {
@@ -1431,7 +1408,7 @@ namespace CORE::DRT::UTILS
               "parent");
       }
     }
-    else if (distype == ::DRT::Element::nurbs9 && pdistype == ::DRT::Element::nurbs27)
+    else if (distype == CORE::FE::CellType::nurbs9 && pdistype == CORE::FE::CellType::nurbs27)
     {
       switch (beleid)
       {
@@ -1600,24 +1577,18 @@ namespace CORE::DRT::UTILS
   // - isnurbs: if true, some NURBS specific stuff is done
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  template <::DRT::Element::DiscretizationType distype>
-  void EvalShapeFuncAtBouIntPoint(
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-          1>& funct,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
-      double& fac,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
-      double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
-      const ::CORE::DRT::UTILS::IntPointsAndWeights<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim>&
-          intpoints,
+  template <CORE::FE::CellType distype>
+  void EvalShapeFuncAtBouIntPoint(CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>& funct,
+      CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
+      double& fac, CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
+      CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xsi,
+      CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, CORE::FE::num_nodes<distype>>& xyze,
+      const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>>& intpoints,
       const int gpid, const std::vector<CORE::LINALG::SerialDenseVector>* myknots,
       const CORE::LINALG::SerialDenseVector* weights, const bool isnurbs)
   {
     // Obtain number of spatial dimensions of boundary element
-    const int bdrynsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    const int bdrynsd = CORE::FE::dim<distype>;
 
     // local coordinates of the current integration point
     const double* gpcoord = (intpoints.IP().qxg)[gpid];
@@ -1630,8 +1601,8 @@ namespace CORE::DRT::UTILS
     if (not isnurbs)
     {
       // shape functions and their first derivatives of boundary element
-      ::CORE::DRT::UTILS::shape_function<distype>(xsi, funct);
-      ::CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi, deriv);
+      CORE::DRT::UTILS::shape_function<distype>(xsi, funct);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi, deriv);
     }
     // only for NURBS!!!
     else
@@ -1654,18 +1625,13 @@ namespace CORE::DRT::UTILS
   // according to dissertation of Prof. Wall, equation (7.13)
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  template <::DRT::Element::DiscretizationType distype>
-  void ElementNodeNormal(
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-          1>& funct,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
-      double& fac,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
-      double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
-      ::DRT::Element* ele, ::DRT::Discretization& discretization,
+  template <CORE::FE::CellType distype>
+  void ElementNodeNormal(CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>& funct,
+      CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
+      double& fac, CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
+      CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xsi,
+      CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, CORE::FE::num_nodes<distype>>& xyze,
+      BACI::DRT::Element* ele, BACI::DRT::Discretization& discretization,
       CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
       const bool isnurbs, const bool isale)
   {
@@ -1673,14 +1639,13 @@ namespace CORE::DRT::UTILS
      |                          Initialization                              |
      *----------------------------------------------------------------------*/
     // Number of spatial dimensions of boundary element
-    const int bdrynsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    const int bdrynsd = CORE::FE::dim<distype>;
 
     // Number of spatial dimensions of parent element
     static const int nsd = bdrynsd + 1;
 
     // Number of nodes of boundary element
-    static const int bdrynen =
-        ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int bdrynen = CORE::FE::num_nodes<distype>;
 
     // Number of degrees of freedom per node
     int numdofpernode = nsd + 1;  // standard case is 'fluid'
@@ -1697,8 +1662,8 @@ namespace CORE::DRT::UTILS
     }
 
     // Get gaussrule
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd> intpoints(
-        ::DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+    const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd> intpoints(
+        BACI::DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // Get node coordinates
     CORE::GEO::fillInitialPositionArray<distype, nsd, CORE::LINALG::Matrix<nsd, bdrynen>>(
@@ -1745,5 +1710,7 @@ namespace CORE::DRT::UTILS
   }   // ElementNodeNormal
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_BOUNDARY_INTEGRATION_H

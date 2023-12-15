@@ -19,6 +19,8 @@ namespace Teuchos
   class ParameterList;
 }  // namespace Teuchos
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class AbstractStratDataContainer;
@@ -67,7 +69,7 @@ namespace CONTACT
       /** \brief Create a contact interface object based on the given information
        *
        *  \author hiermeier \date 03/17 */
-      static Teuchos::RCP<::CONTACT::CoInterface> CreateInterface(const int id,
+      static Teuchos::RCP<CONTACT::CoInterface> CreateInterface(const int id,
           const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
           const bool selfcontact, const Teuchos::RCP<const DRT::Discretization>& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
@@ -76,11 +78,11 @@ namespace CONTACT
       /** \brief Create a contact interface object based on the given information
        *
        *  \author hiermeier \date 03/17 */
-      static Teuchos::RCP<::CONTACT::CoInterface> CreateInterface(
+      static Teuchos::RCP<CONTACT::CoInterface> CreateInterface(
           const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
           const Teuchos::RCP<const DRT::Discretization>& parent_dis,
-          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
+          Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
           const int contactconstitutivelaw_id = -1);
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
@@ -162,5 +164,7 @@ namespace CONTACT
     };
   }  // namespace STRATEGY
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_STRATEGY_FACTORY_H

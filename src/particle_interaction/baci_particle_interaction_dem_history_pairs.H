@@ -22,6 +22,8 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -65,9 +67,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit DEMHistoryPairs(const Epetra_Comm& comm);
-
-    //! destructor
-    ~DEMHistoryPairs() = default;
 
     //! init history pair handler
     void Init();
@@ -185,4 +184,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

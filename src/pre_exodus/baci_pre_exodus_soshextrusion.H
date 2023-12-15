@@ -22,7 +22,6 @@ Here everything related with solid-shell body extrusion
 #include <vector>
 
 
-
 namespace EXODUS
 {
   Mesh SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid,
@@ -62,15 +61,15 @@ namespace EXODUS
 
   std::vector<double> MeanVec(const std::vector<std::vector<double>> baseVecs);
 
-  const std::map<int, std::set<int>> NodeToEleConn(const std::map<int, std::vector<int>> ele_conn);
+  std::map<int, std::set<int>> NodeToEleConn(const std::map<int, std::vector<int>> ele_conn);
 
-  const std::map<int, std::vector<int>> EleNeighbors(const std::map<int, std::vector<int>> ele_conn,
+  std::map<int, std::vector<int>> EleNeighbors(const std::map<int, std::vector<int>> ele_conn,
       const std::map<int, std::set<int>>& node_conn);
 
-  const std::set<int> FreeEdgeNodes(const std::map<int, std::vector<int>>& ele_conn,
+  std::set<int> FreeEdgeNodes(const std::map<int, std::vector<int>>& ele_conn,
       const std::map<int, std::vector<int>>& ele_nbrs);
 
-  const std::set<int> FindExtrudedNodes(const std::set<int>& freedgenodes,
+  std::set<int> FindExtrudedNodes(const std::set<int>& freedgenodes,
       const std::map<int, std::vector<int>>& nodepair, const std::set<int>& ns);
 
   std::set<int> FreeFaceNodes(
@@ -81,7 +80,7 @@ namespace EXODUS
 
   int FindEdgeNeighbor(const std::vector<int> nodes, const int actnode, const int wrong_dir_node);
 
-  std::vector<int> FindNodeNeighbors(const std::vector<int> nodes, const int centernode);
+  std::vector<int> FindNodeNeighbors(const std::vector<int> nodes, const int actnode);
 
   enum ExtrusionType
   {

@@ -21,6 +21,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -676,3 +678,5 @@ void PASI::PASI_PartTwoWayCoup_DispRelaxAitken::CalcOmega(double& omega, const i
   // store current interface displacement increment for next iteration
   intfdispincnpold_->Update(1.0, *intfdispincnp_, 0.0);
 }
+
+BACI_NAMESPACE_CLOSE

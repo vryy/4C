@@ -6,13 +6,15 @@
 
 #include "baci_shell7p_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_shell7p_ele_factory.H"
 #include "baci_shell7p_ele_interface_serializable.H"
 #include "baci_shell7p_line.H"
 #include "baci_shell7p_utils.H"
+
+BACI_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::Shell7pType DRT::ELEMENTS::Shell7pType::instance_;
@@ -32,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell7pType::Create(const int id, cons
   return Teuchos::rcp(new DRT::ELEMENTS::Shell7p(id, owner));
 }
 
-DRT::ParObject* DRT::ELEMENTS::Shell7pType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Shell7pType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Shell7p(-1, -1);
   object->Unpack(data);
@@ -177,7 +179,7 @@ DRT::ELEMENTS::Shell7p::Shell7p(const DRT::ELEMENTS::Shell7p& other)
   shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(other, other.eletech_);
 }
 
-DRT::ELEMENTS::Shell7p& ::DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::Shell7p& other)
+DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::Shell7p& other)
 {
   if (this == &other) return *this;
   DRT::Element::operator=(other);
@@ -205,9 +207,9 @@ int DRT::ELEMENTS::Shell7p::NumLine() const
 int DRT::ELEMENTS::Shell7p::NumSurface() const { return 1; }
 
 
-void DRT::ELEMENTS::Shell7p::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Shell7p::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -235,16 +237,15 @@ void DRT::ELEMENTS::Shell7p::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   // discretization type
-  distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   // element technology
   ExtractfromPack(position, data, eletech_);
   // thickness in reference frame
@@ -252,7 +253,7 @@ void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
   // nodal directors
   ExtractfromPack(position, data, nodal_directors_);
   // Setup flag for material post setup
-  DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(*this, eletech_);
   std::shared_ptr<SHELL::Serializable> serializable_interface =
@@ -307,29 +308,20 @@ bool DRT::ELEMENTS::Shell7p::VisData(const std::string& name, std::vector<double
 void DRT::ELEMENTS::Shell7p::Print(std::ostream& os) const
 {
   os << "Shell7p ";
-  os << " Discretization type: " << DRT::DistypeToString(distype_).c_str();
+  os << " Discretization type: " << CORE::FE::CellTypeToString(distype_).c_str();
   Element::Print(os);
 }
 
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7p::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal, and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Shell7pLine, Shell7p>(DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Shell7pLine, Shell7p>(CORE::COMM::buildLines, *this);
 }
 
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7p::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 bool DRT::ELEMENTS::Shell7p::ReadElement(
@@ -338,7 +330,7 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   STR::ELEMENTS::ShellData shell_data = {};
 
   // set discretization type
-  distype_ = DRT::StringToDistype(distype);
+  distype_ = CORE::FE::StringToCellType(distype);
 
   // set thickness in reference frame
   linedef->ExtractDouble("THICK", thickness_);
@@ -377,3 +369,4 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   }
   return true;
 }
+BACI_NAMESPACE_CLOSE

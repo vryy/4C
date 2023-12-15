@@ -17,6 +17,8 @@
 #include "baci_rigidsphere.H"
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a beam element         meier 05/14|
  *----------------------------------------------------------------------*/
@@ -221,7 +223,7 @@ bool BEAMINTERACTION::IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, doub
 bool BEAMINTERACTION::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
     CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
     CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit,
-    std::pair<double, double>& closestpoints, bool etaset)
+    std::pair<double, double>& closestpoints, bool& etaset)
 {
   CORE::LINALG::Matrix<3, 1, double> t1(true);
   CORE::LINALG::Matrix<3, 1, double> t2(true);
@@ -427,3 +429,5 @@ double BEAMINTERACTION::DetermineSearchboxInc(Teuchos::ParameterList& beamcontac
 
   return searchboxinc;
 }
+
+BACI_NAMESPACE_CLOSE

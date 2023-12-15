@@ -17,12 +17,9 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
-// forward declarations
+BACI_NAMESPACE_OPEN
 
-namespace UTILS
-{
-  class SurfStressManager;
-}
+// forward declarations
 
 namespace STRUMULTI
 {
@@ -55,7 +52,7 @@ namespace MAT
     void NewResultFile(bool eleowner, std::string& newfilename);
 
     //! create path of new result file
-    const std::string NewResultFilePath(const std::string& newprefix);
+    std::string NewResultFilePath(const std::string& newprefix);
 
     /// Perform microscale simulation
     void PerformMicroSimulation(CORE::LINALG::Matrix<3, 3>* defgrd,
@@ -109,9 +106,6 @@ namespace MAT
     /// my vector of new displacements
     Teuchos::RCP<Epetra_Vector> disn_;
 
-    /// my manager of surface stresses
-    Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man_;
-
     // my EAS history data -> note that microstructure is not parallel
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha_;
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha_;
@@ -149,5 +143,7 @@ namespace MAT
     bool build_stiff_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

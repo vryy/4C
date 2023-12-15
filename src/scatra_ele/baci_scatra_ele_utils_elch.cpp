@@ -13,11 +13,12 @@
 #include "baci_scatra_ele_calc_elch.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 08/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(
     const int numdofpernode,    ///< number of degrees of freedom per node
     const int numscal,          ///< number of transported scalars per node
@@ -39,7 +40,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* DRT::ELEMENTS::ScaTraEleUtilsElch<di
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 07/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
     const int numdofpernode,    ///< number of degrees of freedom per node
     const int numscal,          ///< number of transported scalars per node
@@ -55,7 +56,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
  | evaluation of electrochemistry kinetics at integration point on domain or boundary element   fang
  07/15 |
  *---------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrationPoint(
     const DRT::Element* ele,                                   ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
@@ -674,7 +675,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
  | evaluate electrode kinetics status information at integration point on domain or boundary element
  fang 07/15 |
  *----------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegrationPoint(
     const DRT::Element* ele,                   ///< current element
     CORE::LINALG::SerialDenseVector& scalars,  ///< scalars to be computed
@@ -1259,7 +1260,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 /*----------------------------------------------------------------------*
  | evaluate ion material                                     fang 07/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
     const Teuchos::RCP<const MAT::Material> material,  //!< ion material
     const int k,                                       //!< ID of ion material
@@ -1299,24 +1300,26 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::nurbs3>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElch<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::pyramid5>;
+// template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

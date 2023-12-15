@@ -16,6 +16,8 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_engine_typedefs.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -45,9 +47,6 @@ namespace PARTICLEALGORITHM
      * \param[in] viscdampfac viscous damping factor
      */
     explicit ViscousDampingHandler(const double viscdampfac);
-
-    //! destructor
-    ~ViscousDampingHandler() = default;
 
     /*!
      * \brief init viscous damping handler
@@ -84,4 +83,6 @@ namespace PARTICLEALGORITHM
 }  // namespace PARTICLEALGORITHM
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

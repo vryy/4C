@@ -13,24 +13,25 @@
 #define BACI_LIB_CONDITION_H
 
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_container.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class ConditionObjectType : public DRT::ParObjectType
+  class ConditionObjectType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ConditionObjectType"; }
+    std::string Name() const override { return "ConditionObjectType"; }
 
     static ConditionObjectType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ConditionObjectType instance_;
@@ -233,7 +234,7 @@ namespace DRT
       S2IKinetics,
       S2IMeshtying,
       S2INoEvaluation,
-      S2ICouplingGrowth,
+      S2IKineticsGrowth,
       S2ISCLCoupling,
       ElectrodeSOC,
       CCCVCycling,
@@ -359,7 +360,7 @@ namespace DRT
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ConditionObjectType::Instance().UniqueParObjectId();
     }
@@ -370,7 +371,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -378,7 +379,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -431,7 +432,7 @@ namespace DRT
     /*!
     \brief Print this Condition (ostream << is also implemented for DRT::Condition)
     */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /*!
     Return the id and the name of the condition
@@ -446,7 +447,7 @@ namespace DRT
     /*!
     \brief Return communicator
     */
-    inline const Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
+    inline Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
 
     /*!
     \brief Get a reference to the geometry description of the condition
@@ -569,7 +570,9 @@ namespace DRT
 
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Condition& node);
+std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_CONDITION_H

@@ -16,7 +16,9 @@
 #include "baci_fluid_ele_tds.H"
 #include "baci_lib_globalproblem.H"
 
-template <DRT::Element::DiscretizationType distype>
+BACI_NAMESPACE_OPEN
+
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>*
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
@@ -32,7 +34,7 @@ DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(CORE::UTILS::SingletonAct
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
     : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(nullptr), gp_iquad_(0)
 {
@@ -42,7 +44,7 @@ DRT::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
 /*----------------------------------------------------------------------*
  * Evaluate
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -92,7 +94,7 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
     const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
@@ -343,7 +345,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
@@ -412,7 +414,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::InertiaConvectionReactionGalPart(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce,
@@ -440,7 +442,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::InertiaConvectionReactionGalP
   return;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ContinuityGalPart(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
@@ -477,7 +479,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ContinuityGalPart(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ConservativeFormulation(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
@@ -491,18 +493,20 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ConservativeFormulation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::wedge15>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::nurbs9>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

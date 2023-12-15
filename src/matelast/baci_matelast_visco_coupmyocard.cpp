@@ -11,6 +11,8 @@ the collagen and elastin matrix surrounding the myocardial fiber (chappelle12)
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupMyocard::CoupMyocard(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), n_(matdata->GetDouble("N"))
@@ -36,3 +38,4 @@ void MAT::ELASTIC::CoupMyocard::AddCoefficientsViscoPrincipal(
   // contribution: id4sharp_{ijkl} = 1/2 (\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
   xi(2) = eta / dt;
 }
+BACI_NAMESPACE_CLOSE

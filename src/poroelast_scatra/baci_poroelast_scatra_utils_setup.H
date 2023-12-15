@@ -20,6 +20,8 @@
 #include "baci_poroelast_scatra_utils_clonestrategy.H"
 #include "baci_poroelast_utils_setup.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace POROELASTSCATRA
 {
@@ -136,5 +138,7 @@ namespace POROELASTSCATRA
     }
   }  // namespace UTILS
 }  // namespace POROELASTSCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

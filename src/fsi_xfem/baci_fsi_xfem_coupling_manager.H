@@ -14,6 +14,8 @@ managers
 #ifndef BACI_FSI_XFEM_COUPLING_MANAGER_H
 #define BACI_FSI_XFEM_COUPLING_MANAGER_H
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -36,8 +38,7 @@ namespace XFEM
     //@{
 
     /// virtual to get polymorph destruction
-    virtual ~Coupling_Manager() {}
-
+    virtual ~Coupling_Manager() = default;
     //! predict states in the coupling object
     virtual void PredictCouplingStates() = 0;
 
@@ -72,5 +73,7 @@ namespace XFEM
     virtual void ReadRestart(IO::DiscretizationReader& reader) = 0;
   };
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

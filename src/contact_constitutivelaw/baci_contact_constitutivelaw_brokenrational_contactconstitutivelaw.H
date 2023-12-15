@@ -13,6 +13,8 @@
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW
@@ -29,8 +31,6 @@ namespace CONTACT
       BrokenRationalConstitutiveLawParams(
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
 
-      /// destructor
-      virtual ~BrokenRationalConstitutiveLawParams() = default;
 
       /// create constitutive law instance of matching type with my parameters
       Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() override;
@@ -102,5 +102,7 @@ namespace CONTACT
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_BROKENRATIONAL_CONTACTCONSTITUTIVELAW_H

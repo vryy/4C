@@ -260,14 +260,6 @@ EXODUS::Mesh::Mesh()
   title_ = "emptymesh";
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 12/07|
- *----------------------------------------------------------------------*/
-EXODUS::Mesh::~Mesh()
-{
-  // CloseExo();
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  Extension constructor (public)                             maf 01/08|
@@ -620,7 +612,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       }
     }
     std::vector<int> childmap =
-        CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        BACI::CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
     // child gets its node ids
     std::vector<int> child;
     for (unsigned int j = 0; j < childmap.size(); ++j) child.push_back(parent_ele[childmap[j]]);
@@ -750,7 +742,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
       }
     }
     std::vector<int> childmap =
-        CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        BACI::CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
 
     std::vector<int> child;
     if (checkoutside)
@@ -875,10 +867,9 @@ std::vector<double> EXODUS::Mesh::NodeVec(const int tail, const int head) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(
-    const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sideconn) const
+    const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sidesetconn) const
 {
   std::vector<ElementBlock> eblocks;
-  // map<int,std::vector<int> > sideconn = sideset.GetSideSet();
   std::map<int, std::vector<int>>::const_iterator i_ele;
   Teuchos::RCP<std::map<int, std::vector<int>>> quadconn =
       Teuchos::rcp(new std::map<int, std::vector<int>>);
@@ -886,7 +877,7 @@ std::vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(
   Teuchos::RCP<std::map<int, std::vector<int>>> triconn =
       Teuchos::rcp(new std::map<int, std::vector<int>>);
   int tricounter = 0;
-  for (i_ele = sideconn.begin(); i_ele != sideconn.end(); ++i_ele)
+  for (i_ele = sidesetconn.begin(); i_ele != sidesetconn.end(); ++i_ele)
   {
     int numnodes = i_ele->second.size();
     if (numnodes == 4)
@@ -923,12 +914,12 @@ std::vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 EXODUS::NodeSet EXODUS::Mesh::SideSetToNodeSet(
-    const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sideconn) const
+    const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sidesetconn) const
 {
   std::map<int, std::vector<int>>::const_iterator i_side;
   std::vector<int>::const_iterator i_node;
   std::set<int> nodes;
-  for (i_side = sideconn.begin(); i_side != sideconn.end(); ++i_side)
+  for (i_side = sidesetconn.begin(); i_side != sidesetconn.end(); ++i_side)
     for (i_node = i_side->second.begin(); i_node != i_side->second.end(); ++i_node)
       nodes.insert(*i_node);  // nodes.insert(i_side->second.at(i_node));
   std::ostringstream nodesetname;
@@ -942,12 +933,12 @@ EXODUS::NodeSet EXODUS::Mesh::SideSetToNodeSet(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::set<int> EXODUS::Mesh::GetSideSetNodes(
-    const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sideconn) const
+    const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sidesetconn) const
 {
   std::map<int, std::vector<int>>::const_iterator i_side;
   std::vector<int>::const_iterator i_node;
   std::set<int> nodes;
-  for (i_side = sideconn.begin(); i_side != sideconn.end(); ++i_side)
+  for (i_side = sidesetconn.begin(); i_side != sidesetconn.end(); ++i_side)
     for (i_node = i_side->second.begin(); i_node != i_side->second.end(); ++i_node)
       nodes.insert(*i_node);  // nodes.insert(i_side->second.at(i_node));
   return nodes;
@@ -1459,7 +1450,7 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype,
   for (std::map<int, std::vector<int>>::const_iterator elem = eleconn->begin();
        elem != eleconn->end(); ++elem)
   {
-    if (CORE::DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) !=
+    if (BACI::CORE::DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) !=
         (int)elem->second.size())
     {
       dserror("number of read nodes does not fit the distype");
@@ -1468,9 +1459,6 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype,
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-EXODUS::ElementBlock::~ElementBlock() { return; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1539,9 +1527,6 @@ EXODUS::NodeSet::NodeSet(
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-EXODUS::NodeSet::~NodeSet() { return; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1628,9 +1613,6 @@ void EXODUS::SideSet::Print(std::ostream& os, bool verbose) const
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-EXODUS::SideSet::~SideSet() { return; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

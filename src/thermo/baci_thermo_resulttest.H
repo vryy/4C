@@ -23,6 +23,8 @@
 #include "baci_lib_resulttest.H"
 #include "baci_thermo_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                     dano 08/09 |
@@ -44,7 +46,7 @@ namespace THR
     //!
     //! Possible position flags are "temp",
     //!                             "rate",
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! our discretisation
@@ -65,4 +67,6 @@ namespace THR
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_RESULTTEST_H

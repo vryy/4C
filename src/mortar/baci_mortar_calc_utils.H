@@ -21,6 +21,8 @@
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
  *----------------------------------------------------------------------*/
@@ -34,15 +36,15 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get global coords for given local coords                 farah 01/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     bool LocalToGlobal(MORTAR::MortarElement& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
+      static const int n = CORE::FE::num_nodes<distype>;
+      static const int ndim = CORE::FE::dim<distype> + 1;
 
       DRT::Node** mynodes = ele.Points();
       if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
@@ -62,8 +64,8 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs2:
-                case DRT::Element::nurbs3:
+                case CORE::FE::CellType::nurbs2:
+                case CORE::FE::CellType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -85,9 +87,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs4:
-                case DRT::Element::nurbs8:
-                case DRT::Element::nurbs9:
+                case CORE::FE::CellType::nurbs4:
+                case CORE::FE::CellType::nurbs8:
+                case CORE::FE::CellType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -138,8 +140,8 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs2:
-                case DRT::Element::nurbs3:
+                case CORE::FE::CellType::nurbs2:
+                case CORE::FE::CellType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -162,9 +164,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs4:
-                case DRT::Element::nurbs8:
-                case DRT::Element::nurbs9:
+                case CORE::FE::CellType::nurbs4:
+                case CORE::FE::CellType::nurbs8:
+                case CORE::FE::CellType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -206,15 +208,15 @@ namespace MORTAR
         // Second Derivation (eta)
         case 2:
         {
-          CORE::LINALG::Matrix<ndim - 1, n> deriv2;
+          CORE::LINALG::Matrix<ndim - 1, n> deriv2(true);
           switch (ndim)
           {
             case 2:
             {
               switch (distype)
               {
-                case DRT::Element::nurbs2:
-                case DRT::Element::nurbs3:
+                case CORE::FE::CellType::nurbs2:
+                case CORE::FE::CellType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -237,9 +239,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs4:
-                case DRT::Element::nurbs8:
-                case DRT::Element::nurbs9:
+                case CORE::FE::CellType::nurbs4:
+                case CORE::FE::CellType::nurbs8:
+                case CORE::FE::CellType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -270,11 +272,16 @@ namespace MORTAR
             MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
             dsassert(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
 
-            for (int j = 0; j < ndim; ++j)
+            if constexpr (ndim > 2)
             {
-              // use shape function values for interpolation
-              globcoord[j] += deriv2(1, i) * mymrtrnode->xspatial()[j];
+              for (int j = 0; j < ndim; ++j)
+              {
+                // use shape function values for interpolation
+                globcoord[j] += deriv2(1, i) * mymrtrnode->xspatial()[j];
+              }
             }
+            else
+              dserror("Not implemented.");
           }
           break;
         }
@@ -291,15 +298,15 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get global coords for given local coords (ref pos)       farah 01/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     bool LocalToGlobal(DRT::Element& ele, const double* xi, double* globcoord)
     {
       // check input
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
+      static const int n = CORE::FE::num_nodes<distype>;
+      static const int ndim = CORE::FE::dim<distype> + 1;
 
       DRT::Node** mynodes = ele.Nodes();
       if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
@@ -343,7 +350,7 @@ namespace MORTAR
      |                                                                           |
      |  globcoord (out): global xyz coordinate in current configuration of "xi"  |
      *---------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     bool LocalToCurrentGlobal(DRT::Element& ele, const int globdim, const double* xi,
         const std::vector<double> edisp, double* globcoord)
     {
@@ -351,8 +358,8 @@ namespace MORTAR
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int n = CORE::FE::num_nodes<distype>;
+      static const int ndim = CORE::FE::dim<distype>;
 
       if ((int)edisp.size() != n * globdim)
         dserror("ERROR: vector of element displacements has wrong dimension (%d != %d)",
@@ -392,14 +399,13 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void GlobalToLocal(DRT::Element& ele,  // element (input)
         double* xgl,                       // global position (input)
         double* xi)                        // local position  (output)
     {
-      static const int numnod =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numnod = CORE::FE::num_nodes<distype>;
+      static const int ndim = CORE::FE::dim<distype>;
 
       CORE::LINALG::Matrix<numnod, 1> funct(true);
       CORE::LINALG::Matrix<ndim, numnod> xref(true);
@@ -413,18 +419,18 @@ namespace MORTAR
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
       {
-        if (distype == DRT::Element::quad4 or distype == DRT::Element::quad8 or
-            distype == DRT::Element::quad9 or distype == DRT::Element::hex8 or
-            distype == DRT::Element::hex20 or distype == DRT::Element::hex27)
+        if (distype == CORE::FE::CellType::quad4 or distype == CORE::FE::CellType::quad8 or
+            distype == CORE::FE::CellType::quad9 or distype == CORE::FE::CellType::hex8 or
+            distype == CORE::FE::CellType::hex20 or distype == CORE::FE::CellType::hex27)
         {
           xi[p] = 0.0;
         }
-        else if (distype == DRT::Element::tri3 or distype == DRT::Element::tri6 or
-                 distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+        else if (distype == CORE::FE::CellType::tri3 or distype == CORE::FE::CellType::tri6 or
+                 distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
         {
           xi[p] = 1.0 / 3.0;
         }
-        else if (distype == DRT::Element::pyramid5)
+        else if (distype == CORE::FE::CellType::pyramid5)
         {
           if (p < 2)
             xi[p] = 0.0;
@@ -520,15 +526,14 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void GlobalToLocal(DRT::Element& ele,  // element (input)
         double* xgl,                       // global position (input)
         double* xi,
         bool& converged)  // converged solution ?
     {
-      static const int numnod =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numnod = CORE::FE::num_nodes<distype>;
+      static const int ndim = CORE::FE::dim<distype>;
 
       // converged
       converged = false;
@@ -545,18 +550,18 @@ namespace MORTAR
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
       {
-        if (distype == DRT::Element::quad4 or distype == DRT::Element::quad8 or
-            distype == DRT::Element::quad9 or distype == DRT::Element::hex8 or
-            distype == DRT::Element::hex20 or distype == DRT::Element::hex27)
+        if (distype == CORE::FE::CellType::quad4 or distype == CORE::FE::CellType::quad8 or
+            distype == CORE::FE::CellType::quad9 or distype == CORE::FE::CellType::hex8 or
+            distype == CORE::FE::CellType::hex20 or distype == CORE::FE::CellType::hex27)
         {
           xi[p] = 0.0;
         }
-        else if (distype == DRT::Element::tri3 or distype == DRT::Element::tri6 or
-                 distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+        else if (distype == CORE::FE::CellType::tri3 or distype == CORE::FE::CellType::tri6 or
+                 distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
         {
           xi[p] = 1.0 / 3.0;
         }
-        else if (distype == DRT::Element::pyramid5)
+        else if (distype == CORE::FE::CellType::pyramid5)
         {
           if (p < 2)
             xi[p] = 0.0;
@@ -646,16 +651,15 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (curr position) rauch 08/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void GlobalToCurrentLocal(DRT::Element& ele,  // element (input)
         const double* targetdisp,
         double* xgl,  // global position (input)
         double* xi, bool& converged,
         double& residual)  // converged solution ?
     {
-      static const int numnod =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numnod = CORE::FE::num_nodes<distype>;
+      static const int ndim = CORE::FE::dim<distype>;
 
       // converged
       converged = false;
@@ -749,5 +753,7 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_CALC_UTILS_H

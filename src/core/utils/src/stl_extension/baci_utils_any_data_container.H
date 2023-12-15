@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace CONTACT
 {
@@ -104,12 +106,6 @@ namespace CORE::GEN
     };
 
    public:
-    /// constructor
-    AnyDataContainer() = default;
-
-    /// destructor
-    ~AnyDataContainer() = default;
-
     /// @name any data
     /// @{
 
@@ -384,5 +380,7 @@ namespace CORE::GEN
   };
 }  // namespace CORE::GEN
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

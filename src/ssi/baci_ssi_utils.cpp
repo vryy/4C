@@ -13,8 +13,8 @@
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
+#include "baci_coupling_matchingoctree.H"
 #include "baci_inpar_s2i.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -24,6 +24,8 @@
 #include "baci_ssi_monolithic.H"
 
 #include <utility>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1101,10 +1103,10 @@ void SSI::UTILS::SSIMeshTying::FindMatchingNodePairs(Teuchos::RCP<DRT::Discretiz
 
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
-    DRT::UTILS::AddOwnedNodeGIDVector(*dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
+    DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
-    DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+    auto tree = CORE::COUPLING::NodeMatchingOctree();
     tree.Init(*dis, inodegidvec_a, 150, 1.0e-8);
     tree.Setup();
 
@@ -1115,7 +1117,7 @@ void SSI::UTILS::SSIMeshTying::FindMatchingNodePairs(Teuchos::RCP<DRT::Discretiz
 
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
-      DRT::UTILS::AddOwnedNodeGIDVector(*dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
+      DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
 
       // key: master node gid, value: slave node gid and distance
       std::map<int, std::pair<int, double>> coupled_gid_nodes;
@@ -1334,11 +1336,11 @@ void SSI::UTILS::SSIMeshTying::FindSlaveSlaveTransformationNodes(
   {
     if (meshtying_conditon->GetInt("interface side") == INPAR::S2I::side_slave)
     {
-      DRT::UTILS::AddOwnedNodeGIDVector(*dis, *meshtying_conditon->Nodes(), original_slave_gids);
+      DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_conditon->Nodes(), original_slave_gids);
     }
   }
 
-  DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+  auto tree = CORE::COUPLING::NodeMatchingOctree();
   tree.Init(*dis, inodegidvec_slave, 150, 1.0e-8);
   tree.Setup();
   std::map<int, std::pair<int, double>> coupled_gid_nodes;
@@ -1387,3 +1389,5 @@ SSI::UTILS::SSIMeshTyingHandler::SSIMeshTyingHandler(
   slave_side_converter_ =
       Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*slave_master_coupling_));
 }
+
+BACI_NAMESPACE_CLOSE

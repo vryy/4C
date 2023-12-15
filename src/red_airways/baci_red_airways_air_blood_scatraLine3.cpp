@@ -9,10 +9,12 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_red_airways_elementbase.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 using namespace CORE::DRT::UTILS;
 
@@ -23,7 +25,8 @@ DRT::ELEMENTS::RedAirBloodScatraLine3Type& DRT::ELEMENTS::RedAirBloodScatraLine3
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::RedAirBloodScatraLine3* object = new DRT::ELEMENTS::RedAirBloodScatraLine3(-1, -1);
   object->Unpack(data);
@@ -65,7 +68,6 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Type::SetupElementDefinition(
                       .AddNamedDouble("WallThickness")
                       .AddNamedDouble("PercentageOfDiffusionArea")
                       .Build();
-  ;
 }
 
 
@@ -109,27 +111,26 @@ DRT::Element* DRT::ELEMENTS::RedAirBloodScatraLine3::Clone() const
  |                                                             (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::RedAirBloodScatraLine3::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::RedAirBloodScatraLine3::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatraLine3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::RedAirBloodScatraLine3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -160,11 +161,9 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::RedAirBloodScatraLine3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
 
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -191,11 +190,6 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::Unpack(const std::vector<char>& data
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           ismail 05/13|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirBloodScatraLine3::~RedAirBloodScatraLine3() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -268,30 +262,9 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::getParams(std::string name, int& var
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedAirBloodScatraLine3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
+  dsassert(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 
-  // so we have to allocate new line elements:
-
-  if (NumLine() != 2)  // 1D boundary element and 2D/3D parent element
-  {
-    dserror("RED_AIR_BLOOD_SCATRA_LINE3 element must have one and only one line");
-    exit(1);
-  }
-  else if (NumLine() ==
-           2)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> lines(1);
-    lines[0] = Teuchos::rcp(this, false);
-    return lines;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
-  }
+  return {Teuchos::rcpFromRef(*this)};
 }
+
+BACI_NAMESPACE_CLOSE

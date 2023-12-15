@@ -11,11 +11,15 @@
 #include "baci_mat_material.H"
 #include "baci_mat_trait_thermo.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class ThermoMaterial : public Material, public TRAIT::Thermo
   {
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

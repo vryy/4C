@@ -29,6 +29,8 @@
 #include <ctime>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  * Main control routine for arterial network including various solvers:
  *
@@ -144,8 +146,8 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
       DRT::INPUT::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   // build art net time integrator
-  Teuchos::RCP<ADAPTER::ArtNet> artnettimint = ART::UTILS::CreateAlgorithm(timintscheme, actdis,
-      linsolvernumber, artdyn, artdyn, DRT::Problem::Instance()->ErrorFile()->Handle(), output);
+  Teuchos::RCP<ADAPTER::ArtNet> artnettimint =
+      ART::UTILS::CreateAlgorithm(timintscheme, actdis, linsolvernumber, artdyn, artdyn, output);
 
   // initialize
   artnettimint->Init(artdyn, artdyn, scatra_disname);
@@ -192,3 +194,5 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   }
 
 }  // end of dyn_art_net_drt()
+
+BACI_NAMESPACE_CLOSE

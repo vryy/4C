@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -34,8 +36,7 @@ namespace POROMULTIPHASE
       /// constructor
       explicit PoroFluidMultiPhaseCloneStrategy() {}
       /// destructor
-      virtual ~PoroFluidMultiPhaseCloneStrategy() {}
-
+      virtual ~PoroFluidMultiPhaseCloneStrategy() = default;
       /// returns conditions names to be copied (source and target name)
       virtual std::map<std::string, std::string> ConditionsToCopy() const;
 
@@ -56,5 +57,7 @@ namespace POROMULTIPHASE
 
   }  // namespace UTILS
 }  // namespace POROMULTIPHASE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_UTILS_CLONESTRATEGY_H

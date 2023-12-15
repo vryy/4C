@@ -11,6 +11,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::PreStressType DRT::ELEMENTS::PreStressType::instance_;
 
@@ -52,9 +54,9 @@ DRT::ELEMENTS::PreStress::PreStress(const DRT::ELEMENTS::PreStress& old)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PreStress::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::PreStress::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -84,10 +86,8 @@ void DRT::ELEMENTS::PreStress::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::PreStress::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract isinit_
   isinit_ = ExtractInt(position, data);
@@ -110,3 +110,5 @@ int DRT::ELEMENTS::PreStress::UniqueParObjectId() const
 {
   return PreStressType::Instance().UniqueParObjectId();
 }
+
+BACI_NAMESPACE_CLOSE

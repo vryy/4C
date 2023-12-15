@@ -33,8 +33,6 @@ NUMFLUIDDIS                     2
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 ------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
 ALPHA_M                         1
 CALCERROR                       no
@@ -177,8 +175,6 @@ ITEMAX                          10
 CONVTOL                         1e-10
 EXPLPREDICT                     no
 ABSTOLRES                       1e-10
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
@@ -231,8 +227,6 @@ NORM_RESF                       AbsGlobal
 TOLRES_GLOBAL                   1e-10
 TOLINC_GLOBAL                   1e-10
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         Material
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta

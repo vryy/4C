@@ -13,6 +13,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT::FLUIDPORO
 {
   /*! @brief Compute structure tensor from a given direction vector
@@ -707,7 +709,7 @@ void MAT::PAR::FluidPoro::SetInitialPorosity(double initial_porosity)
 
 MAT::FluidPoroType MAT::FluidPoroType::instance_;
 
-DRT::ParObject* MAT::FluidPoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroType::Create(const std::vector<char>& data)
 {
   auto* fluid_poro = new MAT::FluidPoro();
   fluid_poro->Unpack(data);
@@ -721,9 +723,9 @@ MAT::FluidPoro::FluidPoro(MAT::PAR::FluidPoro* params) : params_(params)
   anisotropy_strategy_ = MAT::FLUIDPORO::CreateAnisotropyStrategy(params);
 }
 
-void MAT::FluidPoro::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoro::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -739,10 +741,8 @@ void MAT::FluidPoro::Pack(DRT::PackBuffer& data) const
 void MAT::FluidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -817,3 +817,5 @@ double MAT::FluidPoro::EffectiveViscosity() const
 
   return viscosity;
 }
+
+BACI_NAMESPACE_CLOSE

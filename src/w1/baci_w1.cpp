@@ -10,18 +10,20 @@
 
 #include "baci_w1.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
 
 DRT::ELEMENTS::Wall1Type& DRT::ELEMENTS::Wall1Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Wall1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Wall1Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1* object = new DRT::ELEMENTS::Wall1(-1, -1);
   object->Unpack(data);
@@ -61,7 +63,6 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
-  ;
 }
 
 void DRT::ELEMENTS::Wall1Type::SetupElementDefinition(
@@ -163,7 +164,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
       iseas_(false),
       eastype_(eas_vague),
       structale_(false),
-      distype_(dis_none)
+      distype_(CORE::FE::CellType::dis_none)
 {
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale) structale_ = true;
   return;
@@ -205,16 +206,16 @@ DRT::Element* DRT::ELEMENTS::Wall1::Clone() const
  |                                                             (public) |
  |                                                          mgit 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1::Shape() const { return distype_; }
+CORE::FE::CellType DRT::ELEMENTS::Wall1::Shape() const { return distype_; }
 
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -256,10 +257,9 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -281,7 +281,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // structale_
   structale_ = ExtractInt(position, data);
   // distype_
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   // data
   std::vector<char> tmp(0);
   ExtractfromPack(position, data, tmp);
@@ -294,37 +294,13 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mgit 03/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1::~Wall1() { return; }
-
-
-/*----------------------------------------------------------------------*
- |  print this element (public)                              mgit 03/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Print(std::ostream& os) const
-{
-  os << "Wall1 ";
-  Element::Print(os);
-  os << " gaussrule_: " << CORE::DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1>(DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1>(CORE::COMM::buildLines, *this);
 }
 
 
@@ -333,9 +309,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 /*-----------------------------------------------------------------------------*
@@ -353,3 +327,5 @@ void DRT::ELEMENTS::Wall1::GreenLagrangePlane3d(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

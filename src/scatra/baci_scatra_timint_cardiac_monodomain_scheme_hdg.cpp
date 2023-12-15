@@ -17,6 +17,8 @@
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
@@ -33,10 +35,6 @@ SCATRA::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                               hoermann 09/15 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainHDG::~TimIntCardiacMonodomainHDG() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                          hoermann 09/15 |
@@ -58,13 +56,13 @@ void SCATRA::TimIntCardiacMonodomainHDG::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::Update(const int num)
+void SCATRA::TimIntCardiacMonodomainHDG::Update()
 {
   // time update of myocard material
   ElementMaterialTimeUpdate();
 
   // Standard Update
-  TimIntHDG::Update(num);
+  TimIntHDG::Update();
 
   return;
 }
@@ -175,7 +173,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::WriteProblemSpecificOutput(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
 {
-  DRT::PackBuffer buffer;
+  CORE::COMM::PackBuffer buffer;
 
   // loop over elements
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
@@ -261,3 +259,5 @@ void SCATRA::TimIntCardiacMonodomainHDG::ReadRestart(
   dofmap_ = Teuchos::rcp(
       new Epetra_Map(-1, (int)globaldof.size(), globaldof.data(), 0, discret_->Comm()));
 }
+
+BACI_NAMESPACE_CLOSE

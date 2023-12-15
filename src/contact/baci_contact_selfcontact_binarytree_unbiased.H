@@ -11,6 +11,8 @@
 
 #include "baci_contact_selfcontact_binarytree.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -34,11 +36,6 @@ namespace CONTACT
     UnbiasedSelfBinaryTree(DRT::Discretization& discret, const Teuchos::ParameterList& iparams,
         Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~UnbiasedSelfBinaryTree(){};
 
     /*!
     \brief Initialize the unbiased self binary tree
@@ -107,7 +104,7 @@ namespace CONTACT
     initial state. Only if both vectors point in the same direction integration shall be performed.
 
     */
-    bool RoughCheckRefConfig(int leaf1elegid, int leaf2elegid);
+    bool RoughCheckRefConfig(int ele1gid, int ele2gid);
 
     /*!
     \brief Evaluate unbiased binary search tree
@@ -134,5 +131,7 @@ namespace CONTACT
     const bool Searchele_AllProc_;
   };  // class UnbiasedSelfBinaryTree
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_SELFCONTACT_BINARYTREE_UNBIASED_H

@@ -26,6 +26,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  * Main control routine for scalar transport problems, incl. various solvers
@@ -84,11 +86,26 @@ void scatra_cardiac_monodomain_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
+      // get linear solver id from SCALAR TRANSPORT DYNAMIC
+      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == -1)
+      {
+        dserror(
+            "no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in "
+            "SCALAR TRANSPORT DYNAMIC to a valid number!");
+      }
+
+      // create instance of scalar transport basis algorithm (empty fluid discretization)
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
+          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+              scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
           new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
@@ -135,22 +152,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
         }
       }
 
-      // get linear solver id from SCALAR TRANSPORT DYNAMIC
-      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
-      if (linsolvernumber == (-1))
-        dserror(
-            "no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in "
-            "SCALAR TRANSPORT DYNAMIC to a valid number!");
-
-      // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-
       // now we can call Init() on the base algo.
       // time integrator is constructed and initialized inside
-      scatraonly->Init(
-          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      scatraonly->Init();
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.
@@ -301,7 +305,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           scatradyn, fdyn, "scatra", DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // init algo (init fluid time integrator and scatra time integrator inside)
-      algo->Init(scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      algo->Init();
 
       // setup algo (setup fluid time integrator and scatra time integrator inside)
       algo->Setup();
@@ -395,3 +399,5 @@ void printheartlogo()
   std::cout << "                       aorta                             " << std::endl;
   std::cout << "                                                         " << std::endl;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,8 +13,9 @@
 #define BACI_LIB_ELEMENT_H
 
 
+#include "baci_comm_parobject.H"
+#include "baci_discretization_fem_general_cell_type.H"
 #include "baci_lib_condition.H"
-#include "baci_lib_parobject.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
@@ -22,6 +23,8 @@
 #include <Teuchos_RCP.hpp>
 
 #include <variant>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace MAT
@@ -77,50 +80,13 @@ namespace DRT
   and other connectivity information.
 
   */
-  class Element : public DRT::ParObject
+  class Element : public CORE::COMM::ParObject
   {
    public:
     //! @name Enums and Friends
 
     template <typename>
     friend class MESHFREE::MeshfreeBin;
-
-    /*!
-     \brief Element shape type
-    */
-    enum DiscretizationType
-    {
-      dis_none,    ///< unknown dis type
-      quad4,       ///< 4 noded quadrilateral
-      quad6,       ///< 6 noded quadrilateral (linear in one direction, quadratic in the other)
-      quad8,       ///< 8 noded quadrilateral
-      quad9,       ///< 9 noded quadrilateral
-      tri3,        ///< 3 noded triangle
-      tri6,        ///< 6 noded triangle
-      hex8,        ///< 8 noded hexahedra
-      hex16,       ///< 16 noded hexahedra
-      hex18,       ///< 18 noded hexahedra
-      hex20,       ///< 20 noded hexahedra
-      hex27,       ///< 27 noded hexahedra
-      tet4,        ///< 4 noded tetrahedra
-      tet10,       ///< 10 noded tetrahedra
-      wedge6,      ///< 6 noded wedge
-      wedge15,     ///< 15 noded wedge
-      pyramid5,    ///< 5 noded pyramid
-      line2,       ///< 2 noded line
-      line3,       ///< 3 noded line
-      line4,       ///< 4 noded line
-      line5,       ///< 5 noded line
-      line6,       ///< 6 noded line
-      point1,      ///< 1 noded point
-      nurbs2,      ///< 2 control point first order nurbs line element
-      nurbs3,      ///< 3 control point second order nurbs line element
-      nurbs4,      ///< 4 control point first order nurbs surface element
-      nurbs9,      ///< 9 control point second order nurbs surface element
-      nurbs8,      ///< 8 control point first order nurbs volume element
-      nurbs27,     ///< 27 control point second order nurbs volume element
-      max_distype  ///< end marker. must be the last entry
-    };
 
     //@}
 
@@ -213,11 +179,8 @@ namespace DRT
     */
     Element(const DRT::Element& old);
 
-    /*!
-    \brief Destructor
+    Element& operator=(const Element&) = default;
 
-    */
-    virtual ~Element();
 
     /*!
     \brief Deep copy the derived class and return pointer to it
@@ -236,7 +199,7 @@ namespace DRT
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    virtual int UniqueParObjectId() const = 0;
+    int UniqueParObjectId() const override = 0;
 
     /*!
     \brief Pack this class so it can be communicated
@@ -244,7 +207,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -252,7 +215,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /// return ElementType instance
     virtual DRT::ElementType& ElementType() const = 0;
@@ -279,7 +242,7 @@ namespace DRT
     /*!
     \brief Get shape type of element
     */
-    virtual DiscretizationType Shape() const = 0;
+    virtual CORE::FE::CellType Shape() const = 0;
 
     /*!
     \brief Return number of nodes to this element
@@ -415,6 +378,8 @@ namespace DRT
          In this case, the element itself must be able to evaluate the
          Neumann boundary conditions on a line itself.
 
+    \note Do not store line elements inside parent elements since the nodes
+might become invalid after a redistribution of the discretization.
     */
     virtual std::vector<Teuchos::RCP<DRT::Element>> Lines()
     {
@@ -438,28 +403,10 @@ namespace DRT
          In this case, the element itself must be able to evaluate the
          Neumann boundary conditions on a surface itself.
 
+    \note Do not store surface elements inside parent elements since the nodes
+might become invalid after a redistribution of the discretization.
     */
     virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces()
-    {
-      return std::vector<Teuchos::RCP<DRT::Element>>(0);
-    }
-
-    /*!
-    \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-    This is a base class dummy routine that always returns nullptr.
-    The derived element class is expected to allocate and store
-    a vector of elements that represent the volume of this element.
-    Length of this vector would usually be just one.
-    This volume element is then used to create and evaluate boundary conditions.
-
-    \note A 3D type of element (e.g. a solid, fluid3, etc) may return
-         a vector of length one pointing to itself. It then does not need
-         to be able to spin of an explicit separate volume element.
-         In this case, the element itself must be able to evaluate the
-         Neumann boundary conditions on a volume itself.
-    */
-    virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes()
     {
       return std::vector<Teuchos::RCP<DRT::Element>>(0);
     }
@@ -884,7 +831,7 @@ namespace DRT
              NOT be overwritten but stored twice in the element
 
     */
-    virtual void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
+    void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
     {
       condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, cond));
       return;
@@ -1286,9 +1233,8 @@ namespace DRT
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */
     virtual CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(
-        const DRT::Discretization& discret,
-        const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-        const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const;
+        const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+        const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const;
     /// @}
 
    private:
@@ -1373,7 +1319,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this face element
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -1381,13 +1327,13 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this face element
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /*!
     \brief Returns whether the given element actually is a face element with degrees of freedom
     living there
     */
-    virtual bool IsFaceElement() const { return true; }
+    bool IsFaceElement() const override { return true; }
 
     /*!
     \brief Return the parent element id the face element is connected to (for interior faces, the
@@ -1537,196 +1483,8 @@ namespace DRT
     friend class DRT::DiscretizationHDG;
   };
 
-
-  //! @name Type traits for element shapes
-  /// @{
-  template <DRT::Element::DiscretizationType distype>
-  using is_tet = std::bool_constant<distype == DRT::Element::DiscretizationType::tet4 ||
-                                    distype == DRT::Element::DiscretizationType::tet10>;
-
-  template <DRT::Element::DiscretizationType distype>
-  using is_hex = std::bool_constant<distype == DRT::Element::DiscretizationType::hex8 ||
-                                    distype == DRT::Element::DiscretizationType::hex16 ||
-                                    distype == DRT::Element::DiscretizationType::hex18 ||
-                                    distype == DRT::Element::DiscretizationType::hex20 ||
-                                    distype == DRT::Element::DiscretizationType::hex27>;
-
-  template <DRT::Element::DiscretizationType distype>
-  using is_wedge = std::bool_constant<distype == DRT::Element::DiscretizationType::wedge6 ||
-                                      distype == DRT::Element::DiscretizationType::wedge15>;
-
-  template <DRT::Element::DiscretizationType distype>
-  using is_pyramid = std::bool_constant<distype == DRT::Element::DiscretizationType::pyramid5>;
-
-  template <DRT::Element::DiscretizationType distype>
-  using is_quad = std::bool_constant<distype == DRT::Element::DiscretizationType::quad4 ||
-                                     distype == DRT::Element::DiscretizationType::quad6 ||
-                                     distype == DRT::Element::DiscretizationType::quad8 ||
-                                     distype == DRT::Element::DiscretizationType::quad9>;
-
-  template <DRT::Element::DiscretizationType distype>
-  using is_tri = std::bool_constant<distype == DRT::Element::DiscretizationType::tri3 ||
-                                    distype == DRT::Element::DiscretizationType::tri6>;
-
-  template <DRT::Element::DiscretizationType distype>
-  using is_line = std::bool_constant<distype == DRT::Element::DiscretizationType::line2 ||
-                                     distype == DRT::Element::DiscretizationType::line3 ||
-                                     distype == DRT::Element::DiscretizationType::line4 ||
-                                     distype == DRT::Element::DiscretizationType::line5 ||
-                                     distype == DRT::Element::DiscretizationType::line6>;
-
-  template <DRT::Element::DiscretizationType distype>
-  inline static constexpr bool is_tet_v = is_tet<distype>::value;
-
-  template <DRT::Element::DiscretizationType distype>
-  inline static constexpr bool is_hex_v = is_hex<distype>::value;
-
-  template <DRT::Element::DiscretizationType distype>
-  inline static constexpr bool is_wedge_v = is_wedge<distype>::value;
-
-  template <DRT::Element::DiscretizationType distype>
-  inline static constexpr bool is_pyramid_v = is_pyramid<distype>::value;
-
-  template <DRT::Element::DiscretizationType distype>
-  inline static constexpr bool is_quad_v = is_quad<distype>::value;
-
-  template <DRT::Element::DiscretizationType distype>
-  inline static constexpr bool is_tri_v = is_tri<distype>::value;
-
-  template <DRT::Element::DiscretizationType distype>
-  inline static constexpr bool is_line_v = is_line<distype>::value;
-  /// @}
-
-  //! @name Compile time lists of types with discretization type as template argument
-  ///@{
-  template <typename... Ts>
-  using BaseTypeList = std::tuple<Ts...>;
-
-  template <typename... t>
-  struct Join
-  {
-    using type = decltype(std::tuple_cat(std::declval<t>()...));
-  };
-  template <typename... t>
-  using Join_t = typename Join<t...>::type;
-  ///@}
-
-  //! @name Compile time lists of discretization types
-  ///@{
-  template <DRT::Element::DiscretizationType... distypes>
-  struct DiscretizationTypeList
-  {
-    template <template <DRT::Element::DiscretizationType> typename Base>
-    using Apply = BaseTypeList<Base<distypes>...>;
-  };
-
-  template <template <DRT::Element::DiscretizationType> typename Base,
-      typename DiscretizationTypeList>
-  using ApplyToBase = typename DiscretizationTypeList::template Apply<Base>;
-  ///@}
-
-  /*!
-   * \brief translate to string for screen output
-   */
-  inline std::string DistypeToString(const DRT::Element::DiscretizationType distype)
-  {
-    std::string s = "";
-    switch (distype)
-    {
-      case DRT::Element::dis_none:
-        s = "DIS_NONE";
-        break;
-      case DRT::Element::quad4:
-        s = "QUAD4";
-        break;
-      case DRT::Element::quad8:
-        s = "QUAD8";
-        break;
-      case DRT::Element::quad9:
-        s = "QUAD9";
-        break;
-      case DRT::Element::tri3:
-        s = "TRI3";
-        break;
-      case DRT::Element::tri6:
-        s = "TRI6";
-        break;
-      case DRT::Element::hex8:
-        s = "HEX8";
-        break;
-      case DRT::Element::hex16:
-        s = "HEX16";
-        break;
-      case DRT::Element::hex18:
-        s = "HEX18";
-        break;
-      case DRT::Element::hex20:
-        s = "HEX20";
-        break;
-      case DRT::Element::hex27:
-        s = "HEX27";
-        break;
-      case DRT::Element::tet4:
-        s = "TET4";
-        break;
-      case DRT::Element::tet10:
-        s = "TET10";
-        break;
-      case DRT::Element::wedge6:
-        s = "WEDGE6";
-        break;
-      case DRT::Element::wedge15:
-        s = "WEDGE15";
-        break;
-      case DRT::Element::pyramid5:
-        s = "PYRAMID5";
-        break;
-      case DRT::Element::line2:
-        s = "LINE2";
-        break;
-      case DRT::Element::line3:
-        s = "LINE3";
-        break;
-      case DRT::Element::line4:
-        s = "LINE4";
-        break;
-      case DRT::Element::point1:
-        s = "POINT1";
-        break;
-      case DRT::Element::nurbs2:
-        s = "NURBS2";
-        break;
-      case DRT::Element::nurbs3:
-        s = "NURBS3";
-        break;
-      case DRT::Element::nurbs4:
-        s = "NURBS4";
-        break;
-      case DRT::Element::nurbs9:
-        s = "NURBS9";
-        break;
-      case DRT::Element::nurbs8:
-        s = "NURBS8";
-        break;
-      case DRT::Element::nurbs27:
-        s = "NURBS27";
-        break;
-      case DRT::Element::max_distype:
-        s = "MAX_DISTYPE";
-        break;
-      default:
-        std::cout << distype << std::endl;
-        dserror("no string for this distype defined!");
-        break;
-    };
-    return s;
-  }
-
   /// translate shards::key to enum
-  DRT::Element::DiscretizationType ShardsKeyToDisType(const unsigned& key);
-
-  /// translate distype string to enum
-  DRT::Element::DiscretizationType StringToDistype(const std::string& name);
+  CORE::FE::CellType ShardsKeyToDisType(const unsigned& key);
 
 
 }  // namespace DRT
@@ -1736,5 +1494,7 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_ELEMENT_H

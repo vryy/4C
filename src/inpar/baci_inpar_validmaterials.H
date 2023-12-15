@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -36,12 +38,14 @@ namespace DRT
 
     /// print all known material sections without contents
     void PrintEmptyMaterialDefinitions(
-        std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& condlist);
+        std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist);
   }  // namespace INPUT
 }  // namespace DRT
 
 /// print empty material sections
 void PrintMaterialDatHeader();
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

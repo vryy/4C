@@ -11,12 +11,14 @@
 #include "baci_mat_scatra_reaction_mat.H"
 
 #include "baci_comm_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_scatra_reaction_coupling.H"
+#include "baci_utils_function.H"
 
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -242,7 +244,7 @@ MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ScatraReactionMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraReactionMatType::Create(const std::vector<char>& data)
 {
   MAT::ScatraReactionMat* scatra_reaction_mat = new MAT::ScatraReactionMat();
   scatra_reaction_mat->Unpack(data);
@@ -262,9 +264,9 @@ MAT::ScatraReactionMat::ScatraReactionMat(MAT::PAR::ScatraReactionMat* params) :
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraReactionMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -283,12 +285,9 @@ void MAT::ScatraReactionMat::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraReactionMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "wrong instance type data. type = %d, UniqueParObjectId()=%d", type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
@@ -333,7 +332,7 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
     gpcoord[2] = constants[size - 1].second;
 
     reaccoeff *= (DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(DisFunctReacCoeffID() - 1)
+                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(DisFunctReacCoeffID() - 1)
                       .Evaluate(gpcoord, time, 0));
   }
 
@@ -520,3 +519,5 @@ void MAT::ScatraReactionMat::CalcPermInfluenceDeriv(const int k,  //!< current s
 
   CalcReaBodyForceDeriv(k, derivs, phinp, constants, Stoich()->at(k), scale);
 }
+
+BACI_NAMESPACE_CLOSE

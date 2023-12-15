@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
@@ -45,6 +47,11 @@ namespace SSTI
   class AssembleStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~AssembleStrategyBase() = default;
+
     AssembleStrategyBase(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono);
 
     //! write 1.0 on main diagonal of slave side dofs
@@ -113,7 +120,7 @@ namespace SSTI
 
     //! assemble structure block  into system matrix for meshtying
     void AssembleStructureMeshtying(CORE::LINALG::SparseMatrix& systemmatrix_structure,
-        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structurematrix);
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structuredomain);
 
     //! assemble structure-x block into system matrix for meshtying
     void AssembleStructureXXXMeshtying(CORE::LINALG::SparseMatrix& systemmatrix_structure_x,
@@ -135,9 +142,9 @@ namespace SSTI
     //@}
 
     //! SSTI mono maps
-    const Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_mono_->AllMaps(); }
+    Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_mono_->AllMaps(); }
 
-    const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> StructureField() const
     {
       return ssti_mono_->StructureField();
     }
@@ -373,4 +380,6 @@ namespace SSTI
       CORE::LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSTI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H

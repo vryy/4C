@@ -15,6 +15,8 @@
 
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /* --------------------------------------------------------------------
                           Constructor
    -------------------------------------------------------------------- */
@@ -28,13 +30,6 @@ CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator(Teuchos::RCP<Epet
   return;
 }  // CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator
 
-/* --------------------------------------------------------------------
-                           Destructor
-   -------------------------------------------------------------------- */
-CORE::LINALG::LinalgProjectedOperator::~LinalgProjectedOperator()
-{
-  return;
-}  // CORE::LINALG::LinalgProjectedOperator::~LinalgProjectedOperator
 
 /* --------------------------------------------------------------------
                       (Modified) Apply call
@@ -57,3 +52,5 @@ int CORE::LINALG::LinalgProjectedOperator::Apply(
 
   return (ierr);
 }  // CORE::LINALG::LinalgProjectedOperator::Apply
+
+BACI_NAMESPACE_CLOSE

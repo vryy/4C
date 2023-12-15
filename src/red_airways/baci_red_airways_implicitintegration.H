@@ -15,11 +15,11 @@
 
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
@@ -30,6 +30,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -66,7 +68,7 @@ namespace AIRWAY
     \brief Destructor
 
     */
-    virtual ~RedAirwayImplicitTimeInt();
+    virtual ~RedAirwayImplicitTimeInt() = default;
 
     /*!
     \brief start time loop for startingalgo, normal problems and restarts
@@ -84,14 +86,14 @@ namespace AIRWAY
     \brief Do time integration (time loop)
 
     */
-    void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
     \brief Do one step time integration (time loop)
 
     */
     void TimeStep(bool CoupledTo3D = false,
-        Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
+        Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
 
     /*!
     \brief Integrate one step
@@ -127,7 +129,7 @@ namespace AIRWAY
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel){};
 
     /*!
     \brief Update the solution after convergence of the linear
@@ -221,7 +223,7 @@ namespace AIRWAY
     Teuchos::RCP<Epetra_Vector> Qout_np() { return qout_np_; }
 
     /// provide access to the Dirichlet map
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
@@ -535,5 +537,7 @@ namespace AIRWAY
 
 }  // namespace AIRWAY
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // RED_AIRWAYS_IMPLICITINTEGRATION_H

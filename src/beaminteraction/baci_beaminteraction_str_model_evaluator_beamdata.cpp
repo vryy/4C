@@ -10,6 +10,8 @@
 
 #include "baci_structure_new_model_evaluator_data.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BeamData::BeamData()
@@ -34,3 +36,5 @@ void STR::MODELEVALUATOR::BeamData::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

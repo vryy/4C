@@ -17,7 +17,6 @@
 #include <filesystem>
 #include <iomanip>
 
-
 // deactivate for ascii output. Only do this for debugging.
 // #define BIN_VTK_OUT
 
@@ -192,6 +191,8 @@ void PostVtkWriter::WriteSpecialField(SpecialFieldInterface &special,
 void PostVtkWriter::WriteSolutionVector(const std::vector<double> &solution, const int ncomponents,
     const std::string &name, std::ofstream &file) const
 {
+  using namespace BACI;
+
   file << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
   if (ncomponents > 1) file << " NumberOfComponents=\"" << ncomponents << "\"";
   if (write_binary_output_)
@@ -228,6 +229,8 @@ void PostVtkWriter::WriteSolutionVector(const std::vector<double> &solution, con
 void PostVtkWriter::WriteResult(const std::string groupname, const std::string name,
     const ResultType restype, const int numdf, const int from, const bool fillzeros)
 {
+  using namespace BACI;
+
   Teuchos::RCP<PostResult> result = Teuchos::rcp(new PostResult(field_));
   // only write results which exist in the first result step
   bool foundit = false;
@@ -257,9 +260,9 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
     result->next_result(groupname);
   }
   if (not(field_->problem()->SpatialApproximationType() ==
-              ShapeFunctionType::shapefunction_polynomial or
-          field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg or
-          field_->problem()->SpatialApproximationType() == ShapeFunctionType::shapefunction_nurbs))
+              CORE::FE::ShapeFunctionType::polynomial or
+          field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg or
+          field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs))
     dserror(
         "Undefined spatial approximation type or the VTK filter is not yet implemented for the "
         "given type.");
@@ -299,6 +302,8 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
 
 void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 {
+  using namespace BACI;
+
   PostResult result = PostResult(field_);
 
   // timesteps when the solution is written
@@ -354,6 +359,8 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 
 void PostVtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
 {
+  using namespace BACI;
+
   std::vector<int> solstep;
   std::vector<double> soltime;
   {

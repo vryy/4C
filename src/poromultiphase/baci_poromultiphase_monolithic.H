@@ -11,6 +11,8 @@
 
 #include "baci_poromultiphase_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROMULTIPHASE
 {
   //! Base class of all solid-scatra algorithms
@@ -21,9 +23,6 @@ namespace POROMULTIPHASE
     PoroMultiPhaseMonolithic(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
-    /// virtual destructor
-    virtual ~PoroMultiPhaseMonolithic(){};
-
 
   };  // PoroMultiPhaseMonolithic
 
@@ -31,5 +30,7 @@ namespace POROMULTIPHASE
 }  // namespace POROMULTIPHASE
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_MONOLITHIC_H

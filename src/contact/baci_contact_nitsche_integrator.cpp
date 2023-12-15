@@ -20,6 +20,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegratorNitsche::IntegrateGP_3D(MORTAR::MortarElement& sele,
@@ -399,7 +401,7 @@ void CONTACT::CoIntegratorNitsche::GPTSForces(MORTAR::MortarElement& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parentdistype, int dim>
+template <CORE::FE::CellType parentdistype, int dim>
 void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wgt,
     const double* gpcoord, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtrafo)
@@ -425,31 +427,31 @@ void CONTACT::UTILS::MapGPtoParent(MORTAR::MortarElement& moEle, double* boundar
     const double wgt, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtravo_slave)
 {
-  DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
+  CORE::FE::CellType distype = moEle.ParentElement()->Shape();
   switch (distype)
   {
-    case DRT::Element::hex8:
-      CONTACT::UTILS::SoEleGP<DRT::Element::hex8, dim>(
+    case CORE::FE::CellType::hex8:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::hex8, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::tet4:
-      CONTACT::UTILS::SoEleGP<DRT::Element::tet4, dim>(
+    case CORE::FE::CellType::tet4:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::tet4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::quad4:
-      CONTACT::UTILS::SoEleGP<DRT::Element::quad4, dim>(
+    case CORE::FE::CellType::quad4:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::quad4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::quad9:
-      CONTACT::UTILS::SoEleGP<DRT::Element::quad9, dim>(
+    case CORE::FE::CellType::quad9:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::quad9, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::tri3:
-      CONTACT::UTILS::SoEleGP<DRT::Element::tri3, dim>(
+    case CORE::FE::CellType::tri3:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::tri3, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::nurbs27:
-      CONTACT::UTILS::SoEleGP<DRT::Element::nurbs27, dim>(
+    case CORE::FE::CellType::nurbs27:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::nurbs27, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     default:
@@ -984,3 +986,5 @@ template void CONTACT::UTILS::MapGPtoParent<2>(MORTAR::MortarElement&, double*, 
 
 template void CONTACT::UTILS::MapGPtoParent<3>(MORTAR::MortarElement&, double*, const double,
     CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&);
+
+BACI_NAMESPACE_CLOSE

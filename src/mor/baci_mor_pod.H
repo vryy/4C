@@ -17,6 +17,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -39,10 +41,6 @@ namespace UTILS
      */
     MOR(Teuchos::RCP<DRT::Discretization> discr);
 
-    /*!
-        \brief Destructor
-     */
-    ~MOR() { return; };
 
     /*!
         \brief Read in binary matrix from file
@@ -101,4 +99,6 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
+BACI_NAMESPACE_CLOSE
+
 #endif

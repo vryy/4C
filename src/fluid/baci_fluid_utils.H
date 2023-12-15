@@ -19,6 +19,8 @@
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -142,7 +144,6 @@ namespace FLD
             int rlid0;
             int rlid1;
             int rowblock = RowBlock(lrow, rgid);
-            ;
             if (rowblock == 0)
             {
               rlid0 = rowmap00.LID(rgid);
@@ -365,8 +366,7 @@ namespace FLD
           Teuchos::RCP<const Epetra_Vector> stresses, double dt);
 
       /// time average wss
-      Teuchos::RCP<Epetra_Vector> TimeAverageWss(
-          Teuchos::RCP<const Epetra_Vector> stresses, double dt);
+      Teuchos::RCP<Epetra_Vector> TimeAverageWss(Teuchos::RCP<const Epetra_Vector> wss, double dt);
 
       /// Calculate Aggregation Matrix
       void CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);
@@ -568,5 +568,7 @@ namespace FLD
 
   }  // namespace UTILS
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_UTILS_H

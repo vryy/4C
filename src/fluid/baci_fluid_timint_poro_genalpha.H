@@ -18,6 +18,8 @@
 #include "baci_fluid_timint_poro.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -54,5 +56,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_PORO_GENALPHA_H

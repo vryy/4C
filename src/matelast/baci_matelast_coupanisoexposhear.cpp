@@ -8,9 +8,11 @@
 
 #include "baci_matelast_coupanisoexposhear.H"
 
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_material.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::CoupAnisoExpoShearAnisotropyExtension(
@@ -20,21 +22,21 @@ MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::CoupAnisoExpoShearAnisotrop
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::PackAnisotropy(
-    DRT::PackBuffer& data) const
+    CORE::COMM::PackBuffer& data) const
 {
-  DRT::ParObject::AddtoPack(data, scalarProducts_);
-  DRT::ParObject::AddtoPack(data, structuralTensors_stress_);
-  DRT::ParObject::AddtoPack(data, structuralTensors_);
-  DRT::ParObject::AddtoPack(data, isInitialized_);
+  CORE::COMM::ParObject::AddtoPack(data, scalarProducts_);
+  CORE::COMM::ParObject::AddtoPack(data, structuralTensors_stress_);
+  CORE::COMM::ParObject::AddtoPack(data, structuralTensors_);
+  CORE::COMM::ParObject::AddtoPack(data, isInitialized_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  DRT::ParObject::ExtractfromPack(position, data, scalarProducts_);
-  DRT::ParObject::ExtractfromPack(position, data, structuralTensors_stress_);
-  DRT::ParObject::ExtractfromPack(position, data, structuralTensors_);
-  isInitialized_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, scalarProducts_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, structuralTensors_stress_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, structuralTensors_);
+  isInitialized_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
 double MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetScalarProduct(int gp) const
@@ -125,7 +127,8 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalElementDataIni
 
   structuralTensors_[0].Update(0.5, fiber1fiber2T);
   structuralTensors_[0].UpdateT(0.5, fiber1fiber2T, 1.0);
-  UTILS::VOIGT::Stresses::MatrixToVector(structuralTensors_[0], structuralTensors_stress_[0]);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(
+      structuralTensors_[0], structuralTensors_stress_[0]);
 
   isInitialized_ = true;
 }
@@ -169,7 +172,8 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
 
     structuralTensors_[gp].Update(0.5, fiber1fiber2T);
     structuralTensors_[gp].UpdateT(0.5, fiber1fiber2T, 1.0);
-    UTILS::VOIGT::Stresses::MatrixToVector(structuralTensors_[gp], structuralTensors_stress_[gp]);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(
+        structuralTensors_[gp], structuralTensors_stress_[gp]);
   }
 
   isInitialized_ = true;
@@ -196,7 +200,7 @@ void MAT::ELASTIC::CoupAnisoExpoShear::RegisterAnisotropyExtensions(MAT::Anisotr
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoShear::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoExpoShear::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   anisotropyExtension_.PackAnisotropy(data);
 }
@@ -218,3 +222,5 @@ void MAT::ELASTIC::CoupAnisoExpoShear::SetFiberVecs(const double newgamma,
 {
   dserror("This function is not implemented for this summand!");
 }
+
+BACI_NAMESPACE_CLOSE

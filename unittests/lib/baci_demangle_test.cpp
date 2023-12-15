@@ -20,6 +20,8 @@ namespace DEMANGLE_TEST
 namespace
 {
 
+  using namespace BACI;
+
   TEST(DemangleTest, Struct)
   {
     EXPECT_EQ(CORE::UTILS::TryDemangle(typeid(DEMANGLE_TEST::TestStruct).name()),

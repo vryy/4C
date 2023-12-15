@@ -9,16 +9,18 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_membrane.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)   fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -133,7 +135,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
-                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, i);
             }
 
@@ -156,7 +158,9 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   return 0;
 }
 
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri3>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri6>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad4>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad9>;
+template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

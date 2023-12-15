@@ -8,9 +8,11 @@
 
 #include "baci_matelast_coupanisoexpoactive.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_par_material.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupAnisoExpoActive::CoupAnisoExpoActive(
@@ -48,7 +50,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::RegisterAnisotropyExtensions(MAT::Anisot
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoActive::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoExpoActive::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, lambdaact_);
   anisotropyExtension_.PackAnisotropy(data);
@@ -295,3 +297,5 @@ template void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFunc<double>(
     double&, CORE::LINALG::Matrix<3, 3, double> const&, int, const int) const;
 template void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFunc<FAD>(
     FAD&, CORE::LINALG::Matrix<3, 3, FAD> const&, int, const int) const;
+
+BACI_NAMESPACE_CLOSE

@@ -10,6 +10,8 @@
 #ifndef BACI_ELEMAG_ELE_ACTION_H
 #define BACI_ELEMAG_ELE_ACTION_H
 
+BACI_NAMESPACE_OPEN
+
 namespace ELEMAG
 {
   /*!
@@ -55,5 +57,7 @@ namespace ELEMAG
 
 }  // namespace ELEMAG
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_ELE_ACTION_H

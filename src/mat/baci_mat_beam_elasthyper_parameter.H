@@ -12,6 +12,8 @@
 
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -51,9 +53,6 @@ namespace MAT
      public:
       /// standard constructor
       BeamElastHyperMaterialParameterGeneric(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      virtual ~BeamElastHyperMaterialParameterGeneric() {}
 
       /// @name accessors to 'modal' constitutive parameters
       //@{
@@ -102,7 +101,7 @@ namespace MAT
       bool Uses_FAD() { return use_fad_; };
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
      private:
       /// Flag to store if the material is used with a beam material and automatic differentiation
@@ -118,55 +117,52 @@ namespace MAT
       /// standard constructor
       BeamReissnerElastHyperMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~BeamReissnerElastHyperMaterialParams() {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      virtual double GetAxialRigidity() const { return youngs_modulus_ * cross_section_area_; }
+      double GetAxialRigidity() const override { return youngs_modulus_ * cross_section_area_; }
 
-      virtual double GetShearRigidity2() const
+      double GetShearRigidity2() const override
       {
         return shear_modulus_ * cross_section_area_ * shear_correction_factor_;
       }
 
-      virtual double GetShearRigidity3() const
+      double GetShearRigidity3() const override
       {
         return shear_modulus_ * cross_section_area_ * shear_correction_factor_;
       }
 
 
-      virtual double GetTorsionalRigidity() const
+      double GetTorsionalRigidity() const override
       {
         return shear_modulus_ * area_moment_inertia_polar_;
       }
 
-      virtual double GetBendingRigidity2() const
+      double GetBendingRigidity2() const override
       {
         return youngs_modulus_ * area_moment_inertia_2_;
       }
 
-      virtual double GetBendingRigidity3() const
+      double GetBendingRigidity3() const override
       {
         return youngs_modulus_ * area_moment_inertia_3_;
       }
 
 
-      virtual double GetTranslationalMassInertia() const { return density_ * cross_section_area_; }
+      double GetTranslationalMassInertia() const override { return density_ * cross_section_area_; }
 
 
-      virtual double GetPolarMassMomentOfInertia() const
+      double GetPolarMassMomentOfInertia() const override
       {
         return density_ * (area_moment_inertia_2_ + area_moment_inertia_3_);
       }
 
-      virtual double GetMassMomentOfInertia2() const { return density_ * area_moment_inertia_2_; }
+      double GetMassMomentOfInertia2() const override { return density_ * area_moment_inertia_2_; }
 
-      virtual double GetMassMomentOfInertia3() const { return density_ * area_moment_inertia_3_; }
+      double GetMassMomentOfInertia3() const override { return density_ * area_moment_inertia_3_; }
 
 
-      virtual double GetInteractionRadius() const
+      double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
           dserror(
@@ -228,36 +224,33 @@ namespace MAT
       /// standard constructor
       BeamReissnerElastHyperMaterialParamsByMode(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~BeamReissnerElastHyperMaterialParamsByMode() {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      virtual double GetAxialRigidity() const { return axial_rigidity_; }
+      double GetAxialRigidity() const override { return axial_rigidity_; }
 
-      virtual double GetShearRigidity2() const { return shear_rigidity_2_; }
+      double GetShearRigidity2() const override { return shear_rigidity_2_; }
 
-      virtual double GetShearRigidity3() const { return shear_rigidity_3_; }
-
-
-      virtual double GetTorsionalRigidity() const { return torsional_rigidity_; }
-
-      virtual double GetBendingRigidity2() const { return bending_rigidity_2_; }
-
-      virtual double GetBendingRigidity3() const { return bending_rigidity_3_; }
+      double GetShearRigidity3() const override { return shear_rigidity_3_; }
 
 
-      virtual double GetTranslationalMassInertia() const { return translational_mass_inertia_; }
+      double GetTorsionalRigidity() const override { return torsional_rigidity_; }
+
+      double GetBendingRigidity2() const override { return bending_rigidity_2_; }
+
+      double GetBendingRigidity3() const override { return bending_rigidity_3_; }
 
 
-      virtual double GetPolarMassMomentOfInertia() const { return mass_moment_inertia_polar_; }
+      double GetTranslationalMassInertia() const override { return translational_mass_inertia_; }
 
-      virtual double GetMassMomentOfInertia2() const { return mass_moment_inertia_2_; }
 
-      virtual double GetMassMomentOfInertia3() const { return mass_moment_inertia_3_; }
+      double GetPolarMassMomentOfInertia() const override { return mass_moment_inertia_polar_; }
 
-      virtual double GetInteractionRadius() const
+      double GetMassMomentOfInertia2() const override { return mass_moment_inertia_2_; }
+
+      double GetMassMomentOfInertia3() const override { return mass_moment_inertia_3_; }
+
+      double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
           dserror(
@@ -317,49 +310,46 @@ namespace MAT
       /// standard constructor
       BeamKirchhoffElastHyperMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~BeamKirchhoffElastHyperMaterialParams() {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      virtual double GetAxialRigidity() const { return youngs_modulus_ * cross_section_area_; }
+      double GetAxialRigidity() const override { return youngs_modulus_ * cross_section_area_; }
 
-      virtual double GetShearRigidity2() const { return 0.0; }
+      double GetShearRigidity2() const override { return 0.0; }
 
-      virtual double GetShearRigidity3() const { return 0.0; }
+      double GetShearRigidity3() const override { return 0.0; }
 
 
-      virtual double GetTorsionalRigidity() const
+      double GetTorsionalRigidity() const override
       {
         return shear_modulus_ * area_moment_inertia_polar_;
       }
 
-      virtual double GetBendingRigidity2() const
+      double GetBendingRigidity2() const override
       {
         return youngs_modulus_ * area_moment_inertia_2_;
       }
 
-      virtual double GetBendingRigidity3() const
+      double GetBendingRigidity3() const override
       {
         return youngs_modulus_ * area_moment_inertia_3_;
       }
 
 
-      virtual double GetTranslationalMassInertia() const { return density_ * cross_section_area_; }
+      double GetTranslationalMassInertia() const override { return density_ * cross_section_area_; }
 
 
-      virtual double GetPolarMassMomentOfInertia() const
+      double GetPolarMassMomentOfInertia() const override
       {
         return density_ * (area_moment_inertia_2_ + area_moment_inertia_3_);
       }
 
-      virtual double GetMassMomentOfInertia2() const { return density_ * area_moment_inertia_2_; }
+      double GetMassMomentOfInertia2() const override { return density_ * area_moment_inertia_2_; }
 
-      virtual double GetMassMomentOfInertia3() const { return density_ * area_moment_inertia_3_; }
+      double GetMassMomentOfInertia3() const override { return density_ * area_moment_inertia_3_; }
 
 
-      virtual double GetInteractionRadius() const
+      double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
           dserror(
@@ -412,36 +402,33 @@ namespace MAT
       /// standard constructor
       BeamKirchhoffElastHyperMaterialParamsByMode(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~BeamKirchhoffElastHyperMaterialParamsByMode() {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      virtual double GetAxialRigidity() const { return axial_rigidity_; }
+      double GetAxialRigidity() const override { return axial_rigidity_; }
 
-      virtual double GetShearRigidity2() const { return 0.0; }
+      double GetShearRigidity2() const override { return 0.0; }
 
-      virtual double GetShearRigidity3() const { return 0.0; }
-
-
-      virtual double GetTorsionalRigidity() const { return torsional_rigidity_; }
-
-      virtual double GetBendingRigidity2() const { return bending_rigidity_2_; }
-
-      virtual double GetBendingRigidity3() const { return bending_rigidity_3_; }
+      double GetShearRigidity3() const override { return 0.0; }
 
 
-      virtual double GetTranslationalMassInertia() const { return translational_mass_inertia_; }
+      double GetTorsionalRigidity() const override { return torsional_rigidity_; }
+
+      double GetBendingRigidity2() const override { return bending_rigidity_2_; }
+
+      double GetBendingRigidity3() const override { return bending_rigidity_3_; }
 
 
-      virtual double GetPolarMassMomentOfInertia() const { return mass_moment_inertia_polar_; }
+      double GetTranslationalMassInertia() const override { return translational_mass_inertia_; }
 
-      virtual double GetMassMomentOfInertia2() const { return mass_moment_inertia_2_; }
 
-      virtual double GetMassMomentOfInertia3() const { return mass_moment_inertia_3_; }
+      double GetPolarMassMomentOfInertia() const override { return mass_moment_inertia_polar_; }
 
-      virtual double GetInteractionRadius() const
+      double GetMassMomentOfInertia2() const override { return mass_moment_inertia_2_; }
+
+      double GetMassMomentOfInertia3() const override { return mass_moment_inertia_3_; }
+
+      double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
           dserror(
@@ -498,37 +485,34 @@ namespace MAT
       /// standard constructor
       BeamKirchhoffTorsionFreeElastHyperMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~BeamKirchhoffTorsionFreeElastHyperMaterialParams() {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      virtual double GetAxialRigidity() const { return youngs_modulus_ * cross_section_area_; }
+      double GetAxialRigidity() const override { return youngs_modulus_ * cross_section_area_; }
 
-      virtual double GetShearRigidity2() const { return 0.0; }
+      double GetShearRigidity2() const override { return 0.0; }
 
-      virtual double GetShearRigidity3() const { return 0.0; }
-
-
-      virtual double GetTorsionalRigidity() const { return 0.0; }
-
-      virtual double GetBendingRigidity2() const { return youngs_modulus_ * area_moment_inertia_; }
-
-      virtual double GetBendingRigidity3() const { return youngs_modulus_ * area_moment_inertia_; }
+      double GetShearRigidity3() const override { return 0.0; }
 
 
-      virtual double GetTranslationalMassInertia() const { return density_ * cross_section_area_; }
+      double GetTorsionalRigidity() const override { return 0.0; }
+
+      double GetBendingRigidity2() const override { return youngs_modulus_ * area_moment_inertia_; }
+
+      double GetBendingRigidity3() const override { return youngs_modulus_ * area_moment_inertia_; }
 
 
-      virtual double GetPolarMassMomentOfInertia() const { return 0.0; }
-
-      virtual double GetMassMomentOfInertia2() const { return 0.0; }
-
-      virtual double GetMassMomentOfInertia3() const { return 0.0; }
+      double GetTranslationalMassInertia() const override { return density_ * cross_section_area_; }
 
 
-      virtual double GetInteractionRadius() const
+      double GetPolarMassMomentOfInertia() const override { return 0.0; }
+
+      double GetMassMomentOfInertia2() const override { return 0.0; }
+
+      double GetMassMomentOfInertia3() const override { return 0.0; }
+
+
+      double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
           dserror(
@@ -575,37 +559,34 @@ namespace MAT
       BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode(
           Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode() {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      virtual double GetAxialRigidity() const { return axial_rigidity_; }
+      double GetAxialRigidity() const override { return axial_rigidity_; }
 
-      virtual double GetShearRigidity2() const { return 0.0; }
+      double GetShearRigidity2() const override { return 0.0; }
 
-      virtual double GetShearRigidity3() const { return 0.0; }
-
-
-      virtual double GetTorsionalRigidity() const { return 0.0; }
-
-      virtual double GetBendingRigidity2() const { return bending_rigidity_; }
-
-      virtual double GetBendingRigidity3() const { return bending_rigidity_; }
+      double GetShearRigidity3() const override { return 0.0; }
 
 
-      virtual double GetTranslationalMassInertia() const { return translational_mass_inertia_; }
+      double GetTorsionalRigidity() const override { return 0.0; }
+
+      double GetBendingRigidity2() const override { return bending_rigidity_; }
+
+      double GetBendingRigidity3() const override { return bending_rigidity_; }
 
 
-      virtual double GetPolarMassMomentOfInertia() const { return 0.0; }
-
-      virtual double GetMassMomentOfInertia2() const { return 0.0; }
-
-      virtual double GetMassMomentOfInertia3() const { return 0.0; }
+      double GetTranslationalMassInertia() const override { return translational_mass_inertia_; }
 
 
-      virtual double GetInteractionRadius() const
+      double GetPolarMassMomentOfInertia() const override { return 0.0; }
+
+      double GetMassMomentOfInertia2() const override { return 0.0; }
+
+      double GetMassMomentOfInertia3() const override { return 0.0; }
+
+
+      double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
           dserror(
@@ -642,5 +623,7 @@ namespace MAT
   }  // namespace PAR
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

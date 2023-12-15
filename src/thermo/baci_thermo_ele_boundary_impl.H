@@ -20,6 +20,8 @@
 #include "baci_thermo_ele_impl_utils.H"
 #include "baci_thermo_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -40,8 +42,7 @@ namespace DRT
       //! Empty constructor
       TemperBoundaryImplInterface() {}
       //! Empty destructor
-      virtual ~TemperBoundaryImplInterface() {}
-
+      virtual ~TemperBoundaryImplInterface() = default;
       //! Evaluate the element in the case of multiple dofsets
       //!
       //! This class does not provide a definition for this function, it
@@ -100,7 +101,7 @@ namespace DRT
     //!
     //! \author gjb
     //! \date 08/08
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class TemperBoundaryImpl : public TemperBoundaryImplInterface
     {
      public:
@@ -108,28 +109,28 @@ namespace DRT
       TemperBoundaryImpl(int numdofpernode);
 
       //! number of nodes
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       //! number of Gauss points
       static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
 
       //! Evaluate (la required in case of multiple dofsets)
-      virtual int Evaluate(DRT::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! Evaluate a Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateNeumann(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
 
      private:
       //! prepare the evaluation of NURBS shape functions
@@ -240,4 +241,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_ELE_BOUNDARY_IMPL_H

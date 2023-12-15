@@ -22,6 +22,8 @@
 
 #include <list>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | algebraic reinitialization via solution of equation  rasthofer 09/13 |
@@ -549,16 +551,16 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
     dserror("This discretization does not have any row elements.");
   switch (discret_->lRowElement(0)->Shape())
   {
-    case DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       numnodesperele = 8;
       break;
-    case DRT::Element::hex20:
+    case CORE::FE::CellType::hex20:
       numnodesperele = 20;
       std::cout << "Warning, the fast signed distance reinitialization has not been tested with "
                    "hex20 elements!"
                 << std::endl;
       break;
-    case DRT::Element::hex27:
+    case CORE::FE::CellType::hex27:
       numnodesperele = 27;
       std::cout << "Warning, the fast signed distance reinitialization has not been tested with "
                    "hex27 elements!"
@@ -634,7 +636,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         const int lid = discret_->NodeRowMap()->LID(gid);
         if (lid < 0) continue;
         const DRT::Node* lnode = discret_->lRowNode(lid);
-        const double* coord = lnode->X();
+        const auto& coord = lnode->X();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
       }
@@ -875,7 +877,8 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
             const CORE::GEO::BoundaryIntCell patch = patches[ipatch];
 
             // only triangles and quadrangles are allowed as flame front patches (boundary cells)
-            if (!(patch.Shape() == DRT::Element::tri3 or patch.Shape() == DRT::Element::quad4))
+            if (!(patch.Shape() == CORE::FE::CellType::tri3 or
+                    patch.Shape() == CORE::FE::CellType::quad4))
             {
               dserror("invalid type of boundary integration cell for reinitialization");
             }
@@ -1018,16 +1021,16 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
   bool converged = false;
   switch (patch.Shape())
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
       converged =
-          ProjectNodeOnPatch<DRT::Element::tri3>(node, patch, patchcoord, normal, eta, alpha);
+          ProjectNodeOnPatch<CORE::FE::CellType::tri3>(node, patch, patchcoord, normal, eta, alpha);
       break;
     }
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      converged =
-          ProjectNodeOnPatch<DRT::Element::quad4>(node, patch, patchcoord, normal, eta, alpha);
+      converged = ProjectNodeOnPatch<CORE::FE::CellType::quad4>(
+          node, patch, patchcoord, normal, eta, alpha);
       break;
     }
     default:
@@ -1052,7 +1055,7 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
 
   switch (patch.Shape())
   {
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
       // criteria for tri3 patch
       if ((eta(0) > -TOL) and (eta(0) < 1.0 + TOL) and (eta(1) > -TOL) and (eta(1) < 1.0 + TOL) and
@@ -1065,7 +1068,7 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
       }
       break;
     }
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
       // criteria for quad4 patch
       if ((eta(0) > -1.0 - TOL) and (eta(0) < 1.0 + TOL) and (eta(1) > -1.0 - TOL) and
@@ -1266,7 +1269,7 @@ void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(
 /*-------------------------------------------------------------------------------------*
  | project node into the boundary cell space                               henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
-template <DRT::Element::DiscretizationType DISTYPE>
+template <CORE::FE::CellType DISTYPE>
 bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3, 1>& node,
     const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
     const CORE::LINALG::Matrix<3, 1>& normal, CORE::LINALG::Matrix<2, 1>& eta, double& alpha)
@@ -1276,7 +1279,7 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3,
   // number space dimensions for 3d combustion problems
   const size_t nsd = 3;
   // here, a triangular boundary integration cell is assumed (numvertices = 3)
-  const size_t numvertices = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const size_t numvertices = CORE::FE::num_nodes<DISTYPE>;
 
   // get coordinates of vertices of flame front patch
   // remark: here we only get a view (bool true) on the SerialDenseMatrix returned by
@@ -1542,3 +1545,5 @@ void SCATRA::LevelSetAlgorithm::ReinitializeWithEllipticEquation()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

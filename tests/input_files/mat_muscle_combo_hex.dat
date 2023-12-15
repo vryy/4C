@@ -56,8 +56,6 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-09
 TOLRES                          1.0E-09
-ADAPTCONV                       no
-ADAPTCONV_BETTER                0.01
 MAXITER                         100
 MATERIALTANGENT                 analytical
 --------------------------------------------------------------------SOLVER 1
@@ -94,14 +92,17 @@ STRUCTURE DIS structure NODE 13 QUANTITY dispz VALUE -3.16407161163366035e-01 TO
 STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE -3.16407161163365258e-01 TOLERANCE 1e-9 
 -------------------------------------------------------------------MATERIALS
 // passive unmixed material used for cube 1
-MAT 1 MAT_Muscle_Combo ALPHA 15.0 BETA 1.0 GAMMA 5.0 KAPPA 100.0 OMEGA0 0.8 POPT 0.0 LAMBDAMIN 0.682 LAMBDAOPT 1.192 C 34.40168764326955 ACTSTARTTIME 0.0 DENS 1.0
+MAT 1 MAT_Muscle_Combo ALPHA 15.0 BETA 1.0 GAMMA 5.0 KAPPA 100.0 OMEGA0 0.8 POPT 0.0 LAMBDAMIN 0.682 LAMBDAOPT 1.192 ACTFUNCT 2 DENS 1.0
 
 // active unmixed material used for cube 2
-MAT 2 MAT_Muscle_Combo ALPHA 19.69 BETA 1.19 GAMMA 0.1599 KAPPA 100.0 POPT 73.52 OMEGA0 0.7388 LAMBDAMIN 0.682 LAMBDAOPT 1.192 C 34.40168764326955 ACTSTARTTIME 0.0 DENS 1.0
+MAT 2 MAT_Muscle_Combo ALPHA 19.69 BETA 1.19 GAMMA 0.1599 KAPPA 100.0 POPT 73.52 OMEGA0 0.7388 LAMBDAMIN 0.682 LAMBDAOPT 1.192 ACTFUNCT 2 DENS 1.0
 ----------------------------------------------------------------------FUNCT1
 // function for application of Dirichlet conditions on top surface of cube 1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.005 0.006 0.015 VALUES 0 -0.5 -0.5 0.4
+----------------------------------------------------------------------FUNCT2
+// function for time_dependent activation increase up to a fused tetanus
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*tanh(34.40168764326955*t)
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT		16
 // Dirichlet conditions for cube 1 (passive material behaviour, uniaxial extension constraints)

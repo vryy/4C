@@ -10,9 +10,7 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
@@ -20,11 +18,15 @@
 #include "baci_mat_so3_material.H"
 #include "baci_so3_hex20.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -278,7 +280,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
           dserror("unknown kinematic type");
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -286,7 +288,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -672,7 +674,14 @@ int DRT::ELEMENTS::So_hex20::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return StrParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOH20)
@@ -706,7 +715,7 @@ int DRT::ELEMENTS::So_hex20::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH20; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -747,7 +756,7 @@ int DRT::ELEMENTS::So_hex20::EvaluateNeumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -790,12 +799,12 @@ void DRT::ELEMENTS::So_hex20::InitJacobianMapping()
     else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 
   return;
 }
@@ -832,7 +841,7 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(std::vector<int>& lm,  // locat
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH20; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1106,7 +1115,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(std::vector<int>& lm,  // locat
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH20; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1115,7 +1124,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(std::vector<int>& lm,  // locat
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH20 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH20 + 2];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_SOH20 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOH20 + 1];
@@ -1143,7 +1152,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(std::vector<int>& lm,  // locat
     double detJ = detJ_[gp];
 
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1282,7 +1291,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(std::vector<int>& lm,  // locat
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    UTILS::GetTemperatureForStructuralMaterial<hex20>(shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex20>(shapefcts[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1495,7 +1504,7 @@ void DRT::ELEMENTS::So_hex20::soh20_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Shape fcts at all 20 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20::soh20_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20::soh20_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> shapefcts(NUMGPT_SOH20);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 20
@@ -1508,7 +1517,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, hex20);
+    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::hex20);
   }
   return shapefcts;
 }
@@ -1517,7 +1526,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Shape fct derivs at all 20 Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>>
 DRT::ELEMENTS::So_hex20::soh20_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs(NUMGPT_SOH20);
@@ -1531,7 +1540,7 @@ DRT::ELEMENTS::So_hex20::soh20_derivs()
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, hex20);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::hex20);
   }
   return derivs;
 }
@@ -1539,7 +1548,7 @@ DRT::ELEMENTS::So_hex20::soh20_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Weights at all 20 Gauss Points                       |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
+std::vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
 {
   std::vector<double> weights(NUMGPT_SOH20);
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
@@ -1587,8 +1596,8 @@ void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
 
       CORE::LINALG::Matrix<NUMNOD_SOH20, 1> funct;
       CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20> deriv;
-      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, hex20);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, hex20);
+      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, CORE::FE::CellType::hex20);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::hex20);
       for (int inode = 0; inode < NUMNOD_SOH20; ++inode)
       {
         f(inode, igp) = funct(inode);
@@ -1707,3 +1716,5 @@ void DRT::ELEMENTS::So_hex20::UpdateJacobianMapping(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

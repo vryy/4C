@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -47,10 +49,10 @@ namespace SCATRA
     /*!
       Possible position flags is only "phi"
      */
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! test special quantity not associated with a particular element or node
-    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    protected:
     //! get nodal result to be tested
@@ -68,4 +70,6 @@ namespace SCATRA
    private:
   };
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif

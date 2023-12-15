@@ -12,6 +12,8 @@
 
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -49,3 +51,5 @@ void BEAMINTERACTION::BeamToSphereContactParams::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

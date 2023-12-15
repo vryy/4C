@@ -51,9 +51,9 @@
 // Default: 3
 
 #define mygaussruleeb \
-  ::CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
-                                                // intrule_line_10point
-                                                // is implemented
+  CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
+                                              // intrule_line_10point
+                                              // is implemented
 // Default: 4
 
 // #define BEAM3EBAUTOMATICDIFF      // is Sacado used or not?
@@ -93,6 +93,8 @@ dserror(
 dserror(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3EB !);
 #endif
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   class Beam3ebType : public DRT::ElementType
@@ -102,7 +104,7 @@ namespace DRT::ELEMENTS
 
     static Beam3ebType& Instance();
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
         const int id, const int owner) override;
@@ -160,11 +162,6 @@ namespace DRT::ELEMENTS
     Beam3eb(const Beam3eb& old);
 
     /*!
-    \brief Destructor
-    */
-    virtual ~Beam3eb() = default;
-
-    /*!
     \brief Deep copy this instance of Beam3eb and return pointer to the copy
 
     The Clone() method is used by the virtual base class Element in cases
@@ -174,7 +171,7 @@ namespace DRT::ELEMENTS
     DRT::Element* Clone() const override;
 
     //! \brief Get shape type of element
-    DiscretizationType Shape() const override;
+    CORE::FE::CellType Shape() const override;
 
     /*!
     \brief Return unique ParObject id
@@ -190,7 +187,7 @@ namespace DRT::ELEMENTS
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -609,5 +606,7 @@ namespace DRT::ELEMENTS
   std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

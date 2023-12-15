@@ -11,13 +11,15 @@
 
 #include "baci_lib_discret_faces.H"
 
-#include "baci_lib_exporter.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -112,16 +114,16 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     //-------------------------------------------
     // create
 
-    DRT::UTILS::BoundaryBuildType buildtype = DRT::UTILS::buildNothing;
+    CORE::COMM::BoundaryBuildType buildtype = CORE::COMM::buildNothing;
 
     // 3D elements
     if (ele->NumSurface() > 1)  // 2D boundary element and 3D parent element
     {
-      buildtype = DRT::UTILS::buildSurfaces;
+      buildtype = CORE::COMM::buildSurfaces;
     }
     else if (ele->NumSurface() == 1)  // 1D boundary element and 2D parent element
     {
-      buildtype = DRT::UTILS::buildLines;
+      buildtype = CORE::COMM::buildLines;
     }
     else
       dserror("creating internal faces for 1D elements (would be points) not implemented yet");
@@ -129,17 +131,17 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 
     // get node connectivity for specific distype of parent element
     unsigned int nele = 0;
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
     std::vector<std::vector<int>> connectivity;
     switch (buildtype)
     {
-      case DRT::UTILS::buildSurfaces:
+      case CORE::COMM::buildSurfaces:
       {
         nele = ele->NumSurface();
         connectivity = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
         break;
       }
-      case DRT::UTILS::buildLines:
+      case CORE::COMM::buildLines:
       {
         nele = ele->NumLine();
         connectivity = CORE::DRT::UTILS::getEleNodeNumberingLines(distype);
@@ -1036,29 +1038,6 @@ int DRT::DiscretizationFaces::NumMyColFaces() const
     return (int)faces_.size();
 }
 
-/*----------------------------------------------------------------------*
- |  query existance of element (public)                kronbichler 05/13|
- *----------------------------------------------------------------------*/
-bool DRT::DiscretizationFaces::HaveGlobalFace(int gid) const
-{
-  std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator curr = faces_.find(gid);
-  if (curr == faces_.end())
-    return false;
-  else
-    return true;
-}
-
-/*----------------------------------------------------------------------*
- |  get element with global id (public)                kronbichler 05/13|
- *----------------------------------------------------------------------*/
-DRT::FaceElement* DRT::DiscretizationFaces::gFace(int gid) const
-{
-  std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator curr = faces_.find(gid);
-#ifdef DEBUG
-  if (curr == faces_.end()) dserror("Face with gobal id gid=%d not stored on this proc", gid);
-#endif
-  return curr->second.get();
-}
 
 
 /*----------------------------------------------------------------------*
@@ -1128,3 +1107,5 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

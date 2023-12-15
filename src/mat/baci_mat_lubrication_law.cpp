@@ -11,6 +11,8 @@
 
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -132,3 +134,5 @@ void MAT::PAR::LubricationLawRoeland::ConstitutiveDerivatives(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

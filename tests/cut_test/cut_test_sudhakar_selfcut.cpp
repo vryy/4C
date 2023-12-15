@@ -44,7 +44,7 @@ void test_sud_sc1()
     nids.push_back(1882);
     nids.push_back(1909);
     nids.push_back(1908);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -62,7 +62,7 @@ void test_sud_sc1()
     nids.push_back(1908);
     nids.push_back(1880);
     nids.push_back(1882);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -80,7 +80,7 @@ void test_sud_sc1()
     nids.push_back(1877);
     nids.push_back(1879);
     nids.push_back(1878);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -98,7 +98,7 @@ void test_sud_sc1()
     nids.push_back(1867);
     nids.push_back(1878);
     nids.push_back(1879);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -116,7 +116,7 @@ void test_sud_sc1()
     nids.push_back(1879);
     nids.push_back(1869);
     nids.push_back(1867);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -134,7 +134,7 @@ void test_sud_sc1()
     nids.push_back(1907);
     nids.push_back(1906);
     nids.push_back(1908);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -152,7 +152,7 @@ void test_sud_sc1()
     nids.push_back(1908);
     nids.push_back(1909);
     nids.push_back(1907);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -170,7 +170,7 @@ void test_sud_sc1()
     nids.push_back(1878);
     nids.push_back(1876);
     nids.push_back(1877);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -203,7 +203,7 @@ void test_sud_sc1()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, "Tessellation");

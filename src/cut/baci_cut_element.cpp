@@ -24,6 +24,8 @@
 #include <stack>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------*
  * struct for comparison of position of sides using ray-tracing techniques
  * shoot a ray starting from startpoint through the midpoint of one side
@@ -139,7 +141,7 @@ CORE::GEO::CUT::Element::Element(
       active_(active),
       sides_(sides),
       nodes_(nodes),
-      quadshape_(::DRT::Element::dis_none),
+      quadshape_(CORE::FE::CellType::dis_none),
       eleinttype_(INPAR::CUT::EleIntType_Undecided)
 {
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
@@ -723,7 +725,7 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
       dserror("the line has nearly zero length: %d", line_norm);
     }
 
-    if (s->Shape() != ::DRT::Element::tri3)
+    if (s->Shape() != CORE::FE::CellType::tri3)
     {
       std::cout << "HERE !tri3 cutsides are used!!!" << std::endl;
       //      throw std::runtime_error("expect only tri3 cutsides!");
@@ -732,13 +734,13 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
     // tri3/quad4 element center
     CORE::LINALG::Matrix<2, 1> rs(true);
 
-    if (s->Shape() == ::DRT::Element::tri3)
+    if (s->Shape() == CORE::FE::CellType::tri3)
     {
-      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(::DRT::Element::tri3);
+      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(CORE::FE::CellType::tri3);
     }
-    else if (s->Shape() == ::DRT::Element::quad4)
+    else if (s->Shape() == CORE::FE::CellType::quad4)
     {
-      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(::DRT::Element::quad4);
+      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(CORE::FE::CellType::quad4);
     }
     else
       throw std::runtime_error("unsupported side-shape");
@@ -1049,8 +1051,7 @@ void CORE::GEO::CUT::Element::MakeVolumeCells(Mesh& mesh)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType elementtype,
-    unsigned numNodesElement, unsigned dim>
+template <unsigned probdim, CORE::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
 bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::PointInside(
     Point* p)
 {
@@ -1060,8 +1061,7 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType elementtype,
-    unsigned numNodesElement, unsigned dim>
+template <unsigned probdim, CORE::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
 bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::LocalCoordinates(
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rst)
 {
@@ -1093,7 +1093,7 @@ void CORE::GEO::CUT::Element::LocalCoordinatesQuad(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Element::NumGaussPoints(::DRT::Element::DiscretizationType shape)
+int CORE::GEO::CUT::Element::NumGaussPoints(CORE::FE::CellType shape)
 {
   int numgp = 0;
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
@@ -1108,7 +1108,7 @@ int CORE::GEO::CUT::Element::NumGaussPoints(::DRT::Element::DiscretizationType s
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Element::DebugDump()
 {
-  std::cout << "Problem in element " << Id() << " of shape " << ::DRT::DistypeToString(Shape())
+  std::cout << "Problem in element " << Id() << " of shape " << CORE::FE::CellTypeToString(Shape())
             << ":\n";
   bool haslevelsetside = false;
   const std::vector<Node*>& nodes = Nodes();
@@ -1324,45 +1324,45 @@ bool CORE::GEO::CUT::Element::HasLevelSetSide()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElement(
-    ::DRT::Element::DiscretizationType elementtype, int eid, const std::vector<Side*>& sides,
+    CORE::FE::CellType elementtype, int eid, const std::vector<Side*>& sides,
     const std::vector<Node*>& nodes, bool active) const
 {
   Teuchos::RCP<Element> e = Teuchos::null;
-  const int probdim = ::DRT::Problem::Instance()->NDim();
+  const int probdim = BACI::DRT::Problem::Instance()->NDim();
   switch (elementtype)
   {
-    case ::DRT::Element::line2:
+    case CORE::FE::CellType::line2:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::line2>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<CORE::FE::CellType::line2>(eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::tri3>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<CORE::FE::CellType::tri3>(eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::quad4>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<CORE::FE::CellType::quad4>(eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::tet4:
+    case CORE::FE::CellType::tet4:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::tet4>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<CORE::FE::CellType::tet4>(eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::hex8:
+    case CORE::FE::CellType::hex8:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::hex8>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<CORE::FE::CellType::hex8>(eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::pyramid5>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<CORE::FE::CellType::pyramid5>(eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::wedge6:
+    case CORE::FE::CellType::wedge6:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::wedge6>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<CORE::FE::CellType::wedge6>(eid, sides, nodes, active, probdim));
       break;
     default:
     {
       dserror("Unsupported element type! ( %d | %s )", elementtype,
-          ::DRT::DistypeToString(elementtype).c_str());
+          CORE::FE::CellTypeToString(elementtype).c_str());
       break;
     }
   }
@@ -1372,8 +1372,8 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElem
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(
-    const ::DRT::Element::DiscretizationType& elementtype, const int& eid,
-    const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active)
+    const CORE::FE::CellType& elementtype, const int& eid, const std::vector<Side*>& sides,
+    const std::vector<Node*>& nodes, const bool& active)
 {
   ElementFactory factory;
   return factory.CreateElement(elementtype, eid, sides, nodes, active);
@@ -1385,15 +1385,17 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(const unsi
     const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
     const bool& active)
 {
-  return Create(::DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
+  return Create(BACI::DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
 }
 
-template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::tri3>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::tri3>;
-template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::quad4>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::quad4>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::hex8>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::pyramid5>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::wedge6>;
+template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::line2>;
+template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::line2>;
+template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::tri3>;
+template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::tri3>;
+template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::quad4>;
+template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::quad4>;
+template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::hex8>;
+template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::pyramid5>;
+template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::wedge6>;
+
+BACI_NAMESPACE_CLOSE

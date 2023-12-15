@@ -17,17 +17,19 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_maxwell_0d_acinus.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_red_airways_acinus_impl.H"
 #include "baci_red_airways_evaluation_data.h"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <fstream>
 #include <iomanip>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -38,12 +40,12 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      static InterAcinarDepImpl<DRT::Element::line2>* acinus;
+      static InterAcinarDepImpl<CORE::FE::CellType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new InterAcinarDepImpl<DRT::Element::line2>;
+        acinus = new InterAcinarDepImpl<CORE::FE::CellType::line2>;
       }
       return acinus;
     }
@@ -58,7 +60,7 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
 /*----------------------------------------------------------------------*
  | Constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 {
 }
@@ -67,7 +69,7 @@ DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 /*----------------------------------------------------------------------*
  | Evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -97,7 +99,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
  | matically evaluated during the assembly process later.               |
  |                                              (private)  ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const MAT::Material> material)
@@ -124,7 +126,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
  | per node). The right hand side is zero.                              |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(std::vector<double>& ial,
     CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs)
 {
@@ -150,7 +152,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(std::vector<double>& ial
  |  Evaluate the values of the degrees of freedom           ismail 04/13|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
@@ -211,7 +213,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           if ((*curve)[0] >= 0)
           {
             curvefac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                           ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                            .Evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
@@ -231,8 +233,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           if (functnum > 0)
           {
             functionfac = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[i])->X(), time, 0);
+                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
 
           // Get factor of second CURVE
@@ -241,7 +243,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
             curve2fac = DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfTime>(curve2num)
+                            ->FunctionById<CORE::UTILS::FunctionOfTime>(curve2num)
                             .Evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
@@ -279,7 +281,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               if ((*curve)[0] >= 0)
               {
                 curvefac = DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                               ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                                .Evaluate(time);
               }
 
@@ -416,29 +418,4 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
   }      // End of node i has a condition
 }
 
-
-/*----------------------------------------------------------------------*
- |  CalcFlowRates                                                       |
- |                                                         ismail 01/10 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& elevec1,  // a_volumenp,
-    CORE::LINALG::SerialDenseVector& elevec2,  // a_volume_strain_np,
-    std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
-
-{
-}
-
-
-/*----------------------------------------------------------------------*
- |  Get the coupled the values on the coupling interface    ismail 07/10|
- |  of the 3D/reduced-D problem                                         |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::GetCoupledValues(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
-{
-}
+BACI_NAMESPACE_CLOSE

@@ -13,16 +13,18 @@
 
 #include "baci_xfem_multi_field_mapextractor.H"
 
+#include "baci_comm_exporter.H"
+#include "baci_comm_parobject.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_parobject.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_xfem_xfield_field_coupling.H"
 #include "baci_xfem_xfield_field_coupling_dofset.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -181,14 +183,14 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   std::vector<int> receivedgid;
   std::vector<char> receivedset;
 
-  DRT::PackBuffer data;
+  CORE::COMM::PackBuffer data;
   // --------------------------------------------------------------------------
   // pack gids and std::set's separately
   // --------------------------------------------------------------------------
   // --- count set size
   for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)
   {
-    DRT::ParObject::AddtoPack(data, cit_map->second);
+    CORE::COMM::ParObject::AddtoPack(data, cit_map->second);
   }
 
   // --- activate packing
@@ -198,7 +200,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)
   {
     sendgid.push_back(cit_map->first);
-    DRT::ParObject::AddtoPack(data, cit_map->second);
+    CORE::COMM::ParObject::AddtoPack(data, cit_map->second);
   }
 
   // swap into std::vector<char>
@@ -212,7 +214,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   // (2) round robin loop
   // ------------------------------------------------------------------------
   // create an exporter for point to point communication
-  DRT::Exporter exporter(Comm());
+  CORE::COMM::Exporter exporter(Comm());
   const int numprocs = Comm().NumProc();
 
   for (int p = 0; p < numprocs; ++p)
@@ -298,7 +300,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
       int gid = receivedgid[j];
       // the set gets cleared at the beginning of the ExtractfromPack routine!
       std::set<int> rs;
-      DRT::ParObject::ExtractfromPack(index, receivedset, rs);
+      CORE::COMM::ParObject::ExtractfromPack(index, receivedset, rs);
       g_coupled_sl_dis[gid].insert(rs.begin(), rs.end());
       ++j;
     }
@@ -548,7 +550,7 @@ void XFEM::MultiFieldMapExtractor::BuildInterfaceCouplingDofSet()
       sl_max_num_dof_per_inode[ngids[j]] = numdof;
     }
 
-    DRT::Exporter export_max_dof_num(sl_inodemap, ma_inodemap, SlDiscret(i).Comm());
+    CORE::COMM::Exporter export_max_dof_num(sl_inodemap, ma_inodemap, SlDiscret(i).Comm());
     export_max_dof_num.Export(sl_max_num_dof_per_inode);
 
     // communicate the number of standard DoF's
@@ -1200,3 +1202,5 @@ const Epetra_Map& XFEM::MultiFieldMapExtractor::SlaveNodeRowMap(
   CheckInit();
   return *(SlMapExtractor(dis_id, map_nodes).Map(btype));
 }
+
+BACI_NAMESPACE_CLOSE

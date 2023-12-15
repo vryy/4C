@@ -12,6 +12,8 @@
 #include "baci_mat_newman.H"
 #include "baci_mat_scatra_multiscale.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -23,11 +25,9 @@ namespace MAT
       //! constructor
       NewmanMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      virtual ~NewmanMultiScale() { return; };
 
       //! create instance of Newman multi-scale material
-      Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       //! return electronic conductivity
       double Sigma() const { return sigma_; };
@@ -43,14 +43,14 @@ namespace MAT
 
 
   /*----------------------------------------------------------------------*/
-  class NewmanMultiScaleType : public DRT::ParObjectType
+  class NewmanMultiScaleType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "NewmanMultiScaleType"; };
+    std::string Name() const override { return "NewmanMultiScaleType"; };
 
     static NewmanMultiScaleType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static NewmanMultiScaleType instance_;
@@ -75,7 +75,10 @@ namespace MAT
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const { return NewmanMultiScaleType::Instance().UniqueParObjectId(); };
+    int UniqueParObjectId() const override
+    {
+      return NewmanMultiScaleType::Instance().UniqueParObjectId();
+    };
 
     /*!
       \brief Pack this class so it can be communicated
@@ -87,7 +90,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -100,24 +103,32 @@ namespace MAT
 
       \param data (in) : vector storing all data to be unpacked into this instance.
     */
-    void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
     //@}
 
     //! return material type
-    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_newman_multiscale; };
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_newman_multiscale;
+    };
 
     //! clone Newman multi-scale material
-    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new NewmanMultiScale(*this)); };
+    Teuchos::RCP<Material> Clone() const override
+    {
+      return Teuchos::rcp(new NewmanMultiScale(*this));
+    };
 
     //! return electronic conductivity
     double Sigma() const { return params_->Sigma(); };
 
    private:
     //! return material parameters
-    const MAT::PAR::ScatraMultiScale* Params() const { return params_; };
+    const MAT::PAR::ScatraMultiScale* Params() const override { return params_; };
 
     //! material parameters
     MAT::PAR::NewmanMultiScale* params_;
   };  // wrapper for Newman multi-scale material
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

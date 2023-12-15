@@ -19,6 +19,8 @@
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   class Pstream;
@@ -89,5 +91,7 @@ void PrintHelpMessage();
 /*! print flag sections of dat file with default flags */
 void PrintDefaultDatHeader();
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

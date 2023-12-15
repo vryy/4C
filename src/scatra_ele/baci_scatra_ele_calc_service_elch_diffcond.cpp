@@ -8,7 +8,6 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "baci_lib_discret.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_elchmat.H"
 #include "baci_mat_elchphase.H"
@@ -16,11 +15,14 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_utils_elch_diffcond.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElementParameter(
     DRT::Element* ele)
 {
@@ -105,7 +107,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
 
 /*---------------------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcInitialTimeDerivative(
     DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -124,7 +126,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcInitialTime
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CorrectRHSFromCalcRHSLinMass(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double densnp,
     const double phinp)
@@ -138,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CorrectRHSFromC
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -207,7 +209,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainKinetics(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -310,7 +312,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   if (curvenum >= 0)
   {
     const double curvefac =
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
+        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
   }
@@ -366,7 +369,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
     const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
@@ -418,7 +421,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDomainKinetics(
     const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
@@ -512,7 +515,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectrodeStatus(
     const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
     Teuchos::ParameterList& params, Teuchos::RCP<DRT::Condition> cond,
@@ -583,7 +586,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectro
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
     CORE::LINALG::Matrix<nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const int k)
 {
@@ -606,7 +609,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
       // convective flux contribution
       q.Update(VarManager()->Phinp(k), VarManager()->ConVel(k));
 
-      // no break statement here!
+      [[fallthrough]];
     case INPAR::SCATRA::flux_diffusive:
       // diffusive flux contribution
       q.Update(-DiffManager()->GetIsotropicDiff(k) * DiffManager()->GetPhasePoroTort(0),
@@ -632,7 +635,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateCurrent(
     CORE::LINALG::Matrix<nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const double fac)
 {
@@ -675,7 +678,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateCurren
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorComparedToAnalytSolution(
     const DRT::Element* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& errors)
@@ -813,7 +816,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::SetInternalVariablesForMatAndRHS()
 {
   // set internal variables
@@ -821,7 +824,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::SetInternalVari
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 }
 
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -833,23 +836,25 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 }
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line3, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tet10, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::pyramid5, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tet10, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::pyramid5, 3>;
+
+BACI_NAMESPACE_CLOSE

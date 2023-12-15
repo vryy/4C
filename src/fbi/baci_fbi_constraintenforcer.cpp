@@ -17,8 +17,8 @@ interaction.
 #include "baci_binstrategy.H"
 #include "baci_fbi_adapter_constraintbridge.H"
 #include "baci_fbi_adapter_constraintbridge_penalty.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
 #include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_params.H"
 #include "baci_fbi_immersed_geometry_coupler.H"
 #include "baci_fluid_utils.H"
 #include "baci_geometry_pair.H"
@@ -37,6 +37,8 @@ interaction.
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
 #include <iostream>
+
+BACI_NAMESPACE_OPEN
 
 ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
@@ -284,7 +286,6 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
       elements[0], column_structure_displacement_,
       beam_dofvec);  // todo get "interface" displacements only for beam
                      // elements
-  ;
   // extract velocity of the beam element
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
       *(structure_->Discretization()), elements[0], column_structure_velocity_, vel_tmp);
@@ -322,3 +323,5 @@ void ADAPTER::FBIConstraintenforcer::SetBinning(Teuchos::RCP<BINSTRATEGY::Binnin
 {
   geometrycoupler_->SetBinning(binning);
 };
+
+BACI_NAMESPACE_CLOSE

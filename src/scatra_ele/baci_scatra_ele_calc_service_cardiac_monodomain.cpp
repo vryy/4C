@@ -18,11 +18,13 @@
 #include "baci_scatra_ele_calc_cardiac_monodomain.H"
 #include "baci_scatra_ele_parameter_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAction(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -190,27 +192,33 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line3, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad4, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex8, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tet10, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::pyramid5, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

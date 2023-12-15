@@ -15,11 +15,13 @@
 #include "baci_lib_elementtype.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 
 void CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(
-    ::DRT::Discretization& dis, Teuchos::ParameterList& solverlist)
+    BACI::DRT::Discretization& dis, Teuchos::ParameterList& solverlist)
 {
   Teuchos::RCP<Epetra_Map> nullspaceMap =
       solverlist.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
@@ -34,7 +36,7 @@ void CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(
     if (nullspaceMap == Teuchos::null and dis.NumMyRowNodes() > 0)
     {
       // no map given, just grab the block information on the first element that appears
-      ::DRT::Element* dwele = dis.lRowElement(0);
+      BACI::DRT::Element* dwele = dis.lRowElement(0);
       dwele->ElementType().NodalBlockInformation(dwele, numdf, dimns, nv, np);
     }
     else
@@ -42,14 +44,14 @@ void CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(
       // if a map is given, grab the block information of the first element in that map
       for (int i = 0; i < dis.NumMyRowNodes(); ++i)
       {
-        ::DRT::Node* actnode = dis.lRowNode(i);
+        BACI::DRT::Node* actnode = dis.lRowNode(i);
         std::vector<int> dofs = dis.Dof(0, actnode);
 
         const int localIndex = nullspaceMap->LID(dofs[0]);
 
         if (localIndex == -1) continue;
 
-        ::DRT::Element* dwele = dis.lRowElement(localIndex);
+        BACI::DRT::Element* dwele = dis.lRowElement(localIndex);
         actnode->Elements()[0]->ElementType().NodalBlockInformation(dwele, numdf, dimns, nv, np);
         break;
       }
@@ -91,7 +93,7 @@ void CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(
       nullspaceMap = Teuchos::rcp(new Epetra_Map(*dis.DofRowMap()));
     }
 
-    auto nullspace = ::DRT::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
+    auto nullspace = BACI::DRT::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
 
     solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     solverlist.set("null space: vectors", nullspace->Values());
@@ -157,3 +159,5 @@ void CORE::LINEAR_SOLVER::Parameters::FixNullSpace(std::string field, const Epet
   params.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspaceNew);
   params.set("null space: vectors", nullspaceNew->Values());
 }
+
+BACI_NAMESPACE_CLOSE

@@ -10,6 +10,8 @@
 
 #include "baci_adapter_str_ssiwrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -17,3 +19,5 @@ ADAPTER::SSIStructureWrapper::SSIStructureWrapper(Teuchos::RCP<Structure> struct
     : StructureWrapper(structure)
 {
 }
+
+BACI_NAMESPACE_CLOSE

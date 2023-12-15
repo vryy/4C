@@ -50,13 +50,12 @@
 #include "baci_inpar_xfem.H"  //for enums only
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_locsys.H"
 #include "baci_lib_utils_discret.H"
@@ -65,6 +64,7 @@
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_nurbs_discret_apply_nurbs_initial_condition.H"
+#include "baci_utils_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
 
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
@@ -74,6 +74,7 @@
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
@@ -108,7 +109,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discreti
       isimpedancebc_(false),
       off_proc_assembly_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
       ndsale_((DRT::Problem::Instance()->SpatialApproximationType() ==
-                  ShapeFunctionType::shapefunction_hdg) *
+                  CORE::FE::ShapeFunctionType::hdg) *
               2),
       massmat_(Teuchos::null),
       logenergy_(Teuchos::null),
@@ -568,7 +569,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
 
   // print the results of time measurements
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      COMM_UTILS::toTeuchosComm<int>(discret_->Comm());
+      CORE::COMM::toTeuchosComm<int>(discret_->Comm());
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 
 }  // FluidImplicitTimeInt::Integrate
@@ -892,7 +893,7 @@ void FLD::FluidImplicitTimeInt::Solve()
       //     much for sensitive problems
       //     xwall uses non-polynomial shape functions
       if (DRT::Problem::Instance()->SpatialApproximationType() ==
-              ShapeFunctionType::shapefunction_polynomial &&
+              CORE::FE::ShapeFunctionType::polynomial &&
           xwall_ == Teuchos::null)
         CheckMatrixNullspace();
 
@@ -2447,15 +2448,6 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
     if (myrank_ == 0 and (inconsistent_ or (not inconsistent_ and itnum == 0)))
     {
       printf("+------------+-------------+-------------+-------------+-------------+\n");
-      FILE* errfile = params_->get<FILE*>("err file", nullptr);
-      if (errfile != nullptr)
-      {
-        fprintf(errfile,
-            "fluid solve:   %3d/%3d vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
-            "pinc=%10.3E\n",
-            itnum, itmax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-            incprenorm_L2_ / prenorm_L2_);
-      }
     }
     return true;
   }
@@ -2469,16 +2461,6 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
-
-        FILE* errfile = params_->get<FILE*>("err file", nullptr);
-        if (errfile != nullptr)
-        {
-          fprintf(errfile,
-              "fluid unconverged solve:   %3d/%3d  vres=%10.3E  pres=%10.3E  "
-              "vinc=%10.3E  pinc=%10.3E\n",
-              itnum, itmax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-              incprenorm_L2_ / prenorm_L2_);
-        }
       }
       return true;
     }
@@ -2692,7 +2674,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           DRT::Node* currNode = discret_->gNode(gIdNode);
           std::vector<double> currPos(numdim_);
 
-          const double* refPos = currNode->X();
+          const auto& refPos = currNode->X();
 
           for (int i = 0; i < numdim_; ++i)
           {
@@ -2703,7 +2685,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           for (int i = 0; i < numdim_; i++)
           {
             (*nodeNormals)[dofsLocalInd[i]] =
-                (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                      nodeNormalFunct - 1))
                     .Evaluate(currPos.data(), 0.0, i);
           }
@@ -2930,7 +2912,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           DRT::Node* currNode = discret_->gNode(gIdNode);
           std::vector<double> currPos(numdim_);
 
-          const double* refPos = currNode->X();
+          const auto& refPos = currNode->X();
 
           double lengthCurrPos = 0.0;
           for (int i = 0; i < numdim_; ++i)
@@ -3705,7 +3687,7 @@ void FLD::FluidImplicitTimeInt::Output()
     // get the node
     DRT::Node* node = discret_->gNode(gid);
     // get the coordinates of the node
-    const double* X = node->X();
+    const auto& X = node->X();
     // get degrees of freedom of a node
     std::vector<int> gdofs = discret_->Dof(node);
     // std::cout << "for node:" << *node << std::endl;
@@ -4189,9 +4171,8 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
       params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
   if (scale_sep_solvernumber != (-1))  // create a dummy solver
   {
-    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(
-        new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
-            discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+        DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber), discret_->Comm()));
     // compute the null space,
     discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
 
@@ -4281,8 +4262,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
         int gid = nodedofset[index];
 
         double initialval = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                .Evaluate(lnode->X(), time_, index);
+                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                .Evaluate(lnode->X().data(), time_, index);
 
         velnp_->ReplaceGlobalValues(1, &initialval, &gid);
       }
@@ -4290,9 +4271,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     // for NURBS discretizations we have to solve a least squares problem,
     // with high accuracy! (do nothing for Lagrangian polynomials)
-    DRT::NURBS::apply_nurbs_initial_condition(*discret_,
-        DRT::Problem::Instance()->ErrorFile()->Handle(),
-        DRT::Problem::Instance()->UMFPACKSolverParams(), startfuncno, velnp_);
+    DRT::NURBS::apply_nurbs_initial_condition(
+        *discret_, DRT::Problem::Instance()->UMFPACKSolverParams(), startfuncno, velnp_);
 
     // initialize veln_ as well. That's what we actually want to do here!
     veln_->Update(1.0, *velnp_, 0.0);
@@ -5135,11 +5115,6 @@ double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
   return dta_;
 }  // end EvaluateDtWithCFL
 
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                                  gammi 04/07|
- *----------------------------------------------------------------------*/
-FLD::FluidImplicitTimeInt::~FluidImplicitTimeInt() = default;
-
 
 /*----------------------------------------------------------------------*
  | calculate lift and drag forces as well as angular moment: chfoe 11/07|
@@ -5505,7 +5480,7 @@ void FLD::FluidImplicitTimeInt::RemoveDirichCond(const Teuchos::RCP<const Epetra
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
+Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 {
   if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
@@ -5519,7 +5494,7 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
+Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
 {
   if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichzeros =
@@ -6857,3 +6832,5 @@ void FLD::FluidImplicitTimeInt::ResetExternalForces()
     external_loads_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   external_loads_->PutScalar(0);
 }
+
+BACI_NAMESPACE_CLOSE

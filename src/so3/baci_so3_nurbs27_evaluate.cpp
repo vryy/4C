@@ -13,7 +13,6 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_element_vtk_cell_type_register.H"
 #include "baci_lib_elements_paramsinterface.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
@@ -24,8 +23,11 @@
 #include "baci_so3_nurbs27.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -284,7 +286,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81
     gpa(2) = -1.0;
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
-        funct, gpa, myknots, weights, DRT::Element::nurbs27);
+        funct, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -304,7 +306,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81
     gpa(2) = -1.0;
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
-        funct, gpa, myknots, weights, DRT::Element::nurbs27);
+        funct, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -323,7 +325,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81
     gpa(2) = -1.0;
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
-        funct, gpa, myknots, weights, DRT::Element::nurbs27);
+        funct, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -342,7 +344,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81
     gpa(2) = 1.0;
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
-        funct, gpa, myknots, weights, DRT::Element::nurbs27);
+        funct, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -601,7 +603,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   CORE::LINALG::Matrix<27, 3> xrefe;
   for (int i = 0; i < 27; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -622,7 +624,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
     gpa(2) = intpoints.qxg[gp][2];
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-        shape, deriv, gpa, myknots, weights, DRT::Element::nurbs27);
+        shape, deriv, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
 
     // compute the Jacobian matrix
     CORE::LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27> jac;
@@ -657,7 +659,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -785,7 +787,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   CORE::LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -821,7 +823,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     gpa(2) = intpoints.qxg[gp][2];
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-        funct, deriv, gpa, myknots, weights, DRT::Element::nurbs27);
+        funct, deriv, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -908,7 +910,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     // call material law
     CORE::LINALG::Matrix<6, 6> cmat(true);
     CORE::LINALG::Matrix<6, 1> stress(true);
-    UTILS::GetTemperatureForStructuralMaterial<nurbs27>(funct, params);
+    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::nurbs27>(funct, params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
 
@@ -981,8 +983,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<27, 1>>
-DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
+std::vector<CORE::LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
     const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const CORE::LINALG::Matrix<27, 1>& weights)
 {
@@ -1001,7 +1002,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
     gp(2) = intpoints.qxg[igp][2];
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
-        shapefcts[igp], gp, myknots, weights, DRT::Element::nurbs27);
+        shapefcts[igp], gp, myknots, weights, CORE::FE::CellType::nurbs27);
   }
   return shapefcts;
 }
@@ -1010,7 +1011,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
+std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
     const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const CORE::LINALG::Matrix<27, 1>& weights)
 {
@@ -1031,7 +1032,7 @@ const std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27:
     CORE::LINALG::Matrix<27, 1> dummyfct;
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-        dummyfct, derivs[igp], gp, myknots, weights, DRT::Element::nurbs27);
+        dummyfct, derivs[igp], gp, myknots, weights, CORE::FE::CellType::nurbs27);
   }
   return derivs;
 }
@@ -1039,7 +1040,7 @@ const std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27:
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Weights at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
+std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
 {
   const int numgp = 27;
 
@@ -1109,7 +1110,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   CORE::LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1144,7 +1145,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
     gpa(2) = intpoints.qxg[gp][2];
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-        funct, deriv, gpa, myknots, weights, DRT::Element::nurbs27);
+        funct, deriv, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1225,8 +1226,7 @@ void EvalNurbs3DInterpolation(CORE::LINALG::Matrix<n_val, 1, double>& r,
     const CORE::LINALG::Matrix<n_points * n_val, 1, double>& q,
     const CORE::LINALG::Matrix<3, 1, double>& xi,
     const CORE::LINALG::Matrix<n_points, 1, double>& weights,
-    const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
-    const DRT::Element::DiscretizationType& distype)
+    const std::vector<CORE::LINALG::SerialDenseVector>& myknots, const CORE::FE::CellType& distype)
 {
   // Get the shape functions.
   CORE::LINALG::Matrix<n_points, 1, double> N;
@@ -1251,9 +1251,9 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
     std::vector<double>& point_coordinates) const
 {
   // This NURBS element will be displayed like a hex27 element in the vtk output.
-  const int number_of_ouput_points = 27;
+  const int number_of_output_points = 27;
   const auto vtk_cell_info =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(DRT::Element::hex27);
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::hex27);
   const std::vector<int>& numbering = vtk_cell_info.second;
 
   // Add the cell type to the output.
@@ -1278,7 +1278,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
     // Loop over the "nodes" of the hex27 element.
     CORE::LINALG::Matrix<3, 1, double> r;
     CORE::LINALG::Matrix<3, 1, double> xi;
-    for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
+    for (unsigned int i_node_hex = 0; i_node_hex < number_of_output_points; i_node_hex++)
     {
       for (unsigned int i = 0; i < 3; i++)
         xi(i) = CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
@@ -1290,7 +1290,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
     }
   }
 
-  return number_of_ouput_points;
+  return number_of_output_points;
 }
 
 /**
@@ -1299,7 +1299,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
 unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResultDataVector(
     const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
     unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
-    std::vector<double>& vtu_point_result_data) const
+    std::vector<double>& output_point_result_data) const
 {
   if (read_result_data_from_dofindex != 0)
     dserror("Nurbs output is only implemented for read_result_data_from_dofindex == 0");
@@ -1307,10 +1307,10 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
   if (result_num_dofs_per_node != 3)
     dserror("The nurbs elements can only output nodal data with dimension 3, e.g., displacements");
 
-  // This NURBS element will be displayed like a hex27 element in the vtk output.
+  // This NURBS element will be displayed like a hex27 element in the visualization output.
   const int number_of_ouput_points = 27;
   const std::vector<int>& numbering =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(DRT::Element::hex27).second;
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::hex27).second;
 
   // Add the data at the "nodes" of the hex27 visualization.
   {
@@ -1339,9 +1339,11 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
       // Get the reference position at the parameter coordinate.
       EvalNurbs3DInterpolation(r, q, xi, weights, myknots, this->Shape());
 
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) vtu_point_result_data.push_back(r(i_dim));
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) output_point_result_data.push_back(r(i_dim));
     }
   }
 
   return number_of_ouput_points;
 }
+
+BACI_NAMESPACE_CLOSE

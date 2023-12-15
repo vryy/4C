@@ -15,10 +15,12 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
-
 // forward declaration ...
 class Epetra_Vector;
 class Epetra_FEVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SerialDenseVector;
@@ -42,7 +44,7 @@ namespace BEAMINTERACTION
 {
   // forward declaration ...
   class BeamContactParams;
-  class BeamToSolidVtuOutputWriterBase;
+  class BeamToSolidVisualizationOutputWriterBase;
   class BeamInteractionConditions;
   class BeamToSolidMortarManager;
 
@@ -63,8 +65,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Destructor
     */
-    virtual ~BeamContactPair() {}
-
+    virtual ~BeamContactPair() = default;
     //! Initialization
     virtual void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
         std::vector<DRT::Element const*> elements);
@@ -105,7 +106,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Update state of rotational DoFs of both elements
      */
-    virtual void ResetRotationState(const ::DRT::Discretization& discret,
+    virtual void ResetRotationState(const BACI::DRT::Discretization& discret,
         const Teuchos::RCP<const Epetra_Vector>& ia_discolnp){};
 
     //@}
@@ -244,7 +245,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    virtual void EvaluateAndAssemble(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
@@ -268,7 +269,7 @@ namespace BEAMINTERACTION
      * @param lambda (in) Global Lagrange multiplier vector.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssemble(const ::DRT::Discretization& discret,
+    virtual void EvaluateAndAssemble(const BACI::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -302,7 +303,7 @@ namespace BEAMINTERACTION
      * @param global_lambda_active (in/out) Global vector with active Lagrange multipliers.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    virtual void EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -310,7 +311,7 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
      *
      * This is currently only implemented for beam to solid pairs, if in the future we also want to
      * use this function in other type of pairs, the name should be adapted accordingly.
@@ -321,7 +322,7 @@ namespace BEAMINTERACTION
      * visualization in the pairs.
      */
     virtual void GetPairVisualization(
-        Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const
     {
     }
@@ -332,13 +333,15 @@ namespace BEAMINTERACTION
      * Per default no geometry pair is created. The geometry pair has to be created before init is
      * called on the contact pair.
      *
+     * @param element1 Pointer to the first element
+     * @param element2 Pointer to the second element
+     *
      * @param geometry_evaluation_data_ptr (in) Geometry evaluation data for the geometry pair.
      */
-    virtual void CreateGeometryPair(
+    virtual void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
     {
-      if (isinit_)
-        dserror("If a geometry pair is created, it has has to be done before Init is called.");
+      dserror("CreateGeometryPair has to be implemented in the derived class.");
     };
 
     /**
@@ -404,5 +407,7 @@ namespace BEAMINTERACTION
     //@}
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

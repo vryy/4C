@@ -31,6 +31,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -280,8 +282,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSolver(
     const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype)
 {
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
   // no need to do the rest for direct solvers
   if (solvertype == INPAR::SOLVER::SolverType::umfpack or
       solvertype == INPAR::SOLVER::SolverType::superlu)
@@ -372,7 +373,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::TimeStep()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
-    Teuchos::RCP<const Epetra_Vector> x)
+    Teuchos::RCP<const Epetra_Vector> iterinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate");
 
@@ -386,7 +387,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
   Teuchos::RCP<const Epetra_Vector> porostructinc;
   Teuchos::RCP<const Epetra_Vector> porofluidinc;
   Teuchos::RCP<const Epetra_Vector> scatrainc;
-  ExtractFieldVectors(x, porostructinc, porofluidinc, scatrainc);
+  ExtractFieldVectors(iterinc, porostructinc, porofluidinc, scatrainc);
 
   // (1) Newton update of the scatra field
   UpdateScatra(scatrainc);
@@ -1661,3 +1662,5 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       *(scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)),
       *(scatramsht_->ArtScatraDofRowMap()), blocksmootherparams5);
 }
+
+BACI_NAMESPACE_CLOSE

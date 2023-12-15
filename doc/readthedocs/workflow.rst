@@ -6,8 +6,8 @@ The BACI Workflow
 .. toctree::
    :maxdepth: 2
 
-   preprocessing
    bacisimulation
+   preprocessing
    postprocessing
 
 

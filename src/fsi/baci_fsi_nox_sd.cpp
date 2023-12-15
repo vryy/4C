@@ -27,19 +27,19 @@
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 NOX::FSI::SDRelaxation::SDRelaxation(
-    const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params)
+    const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)
 {
 }
 
 
-NOX::FSI::SDRelaxation::~SDRelaxation() {}
-
 
 bool NOX::FSI::SDRelaxation::reset(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
   // Teuchos::ParameterList& p = params.sublist("SDRelaxation");
@@ -47,18 +47,18 @@ bool NOX::FSI::SDRelaxation::reset(
 }
 
 
-bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp, double& step,
-    const NOX::Abstract::Vector& dir, const NOX::Solver::Generic& s)
+bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& step,
+    const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
-  if (utils_->isPrintType(NOX::Utils::InnerIteration))
+  if (utils_->isPrintType(::NOX::Utils::InnerIteration))
   {
     utils_->out() << "\n"
-                  << NOX::Utils::fill(72) << "\n"
+                  << ::NOX::Utils::fill(72) << "\n"
                   << "-- SDRelaxation Line Search -- \n";
   }
 
-  const NOX::Abstract::Group& oldgrp = s.getPreviousSolutionGroup();
-  NOX::Epetra::Group& egrp = dynamic_cast<NOX::Epetra::Group&>(newgrp);
+  const ::NOX::Abstract::Group& oldgrp = s.getPreviousSolutionGroup();
+  ::NOX::Epetra::Group& egrp = dynamic_cast<::NOX::Epetra::Group&>(newgrp);
 
   // Perform single-step linesearch
 
@@ -77,18 +77,19 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp, double& step,
 
   double checkOrthogonality = fabs(newgrp.getF().innerProduct(dir));
 
-  if (utils_->isPrintType(NOX::Utils::InnerIteration))
+  if (utils_->isPrintType(::NOX::Utils::InnerIteration))
   {
     utils_->out() << std::setw(3) << "1"
                   << ":";
     utils_->out() << " step = " << utils_->sciformat(step);
     utils_->out() << " orth = " << utils_->sciformat(checkOrthogonality);
-    utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << std::endl;
+    utils_->out() << "\n" << ::NOX::Utils::fill(72) << "\n" << std::endl;
   }
 
   // write omega
   double fnorm = oldgrp.getF().norm();
-  if (dynamic_cast<const NOX::Epetra::Vector&>(oldgrp.getF()).getEpetraVector().Comm().MyPID() == 0)
+  if (dynamic_cast<const ::NOX::Epetra::Vector&>(oldgrp.getF()).getEpetraVector().Comm().MyPID() ==
+      0)
   {
     static int count;
     static std::ofstream* out;
@@ -107,20 +108,22 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp, double& step,
 }
 
 
-NOX::Abstract::Vector& NOX::FSI::SDRelaxation::computeDirectionalDerivative(
-    const NOX::Abstract::Vector& dir, NOX::Epetra::Interface::Required& interface)
+::NOX::Abstract::Vector& NOX::FSI::SDRelaxation::computeDirectionalDerivative(
+    const ::NOX::Abstract::Vector& dir, ::NOX::Epetra::Interface::Required& interface)
 {
   // Allocate space for vecPtr and grpPtr if necessary
-  if (Teuchos::is_null(vecPtr_)) vecPtr_ = dir.clone(NOX::ShapeCopy);
+  if (Teuchos::is_null(vecPtr_)) vecPtr_ = dir.clone(::NOX::ShapeCopy);
 
-  const NOX::Epetra::Vector& edir = dynamic_cast<const NOX::Epetra::Vector&>(dir);
-  NOX::Epetra::Vector& evec = dynamic_cast<NOX::Epetra::Vector&>(*vecPtr_);
+  const ::NOX::Epetra::Vector& edir = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
+  ::NOX::Epetra::Vector& evec = dynamic_cast<::NOX::Epetra::Vector&>(*vecPtr_);
 
   // we do not want the group to remember this solution
   // and we want to set our own flag
   // this tells computeF to do a SD relaxation calculation
   interface.computeF(
-      edir.getEpetraVector(), evec.getEpetraVector(), NOX::Epetra::Interface::Required::User);
+      edir.getEpetraVector(), evec.getEpetraVector(), ::NOX::Epetra::Interface::Required::User);
 
   return *vecPtr_;
 }
+
+BACI_NAMESPACE_CLOSE

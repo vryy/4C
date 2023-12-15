@@ -13,18 +13,19 @@
 #include "baci_art_net_artery_ele_calc_pres_based.H"
 #include "baci_art_net_artery_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, INPAR::ARTDYN::ImplType problem,
-    const std::string& disname)
+    CORE::FE::CellType distype, INPAR::ARTDYN::ImplType problem, const std::string& disname)
 {
   switch (distype)
   {
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
-      return DefineProblemType<DRT::Element::line2>(problem, disname);
+      return DefineProblemType<CORE::FE::CellType::line2>(problem, disname);
 
       break;
     }
@@ -46,7 +47,7 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::DefineProblemType(
     INPAR::ARTDYN::ImplType problem, const std::string& disname)
 {
@@ -73,3 +74,5 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::DefineProblemTy
 
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -46,7 +48,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ArrheniusPV::CreateMaterial()
 MAT::ArrheniusPVType MAT::ArrheniusPVType::instance_;
 
 
-DRT::ParObject* MAT::ArrheniusPVType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ArrheniusPVType::Create(const std::vector<char>& data)
 {
   MAT::ArrheniusPV* arrhenius_pv = new MAT::ArrheniusPV();
   arrhenius_pv->Unpack(data);
@@ -66,9 +68,9 @@ MAT::ArrheniusPV::ArrheniusPV(MAT::PAR::ArrheniusPV* params) : params_(params) {
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusPV::Pack(DRT::PackBuffer& data) const
+void MAT::ArrheniusPV::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -86,10 +88,8 @@ void MAT::ArrheniusPV::Pack(DRT::PackBuffer& data) const
 void MAT::ArrheniusPV::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -191,3 +191,5 @@ double MAT::ArrheniusPV::ComputeReactionCoeff(const double temp) const
 
   return reacoeff;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -6,10 +6,12 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_lib_inputreader.H"
+#include "baci_io_inputreader.H"
 
 namespace
 {
+  using namespace BACI;
+
   TEST(ReadKeyValue, WithWhitespace)
   {
     const auto& [key, value] = DRT::INPUT::ReadKeyValue("key 1.0");

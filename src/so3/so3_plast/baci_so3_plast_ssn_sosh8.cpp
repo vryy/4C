@@ -20,8 +20,8 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 #include "baci_so3_plast_ssn_sosh8.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -32,15 +32,17 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8PlastType DRT::ELEMENTS::So_sh8PlastType::instance_;
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::nsd_>>
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::nsd_,
+                    DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::nsd_>>
     DRT::ELEMENTS::So_sh8Plast::jac_refe_;
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::nsd_>>
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::nsd_,
+                    DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::nsd_>>
     DRT::ELEMENTS::So_sh8Plast::jac_curr_;
 std::pair<bool,
     CORE::LINALG::Matrix<DRT::ELEMENTS::So_sh8Plast::num_ans * DRT::ELEMENTS::So_sh8Plast::num_sp,
@@ -58,7 +60,7 @@ DRT::ELEMENTS::So_sh8PlastType& DRT::ELEMENTS::So_sh8PlastType::Instance() { ret
 | create the new element type (public)                     seitz 05/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_sh8PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_sh8PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_sh8Plast(-1, -1);
   object->Unpack(data);
@@ -304,7 +306,7 @@ void DRT::ELEMENTS::So_sh8PlastType::SetupElementDefinition(
  | ctor (public)                                            seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner)
-    : So_base(id, owner), DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(id, owner)
+    : So_base(id, owner), DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(id, owner)
 {
   thickdir_ = globx;
   nodes_rearranged_ = false;
@@ -324,7 +326,7 @@ DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner)
  | copy-ctor (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(const DRT::ELEMENTS::So_sh8Plast& old)
-    : So_base(old), DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(old)
+    : So_base(old), DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(old)
 {
   return;
 }
@@ -342,16 +344,16 @@ DRT::Element* DRT::ELEMENTS::So_sh8Plast::Clone() const
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8Plast::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_sh8Plast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So3_Plast Element
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::Pack(data);
+  DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::Pack(data);
   // thickdir
   AddtoPack(data, thickdir_);
   AddtoPack(data, thickvec_);
@@ -367,14 +369,13 @@ void DRT::ELEMENTS::So_sh8Plast::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_sh8Plast::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::Unpack(basedata);
+  DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::Unpack(basedata);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(ExtractInt(position, data));
   ExtractfromPack(position, data, thickvec_);
@@ -385,8 +386,6 @@ void DRT::ELEMENTS::So_sh8Plast::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
-
-DRT::ELEMENTS::So_sh8Plast::~So_sh8Plast() { return; }
 
 void DRT::ELEMENTS::So_sh8Plast::Print(std::ostream& os) const
 {
@@ -419,7 +418,7 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(
   else
     dserror("Reading of SO3_PLAST element failed! KINEM unknown");
 
-  CORE::DRT::UTILS::GaussIntegration ip(DRT::Element::hex8, 3);
+  CORE::DRT::UTILS::GaussIntegration ip(CORE::FE::CellType::hex8, 3);
   numgpt_ = ip.NumPoints();
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
@@ -1008,8 +1007,9 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   {
     InvalidGpData();
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xsi_[gp], SetShapeFunction());
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi_[gp], SetDerivShapeFunction());
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex8>(xsi_[gp], SetShapeFunction());
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(
+        xsi_[gp], SetDerivShapeFunction());
 
     Kinematics(gp);
 
@@ -1444,3 +1444,5 @@ void DRT::ELEMENTS::So_sh8Plast::AnsStrains(const int gp,
   // calculate deformation gradient consistent with modified GL strain tensor
   CalcConsistentDefgrd();
 }
+
+BACI_NAMESPACE_CLOSE

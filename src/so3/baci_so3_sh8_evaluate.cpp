@@ -10,8 +10,6 @@
 #include "baci_io_gmsh.H"
 #include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -23,12 +21,15 @@
 #include "baci_mat_viscoanisotropic.H"
 #include "baci_mat_viscoelasthyper.H"
 #include "baci_mat_visconeohooke.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_sh8.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_enum_lists.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -135,7 +136,6 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -171,7 +171,6 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -209,7 +208,6 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -252,7 +250,6 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -315,7 +312,6 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
           {
             Teuchos::RCP<const Epetra_Vector> dispmat =
                 discretization.GetState("material_displacement");
-            ;
             DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
           }
 
@@ -324,21 +320,21 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
               ioplstrain);
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, plstrain);
           data.StartPacking();
           AddtoPack(data, plstrain);
@@ -552,7 +548,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
 double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
     const std::vector<double>& disp, Teuchos::ParameterList& params)
 {
-  if (::UTILS::PRESTRESS::IsMulf(pstype_)) dserror("mulf is unsupported for the So_sh8 element!");
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+    dserror("mulf is unsupported for the So_sh8 element!");
 
   if (kintype_ != INPAR::STR::kinem_nonlinearTotLag)
     dserror("Unsupported kinematic type for the So_sh8 element!");
@@ -571,7 +568,7 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -771,7 +768,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -2212,3 +2209,5 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

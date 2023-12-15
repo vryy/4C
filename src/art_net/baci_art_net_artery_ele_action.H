@@ -10,6 +10,8 @@
 #ifndef BACI_ART_NET_ARTERY_ELE_ACTION_H
 #define BACI_ART_NET_ARTERY_ELE_ACTION_H
 
+BACI_NAMESPACE_OPEN
+
 
 namespace ARTERY
 {
@@ -36,5 +38,7 @@ namespace ARTERY
   };
 
 }  // namespace ARTERY
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_ARTERY_ELE_ACTION_H

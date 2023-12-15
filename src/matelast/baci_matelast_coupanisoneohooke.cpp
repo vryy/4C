@@ -8,9 +8,11 @@
 
 #include "baci_matelast_coupanisoneohooke.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_par_material.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
@@ -28,7 +30,7 @@ MAT::ELASTIC::CoupAnisoNeoHooke::CoupAnisoNeoHooke(MAT::ELASTIC::PAR::CoupAnisoN
 {
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoNeoHooke::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
@@ -140,3 +142,4 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::SetFiberVecs(const double newgamma,
 
   params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
 }
+BACI_NAMESPACE_CLOSE

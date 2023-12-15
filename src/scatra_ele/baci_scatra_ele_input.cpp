@@ -6,9 +6,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_lib_linedefinition.H"
+#include "baci_discretization_fem_general_cell_type_traits.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_myocard.H"
 #include "baci_scatra_ele.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -75,7 +78,7 @@ bool DRT::ELEMENTS::Transport::ReadElement(
   SetMaterial(material);
 
   // set discretization type
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   if (Material()->MaterialType() == INPAR::MAT::m_myocard)
   {
@@ -85,3 +88,5 @@ bool DRT::ELEMENTS::Transport::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

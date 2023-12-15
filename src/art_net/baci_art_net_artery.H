@@ -9,16 +9,18 @@
 #ifndef BACI_ART_NET_ARTERY_H
 #define BACI_ART_NET_ARTERY_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_fluid_ele_nullspace.H"
 #include "baci_inpar_bio.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 struct _MATERIAL;
@@ -35,33 +37,34 @@ namespace DRT
     class ArteryType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "ArteryType"; }
+      std::string Name() const override { return "ArteryType"; }
 
       static ArteryType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
         numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
         dimns = numdf;
         nv = numdf;
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
       }
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static ArteryType instance_;
@@ -99,17 +102,17 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const
+      int NumLine() const override
       {
         if (NumNode() == 2)
           return 1;
@@ -123,12 +126,12 @@ namespace DRT
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      virtual int NumSurface() const { return -1; }
+      int NumSurface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual int NumVolume() const { return -1; }
+      int NumVolume() const override { return -1; }
 
       /*!
       \brief Return unique ParObject id
@@ -136,7 +139,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return ArteryType::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return ArteryType::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -144,7 +147,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -152,18 +155,13 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
        \brief Get vector of Teuchos::RCPs to the lines of this element
        */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~Artery();
 
       //@}
 
@@ -179,7 +177,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         switch (impltype_)
         {
@@ -214,14 +212,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual ArteryType& ElementType() const { return ArteryType::Instance(); }
+      ArteryType& ElementType() const override { return ArteryType::Instance(); }
 
       //@}
 
@@ -231,7 +229,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       /**
        * Set diameter in material
@@ -266,10 +264,11 @@ namespace DRT
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       int ScatraEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
@@ -295,10 +294,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -347,14 +345,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -371,5 +368,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_ARTERY_H

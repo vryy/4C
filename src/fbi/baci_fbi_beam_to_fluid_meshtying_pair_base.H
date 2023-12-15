@@ -11,7 +11,13 @@
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
+BACI_NAMESPACE_OPEN
+
 // Forward declarations.
+namespace DRT
+{
+  class Element;
+}
 namespace CORE::LINALG
 {
   class SerialDenseVector;
@@ -47,11 +53,6 @@ namespace BEAMINTERACTION
 
    public:
     /**
-     * \brief empty Destructor.
-     */
-    virtual ~BeamToFluidMeshtyingPairBase() = default;
-
-    /**
      * \brief Setup the contact pair and set information on the current position of the elements in
      * the pair
      */
@@ -85,7 +86,7 @@ namespace BEAMINTERACTION
     void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
      *
      * This base class creates output of (if selected in the input file) the segmentation, the
      * integration points - and if implemented in the derived classes - the forces at the
@@ -95,14 +96,17 @@ namespace BEAMINTERACTION
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**
      * \brief Create the geometry pair for this contact pair.
+     * @param element1 Pointer to the first element
+     * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(
+    void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -124,5 +128,7 @@ namespace BEAMINTERACTION
     CORE::LINALG::Matrix<fluid::n_dof_, 1, double> ele2poscur_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

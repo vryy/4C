@@ -12,8 +12,11 @@
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_lib_element.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::DRT::UTILS
 {
@@ -42,14 +45,6 @@ namespace CORE::DRT::UTILS
 
     CORE::LINALG::SerialDenseMatrix matrix_;
     std::vector<bool> isNonzero_;
-
-    // assignment operator
-    ShapeValuesInteriorOnFace &operator=(ShapeValuesInteriorOnFace &other)
-    {
-      matrix_ = other.matrix_;
-      isNonzero_ = other.isNonzero_;
-      return *this;
-    }
   };
 
   /*!
@@ -92,19 +87,18 @@ namespace CORE::DRT::UTILS
     \author kronbichler
     \date 05/14
   */
-  template <::DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class ShapeValues
   {
    public:
     //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-    static const unsigned int nen_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
     //! number of space dimensions
-    static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
     ///! number of faces on element
-    static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+    static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
     ///! number of nodes on faces
     static const unsigned int nfn_ =
@@ -126,7 +120,7 @@ namespace CORE::DRT::UTILS
     \brief Compute element-dependent data, like gradients in real cell, integration weights, for
     element dofs
     */
-    void Evaluate(const ::DRT::Element &ele, const std::vector<double> &aleDis = {});
+    void Evaluate(const BACI::DRT::Element &ele, const std::vector<double> &aleDis = {});
 
     /// polynomial degree
     unsigned int degree_;
@@ -182,23 +176,22 @@ namespace CORE::DRT::UTILS
     \author schoeder
     \date 06/14
   */
-  template <::DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class ShapeValuesFace
   {
    public:
     //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-    static const unsigned int nen_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
     ///! number of nodes on faces
     static const unsigned int nfn_ =
         CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     //! number of space dimensions
-    static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
     ///! number of faces on element
-    static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+    static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
     /*!
     \brief Constructor which does the things which do not need to be redone for the same
@@ -210,13 +203,13 @@ namespace CORE::DRT::UTILS
     \brief Compute element-dependent data on faces, like integration weights, normal vectors,
     correctly oriented trace variables
     */
-    void EvaluateFace(
-        const ::DRT::Element &ele, const unsigned int face, const std::vector<double> &aleDis = {});
+    void EvaluateFace(const BACI::DRT::Element &ele, const unsigned int face,
+        const std::vector<double> &aleDis = {});
 
     /*!
     \brief Consider the orientation of faces for face degrees of freedom
      */
-    void AdjustFaceOrientation(const ::DRT::Element &ele, const unsigned int face);
+    void AdjustFaceOrientation(const BACI::DRT::Element &ele, const unsigned int face);
 
     /// Parameters underlying this structure, necessary for evaluating element basis functions on
     /// faces
@@ -284,7 +277,7 @@ namespace CORE::DRT::UTILS
 
     \Author: Berardocco
      */
-    void ComputeFaceReferenceSystem(const ::DRT::Element &ele, const unsigned int face);
+    void ComputeFaceReferenceSystem(const BACI::DRT::Element &ele, const unsigned int face);
   };
 
   /*!
@@ -292,7 +285,7 @@ namespace CORE::DRT::UTILS
 
    Author: schoeder 08/14
   */
-  template <::DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class ShapeValuesFaceCache
   {
    public:
@@ -314,7 +307,7 @@ namespace CORE::DRT::UTILS
 
    Author: kronbichler 09/14
   */
-  template <::DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class ShapeValuesInteriorOnFaceCache
   {
    public:
@@ -332,5 +325,7 @@ namespace CORE::DRT::UTILS
   };
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

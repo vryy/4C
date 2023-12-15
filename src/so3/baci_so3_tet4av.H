@@ -27,6 +27,8 @@
 #define NUMNOD_SOTET4av_FACE 3  ///< number of nodes on a TET4 face (which is a TRI3)
 #define NUMGPT_SOTET4av_FACE 1  ///< number of GP on a TET4 face (which is a TRI3)
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -41,7 +43,7 @@ namespace DRT
 
       static So_tet4avType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -109,7 +111,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element
@@ -139,12 +141,6 @@ namespace DRT
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
-      /*!
       \brief Return unique ParObject id
 
       every class implementing ParObject needs a unique id defined at the
@@ -161,7 +157,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -171,11 +167,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_tet4av() override;
       //@}
 
       //! @name Acess methods
@@ -378,7 +369,7 @@ namespace DRT
           CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* stiffmatrix,
           CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,
           CORE::LINALG::Matrix<NUMDOF_SOTET4av, 1>* force,
-          CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* stresses,
+          CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestress,
           CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestrain,
           Teuchos::ParameterList& params, const INPAR::STR::StressType iostress,
           const INPAR::STR::StrainType iostrain);
@@ -392,5 +383,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_TET4AV_H

@@ -45,17 +45,14 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
 //! turn defines the dof number ordering of the Discretizations.
 
-
-/*----------------------------------------------------------------------*
- | destructor (public)                                      wirtz 01/16 |
- *----------------------------------------------------------------------*/
-EHL::Monolithic::~Monolithic() {}
 
 
 /*----------------------------------------------------------------------*
@@ -73,9 +70,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       solveradaptolbetter_(
           ((DRT::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC"))
               .get<double>("ADAPTCONV_BETTER")),
-      printiter_(true),      // ADD INPUT PARAMETER
-      printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(nullptr),
+      printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(
           DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP")),
@@ -93,9 +88,6 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       sdyn_(structparams),
       timernewton_("EHL_Monolithic_newton", true)
 {
-  errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
-  if (errfile_) printerrfile_ = true;
-
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   // --------------------------------- EHL solver: create a linear solver
@@ -113,8 +105,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = ehlsolverparams;
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        *solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*solverparams, Comm()));
   }  // end BlockMatrixMerge
 
 }  // Monolithic()
@@ -228,7 +219,7 @@ void EHL::Monolithic::CreateLinearSolver()
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Comm()));
 
       // use solver blocks for structure and pressure (lubrication field)
       const Teuchos::ParameterList& ssolverparams =
@@ -259,7 +250,7 @@ void EHL::Monolithic::CreateLinearSolver()
     {
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Comm()));
 
       // use solver blocks for structure and pressure (lubrication field)
       const Teuchos::ParameterList& ssolverparams =
@@ -512,7 +503,7 @@ void EHL::Monolithic::NewtonFull()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                               wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
+void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::Evaluate");
 
@@ -521,11 +512,11 @@ void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   Teuchos::RCP<Epetra_Vector> lx;
 
   // if an increment vector exists
-  if (x != Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
     // extract displacement sx and pressure lx incremental vector of global
     // unknown incremental vector x
-    ExtractFieldVectors(x, sx, lx);
+    ExtractFieldVectors(stepinc, sx, lx);
   }
 
   // Newton update of the lubrication field
@@ -1128,15 +1119,6 @@ void EHL::Monolithic::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  // see you
-  return;
 }  // PrintNewtonIter()
 
 
@@ -2170,3 +2152,5 @@ void EHL::Monolithic::ApplyDBC()
       if (abs(inf_gap_toggle_lub_->operator[](i)) > 1.e-12)
         rhs_->ReplaceGlobalValue(inf_gap_toggle_lub_->Map().GID(i), 0, 0.);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@ global coupling matrices M and D first.
 
 #include "baci_fbi_partitioned_penaltycoupling_assembly_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declaration.
 namespace BEAMINTERACTION
@@ -54,11 +56,6 @@ namespace BEAMINTERACTION
           Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr);
 
       /**
-       * \brief Destructor.
-       */
-      ~PartitionedBeamInteractionAssemblyManagerIndirect() override = default;
-
-      /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
        * @param discret (in) Pointer to the disretization.
        * @param fe_sysvec (out) Global force vector.
@@ -89,5 +86,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

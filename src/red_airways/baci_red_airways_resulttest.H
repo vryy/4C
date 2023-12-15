@@ -19,6 +19,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -41,12 +43,12 @@ namespace AIRWAY
     RedAirwayResultTest(RedAirwayImplicitTimeInt& red_airways);
 
 
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*!
       Element test routine, our version of element value tests
     */
-    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to scalar transport discretization
@@ -71,5 +73,7 @@ namespace AIRWAY
   };
 
 }  // namespace AIRWAY
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // RED_AIRWAYS_RESULTTEST_H

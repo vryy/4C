@@ -13,6 +13,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 DRT::ELEMENTS::Vele3LineType DRT::ELEMENTS::Vele3LineType::instance_;
@@ -58,18 +60,17 @@ DRT::Element* DRT::ELEMENTS::Vele3Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3Line::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Vele3Line::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 
@@ -77,7 +78,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Line::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Vele3Line::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Vele3Line element does not support communication");
 
@@ -96,11 +97,6 @@ void DRT::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 01/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Line::~Vele3Line() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
@@ -111,3 +107,5 @@ void DRT::ELEMENTS::Vele3Line::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

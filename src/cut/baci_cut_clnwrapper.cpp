@@ -17,6 +17,8 @@
 #include <cln/malloc.h>
 #endif
 
+BACI_NAMESPACE_OPEN
+
 // initial value of precision_
 unsigned int CORE::GEO::CUT::ClnWrapper::precision_ = CLN_START_PRECISION;
 
@@ -40,6 +42,8 @@ namespace cln
 }  // namespace cln
 
 #endif
+
+BACI_NAMESPACE_CLOSE
 
 #ifndef CLN_CALC
 

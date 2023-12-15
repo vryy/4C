@@ -19,6 +19,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 using namespace CONTACT;
 
@@ -45,7 +46,7 @@ class Beam3ContactOctTree
       Teuchos::ParameterList& params, DRT::Discretization& discret, DRT::Discretization& searchdis);
 
   //!\brief Destructor
-  virtual ~Beam3ContactOctTree(){};
+  virtual ~Beam3ContactOctTree() = default;
 
   /*!\brief call octtree search routine
    * \param currentposition (in) node positions in column map format (fully overlapping)
@@ -63,7 +64,7 @@ class Beam3ContactOctTree
       CORE::LINALG::SerialDenseMatrix& nodecoords, CORE::LINALG::SerialDenseMatrix& nodeLID);
 
   /*!\brief output of octree discretization, bounding boxes and contact pairs
-   * \param cpairs (in) vector with contact pairs
+   * \param contactpairelements (in) vector with contact pairs
    * \param step   (in) time step */
   void OctreeOutput(std::vector<std::vector<DRT::Element*>> contactpairelements, int step);
 
@@ -291,5 +292,7 @@ class Beam3ContactOctTree
   int numcrit1_;
   int numcrit2_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BEAMCONTACT_BEAM3CONTACT_OCTTREE_H

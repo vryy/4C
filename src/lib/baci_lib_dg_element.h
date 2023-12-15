@@ -9,6 +9,8 @@
 #ifndef BACI_LIB_DG_ELEMENT_H
 #define BACI_LIB_DG_ELEMENT_H
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class DG_Element
@@ -17,14 +19,13 @@ namespace DRT
     /*!
      \brief Destructor
     */
-    virtual ~DG_Element() {}
-
+    virtual ~DG_Element() = default;
     virtual int NumDofPerNodeAuxiliary() const = 0;
 
     virtual int NumDofPerElementAuxiliary() const = 0;
   };
 }  // namespace DRT
 
-
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LIB_DG_ELEMENT_H

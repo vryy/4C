@@ -25,7 +25,6 @@
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -35,6 +34,8 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // TODO: Abfangen, dass Kontaktpunkte am Elementuebergang zweimal ausgewertet werden!!!
 
@@ -1134,7 +1135,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 
         std::pair<int, int> integration_ids = std::make_pair(1, 0);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1167,7 +1167,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 
         std::pair<int, int> integration_ids = std::make_pair(1, 0);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1200,7 +1199,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 
         std::pair<int, int> integration_ids = std::make_pair(0, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1233,7 +1231,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 
         std::pair<int, int> integration_ids = std::make_pair(0, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1263,7 +1260,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 
         std::pair<int, int> integration_ids = std::make_pair(1, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1294,7 +1290,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 
         std::pair<int, int> integration_ids = std::make_pair(1, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1324,7 +1319,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 
         std::pair<int, int> integration_ids = std::make_pair(1, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1354,7 +1348,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 
         std::pair<int, int> integration_ids = std::make_pair(1, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -3860,11 +3853,11 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   CORE::LINALG::Matrix<2, dim1 + dim2, TYPE> D(true);
 
   // compute L elementwise
-  L(0, 0) = ::CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) +
-            ::CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
-  L(1, 1) = -::CORE::FADUTILS::ScalarProduct(r2_xi, r2_xi) +
-            ::CORE::FADUTILS::ScalarProduct(delta_r, r2_xixi);
-  L(0, 1) = -::CORE::FADUTILS::ScalarProduct(r2_xi, r1_xi);
+  L(0, 0) =
+      CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) + CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
+  L(1, 1) = -CORE::FADUTILS::ScalarProduct(r2_xi, r2_xi) +
+            CORE::FADUTILS::ScalarProduct(delta_r, r2_xixi);
+  L(0, 1) = -CORE::FADUTILS::ScalarProduct(r2_xi, r1_xi);
   L(1, 0) = -L(0, 1);
 
   // invert L by hand
@@ -4332,8 +4325,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
     const TYPE& eta2)
 {
   // get both discretization types
-  const DRT::Element::DiscretizationType distype1 = Element1()->Shape();
-  const DRT::Element::DiscretizationType distype2 = Element2()->Shape();
+  const CORE::FE::CellType distype1 = Element1()->Shape();
+  const CORE::FE::CellType distype2 = Element2()->Shape();
 
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i(true);
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi(true);
@@ -4360,8 +4353,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
-    const DRT::Element::DiscretizationType distype2herm = DRT::Element::line2;
+    const CORE::FE::CellType distype1herm = CORE::FE::CellType::line2;
+    const CORE::FE::CellType distype2herm = CORE::FE::CellType::line2;
 
     // get values and derivatives of shape functions
     CORE::DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1herm);
@@ -4398,7 +4391,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
     const DRT::Element* ele) const
 {
   // get both discretization types
-  const DRT::Element::DiscretizationType distype = ele->Shape();
+  const CORE::FE::CellType distype = ele->Shape();
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N_i(true);
 
   if (numnodalvalues == 1)
@@ -4429,7 +4422,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const DRT::Element::DiscretizationType distypeherm = DRT::Element::line2;
+    const CORE::FE::CellType distypeherm = CORE::FE::CellType::line2;
 
     // get values and derivatives of shape functions
     switch (deriv)
@@ -5457,3 +5450,5 @@ template class BEAMINTERACTION::BeamToBeamContactPair<3, 1>;
 template class BEAMINTERACTION::BeamToBeamContactPair<4, 1>;
 template class BEAMINTERACTION::BeamToBeamContactPair<5, 1>;
 template class BEAMINTERACTION::BeamToBeamContactPair<2, 2>;
+
+BACI_NAMESPACE_CLOSE

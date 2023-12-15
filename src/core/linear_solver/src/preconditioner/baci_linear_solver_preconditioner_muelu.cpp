@@ -42,6 +42,8 @@
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_StridedMap.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // define some trillinos shortcuts
 using SC = Scalar;
 using LO = LocalOrdinal;
@@ -50,9 +52,8 @@ using NO = Node;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MueLuPreconditioner::MueLuPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& muelulist)
-    : PreconditionerType(outfile), muelulist_(muelulist)
+CORE::LINEAR_SOLVER::MueLuPreconditioner::MueLuPreconditioner(Teuchos::ParameterList& muelulist)
+    : muelulist_(muelulist)
 {
   P_ = Teuchos::null;
   Pmatrix_ = Teuchos::null;
@@ -165,8 +166,8 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::MueLuFluidBlockPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& muelulist)
-    : MueLuPreconditioner(outfile, muelulist)
+    Teuchos::ParameterList& muelulist)
+    : MueLuPreconditioner(muelulist)
 {
 }
 
@@ -303,8 +304,8 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::MueLuTsiBlockPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& muelulist)
-    : MueLuPreconditioner(outfile, muelulist)
+    Teuchos::ParameterList& muelulist)
+    : MueLuPreconditioner(muelulist)
 {
 }
 
@@ -424,8 +425,8 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& muelulist)
-    : MueLuPreconditioner(outfile, muelulist)
+    Teuchos::ParameterList& muelulist)
+    : MueLuPreconditioner(muelulist)
 {
 }
 
@@ -716,7 +717,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::MueLuBeamSolidBlockPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& muelulist)
+    Teuchos::ParameterList& muelulist)
     : MueLuPreconditioner(outfile, muelulist)
 {
 }
@@ -859,8 +860,8 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::MueLuFsiBlockPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& muelulist)
-    : MueLuPreconditioner(outfile, muelulist)
+    Teuchos::ParameterList& muelulist)
+    : MueLuPreconditioner(muelulist)
 {
 }
 
@@ -1057,3 +1058,5 @@ CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
 
   return nullspace;
 }
+
+BACI_NAMESPACE_CLOSE

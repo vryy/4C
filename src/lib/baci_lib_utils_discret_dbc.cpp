@@ -10,11 +10,13 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_nurbs_discret.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -328,8 +330,8 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
           funct_num = (*funct)[onesetj];
           if (funct_num > 0)
             functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                           .Evaluate(actnode->X(), time, onesetj);
+                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                           .Evaluate(actnode->X().data(), time, onesetj);
         }
 
         const double value = (*val)[onesetj] * functfac;
@@ -530,8 +532,8 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
         funct_num = (*funct)[onesetj];
         if (funct_num > 0)
           functimederivfac = DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                 .EvaluateTimeDerivative(actnode->X(), time, deg, onesetj);
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                                 .EvaluateTimeDerivative(actnode->X().data(), time, deg, onesetj);
       }
 
       // apply factors to Dirichlet value
@@ -575,3 +577,5 @@ void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::Discretization& discret,
   // build the map extractor of Dirichlet-conditioned and free DOFs
   dbcmapextractor->Setup(*(discret.DofRowMap()), dbcmap);
 }
+
+BACI_NAMESPACE_CLOSE

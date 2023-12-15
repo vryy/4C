@@ -13,11 +13,14 @@ means are computed as time averages
 
 #include "baci_fluid_turbulence_statistics_mean_general.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+BACI_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------
 //
@@ -124,15 +127,6 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   return;
 }  // FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean
 
-//----------------------------------------------------------------------
-//
-//                                 Destructor
-//
-//----------------------------------------------------------------------
-FLD::TurbulenceStatisticsGeneralMean::~TurbulenceStatisticsGeneralMean()
-{
-  return;
-}  // FLD::TurbulenceStatisticsGeneralMean::~TurbulenceStatisticsGeneralMean
 
 
 //----------------------------------------------------------------------
@@ -417,7 +411,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
   std::map<double, int, doublecomp>::iterator y_and_i;
 
   // create an exporter for point to point comunication
-  DRT::Exporter exporter(avgcomm);
+  CORE::COMM::Exporter exporter(avgcomm);
 
   // necessary variables
   MPI_Request request;
@@ -474,7 +468,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       // size
       int size;
-      DRT::ParObject::ExtractfromPack(position, rblock, size);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
 
       x.resize(size, 0.0);
       y.resize(size, 0.0);
@@ -486,17 +480,17 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       avg_p.resize(size, 0.0);
 
       // x and y
-      DRT::ParObject::ExtractfromPack(position, rblock, x);
-      DRT::ParObject::ExtractfromPack(position, rblock, y);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, x);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, y);
 
       // counters
-      DRT::ParObject::ExtractfromPack(position, rblock, count);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, count);
 
       // avgs
-      DRT::ParObject::ExtractfromPack(position, rblock, avg_u);
-      DRT::ParObject::ExtractfromPack(position, rblock, avg_v);
-      DRT::ParObject::ExtractfromPack(position, rblock, avg_w);
-      DRT::ParObject::ExtractfromPack(position, rblock, avg_p);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_u);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_v);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_w);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_p);
 
       rblock.clear();
     }
@@ -671,41 +665,41 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       //--------------------------------------------------
       // Pack block to send
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
 
       // size
       int size = x.size();
-      DRT::ParObject::AddtoPack(data, size);
+      CORE::COMM::ParObject::AddtoPack(data, size);
 
       // x and y
-      DRT::ParObject::AddtoPack(data, x);
-      DRT::ParObject::AddtoPack(data, y);
+      CORE::COMM::ParObject::AddtoPack(data, x);
+      CORE::COMM::ParObject::AddtoPack(data, y);
 
       // counters
-      DRT::ParObject::AddtoPack(data, count);
+      CORE::COMM::ParObject::AddtoPack(data, count);
 
       // avgs
-      DRT::ParObject::AddtoPack(data, avg_u);
-      DRT::ParObject::AddtoPack(data, avg_v);
-      DRT::ParObject::AddtoPack(data, avg_w);
-      DRT::ParObject::AddtoPack(data, avg_p);
+      CORE::COMM::ParObject::AddtoPack(data, avg_u);
+      CORE::COMM::ParObject::AddtoPack(data, avg_v);
+      CORE::COMM::ParObject::AddtoPack(data, avg_w);
+      CORE::COMM::ParObject::AddtoPack(data, avg_p);
 
       data.StartPacking();
 
-      DRT::ParObject::AddtoPack(data, size);
+      CORE::COMM::ParObject::AddtoPack(data, size);
 
       // x and y
-      DRT::ParObject::AddtoPack(data, x);
-      DRT::ParObject::AddtoPack(data, y);
+      CORE::COMM::ParObject::AddtoPack(data, x);
+      CORE::COMM::ParObject::AddtoPack(data, y);
 
       // counters
-      DRT::ParObject::AddtoPack(data, count);
+      CORE::COMM::ParObject::AddtoPack(data, count);
 
       // avgs
-      DRT::ParObject::AddtoPack(data, avg_u);
-      DRT::ParObject::AddtoPack(data, avg_v);
-      DRT::ParObject::AddtoPack(data, avg_w);
-      DRT::ParObject::AddtoPack(data, avg_p);
+      CORE::COMM::ParObject::AddtoPack(data, avg_u);
+      CORE::COMM::ParObject::AddtoPack(data, avg_v);
+      CORE::COMM::ParObject::AddtoPack(data, avg_w);
+      CORE::COMM::ParObject::AddtoPack(data, avg_p);
 
       swap(sblock, data());
 
@@ -783,7 +777,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       // size
       int size;
-      DRT::ParObject::ExtractfromPack(position, rblock, size);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
 
       count.resize(size, 0);
       avg_u.resize(size, 0.0);
@@ -792,17 +786,17 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       avg_p.resize(size, 0.0);
 
       // x and y
-      DRT::ParObject::ExtractfromPack(position, rblock, x);
-      DRT::ParObject::ExtractfromPack(position, rblock, y);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, x);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, y);
 
       // counters
-      DRT::ParObject::ExtractfromPack(position, rblock, count);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, count);
 
       // avgs
-      DRT::ParObject::ExtractfromPack(position, rblock, avg_u);
-      DRT::ParObject::ExtractfromPack(position, rblock, avg_v);
-      DRT::ParObject::ExtractfromPack(position, rblock, avg_w);
-      DRT::ParObject::ExtractfromPack(position, rblock, avg_p);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_u);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_v);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_w);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_p);
 
       rblock.clear();
     }
@@ -966,42 +960,42 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
     {
       //--------------------------------------------------
       // Pack block to send
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
 
       // size
       int size = x.size();
 
-      DRT::ParObject::AddtoPack(data, size);
+      CORE::COMM::ParObject::AddtoPack(data, size);
 
       // x and y
-      DRT::ParObject::AddtoPack(data, x);
-      DRT::ParObject::AddtoPack(data, y);
+      CORE::COMM::ParObject::AddtoPack(data, x);
+      CORE::COMM::ParObject::AddtoPack(data, y);
 
       // counters
-      DRT::ParObject::AddtoPack(data, count);
+      CORE::COMM::ParObject::AddtoPack(data, count);
 
       // avgs
-      DRT::ParObject::AddtoPack(data, avg_u);
-      DRT::ParObject::AddtoPack(data, avg_v);
-      DRT::ParObject::AddtoPack(data, avg_w);
-      DRT::ParObject::AddtoPack(data, avg_p);
+      CORE::COMM::ParObject::AddtoPack(data, avg_u);
+      CORE::COMM::ParObject::AddtoPack(data, avg_v);
+      CORE::COMM::ParObject::AddtoPack(data, avg_w);
+      CORE::COMM::ParObject::AddtoPack(data, avg_p);
 
       data.StartPacking();
 
-      DRT::ParObject::AddtoPack(data, size);
+      CORE::COMM::ParObject::AddtoPack(data, size);
 
       // x and y
-      DRT::ParObject::AddtoPack(data, x);
-      DRT::ParObject::AddtoPack(data, y);
+      CORE::COMM::ParObject::AddtoPack(data, x);
+      CORE::COMM::ParObject::AddtoPack(data, y);
 
       // counters
-      DRT::ParObject::AddtoPack(data, count);
+      CORE::COMM::ParObject::AddtoPack(data, count);
 
       // avgs
-      DRT::ParObject::AddtoPack(data, avg_u);
-      DRT::ParObject::AddtoPack(data, avg_v);
-      DRT::ParObject::AddtoPack(data, avg_w);
-      DRT::ParObject::AddtoPack(data, avg_p);
+      CORE::COMM::ParObject::AddtoPack(data, avg_u);
+      CORE::COMM::ParObject::AddtoPack(data, avg_v);
+      CORE::COMM::ParObject::AddtoPack(data, avg_w);
+      CORE::COMM::ParObject::AddtoPack(data, avg_p);
 
       swap(sblock, data());
 
@@ -1373,3 +1367,5 @@ void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

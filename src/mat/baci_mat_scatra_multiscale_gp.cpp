@@ -21,6 +21,8 @@ transport problems
 
 #include <filesystem>
 
+BACI_NAMESPACE_OPEN
+
 // instantiate static maps
 std::map<int, Teuchos::RCP<SCATRA::TimIntOneStepTheta>>
     MAT::ScatraMultiScaleGP::microdisnum_microtimint_map_;
@@ -187,15 +189,13 @@ void MAT::ScatraMultiScaleGP::Init()
 
     // create solver
     Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-        DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm(),
-        DRT::Problem::Instance()->ErrorFile()->Handle()));
+        DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm()));
 
     // provide solver with null space information if necessary
     microdis->ComputeNullSpaceIfNecessary(solver->Params());
 
     // supplementary parameter list
     Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
-    extraparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
     extraparams->set<bool>("isale", false);
     extraparams->sublist("TURBULENT INFLOW") =
         DRT::Problem::Instance(microdisnum_)->FluidDynamicParams().sublist("TURBULENT INFLOW");
@@ -434,7 +434,7 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-const std::string MAT::ScatraMultiScaleGP::NewResultFilePath(const std::string& newprefix)
+std::string MAT::ScatraMultiScaleGP::NewResultFilePath(const std::string& newprefix)
 {
   std::string newfilename;
 
@@ -484,13 +484,18 @@ void MAT::ScatraMultiScaleGP::Output()
         std::vector<double>(0, 0.), step_,
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
 
-    // output micro-scale quantities
-    microtimint->Output();
+    // output micro-scale results
+    if (microtimint->IsResultStep()) microtimint->WriteResult();
 
-    if (microtimint->DoOutputRestart() and is_ale_)
+    // output micro-scale restart information
+    if (microtimint->IsRestartStep())
     {
-      microtimint->DiscWriter()->WriteDouble("detFn", detFn_);
-      microtimint->DiscWriter()->WriteDouble("ddetFdtn", ddetFdtn_);
+      microtimint->WriteRestart();
+      if (is_ale_)
+      {
+        microtimint->DiscWriter()->WriteDouble("detFn", detFn_);
+        microtimint->DiscWriter()->WriteDouble("ddetFdtn", ddetFdtn_);
+      }
     }
 
     // clear state in micro-scale time integrator
@@ -577,3 +582,4 @@ void MAT::ScatraMultiScaleGP::SetTimeStepping(const double dt, const double time
   microtimint->SetDt(dt);
   microtimint->SetTimeStep(time, step);
 }
+BACI_NAMESPACE_CLOSE

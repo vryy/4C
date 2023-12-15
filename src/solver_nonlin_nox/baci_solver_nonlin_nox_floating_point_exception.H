@@ -15,6 +15,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -31,12 +33,6 @@ namespace NOX
     class FloatingPointException
     {
      public:
-      /// constructor
-      FloatingPointException() = default;
-
-      /// destructor
-      ~FloatingPointException() = default;
-
       /** \brief Wrapper function which disables the floating point exception
        *  checks if desired.
        *
@@ -88,5 +84,7 @@ namespace NOX
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_FLOATING_POINT_EXCEPTION_H

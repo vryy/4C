@@ -13,10 +13,12 @@
 
 #include "baci_fluid_ele_action.H"
 #include "baci_io.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_poroelast_utils.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
@@ -118,8 +120,8 @@ void FLD::TimIntPoro::SetInitialPorosityField(
 
         int numdofs = nodedofset.size();
         double initialval = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                .Evaluate(lnode->X(), time_, 0);
+                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                .Evaluate(lnode->X().data(), time_, 0);
 
         // check whether there are invalid values of porosity
         if (initialval < 1e-15) dserror("zero or negative initial porosity");
@@ -254,3 +256,5 @@ void FLD::TimIntPoro::TimIntCalculateAcceleration()
   // derivatives of the pressure and thus do not split the state vectors
   CalculateAcceleration(velnp_, veln_, velnm_, accn_, accnp_);
 }
+
+BACI_NAMESPACE_CLOSE

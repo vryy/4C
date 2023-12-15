@@ -9,7 +9,6 @@
 
 #include "baci_mixture_constituent_elasthyper_elastin_membrane.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_anisotropy_extension.H"
@@ -18,6 +17,9 @@
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_isoneohooke.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 MIXTURE::ElastinMembraneAnisotropyExtension::ElastinMembraneAnisotropyExtension(
     const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy)
@@ -152,13 +154,13 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::
 
 // Pack the constituent
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::PackConstituent(
-    DRT::PackBuffer& data) const
+    CORE::COMM::PackBuffer& data) const
 {
   MixtureConstituent_ElastHyperBase::PackConstituent(data);
 
-  DRT::ParObject::AddtoPack(data, current_reference_growth_);
+  CORE::COMM::ParObject::AddtoPack(data, current_reference_growth_);
 
-  DRT::ParObject::AddtoPack(data, mue_frac_);
+  CORE::COMM::ParObject::AddtoPack(data, mue_frac_);
 
   anisotropyExtension_.PackAnisotropy(data);
 
@@ -175,9 +177,9 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::UnpackConstituent(
 {
   MixtureConstituent_ElastHyperBase::UnpackConstituent(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, current_reference_growth_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_reference_growth_);
 
-  DRT::ParObject::ExtractfromPack(position, data, mue_frac_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, mue_frac_);
 
   anisotropyExtension_.UnpackAnisotropy(data, position);
 
@@ -224,7 +226,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Update(
 
   current_reference_growth_[gp] =
       DRT::Problem::Instance()
-          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
+          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
           .Evaluate(gprefecoord.A(), totaltime, 0);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);
@@ -328,7 +330,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateStressCMatMe
   EvaluateiFinTAorthgrTiXTAorthgriFin(
       iFinTAorthgrTiXTAorthgriFin_sym, AorthgrCeAorthgrArad, iFin, Aorthgr);
 
-  UTILS::VOIGT::Stresses::MatrixToVector(
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(
       iFinTAorthgrTiXTAorthgriFin_sym, iFinTAorthgrTiXTAorthgriFin_sym_stress);
 
   // Get material parameter
@@ -343,7 +345,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateStressCMatMe
   Smembrane.Update(mue * mue_frac_[gp], iFinAorthgriFinT, 0.0);
   Smembrane.Update(-mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym, 1.0);
 
-  UTILS::VOIGT::Stresses::MatrixToVector(Smembrane, S_stress);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(Smembrane, S_stress);
 
   // Compute constitutive tensor
   static CORE::LINALG::Matrix<6, 6> dAradgriXAradgr_symdC(false);
@@ -418,3 +420,4 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateiFinTAorthgr
   iFinTAorthgrTiXTAorthgriFin_sym.Update(0.5, iFinTAorthgrTiXTAorthgriFin, 0.0);
   iFinTAorthgrTiXTAorthgriFin_sym.UpdateT(0.5, iFinTAorthgrTiXTAorthgriFin, 1.0);
 }
+BACI_NAMESPACE_CLOSE

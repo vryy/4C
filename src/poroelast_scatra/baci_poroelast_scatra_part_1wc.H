@@ -13,6 +13,8 @@
 
 #include "baci_poroelast_scatra_part.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROELASTSCATRA
 {
   class PoroScatraPart1WC : public PoroScatraPart
@@ -22,18 +24,18 @@ namespace POROELASTSCATRA
         : PoroScatraPart(comm, timeparams){};
 
     //! solve one time step of porous media problem
-    void DoPoroStep();
+    void DoPoroStep() override;
     //! solve one time step of scalar transport problem
-    void DoScatraStep();
+    void DoScatraStep() override;
 
     //! prepare output
-    void PrepareOutput();
+    void PrepareOutput() override;
 
     //! update time step
-    void Update();
+    void Update() override;
 
     //! write output print to screen
-    void Output();
+    void Output() override;
   };
 
   class PoroScatraPart1WCPoroToScatra : public PoroScatraPart1WC
@@ -43,20 +45,17 @@ namespace POROELASTSCATRA
     explicit PoroScatraPart1WCPoroToScatra(
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    //! virtual destructor
-    virtual ~PoroScatraPart1WCPoroToScatra(){};
-
     //! actual time loop
-    void Timeloop();
+    void Timeloop() override;
 
     //! increment time and step and print header
-    void PrepareTimeStep(bool printheader = true);
+    void PrepareTimeStep(bool printheader = true) override;
 
     //! perform iteration loop between fields
-    void Solve();
+    void Solve() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
   };
 
   class PoroScatraPart1WCScatraToPoro : public PoroScatraPart1WC
@@ -66,22 +65,21 @@ namespace POROELASTSCATRA
     explicit PoroScatraPart1WCScatraToPoro(
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    //! virtual destructor
-    virtual ~PoroScatraPart1WCScatraToPoro(){};
-
     //! actual time loop
-    void Timeloop();
+    void Timeloop() override;
 
     //! increment time and step and print header
-    void PrepareTimeStep(bool printheader = true);
+    void PrepareTimeStep(bool printheader = true) override;
 
     //! perform iteration loop between fields
-    void Solve();
+    void Solve() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
   };
 }  // namespace POROELASTSCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_SCATRA_PART_1WC_H

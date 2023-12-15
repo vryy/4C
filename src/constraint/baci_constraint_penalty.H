@@ -18,6 +18,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace UTILS
 {
   /*!
@@ -34,14 +36,9 @@ namespace UTILS
 
     ConstraintPenalty(
         Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-        const std::string& CondName               ///< Name of condition to create constraints from
+        const std::string& conditionname          ///< Name of condition to create constraints from
     );
 
-    /*!
-        \brief Destructor
-
-     */
-    ~ConstraintPenalty() { return; };
 
     /// unused
     void Initialize(
@@ -128,5 +125,7 @@ namespace UTILS
     );
   };  // class
 }  // namespace UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_PENALTY_H

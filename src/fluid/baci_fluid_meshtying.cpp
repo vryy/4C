@@ -30,6 +30,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
@@ -46,7 +48,10 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::S
       gmdofrowmap_(Teuchos::null),
       mergedmap_(Teuchos::null),
       valuesdc_(Teuchos::null),
-      adaptermeshtying_(Teuchos::rcp(new CORE::ADAPTER::CouplingMortar())),
+      adaptermeshtying_(Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
+          DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+          DRT::Problem::Instance()->ContactDynamicParams(),
+          DRT::Problem::Instance()->SpatialApproximationType()))),
       pcoupled_(true),
       dconmaster_(false),
       firstnonliniter_(false),
@@ -1898,3 +1903,5 @@ void FLD::Meshtying::CondensationOperationBlockMatrixShape(
   // complete matrix
   shapederivatives->Complete();
 }
+
+BACI_NAMESPACE_CLOSE

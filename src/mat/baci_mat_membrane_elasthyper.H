@@ -22,6 +22,8 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_membrane_material_interfaces.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | hyperelastic material for membranes                   sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
@@ -45,24 +47,21 @@ namespace MAT
       /// standard constructor
       Membrane_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~Membrane_ElastHyper() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class Membrane_ElastHyper
 
   }  // namespace PAR
 
-  class Membrane_ElastHyperType : public DRT::ParObjectType
+  class Membrane_ElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "Membrane_ElastHyperType"; }
+    std::string Name() const override { return "Membrane_ElastHyperType"; }
 
     static Membrane_ElastHyperType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Membrane_ElastHyperType instance_;
@@ -115,7 +114,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return Membrane_ElastHyperType::Instance().UniqueParObjectId();
     }
@@ -128,7 +127,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -140,24 +139,24 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_membrane_elasthyper;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new Membrane_ElastHyper(*this));
     }
 
     /// setup
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     void UpdateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
         const CORE::LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
@@ -192,4 +191,6 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_MEMBRANE_ELASTHYPER_H

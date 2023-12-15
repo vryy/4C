@@ -19,6 +19,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 03/12|
@@ -33,7 +35,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
     for (double& i : midX_) i = 0.0;
     for (int i = 0; i < 4; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       J(i, 0) = 1.0;
       J(i, 1) = xrefe(i, 0) = x[0];
       J(i, 2) = xrefe(i, 1) = x[1];
@@ -295,14 +297,14 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
 
         //----------------------------------------------- add final stress to storage
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -836,3 +838,5 @@ int DRT::ELEMENTS::NStet5::EvaluateNeumann(Teuchos::ParameterList& params,
   dserror("DRT::ELEMENTS::NStet5::EvaluateNeumann not implemented");
   return -1;
 }  // DRT::ELEMENTS::NStet5::EvaluateNeumann
+
+BACI_NAMESPACE_CLOSE

@@ -11,9 +11,11 @@
 
 
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -26,9 +28,6 @@ namespace MAT
      public:
       /// standard constructor
       TempDepWater(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      virtual ~TempDepWater() { ; }
 
       /// @name material parameters
       //@{
@@ -43,20 +42,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class TempDepWater
 
   }  // namespace PAR
 
-  class TempDepWaterType : public DRT::ParObjectType
+  class TempDepWaterType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "TempDepWaterType"; }
+    std::string Name() const override { return "TempDepWaterType"; }
 
     static TempDepWaterType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static TempDepWaterType instance_;
@@ -82,7 +81,7 @@ namespace MAT
       top of parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return TempDepWaterType::Instance().UniqueParObjectId();
     }
@@ -97,7 +96,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -111,15 +110,15 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_tempdepwater; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_tempdepwater; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new TempDepWater(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new TempDepWater(*this)); }
 
     /// compute viscosity
     double ComputeViscosity(const double temp) const;
@@ -143,7 +142,7 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
@@ -151,5 +150,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

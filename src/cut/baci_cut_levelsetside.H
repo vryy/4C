@@ -17,6 +17,8 @@ levelset
 // Use derivatives of LevelSet field to determine the Cut configuration
 #define USE_PHIDERIV_FOR_CUT_DETERMINATION
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -35,14 +37,11 @@ namespace CORE::GEO
         if (sid < 0) dserror("The level-set side must have a positive side id!");
       }
 
-      /// destructor
-      virtual ~LevelSetSide(){};
-
       /// Returns the geometric shape of this side
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::dis_none; }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::dis_none; }
 
       /// element dimension
-      virtual unsigned Dim() const
+      unsigned Dim() const override
       {
         dserror(
             "No dimension information for level set sides. It's "
@@ -51,10 +50,10 @@ namespace CORE::GEO
       }
 
       /// problem dimension
-      virtual unsigned ProbDim() const { return probdim; }
+      unsigned ProbDim() const override { return probdim; }
 
       /// number of nodes
-      virtual unsigned NumNodes() const
+      unsigned NumNodes() const override
       {
         dserror(
             "No number of nodes information for level set sides. It's "
@@ -63,71 +62,71 @@ namespace CORE::GEO
       }
 
       /// \brief Returns the topology data for the side from Shards library
-      virtual const CellTopologyData* Topology() const
+      const CellTopologyData* Topology() const override
       {
         dserror("No topology data for level-set sides!");
         exit(EXIT_FAILURE);
       }
 
       /** Get the cut points between the levelset side and the specified edge */
-      virtual bool Cut(Mesh& mesh, Edge& edge, PointSet& cut_points);
+      bool Cut(Mesh& mesh, Edge& edge, PointSet& cut_points) override;
 
       /** In the level-set case, the level-set side is the cut side and will
        *  be divided into facets. Among other places, this becomes important for
        *  the boundary integration cell creation. */
-      virtual void MakeInternalFacets(Mesh& mesh, Element* element, plain_facet_set& facets);
+      void MakeInternalFacets(Mesh& mesh, Element* element, plain_facet_set& facets) override;
 
       //   virtual bool DoTriangulation() { return true; }
 
-      virtual bool FindAmbiguousCutLines(
-          Mesh& mesh, Element* element, Side& side, const PointSet& cut);
+      bool FindAmbiguousCutLines(
+          Mesh& mesh, Element* element, Side& side, const PointSet& cut) override;
 
       // a levelset-side returns true
-      virtual bool IsLevelSetSide() { return true; };
+      bool IsLevelSetSide() override { return true; };
 
 
-      virtual bool FindCutPointsDispatch(Mesh& mesh, Element* element, Side& side, Edge& e);
+      bool FindCutPointsDispatch(Mesh& mesh, Element* element, Side& side, Edge& e) override;
 
      protected:
       /*! \brief is this side closer to the start-point as the other side? */
-      virtual bool IsCloserSide(
-          const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
+      bool IsCloserSide(
+          const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer) override
       {
         dserror("no IsCloserSide routine for level set cut side");
         exit(EXIT_FAILURE);
       }
 
       /*! \brief Returns the global coordinates of the nodes of this side */
-      virtual void Coordinates(double* xyze) const
+      void Coordinates(double* xyze) const override
       {
         dserror("no coordinates on level set cut side");
       }
 
       /*! \brief get all edges adjacent to given local coordinates */
-      virtual void EdgeAt(const double* rs, std::vector<Edge*>& edges)
+      void EdgeAt(const double* rs, std::vector<Edge*>& edges) override
       {
         dserror("no edges on level set cut side");
       }
 
       /*! \brief get the global coordinates on side at given local coordinates */
-      virtual void PointAt(const double* rs, double* xyz)
+      void PointAt(const double* rs, double* xyz) override
       {
         dserror("no PointAt on level set cut side defined");
       }
 
       /*! \brief get global coordinates of the center of the side */
-      virtual void SideCenter(double* midpoint)
+      void SideCenter(double* midpoint) override
       {
         dserror("no SideCenter on level set cut side defined");
       }
 
-      virtual bool WithinSide(const double* xyz, double* rs, double& dist)
+      bool WithinSide(const double* xyz, double* rs, double& dist) override
       {
         dserror("no WithinSide check implemented");
         exit(EXIT_FAILURE);
       }
 
-      virtual bool RayCut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi)
+      bool RayCut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi) override
       {
         dserror("no RayCut with level set cut side implemented");
         exit(EXIT_FAILURE);
@@ -137,8 +136,8 @@ namespace CORE::GEO
        *  from its global coordinates (xyz), return TRUE if successful. The last coordinate
        *  of \c rsd is the distance of the n-dimensional point \c xyz to the embedded
        *  side. */
-      virtual bool LocalCoordinates(
-          const double* xyz, double* rst, bool allow_dist = false, double tol = POSITIONTOL)
+      bool LocalCoordinates(const double* xyz, double* rst, bool allow_dist = false,
+          double tol = POSITIONTOL) override
       {
         dserror("no local coordinates on level set cut side");
         exit(EXIT_FAILURE);
@@ -146,14 +145,14 @@ namespace CORE::GEO
 
       /*! \brief get local coordinates (rst) with respect to the element shape
        * for all the corner points */
-      virtual void LocalCornerCoordinates(double* rst_corners)
+      void LocalCornerCoordinates(double* rst_corners) override
       {
         dserror("no local coordinates of corner points on level set cut side");
       }
 
       /*! \brief Calculates the normal vector with respect to the element shape
        *  at local coordinates \c rs */
-      virtual void Normal(const double* xsi, double* normal, bool unitnormal = true)
+      void Normal(const double* xsi, double* normal, bool unitnormal = true) override
       {
         dserror("no normal vector on level set cut side implemented");
       }
@@ -161,7 +160,7 @@ namespace CORE::GEO
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
        * the normal vector with respect to the element shape at local coordinates rs,
        * basis vectors have norm=1 */
-      virtual void BasisAtCenter(double* t1, double* t2, double* n)
+      void BasisAtCenter(double* t1, double* t2, double* n) override
       {
         dserror("no BasisAtCenter on level set cut side implemented");
       }
@@ -169,7 +168,7 @@ namespace CORE::GEO
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
        * the normal vector with respect to the element shape at local coordinates rs,
        * basis vectors have norm=1. */
-      virtual void Basis(const double* xsi, double* t1, double* t2, double* n)
+      void Basis(const double* xsi, double* t1, double* t2, double* n) override
       {
         dserror("no Basis on level set cut side implemented");
       }
@@ -177,5 +176,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

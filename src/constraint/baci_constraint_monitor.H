@@ -11,6 +11,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -46,16 +48,11 @@ namespace UTILS
     */
 
     Monitor(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization monitor lives on
-        const std::string& CondName,                  ///< Name of condition to creat monitor from
+        const std::string& conditionname,             ///< Name of condition to creat monitor from
         int& minID,                                   ///< minimum monitor ID so far
         int& maxID                                    ///< maximum monitor ID so far
     );
 
-    /*!
-        \brief Destructor
-
-     */
-    ~Monitor() { return; };
 
     /*!
      \brief Return if there are monitors
@@ -110,5 +107,7 @@ namespace UTILS
     );
   };  // class
 }  // namespace UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_MONITOR_H

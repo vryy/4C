@@ -17,6 +17,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declarations.
 namespace CORE::LINALG
@@ -56,10 +58,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingPairBase();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidVolumeMeshtyingPairBase(){};
 
     /**
      * \brief Setup the contact pair (derived).
@@ -98,11 +96,11 @@ namespace BEAMINTERACTION
      * @param centerline_restart_vec_ (in) Vector with the centerline displacements at the restart
      * step, for all contained elements (Vector of vector).
      */
-    virtual void SetRestartDisplacement(
+    void SetRestartDisplacement(
         const std::vector<std::vector<double>>& centerline_restart_vec_) override;
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
      *
      * Create segmentation and integration points output.
      *
@@ -110,14 +108,17 @@ namespace BEAMINTERACTION
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**
      * \brief Create the geometry pair for this contact pair.
+     * @param element1 Pointer to the first element
+     * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(
+    void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -175,5 +176,7 @@ namespace BEAMINTERACTION
     CORE::LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

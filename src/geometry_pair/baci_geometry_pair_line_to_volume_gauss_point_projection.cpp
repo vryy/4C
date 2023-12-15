@@ -16,15 +16,18 @@
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 /**
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>::Setup()
+GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
+    volume>::GeometryPairLineToVolumeGaussPointProjection(const DRT::Element* element1,
+    const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
+    : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
 {
-  // Call Setup on the base class.
-  GeometryPairLineToVolume<scalar_type, line, volume>::Setup();
-
   // Check if a projection tracking vector exists for this line element. If not a new one is
   // created.
   int line_element_id = this->Element1()->Id();
@@ -50,9 +53,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
     const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
-  // Check if the element is initialized.
-  this->CheckInitSetup();
-
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
       GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>>::PreEvaluate(this,
@@ -69,9 +69,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
     const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
-  // Check if the element is initialized.
-  this->CheckInitSetup();
-
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
       GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>>::Evaluate(this,
@@ -94,3 +91,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;
 template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>;
+
+BACI_NAMESPACE_CLOSE

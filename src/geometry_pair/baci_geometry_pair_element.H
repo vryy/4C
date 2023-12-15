@@ -20,6 +20,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -39,22 +40,21 @@ namespace GEOMETRYPAIR
    * @tparam values_per_node Number of nodal values per node (standard elements have 1, Hermitian
    * shape functions have 2)
    */
-  template <DRT::Element::DiscretizationType discretization, unsigned int values_per_node>
+  template <CORE::FE::CellType discretization, unsigned int values_per_node>
   class ElementDiscretizationBase
   {
    public:
     //! Type of shape function that will be used when evaluating the shape functions.
-    static const DRT::Element::DiscretizationType discretization_ = discretization;
+    static const CORE::FE::CellType discretization_ = discretization;
 
     //! Dimension of element (curve=1, surface=2, volume=3).
-    static const unsigned int dim_ = CORE::DRT::UTILS::DisTypeToDim<discretization_>::dim;
+    static const unsigned int dim_ = CORE::FE::dim<discretization_>;
 
     //! Number of values per node.
     static const unsigned int n_val_ = values_per_node;
 
     //! Number of nodes for this element.
-    static const unsigned int n_nodes_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<discretization_>::numNodePerElement;
+    static const unsigned int n_nodes_ = CORE::FE::num_nodes<discretization_>;
 
     //! Number of unknowns for this element.
     static const unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
@@ -91,7 +91,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::DRT::UTILS::shape_function_1D(N, xi, discretization);
@@ -115,7 +115,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::DRT::UTILS::shape_function_1D_deriv1(dN, xi, discretization);
@@ -138,7 +138,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::DRT::UTILS::shape_function_2D(N, xi(0), xi(1), discretization);
@@ -162,7 +162,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::DRT::UTILS::shape_function_2D_deriv1(dN, xi(0), xi(1), discretization);
@@ -185,7 +185,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::DRT::UTILS::shape_function_3D(N, xi(0), xi(1), xi(2), discretization);
@@ -208,7 +208,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::DRT::UTILS::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), discretization);
@@ -243,7 +243,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Get the reference length of the beam element.
       const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
@@ -275,7 +275,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Get the reference length of the beam element.
       const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
@@ -336,7 +336,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct<V, T, type_weights, typename V::scalar_type>(
@@ -370,7 +370,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, discretization);
@@ -412,7 +412,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       using type_dummy = CORE::LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type>;
@@ -448,7 +448,7 @@ namespace GEOMETRYPAIR
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
-      DRT::Element::DiscretizationType discretization = base::discretization_;
+      CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
       CORE::LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type> dummy;
@@ -464,27 +464,45 @@ namespace GEOMETRYPAIR
    */
 
   //! 1D elements
-  using t_hermite = ElementDiscretizationHermite<ElementDiscretizationBase<DRT::Element::line2, 2>>;
-  using t_line2 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line2, 1>>;
-  using t_line3 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line3, 1>>;
-  using t_line4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line4, 1>>;
+  using t_hermite =
+      ElementDiscretizationHermite<ElementDiscretizationBase<CORE::FE::CellType::line2, 2>>;
+  using t_line2 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::line2, 1>>;
+  using t_line3 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::line3, 1>>;
+  using t_line4 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::line4, 1>>;
 
   //! 2D elements
-  using t_tri3 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tri3, 1>>;
-  using t_tri6 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tri6, 1>>;
-  using t_quad4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad4, 1>>;
-  using t_quad8 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad8, 1>>;
-  using t_quad9 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad9, 1>>;
-  using t_nurbs9 = ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs9, 1>>;
+  using t_tri3 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::tri3, 1>>;
+  using t_tri6 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::tri6, 1>>;
+  using t_quad4 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::quad4, 1>>;
+  using t_quad8 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::quad8, 1>>;
+  using t_quad9 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::quad9, 1>>;
+  using t_nurbs9 =
+      ElementDiscretizationNurbs<ElementDiscretizationBase<CORE::FE::CellType::nurbs9, 1>>;
 
   //! 3D elements
-  using t_hex8 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex8, 1>>;
-  using t_hex20 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex20, 1>>;
-  using t_hex27 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>>;
-  using t_tet4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet4, 1>>;
-  using t_tet10 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet10, 1>>;
-  using t_nurbs27 = ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs27, 1>>;
+  using t_hex8 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::hex8, 1>>;
+  using t_hex20 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::hex20, 1>>;
+  using t_hex27 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::hex27, 1>>;
+  using t_tet4 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::tet4, 1>>;
+  using t_tet10 =
+      ElementDiscretizationStandard<ElementDiscretizationBase<CORE::FE::CellType::tet10, 1>>;
+  using t_nurbs27 =
+      ElementDiscretizationNurbs<ElementDiscretizationBase<CORE::FE::CellType::nurbs27, 1>>;
 
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

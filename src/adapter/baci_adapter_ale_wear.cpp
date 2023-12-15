@@ -15,6 +15,8 @@
 #include "baci_ale_utils_mapextractor.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::AleWearWrapper::AleWearWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
@@ -34,3 +36,5 @@ Teuchos::RCP<const ALE::UTILS::MapExtractor> ADAPTER::AleWearWrapper::Interface(
 {
   return interface_;
 }
+
+BACI_NAMESPACE_CLOSE

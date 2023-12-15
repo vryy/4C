@@ -28,4 +28,8 @@
 // convergence check
 #define WEARCONV 1.0e-12 /* tolerance for convergence check*/
 
+BACI_NAMESPACE_OPEN
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // WEAR_DEFINES_H

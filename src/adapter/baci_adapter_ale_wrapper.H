@@ -17,6 +17,8 @@
 #include "baci_adapter_ale.H"
 #include "baci_ale_utils_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* class definitions */
 namespace ADAPTER
@@ -40,16 +42,16 @@ namespace ADAPTER
     //@{
 
     //! initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const { return ale_->InitialGuess(); }
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() const override { return ale_->InitialGuess(); }
 
     //! right-hand-side of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const { return ale_->RHS(); }
+    Teuchos::RCP<const Epetra_Vector> RHS() const override { return ale_->RHS(); }
 
     //! unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const { return ale_->Dispnp(); }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() const override { return ale_->Dispnp(); }
 
     //! known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const { return ale_->Dispn(); }
+    Teuchos::RCP<const Epetra_Vector> Dispn() const override { return ale_->Dispn(); }
 
     //@}
 
@@ -57,83 +59,86 @@ namespace ADAPTER
     //@{
 
     //! dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const { return ale_->DofRowMap(); }
+    Teuchos::RCP<const Epetra_Map> DofRowMap() const override { return ale_->DofRowMap(); }
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() { return ale_->SystemMatrix(); }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    {
+      return ale_->SystemMatrix();
+    }
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return ale_->BlockSystemMatrix();
     }
 
     //! access to locsys manager
-    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager()
+    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override
     {
       return ale_->LocsysManager();
     }
 
     //! direct access to discretization
-    virtual Teuchos::RCP<const DRT::Discretization> Discretization() const
+    Teuchos::RCP<const DRT::Discretization> Discretization() const override
     {
       return ale_->Discretization();
     }
 
     /// writing access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization()
+    Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() override
     {
       return ale_->WriteAccessDiscretization();
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return ale_->GetDBCMapExtractor(ALE::UTILS::MapExtractor::dbc_set_std);
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions in case of non-standard Dirichlet sets
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
-    )
+        ) override
     {
       return ale_->GetDBCMapExtractor(dbc_type);
     }
 
     //! reset state vectors to zero
-    virtual void Reset() { ale_->Reset(); }
+    void Reset() override { ale_->Reset(); }
 
     //! reset last time step, needed for time step size adaptivity of FSI
-    virtual void ResetStep() { ale_->ResetStep(); }
+    void ResetStep() override { ale_->ResetStep(); }
 
     //@}
 
     //! @name Time step helpers
     //@{
 
-    virtual void ResetTime(const double dtold) { ale_->ResetTime(dtold); }
+    void ResetTime(const double dtold) override { ale_->ResetTime(dtold); }
     //! Return target time \f$t_{n+1}\f$
-    virtual double Time() const { return ale_->Time(); }
+    double Time() const override { return ale_->Time(); }
 
     //! Return target step counter \f$step_{n+1}\f$
-    virtual double Step() const { return ale_->Step(); }
+    double Step() const override { return ale_->Step(); }
 
     //! get time step size \f$\Delta t_n\f$
-    virtual double Dt() const { return ale_->Dt(); }
+    double Dt() const override { return ale_->Dt(); }
 
     //! integrate from t1 to t2
-    virtual int Integrate() { return ale_->Integrate(); }
+    int Integrate() override { return ale_->Integrate(); }
 
-    virtual void TimeStep(
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std)
+    void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+                      ALE::UTILS::MapExtractor::dbc_set_std) override
     {
       ale_->TimeStep(dbc_type);
       return;
     }
 
     //! set time step size
-    virtual void SetDt(const double dtnew  ///< new time step size (to be set)
-    )
+    void SetDt(const double dtnew  ///< new time step size (to be set)
+        ) override
     {
       ale_->SetDt(dtnew);
     }
@@ -141,13 +146,13 @@ namespace ADAPTER
     //! Set time and step
     void SetTimeStep(const double time,  ///< simulation time (to be set)
         const int step                   ///< step number (to be set)
-    )
+        ) override
     {
       ale_->SetTimeStep(time, step);
     }
 
     //! start new time step
-    virtual void PrepareTimeStep() { ale_->PrepareTimeStep(); }
+    void PrepareTimeStep() override { ale_->PrepareTimeStep(); }
 
     //! update displacement and evaluate elements
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
@@ -164,24 +169,24 @@ namespace ADAPTER
                                                     ///< = x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType
             dbc_type  ///< application-specific type of Dirichlet set
-    )
+        ) override
     {
       ale_->Evaluate(stepinc, dbc_type);
     }
 
     //! update at time step end
-    virtual void Update() { ale_->Update(); }
+    void Update() override { ale_->Update(); }
 
     //! update at time step end
-    virtual void UpdateIter() { ale_->UpdateIter(); }
+    void UpdateIter() override { ale_->UpdateIter(); }
 
     //! output results
-    virtual void Output() { return ale_->Output(); }
+    void Output() override { return ale_->Output(); }
 
 
     //! read restart information for given time step \p step
-    virtual void ReadRestart(const int step  ///< step number to read restart from
-    )
+    void ReadRestart(const int step  ///< step number to read restart from
+        ) override
     {
       return ale_->ReadRestart(step);
     }
@@ -189,7 +194,7 @@ namespace ADAPTER
     //@}
 
     /// setup Dirichlet boundary condition map extractor
-    virtual void SetupDBCMapEx(
+    void SetupDBCMapEx(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
             ALE::UTILS::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface =
@@ -198,7 +203,7 @@ namespace ADAPTER
         Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface =
             Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to
                            //!< XFFSI
-    )
+        ) override
     {
       ale_->SetupDBCMapEx(dbc_type, interface, xff_interface);
     }
@@ -207,13 +212,13 @@ namespace ADAPTER
     //@{
 
     //! nonlinear solve
-    virtual int Solve() { return ale_->Solve(); }
+    int Solve() override { return ale_->Solve(); }
 
     //! Access to linear solver of ALE field
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return ale_->LinearSolver(); }
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return ale_->LinearSolver(); }
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner()
+    Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner() override
     {
       return ale_->ConstPreconditioner();
     }
@@ -224,7 +229,7 @@ namespace ADAPTER
     //@{
 
     //! write access to extract displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const
+    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const override
     {
       return ale_->WriteAccessDispnp();
     }
@@ -232,7 +237,7 @@ namespace ADAPTER
     //@}
 
     //! create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() { return ale_->CreateFieldTest(); }
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override { return ale_->CreateFieldTest(); }
 
     /*! \brief Create Systemmatrix
      *
@@ -243,13 +248,13 @@ namespace ADAPTER
     void CreateSystemMatrix(
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface =
             Teuchos::null  ///< Blocksparsematrix if an interface is passed, SparseMatrix otherwise
-    )
+        ) override
     {
       ale_->CreateSystemMatrix(interface);
     }
 
     //! update slave dofs for fsi simulations with ale mesh tying
-    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a) { ale_->UpdateSlaveDOF(a); }
+    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a) override { ale_->UpdateSlaveDOF(a); }
 
    private:
     Teuchos::RCP<Ale> ale_;  //!< underlying ALE time integration
@@ -262,7 +267,7 @@ namespace ADAPTER
     explicit AleNOXCorrectionWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale) {}
 
     //! Prepare time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /*! \brief Evaluate() routine that can handle NOX step increments
      *
@@ -282,8 +287,8 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 10/2014
      */
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc  ///< step increment
-    );
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc  ///< step increment
+        ) override;
 
    private:
     //! sum of displacement increments already applied,
@@ -296,5 +301,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> stepinc_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_WRAPPER_H

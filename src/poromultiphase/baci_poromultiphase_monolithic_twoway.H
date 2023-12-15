@@ -16,6 +16,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -46,49 +48,46 @@ namespace POROMULTIPHASE
     PoroMultiPhaseMonolithicTwoWay(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    /// virtual destructor
-    virtual ~PoroMultiPhaseMonolithicTwoWay(){};
-
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
         const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
         const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
         int nds_solidpressure, int ndsporofluid_scatra,
-        const std::map<int, std::set<int>>* nearbyelepairs);
+        const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /// setup
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// time step of coupled problem
-    virtual void TimeStep();
+    void TimeStep() override;
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const override
     {
       return blockrowdofmap_;
     }
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
-        const bool firstcall);
+        const bool firstcall) override;
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables) public for access from monolithic scatra problem
     void UpdateFieldsAfterConvergence(
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override;
 
     // access to monolithic rhs vector
-    Teuchos::RCP<const Epetra_Vector> RHS() const { return rhs_; }
+    Teuchos::RCP<const Epetra_Vector> RHS() const override { return rhs_; }
 
     // access to monolithic block system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const override
     {
       return systemmatrix_;
     }
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; };
+    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const override { return combinedDBCMap_; };
 
    protected:
     //! Newton output to screen
@@ -142,10 +141,10 @@ namespace POROMULTIPHASE
     virtual void SetupMaps();
 
     // Setup solver for monolithic system
-    virtual bool SetupSolver();
+    bool SetupSolver() override;
 
     //! build the block null spaces
-    virtual void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver);
+    void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override;
 
     //! Evaluate mechanical-fluid system matrix
     virtual void ApplyStrCouplMatrix(
@@ -293,9 +292,6 @@ namespace POROMULTIPHASE
     PoroMultiPhaseMonolithicTwoWayArteryCoupling(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    /// virtual destructor
-    virtual ~PoroMultiPhaseMonolithicTwoWayArteryCoupling(){};
-
     //! extract the field vectors from a given composed vector.
     /*!
      x is the sum of all increments up to this point.
@@ -304,32 +300,32 @@ namespace POROMULTIPHASE
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations,
      and 1D artery pressure)
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
+    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override;
 
     //! build norms for convergence check
-    void BuildConvergenceNorms();
+    void BuildConvergenceNorms() override;
 
    protected:
     /// setup composed system matrix from field solvers
-    virtual void SetupMaps();
+    void SetupMaps() override;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
+    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     /// setup global rhs
-    virtual void SetupRHS();
+    void SetupRHS() override;
 
     //! build the combined dirichletbcmap
-    virtual void BuildCombinedDBCMap();
+    void BuildCombinedDBCMap() override;
 
     //! Create the linear solver
-    virtual void CreateLinearSolver(
-        const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype);
+    void CreateLinearSolver(const Teuchos::ParameterList& solverparams,
+        const INPAR::SOLVER::SolverType solvertype) override;
 
     //! build the block null spaces
-    virtual void BuildArteryBlockNullSpace(
-        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum);
+    void BuildArteryBlockNullSpace(
+        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) override;
 
     //! dof row map (not splitted)
     Teuchos::RCP<Epetra_Map> fullmap_artporo_;
@@ -340,5 +336,7 @@ namespace POROMULTIPHASE
 
 
 }  // namespace POROMULTIPHASE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_MONOLITHIC_TWOWAY_H

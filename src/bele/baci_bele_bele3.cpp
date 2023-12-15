@@ -10,13 +10,15 @@
 
 #include "baci_bele_bele3.H"
 
+#include "baci_comm_utils_factory.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
 
 #include <sstream>
+
+BACI_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::Bele3Type DRT::ELEMENTS::Bele3Type::instance_;
@@ -25,7 +27,7 @@ DRT::ELEMENTS::Bele3Type DRT::ELEMENTS::Bele3Type::instance_;
 DRT::ELEMENTS::Bele3Type& DRT::ELEMENTS::Bele3Type::Instance() { return instance_; }
 
 
-DRT::ParObject* DRT::ELEMENTS::Bele3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Bele3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Bele3* object = new DRT::ELEMENTS::Bele3(-1, -1);
   object->Unpack(data);
@@ -154,32 +156,31 @@ DRT::Element* DRT::ELEMENTS::Bele3::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Bele3::Shape() const
 {
   switch (NumNode())
   {
     case 3:
-      return tri3;
+      return CORE::FE::CellType::tri3;
     case 4:
-      return quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      return quad9;
+      return CORE::FE::CellType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Bele3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -199,10 +200,9 @@ void DRT::ELEMENTS::Bele3::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Bele3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -214,16 +214,12 @@ void DRT::ELEMENTS::Bele3::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3::~Bele3() { return; }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3::Print(std::ostream& os) const
 {
-  os << "Bele3_" << numdofpernode_ << " " << DRT::DistypeToString(Shape());
+  os << "Bele3_" << numdofpernode_ << " " << CORE::FE::CellTypeToString(Shape());
   Element::Print(os);
   return;
 }
@@ -233,14 +229,7 @@ void DRT::ELEMENTS::Bele3::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Bele3Line, Bele3>(DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<Bele3Line, Bele3>(CORE::COMM::buildLines, *this);
 }
 
 
@@ -249,9 +238,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Surfaces()
 {
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 
@@ -260,17 +247,17 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
   CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (Shape())
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:
@@ -295,3 +282,5 @@ bool DRT::ELEMENTS::Bele3::ReadElement(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

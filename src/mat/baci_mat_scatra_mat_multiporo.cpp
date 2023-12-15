@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -35,7 +37,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroFluid::CreateMaterial()
 
 MAT::ScatraMatMultiPoroFluidType MAT::ScatraMatMultiPoroFluidType::instance_;
 
-DRT::ParObject* MAT::ScatraMatMultiPoroFluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatMultiPoroFluidType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatMultiPoroFluid* scatra_mat = new MAT::ScatraMatMultiPoroFluid();
   scatra_mat->Unpack(data);
@@ -57,9 +59,9 @@ MAT::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(MAT::PAR::ScatraMatMultiPo
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatMultiPoroFluid::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatMultiPoroFluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -80,10 +82,8 @@ void MAT::ScatraMatMultiPoroFluid::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -125,7 +125,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroVolFrac::CreateMaterial(
 
 MAT::ScatraMatMultiPoroVolFracType MAT::ScatraMatMultiPoroVolFracType::instance_;
 
-DRT::ParObject* MAT::ScatraMatMultiPoroVolFracType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatMultiPoroVolFracType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatMultiPoroVolFrac* scatra_mat = new MAT::ScatraMatMultiPoroVolFrac();
   scatra_mat->Unpack(data);
@@ -148,9 +148,9 @@ MAT::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatMultiPoroVolFrac::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatMultiPoroVolFrac::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -171,10 +171,8 @@ void MAT::ScatraMatMultiPoroVolFrac::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -214,7 +212,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroSolid::CreateMaterial()
 
 MAT::ScatraMatMultiPoroSolidType MAT::ScatraMatMultiPoroSolidType::instance_;
 
-DRT::ParObject* MAT::ScatraMatMultiPoroSolidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatMultiPoroSolidType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatMultiPoroSolid* scatra_mat = new MAT::ScatraMatMultiPoroSolid();
   scatra_mat->Unpack(data);
@@ -234,9 +232,9 @@ MAT::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(MAT::PAR::ScatraMatMultiPo
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatMultiPoroSolid::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatMultiPoroSolid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -257,10 +255,8 @@ void MAT::ScatraMatMultiPoroSolid::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -309,7 +305,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroTemperature::CreateMater
 
 MAT::ScatraMatMultiPoroTemperatureType MAT::ScatraMatMultiPoroTemperatureType::instance_;
 
-DRT::ParObject* MAT::ScatraMatMultiPoroTemperatureType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatMultiPoroTemperatureType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatMultiPoroTemperature* scatra_mat = new MAT::ScatraMatMultiPoroTemperature();
   scatra_mat->Unpack(data);
@@ -330,9 +326,9 @@ MAT::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatMultiPoroTemperature::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatMultiPoroTemperature::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -353,10 +349,8 @@ void MAT::ScatraMatMultiPoroTemperature::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatMultiPoroTemperature::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -380,3 +374,5 @@ void MAT::ScatraMatMultiPoroTemperature::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   ScatraMat::Unpack(basedata);
 }
+
+BACI_NAMESPACE_CLOSE

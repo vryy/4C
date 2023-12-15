@@ -21,6 +21,8 @@
 #include "baci_mat_material.H"
 #include "baci_so3_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace ELEMENTS
@@ -39,7 +41,7 @@ const int NUMDIM_SOH8 = 3;   ///< number of dimensions
 struct GP_RULE_SOH8
 {
   static const enum CORE::DRT::UTILS::GaussRule3D rule =
-      DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::hex8>::rule;
+      DRT::ELEMENTS::DisTypeToOptGaussRule<CORE::FE::CellType::hex8>::rule;
 };
 /// total gauss points per element
 const unsigned NUMGPT_SOH8 =
@@ -64,7 +66,7 @@ namespace DRT
 
       static So_hex8Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(
           std::string eletype, std::string eledistype, int id, int owner) override;
@@ -143,7 +145,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element
@@ -172,12 +174,6 @@ namespace DRT
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
 
       virtual std::vector<double> ElementCenterRefeCoords();
 
@@ -196,7 +192,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -579,9 +575,9 @@ namespace DRT
       void soh8_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass);
 
       //! Evaluate Hex8 Shapefcts to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
       //! Evaluate Hex8 Derivs to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> soh8_derivs() const;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> soh8_derivs() const;
 
       /*!
        * \brief Evaluate the first derivatives of the shape functions at the Gauss point gp
@@ -591,7 +587,7 @@ namespace DRT
        */
       void soh8_derivs(CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, int gp) const;
       //! Evaluate Hex8 Weights to keep them static
-      const std::vector<double> soh8_weights() const;
+      std::vector<double> soh8_weights() const;
 
       //! push forward of material stresses to the current, spatial configuration
       void PK2toCauchy(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
@@ -761,5 +757,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_HEX8_H

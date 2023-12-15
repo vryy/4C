@@ -21,6 +21,8 @@
 #include <fstream>
 #include <map>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -30,8 +32,7 @@ namespace CORE::GEO
       class PointLineFilter
       {
        public:
-        virtual ~PointLineFilter() {}
-
+        virtual ~PointLineFilter() = default;
         virtual bool operator()(Line* line) const = 0;
       };
 
@@ -53,7 +54,7 @@ namespace CORE::GEO
       };
 
       /// translate PointPosition enumerator to string
-      static inline const std::string PointPosition2String(const enum PointPosition& pos)
+      static inline std::string PointPosition2String(const enum PointPosition& pos)
       {
         switch (pos)
         {
@@ -80,7 +81,7 @@ namespace CORE::GEO
       Point(unsigned pid, double tolerance);
 
       /// destructor
-      virtual ~Point(){};
+      virtual ~Point() = default;
 
       int Id() const { return pid_; }
 
@@ -111,7 +112,7 @@ namespace CORE::GEO
 
       /// adding pair of side-edge to container of intersected, does not insert if such pair already
       /// exists
-      void AddPair(Side* side, Edge* edge, const std::pair<Side*, Edge*>& or_pair);
+      void AddPair(Side* side, Edge* edge, const std::pair<Side*, Edge*>& original_pair);
 
       /// default call
       void AddPair(Side* side, Edge* edge);
@@ -302,7 +303,7 @@ namespace CORE::GEO
       void DumpConnectivityInfo();
 
       /// Get the Merged Points
-      const std::vector<Point*> GetMergedPoints() { return merged_points_; };
+      std::vector<Point*> GetMergedPoints() { return merged_points_; };
 
 #if CUT_CREATION_INFO
       // Add merged pair. If the coord = nullptr, it means it was inserted without actual
@@ -467,13 +468,10 @@ namespace CORE::GEO
         if ((cut_side != nullptr) && (cut_edge != nullptr)) this->AddPair(cut_side, cut_edge);
       };
 
-      /// destructor
-      virtual ~ConcretePoint(){};
-
       /** \brief Get the coordinates of this point */
-      virtual void Coordinates(double* x) const { std::copy(this->x_, this->x_ + probDim, x); };
+      void Coordinates(double* x) const override { std::copy(this->x_, this->x_ + probDim, x); };
 
-      virtual void MovePoint(const double* new_coord);
+      void MovePoint(const double* new_coord) override;
 
     };  // class ConcretePoint
 
@@ -582,7 +580,7 @@ namespace CORE::GEO
         {
         }
 
-        virtual bool operator()(Line* line) const { return line != line_ and filter_(line); }
+        bool operator()(Line* line) const override { return line != line_ and filter_(line); }
 
        private:
         Line* line_;
@@ -594,7 +592,7 @@ namespace CORE::GEO
        public:
         SideCutFilter(Side* side) : side_(side) {}
 
-        virtual bool operator()(Line* line) const;
+        bool operator()(Line* line) const override;
 
        private:
         Side* side_;
@@ -605,7 +603,7 @@ namespace CORE::GEO
        public:
         SideElementCutFilter(Side* side, Element* element) : side_(side), element_(element) {}
 
-        virtual bool operator()(Line* line) const;
+        bool operator()(Line* line) const override;
 
        private:
         Side* side_;
@@ -617,7 +615,7 @@ namespace CORE::GEO
        public:
         SideSideCutFilter(Side* side1, Side* side2) : side1_(side1), side2_(side2) {}
 
-        virtual bool operator()(Line* line) const;
+        bool operator()(Line* line) const override;
 
        private:
         Side* side1_;
@@ -692,5 +690,7 @@ namespace CORE::GEO
 std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Point& point);
 
 std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Point* point);
+
+BACI_NAMESPACE_CLOSE
 
 #endif

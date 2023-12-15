@@ -15,10 +15,7 @@
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -26,14 +23,16 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_structporo.H"
 #include "baci_nurbs_discret.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_surface.H"
 #include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_surfstress_manager.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Sacado.hpp>
 
-using UTILS::SurfStressManager;
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -163,7 +162,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
 
       // The true spatial configuration is the material configuration for mulf
-      if (::UTILS::PRESTRESS::IsMulfActive(time))
+      if (BACI::UTILS::PRESTRESS::IsMulfActive(time))
       {
         // no linearization needed for mulf
         loadlin = false;
@@ -256,7 +255,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
     }
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, e, myknots, weights, nurbs9);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          funct, deriv, e, myknots, weights, CORE::FE::CellType::nurbs9);
     }
 
     // Stuff to get spatial Neumann
@@ -306,7 +306,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
-                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, dof);
             }
             else
@@ -353,7 +353,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, 0);
         }
 
@@ -429,7 +429,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate(coordgpref, time, 0);
           }
           else
@@ -652,8 +652,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     act = StructuralSurface::calc_struct_areaconstrstiff;
   else if (action == "calc_init_vol")
     act = StructuralSurface::calc_init_vol;
-  else if (action == "calc_surfstress_stiff")
-    act = StructuralSurface::calc_surfstress_stiff;
   else if (action == "calc_brownian_motion")
     act = StructuralSurface::calc_brownian_motion;
   else if (action == "calc_brownian_motion_damping")
@@ -1076,78 +1074,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    case calc_surfstress_stiff:
-    {
-      Teuchos::RCP<SurfStressManager> surfstressman =
-          params.get<Teuchos::RCP<SurfStressManager>>("surfstr_man", Teuchos::null);
-
-      if (surfstressman == Teuchos::null)
-        dserror("No SurfStressManager in Solid3 Surface available");
-
-      Teuchos::RCP<DRT::Condition> cond =
-          params.get<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::null);
-      if (cond == Teuchos::null) dserror("Condition not available in Solid3 Surface");
-
-      double time = params.get<double>("total time", -1.0);
-      double dt = params.get<double>("delta time", 0.0);
-      bool newstep = params.get<bool>("newstep", false);
-
-      // element geometry update
-
-      const int numnode = NumNode();
-      CORE::LINALG::SerialDenseMatrix x(numnode, 3);
-
-      Teuchos::RCP<const Epetra_Vector> disn = discretization.GetState("new displacement");
-      if (disn == Teuchos::null) dserror("Cannot get state vector 'new displacement'");
-      std::vector<double> mydisn(lm.size());
-      DRT::UTILS::ExtractMyValues(*disn, mydisn, lm);
-      SpatialConfiguration(x, mydisn);
-
-      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
-
-      // set up matrices and parameters needed for the evaluation of current
-      // interfacial area and its derivatives w.r.t. the displacements
-
-      int ndof = 3 * numnode;  // overall number of surface dofs
-      double A;                // interfacial area
-      // first partial derivatives
-      Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
-      // second partial derivatives
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2 =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-
-      ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
-
-      if (cond->Type() == DRT::Condition::Surfactant)  // dynamic surfactant model
-      {
-        int curvenum = cond->GetInt("funct");
-        double k1xC = cond->GetDouble("k1xCbulk");
-        double k2 = cond->GetDouble("k2");
-        double m1 = cond->GetDouble("m1");
-        double m2 = cond->GetDouble("m2");
-        double gamma_0 = cond->GetDouble("gamma_0");
-        double gamma_min = cond->GetDouble("gamma_min");
-        double gamma_min_eq = gamma_0 - m1;
-        double con_quot_max = (gamma_min_eq - gamma_min) / m2 + 1.;
-        double con_quot_eq = (k1xC) / (k1xC + k2);
-
-        surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1,
-            elematrix1, this->Id(), time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0, gamma_min,
-            gamma_min_eq, con_quot_max, con_quot_eq, newstep);
-      }
-      else if (cond->Type() == DRT::Condition::SurfaceTension)  // ideal liquid
-      {
-        int curvenum = cond->GetInt("funct");
-        double const_gamma = cond->GetDouble("gamma");
-        surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1,
-            elematrix1, this->Id(), time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, newstep);
-      }
-      else
-        dserror("Unknown condition type %d", cond->Type());
-    }
-    break;
     // compute stochastical forces due to Brownian Motion
     case calc_brownian_motion:
     {
@@ -1401,7 +1327,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
       // get integration rule
       const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
-          DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
+          DRT::ELEMENTS::DisTypeToOptGaussRule<CORE::FE::CellType::quad4>::rule);
 
       const Teuchos::RCP<DRT::Discretization> backgrddis = globalproblem->GetDis(backgrddisname);
       const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
@@ -1444,7 +1370,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       DRT::Node** nodes = this->Nodes();
       for (int i = 0; i < nen; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(0, i) = x[0];
         xrefe(1, i) = x[1];
         xrefe(2, i) = x[2];
@@ -1457,7 +1383,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       nodes = this->ParentElement()->Nodes();
       for (int i = 0; i < parent_nen; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         parent_xrefe(0, i) = x[0];
         parent_xrefe(1, i) = x[1];
         parent_xrefe(2, i) = x[2];
@@ -1472,7 +1398,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::SerialDenseMatrix derivtrafo(3, 3);
 
       CORE::DRT::UTILS::BoundaryGPToParentGP<3>(parent_xi, derivtrafo, intpoints,
-          DRT::Element::hex8, DRT::Element::quad4, this->FaceParentNumber());
+          CORE::FE::CellType::hex8, CORE::FE::CellType::quad4, this->FaceParentNumber());
 
       ////////////////////////////////////////////////////////////////////
       /////   gauss point loop
@@ -1486,8 +1412,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> interpolationresult(7);
         auto action = (int)FLD::interpolate_velgrad_to_given_point;
 
-        IMMERSED::InterpolateToImmersedIntPoint<DRT::Element::hex8,  // source
-            DRT::Element::quad4>                                     // target
+        IMMERSED::InterpolateToImmersedIntPoint<CORE::FE::CellType::hex8,  // source
+            CORE::FE::CellType::quad4>                                     // target
             (backgrddis, immerseddis, *this, bdryxi, bdryeledisp, action,
                 interpolationresult  // result
             );
@@ -1699,7 +1625,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         {
           springstiff[i] = (*numfuncstiff)[i] != 0
                                ? springstiff[i] * DRT::Problem::Instance()
-                                                      ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                                      ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                           (*numfuncstiff)[i] - 1)
                                                       .Evaluate(time)
                                : springstiff[i];
@@ -1709,7 +1635,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       for (auto i = 0U; i < numfuncvisco->size(); ++i)
         dashpotvisc[i] = (*numfuncvisco)[i] != 0
                              ? dashpotvisc[i] * DRT::Problem::Instance()
-                                                    ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                                    ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                         (*numfuncvisco)[i] - 1)
                                                     .Evaluate(time)
                              : dashpotvisc[i];
@@ -1717,7 +1643,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       for (auto i = 0U; i < numfuncdisploffset->size(); ++i)
         disploffset[i] = (*numfuncdisploffset)[i] != 0
                              ? disploffset[i] * DRT::Problem::Instance()
-                                                    ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                                    ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                         (*numfuncdisploffset)[i] - 1)
                                                     .Evaluate(time)
                              : disploffset[i];
@@ -1874,7 +1800,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         else
         {
           CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-              funct, deriv, e, myknots, weights, nurbs9);
+              funct, deriv, e, myknots, weights, CORE::FE::CellType::nurbs9);
         }
 
         // check for correct input
@@ -1926,12 +1852,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                       std::numeric_limits<double>::infinity()};
                   displ[dim] = dispnp_gp - disploffset[dim] + offprestrn_gp;
                   force_disp = DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                        (*numfuncnonlinstiff)[dim] - 1)
                                    .Evaluate(displ, time, 0);
 
                   force_disp_deriv = (DRT::Problem::Instance()
-                                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                               (*numfuncnonlinstiff)[dim] - 1)
                                           .EvaluateSpatialDerivative(displ, time, 0))[dim];
                 }
@@ -2006,12 +1932,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                     std::numeric_limits<double>::infinity(),
                     std::numeric_limits<double>::infinity()};
                 force_disp = DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                      (*numfuncnonlinstiff)[0] - 1)
                                  .Evaluate(displ, time, 0);
 
                 force_disp_deriv = (DRT::Problem::Instance()
-                                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                             (*numfuncnonlinstiff)[0] - 1)
                                         .EvaluateSpatialDerivative(displ, time, 0))[0];
               }
@@ -2530,7 +2456,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   DRT::Node** nodes = parentele->Nodes();
   for (int i = 0; i < nenparent; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(0, i) = x[0];
     xrefe(1, i) = x[1];
     xrefe(2, i) = x[2];
@@ -2610,3 +2536,5 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
         nullptr, nullptr, nullptr, true);
   }
 }
+
+BACI_NAMESPACE_CLOSE

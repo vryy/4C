@@ -16,6 +16,8 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -28,20 +30,18 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    virtual ~TimIntStationary();
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief Do time integration (time loop)
 
     */
-    void TimeLoop();
+    void TimeLoop() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -67,7 +67,7 @@ namespace FLD
 
 
     */
-    void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /*!
     \brief Solve stationary problem
@@ -79,7 +79,7 @@ namespace FLD
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    void SetStateTimInt();
+    void SetStateTimInt() override;
 
     /*!
     \brief Calculate time derivatives for
@@ -91,26 +91,26 @@ namespace FLD
         const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
         const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
         const Teuchos::RCP<Epetra_Vector> accnp         ///< acceleration at n+1
-    );
+        ) override;
 
     /*!
     \brief Set gamma to a value
 
     */
-    void SetGamma(Teuchos::ParameterList& eleparams);
+    void SetGamma(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Scale separation
 
     */
-    void Sep_Multiply();
+    void Sep_Multiply() override;
 
     /*!
     \brief Output of filtered velocity
 
     */
     void OutputofFilteredVel(
-        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec);
+        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
 
     /*!
 
@@ -119,42 +119,42 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    void SetElementTimeParameter();
+    void SetElementTimeParameter() override;
 
     /*!
     \brief return scheme-specific time integration parameter
 
     */
-    virtual double TimIntParam() const;
+    double TimIntParam() const override;
 
     /*!
     \brief return scaling factor for the residual
 
     */
-    double ResidualScaling() const { return 1.0; }
+    double ResidualScaling() const override { return 1.0; }
 
     /*!
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Epetra_Vector> EvaluationVel() { return Teuchos::null; };
+    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return Teuchos::null; };
 
     /*!
     \brief treat turbulence models in AssembleMatAndRHS
     */
-    virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
+    void TreatTurbulenceModels(Teuchos::ParameterList& eleparams) override;
 
     //! @name Time Step Size Adaptivity
     //@{
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const { return 1; }
+    int MethodOrderOfAccuracyVel() const override { return 1; }
 
     //! Give local order of accuracy of pressure part
-    virtual int MethodOrderOfAccuracyPres() const { return 1; }
+    int MethodOrderOfAccuracyPres() const override { return 1; }
 
     //! Return linear error coefficient of velocity
-    virtual double MethodLinErrCoeffVel() const { return 1.0; }
+    double MethodLinErrCoeffVel() const override { return 1.0; }
 
     //@}
 
@@ -163,12 +163,14 @@ namespace FLD
     \brief break criterion for pseudo timeloop
 
     */
-    bool NotFinished() { return step_ < stepmax_; }
+    bool NotFinished() override { return step_ < stepmax_; }
 
 
    private:
   };  // class TimIntStationary
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_STAT_H

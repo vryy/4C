@@ -2,11 +2,10 @@ References
 ===========
 
 .. [Gee07] M. Gee, C.M. Siefert, J.J. Hu, R.S. Tuminaro, M.G. Sala: ML 5.0 Smoothed Aggregation User's Guide, SAND2006-2649, Sandia Nat. Lab, 2007.
+
 .. [Wall99] W.A. Wall, PhD thesis, 1999 (available under ``/lnm/literature/1999/``)
 
 .. [Will20] Will, Torsten T. (2020): C++: Das umfassende Handbuch zu Modern C++ (in German). Rheinwerk Computing, 2nd. edition.
-
-.. [Stroustrup98] Stroustrup, Bjarne (1998): Die C++ Programmiersprache. Addison-Wesley, Reading, Massachusetts, 3. Auflage
 
 .. [Bancila20] Bancila, Marius (2020): Modern C++ Programming Cookbook: Master C++ core language and standard library features. Packt Publishing, 2. Edition. 
 
@@ -14,20 +13,22 @@ References
 
 .. [Reiser94] Reiser et al., 1994
 
-.. [strdyn:zienkiewicz91] O.C. Zienkiewicz, Y.M. Xie. A simple error estimator and adaptive time stepping procedure for
-   dynamic analysis. Earthquake Engrg. Structural Dynamics, 20:871–887, 1991.
+.. [Martin08] Robert C. Martin (2008):  Clean code: A Handbook of Agile Software Craftsmanship. Prentice Hall, p. 122f
 
-.. [strdyn:hairer87] E. Hairer, S.P. Nørsett, G. Wanner. Solving ordinary differential equations I, Nonstiff problems.
-   Springer-Verlag, Berlin, 1987.
+.. [strdyn:zienkiewicz91] O.C. Zienkiewicz, Y.M. Xie. A simple error estimator and adaptive time stepping procedure for dynamic analysis. Earthquake Engrg. Structural Dynamics, 20:871–887, 1991.
 
-.. [strdyn:hairer91] E. Hairer, G. Wanner. Solving ordinary differential equations II, Stiff and differential-algebraic
-   problems. Springer-Verlag, Berlin, 1991.
+.. [strdyn:hairer87] E. Hairer, S.P. Nørsett, G. Wanner. Solving ordinary differential equations I, Nonstiff problems. Springer-Verlag, Berlin, 1987.
 
-.. [strdyn:deuflhard94] P. Deuflhard, F. Bornemann. Numerische Mathematik II: Integration gewöhnlicher Differential-
-   gleichungen. Walter de Gryter, Berlin, 1994.
+.. [strdyn:hairer91] E. Hairer, G. Wanner. Solving ordinary differential equations II, Stiff and differential-algebraic problems. Springer-Verlag, Berlin, 1991.
 
-.. [strdyn:chung95] J. Chung, G. Hulbert. A time integration algorithm for structural dynamics with improved
-   numerical dissipation. J. Appl. Mech., 60:371–375, 1993.
+.. [strdyn:deuflhard94] P. Deuflhard, F. Bornemann. Numerische Mathematik II: Integration gewöhnlicher Differentialgleichungen. Walter de Gryter, Berlin, 1994.
 
-.. [strdyn:bornemann03] P.B. Bornemann. Time integration algorithms for the steady states of dissipative non-linear dynamic
-   systems. PhD thesis, Imperial College London, 2003.
+.. [strdyn:chung95] J. Chung, G. Hulbert. A time integration algorithm for structural dynamics with improved numerical dissipation. J. Appl. Mech., 60:371–375, 1993.
+
+.. [strdyn:bornemann03] P.B. Bornemann. Time integration algorithms for the steady states of dissipative non-linear dynamic systems. PhD thesis, Imperial College London, 2003.
+
+~
+~
+~
+~
+

@@ -11,6 +11,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 06/15 |
  *----------------------------------------------------------------------*/
@@ -31,7 +33,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Soret::CreateMaterial()
 
 MAT::SoretType MAT::SoretType::instance_;
 
-DRT::ParObject* MAT::SoretType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::SoretType::Create(const std::vector<char>& data)
 {
   MAT::Soret* soret = new MAT::Soret();
   soret->Unpack(data);
@@ -54,9 +56,9 @@ MAT::Soret::Soret(MAT::PAR::Soret* params) : FourierIso(params), params_(params)
 /*----------------------------------------------------------------------*
  | pack material for communication purposes                  fang 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::Soret::Pack(DRT::PackBuffer& data) const
+void MAT::Soret::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -81,10 +83,7 @@ void MAT::Soret::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("Wrong instance type data!");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -114,3 +113,5 @@ void MAT::Soret::Unpack(const std::vector<char>& data)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
@@ -171,3 +173,5 @@ void ADAPTER::StructureRedAirway::Update()
     Vn_[coupID] = Vnp_[coupID];
   }
 }
+
+BACI_NAMESPACE_CLOSE

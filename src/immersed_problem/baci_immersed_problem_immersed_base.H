@@ -11,6 +11,7 @@
 #define BACI_IMMERSED_PROBLEM_IMMERSED_BASE_H
 
 
+#include "baci_comm_exporter.H"
 #include "baci_cut_boundingbox.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
@@ -20,12 +21,12 @@
 #include "baci_fluid_ele_immersed_base.H"
 #include "baci_inpar_fluid.H"
 #include "baci_lib_assemblestrategy.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_immersed_node.H"
 #include "baci_mortar_calc_utils.H"
 #include "baci_mortar_element.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -55,7 +56,7 @@ namespace IMMERSED
     \brief destructor
 
     */
-    virtual ~ImmersedBase(){};
+    virtual ~ImmersedBase() = default;
 
 
     /*! \brief Initialize this object
@@ -162,7 +163,7 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    virtual void ApplyDirichlet(const Teuchos::RCP<::ADAPTER::StructureWrapper>& field_wrapper,
+    virtual void ApplyDirichlet(const Teuchos::RCP<ADAPTER::StructureWrapper>& field_wrapper,
         const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
@@ -174,7 +175,7 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    void ApplyDirichletToFluid(const Teuchos::RCP<::ADAPTER::FluidWrapper>& field_wrapper,
+    void ApplyDirichletToFluid(const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper,
         const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
@@ -187,7 +188,7 @@ namespace IMMERSED
     \date 02/17
     */
     void RemoveDirichlet(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-        const Teuchos::RCP<::ADAPTER::StructureWrapper>& field_wrapper);
+        const Teuchos::RCP<ADAPTER::StructureWrapper>& field_wrapper);
 
 
     /*!
@@ -197,7 +198,7 @@ namespace IMMERSED
     \date 02/17
     */
     void RemoveDirichletFromFluid(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-        const Teuchos::RCP<::ADAPTER::FluidWrapper>& field_wrapper);
+        const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper);
 
 
     /*!
@@ -356,8 +357,7 @@ namespace IMMERSED
   \date 09/15
 
   */
-  template <DRT::Element::DiscretizationType sourcedistype,
-      DRT::Element::DiscretizationType targetdistype>
+  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
   int InterpolateToImmersedIntPoint(const Teuchos::RCP<DRT::Discretization> sourcedis,
       const Teuchos::RCP<DRT::Discretization> targetdis, DRT::Element& targetele,
       const std::vector<double>& targetxi, const std::vector<double>& targetedisp, int action,
@@ -409,8 +409,8 @@ namespace IMMERSED
     std::vector<double> x(globdim);
 
     // dimension of source discretization
-    static const int source_dim = CORE::DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
-    static const int target_dim = CORE::DRT::UTILS::DisTypeToDim<targetdistype>::dim;
+    static const int source_dim = CORE::FE::dim<sourcedistype>;
+    static const int target_dim = CORE::FE::dim<targetdistype>;
 
     // declarations and definitions for round robin loop
     const int numproc = comm.NumProc();
@@ -418,7 +418,7 @@ namespace IMMERSED
     const int torank = (myrank + 1) % numproc;              // sends to
     const int fromrank = (myrank + numproc - 1) % numproc;  // recieves from
 
-    DRT::Exporter exporter(comm);
+    CORE::COMM::Exporter exporter(comm);
 
     // get current global coordinates of the given point xi of the target dis
     MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(
@@ -537,12 +537,12 @@ namespace IMMERSED
                   sourceeledisp[node * 3 + dof] = myvalues[node * 4 + dof];
 
               // node 1  and node 7 coords of current source element (diagonal points)
-              const double* X1 = curr->second->Nodes()[1]->X();
+              const auto& X1 = curr->second->Nodes()[1]->X();
               double x1[3];
               x1[0] = X1[0] + sourceeledisp[1 * 3 + 0];
               x1[1] = X1[1] + sourceeledisp[1 * 3 + 1];
               x1[2] = X1[2] + sourceeledisp[1 * 3 + 2];
-              const double* X7 = curr->second->Nodes()[7]->X();
+              const auto& X7 = curr->second->Nodes()[7]->X();
               double diagonal =
                   sqrt(pow(X1[0] - X7[0], 2) + pow(X1[1] - X7[1], 2) + pow(X1[2] - X7[2], 2));
 
@@ -585,8 +585,8 @@ namespace IMMERSED
             else
             {
               // node 1  and node 7 coords of current source element (diagonal points)
-              const double* X1 = curr->second->Nodes()[1]->X();
-              const double* X7 = curr->second->Nodes()[7]->X();
+              const auto& X1 = curr->second->Nodes()[1]->X();
+              const auto& X7 = curr->second->Nodes()[7]->X();
               double diagonal =
                   sqrt(pow(X1[0] - X7[0], 2) + pow(X1[1] - X7[1], 2) + pow(X1[2] - X7[2], 2));
 
@@ -653,8 +653,7 @@ namespace IMMERSED
               {
                 if (isALE)
                 {
-                  const double* X;
-                  X = sourceele->Nodes()[sourcenode]->X();
+                  const auto& X = sourceele->Nodes()[sourcenode]->X();
 
                   distances[sourcenode] =
                       sqrt(pow(xvec[0] - (X[0] + myvalues[sourcenode * 4 + 0]), 2) +
@@ -663,8 +662,7 @@ namespace IMMERSED
                 }
                 else
                 {
-                  const double* X;
-                  X = sourceele->Nodes()[sourcenode]->X();
+                  const auto& X = sourceele->Nodes()[sourcenode]->X();
 
                   distances[sourcenode] = sqrt(
                       pow(xvec[0] - X[0], 2) + pow(xvec[1] - X[1], 2) + pow(xvec[2] - X[2], 2));
@@ -683,11 +681,10 @@ namespace IMMERSED
                 }
               }
 
-              const double* X;
               double x[3];
               if (isALE)
               {
-                X = sourceele->Nodes()[maxdistanceindex]->X();
+                const auto& X = sourceele->Nodes()[maxdistanceindex]->X();
                 x[0] = X[0] + myvalues[maxdistanceindex * 4 + 0];
                 x[1] = X[1] + myvalues[maxdistanceindex * 4 + 1];
                 x[2] = X[2] + myvalues[maxdistanceindex * 4 + 2];
@@ -797,7 +794,7 @@ namespace IMMERSED
       {
         // ---- pack data for sending -----
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -844,20 +841,21 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = DRT::ParObject::ExtractInt(position, rdata);
-        owner = DRT::ParObject::ExtractInt(position, rdata);
-        datalength = DRT::ParObject::ExtractInt(position, rdata);
+        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
 
-        for (int i = 0; i < globdim; ++i) xvec[i] = DRT::ParObject::ExtractDouble(position, rdata);
+        for (int i = 0; i < globdim; ++i)
+          xvec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = DRT::ParObject::ExtractDouble(position, rdata);
+            (*vectofill)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
         }
 
         for (int i = 0; i < globdim; ++i)
-          normal_vec[i] = DRT::ParObject::ExtractDouble(position, rdata);
+          normal_vec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
         // wait for all communication to finish
         exporter.Wait(request);
@@ -898,8 +896,7 @@ namespace IMMERSED
   \date 09/15
 
   */
-  template <DRT::Element::DiscretizationType sourcedistype,
-      DRT::Element::DiscretizationType targetdistype>
+  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
   int InterpolateToBackgrdPoint(std::map<int, std::set<int>>& curr_subset_of_structdis,
       const Teuchos::RCP<DRT::Discretization> sourcedis,
       const Teuchos::RCP<DRT::Discretization> targetdis, DRT::Element& targetele,
@@ -929,7 +926,7 @@ namespace IMMERSED
     // declare vector of global current coordinates
     std::vector<double> x(globdim);
     // dimension of source discretization
-    static const int source_dim = CORE::DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
+    static const int source_dim = CORE::FE::dim<sourcedistype>;
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
     const int myrank = comm.MyPID();                        // myrank
@@ -1128,11 +1125,11 @@ namespace IMMERSED
 
       if (doCommunication)
       {
-        DRT::Exporter exporter(comm);
+        CORE::COMM::Exporter exporter(comm);
 
         // ---- pack data for sending -----
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -1172,16 +1169,17 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = DRT::ParObject::ExtractInt(position, rdata);
-        owner = DRT::ParObject::ExtractInt(position, rdata);
-        datalength = DRT::ParObject::ExtractInt(position, rdata);
+        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
 
-        for (int i = 0; i < globdim; ++i) xvec[i] = DRT::ParObject::ExtractDouble(position, rdata);
+        for (int i = 0; i < globdim; ++i)
+          xvec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = DRT::ParObject::ExtractDouble(position, rdata);
+            (*vectofill)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
         }
 
         // wait for all communication to finish
@@ -1218,8 +1216,7 @@ namespace IMMERSED
   \date 07/2015
 
    */
-  template <DRT::Element::DiscretizationType structdistype,
-      DRT::Element::DiscretizationType fluiddistype>
+  template <CORE::FE::CellType structdistype, CORE::FE::CellType fluiddistype>
   int FindClosestStructureSurfacePoint(
       std::map<int, std::set<int>>& curr_subset_of_structdis,  //!< Input
       const Teuchos::RCP<DRT::Discretization> structdis,       //!< Input
@@ -1254,8 +1251,8 @@ namespace IMMERSED
     std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
-    static const int struct_dim = CORE::DRT::UTILS::DisTypeToDim<structdistype>::dim;
-    static const int fluid_dim = CORE::DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
+    static const int struct_dim = CORE::FE::dim<structdistype>;
+    static const int fluid_dim = CORE::FE::dim<fluiddistype>;
 
     // get integration rule of structural surface element
     const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
@@ -1458,7 +1455,8 @@ namespace IMMERSED
                     stored_dist = dist;
 
                     // evaluate shape functions of structure dis at gp
-                    CORE::DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi, shapefcts);
+                    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::quad4>(
+                        struct_xi, shapefcts);
                     CORE::LINALG::Matrix<4, 3> myvelocitynp(true);
                     for (int node = 0; node < 4; ++node)
                       for (int dim = 0; dim < 3; ++dim)
@@ -1536,10 +1534,10 @@ namespace IMMERSED
 
       if (doCommunication)
       {
-        DRT::Exporter exporter(comm);
+        CORE::COMM::Exporter exporter(comm);
         // ---- pack data for sending -----
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -1579,17 +1577,17 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = DRT::ParObject::ExtractInt(position, rdata);
-        owner = DRT::ParObject::ExtractInt(position, rdata);
-        datalength = DRT::ParObject::ExtractInt(position, rdata);
+        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
 
         for (int i = 0; i < globdim; ++i)
-          fluid_node_glob_coord[i] = DRT::ParObject::ExtractDouble(position, rdata);
+          fluid_node_glob_coord[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*velnp_at_struct_point)(dim) = DRT::ParObject::ExtractDouble(position, rdata);
+            (*velnp_at_struct_point)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
         }
 
         // wait for all communication to finish
@@ -1624,8 +1622,7 @@ namespace IMMERSED
   \date 2015
 
    */
-  template <DRT::Element::DiscretizationType sourcedistype,
-      DRT::Element::DiscretizationType targetdistype>
+  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
   double IntersectLineWithBoundary(Teuchos::RCP<DRT::Discretization> evaldis,
       const Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<3, 1>& searchdirection, CORE::LINALG::Matrix<3, 1>& spacepoint,
@@ -1704,9 +1701,9 @@ namespace IMMERSED
               {
                 // get nodes
                 DRT::Node** bdrynodes = curr->second->Nodes();
-                const double* X0 = bdrynodes[0]->X();
-                const double* X1 = bdrynodes[1]->X();
-                const double* X3 = bdrynodes[3]->X();
+                const auto& X0 = bdrynodes[0]->X();
+                const auto& X1 = bdrynodes[1]->X();
+                const auto& X3 = bdrynodes[3]->X();
 
                 // get location vector
                 curr->second->LocationVector(*evaldis, la, false, condstring, params);
@@ -1775,19 +1772,19 @@ namespace IMMERSED
             // send data around to the other procs if there are any
             if (comm.NumProc() > 1)
             {
-              DRT::Exporter exporter(comm);
+              CORE::COMM::Exporter exporter(comm);
 
               // ---- pack data for sending -----
               {
-                DRT::PackBuffer data;
+                CORE::COMM::PackBuffer data;
                 data.StartPacking();
                 {
                   data.AddtoPack(
                       matched);  //< owner already found matching point vis-a-vis spacepoint
                   data.AddtoPack(owner);  //< myrank = owner of data
-                  DRT::ParObject::AddtoPack<3, 1>(
-                      data, searchdirection);                         //< searchdirection of owner
-                  DRT::ParObject::AddtoPack<3, 1>(data, spacepoint);  //< spacepoint of owner
+                  CORE::COMM::ParObject::AddtoPack<3, 1>(
+                      data, searchdirection);  //< searchdirection of owner
+                  CORE::COMM::ParObject::AddtoPack<3, 1>(data, spacepoint);  //< spacepoint of owner
 
                   data.AddtoPack(tempresult);
                 }
@@ -1811,12 +1808,12 @@ namespace IMMERSED
 
               // ---- unpack data -----
               std::vector<char>::size_type position = 0;
-              matched = DRT::ParObject::ExtractInt(position, rdata);
-              owner = DRT::ParObject::ExtractInt(position, rdata);
-              DRT::ParObject::ExtractfromPack<3, 1>(position, rdata, searchdirection);
-              DRT::ParObject::ExtractfromPack<3, 1>(position, rdata, spacepoint);
+              matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
+              owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
+              CORE::COMM::ParObject::ExtractfromPack<3, 1>(position, rdata, searchdirection);
+              CORE::COMM::ParObject::ExtractfromPack<3, 1>(position, rdata, spacepoint);
 
-              tempresult = DRT::ParObject::ExtractDouble(position, rdata);
+              tempresult = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
               // wait for all communication to finish
               exporter.Wait(request);
@@ -1857,5 +1854,7 @@ namespace IMMERSED
   };
 
 }  // namespace IMMERSED
+
+BACI_NAMESPACE_CLOSE
 
 #endif

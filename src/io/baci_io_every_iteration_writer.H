@@ -18,6 +18,9 @@ namespace Teuchos
 {
   class ParameterList;
 }
+
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   class DiscretizationWriter;
@@ -40,7 +43,7 @@ namespace IO
     EveryIterationWriterInterface(){};
 
     /// destructor
-    virtual ~EveryIterationWriterInterface(){};
+    virtual ~EveryIterationWriterInterface() = default;
 
     /// Prepare the output before it is accessed via OutputState.
     virtual void PrepareOutput(bool force_prepare) = 0;
@@ -128,8 +131,6 @@ namespace IO
     /// Empty default constructor
     EveryIterationWriter();
 
-    /// destructor
-    ~EveryIterationWriter(){};
 
     /** @brief Initialize the object
      *
@@ -253,5 +254,7 @@ namespace IO
   int CountLinesInFile(const std::string& filepath);
 }  // namespace IO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // IO_EVERY_ITERATION_WRITER_H

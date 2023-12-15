@@ -16,6 +16,7 @@
  | headers                                                   dano 11/09 |
  *----------------------------------------------------------------------*/
 #include "baci_io_legacy_table_cpp.h"
+#include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_post_common.H"
 #include "baci_post_common_single_field_writers.H"
@@ -93,12 +94,14 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     return numdf;
   }
 
-  virtual std::vector<int> NumDfMap() { return std::vector<int>(1, Numdf()); }
+  std::vector<int> NumDfMap() override { return std::vector<int>(1, Numdf()); }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 1, "Unexpected number of names");
 
     int numdf = Numdf();
@@ -211,12 +214,14 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     return numdf;
   }
 
-  virtual std::vector<int> NumDfMap() { return std::vector<int>(1, Numdf()); }
+  std::vector<int> NumDfMap() override { return std::vector<int>(1, Numdf()); }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 1, "Unexpected number of names");
 
     int numdf = Numdf();

@@ -36,8 +36,6 @@
 
 /tests/                            @baci/team_testing
 
-/trilinos/                         @baci/team_infrastructure
-
 # Note: the code ownership of the respective unit test directories
 # can be overwritten by the specification based on the BACI source directories
 
@@ -108,17 +106,17 @@ contact_aug/               @baci/team_contact
 
 contact_constitutivelaw/   @baci/team_contact
 
-core/                      @baci/team_infrastructure
-core/coupling              @baci/team_discretization
-core/discretization        @baci/team_discretization
-core/linear_solver         @baci/team_solvers
-core/utils                 @baci/team_infrastructure
+core/*                     @baci/team_infrastructure
+core/coupling/             @baci/team_discretization
+core/discretization/       @baci/team_discretization
+core/linalg/               @baci/team_solvers
+core/linear_solver/        @baci/team_solvers
+core/rebalance/            @baci/team_discretization
+core/utils/                @baci/team_infrastructure
 
 create_rtdfiles/           @baci/team_infrastructure
 
 cut/                       @baci/team_fluid
-
-discsh3/                   @baci/team_structure
 
 ehl/                       @baci/team_scatra
 
@@ -184,14 +182,11 @@ inpar/baci_inpar_validcontactconstitutivelaw*            @baci/team_contact
 inpar/baci_inpar_validmaterials*                         @baci/team_material
 
 io/                        @baci/team_input @baci/team_output
+io/baci_io_material*              @baci/team_material
 
 levelset/                  @baci/team_fluid
 
 lib/                       @baci/team_discretization
-lib/baci_lib_material*              @baci/team_material
-lib/baci_lib_parobject*             @baci/team_infrastructure
-
-linalg/                    @baci/team_solvers
 
 loma/                      @baci/team_fluid
 
@@ -260,8 +255,6 @@ pre_exodus/                @baci/team_input
 
 pre_locsys/                @baci/team_input
 
-rebalance/                 @baci/team_discretization
-
 red_airways/               @baci/team_reduced_fluid_models
 
 rigidsphere/               @baci/team_structure
@@ -284,6 +277,8 @@ so3/baci_so3_poro*         @baci/team_structure @baci/team_poro
 
 solid_ele/                 @baci/team_structure
 
+solid_poro_ele/             @baci/team_poro
+
 solver_nonlin_nox/         @baci/team_solvers
 
 ssi/                       @baci/team_scatra
@@ -300,8 +295,6 @@ structure/                 @baci/team_structure
 
 structure_new/             @baci/team_structure
 
-surfstress/                @baci/team_discretization
-
 thermo/                    @baci/team_thermo
 
 timestepping/              @baci/team_discretization
@@ -310,11 +303,7 @@ torsion3/                  @baci/team_structure
 
 truss3/                    @baci/team_structure
 
-truss3cl/                  @baci/team_structure
-
 tsi/                       @baci/team_thermo
-
-tutorial/                  @baci/team_infrastructure
 
 w1/                        @baci/team_structure
 w1/baci_w1_poro*           @baci/team_structure @baci/team_poro
@@ -446,7 +435,8 @@ requirements.txt                               @baci/team_infrastructure
 .gitlab/issue_templates/ISSUE_TEMPLATE.md                                    @baci/baci_developers 
 .gitlab/issue_templates/ONBOARDING.md                                        @baci/baci_maintainer 
 .gitlab/issue_templates/TEST_FAILING.md                                      @baci/team_infrastructure 
-.gitlab/merge_request_templates/MERGE_REQUEST_TEMPLATE.md                    @baci/baci_developers 
+.gitlab/merge_request_templates/MERGE_REQUEST_TEMPLATE.md                    @baci/baci_developers
+.gitlab/merge_request_templates/MERGE_REQUEST_TRILINOS_UPDATE_TEMPLATE.md    @baci/team_infrastructure
 
 
 # put CMakeLists.txt last to override folder owners

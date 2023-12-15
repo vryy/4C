@@ -15,6 +15,8 @@
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
+BACI_NAMESPACE_OPEN
+
 // Forward declaration.
 namespace GEOMETRYPAIR
 {
@@ -47,17 +49,15 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingPair2D3DBase() = default;
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidVolumeMeshtyingPair2D3DBase(){};
 
     /**
      * \brief Create the geometry pair for this contact pair. We overload that function because this
      * pair requires explicitly that a cross section projection pair is created.
+     * @param element1 Pointer to the first element
+     * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(
+    void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -98,5 +98,7 @@ namespace BEAMINTERACTION
         const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const = 0;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

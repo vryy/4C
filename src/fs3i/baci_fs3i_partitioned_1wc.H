@@ -18,6 +18,8 @@
 
 #include "baci_fs3i_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FS3I
 {
@@ -26,23 +28,23 @@ namespace FS3I
    public:
     PartFS3I_1WC(const Epetra_Comm& comm);
 
-    virtual ~PartFS3I_1WC(){};
+    void Init() override;
 
-    virtual void Init();
+    void Setup() override;
 
-    virtual void Setup();
-
-    virtual void Timeloop();
+    void Timeloop() override;
 
     void DoFSIStep();
 
     void DoScatraStep();
 
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
-    virtual bool ScatraConvergenceCheck(int itnum);
+    bool ScatraConvergenceCheck(int itnum) override;
   };
 
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

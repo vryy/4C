@@ -20,6 +20,7 @@
 #include "baci_mat_fluid_weakly_compressible.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                  laspina 08/19 |
@@ -768,3 +769,5 @@ void FLD::TimIntHDGWeakComp::Output()
     if (step_ == upres_ or step_ == 0) output_->WriteElementData(true);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,7 +12,9 @@
 #define BACI_INPAR_XFEM_H
 
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_linecomponent.H"
+#include "baci_io_linecomponent.H"
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration
 namespace DRT
@@ -320,12 +322,14 @@ namespace INPAR
 
     /// set specific xfem conditions
     void SetValidConditions(
-        const std::vector<Teuchos::RCP<::INPUT::LineComponent>> &dirichletbundcomponents,
-        const std::vector<Teuchos::RCP<::INPUT::LineComponent>> &neumanncomponents,
+        const std::vector<Teuchos::RCP<INPUT::LineComponent>> &dirichletbundcomponents,
+        const std::vector<Teuchos::RCP<INPUT::LineComponent>> &neumanncomponents,
         std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>> &condlist);
 
   }  // namespace XFEM
 
 }  // namespace INPAR
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // INPAR_XFEM_H

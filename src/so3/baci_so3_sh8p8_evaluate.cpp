@@ -12,9 +12,8 @@
 /* headers */
 #include "baci_io_gmsh.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
@@ -34,7 +33,9 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-using VoigtMapping = ::UTILS::VOIGT::IndexMappings;
+BACI_NAMESPACE_OPEN
+
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            bborn 03/08|
@@ -319,14 +320,14 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
         ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, nullptr, nullptr, nullptr, nullptr,
             nullptr, nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain);
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -574,7 +575,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1348,7 +1349,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
 
             // C^d_{,U^d} = (U^d . U^d)_{,U^d}
             SqVector6VoigtDiffByItself(
-                rcgDbyrgtstrD, rgtstrD, ::UTILS::VOIGT::NotationType::strain);
+                rcgDbyrgtstrD, rgtstrD, CORE::LINALG::VOIGT::NotationType::strain);
 
             // displ-based deformation gradient as Voigt matrix
             CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDFGR_> defgradDm;
@@ -1384,7 +1385,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
             // derivative of ass. right Cauchy-Green with respect to ass. material stretch tensor
             // C^{ass}_{,U^{ass}}
             CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> rcgbyrgtstr;
-            SqVector6VoigtDiffByItself(rcgbyrgtstr, rgtstr, ::UTILS::VOIGT::NotationType::strain);
+            SqVector6VoigtDiffByItself(
+                rcgbyrgtstr, rgtstr, CORE::LINALG::VOIGT::NotationType::strain);
 
             // C^{ass}_{,d} = 2 * bop
             // C^{ass}_{AB,k} = 2 B_{ABk}
@@ -2007,7 +2009,7 @@ void DRT::ELEMENTS::So_sh8p8::Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRE
         invcg.MultiplyTN(defgrd, defgrd);
         invcg.Invert();
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> invcgv;
-        ::UTILS::VOIGT::Stresses::MatrixToVector(invcg, invcgv);
+        CORE::LINALG::VOIGT::Stresses::MatrixToVector(invcg, invcgv);
         // store stress
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         {
@@ -2022,7 +2024,7 @@ void DRT::ELEMENTS::So_sh8p8::Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRE
       // push forward
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> defgraddefgradT;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(defgraddefgradT, defgrd, true,
-          ::UTILS::VOIGT::NotationType::stress, ::UTILS::VOIGT::NotationType::strain);
+          CORE::LINALG::VOIGT::NotationType::stress, CORE::LINALG::VOIGT::NotationType::strain);
       // (deviatoric/isochoric) Cauchy stress vector
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cauchyv;
       cauchyv.MultiplyNN(1.0 / detdefgrd, defgraddefgradT, stress);
@@ -2081,7 +2083,7 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
       // create push forward 6x6 matrix
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradTdefgrad;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(invdefgradTdefgrad, invdefgrd, false,
-          ::UTILS::VOIGT::NotationType::strain, ::UTILS::VOIGT::NotationType::stress);
+          CORE::LINALG::VOIGT::NotationType::strain, CORE::LINALG::VOIGT::NotationType::stress);
       // push forward
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> eastrain;
       eastrain.MultiplyNN(invdefgradTdefgrad, glstrain);
@@ -2694,3 +2696,5 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -30,6 +30,7 @@ workflow:
 variables:
   # Clone repository by default, file have changed attribute.
   GIT_STRATEGY: clone
+
   # If not called by a scheduler this variable has to be 0.
   # 1: daily full (release, debug)
   # 3: coverage
@@ -45,14 +46,19 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_HASH: defb9e27
+  BACI_DOCKER_DEPENDENCIES_HASH: f19a0abd
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
   BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
 
+  # Variables for Trilinos pipeline
+  # The default Trilinos commit ref the Trilinos pipeline is running on
+  TRILINOS_PIPELINE_COMMIT_REF: develop
+  BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS: baci-dependencies-trilinos:$TRILINOS_PIPELINE_COMMIT_REF
+
 .compute-dependencies-hash: &compute-dependencies-hash
-# compute short hash from contents of folder dependencies and docker
-- COMPUTED_DOCKER_DEPENDENCIES_HASH=`find dependencies docker -type f -exec sha1sum
-  {} \; | sort | sha1sum | cut -c -8`
+  # compute short hash from contents of folder dependencies and docker (exclude trilinos_config and README.md files)
+- COMPUTED_DOCKER_DEPENDENCIES_HASH=`find dependencies docker -not -wholename '*/trilinos_develop/*'
+  -not -name 'README.md' -type f -exec sha1sum {} \; | sort | sha1sum | cut -c -8`
 
 before_script:
 - git config --global --add safe.directory ${CI_PROJECT_DIR}
@@ -88,39 +94,31 @@ before_script:
 - echo Building the following targets ${BUILD_TARGETS}
   # build
 - time ${CMAKE_COMMAND} --build . --target ${BUILD_TARGETS} -- -j `nproc` 2>&1 | tee
-  build.log
+  ${CI_PROJECT_DIR}/build.log
 
 .build-and-test: &build-and-test
 - *build-only
   # test
 - 'echo ctest selection: $CTEST_TEST_SELECTION'
 - time ${CTEST_COMMAND} -VV $CTEST_TEST_SELECTION -j `nproc` --output-junit ${CI_PROJECT_DIR}/junit_test_summary.xml
-  | tee test.log | grep -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
-- cd ${CI_PROJECT_DIR}
-
-.check-no-warnings: &check-no-warnings
-- cd ${CI_PROJECT_DIR}/../baci-build
-  # check for warnings
-- if grep -iP "warning:" build.log; then echo 'Warnings found!' && exit 1; else echo
-  'No warnings found'; fi
+  | tee ${CI_PROJECT_DIR}/test.log | grep -e "\*\*\*Failed" -e "\.\.\.   Passed" -e
+  " tests passed\,"
 - cd ${CI_PROJECT_DIR}
 
 .post-process-log-files: &post-process-log-files
   # sort output of pipeline
 - cd ${CI_PROJECT_DIR}/../baci-build
 - ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
-  test.log test.log
+  ${CI_PROJECT_DIR}/test.log ${CI_PROJECT_DIR}/test.log
   # Write selection of the output into the terminal and therefore to GITLAB
   # Output 200 lines for any failing test
-- grep -B 200 '*Failed\|*Timeout' test.log || true
-- sed -n '/tests passed,/,//p' test.log
+- grep -B 200 '*Failed\|*Timeout' ${CI_PROJECT_DIR}/test.log || true
+- sed -n '/tests passed,/,//p' ${CI_PROJECT_DIR}/test.log
   # Specify which configuration was tested by this pipeline
 - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
 - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
 - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
   # Move the log files to the source folder, so it can be found by artifacts.
-- mv build.log ${CI_PROJECT_DIR}/
-- mv test.log ${CI_PROJECT_DIR}/
 - cd ${CI_PROJECT_DIR}
 
 
@@ -134,7 +132,6 @@ before_script:
   script:
   - *clean-build-folder
   - *build-and-test
-  - *check-no-warnings
   after_script:
   - *post-process-log-files
   artifacts:
@@ -172,19 +169,19 @@ before_script:
   - *build-and-test
     # generate the baci_coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
   - lcov --capture --initial --no-external --directory ../baci-build/ --base-directory
-    . --output-file baci_coverage_base.info > baci_coverage_base.log
+    . --output-file baci_coverage_base.info > ${CI_PROJECT_DIR}/baci_coverage_base.log
     # generate the baci_coverage_tests.info based on tests run above
   - lcov --capture --no-external --directory ../baci-build/ --base-directory . --output-file
-    baci_coverage_tests.info > baci_coverage_tests.log
+    baci_coverage_tests.info > ${CI_PROJECT_DIR}/baci_coverage_tests.log
     # combine the baseline coverage with the coverage from the tests
   - lcov --add-tracefile baci_coverage_base.info --add-tracefile baci_coverage_tests.info
-    --output-file baci_coverage.info  > baci_coverage.log
+    --output-file baci_coverage.info  > ${CI_PROJECT_DIR}/baci_coverage.log
     # remove unwanted files from the coveragre report
   - lcov --remove baci_coverage.info "*/unittests*/*" "*/tests/*" "*/baci-build/*"
-    -o baci_coverage_filtered.info > baci_coverage_filtered.log
+    -o baci_coverage_filtered.info > ${CI_PROJECT_DIR}/baci_coverage_filtered.log
     # generate the html version of the coverage report
   - genhtml baci_coverage_filtered.info --legend --demangle-cpp --output-directory
-    coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_coverage.log
+    coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee ${CI_PROJECT_DIR}/genhtml_coverage.log
     # add repo link to the commit that the report is based on
   - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI
     commit  \<a 
@@ -221,43 +218,6 @@ before_script:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
 
-# Trilinos-develop build job
-.buildtest_release_trilinos_develop:
-  stage: buildtest
-  variables:
-    BUILD_TARGETS: full
-  script:
-  - echo Build and test Trilinos develop branch
-  - cd $CI_PROJECT_DIR/..
-    # Delete old Trilinos
-  - rm -rf Trilinos
-    # Cloning the Trilinos-develop branch
-  - git clone -b develop https://github.com/trilinos/Trilinos.git
-  - cd Trilinos
-    # Delete old Trilinos build files
-  - rm -rf $CI_PROJECT_DIR/../Trilinos-develop-build
-  - mkdir $CI_PROJECT_DIR/../Trilinos-develop-build
-  - cd $CI_PROJECT_DIR/../Trilinos-develop-build
-    # Configure Trilinos and build it
-  - source $CI_PROJECT_DIR/trilinos/$TRILINOS_DEVELOP_CONFIG |& tee ../buildtest_release_trilinos_develop.log
-  - make -j`nproc` install |& tee -a ../buildtest_release_trilinos_develop.log
-
-  - *clean-build-folder
-  - *build-and-test
-  - *check-no-warnings
-  after_script:
-  - *post-process-log-files
-    # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../buildtest_release_trilinos_develop.log buildtest_release_trilinos_develop.log
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - '*.log'
-    when: on_failure
-    expire_in: 1 week
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "4"
-
 # codeclimate job
 .codeclimate:
   stage: checkcode
@@ -272,17 +232,24 @@ before_script:
   - . venv/bin/activate
   - pip install wheel
   - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
-  # get extra arguments for mpi
+    # create temporary directory for the yaml files from clang-tidy
+  - mkdir clang-tidy-issues
+    # get extra arguments for mpi
   - get_mpi_extra_args() { OUT="`OMPI_CXX=clang++ mpic++ --showme:compile`"; for i
-    in $OUT; do echo -n "-extra-arg=\"$i\" "; done; echo;}
+    in $OUT; do echo -n "-extra-arg=$i "; done; echo;}
+  - ESCAPED_PROJECT_DIR=$(echo "${CI_PROJECT_DIR}" | sed 's/\//\\\//g')
     # run clang tidy and export report
-  - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j `nproc` -p
-    . `get_mpi_extra_args` -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json
-    -header-filter ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
+  - python ${CI_PROJECT_DIR}/utilities/code_climate/run-clang-tidy.py -j `nproc` -use-color
+    -p . `get_mpi_extra_args` -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
+    "${ESCAPED_PROJECT_DIR}\/.*" | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
+    # export clang tidy issues
+  - python ${CI_PROJECT_DIR}/utilities/code_climate/export_clang_tidy_issues.py -j
+    `nproc` --code-climate-file ${CI_PROJECT_DIR}/codeclimate.json --source-folder
+    ${CI_PROJECT_DIR} ./clang-tidy-issues/*.yaml
   - cd ${CI_PROJECT_DIR}
   variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_codeclimate
+    CMAKE_COMMAND: cmake
   artifacts:
     paths: [codeclimate.json]
     reports:
@@ -305,27 +272,28 @@ before_script:
     # Configure and build (setting BACI_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
   - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
     -DBACI_BUILD_READTHEDOCS=OFF
-  - ${CMAKE_COMMAND} --build . --target doxygen > ../doxygen.log
+  - ${CMAKE_COMMAND} --build . --target doxygen > ${CI_PROJECT_DIR}/doxygen.log
 
     # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
-  - if grep -qE '^[eE]rror:' ../doxygen.log; then echo 'Found at least one fatal error
-    during doxygen generation.'; exit 1; else echo 'Doxygen builds without fatal errors.';
-    fi
-  - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during
-    doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
+  - if grep -qE '^[eE]rror:' ${CI_PROJECT_DIR}/doxygen.log; then echo 'Found at least
+    one fatal error during doxygen generation.'; exit 1; else echo 'Doxygen builds
+    without fatal errors.'; fi
+  - if grep -qE '^! ' ${CI_PROJECT_DIR}/doxygen.log; then echo "Found at least one
+    LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without
+    LaTeX errors."; fi
     # Move final doxygen into the base folder for the next stage
   - mv $CI_PROJECT_DIR/../baci-build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
   after_script:
     # Write Selection of the output into the terminal and therefore to GITLAB
-  - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
+  - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/doxygen.log
     # Write information about possible Latex errors to terminal
-  - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during
-    doxygen build."; else echo "Doxygen builds without LaTeX errors."; fi
+  - if grep -qE '^! ' ${CI_PROJECT_DIR}/doxygen.log; then echo "Found at least one
+    LaTeX error during doxygen build."; else echo "Doxygen builds without LaTeX errors.";
+    fi
     # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../doxygen.log doxygen.log
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
 
 # ReadTheDocs job
 .readthedocs:
@@ -341,22 +309,21 @@ before_script:
 
     # Configure and build
   - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
-  - ${CMAKE_COMMAND} --build . --target readthedocs | tee ../readthedocs.log
+  - ${CMAKE_COMMAND} --build . --target readthedocs | tee ${CI_PROJECT_DIR}/readthedocs.log
 
     # Throw error if there are errors (or Warnings treated as errors) in readthedocs comments.
-  - if grep -qE 'ERROR|treated as error:' ../readthedocs.log; then echo 'Found at
-    least one fatal error during readthedocs generation.'; exit 1; else echo 'ReadTheDocs
-    documentation builds without fatal errors.'; fi
+  - if grep -qE 'ERROR|treated as error:' ${CI_PROJECT_DIR}/readthedocs.log; then
+    echo 'Found at least one fatal error during readthedocs generation.'; exit 1;
+    else echo 'ReadTheDocs documentation builds without fatal errors.'; fi
     # Move final readthedocs into the base folder for the next stage
   - mv $CI_PROJECT_DIR/../baci-build/doc/readthedocs/html $CI_PROJECT_DIR/readthedocs
   after_script:
     # Write Selection of the output into the terminal and therefore to GITLAB
-  - sed -n '/* Extra verbosity turned on/,/Test project /p' ../readthedocs.log
+  - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/readthedocs.log
     # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../readthedocs.log readthedocs.log
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -427,10 +394,7 @@ danger-review:
     - runner_system_failure
     - stuck_or_timeout_failure
   before_script:
-  - '[[ ! -f "Gemfile" ]] && bundle init && bundle add gitlab-dangerfiles --version
-    "$GITLAB_DANGERFILES_VERSION"'
-  - '[[ ! -f "Gemfile.lock" ]] || bundle config set --local frozen "true"'
-  - bundle install
+  - bundle install --gemfile="./utilities/danger/Gemfile"
   - apt-get update && apt-get install -y python3-venv
     # create  and activate virtual environment
   - python3 -m venv venv
@@ -438,17 +402,9 @@ danger-review:
   - pip install wheel
   - pip install -r ${CI_PROJECT_DIR}/utilities/danger/requirements.txt
   script:
-    # ${DANGER_DANGERFILE} is used by Jihulab for customizing danger support: https://jihulab.com/gitlab-cn/gitlab/-/blob/main-jh/jh/.gitlab-ci.yml
   - |
-    if [ -z "${DANGER_GITLAB_API_TOKEN}" ]; then
-      # Force danger to skip CI source GitLab and fallback to "local only git repo".
-      unset GITLAB_CI;
-      # We need to base SHA to help danger determine the base commit for this shallow clone.
-      bundle exec danger dry_run --fail-on-errors=true --verbose --base="${CI_MERGE_REQUEST_DIFF_BASE_SHA}" --head="${CI_MERGE_REQUEST_SOURCE_BRANCH_SHA:-$CI_COMMIT_SHA}" --dangerfile="${DANGER_DANGERFILE:-Dangerfile}";
-    else
-      danger_id=$(echo -n ${DANGER_GITLAB_API_TOKEN} | md5sum | awk '{print $1}' | cut -c5-10);
-      bundle exec danger --fail-on-errors=true --verbose --danger_id="${danger_id}" --dangerfile="${DANGER_DANGERFILE:-Dangerfile}";
-    fi
+    danger_id=$(echo -n ${DANGER_GITLAB_API_TOKEN} | md5sum | awk '{print $1}' | cut -c5-10);
+    BUNDLE_GEMFILE=./utilities/danger/Gemfile bundle exec danger --fail-on-errors=true --verbose --danger_id="${danger_id}" --dangerfile="./utilities/danger/Dangerfile";
 
 
 # IMCS--------------------------------------------------------------------------
@@ -471,18 +427,6 @@ imcs-buildtest_daily_debug_ubuntu20:
     CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
   tags:
   - imcs-nightly-debug-ubuntu20
-  needs: []
-
-imcs-buildtest_release_trilinos_develop:
-  extends: .buildtest_release_trilinos_develop
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation_trilinos
-    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
-    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
-    TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
-    TRILINOS_DEVELOP_CONFIG: do-configure-trilinos-develop-imcs
-  tags:
-  - imcs-buildtest_release_trilinos_develop-ubuntu20
   needs: []
 
 # Docker---------------------------------------------------------------------------
@@ -510,8 +454,8 @@ buildtest_coverage:
     UNITTEST_TIMEOUT: '50'
     # enable coverage option of ctest
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_coverage
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
   tags:
   - coverage
   needs: []
@@ -574,7 +518,7 @@ doxygen:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
   tags:
   - doxygen
   artifacts:
@@ -622,8 +566,8 @@ buildtest_full_release:
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
   tags:
   - buildtest
   needs:
@@ -641,11 +585,12 @@ buildtest_full_release_asan:
   variables:
     GLOBAL_TEST_TIMEOUT_SCALE: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_asan
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
   after_script:
   - *post-process-log-files
-  - ${CI_PROJECT_DIR}/utilities/grep_asan_failures.sh test.log > asan_summary.log
+  - ${CI_PROJECT_DIR}/utilities/grep_asan_failures.sh ${CI_PROJECT_DIR}/test.log >
+    ${CI_PROJECT_DIR}/asan_summary.log
   tags:
   - buildtest
   needs:
@@ -655,7 +600,6 @@ buildtest_full_release_asan:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
   interruptible: true
-  allow_failure: true
 
 
 buildtest_full_debug:
@@ -663,8 +607,8 @@ buildtest_full_debug:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
   tags:
   - buildtest-debug
   needs:
@@ -679,7 +623,7 @@ build-verify-headers:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     NUMBER_OF_BUILD_THREADS: '10'
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
   tags:
   - verify-headers
   needs:
@@ -697,7 +641,7 @@ build-verify-headers:
     ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
     # verify headers
   - time ${CMAKE_COMMAND} --build . --target all_verify_interface_header_sets -- -j
-    `nproc` 2>&1 | tee verify_headers.log
+    `nproc` 2>&1 | tee ${CI_PROJECT_DIR}/verify_headers.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
@@ -713,7 +657,7 @@ readthedocs:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
   tags:
   - readthedocs
   artifacts:
@@ -732,3 +676,56 @@ readthedocs:
   needs:
   - job: build-base-dependencies
     optional: true
+
+# The Trilinos pipeline with a specific commit ref runs via a schedule or when manually triggered
+build-base-dependencies-trilinos-develop:
+  stage: build-docker-images
+  tags:
+  - build-docker-image
+  image: docker:20.10.16
+  services:
+  - docker:20.10.16-dind
+  before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+  - echo "Generating BACI dependencies docker image with Trilinos version $TRILINOS_PIPELINE_COMMIT_REF"
+  - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS"
+  - docker build --no-cache --build-arg NPROCS=`nproc` --build-arg TRILINOS_VERSION="$TRILINOS_PIPELINE_COMMIT_REF"
+    --tag $FULL_IMAGE_PATH --file docker/trilinos_develop/Dockerfile .
+  - docker push $FULL_IMAGE_PATH
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  interruptible: true
+
+buildtest_full_release_trilinos_develop:
+  extends: .buildtest_full
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
+  variables:
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
+  tags:
+  - buildtest
+  needs:
+  - job: build-base-dependencies-trilinos-develop
+    optional: true
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  interruptible: true
+
+buildtest_full_debug_trilinos_develop:
+  extends: .buildtest_daily_debug
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
+  variables:
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
+  tags:
+  - buildtest-debug
+  needs:
+  - job: build-base-dependencies-trilinos-develop
+    optional: true
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  interruptible: true

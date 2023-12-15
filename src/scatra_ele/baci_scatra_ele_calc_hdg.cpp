@@ -17,7 +17,6 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_list.H"
@@ -26,16 +25,19 @@
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 
 /*----------------------------------------------------------------------*
  * Constructor
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ScaTraEleCalcHDG(
     const int numdofpernode, const int numscal, const std::string& disname)
     : numdofpernode_(numdofpernode),
@@ -50,7 +52,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ScaTraEleCalcHDG(
 /*----------------------------------------------------------------------*
  | singleton access method                               hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname, bool create)
@@ -83,7 +85,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  | Initialize Shapes                                     hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::InitializeShapes(
     const DRT::Element* ele, const std::string& disname)
 {
@@ -129,7 +131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::InitializeShapes(
 /*----------------------------------------------------------------------*
  | Evaluate                                              hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
@@ -163,7 +165,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(DRT::Element* el
 /*----------------------------------------------------------------------*
  * Evaluate Service                                      hoermann  09/15|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -318,7 +320,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
 /*----------------------------------------------------------------------*
  | Calculate node based values                           hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(DRT::Element* ele,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -392,7 +394,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(DRT::Elem
 /*----------------------------------------------------------------------*
  * ProjectDirichField                                  berardocco 05/20 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1)
@@ -423,7 +425,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::E
     const double fac = shapesface_->jfac(q);
     // evaluate function at current Gauss point (provide always 3D coordinates!)
     const double functfac = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*func)[0] - 1)
+                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*func)[0] - 1)
                                 .Evaluate(coordgp, time, 0);
 
     // Creating the mass matrix and the RHS vector
@@ -455,7 +457,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::E
 /*----------------------------------------------------------------------*
  * ReadGlobalVectors                                     hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ReadGlobalVectors(
     DRT::Element* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -497,7 +499,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ReadGlobalVectors(
 /*----------------------------------------------------------------------*
  * LocalSolver                                           hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::LocalSolver(const DRT::Element* ele,
     CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
     CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly,
@@ -542,7 +544,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::LocalSolver(cons
 /*----------------------------------------------------------------------*
  * Compute internal and face matrices
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeMatrices(
     DRT::Element* ele)
 {
@@ -618,7 +620,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeMatr
 /*----------------------------------------------------------------------*
  * ComputeFaceMatrices                                   hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeFaceMatrices(
     const int face, int indexstart, DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
@@ -743,7 +745,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeFace
 /*----------------------------------------------------------------------*
  * ComputeInteriorMatricesTet                             hoermann 01/17|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInteriorMatricesTet(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
@@ -763,8 +765,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
   Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<probdim>> polySpace =
       CORE::DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
-  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
+  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
 
   std::vector<CORE::LINALG::SerialDenseVector> shape_gp(intpoints.IP().nquad);
   std::vector<CORE::LINALG::SerialDenseMatrix> massPartDW(
@@ -779,7 +781,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
     shape_gp[q].size(polySpace->Size());
 
     // gaussian points coordinates
-    for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+    for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
       gp_coord(idim) = intpoints.IP().qxg[q][idim];
     polySpace->Evaluate(gp_coord, shape_gp[q]);
   }
@@ -862,11 +864,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 /*----------------------------------------------------------------------*
  * ComputeInteriorMatrices                                hoermann 01/17|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInteriorMatrices(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
-  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+  if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
     ComputeInteriorMatricesTet(hdgele);
   else
     ComputeInteriorMatricesAll(hdgele);
@@ -877,7 +879,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 /*----------------------------------------------------------------------*
  * ComputeInteriorMatrices                                hoermann 09/15|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInteriorMatricesAll(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
@@ -959,7 +961,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 /*----------------------------------------------------------------------*
  * ComputeResidual
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResidual(
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& interiorPhin,
@@ -1119,7 +1121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
 /*----------------------------------------------------------------------*
  * ComputeSource
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSource(
     const DRT::Element* ele, CORE::LINALG::SerialDenseVector& elevec1, const double time)
 {
@@ -1129,7 +1131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSour
 
   // CORE::LINALG::SerialDenseVector source(nsd_);
   if (nsd_ != DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcno - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcno - 1)
                   .NumberComponents())
     dserror(
         "The source does not have the correct number of components.\n The correct number of "
@@ -1148,7 +1150,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSour
         for (unsigned int d = 0; d < nsd_; ++d)
           source += shapes_->shderxy(j * nsd_ + d, q) *
                     DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcno - 1)
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcno - 1)
                         .Evaluate(xyz.A(), time, d);
         elevec1(i) += shapes_->shfunct(i, q) * source * shapes_->jfac(q);
       }
@@ -1160,7 +1162,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSour
 /*----------------------------------------------------------------------*
  * CondenseLocalPart
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::CondenseLocalPart(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
@@ -1251,7 +1253,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::CondenseLoc
 /*----------------------------------------------------------------------*
  * Add Diffusive Part to Matrix
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddDiffMat(
     CORE::LINALG::SerialDenseMatrix& eleMat, const DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
@@ -1265,7 +1267,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddDiffMat(
 /*----------------------------------------------------------------------*
  * Add Reactive Part to Matrix
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddReacMat(
     CORE::LINALG::SerialDenseMatrix& eleMat, const DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
@@ -1301,7 +1303,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddReacMat(
 /*----------------------------------------------------------------------*
  |  Compute Neumann BC                                    hoermann 09/15|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeumannBC(
     DRT::Element* ele, Teuchos::ParameterList& params, int face,
     CORE::LINALG::SerialDenseVector& elevec, int indexstart)
@@ -1351,7 +1353,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
       {
         // evaluate function at current Gauss point (provide always 3D coordinates!)
         functfac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                        .Evaluate(coordgpref, time, 0);
       }
       else
@@ -1371,7 +1373,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
 /*----------------------------------------------------------------------*
  |  prepare material parameter                            hoermann 11/16|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
     DRT::Element* ele  //!< the element we are dealing with
 )
@@ -1413,7 +1415,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
 /*----------------------------------------------------------------------*
  |  get the material parameter                            hoermann 09/15|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
     DRT::Element* ele  //!< the element we are dealing with
 )
@@ -1455,7 +1457,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
 /*----------------------------------------------------------------------*
  * UpdateInteriorVariables
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
     DRT::ELEMENTS::ScaTraHDG* hdgele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec
@@ -1618,7 +1620,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
 /*----------------------------------------------------------------------*
  * SetInitialField
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT::Element* ele,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseVector& elevec2)
@@ -1655,10 +1657,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
 
       dsassert(start_func != nullptr, "funct not set for initial value");
       if (DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .NumberComponents() != 1 &&
           DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .NumberComponents() != nsd_ + 2)
         dserror(
             "Impossible to initialize the field with the given number of components of the initial "
@@ -1666,11 +1668,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
             "as:\n- phi\n- gradphi\n- tracephi");
 
       phi = DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                 .Evaluate(xyz, 0, 0);
       for (unsigned int i = 0; i < nsd_; ++i)
         gradphi[i] = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                          .Evaluate(xyz, 0, 1 + i);
 
       // now fill the components in the one-sided mass matrix and the right hand side
@@ -1723,7 +1725,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
 
       double trphi;
       trphi = DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .Evaluate(xyz, 0, nsd_ + 1);
 
       // now fill the components in the mass matrix and the right hand side
@@ -1758,7 +1760,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterials(
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
@@ -1787,7 +1789,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterials(
 /*----------------------------------------------------------------------*
  |  Set material parameter                               hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::SetMaterialParameter(
     DRT::ELEMENTS::ScaTraHDG* hdgele,             //!< hdg element
     CORE::LINALG::SerialDenseVector& ivecn,       //!< reaction term at time n
@@ -1809,7 +1811,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::SetMaterial
 /*----------------------------------------------------------------------*
  |  Prepare material parameter                           hoermann 11/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::PrepareMaterialParameter(
     DRT::ELEMENTS::ScaTraHDG* hdgele,            //!< hdg element
     CORE::LINALG::SerialDenseMatrix& difftensor  //!< diffusion tensor
@@ -1828,7 +1830,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::PrepareMate
 /*----------------------------------------------------------------------*
  * Element Init
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ElementInit(DRT::Element* ele)
 {
   DRT::ELEMENTS::ScaTraHDG* hdgele =
@@ -1863,7 +1865,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ElementInit(DRT::Element
 /*----------------------------------------------------------------------*
  * ProjectField
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::Element* ele,
     DRT::Discretization& discretization, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
@@ -2052,7 +2054,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
 /*----------------------------------------------------------------------*
  * Calc P-Adaptivity
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
     const DRT::Element* ele, DRT::Discretization& discretization, Teuchos::ParameterList& params)
 {
@@ -2143,7 +2145,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
 /*----------------------------------------------------------------------*
  * Calc Error
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Element* ele,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec)
 {
@@ -2163,7 +2165,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Elem
   const double time = params.get<double>("time");
 
   if (DRT::Problem::Instance()
-          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func - 1)
+          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1)
           .NumberComponents() != 1)
     dserror(
         "The number of component must be one. The grandient is computed with forward auomatic "
@@ -2203,10 +2205,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Elem
     // Evaluate error function and its derivatives in the integration point (real) coordinates
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
     double funct =
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func - 1).Evaluate(
+        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1).Evaluate(
             xsi.A(), time, 0);
     std::vector<double> deriv = DRT::Problem::Instance()
-                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func - 1)
+                                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1)
                                     .EvaluateSpatialDerivative(xsi.A(), time, 0);
 
     error_phi += std::pow((funct - phi), 2) * highshapes.jfac(q);
@@ -2228,26 +2230,28 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Elem
 
 // template classes
 // 1D elements
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::line2,1>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::line2,2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::line2,3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::line3,1>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::line2,1>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::line2,2>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::line2,3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::line3,1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::tri3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::tri3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::quad4, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDG<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::hex8, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::tet10, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::pyramid5, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcHDG<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

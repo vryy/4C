@@ -15,19 +15,21 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   // forward declaration
   class CoNode;
 
-  class CoNodeType : public DRT::ParObjectType
+  class CoNodeType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const final { return "CoNodeType"; }
 
     static CoNodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CoNodeType instance_;
@@ -57,8 +59,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoNodeDataContainer() { return; }
-
+    virtual ~CoNodeDataContainer() = default;
     /*!
      \brief Pack this class so that it can be communicated
 
@@ -67,7 +68,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -420,7 +421,7 @@ namespace CONTACT
       NodeDataContainer(
           CoNode& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster);
 
-      virtual ~NodeDataContainer(){};
+      virtual ~NodeDataContainer() = default;
 
       void Setup();
 
@@ -429,7 +430,7 @@ namespace CONTACT
        *  This function packs the datacontainer. This is only called
        *  when the class has been initialized and the pointer to this
        *  class exists. */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*! \brief Unpack data from a vector into this class
        *
@@ -644,8 +645,6 @@ namespace CONTACT
       {
         Debug() : d_(0), dd_(0), d_vec_(0), dd_vec_(0){};
 
-        ~Debug(){};
-
         void Complete();
 
         std::pair<int, double> x_;
@@ -691,8 +690,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoNodePoroDataContainer() { return; }
-
+    virtual ~CoNodePoroDataContainer() = default;
     /*!
     \brief Pack this class so that it can be communicated
 
@@ -701,7 +699,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -815,8 +813,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoNodeTSIDataContainer() { return; }
-
+    virtual ~CoNodeTSIDataContainer() = default;
     /*!
     \brief Pack this class so that it can be communicated
 
@@ -825,7 +822,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -901,10 +898,10 @@ namespace CONTACT
     CoNodeEhlDataContainer() {}
 
     //! d-tor
-    virtual ~CoNodeEhlDataContainer(){};
+    virtual ~CoNodeEhlDataContainer() = default;
 
     //! pack for parallel communication
-    virtual void Pack(DRT::PackBuffer& data) const {
+    virtual void Pack(CORE::COMM::PackBuffer& data) const {
         /* no need to pack, since terms are re-evaluated after parallel communication */};
 
     //! unpack and re-init after parallel comunication
@@ -984,14 +981,13 @@ namespace CONTACT
      \param id     (in): A globally unique node id
      \param coords (in): vector of nodal coordinates, length 3
      \param owner  (in): Owner of this node.
-     \param numdof (in): Number of degrees of freedom to this node
      \param dofs   (in): list of global degrees of freedom
      \param isslave(in): flag indicating whether node is slave or master
      \param initactive (in): flag indicating whether initially set to active
 
      */
-    CoNode(int id, const double* coords, const int owner, const int numdof,
-        const std::vector<int>& dofs, const bool isslave, const bool initactive);
+    CoNode(int id, const std::vector<double>& coords, const int owner, const std::vector<int>& dofs,
+        const bool isslave, const bool initactive);
 
     /*!
      \brief Copy Constructor
@@ -1005,13 +1001,8 @@ namespace CONTACT
      \brief Deep copy the derived class and return pointer to it
 
      */
-    virtual CONTACT::CoNode* Clone() const;
+    CONTACT::CoNode* Clone() const override;
 
-    /*!
-     \brief Destructor
-
-     */
-    virtual ~CoNode() = default;
 
     /*!
      \brief Return unique ParObject id
@@ -1020,7 +1011,7 @@ namespace CONTACT
      top of lib/parobject.H.
 
      */
-    virtual int UniqueParObjectId() const { return CoNodeType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return CoNodeType::Instance().UniqueParObjectId(); }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -1028,7 +1019,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -1036,7 +1027,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -1045,7 +1036,7 @@ namespace CONTACT
     /*!
      \brief Print this contact node
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /*!
      \brief Is Node initialized as active node (only slave nodes)
@@ -1203,7 +1194,7 @@ namespace CONTACT
     /*!
      \brief Build nodal normal
      */
-    void BuildAveragedNormal();
+    void BuildAveragedNormal() override;
 
     /*!
      \brief Build nodal edge tangent
@@ -1217,7 +1208,7 @@ namespace CONTACT
      is initialized.
 
      */
-    virtual void InitializeDataContainer();
+    void InitializeDataContainer() override;
 
     /*!
      \brief Initializes the data container of the augmented contact node
@@ -1235,7 +1226,7 @@ namespace CONTACT
     is initialized. --- Used to initialize PoroDataContainer for master nodes!
 
     */
-    virtual void InitializePoroDataContainer();
+    void InitializePoroDataContainer() override;
 
     /*!
     \brief Initializes the ehl data container of the node
@@ -1244,7 +1235,7 @@ namespace CONTACT
     is initialized.
 
     */
-    virtual void InitializeEhlDataContainer();
+    void InitializeEhlDataContainer() override;
 
     /*!
     \brief Initializes the TSI data container of the node
@@ -1258,7 +1249,7 @@ namespace CONTACT
      is deleted / reset to Teuchos::null pointer
 
      */
-    virtual void ResetDataContainer();
+    void ResetDataContainer() override;
 
     /*!
      \brief Get number of linearization entries
@@ -1340,4 +1331,6 @@ namespace CONTACT
 // << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoNode& cnode);
 
-#endif  // CONTACT_NODE_H
+BACI_NAMESPACE_CLOSE
+
+#endif  // BACI_CONTACT_NODE_H

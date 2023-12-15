@@ -12,6 +12,8 @@
 
 #include "baci_ssi_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SSI
 {
   class SSIPart : public SSIBase
@@ -19,10 +21,6 @@ namespace SSI
    public:
     /// setup SSI algorithm
     SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
-
-    /// virtual destructor
-    ~SSIPart() override = default;
-    ;
 
     /*!
     \brief Initialize this object
@@ -77,5 +75,7 @@ namespace SSI
   };
 
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_PARTITIONED_H

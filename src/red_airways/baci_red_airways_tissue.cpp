@@ -24,6 +24,8 @@
 
 #include <stdio.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 yoshihara 09/12|
  *----------------------------------------------------------------------*/
@@ -480,8 +482,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
         "no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC "
         "to a valid number!");
   std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle());
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // Set parameters in list required for all schemes
@@ -529,9 +530,6 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   else
     airwaystimeparams.set("CalcV0PreStress", false);
 
-
-  airwaystimeparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
-
   // Get restart timestep
   uprestart_ = rawdyn.get<int>("RESTARTEVRY");
 
@@ -546,3 +544,5 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
 
   redairways_->SetupForCoupling();
 }
+
+BACI_NAMESPACE_CLOSE

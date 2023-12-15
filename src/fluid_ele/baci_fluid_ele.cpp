@@ -11,18 +11,20 @@
 
 #include "baci_fluid_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_fluid_ele_nullspace.H"
 #include "baci_fluid_ele_tds.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
 
 DRT::ELEMENTS::FluidType& DRT::ELEMENTS::FluidType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Fluid* object = new DRT::ELEMENTS::Fluid(-1, -1);
   object->Unpack(data);
@@ -184,7 +186,7 @@ void DRT::ELEMENTS::FluidType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid::Fluid(int id, int owner) : DRT::Element(id, owner), is_ale_(false)
 {
-  distype_ = dis_none;
+  distype_ = CORE::FE::CellType::dis_none;
   tds_ = Teuchos::null;
   return;
 }
@@ -215,9 +217,9 @@ DRT::Element* DRT::ELEMENTS::Fluid::Clone() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Fluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -254,10 +256,9 @@ void DRT::ELEMENTS::Fluid::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -265,7 +266,7 @@ void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
   // is_ale_
   is_ale_ = ExtractInt(position, data);
   // distype
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
   // time-dependent subgrid scales
   bool is_tds = ExtractInt(position, data);
@@ -286,11 +287,6 @@ void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            gammi 02/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid::~Fluid() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/08|
@@ -309,31 +305,7 @@ void DRT::ELEMENTS::Fluid::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumLine() > 1)  // 1D boundary element and 2D/3D parent element
-  {
-    return DRT::UTILS::ElementBoundaryFactory<FluidBoundary, Fluid>(DRT::UTILS::buildLines, this);
-  }
-  else if (NumLine() ==
-           1)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementLines<FluidBoundary, Fluid>(*this);
 }
 
 
@@ -342,50 +314,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumSurface() > 1)  // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<FluidBoundary, Fluid>(
-        DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() ==
-           1)  // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else  // 1D elements
-  {
-    dserror("Surfaces() does not exist for 1D-element ");
-    return DRT::Element::Surfaces();
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                 ehrl 02/10|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Volumes()
-{
-  if (NumVolume() ==
-      1)  // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
-  {
-    std::vector<Teuchos::RCP<Element>> volumes(1);
-    volumes[0] = Teuchos::rcp(this, false);
-    return volumes;
-  }
-  else  //
-  {
-    dserror("Volumes() does not exist for 1D/2D-elements");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementSurfaces<FluidBoundary, Fluid>(*this);
 }
 
 
@@ -407,7 +336,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateFaceElement(
 
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<FluidIntFace, Fluid>(-1,  //!< internal face element id
+  return CORE::COMM::ElementIntFaceFactory<FluidIntFace, Fluid>(-1,  //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
       nodeids,          //!< node ids of surface element
@@ -431,3 +360,5 @@ void DRT::ELEMENTS::Fluid::ActivateTDS(
 
   tds_->ActivateTDS(nquad, nsd, saccn, sveln, svelnp);
 }
+
+BACI_NAMESPACE_CLOSE

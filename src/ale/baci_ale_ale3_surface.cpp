@@ -12,6 +12,8 @@
 #include "baci_ale_ale3.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::Ale3SurfaceType DRT::ELEMENTS::Ale3SurfaceType::instance_;
 
@@ -45,30 +47,29 @@ DRT::Element* DRT::ELEMENTS::Ale3Surface::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3Surface::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
 {
   switch (NumNode())
   {
     case 3:
-      return tri3;
+      return CORE::FE::CellType::tri3;
     case 4:
-      return quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      return quad9;
+      return CORE::FE::CellType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Surface::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Ale3Surface::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Ale3Surface element does not support communication");
 }
@@ -82,12 +83,10 @@ void DRT::ELEMENTS::Ale3Surface::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3Surface::~Ale3Surface() {}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale3Surface::Print(std::ostream& os) const
 {
   os << "Ale3Surface ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

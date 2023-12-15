@@ -13,6 +13,8 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace INPUT
@@ -47,5 +49,7 @@ namespace INPAR
 
   }  // namespace SSTI
 }  // namespace INPAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // INPAR_SSTI_H

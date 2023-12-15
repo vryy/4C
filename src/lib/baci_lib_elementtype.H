@@ -12,13 +12,15 @@
 #ifndef BACI_LIB_ELEMENTTYPE_H
 #define BACI_LIB_ELEMENTTYPE_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_element.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -44,7 +46,7 @@ namespace DRT
     \author u.kue
     \date 06/10
    */
-  class ElementType : public ParObjectType
+  class ElementType : public CORE::COMM::ParObjectType
   {
    protected:
     // only derived classes might create an instance
@@ -101,5 +103,7 @@ namespace DRT
   };
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

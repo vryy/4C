@@ -16,6 +16,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -40,8 +42,8 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param [in] comm    contact interface communicator
      */
-    CoIntegratorNitsche(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm)
+    CoIntegratorNitsche(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
         : CoIntegrator(params, eletype, comm),
           theta_(params.get<double>("NITSCHE_THETA")),
           theta_2_(params.get<double>("NITSCHE_THETA_2")),
@@ -56,8 +58,6 @@ namespace CONTACT
           two_half_pass_(imortar_.get<bool>("Two_half_pass"))
     {
     }
-
-    ~CoIntegratorNitsche() override = default;
 
    protected:
     void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
@@ -150,7 +150,8 @@ namespace CONTACT
         const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, double wgt, double gap,
         const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
+        std::vector<CORE::GEN::pairedvector<int, double>>& deriv_contact_normal, double* sxi,
+        double* mxi);
 
    protected:
     template <int dim>
@@ -213,7 +214,7 @@ namespace CONTACT
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtravo_slave);
 
     //! templated version of MapGPtoParent
-    template <DRT::Element::DiscretizationType parentdistype, int dim>
+    template <CORE::FE::CellType parentdistype, int dim>
     void inline SoEleGP(MORTAR::MortarElement& sele, double wgt, const double* gpcoord,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo);
 
@@ -271,4 +272,6 @@ namespace CONTACT
         double& pet);
   }  // namespace UTILS
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_H

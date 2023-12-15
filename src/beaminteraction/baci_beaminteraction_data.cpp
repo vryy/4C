@@ -11,10 +11,12 @@
 
 #include "baci_beaminteraction_data.H"
 
+#include "baci_comm_pack_buffer.H"
+#include "baci_comm_parobject.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_pack_buffer.H"
-#include "baci_lib_parobject.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -66,19 +68,19 @@ BEAMINTERACTION::DATA::CrosslinkerData::CrosslinkerData() : id_(-1), pos_(true),
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::DATA::CrosslinkerData::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::DATA::CrosslinkerData::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack id
-  DRT::ParObject::AddtoPack(data, id_);
+  CORE::COMM::ParObject::AddtoPack(data, id_);
   // pack position
-  DRT::ParObject::AddtoPack(data, pos_);
+  CORE::COMM::ParObject::AddtoPack(data, pos_);
   // pack bspot status
-  DRT::ParObject::AddtoPack(data, bspots_);
+  CORE::COMM::ParObject::AddtoPack(data, bspots_);
   // pack number of bonds
-  DRT::ParObject::AddtoPack(data, numbond_);
+  CORE::COMM::ParObject::AddtoPack(data, numbond_);
 
 
   return;
@@ -91,13 +93,13 @@ void BEAMINTERACTION::DATA::CrosslinkerData::Unpack(std::vector<char> const& dat
   std::vector<char>::size_type position = 0;
 
   // id
-  DRT::ParObject::ExtractfromPack(position, data, id_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, id_);
   // position
-  DRT::ParObject::ExtractfromPack(position, data, pos_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, pos_);
   // bspot status
-  DRT::ParObject::ExtractfromPack(position, data, bspots_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, bspots_);
   // number of bonds
-  DRT::ParObject::ExtractfromPack(position, data, numbond_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, numbond_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
@@ -117,21 +119,21 @@ BEAMINTERACTION::DATA::BeamData::BeamData() : id_(-1)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::DATA::BeamData::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::DATA::BeamData::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack id
-  DRT::ParObject::AddtoPack(data, id_);
+  CORE::COMM::ParObject::AddtoPack(data, id_);
   // pack bspotpos
-  DRT::ParObject::AddtoPack(data, bspotpos_);
+  CORE::COMM::ParObject::AddtoPack(data, bspotpos_);
   // pack bspottriad
-  DRT::ParObject::AddtoPack(data, bspottriad_);
+  CORE::COMM::ParObject::AddtoPack(data, bspottriad_);
   // pack bspotstatus_
-  DRT::ParObject::AddtoPack(data, bspotstatus_);
+  CORE::COMM::ParObject::AddtoPack(data, bspotstatus_);
   //  // pack filamenttype
-  //  DRT::ParObject::AddtoPack( data, filamenttype_ );
+  //  CORE::COMM::ParObject::AddtoPack( data, filamenttype_ );
 
   return;
 }
@@ -143,16 +145,16 @@ void BEAMINTERACTION::DATA::BeamData::Unpack(std::vector<char> const& data)
   std::vector<char>::size_type position = 0;
 
   // id
-  DRT::ParObject::ExtractfromPack(position, data, id_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, id_);
   // bspotpos
-  DRT::ParObject::ExtractfromPack(position, data, bspotpos_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, bspotpos_);
   // bspottriad
-  DRT::ParObject::ExtractfromPack(position, data, bspottriad_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, bspottriad_);
   // bspotstatus
-  DRT::ParObject::ExtractfromPack(position, data, bspotstatus_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, bspotstatus_);
   //  // filamenttype
   //  filamenttype_ = static_cast<INPAR::BEAMINTERACTION::FilamentType>(
-  //      DRT::ParObject::ExtractInt(position,data) );
+  //      CORE::COMM::ParObject::ExtractInt(position,data) );
 
 
   if (position != data.size())
@@ -183,20 +185,20 @@ void BEAMINTERACTION::DATA::BindEventData::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::DATA::BindEventData::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::DATA::BindEventData::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
-  DRT::ParObject::AddtoPack(data, clgid_);
+  CORE::COMM::ParObject::AddtoPack(data, clgid_);
 
-  DRT::ParObject::AddtoPack(data, elegid_);
+  CORE::COMM::ParObject::AddtoPack(data, elegid_);
 
-  DRT::ParObject::AddtoPack(data, bspotlocn_);
+  CORE::COMM::ParObject::AddtoPack(data, bspotlocn_);
 
-  DRT::ParObject::AddtoPack(data, requestproc_);
+  CORE::COMM::ParObject::AddtoPack(data, requestproc_);
 
-  DRT::ParObject::AddtoPack(data, permission_);
+  CORE::COMM::ParObject::AddtoPack(data, permission_);
 
   return;
 }
@@ -207,15 +209,15 @@ void BEAMINTERACTION::DATA::BindEventData::Unpack(std::vector<char> const& data)
 {
   std::vector<char>::size_type position = 0;
 
-  DRT::ParObject::ExtractfromPack(position, data, clgid_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, clgid_);
 
-  DRT::ParObject::ExtractfromPack(position, data, elegid_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, elegid_);
 
-  DRT::ParObject::ExtractfromPack(position, data, bspotlocn_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, bspotlocn_);
 
-  DRT::ParObject::ExtractfromPack(position, data, requestproc_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, requestproc_);
 
-  DRT::ParObject::ExtractfromPack(position, data, permission_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, permission_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
@@ -235,16 +237,16 @@ BEAMINTERACTION::DATA::UnBindEventData::UnBindEventData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::DATA::UnBindEventData::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::DATA::UnBindEventData::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
-  DRT::ParObject::AddtoPack(data, clgid_);
+  CORE::COMM::ParObject::AddtoPack(data, clgid_);
 
-  DRT::ParObject::AddtoPack(data, eletoupdate_);
+  CORE::COMM::ParObject::AddtoPack(data, eletoupdate_);
 
-  DRT::ParObject::AddtoPack(data, linkertype_);
+  CORE::COMM::ParObject::AddtoPack(data, linkertype_);
 
   return;
 }
@@ -255,12 +257,12 @@ void BEAMINTERACTION::DATA::UnBindEventData::Unpack(std::vector<char> const& dat
 {
   std::vector<char>::size_type position = 0;
 
-  DRT::ParObject::ExtractfromPack(position, data, clgid_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, clgid_);
 
-  DRT::ParObject::ExtractfromPack(position, data, eletoupdate_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eletoupdate_);
 
   linkertype_ = static_cast<INPAR::BEAMINTERACTION::CrosslinkerType>(
-      DRT::ParObject::ExtractInt(position, data));
+      CORE::COMM::ParObject::ExtractInt(position, data));
 
   if (position != data.size())
     dserror("Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
@@ -294,3 +296,5 @@ bool BEAMINTERACTION::DATA::BspotLinkerData::SameAs(BspotLinkerData bspotlinker)
 
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

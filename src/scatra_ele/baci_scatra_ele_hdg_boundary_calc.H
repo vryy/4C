@@ -16,6 +16,8 @@
 #include "baci_lib_element.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Condition;
@@ -38,8 +40,7 @@ namespace DRT
       //! Empty constructor
       ScaTraHDGBoundaryImplInterface() {}
       //! Empty destructor
-      virtual ~ScaTraHDGBoundaryImplInterface() {}
-
+      virtual ~ScaTraHDGBoundaryImplInterface() = default;
       //! Evaluate a Neumann boundary condition
       /*!
         This class does not provide a definition for this function, it
@@ -56,7 +57,7 @@ namespace DRT
     };  // class ScaTraHDGBoundaryImplInterface
 
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraHDGBoundaryImpl : public ScaTraHDGBoundaryImplInterface
     {
      public:
@@ -68,20 +69,19 @@ namespace DRT
       ScaTraHDGBoundaryImpl();
 
       //! number of element nodes
-      static const int bdrynen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions of the ScaTraHDGBoundary element
-      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::FE::dim<distype>;
 
       //! number of space dimensions of the parent element
       static const int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra);
+      int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
 
      private:
       //! node coordinates for boundary element
@@ -105,5 +105,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_HDG_BOUNDARY_CALC_H

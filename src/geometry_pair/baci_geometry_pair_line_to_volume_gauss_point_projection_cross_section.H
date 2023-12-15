@@ -15,6 +15,7 @@ line.
 
 #include "baci_geometry_pair_line_to_volume.H"
 
+BACI_NAMESPACE_OPEN
 
 // Forward declaration.
 namespace GEOMETRYPAIR
@@ -47,19 +48,10 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeGaussPointProjectionCrossSection(
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
-        : GeometryPairLineToVolume<scalar_type, line, volume>(evaluation_data){};
+    GeometryPairLineToVolumeGaussPointProjectionCrossSection(const DRT::Element* element1,
+        const DRT::Element* element2,
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToVolumeGaussPointProjectionCrossSection(){};
-
-    /**
-     * \brief Setup the projection tracker for this line element.
-     */
-    void Setup() override;
 
     /**
      * \brief Try to project the points on the surface of the line to the volume.
@@ -93,5 +85,7 @@ namespace GEOMETRYPAIR
     std::vector<bool>& GetLineProjectionVector() const;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

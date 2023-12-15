@@ -13,6 +13,8 @@
 #include "baci_lib_element_integration_select.H"
 #include "baci_shell7p_ele.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   class Shell7pLineType : public DRT::ElementType
@@ -74,8 +76,6 @@ namespace DRT::ELEMENTS
     ///! copy constructor
     Shell7pLine(const Shell7pLine& old);
 
-    //! destructor
-    ~Shell7pLine() override = default;
 
     //! copy assignment operator
     Shell7pLine& operator=(const Shell7pLine& other) = default;
@@ -94,13 +94,13 @@ namespace DRT::ELEMENTS
       return Shell7pLineType::Instance().UniqueParObjectId();
     };
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
     //! @name Access methods
     //! @{
-    [[nodiscard]] DiscretizationType Shape() const override;
+    [[nodiscard]] CORE::FE::CellType Shape() const override;
 
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return node_dof_; }
 
@@ -161,5 +161,7 @@ namespace DRT::ELEMENTS
   };  // class Shell7pLine
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

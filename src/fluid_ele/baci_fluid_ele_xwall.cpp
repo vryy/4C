@@ -16,17 +16,19 @@ of errors, turbulence statistics etc.)
 
 #include "baci_fluid_ele_xwall.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_fluid_ele_nullspace.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
+
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidXWallType DRT::ELEMENTS::FluidXWallType::instance_;
 
 DRT::ELEMENTS::FluidXWallType& DRT::ELEMENTS::FluidXWallType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidXWallType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidXWallType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::FluidXWall* object = new DRT::ELEMENTS::FluidXWall(-1, -1);
   object->Unpack(data);
@@ -104,10 +106,6 @@ DRT::Element* DRT::ELEMENTS::FluidXWall::Clone() const
   return newelement;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            gammi 02/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidXWall::~FluidXWall() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -115,32 +113,7 @@ DRT::ELEMENTS::FluidXWall::~FluidXWall() { return; }
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumLine() > 1)  // 1D boundary element and 2D/3D parent element
-  {
-    return DRT::UTILS::ElementBoundaryFactory<FluidXWallBoundary, FluidXWall>(
-        DRT::UTILS::buildLines, this);
-  }
-  else if (NumLine() ==
-           1)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementLines<FluidXWallBoundary, FluidXWall>(*this);
 }
 
 
@@ -149,50 +122,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-
-  if (NumSurface() > 1)  // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<FluidXWallBoundary, FluidXWall>(
-        DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() ==
-           1)  // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else  // 1D elements
-  {
-    dserror("Surfaces() does not exist for 1D-element ");
-    return DRT::Element::Surfaces();
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                            |
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Volumes()
-{
-  if (NumVolume() ==
-      1)  // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
-  {
-    std::vector<Teuchos::RCP<Element>> volumes(1);
-    volumes[0] = Teuchos::rcp(this, false);
-    return volumes;
-  }
-  else  //
-  {
-    dserror("Volumes() does not exist for 1D/2D-elements");
-    return DRT::Element::Surfaces();
-  }
+  return CORE::COMM::GetElementSurfaces<FluidXWallBoundary, FluidXWall>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -204,3 +134,5 @@ void DRT::ELEMENTS::FluidXWall::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

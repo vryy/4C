@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -32,7 +34,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatPoroECM::CreateMaterial()
 
 MAT::ScatraMatPoroECMType MAT::ScatraMatPoroECMType::instance_;
 
-DRT::ParObject* MAT::ScatraMatPoroECMType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatPoroECMType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatPoroECM* scatra_mat = new MAT::ScatraMatPoroECM();
   scatra_mat->Unpack(data);
@@ -54,9 +56,9 @@ MAT::ScatraMatPoroECM::ScatraMatPoroECM(MAT::PAR::ScatraMatPoroECM* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatPoroECM::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatPoroECM::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -80,10 +82,8 @@ void MAT::ScatraMatPoroECM::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -118,3 +118,5 @@ void MAT::ScatraMatPoroECM::ComputeReacCoeff(double chempot)
   reaccoeff_ = params_->reaccoeff_ * exp(params_->reacscale_ * chempot);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 BEAMINTERACTION::BeamLinkRigidJointedType BEAMINTERACTION::BeamLinkRigidJointedType::instance_;
 
 
@@ -203,9 +205,9 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkRigidJointed::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -231,10 +233,8 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Pack(DRT::PackBuffer& data) const
 void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -305,3 +305,5 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Print(std::ostream& out) const
   triad.Print(out);
   out << "\n";
 }
+
+BACI_NAMESPACE_CLOSE

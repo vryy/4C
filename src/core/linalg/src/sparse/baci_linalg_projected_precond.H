@@ -21,6 +21,8 @@
 // forward declarations
 class Epetra_MultiVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class KrylovProjector;
@@ -58,16 +60,10 @@ namespace CORE::LINALG
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
 
-    /*!
-    \brief Destructor
-
-    */
-    ~LinalgPrecondOperator();
-
 
     //! @name Atribute set methods required to support the Epetra_Operator interface
 
-    virtual int SetUseTranspose(bool UseTranspose)
+    int SetUseTranspose(bool UseTranspose) override
     {
       return (precond_->SetUseTranspose(UseTranspose));
     }
@@ -75,26 +71,26 @@ namespace CORE::LINALG
 
     //! @name Mathematical functions required to support the Epetra_Operator interface (pass
     //! through)
-    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+    int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
       return (precond_->Apply(X, Y));
     }
 
-    virtual double NormInf() const { return (precond_->NormInf()); }
+    double NormInf() const override { return (precond_->NormInf()); }
     //! @}
 
     //! @name Atribute access functions required to support the Epetra_Operator interface
-    virtual const char *Label() const { return (precond_->Label()); }
+    const char *Label() const override { return (precond_->Label()); }
 
-    virtual bool UseTranspose() const { return (precond_->UseTranspose()); }
+    bool UseTranspose() const override { return (precond_->UseTranspose()); }
 
-    virtual bool HasNormInf() const { return (precond_->HasNormInf()); }
+    bool HasNormInf() const override { return (precond_->HasNormInf()); }
 
-    virtual const Epetra_Comm &Comm() const { return (precond_->Comm()); }
+    const Epetra_Comm &Comm() const override { return (precond_->Comm()); }
 
-    virtual const Epetra_Map &OperatorDomainMap() const { return (precond_->OperatorDomainMap()); }
+    const Epetra_Map &OperatorDomainMap() const override { return (precond_->OperatorDomainMap()); }
 
-    virtual const Epetra_Map &OperatorRangeMap() const { return (precond_->OperatorRangeMap()); }
+    const Epetra_Map &OperatorRangeMap() const override { return (precond_->OperatorRangeMap()); }
 
     //! @}
 
@@ -187,7 +183,7 @@ namespace CORE::LINALG
        }
 
     */
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
 
 
    private:
@@ -202,5 +198,7 @@ namespace CORE::LINALG
   };
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_PROJECTED_PRECOND_H

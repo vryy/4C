@@ -10,7 +10,6 @@ surface meshes
 #ifndef BACI_CUT_CUTWIZARD_H
 #define BACI_CUT_CUTWIZARD_H
 
-#include "baci_cut_clnwrapper.H"
 #include "baci_inpar_cut.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -19,6 +18,7 @@ surface meshes
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -59,7 +59,7 @@ namespace CORE::GEO
      public:
       /// constructor
       explicit BackMesh(
-          const Teuchos::RCP<::DRT::Discretization>& backdis, CORE::GEO::CutWizard* wizard)
+          const Teuchos::RCP<BACI::DRT::Discretization>& backdis, CORE::GEO::CutWizard* wizard)
           : wizard_(wizard),
             back_discret_(backdis),
             back_disp_col_(Teuchos::null),
@@ -68,20 +68,20 @@ namespace CORE::GEO
         if (backdis.is_null()) dserror("null pointer to background dis, invalid!");
       }
 
-      virtual ~BackMesh(){};
+      virtual ~BackMesh() = default;
 
       void Init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
           const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
 
-      const Teuchos::RCP<::DRT::Discretization>& GetPtr() { return back_discret_; }
+      const Teuchos::RCP<BACI::DRT::Discretization>& GetPtr() { return back_discret_; }
 
-      ::DRT::Discretization& Get() { return *back_discret_; }
+      BACI::DRT::Discretization& Get() { return *back_discret_; }
 
-      const ::DRT::Discretization& Get() const { return *back_discret_; }
+      const BACI::DRT::Discretization& Get() const { return *back_discret_; }
 
       virtual int NumMyColElements() const;
 
-      virtual const ::DRT::Element* lColElement(int lid) const;
+      virtual const BACI::DRT::Element* lColElement(int lid) const;
 
       inline bool IsBackDisp() const { return (not back_disp_col_.is_null()); }
 
@@ -107,7 +107,7 @@ namespace CORE::GEO
 
      private:
       /// background discretization
-      Teuchos::RCP<::DRT::Discretization> back_discret_;
+      Teuchos::RCP<BACI::DRT::Discretization> back_discret_;
 
       /// col vector holding background ALE displacements for backdis
       Teuchos::RCP<const Epetra_Vector> back_disp_col_;
@@ -124,21 +124,16 @@ namespace CORE::GEO
     {
      public:
       //! ctor
-      CutterMesh(Teuchos::RCP<::DRT::Discretization> cutterdis,
+      CutterMesh(Teuchos::RCP<BACI::DRT::Discretization> cutterdis,
           Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
           : cutterdis_(cutterdis), cutter_disp_col_(cutter_disp_col), start_ele_gid_(start_ele_gid)
       {
       }
 
-      /*!
-      \brief Destructor
-      */
-      ~CutterMesh(){};
-
       //---------------------------------discretization-----------------------------
 
       //! @name cutter discretization
-      Teuchos::RCP<::DRT::Discretization> cutterdis_;  ///< cutter discretization
+      Teuchos::RCP<BACI::DRT::Discretization> cutterdis_;  ///< cutter discretization
       //@}
 
       //---------------------------------state vectors ----------------------------
@@ -159,13 +154,13 @@ namespace CORE::GEO
     /*!
     \brief Constructor
     */
-    CutWizard(const Teuchos::RCP<::DRT::Discretization>& backdis);
+    CutWizard(const Teuchos::RCP<BACI::DRT::Discretization>& backdis);
 
 
     /*!
     \brief Destructor
     */
-    virtual ~CutWizard(){};
+    virtual ~CutWizard() = default;
 
     //@}
 
@@ -193,17 +188,17 @@ namespace CORE::GEO
         int level_set_sid       //!< global id for level-set side
     );
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<::DRT::Discretization> cutter_dis,
+    void AddCutterState(const int mc_idx, Teuchos::RCP<BACI::DRT::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col);
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<::DRT::Discretization> cutter_dis,
+    void AddCutterState(const int mc_idx, Teuchos::RCP<BACI::DRT::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     // Find marked background-boundary sides.
     //  Extract these sides and create boundary cell for these!
     void SetMarkedConditionSides(
         // const int mc_idx,
-        Teuchos::RCP<::DRT::Discretization> cutter_dis,
+        Teuchos::RCP<BACI::DRT::Discretization> cutter_dis,
         // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid);
 
@@ -236,7 +231,7 @@ namespace CORE::GEO
     CORE::GEO::CUT::ElementHandle* GetElement(const int eleid) const;
 
     //! Get this element from the cut libraries by element pointer
-    CORE::GEO::CUT::ElementHandle* GetElement(const ::DRT::Element* ele) const;
+    CORE::GEO::CUT::ElementHandle* GetElement(const BACI::DRT::Element* ele) const;
 
     //! Get this node from the cut libraries
     CORE::GEO::CUT::Node* GetNode(int nid);
@@ -248,7 +243,7 @@ namespace CORE::GEO
     bool HasLSCuttingSide(int sid);
 
     //! update the coordinates of the cut boundary cells
-    void UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discretization> cutterdis,
+    void UpdateBoundaryCellCoords(Teuchos::RCP<BACI::DRT::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     //! Cubaturedegree for creating of integrationpoints on boundarycells
@@ -265,7 +260,7 @@ namespace CORE::GEO
     Teuchos::RCP<const BackMesh> BackMeshPtr() const { return back_mesh_.getConst(); }
 
     virtual void GetPhysicalNodalCoordinates(
-        const ::DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
+        const BACI::DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
 
     CORE::GEO::CUT::CombIntersection& Intersection()
     {
@@ -293,18 +288,18 @@ namespace CORE::GEO
 
     //! Add all cutting side elements of given cutter discretization with given displacement field
     //! to the intersection class
-    void AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization> cutterdis,
+    void AddMeshCuttingSide(Teuchos::RCP<BACI::DRT::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid = 0  ///< global start index for element id numbering
     );
 
     //! Add this cutting side element with given global coordinates to the intersection class
-    void AddMeshCuttingSide(int mi, ::DRT::Element* ele,
+    void AddMeshCuttingSide(int mi, BACI::DRT::Element* ele,
         const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid);
 
     //! Add this background mesh element to the intersection class
-    void AddElement(const ::DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
-        double* myphinp = nullptr, bool ls_only_plus_domain = false);
+    void AddElement(const BACI::DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
+        double* myphinp = nullptr, bool lsv_only_plus_domain = false);
 
     //@}
 
@@ -392,5 +387,7 @@ namespace CORE::GEO
 
   };  // class CutWizard
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

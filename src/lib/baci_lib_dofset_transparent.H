@@ -13,9 +13,11 @@
 #define BACI_LIB_DOFSET_TRANSPARENT_H
 
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
-#include "baci_lib_exporter.H"
+
+BACI_NAMESPACE_OPEN
 
 
 namespace DRT
@@ -37,17 +39,14 @@ namespace DRT
     */
     explicit TransparentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel = false);
 
-    /*!
-    \brief Destructor
-    */
-    virtual ~TransparentDofSet() { return; }
+
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new TransparentDofSet(*this)); }
+    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new TransparentDofSet(*this)); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
-    virtual int AssignDegreesOfFreedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
     void TransferDegreesOfFreedom(const DRT::Discretization& sourcedis,  ///< source discret
@@ -73,19 +72,20 @@ namespace DRT
 
     /// helper for ParallelTransferDegreesOfFreedom; pack the current map
     /// node gid -> its dofs into a send block
-    void PackLocalSourceDofs(std::map<int, std::vector<int>>& gid_to_dofs, DRT::PackBuffer& sblock);
+    void PackLocalSourceDofs(
+        std::map<int, std::vector<int>>& gid_to_dofs, CORE::COMM::PackBuffer& sblock);
 
     /// helper for ParallelTransferDegreesOfFreedom; add processor local information
     /// to the map unpack the received block to the current map node gid -> its dofs
     void SetSourceDofsAvailableOnThisProc(std::map<int, std::vector<int>>& gid_to_dofs);
 
     /// helper for ParallelTransferDegreesOfFreedom, an MPI send call
-    void SendBlock(int numproc, int myrank, std::vector<char>& sblock, DRT::Exporter& exporter,
-        MPI_Request& request);
+    void SendBlock(int numproc, int myrank, std::vector<char>& sblock,
+        CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// helper for ParallelTransferDegreesOfFreedom, an MPI receive call
-    void ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock, DRT::Exporter& exporter,
-        MPI_Request& request);
+    void ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock,
+        CORE::COMM::Exporter& exporter, MPI_Request& request);
 
    protected:
     Teuchos::RCP<DRT::Discretization> sourcedis_;  ///< source discretization
@@ -94,5 +94,7 @@ namespace DRT
 
   };  // class TransparentDofSet
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_TRANSPARENT_H

@@ -16,6 +16,8 @@
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -133,3 +135,5 @@ void STR::MODELEVALUATOR::BrownianDynData::ResizeRandomForceMVector(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

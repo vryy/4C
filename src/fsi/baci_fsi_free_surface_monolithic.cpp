@@ -31,6 +31,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBaseFS::MonolithicBaseFS(
@@ -51,10 +53,6 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(
   coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FSI::MonolithicBaseFS::~MonolithicBaseFS() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -140,7 +138,7 @@ FSI::MonolithicMainFS::MonolithicMainFS(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicMainFS::Timeloop(
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = NOXParameterList();
@@ -158,7 +156,7 @@ void FSI::MonolithicMainFS::Timeloop(
   printParams.set("Output Information", 0xffff);
 
   // Create printing utilities
-  utils_ = Teuchos::rcp(new NOX::Utils(printParams));
+  utils_ = Teuchos::rcp(new ::NOX::Utils(printParams));
 
   Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID() == 0)
@@ -195,29 +193,30 @@ void FSI::MonolithicMainFS::Timeloop(
     Teuchos::RCP<Epetra_Vector> initial_guess = Teuchos::rcp(new Epetra_Vector(*DofRowMap()));
     InitialGuess(initial_guess);
 
-    NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
+    ::NOX::Epetra::Vector noxSoln(initial_guess, ::NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> linSys = CreateLinearSystem(nlParams, noxSoln, utils_);
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
+        CreateLinearSystem(nlParams, noxSoln, utils_);
 
     // Create the Group
     Teuchos::RCP<NOX::FSI::GroupFS> grp =
         Teuchos::rcp(new NOX::FSI::GroupFS(*this, printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
-    Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+    Teuchos::RCP<::NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
     // Create the solver
-    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(
+    Teuchos::RCP<::NOX::Solver::Generic> solver = ::NOX::Solver::buildSolver(
         grp, combo, Teuchos::RCP<Teuchos::ParameterList>(&nlParams, false));
 
     // we know we already have the first linear system calculated
     grp->CaptureSystemState();
 
     // solve the whole thing
-    NOX::StatusTest::StatusType status = solver->solve();
+    ::NOX::StatusTest::StatusType status = solver->solve();
 
-    if (status != NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
+    if (status != ::NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
 
     // cleanup
     // mat_->Zero();
@@ -243,16 +242,16 @@ void FSI::MonolithicMainFS::Timeloop(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicMainFS::Evaluate");
 
   Teuchos::RCP<const Epetra_Vector> fx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
-  if (x != Teuchos::null)
+  if (step_increment != Teuchos::null)
   {
-    ExtractFieldVectors(x, fx, ax);
+    ExtractFieldVectors(step_increment, fx, ax);
   }
 
   // Call all elements and assemble rhs and matrices
@@ -322,7 +321,7 @@ void FSI::MonolithicMainFS::SetDefaultParameters(
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method", "User Defined");
-  Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this, false);
+  Teuchos::RCP<::NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this, false);
   dirParams.set("User Defined Direction Factory", newtonfactory);
 
   // status tests are expensive, but instructive
@@ -349,8 +348,8 @@ void FSI::MonolithicMainFS::SetDefaultParameters(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Direction::Generic> FSI::MonolithicMainFS::buildDirection(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
+Teuchos::RCP<::NOX::Direction::Generic> FSI::MonolithicMainFS::buildDirection(
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
 {
   Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd, params));
   for (unsigned i = 0; i < statustests_.size(); ++i)
@@ -541,10 +540,9 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   switch (linearsolverstrategy_)
   {
     case INPAR::FSI::PreconditionedKrylov:
-      systemmatrix_ =
-          Teuchos::rcp(new OverlappingBlockMatrixFS(Extractor(), *FluidField(), *AleField(), true,
-              DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
-              fpcomega[0], fpciter[0], DRT::Problem::Instance()->ErrorFile()->Handle()));
+      systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFS(Extractor(), *FluidField(),
+          *AleField(), true, DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"),
+          pcomega[0], pciter[0], fpcomega[0], fpciter[0]));
       break;
     default:
       dserror("Unsupported type of monolithic free surface solver");
@@ -782,10 +780,11 @@ void FSI::MonolithicFS::SetupVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MonolithicFS::CreateLinearSystem(
-    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils)
+Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::MonolithicFS::CreateLinearSystem(
+    Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
+    Teuchos::RCP<::NOX::Utils> utils)
 {
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
+  Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys;
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
@@ -800,8 +799,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MonolithicFS::CreateLinearSystem(
   else
     dserror("Unknown nonlinear method");
 
-  NOX::Epetra::Interface::Jacobian* iJac = this;
-  NOX::Epetra::Interface::Preconditioner* iPrec = this;
+  ::NOX::Epetra::Interface::Jacobian* iJac = this;
+  ::NOX::Epetra::Interface::Preconditioner* iPrec = this;
   const Teuchos::RCP<Epetra_Operator> J = systemmatrix_;
   const Teuchos::RCP<Epetra_Operator> M = systemmatrix_;
 
@@ -822,18 +821,19 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MonolithicFS::CreateLinearSystem(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Combo> FSI::MonolithicFS::CreateStatusTest(
-    Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp)
+Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicFS::CreateStatusTest(
+    Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  Teuchos::RCP<::NOX::StatusTest::Combo> combo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> converged =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
 
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
-      Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+  Teuchos::RCP<::NOX::StatusTest::MaxIters> maxiters =
+      Teuchos::rcp(new ::NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+  Teuchos::RCP<::NOX::StatusTest::FiniteValue> fv =
+      Teuchos::rcp(new ::NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
@@ -849,12 +849,12 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::MonolithicFS::CreateStatusTest(
   interface.push_back(Teuchos::null);
   CORE::LINALG::MultiMapExtractor interfaceextract(*DofRowMap(), interface);
 
-  Teuchos::RCP<NOX::StatusTest::Combo> interfacecombo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> interfacecombo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest = Teuchos::rcp(new NOX::FSI::PartialNormF(
       "interface", interfaceextract, 0, nlParams.get("Norm abs vel", 1.0e-6),
-      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate =
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("interface update", interfaceextract, 0,
           nlParams.get("Norm abs vel", 1.0e-6), NOX::FSI::PartialNormUpdate::Scaled));
@@ -872,12 +872,12 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::MonolithicFS::CreateStatusTest(
   fluidvel.push_back(Teuchos::null);
   CORE::LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(), fluidvel);
 
-  Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> fluidvelcombo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel = Teuchos::rcp(new NOX::FSI::PartialNormF(
       "velocity", fluidvelextract, 0, nlParams.get("Norm abs vel", 1.0e-6),
-      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate =
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update", fluidvelextract, 0,
           nlParams.get("Norm abs vel", 1.0e-6), NOX::FSI::PartialNormUpdate::Scaled));
@@ -895,12 +895,12 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::MonolithicFS::CreateStatusTest(
   fluidpress.push_back(Teuchos::null);
   CORE::LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(), fluidpress);
 
-  Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> fluidpresscombo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress = Teuchos::rcp(new NOX::FSI::PartialNormF(
       "pressure", fluidpressextract, 0, nlParams.get("Norm abs pres", 1.0e-6),
-      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate =
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update", fluidpressextract, 0,
           nlParams.get("Norm abs pres", 1.0e-6), NOX::FSI::PartialNormUpdate::Scaled));
@@ -941,10 +941,10 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::GroupFS::GroupFS(::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
-    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
-    : NOX::Epetra::Group(printParams, i, x, linSys), mfsi_(mfsi)
+NOX::FSI::GroupFS::GroupFS(BACI::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
+    const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
+    : ::NOX::Epetra::Group(printParams, i, x, linSys), mfsi_(mfsi)
 {
 }
 
@@ -966,10 +966,10 @@ void NOX::FSI::GroupFS::CaptureSystemState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeF()
+::NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeF()
 {
-  NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeF();
-  if (ret == NOX::Abstract::Group::Ok)
+  ::NOX::Abstract::Group::ReturnType ret = ::NOX::Epetra::Group::computeF();
+  if (ret == ::NOX::Abstract::Group::Ok)
   {
     if (not isValidJacobian)
     {
@@ -984,10 +984,10 @@ NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeF()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeJacobian()
+::NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeJacobian()
 {
-  NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeJacobian();
-  if (ret == NOX::Abstract::Group::Ok)
+  ::NOX::Abstract::Group::ReturnType ret = ::NOX::Epetra::Group::computeJacobian();
+  if (ret == ::NOX::Abstract::Group::Ok)
   {
     if (not isValidRHS)
     {
@@ -1001,10 +1001,10 @@ NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeJacobian()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeNewton(Teuchos::ParameterList& p)
+::NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeNewton(Teuchos::ParameterList& p)
 {
   mfsi_.ScaleSystem(RHSVector.getEpetraVector());
-  NOX::Abstract::Group::ReturnType status = NOX::Epetra::Group::computeNewton(p);
+  ::NOX::Abstract::Group::ReturnType status = ::NOX::Epetra::Group::computeNewton(p);
   mfsi_.UnscaleSolution(NewtonVector.getEpetraVector(), RHSVector.getEpetraVector());
   return status;
 }
@@ -1286,3 +1286,5 @@ void FSI::OverlappingBlockMatrixFS::SGS(const Epetra_MultiVector& X, Epetra_Mult
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const char* FSI::OverlappingBlockMatrixFS::Label() const { return "FSI::OverlappingBlockMatrixFS"; }
+
+BACI_NAMESPACE_CLOSE

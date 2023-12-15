@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -54,8 +56,7 @@ namespace MORTAR
      \brief Destructor
 
      */
-    virtual ~Coupling2d() {}
-
+    virtual ~Coupling2d() = default;
     //! @name Access methods
 
     /*!
@@ -232,8 +233,7 @@ namespace MORTAR
      \brief Destructor
 
      */
-    virtual ~Coupling2dManager() {}
-
+    virtual ~Coupling2dManager() = default;
     /*!
      \brief Get coupling slave element
 
@@ -326,5 +326,7 @@ namespace MORTAR
   };
   // class Coupling2dManager
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_COUPLING2D_H

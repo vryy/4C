@@ -26,6 +26,8 @@ The current implementation does not scale at all!
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 
 FBI::FBIGeometryCoupler::FBIGeometryCoupler()
@@ -340,3 +342,5 @@ void FBI::FBIGeometryCoupler::ComputeCurrentPositions(DRT::Discretization& dis,
 /*----------------------------------------------------------------------*/
 
 void FBI::FBIGeometryCoupler::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning){};
+
+BACI_NAMESPACE_CLOSE

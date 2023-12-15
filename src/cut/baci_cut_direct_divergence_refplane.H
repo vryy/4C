@@ -14,6 +14,8 @@ coordinate system
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -35,8 +37,6 @@ namespace CORE::GEO
           : elem1_(elem), volcell_(vc), options_(options)
       {
       }
-
-      ~DirectDivergenceGlobalRefplane(){};
 
       /*!
       \Compute the reference plane for this element
@@ -105,4 +105,6 @@ namespace CORE::GEO
 
   } /* namespace CUT */
 }  // namespace CORE::GEO
+BACI_NAMESPACE_CLOSE
+
 #endif  // CUT_DIRECT_DIVERGENCE_REFPLANE_H

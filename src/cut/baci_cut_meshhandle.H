@@ -14,6 +14,8 @@
 #include "baci_cut_mesh.H"
 #include "baci_cut_sidehandle.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -51,13 +53,13 @@ namespace CORE::GEO
 
       /// create a new side (sidehandle) of the cutter discretization and return the sidehandle,
       /// non-tri3 sides will be subdivided into tri3 subsides depending on the options
-      SideHandle* CreateSide(int sid, const std::vector<int>& nids,
-          ::DRT::Element::DiscretizationType distype, CORE::GEO::CUT::Options& options);
+      SideHandle* CreateSide(int sid, const std::vector<int>& nids, CORE::FE::CellType distype,
+          CORE::GEO::CUT::Options& options);
 
       /// create a new element (elementhandle) of the background discretization and return the
       /// elementhandle, quadratic elements will create linear shadow elements
       ElementHandle* CreateElement(
-          int eid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype);
+          int eid, const std::vector<int>& nids, CORE::FE::CellType distype);
 
       /// create a new data structure for face oriented stabilization; the sides of the linear
       /// element are included into a sidehandle
@@ -65,8 +67,7 @@ namespace CORE::GEO
 
       /// create a new data structure for face oriented stabilization; the sides of the quadratic
       /// element are included into a sidehandle
-      void CreateElementSides(
-          const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype);
+      void CreateElementSides(const std::vector<int>& nids, CORE::FE::CellType distype);
 
       /*========================================================================*/
       //! @name Get-routines for nodes, cutter sides, elements and element sides
@@ -121,5 +122,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

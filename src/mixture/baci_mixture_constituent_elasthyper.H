@@ -17,6 +17,8 @@
 #include "baci_mixture_constituent_elasthyperbase.H"
 #include "baci_mixture_prestress_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class MixtureConstituent_ElastHyper;
@@ -27,9 +29,6 @@ namespace MIXTURE
     {
      public:
       explicit MixtureConstituent_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
-
-      ~MixtureConstituent_ElastHyper() override = default;
-
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
@@ -89,7 +88,7 @@ namespace MIXTURE
      * @param eleGID Global element id
      */
     void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
 
@@ -98,5 +97,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_ELASTHYPER_H

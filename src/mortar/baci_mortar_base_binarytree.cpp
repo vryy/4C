@@ -13,6 +13,8 @@
 #include "baci_mortar_node.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor BaseBinaryTree (public)                           schmidt 01/19|
  *----------------------------------------------------------------------*/
@@ -307,7 +309,7 @@ void MORTAR::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
                     << position(7, 2) << "," << position(0, 0) << "," << position(0, 1) << ","
                     << position(0, 2) << ")";
     gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
-    fprintf(fp, gmshfilecontent.str().c_str());
+    fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
 
@@ -515,7 +517,7 @@ void MORTAR::BaseBinaryTreeNode::PlotGmshPoint(std::string filename, double* pos
                   << position0[2] << "," << 17 << ")";
   gmshfilecontent << "{"
                   << "SK" << nr << "};" << std::endl;
-  fprintf(fp, gmshfilecontent.str().c_str());
+  fprintf(fp, "%s", gmshfilecontent.str().c_str());
   fclose(fp);
 
   return;
@@ -539,7 +541,7 @@ void MORTAR::BaseBinaryTreeNode::PlotGmshQuadrangle(std::string filename, double
                   << position3[2] << ")";
   gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};"
                   << std::endl;
-  fprintf(fp, gmshfilecontent.str().c_str());
+  fprintf(fp, "%s", gmshfilecontent.str().c_str());
   fclose(fp);
 
   return;
@@ -561,8 +563,10 @@ void MORTAR::BaseBinaryTreeNode::PlotGmshTriangle(
                   << position1[2] << "," << position2[0] << "," << position2[1] << ","
                   << position2[2] << ")";
   gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "};" << std::endl;
-  fprintf(fp, gmshfilecontent.str().c_str());
+  fprintf(fp, "%s", gmshfilecontent.str().c_str());
   fclose(fp);
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

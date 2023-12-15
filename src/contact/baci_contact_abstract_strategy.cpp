@@ -34,6 +34,8 @@
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1819,7 +1821,7 @@ void CONTACT::CoAbstractStrategy::ComputeContactStresses()
 
       // be aware of problem dimension
       int dim = Dim();
-      int numdof = cnode->NumDof();
+      const int numdof = cnode->NumDof();
       if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
 
       double nn[3];
@@ -3441,3 +3443,5 @@ bool CONTACT::CoAbstractStrategy::IsFirstTimeStep() const
 
   return first_time_step;
 }
+
+BACI_NAMESPACE_CLOSE

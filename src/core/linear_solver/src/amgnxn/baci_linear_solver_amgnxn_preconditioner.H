@@ -25,26 +25,25 @@
 #include <MueLu_Utilities.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::LINEAR_SOLVER
 {
   class AMGnxn_Preconditioner : public PreconditionerType
   {
    public:
-    AMGnxn_Preconditioner(FILE *outfile, Teuchos::ParameterList &params);
+    AMGnxn_Preconditioner(Teuchos::ParameterList &params);
 
     void Setup(bool create, Epetra_Operator *matrix, Epetra_MultiVector *x,
         Epetra_MultiVector *b) override;
 
     virtual void Setup(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A);
 
-    Epetra_Operator *PrecOperator() const override;
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override;
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override;
 
-    void Print(std::ostream &stream) const override { stream << "AMGnxn"; }
-    const std::string getParameterListName() const override { return "AMGnxn Parameters"; }
+    std::string getParameterListName() const override { return "AMGnxn Parameters"; }
 
    private:
     // Private variables
@@ -296,5 +295,7 @@ namespace CORE::LINEAR_SOLVER
   void PrintMap(const Epetra_Map &Map, std::string prefix);
 
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_AMGNXN_PRECONDITIONER_H

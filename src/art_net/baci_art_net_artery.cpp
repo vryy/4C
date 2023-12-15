@@ -9,10 +9,12 @@
 
 #include "baci_art_net_artery.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 using namespace DRT::UTILS;
 
@@ -20,7 +22,7 @@ DRT::ELEMENTS::ArteryType DRT::ELEMENTS::ArteryType::instance_;
 
 DRT::ELEMENTS::ArteryType& DRT::ELEMENTS::ArteryType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::ArteryType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ArteryType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Artery* object = new DRT::ELEMENTS::Artery(-1, -1);
   object->Unpack(data);
@@ -97,25 +99,24 @@ DRT::Element* DRT::ELEMENTS::Artery::Clone() const
  |                                                             (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Artery::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Artery::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Artery::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -142,11 +143,9 @@ void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
 
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -170,16 +169,9 @@ void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Artery::Lines()
 {
-  std::vector<Teuchos::RCP<Element>> lines(1);
-  lines[0] = Teuchos::rcp(this, false);
-  return lines;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           ismail 01/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Artery::~Artery() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -192,3 +184,5 @@ void DRT::ELEMENTS::Artery::Print(std::ostream& os) const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

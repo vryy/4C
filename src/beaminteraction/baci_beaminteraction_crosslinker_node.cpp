@@ -13,9 +13,11 @@
 
 #include "baci_beaminteraction_crosslinker_node.H"
 
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_mat_crosslinkermat.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 CROSSLINKING::CrosslinkerNodeType CROSSLINKING::CrosslinkerNodeType::instance_;
 
@@ -23,11 +25,10 @@ CROSSLINKING::CrosslinkerNodeType CROSSLINKING::CrosslinkerNodeType::instance_;
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::ParObject* CROSSLINKING::CrosslinkerNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* CROSSLINKING::CrosslinkerNodeType::Create(const std::vector<char>& data)
 {
-  double dummycoord[3] = {999., 999., 999.};
-  CROSSLINKING::CrosslinkerNode* crosslinker =
-      new CROSSLINKING::CrosslinkerNode(-1, dummycoord, -1);
+  std::vector<double> dummycoord(3, 999.0);
+  auto* crosslinker = new CROSSLINKING::CrosslinkerNode(-1, dummycoord, -1);
   crosslinker->Unpack(data);
   return crosslinker;
 }
@@ -51,12 +52,12 @@ CROSSLINKING::CrosslinkerNodeDataContainer::CrosslinkerNodeDataContainer() : num
  |  Pack data                                                        (public) |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNodeDataContainer::Pack(DRT::PackBuffer& data) const
+void CROSSLINKING::CrosslinkerNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add numbond
-  DRT::ParObject::AddtoPack(data, numbond_);
+  CORE::COMM::ParObject::AddtoPack(data, numbond_);
   // add clbspots_
-  DRT::ParObject::AddtoPack(data, clbspots_);
+  CORE::COMM::ParObject::AddtoPack(data, clbspots_);
 
   return;
 }
@@ -69,9 +70,9 @@ void CROSSLINKING::CrosslinkerNodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // numbond
-  DRT::ParObject::ExtractfromPack(position, data, numbond_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, numbond_);
   // clbspots_
-  DRT::ParObject::ExtractfromPack(position, data, clbspots_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, clbspots_);
 
   return;
 }
@@ -79,7 +80,8 @@ void CROSSLINKING::CrosslinkerNodeDataContainer::Unpack(
 /*----------------------------------------------------------------------------*
  *  ctor (public)                                              eichinger 10/16|
  *----------------------------------------------------------------------------*/
-CROSSLINKING::CrosslinkerNode::CrosslinkerNode(int id, const double* coords, const int owner)
+CROSSLINKING::CrosslinkerNode::CrosslinkerNode(
+    int id, const std::vector<double>& coords, const int owner)
     : DRT::Node(id, coords, owner), mat_(Teuchos::null)
 {
   return;
@@ -110,9 +112,9 @@ CROSSLINKING::CrosslinkerNode* CROSSLINKING::CrosslinkerNode::Clone() const
 /*----------------------------------------------------------------------------*
  |  << operator                                                eichinger 10/16|
  *----------------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker)
+std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node)
 {
-  crosslinker.Print(os);
+  crosslinker_node.Print(os);
   return os;
 }
 
@@ -133,9 +135,9 @@ void CROSSLINKING::CrosslinkerNode::Print(std::ostream& os) const
  |  Pack data                                                        (public) |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::Pack(DRT::PackBuffer& data) const
+void CROSSLINKING::CrosslinkerNode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -143,12 +145,6 @@ void CROSSLINKING::CrosslinkerNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // add base class DRT::Node
   DRT::Node::Pack(data);
-
-  // add data_
-  //  bool hasdata = (cldata_!=Teuchos::null);
-  //  AddtoPack(data,hasdata);
-  //  if (hasdata)
-  //    cldata_->Pack(data);
 
   // add material
   bool hasmat = (mat_ != Teuchos::null);
@@ -165,26 +161,13 @@ void CROSSLINKING::CrosslinkerNode::Pack(DRT::PackBuffer& data) const
 void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class DRT::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   DRT::Node::Unpack(basedata);
-
-  //  // data_
-  //  bool hasdata = ExtractInt(position,data);
-  //  if (hasdata)
-  //  {
-  //    cldata_ = Teuchos::rcp(new CROSSLINKING::CrosslinkerNodeDataContainer());
-  //    cldata_->Unpack(position,data);
-  //  }
-  //  else
-  //  {
-  //    cldata_ = Teuchos::null;
-  //  }
 
   // mat
   bool hasmat = ExtractInt(position, data);
@@ -192,7 +175,7 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
   {
     std::vector<char> tmp;
     ExtractfromPack(position, data, tmp);
-    DRT::ParObject* o = DRT::UTILS::Factory(tmp);
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(tmp);
     MAT::CrosslinkerMat* mat = dynamic_cast<MAT::CrosslinkerMat*>(o);
     if (mat == nullptr) dserror("failed to unpack material");
     // unpack material
@@ -251,3 +234,5 @@ void CROSSLINKING::CrosslinkerNode::SetMaterial(Teuchos::RCP<MAT::Material> mate
 //
 //  return;
 //}
+
+BACI_NAMESPACE_CLOSE

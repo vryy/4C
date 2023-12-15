@@ -30,6 +30,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::ConstrMonolithicStructureSplit::ConstrMonolithicStructureSplit(
@@ -475,3 +477,5 @@ void FSI::ConstrMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
 
   ax = a;
 }
+
+BACI_NAMESPACE_CLOSE

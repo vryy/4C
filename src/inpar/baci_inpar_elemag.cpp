@@ -14,6 +14,8 @@
 #include "baci_lib_conditiondefinition.H"
 #include "baci_linalg_equilibrate.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -116,19 +118,19 @@ void INPAR::ELEMAG::SetValidConditions(
 {
   using namespace DRT::INPUT;
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> abcbundcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> abcbundcomponents;
 
-  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NUMDOF")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("numdof")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ONOFF")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMDOF")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numdof")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ONOFF")));
   abcbundcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("onoff", INPUT::LengthFromInt("numdof"))));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("FUNCT")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntVectorComponent(
+      Teuchos::rcp(new INPUT::IntVectorComponent("onoff", INPUT::LengthFromInt("numdof"))));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("FUNCT")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::IntVectorComponent(
       "funct", INPUT::LengthFromInt("numdof"), {0, false, true, false})));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("VAL")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
   abcbundcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::RealVectorComponent("val", INPUT::LengthFromInt("numdof"))));
+      Teuchos::rcp(new INPUT::RealVectorComponent("val", INPUT::LengthFromInt("numdof"))));
 
   //*--------------------------------------------------------------------* /
   // absorbing boundary condition for electromagnetic problems
@@ -153,3 +155,5 @@ void INPAR::ELEMAG::SetValidConditions(
   condlist.push_back(silvermueller_line);
   condlist.push_back(silvermueller_surface);
 }
+
+BACI_NAMESPACE_CLOSE

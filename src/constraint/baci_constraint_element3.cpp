@@ -8,6 +8,8 @@
 
 #include "baci_constraint_element3.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::ConstraintElement3Type DRT::ELEMENTS::ConstraintElement3Type::instance_;
 
@@ -18,7 +20,7 @@ DRT::ELEMENTS::ConstraintElement3Type& DRT::ELEMENTS::ConstraintElement3Type::In
 }
 
 
-DRT::ParObject* DRT::ELEMENTS::ConstraintElement3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ConstraintElement3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::ConstraintElement3* object = new DRT::ELEMENTS::ConstraintElement3(-1, -1);
   object->Unpack(data);
@@ -86,9 +88,9 @@ DRT::Element* DRT::ELEMENTS::ConstraintElement3::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ConstraintElement3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -109,10 +111,9 @@ void DRT::ELEMENTS::ConstraintElement3::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::ConstraintElement3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -128,19 +129,4 @@ void DRT::ELEMENTS::ConstraintElement3::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement3::~ConstraintElement3() { return; }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement3::Print(std::ostream& os) const
-{
-  os << "ConstraintElement3 ";
-  Element::Print(os);
-  std::cout << std::endl;
-  std::cout << data_;
-  return;
-}
+BACI_NAMESPACE_CLOSE

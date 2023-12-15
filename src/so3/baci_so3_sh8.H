@@ -12,6 +12,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_hex8.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 struct _SOH8_DATA;
 
@@ -29,7 +31,7 @@ namespace DRT
 
       static So_sh8Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -116,7 +118,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -143,11 +145,6 @@ namespace DRT
       bool ReadElement(const std::string& eletype, const std::string& distype,
           DRT::INPUT::LineDefinition* linedef) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_sh8() override;
 
 
       //@}
@@ -278,16 +275,16 @@ namespace DRT
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
       ThicknessDirection sosh8_enfthickdir(CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&
-              glothickdir  ///< global direction of enforced thickness direction
+              thickdirglo  ///< global direction of enforced thickness direction
       );
 
       //! return thickness direction
-      const std::vector<double> GetThickvec() { return thickvec_; };
+      std::vector<double> GetThickvec() { return thickvec_; };
 
       //! Debug gmsh-plot to check thickness direction
       void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
 
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> sosh8_derivs_sdc();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> sosh8_derivs_sdc();
 
       /** \brief Evaluate the reference and current jacobian as well as the
        *  respective determinants */
@@ -340,5 +337,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_SH8_H

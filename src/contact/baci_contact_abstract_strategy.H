@@ -10,13 +10,15 @@
 #ifndef BACI_CONTACT_ABSTRACT_STRATEGY_H
 #define BACI_CONTACT_ABSTRACT_STRATEGY_H
 
+#include "baci_contact_utils.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
-#include "baci_lib_utils_matrix_vector_enums.H"
 #include "baci_mortar_strategy_base.H"
 
 #include <Epetra_Operator.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace NOX
@@ -59,9 +61,6 @@ namespace CONTACT
    public:
     //! constructor
     AbstractStratDataContainer();
-
-    //! destructor
-    virtual ~AbstractStratDataContainer(){};
 
     //! @name Accessors
     //!@{
@@ -721,7 +720,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    CoAbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& stratData,
+    CoAbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, int const maxdof);
@@ -738,8 +737,6 @@ namespace CONTACT
      for initialization of the active set. */
     virtual void Setup(bool redistributed, bool init);
 
-    //! Destructor
-    virtual ~CoAbstractStrategy() = default;
 
     //! return the current solution type
     virtual INPAR::CONTACT::SolvingStrategy Type() const { return stype_; }
@@ -896,7 +893,7 @@ namespace CONTACT
      *  \date 05/2016
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const
+        const enum CONTACT::VecBlockType& bt) const
     {
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
@@ -919,7 +916,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 08/17  */
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
-        const enum DRT::UTILS::VecBlockType& bt) const
+        const enum CONTACT::VecBlockType& bt) const
     {
       return GetRhsBlockPtr(bt);
     }
@@ -950,7 +947,7 @@ namespace CONTACT
      *  \date 05/2016
      *  \author hiermeier */
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt,
+        const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const
     {
       dserror("Not yet implemented!");
@@ -963,7 +960,6 @@ namespace CONTACT
     virtual void RunPreApplyJacobianInverse(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
     { /* do nothing */
-      ;
     }
 
     /*! Return the condensed matrix block pointer (read-only)
@@ -981,7 +977,7 @@ namespace CONTACT
     };
 
     //! Return global slave node row map
-    const Teuchos::RCP<Epetra_Map> SlaveRowNodes() { return Data().GSlNodeRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> SlaveRowNodes() override { return Data().GSlNodeRowMapPtr(); }
     Teuchos::RCP<const Epetra_Map> SlRowNodesPtr() const { return Data().GSlNodeRowMapPtr(); }
     const Epetra_Map& SlRowNodes() const { return *Data().GSlNodeRowMapPtr(); }
 
@@ -990,36 +986,33 @@ namespace CONTACT
     const Epetra_Map& MaRowNodes() const { return *Data().GMaNodeRowMapPtr(); }
 
     //! Return global active node row map
-    virtual const Teuchos::RCP<Epetra_Map> ActiveRowNodes()
-    {
-      return Data().GActiveNodeRowMapPtr();
-    };
+    Teuchos::RCP<Epetra_Map> ActiveRowNodes() override { return Data().GActiveNodeRowMapPtr(); };
     virtual Teuchos::RCP<const Epetra_Map> ActiveRowNodes() const
     {
       return Data().GActiveNodeRowMapPtr();
     };
 
     //! Return global slip node row map
-    const Teuchos::RCP<Epetra_Map> SlipRowNodes() { return Data().GSlipNodeRowMapPtr(); };
+    Teuchos::RCP<Epetra_Map> SlipRowNodes() override { return Data().GSlipNodeRowMapPtr(); };
     Teuchos::RCP<const Epetra_Map> SlipRowNodes() const { return Data().GSlipNodeRowMapPtr(); };
 
     //! Return global slave dof row map
-    const Teuchos::RCP<Epetra_Map> SlaveRowDofs() { return Data().GSlDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> SlaveRowDofs() { return Data().GSlDofRowMapPtr(); }
 
     //! Return global active dof row map
-    virtual const Teuchos::RCP<Epetra_Map> ActiveRowDofs() { return Data().GActiveDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> ActiveRowDofs() override { return Data().GActiveDofRowMapPtr(); }
 
     //! Return global master dof row map
-    const Teuchos::RCP<Epetra_Map> MasterRowDofs() { return Data().GMaDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> MasterRowDofs() { return Data().GMaDofRowMapPtr(); }
 
     //! Return global slave dof row map
-    const Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs() { return Data().GSlMaDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs() { return Data().GSlMaDofRowMapPtr(); }
 
     //! Return not redistributed global slave dof row map
-    const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() { return Data().PGSlDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() override { return Data().PGSlDofRowMapPtr(); }
 
     //! Return not redistributed global master dof row map
-    const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() { return Data().PGMaDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() override { return Data().PGMaDofRowMapPtr(); }
 
     /*!
     \brief Gather maps needed for contact/meshtying specific multigrid preconditioners
@@ -1034,7 +1027,7 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Map>& ActiveDofMap) const override;
 
     //! Return Lagrange multiplier vector (\f$t_{n+1}\f$)
-    virtual Teuchos::RCP<Epetra_Vector> LagrMult() { return z_; }
+    Teuchos::RCP<Epetra_Vector> LagrMult() override { return z_; }
 
     /*! \brief Return Lagrange multiplier vector \f$(t_{n+1})\f$
      *
@@ -1049,7 +1042,7 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultNp(const bool& redist) const;
 
     //! Return old Lagrange multiplier vector (\f$t_{n}\f$)
-    virtual Teuchos::RCP<Epetra_Vector> LagrMultOld() { return Data().OldLmPtr(); }
+    Teuchos::RCP<Epetra_Vector> LagrMultOld() override { return Data().OldLmPtr(); }
 
     /*! \brief Return old Lagrange multiplier vector \f$(t_n)\f$
      *
@@ -1067,37 +1060,37 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return Data().LmUzawaPtr(); }
 
     //! Return constraint rhs vector (only in saddle-point formulation
-    Teuchos::RCP<Epetra_Vector> ConstrRhs() { return Data().ConstrRhsPtr(); }
+    Teuchos::RCP<Epetra_Vector> ConstrRhs() override { return Data().ConstrRhsPtr(); }
 
     //! Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
-    Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() { return Data().LmIncrPtr(); }
+    Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() override { return Data().LmIncrPtr(); }
     Teuchos::RCP<const Epetra_Vector> GetLagrMultSolveIncr() const { return Data().LmIncrPtr(); };
 
     //! Return mortar matrix D
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> DMatrix() { return Data().DMatrixPtr(); }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> DMatrix() override { return Data().DMatrixPtr(); }
 
     //! Return mortar matrix M
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> MMatrix() { return Data().MMatrixPtr(); }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> MMatrix() override { return Data().MMatrixPtr(); }
 
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ContactNorStress() { return Data().StressNormalPtr(); }
+    Teuchos::RCP<Epetra_Vector> ContactNorStress() override { return Data().StressNormalPtr(); }
     Teuchos::RCP<const Epetra_Vector> ContactNorStress() const { return Data().StressNormalPtr(); }
     //! Return weighted gap
     Teuchos::RCP<Epetra_Vector> ContactWGap() { return Data().WGapPtr(); }
 
     //! Return vector of tangential contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ContactTanStress() { return Data().StressTangentialPtr(); }
+    Teuchos::RCP<Epetra_Vector> ContactTanStress() override { return Data().StressTangentialPtr(); }
     Teuchos::RCP<const Epetra_Vector> ContactTanStress() const
     {
       return Data().StressTangentialPtr();
     }
 
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ContactNorForce() { return Data().ForceNormalPtr(); }
+    Teuchos::RCP<Epetra_Vector> ContactNorForce() override { return Data().ForceNormalPtr(); }
     Teuchos::RCP<const Epetra_Vector> ContactNorForce() const { return Data().ForceNormalPtr(); }
 
     //! Return vector of tangential contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ContactTanForce() { return Data().ForceTangentialPtr(); }
+    Teuchos::RCP<Epetra_Vector> ContactTanForce() override { return Data().ForceTangentialPtr(); }
     Teuchos::RCP<const Epetra_Vector> ContactTanForce() const
     {
       return Data().ForceTangentialPtr();
@@ -1105,19 +1098,19 @@ namespace CONTACT
 
 
     //! Return required Integration time
-    double Inttime() { return Data().IntTime(); };
+    double Inttime() override { return Data().IntTime(); };
 
     //! Set integration time to zero
-    void Inttime_init() { Data().IntTime() = 0.0; };
+    void Inttime_init() override { Data().IntTime() = 0.0; };
 
     //! Return current global contact status
-    bool IsInContact() const { return Data().IsInContact(); }
+    bool IsInContact() const override { return Data().IsInContact(); }
 
     /*! \brief Return old global contact status (this time step)
 
      True if there has been contact in any nonlinear iteration
      step of the current time step. */
-    bool WasInContact() const { return Data().WasInContact(); }
+    bool WasInContact() const override { return Data().WasInContact(); }
 
     /*!
     \brief Return old global contact status (last time step)
@@ -1125,7 +1118,7 @@ namespace CONTACT
     True if there has been contact at the end of the last
     time step (last converged state)
     */
-    bool WasInContactLastTimeStep() const { return Data().WasInContactLastTimeStep(); }
+    bool WasInContactLastTimeStep() const override { return Data().WasInContactLastTimeStep(); }
 
     /*!
     \brief Return global self contact status
@@ -1140,7 +1133,7 @@ namespace CONTACT
     bool IsSelfContact() const { return Data().IsSelfContact(); };
 
     //! Return global frictional status
-    bool Friction() const { return Data().IsFriction(); }
+    bool Friction() const override { return Data().IsFriction(); }
 
     //! Return contact interfaces
     const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& ContactInterfaces() const
@@ -1170,7 +1163,7 @@ namespace CONTACT
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> TMatrix() { return Teuchos::null; }
 
     //! Return number of active nodes
-    int NumberOfActiveNodes() const
+    int NumberOfActiveNodes() const override
     {
       if (not Data().GActiveNodeRowMapPtr().is_null())
         return Data().GActiveNodeRowMapPtr()->NumGlobalElements();
@@ -1178,7 +1171,7 @@ namespace CONTACT
     }
 
     //! Return number of frictional slip nodes
-    int NumberOfSlipNodes() const
+    int NumberOfSlipNodes() const override
     {
       if (not Data().GSlipNodeRowMapPtr().is_null())
         return Data().GSlipNodeRowMapPtr()->NumGlobalElements();
@@ -1245,7 +1238,7 @@ namespace CONTACT
     */
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
-        const int timeStep, const int nonlinearIteration, bool predictor = false);
+        const int timeStep, const int nonlinearIteration, bool predictor = false) override;
 
     /*! \brief Reset the internal state variables
      *
@@ -1296,7 +1289,7 @@ namespace CONTACT
                            "olddisplacement")
     \param vec (in): current global state of the quantity defined by statename
     */
-    virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec);
+    void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
 
     /*! \brief Evaluate reference state
 
@@ -1311,7 +1304,8 @@ namespace CONTACT
     /*! \brief Evaluate matrix of nodal normals
 
      This is needed for energy-conserving time integration (Velocity-Update) */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> EvaluateNormals(
+        Teuchos::RCP<Epetra_Vector> dis) override;
 
     //!@}
 
@@ -1334,10 +1328,10 @@ namespace CONTACT
     //!@{
 
     //! Is this a saddle-point system?
-    virtual bool IsSaddlePointSystem() const;
+    bool IsSaddlePointSystem() const override;
 
     //! Is this a condensed system?
-    virtual bool IsCondensedSystem() const;
+    bool IsCondensedSystem() const override;
 
     /*! \brief Fill the maps vector for the linear solver preconditioner
 
@@ -1349,11 +1343,11 @@ namespace CONTACT
 
     \author hiermeier
     */
-    virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const;
+    void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override;
 
     //! compute the preconditioner operator
-    virtual bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
+    bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
+        Teuchos::ParameterList* precParams = nullptr) override;
 
     //!@}
 
@@ -1375,7 +1369,7 @@ namespace CONTACT
      \param type (in): enum defining which quantity to store into CoNodes
 
      */
-    virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type);
+    void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) override;
 
     /*! \brief Evaluate contact stresses in normal direction and tangential plane
 
@@ -1390,7 +1384,7 @@ namespace CONTACT
      to set the D.B.C. status in each CNode.
 
      \param dbcmaps (in): MapExtractor carrying global dbc map */
-    virtual void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps);
+    void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override;
 
     virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
         const Teuchos::RCP<DRT::Discretization> dis){
@@ -1401,7 +1395,7 @@ namespace CONTACT
      \param dis (in):  current displacements (-> old displacements)
 
      */
-    virtual void Update(Teuchos::RCP<const Epetra_Vector> dis);
+    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*! \brief Perform a write restart
 
@@ -1409,8 +1403,8 @@ namespace CONTACT
      direct access to the nodal quantities. Hence, a portion of the restart has to be
      performed on the level of the contact algorithm, for short: here's the right place.
      */
-    virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
-        bool forcedrestart = false) const;
+    void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+        bool forcedrestart = false) const override;
 
     /*!
     \brief Read restart data from disk
@@ -1418,8 +1412,8 @@ namespace CONTACT
     @param reader Discretization reader to be used for reading the restart data
     @param dis Displacement vector of the solid field
     */
-    virtual void DoReadRestart(
-        IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
+    void DoReadRestart(
+        IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override
     {
       DoReadRestart(reader, dis, Teuchos::null);
     };
@@ -1453,13 +1447,13 @@ namespace CONTACT
      *
      *\param output (in): flag indicating whether force output shall be written
      */
-    virtual void InterfaceForces(bool output = false);
+    void InterfaceForces(bool output = false) override;
 
     //! Print interfaces
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     //! Print summary of active set status to screen
-    virtual void PrintActiveSet() const;
+    void PrintActiveSet() const override;
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -1480,7 +1474,7 @@ namespace CONTACT
      \param step (in): current time step index
      \param iter (in): current iteration index
      */
-    void VisualizeGmsh(const int step, const int iter);
+    void VisualizeGmsh(const int step, const int iter) override;
 
     //!@}
 
@@ -1493,25 +1487,25 @@ namespace CONTACT
      */
     //!@{
 
-    virtual bool ActiveSetSemiSmoothConverged() const = 0;
-    virtual bool ActiveSetConverged() = 0;
+    bool ActiveSetSemiSmoothConverged() const override = 0;
+    bool ActiveSetConverged() override = 0;
     virtual int ActiveSetSteps() = 0;
     virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const = 0;
     virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const = 0;
-    virtual double ConstraintNorm() const = 0;
+    double ConstraintNorm() const override = 0;
     virtual void EvaluateContact(
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual void EvaluateFriction(
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
-    virtual void EvaluateRelMovPredict() = 0;
-    virtual double InitialPenalty() = 0;
-    virtual void Initialize() = 0;
-    virtual void InitializeUzawa(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
+    void EvaluateRelMovPredict() override = 0;
+    double InitialPenalty() override = 0;
+    void Initialize() override = 0;
+    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override = 0;
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
-    virtual void ResetActiveSet() = 0;
-    virtual void ResetPenalty() = 0;
-    virtual void ModifyPenalty() = 0;
+    void ResetActiveSet() override = 0;
+    void ResetPenalty() override = 0;
+    void ModifyPenalty() override = 0;
     void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
@@ -1519,11 +1513,11 @@ namespace CONTACT
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override = 0;
     virtual void EvalConstrRHS() = 0;
-    virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
-    virtual void UpdateActiveSet() = 0;
-    virtual void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) = 0;
-    virtual void UpdateUzawaAugmentedLagrange() = 0;
-    virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override = 0;
+    void UpdateActiveSet() override = 0;
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override = 0;
+    void UpdateUzawaAugmentedLagrange() override = 0;
+    void UpdateConstraintNorm(int uzawaiter = 0) override = 0;
 
     //!@}
 
@@ -1536,14 +1530,14 @@ namespace CONTACT
     //!@{
 
     void RedistributeMeshtying() final {}
-    void RestrictMeshtyingZone() {}
+    void RestrictMeshtyingZone() override {}
     void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
+        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override
     {
     }
     Teuchos::RCP<const Epetra_Vector> MeshInitialization() override { return Teuchos::null; };
 
-    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) {}
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) override {}
 
     //!@}
 
@@ -1677,7 +1671,7 @@ namespace CONTACT
 
     /*! \brief run pre-compute x routine for contact
      *
-     *  This routine is called in the end of a NOX::Solver::step() call.
+     *  This routine is called in the end of a ::NOX::Solver::step() call.
      *
      *  \param cparams (in)    : parameter interface between the contact objects
      *                           and the structural time integration
@@ -1736,7 +1730,7 @@ namespace CONTACT
 
      */
     void Evaluate(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
+        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*! \brief Evaluate relative movement of contact bodies
 
@@ -1745,7 +1739,7 @@ namespace CONTACT
      or regarding the change of mortar projection. The second possibility
      is definitely objective whereas the first possibility is objective
      only when the gap is zero. */
-    void EvaluateRelMov();
+    void EvaluateRelMov() override;
 
     /*! \brief Initialize and evaluate Mortar stuff for the next Newton step
 
@@ -1757,8 +1751,8 @@ namespace CONTACT
      to global matrices and vectors respectively. No setup of the global system
      is to be done here yet, so there is no need to pass in the effective
      stiffness K or the effective load vector f. */
-    virtual void InitMortar();
-    virtual void AssembleMortar();
+    void InitMortar() override;
+    void AssembleMortar() override;
 
     /*! \brief Initialize and evaluate interface for the next Newton step
 
@@ -1772,7 +1766,7 @@ namespace CONTACT
      and overlap detection, integration of the  Mortar terms D, M and of the
      weighted gap. Additionally, the linearizations of geometric quantities
      (delta_n, delta_t, delta_D, delta_M) are calculated. */
-    void InitEvalInterface() { InitEvalInterface(Teuchos::null); };
+    void InitEvalInterface() override { InitEvalInterface(Teuchos::null); };
     virtual void InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 
     /*! check the parallel distribution and initialize a possible
@@ -2317,5 +2311,7 @@ namespace CONTACT
 
 //! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& strategy);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_ABSTRACT_STRATEGY_H

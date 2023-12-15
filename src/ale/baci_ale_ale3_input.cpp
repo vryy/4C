@@ -10,8 +10,10 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale3.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -25,7 +27,7 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   linedef->Print(std::cout);
 
-  DiscretizationType shape = StringToDistype(distype);
+  CORE::FE::CellType shape = CORE::FE::StringToCellType(distype);
 
   std::cout << " distype " << distype << std::endl;
 
@@ -33,28 +35,28 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   switch (shape)
   {
-    case hex8:
+    case CORE::FE::CellType::hex8:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
     }
-    case hex20:
-    case hex27:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
     }
-    case pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
       break;
     }
-    case tet4:
+    case CORE::FE::CellType::tet4:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::tet_1point;
       break;
     }
-    case tet10:
+    case CORE::FE::CellType::tet10:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;
@@ -75,3 +77,5 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

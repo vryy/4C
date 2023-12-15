@@ -21,6 +21,8 @@
 #include "baci_adapter_str_wrapper.H"
 #include "baci_pasi_str_model_evaluator_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                 |
  *----------------------------------------------------------------------*/
@@ -47,18 +49,18 @@ namespace ADAPTER
     //! constructor
     explicit PASIStructureWrapper(Teuchos::RCP<Structure> structure);
 
-    //! Destructor
-    virtual ~PASIStructureWrapper(){};
-
     //! set pointer to model evaluator
-    void SetModelEvaluatorPtr(Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedPASI> me)
+    void SetModelEvaluatorPtr(Teuchos::RCP<BACI::STR::MODELEVALUATOR::PartitionedPASI> me)
     {
       pasi_model_evaluator_ = me;
       return;
     }
 
     //! communication object at the interface
-    virtual Teuchos::RCP<const ::STR::AUX::MapExtractor> Interface() const { return interface_; }
+    virtual Teuchos::RCP<const BACI::STR::AUX::MapExtractor> Interface() const
+    {
+      return interface_;
+    }
 
     //! apply interface force to structure interface
     void ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce);
@@ -69,19 +71,21 @@ namespace ADAPTER
     //! If this method is related to the structural field,
     //! a corresponding method in the model evaluator may be
     //! called, if necessary.
-    Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedPASI> pasi_model_evaluator_;
+    Teuchos::RCP<BACI::STR::MODELEVALUATOR::PartitionedPASI> pasi_model_evaluator_;
 
     //! access the pasi model evaluator
-    Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedPASI> PASIModelEvaluator()
+    Teuchos::RCP<BACI::STR::MODELEVALUATOR::PartitionedPASI> PASIModelEvaluator()
     {
       return pasi_model_evaluator_;
     };
 
     //! the interface map setup for interface <-> full translation
-    Teuchos::RCP<::STR::AUX::MapExtractor> interface_;
+    Teuchos::RCP<BACI::STR::AUX::MapExtractor> interface_;
   };
 
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

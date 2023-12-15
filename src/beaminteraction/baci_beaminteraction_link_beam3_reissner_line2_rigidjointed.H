@@ -15,6 +15,8 @@ elements
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -31,14 +33,14 @@ namespace DRT
 
 namespace BEAMINTERACTION
 {
-  class BeamLinkBeam3rLine2RigidJointedType : public DRT::ParObjectType
+  class BeamLinkBeam3rLine2RigidJointedType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "BeamLinkBeam3rLine2RigidJointedType"; };
+    std::string Name() const override { return "BeamLinkBeam3rLine2RigidJointedType"; };
 
     static BeamLinkBeam3rLine2RigidJointedType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamLinkBeam3rLine2RigidJointedType instance_;
@@ -70,13 +72,10 @@ namespace BEAMINTERACTION
     */
     BeamLinkBeam3rLine2RigidJointed(const BeamLinkBeam3rLine2RigidJointed& old);
 
-    /*!
-    \brief Destructor
-    */
-    virtual ~BeamLinkBeam3rLine2RigidJointed(){};
+
 
     //! Setup [derived]
-    virtual void Setup(int matnum);
+    void Setup(int matnum) override;
 
     /*!
     \brief Return unique ParObject id [derived]
@@ -84,7 +83,7 @@ namespace BEAMINTERACTION
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return BeamLinkBeam3rLine2RigidJointedType::Instance().UniqueParObjectId();
     };
@@ -95,7 +94,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class [derived]
@@ -103,10 +102,10 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /// return copy of this linking object
-    virtual Teuchos::RCP<BeamLink> Clone() const;
+    Teuchos::RCP<BeamLink> Clone() const override;
 
     //@}
 
@@ -114,19 +113,20 @@ namespace BEAMINTERACTION
     //! @name Access methods
 
     //! get internal linker energy
-    virtual double GetInternalEnergy() const override;
+    double GetInternalEnergy() const override;
 
     //! get kinetic linker energy
-    virtual double GetKineticEnergy() const override;
+    double GetKineticEnergy() const override;
 
     //! scale linker element reference length
-    virtual void ScaleLinkerReferenceLength(double scalefac)
+    void ScaleLinkerReferenceLength(double scalefac) override
     {
       dserror(" not yet implemented for beam3r element.");
     }
 
     //! get force in first or second binding spot
-    virtual void GetBindingSpotForce(int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const
+    void GetBindingSpotForce(
+        int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const override
     {
       bspotforce = bspotforces_[bspotid];
     }
@@ -138,23 +138,23 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate forces and stiffness contribution [derived]
     */
-    virtual bool EvaluateForce(
-        CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2);
+    bool EvaluateForce(CORE::LINALG::SerialDenseVector& forcevec1,
+        CORE::LINALG::SerialDenseVector& forcevec2) override;
 
     /*!
     \brief Evaluate stiffness contribution [derived]
     */
-    virtual bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+    bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22);
+        CORE::LINALG::SerialDenseMatrix& stiffmat22) override;
 
     /*!
     \brief Evaluate forces and stiffness contribution [derived]
     */
-    virtual bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
+    bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
         CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22);
+        CORE::LINALG::SerialDenseMatrix& stiffmat22) override;
 
     //@}
 
@@ -184,5 +184,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

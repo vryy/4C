@@ -8,7 +8,6 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -21,6 +20,8 @@
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -186,14 +187,14 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
         soshw6_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
             params, iostress, iostrain);
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -285,7 +286,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -864,7 +865,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i = 0; i < num_sp; ++i)
     {
-      CORE::DRT::UTILS::shape_function_3D_deriv1(df_sp[i], r[i], s[i], t[i], wedge6);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(
+          df_sp[i], r[i], s[i], t[i], CORE::FE::CellType::wedge6);
     }
 
     // return adresses of just evaluated matrices
@@ -1028,8 +1030,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
   const CORE::DRT::UTILS::IntegrationPoints3D intpoints(
       CORE::DRT::UTILS::GaussRule3D::wedge_1point);
   CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> df0;
-  CORE::DRT::UTILS::shape_function_3D_deriv1(
-      df0, intpoints.qxg[0][0], intpoints.qxg[0][1], intpoints.qxg[0][2], DRT::Element::wedge6);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(df0, intpoints.qxg[0][0], intpoints.qxg[0][1],
+      intpoints.qxg[0][2], CORE::FE::CellType::wedge6);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> jac0;
@@ -1329,3 +1331,5 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
   StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, soshw6_easpoisthick,
       (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 }
+
+BACI_NAMESPACE_CLOSE

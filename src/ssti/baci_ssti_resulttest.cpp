@@ -9,9 +9,11 @@
 /*----------------------------------------------------------------------*/
 #include "baci_ssti_resulttest.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_ssti_algorithm.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -69,3 +71,4 @@ double SSTI::SSTIResultTest::ResultSpecial(const std::string& quantity) const
 
   return result;
 }
+BACI_NAMESPACE_CLOSE

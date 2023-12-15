@@ -13,8 +13,8 @@
 #define BACI_LIB_CONTAINER_H
 
 
-#include "baci_lib_parobject.H"
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobject.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
 
@@ -26,16 +26,18 @@
 class Epetra_MultiVector;
 class Epetra_Vector;
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
-  class ContainerType : public DRT::ParObjectType
+  class ContainerType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "ContainerType"; }
+    std::string Name() const override { return "ContainerType"; }
 
     static ContainerType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ContainerType instance_;
@@ -48,7 +50,7 @@ namespace DRT
 
   You can store arrays of integer, double, and strings in this container
   and access the data by keys. As the Container implements ParObject
-  everything stored in here can easily be communicated using the DRT::Exporter.
+  everything stored in here can easily be communicated using the CORE::COMM::Exporter.
 
   The intention of this class is to store rather 'small' units of data. Though possible,
   it is not meant to be used at the system level to store huge data sets such as sparse matrices or
@@ -56,7 +58,7 @@ namespace DRT
   or Epetra_CrsMatrix objects and is not supposed to in the future either.
 
   */
-  class Container : public DRT::ParObject
+  class Container : public CORE::COMM::ParObject
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -75,11 +77,6 @@ namespace DRT
     */
     Container(const DRT::Container& old);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~Container();
 
     /*!
     \brief Return unique ParObject id
@@ -88,7 +85,7 @@ namespace DRT
     top of this file.
 
     */
-    virtual int UniqueParObjectId() const;
+    int UniqueParObjectId() const override;
 
     /*!
     \brief Pack this class so it can be communicated
@@ -96,7 +93,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -104,7 +101,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -279,7 +276,7 @@ namespace DRT
 
    \note If record with name name already exists, it will be overwritten
    */
-    void Add(const std::string& name, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> data);
+    void Add(const std::string& name, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matrix);
 
     /*!
    \brief Add Teuchos::rcp to Epetra_MultiVector to the container
@@ -556,8 +553,10 @@ namespace DRT
 }  // namespace DRT
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Container& node);
+std::ostream& operator<<(std::ostream& os, const DRT::Container& cont);
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_CONTAINER_H

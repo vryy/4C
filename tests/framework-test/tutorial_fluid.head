@@ -14,7 +14,7 @@ SHAPEFCT                        Polynomial
 //
 // Switch on adaptive control of linear solver tolerance for nonlinear solution
 //                              Yes,No,yes,no,YES,NO
-ADAPTCONV                       yes
+ADAPTCONV                       no
 //
 // The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit
 ADAPTCONV_BETTER                0.1

@@ -30,15 +30,16 @@ For a detailed description see:
 #include "baci_inpar_structure.H"                               // for pstime
 #include "baci_io_control.H"                                    // for debug plotting with gmsh
 #include "baci_io_gmsh.H"                                       // for debug plotting with gmsh
-#include "baci_lib_function_of_time.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"  // for debug plotting with gmsh
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_constraintmixture_history.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+#include "baci_utils_function_of_time.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -96,7 +97,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ConstraintMixture::CreateMaterial()
 
 MAT::ConstraintMixtureType MAT::ConstraintMixtureType::instance_;
 
-DRT::ParObject* MAT::ConstraintMixtureType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ConstraintMixtureType::Create(const std::vector<char>& data)
 {
   MAT::ConstraintMixture* comix = new MAT::ConstraintMixture();
   comix->Unpack(data);
@@ -117,9 +118,9 @@ MAT::ConstraintMixture::ConstraintMixture(MAT::PAR::ConstraintMixture* params) :
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         12/10|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
+void MAT::ConstraintMixture::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -182,10 +183,8 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -485,10 +484,18 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
   }
   minindex_ = 0;
 
-  // prestress time
-  if (::UTILS::PRESTRESS::IsMulfActive(params_->starttime_ + dt))
   {
-    dserror("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
+    const INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+    const double pstime =
+        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+
+    const double currentTime = params_->starttime_ + dt;
+    // prestress time
+    if (pstype == INPAR::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15)
+    {
+      dserror("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
+    }
   }
 
   // basal mass production rate determined by DENS, PHIE and degradation function
@@ -972,7 +979,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       // numbering starts from zero here, thus use curvenum-1
       if (curvenum)
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1)
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1)
                        .Evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f",
@@ -1447,7 +1454,7 @@ void MAT::ConstraintMixture::EvaluateElastin(const CORE::LINALG::Matrix<NUM_STRE
     // numbering starts from zero here, thus use curvenum-1
     if (curvenum)
       curvefac = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1)
                      .Evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       dserror(
@@ -2054,7 +2061,8 @@ void MAT::ConstraintMixture::Degradation(double t, double& degr)
 /*----------------------------------------------------------------------*
  |  ElastinDegradation                            (private)        05/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord, double& degr)
+void MAT::ConstraintMixture::ElastinDegradation(
+    CORE::LINALG::Matrix<1, 3> coord, double& elastin_survival)
 {
   if (*params_->elastindegrad_ == "Rectangle")
   {
@@ -2095,7 +2103,7 @@ void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord
       funcphi = 1.0;
     }
 
-    degr = 1.0 - funcz * funcphi;
+    elastin_survival = 1.0 - funcz * funcphi;
   }
   else if (*params_->elastindegrad_ == "RectanglePlate")
   {
@@ -2135,7 +2143,7 @@ void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord
       funcx = 1.0;
     }
 
-    degr = 1.0 - funcz * funcx;
+    elastin_survival = 1.0 - funcz * funcx;
   }
   else if (*params_->elastindegrad_ == "Wedge")
   {
@@ -2162,7 +2170,7 @@ void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord
       funcz = 1.0;
     }
 
-    degr = 1.0 - funcz;
+    elastin_survival = 1.0 - funcz;
   }
   else if (*params_->elastindegrad_ == "Circles")
   {
@@ -2201,7 +2209,7 @@ void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord
       func2 = 0.5 * (1.0 - cos((rad2 - radmax) / (radmax - radmin) * M_PI));
     }
     double func = std::max(func1, func2);
-    degr = 1.0 - func;
+    elastin_survival = 1.0 - func;
   }
 }
 
@@ -3138,26 +3146,26 @@ void MAT::ConstraintMixtureOutputToGmsh(
       xcurr(i, 1) = actele->Nodes()[i]->X()[1] + mydisp[i * numdof + 1];
       xcurr(i, 2) = actele->Nodes()[i]->X()[2] + mydisp[i * numdof + 2];
     }
-    const DRT::Element::DiscretizationType distype = actele->Shape();
+    const CORE::FE::CellType distype = actele->Shape();
     CORE::LINALG::SerialDenseVector funct(numnode);
 
     // define gauss rule
     CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::undefined;
     switch (distype)
     {
-      case DRT::Element::hex8:
+      case CORE::FE::CellType::hex8:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::hex_8point;
         if (ngp != 8) dserror("hex8 has not 8 gauss points: %d", ngp);
         break;
       }
-      case DRT::Element::wedge6:
+      case CORE::FE::CellType::wedge6:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
         if (ngp != 6) dserror("wedge6 has not 6 gauss points: %d", ngp);
         break;
       }
-      case DRT::Element::tet4:
+      case CORE::FE::CellType::tet4:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         if (ngp != 1) dserror("tet4 has not 1 gauss point: %d", ngp);
@@ -3205,3 +3213,5 @@ void MAT::ConstraintMixtureOutputToGmsh(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

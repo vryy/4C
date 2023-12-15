@@ -13,6 +13,8 @@
 
 #include <NOX_Observer.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -31,23 +33,22 @@ namespace NOX
          *
          * \author Michael Hiermeier */
 
-        class Generic : public NOX::Observer
+        class Generic : public ::NOX::Observer
         {
          public:
           //! constructor
           Generic();
 
-          //! destructor
-          virtual ~Generic(){};
+          void runPreIterate(const ::NOX::Solver::Generic& solver) override;
 
-          void runPreIterate(const NOX::Solver::Generic& solver) override;
-
-          void runPreSolve(const NOX::Solver::Generic& nlnSolver) override;
+          void runPreSolve(const ::NOX::Solver::Generic& nlnSolver) override;
         };
       }  // namespace PrePostOp
     }    // namespace Solver
   }      // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_SOLVER_PREPOSTOP_GENERIC_H

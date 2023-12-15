@@ -13,9 +13,12 @@
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_inpar_elch.H"
 #include "baci_io.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_scatra_timint_elch.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -38,16 +41,10 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
+void ELCH::MovingBoundaryAlgorithm::Init()
 {
   // call setup in base class
-  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
+  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init();
 
   // safety check
   if (!ScaTraField()->Discretization()->GetCondition("ScaTraFluxCalc"))
@@ -56,8 +53,6 @@ void ELCH::MovingBoundaryAlgorithm::Init(
         "Scalar transport discretization must have boundary condition for flux calculation at FSI "
         "interface!");
   }
-
-  ScaTraField()->SetNumberOfDofSetDisplacement(2);
 
   pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elch_params_,
                           "MOVINGBOUNDARY") == INPAR::ELCH::elch_mov_bndry_pseudo_transient);
@@ -320,7 +315,7 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   }
 
   // now the other physical fiels
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
   AleField()->Output();
 }
 
@@ -406,3 +401,4 @@ void ELCH::MovingBoundaryAlgorithm::TestResults()
   problem->AddFieldTest(ScaTraField()->CreateScaTraFieldTest());
   problem->TestAll(ScaTraField()->Discretization()->Comm());
 }
+BACI_NAMESPACE_CLOSE

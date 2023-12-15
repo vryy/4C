@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class CoAbstractStrategy;
@@ -25,9 +27,6 @@ namespace CONTACT
    public:
     /// constructor
     NoxInterface();
-
-    /// destructor
-    virtual ~NoxInterface(){};
 
     /// initialize important member variables
     void Init(const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr);
@@ -40,47 +39,47 @@ namespace CONTACT
     /// @name Supported basic interface functions
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
-    virtual double GetConstraintRHSNorms(const Epetra_Vector& F,
-        NOX::NLN::StatusTest::QuantityType chQ, NOX::Abstract::Vector::NormType type,
-        bool isScaled) const;
+    double GetConstraintRHSNorms(const Epetra_Vector& F,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
+        bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
-    virtual double GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew,
-        const Epetra_Vector& xOld, double aTol, double rTol,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const;
+    double GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
+        double aTol, double rTol, NOX::NLN::StatusTest::QuantityType checkQuantity,
+        bool disable_implicit_weighting) const override;
 
     /// Returns the increment norm of the largange multiplier DoFs
-    virtual double GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew,
-        const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
-        NOX::Abstract::Vector::NormType type, bool isScaled) const;
+    double GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
+        bool isScaled) const override;
 
     /// Returns the previous solution norm of the largange multiplier DoFs
-    virtual double GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
-        bool isScaled) const;
+    double GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
+        bool isScaled) const override;
 
     /// Returns the active set info [derived]
-    virtual enum NOX::StatusTest::StatusType GetActiveSetInfo(
-        enum NOX::NLN::StatusTest::QuantityType qt, int& activesetsize) const;
+    enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
+        enum NOX::NLN::StatusTest::QuantityType checkQuantity, int& activesetsize) const override;
 
     /// Returns the current active set map
-    virtual Teuchos::RCP<const Epetra_Map> GetCurrentActiveSetMap(
-        enum NOX::NLN::StatusTest::QuantityType qt) const;
+    Teuchos::RCP<const Epetra_Map> GetCurrentActiveSetMap(
+        enum NOX::NLN::StatusTest::QuantityType checkQuantity) const override;
 
     /// Returns the old active set map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
-        enum NOX::NLN::StatusTest::QuantityType qt) const;
+    Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
+        enum NOX::NLN::StatusTest::QuantityType checkQuantity) const override;
     /// @}
 
     /// @name Merit function support functions
     /// @{
 
-    virtual double GetModelValue(NOX::NLN::MeritFunction::MeritFctName name) const;
+    double GetModelValue(NOX::NLN::MeritFunction::MeritFctName name) const override;
 
-    virtual double GetLinearizedModelTerms(const Epetra_Vector& dir,
+    double GetLinearizedModelTerms(const Epetra_Vector& dir,
         const enum NOX::NLN::MeritFunction::MeritFctName name,
         const enum NOX::NLN::MeritFunction::LinOrder linorder,
-        const enum NOX::NLN::MeritFunction::LinType lintype) const;
+        const enum NOX::NLN::MeritFunction::LinType lintype) const override;
 
     /// @}
 
@@ -124,5 +123,7 @@ namespace CONTACT
   };
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_NOXINTERFACE_H

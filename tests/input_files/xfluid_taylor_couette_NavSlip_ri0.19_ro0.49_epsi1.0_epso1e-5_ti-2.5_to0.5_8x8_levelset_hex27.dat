@@ -26,8 +26,6 @@ ITEMAX                          20
 CONVCHECK                       L_2_norm
 RESULTSEVRY                     1
 RESTARTEVRY                     10
-ADAPTCONV                       Yes
-ADAPTCONV_BETTER                0.1
 CONVFORM                        convective
 PREDICTOR                       steady_state
 MAXTIME                         1

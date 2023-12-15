@@ -9,18 +9,19 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
+#include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  calculate stabilization parameter  (private)              gjb 06/08 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
@@ -89,7 +90,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
 /*----------------------------------------------------------------------*
  |  calculation of tau according to Taylor, Hughes and Zarins  vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauTaylorHughesZarins(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
@@ -200,7 +201,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauTaylorHughesZarins(
 /*----------------------------------------------------------------------*
  |  calculation of tau according to Franca and Valentin        vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaValentin(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
@@ -268,7 +269,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaValentin(
 /*----------------------------------------------------------------------*
  |  calculation of tau according to Franca, Shakib and Codina  vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaShakibCodina(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
@@ -341,7 +342,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaShakibCodina(
 /*----------------------------------------------------------------------*
  |  calculation of tau according to Codina                     vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauCodina(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
@@ -395,7 +396,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauCodina(
 /*---------------------------------------------------------------------------*
  |  calculation of tau according to Franca, Madureira and Valentin  vg 01/11 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaMadureiraValentin(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
@@ -458,7 +459,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaMadureiraValen
 /*----------------------------------------------------------------------*
  |  exact calculation of tau for 1D                            vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
@@ -502,7 +503,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
 /*----------------------------------------------------------------------*
  |  calculation of characteristic element length               vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
     const double vol,                               //!< element volume
     const double vel_norm,                          //!< norm of velocity
@@ -566,7 +567,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
 /*----------------------------------------------------------------------*
  |  calculate artificial diffusivity                           vg 10/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
     const double vol,                                //!< element volume
     const int k,                                     //!< id of current scalar
@@ -837,7 +838,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
  |  calculation of strong residual for stabilization                             |
  | (depending on respective stationary or time-integration scheme)      vg 10/11 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcStrongResidual(
     const int k,           //!< index of current scalar
     double& scatrares,     //!< residual of convection-diffusion-reaction eq
@@ -894,7 +895,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcStrongResidual(
 /*----------------------------------------------------------------------*
  |  calculate subgrid-scale velocity                           vg 10/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
     const DRT::Element* ele,                         //!< the element we are dealing with
     CORE::LINALG::Matrix<nsd_, 1>& sgvelint,         //!< subgrid velocity at integration point
@@ -990,9 +991,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
             // evaluation at the integration point. However, we need a node
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
-            functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate((ele->Nodes()[jnode])->X(), scatraparatimint_->Time(), isd);
+            functfac =
+                DRT::Problem::Instance()
+                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                    .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), isd);
           }
           else
             dserror("Negative time value in body force calculation: time = %f",
@@ -1089,7 +1091,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
 /*---------------------------------------------------------------*
  | calculate viscous part of subgrid-scale velocity   fang 02/15 |
  *---------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocityVisc(
     CORE::LINALG::Matrix<nsd_, 1>& epsilonvel)
 {
@@ -1122,6 +1124,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocityVisc(
   return;
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocityVisc
 
+BACI_NAMESPACE_CLOSE
 
 // template classes
 

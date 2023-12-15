@@ -20,6 +20,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -49,9 +51,6 @@ namespace PARTICLEWALL
      * \param[in] params particle simulation parameter list
      */
     explicit WallDataState(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~WallDataState() = default;
 
     /*!
      * \brief init wall data state container
@@ -171,4 +170,6 @@ namespace PARTICLEWALL
 }  // namespace PARTICLEWALL
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

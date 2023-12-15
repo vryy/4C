@@ -10,15 +10,14 @@
 
 #include "baci_so3_hex8.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_fiber_nodal_fiber_holder.H"
 #include "baci_fiber_node.H"
 #include "baci_fiber_utils.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_prestress_service.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_element_service.H"
@@ -26,12 +25,14 @@
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_prestress.H"
+#include "baci_so3_prestress_service.H"
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_hex8Type DRT::ELEMENTS::So_hex8Type::instance_;
 
@@ -42,7 +43,7 @@ namespace
   const std::string name = DRT::ELEMENTS::So_hex8Type::Instance().Name();
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex8Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_hex8(-1, -1);
   object->Unpack(data);
@@ -133,11 +134,11 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-    pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+    pstype_ = BACI::UTILS::PRESTRESS::GetType();
+    pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
     if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
   }
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
@@ -178,7 +179,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
@@ -208,15 +209,15 @@ DRT::Element* DRT::ELEMENTS::So_hex8::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex8::Shape() const { return hex8; }
+CORE::FE::CellType DRT::ELEMENTS::So_hex8::Shape() const { return CORE::FE::CellType::hex8; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_hex8::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -238,9 +239,9 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
-    DRT::ParObject::AddtoPack(data, *prestress_);
+    CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
 
   // detJ_
@@ -262,10 +263,9 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -360,30 +360,13 @@ void DRT::ELEMENTS::So_hex8::Print(std::ostream& os) const
 /*====================================================================*/
 
 /*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                  maf 04/07|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex8::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
-/*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex8::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -391,15 +374,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex8::Surfaces()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex8::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -412,12 +388,12 @@ std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOH8, 1> funct;
   // Element midpoint at r=s=t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
@@ -454,7 +430,7 @@ bool DRT::ELEMENTS::So_hex8::VisData(const std::string& name, std::vector<double
 // Compute nodal fibers and call post setup routine of the materials
 void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
 {
-  if (DRT::FIBER::UTILS::HaveNodalFibers<hex8>(Nodes()))
+  if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::hex8>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -468,7 +444,7 @@ void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
     DRT::FIBER::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex8>(
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::hex8>(
         Nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);
@@ -481,3 +457,5 @@ void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
   // do not throw an error if key does not exist.
   params.remove("fiberholder", false);
 }
+
+BACI_NAMESPACE_CLOSE

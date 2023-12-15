@@ -9,14 +9,14 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 
 #include <sstream>
 
 namespace
 {
+  using namespace BACI::DRT::INPUT;
 
-  using namespace DRT::INPUT;
   TEST(LineDefinitionTest, AddTag)
   {
     std::istringstream input("OMEGA");

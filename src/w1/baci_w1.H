@@ -13,6 +13,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_comm_parobjectfactory.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_inpar_structure.H"
@@ -20,13 +21,14 @@
 #include "baci_lib_elementtype.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_so3_base.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -41,25 +43,26 @@ namespace DRT
     class Wall1Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Wall1Type"; }
+      std::string Name() const override { return "Wall1Type"; }
 
       static Wall1Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, int const numdof, int const dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, int const numdof, int const dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static Wall1Type instance_;
@@ -135,13 +138,13 @@ namespace DRT
       ///
       /// The Clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /// Get shape type of element
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /// Set discretization type of element
-      virtual void SetDisType(DRT::Element::DiscretizationType shape)
+      virtual void SetDisType(CORE::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -149,7 +152,7 @@ namespace DRT
 
 
       /// Return number of lines of this element
-      virtual int NumLine() const
+      int NumLine() const override
       {
         if (NumNode() == 4 || NumNode() == 8 || NumNode() == 9)
           return 4;
@@ -158,32 +161,30 @@ namespace DRT
       }
 
       /// Return number of surfaces of this element
-      virtual int NumSurface() const { return 1; }
+      int NumSurface() const override { return 1; }
 
       /// Get vector of Teuchos::RCPs to the lines of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /// Get vector of Teuchos::RCPs to the surfaces of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /// Return unique ParObject id
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      virtual int UniqueParObjectId() const { return Wall1Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return Wall1Type::Instance().UniqueParObjectId(); }
 
       /// Pack this class so it can be communicated
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /// Destructor
-      virtual ~Wall1();
 
       //@}
 
@@ -192,7 +193,7 @@ namespace DRT
       /*!
       \brief Does this element use EAS?
       */
-      bool HaveEAS() const { return (eastype_ != eas_vague); };
+      bool HaveEAS() const override { return (eastype_ != eas_vague); };
 
       /// Get number of degrees of freedom of a certain node
       /// (implements pure virtual DRT::Element)
@@ -201,7 +202,7 @@ namespace DRT
       /// As this may vary along a simulation, the element can redecide the
       /// number of degrees of freedom per node along the way for each of it's nodes
       /// separately.
-      virtual int NumDofPerNode(const DRT::Node& node) const { return Wall1::noddof_; }
+      int NumDofPerNode(const DRT::Node& node) const override { return Wall1::noddof_; }
 
       /// Get number of degrees of freedom per element
       /// (implements pure virtual DRT::Element)
@@ -212,12 +213,9 @@ namespace DRT
       /// \note Element degrees of freedom mentioned here are dofs that are visible
       ///      at the level of the total system of equations. Purely internal
       ///      element dofs that are condensed internally should NOT be considered.
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
-      /// Print this element
-      void Print(std::ostream& os) const;
-
-      virtual DRT::ElementType& ElementType() const { return Wall1Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return Wall1Type::Instance(); }
 
       //@}
 
@@ -225,8 +223,8 @@ namespace DRT
       //@{
 
       /// Read input for this element
-      virtual bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -238,9 +236,8 @@ namespace DRT
       /// Evaluate Wall1 element stiffness, mass, internal forces etc
       ///
       /// \return 0 if successful, negative otherwise
-      virtual int Evaluate(
-          Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between
-                                           ///< control routine and elements
+      int Evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
+                                                    ///< between control routine and elements
           DRT::Discretization& discretization,  ///< A reference to the underlying discretization
           std::vector<int>& lm,                 ///< location vector of this element
           CORE::LINALG::SerialDenseMatrix& elemat1,  ///< matrix to be filled by element. If nullptr
@@ -258,14 +255,14 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element. If nullptr
                                                      ///< on input, the controlling method does not
                                                      ///< epxect the element to fill this vector
-      );
+          ) override;
 
       /// Evaluate a Neumann boundary condition
       ///
       /// this method evaluates a surfaces Neumann condition on the wall element
       ///
       /// \return 0 if successful, negative otherwise
-      virtual int EvaluateNeumann(
+      int EvaluateNeumann(
           Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between
                                            ///< control routine and elements
           DRT::Discretization& discretization,  ///< A reference to the underlying discretization
@@ -273,7 +270,7 @@ namespace DRT
           std::vector<int>& lm,                 ///< location vector of this element
           CORE::LINALG::SerialDenseVector&
               elevec1,  ///< vector to be filled by element. If nullptr on input
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -327,7 +324,7 @@ namespace DRT
       bool structale_;
 
       //! the element discretization type (shape)
-      DRT::Element::DiscretizationType distype_;
+      CORE::FE::CellType distype_;
 
       /// @name Internal calculation methods
       //@{
@@ -499,12 +496,12 @@ namespace DRT
 
       /// setup of constant EAS data
       void w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,  ///< linear B-op at origin
-          CORE::LINALG::SerialDenseVector& F0,             ///< deformation gradient at origin
-          CORE::LINALG::SerialDenseMatrix& xjm0,           ///< jacobian matrix at origin
-          double& detJ0,                                   ///< det of Jacobian at origin
-          const CORE::LINALG::SerialDenseMatrix& xrefe,    ///< material element coords
-          const CORE::LINALG::SerialDenseMatrix& xcure,    ///< current element coords
-          const DRT::Element::DiscretizationType& distype  ///< discretisation type
+          CORE::LINALG::SerialDenseVector& F0,           ///< deformation gradient at origin
+          CORE::LINALG::SerialDenseMatrix& xjm0,         ///< jacobian matrix at origin
+          double& detJ0,                                 ///< det of Jacobian at origin
+          const CORE::LINALG::SerialDenseMatrix& xrefe,  ///< material element coords
+          const CORE::LINALG::SerialDenseMatrix& xcure,  ///< current element coords
+          const CORE::FE::CellType& distype              ///< discretisation type
       );
 
       /// Get the enhanced deformation gradient and
@@ -783,19 +780,19 @@ namespace DRT
     class Wall1LineType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Wall1LineType"; }
+      std::string Name() const override { return "Wall1LineType"; }
 
       static Wall1LineType& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
@@ -843,18 +840,18 @@ namespace DRT
       ///
       /// The Clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
 
       /// Get shape type of element
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
 
       /// Return unique ParObject id
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of the parobject.H file.
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return Wall1LineType::Instance().UniqueParObjectId();
       }
@@ -862,15 +859,13 @@ namespace DRT
       /// Pack this class so it can be communicated
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /// Destructor
-      virtual ~Wall1Line();
 
       //@}
 
@@ -884,7 +879,7 @@ namespace DRT
       /// As this may vary along a simulation, the element can redecide the
       /// number of degrees of freedom per node along the way for each of it's nodes
       /// separately.
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         return ParentMasterElement()->NumDofPerNode(node);
       }
@@ -898,12 +893,12 @@ namespace DRT
       /// \note Element degrees of freedom mentioned here are dofs that are visible
       ///       at the level of the total system of equations. Purely internal
       ///       element dofs that are condensed internally should NOT be considered.
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /// Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return Wall1LineType::Instance(); }
+      DRT::ElementType& ElementType() const override { return Wall1LineType::Instance(); }
 
       //@}
 
@@ -915,7 +910,7 @@ namespace DRT
       /// this method evaluates a line Neumann condition on the wall element
       ///
       /// \return 0 if successful, negative otherwise
-      virtual int EvaluateNeumann(
+      int EvaluateNeumann(
           Teuchos::ParameterList&
               params,  ///< (in/out) ParameterList for communication between control routine
                        ///<   and elements
@@ -925,28 +920,28 @@ namespace DRT
           std::vector<int>& lm,       ///< (in) location vector of this element
           CORE::LINALG::SerialDenseVector&
               elevec1,  ///< (out) vector to be filled by element. If nullptr on input
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /// Evaluate a boundary condition
       ///
       /// this method evaluates a line Neumann condition on the wall element
       ///
       /// \return 0 if successful, negative otherwise
-      virtual int Evaluate(
-          Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between
-                                           ///< control routine and elements
+      int Evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
+                                                    ///< between control routine and elements
           DRT::Discretization&
               discretization,    ///< (in) A reference to the underlying discretization
           std::vector<int>& lm,  ///< (in) location vector of this element
           CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
           CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2,
-          CORE::LINALG::SerialDenseVector& elevector3);
+          CORE::LINALG::SerialDenseVector& elevector3) override;
 
       //! Evaluate method on mutliple dofsets for wall element
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           LocationArray& la, CORE::LINALG::SerialDenseMatrix& elematrix1,
           CORE::LINALG::SerialDenseMatrix& elematrix2, CORE::LINALG::SerialDenseVector& elevector1,
-          CORE::LINALG::SerialDenseVector& elevector2, CORE::LINALG::SerialDenseVector& elevector3);
+          CORE::LINALG::SerialDenseVector& elevector2,
+          CORE::LINALG::SerialDenseVector& elevector3) override;
 
       //@}
 
@@ -977,7 +972,7 @@ namespace DRT
           const CORE::LINALG::SerialDenseMatrix& deriv, std::vector<double>* unrm, const int iel);
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
     };  // class Wall1Line
 
@@ -985,5 +980,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_H

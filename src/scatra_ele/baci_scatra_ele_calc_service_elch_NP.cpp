@@ -13,11 +13,13 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------------------------------------*
  | validity check with respect to input parameters, degrees of freedom, number of scalars etc. fang
  02/15 |
  *----------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
     DRT::Element* ele  //!< current element
 )
@@ -58,7 +60,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
 /*----------------------------------------------------------------------*
  | evaluate an electrode boundary kinetics point condition   fang 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPoint(
     const DRT::Element* ele,                                   ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
@@ -157,7 +159,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
 /*----------------------------------------------------------------------*
  * Get Conductivity
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
     const enum INPAR::ELCH::EquPot equpot, double& sigma_all, std::vector<double>& sigma,
     bool effCond  // the bool effCond is not used for the NP formulation since the volume averaging
@@ -195,7 +197,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
     CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
@@ -221,7 +223,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
       // convective flux contribution
       q.Update(VarManager()->Phinp(k), VarManager()->ConVel(k));
 
-      // no break statement here!
+      [[fallthrough]];
     case INPAR::SCATRA::flux_diffusive:
       // diffusive flux contribution
       q.Update(-myelch::DiffManager()->GetIsotropicDiff(k), VarManager()->GradPhi(k), 1.0);
@@ -245,7 +247,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
 /*---------------------------------------------------------------------*
   |  calculate error compared to analytical solution           gjb 10/08|
   *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSolution(
     const DRT::Element* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& errors)
@@ -500,7 +502,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 /*------------------------------------------------------------------------------*
  | set internal variables for Nernst-Planck formulation              fang 02/15 |
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::SetInternalVariablesForMatAndRHS()
 {
   // set internal variables
@@ -514,23 +516,25 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::SetInternalVariablesForMatAndR
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::pyramid5>;
+// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

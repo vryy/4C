@@ -21,6 +21,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_solver_factory.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
@@ -312,7 +314,7 @@ const Epetra_Map& CONTACT::AUG::ComboStrategy::SlTangentialDoFRowMap(const bool&
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   return Get().GetRhsBlockPtr(bt);
 }
@@ -320,7 +322,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetRhsBlockPtr(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetRhsBlockPtrForNormCheck(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   return Get().GetRhsBlockPtrForNormCheck(bt);
 }
@@ -336,7 +338,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetCondensedRhsPt
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   return Get().GetMatrixBlockPtr(bt, cparams);
 }
@@ -686,3 +688,5 @@ std::ostream& CONTACT::AUG::ComboStrategy::Output::oscreen() const
   if (not oscreen_) dserror("Call initScreenOutput first");
   return *oscreen_;
 }
+
+BACI_NAMESPACE_CLOSE

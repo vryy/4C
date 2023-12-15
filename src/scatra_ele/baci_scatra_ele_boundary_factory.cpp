@@ -25,6 +25,8 @@
 #include "baci_scatra_ele_boundary_interface.H"
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
@@ -38,64 +40,74 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
 
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case CORE::FE::CellType::quad4:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::quad4, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<CORE::FE::CellType::quad4, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::quad8:
+    case CORE::FE::CellType::quad8:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::quad8, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<CORE::FE::CellType::quad8, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::quad9:
+    case CORE::FE::CellType::quad9:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::quad9, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<CORE::FE::CellType::quad9, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::tri3:
+    case CORE::FE::CellType::tri3:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::tri3, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<CORE::FE::CellType::tri3, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::tri6:
+    case CORE::FE::CellType::tri6:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::tri6, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<CORE::FE::CellType::tri6, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::line2:
+    case CORE::FE::CellType::line2:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::line2, 2>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<CORE::FE::CellType::line2, 2>(
+            impltype, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<DRT::Element::line2, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<CORE::FE::CellType::line2, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::line3:
+    case CORE::FE::CellType::line3:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::line3, 2>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<CORE::FE::CellType::line3, 2>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::nurbs3:  // 1D nurbs boundary element
+    case CORE::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
-      return DefineProblemType<DRT::Element::nurbs3, 2>(impltype, numdofpernode, numscal, disname);
+      return DefineProblemType<CORE::FE::CellType::nurbs3, 2>(
+          impltype, numdofpernode, numscal, disname);
     }
-    case DRT::Element::nurbs9:  // 2D nurbs boundary element
+    case CORE::FE::CellType::nurbs9:  // 2D nurbs boundary element
     {
-      return DefineProblemType<DRT::Element::nurbs9, 3>(impltype, numdofpernode, numscal, disname);
+      return DefineProblemType<CORE::FE::CellType::nurbs9, 3>(
+          impltype, numdofpernode, numscal, disname);
     }
     default:
     {
@@ -112,7 +124,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
 /*-------------------------------------------------------------------------------------------*
  | return instance of element evaluation class depending on implementation type   fang 02/15 |
  *-------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::DefineProblemType(
     const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode, const int numscal,
     const std::string& disname)
@@ -198,3 +210,5 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
 
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

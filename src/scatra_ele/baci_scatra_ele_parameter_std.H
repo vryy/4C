@@ -24,6 +24,8 @@ coexist with this general class.
 #include "baci_inpar_scatra.H"
 #include "baci_scatra_ele_parameter_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -50,7 +52,7 @@ namespace DRT
       bool IsConservative() const { return is_conservative_; };
       bool SphericalCoords() const { return sphericalcoords_; };
       INPAR::SCATRA::FluxType CalcFluxDomain() const { return calcflux_domain_; };
-      const Teuchos::RCP<std::vector<int>> WriteFluxIds() const { return writefluxids_; };
+      Teuchos::RCP<std::vector<int>> WriteFluxIds() const { return writefluxids_; };
       INPAR::SCATRA::FDCheck FDCheck() const { return fdcheck_; };
       double FDCheckEps() const { return fdcheckeps_; };
       double FDCheckTol() const { return fdchecktol_; };
@@ -63,10 +65,16 @@ namespace DRT
       int EMDSource() const { return emd_source_; };
       //! number of dofset associated with displacement dofs
       int NdsDisp() const;
+      //! number of dofset associated with interface growth dofs
+      int NdsGrowth() const;
       //! number of dofset to write micro scale values on
       int NdsMicro() const;
       //! number of dofset associated with pressure dofs
       int NdsPres() const;
+      //! number of dofset associated with scalar transport dofs
+      int NdsScaTra() const;
+      //! number of dofset associated with temperature dofs
+      int NdsThermo() const;
       //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
       int NdsTwoTensorQuantity() const;
       //! number of dofset associated with velocity related dofs
@@ -124,11 +132,20 @@ namespace DRT
       //! number of dofset associated with displacement dofs
       int nds_disp_;
 
+      //! number of dofset associated with interface growth dofs
+      int nds_growth_;
+
       //! number of dofset to write micro scale values on
       int nds_micro_;
 
       //! number of dofset associated with pressure dofs
       int nds_pres_;
+
+      //! number of dofset associated with scalar transport dofs
+      int nds_scatra_;
+
+      //! number of dofset associated with temperature dofs
+      int nds_thermo_;
 
       //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
       int nds_two_tensor_quantitiy_;
@@ -201,4 +218,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -23,6 +23,16 @@ namespace Teuchos
 {
   class ParameterList;
 }
+namespace NOX
+{
+  namespace Solver
+  {
+    class Generic;
+  }  // namespace Solver
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -37,10 +47,6 @@ namespace STR
 }  // namespace STR
 namespace NOX
 {
-  namespace Solver
-  {
-    class Generic;
-  }  // namespace Solver
   namespace NLN
   {
     namespace CONSTRAINT
@@ -83,12 +89,10 @@ namespace CONTACT
       static void Create(Teuchos::ParameterList& nox_params,
           const Teuchos::ParameterList& plot_params, const CONTACT::CoAbstractStrategy* strat);
 
-      void Do(const NOX::Solver::Generic& solver);
+      void Do(const ::NOX::Solver::Generic& solver);
 
       /// extra wrapper function to enable the plot of the predictor state as well
-      void DoPredictor(const NOX::Solver::Generic& solver);
-
-      ~Plot(){};
+      void DoPredictor(const ::NOX::Solver::Generic& solver);
 
      private:
       static bool Activated(const Teuchos::ParameterList& plot_params);
@@ -100,7 +104,7 @@ namespace CONTACT
 
       void Setup();
 
-      void Execute(const NOX::Solver::Generic& solver);
+      void Execute(const ::NOX::Solver::Generic& solver);
 
       void LinSpace(
           const double a, const double b, const unsigned n, std::vector<double>& res) const;
@@ -141,7 +145,7 @@ namespace CONTACT
           const enum INPAR::CONTACT::PlotFuncName pfunc_name) const;
 
       const NOX::NLN::CONSTRAINT::Group* GetReferenceGroup(
-          const NOX::Solver::Generic& solver) const;
+          const ::NOX::Solver::Generic& solver) const;
 
       double GetValue(const enum INPAR::CONTACT::PlotFuncName functype,
           NOX::NLN::CONSTRAINT::Group& plot_grp, const double* curr_xy = nullptr,
@@ -155,7 +159,7 @@ namespace CONTACT
           std::vector<double>& vec_vals) const;
 
       void GetWGapDirectionGradients(const enum CONTACT::AUG::WGapGradientType wgap_type,
-          const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& vec_vals) const;
+          const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const;
 
       void GetEnergyDirectionGradients(
           const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const;
@@ -191,7 +195,7 @@ namespace CONTACT
         void SplitIntoSurfaceDirections(const Epetra_Vector& dir,
             Teuchos::RCP<Epetra_Vector>& x_dir_ptr, Teuchos::RCP<Epetra_Vector>& y_dir_ptr) const;
 
-        Teuchos::RCP<const Epetra_Vector> Get(const NOX::Solver::Generic& solver) const;
+        Teuchos::RCP<const Epetra_Vector> Get(const ::NOX::Solver::Generic& solver) const;
 
         enum INPAR::CONTACT::PlotDirection type_;
         enum INPAR::CONTACT::PlotDirectionSplit split_;
@@ -296,19 +300,17 @@ namespace NOX
       {
         namespace CONTACT
         {
-          class Plot : public NOX::Observer
+          class Plot : public ::NOX::Observer
           {
            public:
-            Plot(const Teuchos::RCP<::CONTACT::AUG::Plot>& plot_ptr);
+            Plot(const Teuchos::RCP<BACI::CONTACT::AUG::Plot>& plot_ptr);
 
-            virtual ~Plot(){};
-
-            virtual void runPreIterate(const NOX::Solver::Generic& solver);
-            virtual void runPostIterate(const NOX::Solver::Generic& solver);
+            void runPreIterate(const ::NOX::Solver::Generic& solver) override;
+            void runPostIterate(const ::NOX::Solver::Generic& solver) override;
 
            private:
-            Teuchos::RCP<::CONTACT::AUG::Plot> plot_ptr_;
-            ::CONTACT::AUG::Plot& plot_;
+            Teuchos::RCP<BACI::CONTACT::AUG::Plot> plot_ptr_;
+            BACI::CONTACT::AUG::Plot& plot_;
           };  // class Plot
         }     // namespace CONTACT
       }       // namespace PrePostOp
@@ -316,5 +318,7 @@ namespace NOX
   }           // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_PLOT_H

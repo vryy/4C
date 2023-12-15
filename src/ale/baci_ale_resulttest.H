@@ -19,6 +19,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace DRT
@@ -46,7 +48,7 @@ namespace ALE
       Possible position flags are "velx", "vely", "velz" and
       "pressure". With the obvious meaning.
      */
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// pointer to ALE discretization
@@ -57,5 +59,7 @@ namespace ALE
   };
 
 }  // namespace ALE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_RESULTTEST_H

@@ -12,6 +12,8 @@
 
 #include "baci_scatra_ele_utils_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -20,7 +22,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchElectrode;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchElectrode : public ScaTraEleUtilsElch<distype>
     {
       //! abbreviation
@@ -53,4 +55,6 @@ namespace DRT
     };  // class ScaTraEleUtilsElchElectrode
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -11,11 +11,11 @@
 #define BACI_SO3_NURBS27_H
 
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -24,6 +24,8 @@
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /// Several parameters which are fixed for Solid nurbs27
 const int NUMNOD_SONURBS27 = 27;  ///< number of nodes
@@ -49,7 +51,7 @@ namespace DRT
 
         static So_nurbs27Type& Instance();
 
-        DRT::ParObject* Create(const std::vector<char>& data) override;
+        CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
         Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
             const int id, const int owner) override;
@@ -121,7 +123,7 @@ namespace DRT
         /*!
         \brief Get shape type of element
         */
-        DiscretizationType Shape() const override;
+        CORE::FE::CellType Shape() const override;
 
         /*!
         \brief Return number of volumes of this element
@@ -151,12 +153,6 @@ namespace DRT
         std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
         /*!
-        \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-        */
-        std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
-        /*!
         \brief Return unique ParObject id
 
         every class implementing ParObject needs a unique id defined at the
@@ -173,7 +169,7 @@ namespace DRT
         \ref Pack and \ref Unpack are used to communicate this element
 
         */
-        void Pack(DRT::PackBuffer& data) const override;
+        void Pack(CORE::COMM::PackBuffer& data) const override;
 
         /*!
         \brief Unpack data from a char vector into this class
@@ -183,11 +179,6 @@ namespace DRT
         */
         void Unpack(const std::vector<char>& data) override;
 
-        /*!
-        \brief Destructor
-
-        */
-        ~So_nurbs27() override;
 
         //@}
 
@@ -294,7 +285,7 @@ namespace DRT
             DRT::Discretization& discretization, bool do_inverse);
 
         /**
-         * \brief Add the element geometry visualization to the vtu data vectors (derived)
+         * \brief Add the element geometry visualization to the visualization data vectors (derived)
          */
         unsigned int AppendVisualizationGeometry(const DRT::Discretization& discret,
             std::vector<uint8_t>& cell_types,
@@ -308,7 +299,7 @@ namespace DRT
             const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
             unsigned int& result_num_dofs_per_node,
             const unsigned int read_result_data_from_dofindex,
-            std::vector<double>& vtu_point_result_data) const override;
+            std::vector<double>& output_point_result_data) const override;
 
        protected:
         //! action parameters recognized by So_nurbs27
@@ -360,15 +351,15 @@ namespace DRT
             Teuchos::ParameterList& params);
 
         //! Evaluate Nurbs27 Shapefcts to keep them static
-        const std::vector<CORE::LINALG::Matrix<27, 1>> sonurbs27_shapefcts(
+        std::vector<CORE::LINALG::Matrix<27, 1>> sonurbs27_shapefcts(
             const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
             const CORE::LINALG::Matrix<27, 1>& weights);
         //! Evaluate Nurbs27 Derivs to keep them static
-        const std::vector<CORE::LINALG::Matrix<3, 27>> sonurbs27_derivs(
+        std::vector<CORE::LINALG::Matrix<3, 27>> sonurbs27_derivs(
             const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
             const CORE::LINALG::Matrix<27, 1>& weights);
         //! Evaluate Nurbs27 Weights to keep them static
-        const std::vector<double> sonurbs27_gpweights();
+        std::vector<double> sonurbs27_gpweights();
 
         //! calculate internal energy
         double CalcIntEnergy(DRT::Discretization& discretization, std::vector<double>& disp,
@@ -386,5 +377,7 @@ namespace DRT
     }  // namespace NURBS
   }    // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_NURBS27_H

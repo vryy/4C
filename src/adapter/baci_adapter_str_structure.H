@@ -20,6 +20,8 @@
 #include <Epetra_Operator.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -210,7 +212,7 @@ namespace ADAPTER
     }
 
     /// return model evaluator
-    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) = 0;
+    virtual BACI::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) = 0;
 
     // access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;
@@ -225,10 +227,10 @@ namespace ADAPTER
     virtual bool HaveSpringDashpot() = 0;
 
     /// get constraint manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+    virtual Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
     /// get SpringDashpot manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
+    virtual Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
@@ -237,7 +239,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// expand dirichlet bc map
     virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
@@ -524,7 +526,7 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~StructureBaseAlgorithm();
+    virtual ~StructureBaseAlgorithm() = default;
 
     /// structural field solver
     Teuchos::RCP<Structure> StructureField() { return structure_; }
@@ -598,5 +600,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

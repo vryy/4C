@@ -13,6 +13,9 @@
 #define BACI_MAT_ANISOTROPY_EXTENSION_DEFAULT_H
 
 #include "baci_mat_anisotropy_extension.H"
+
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   /*!
@@ -62,7 +65,7 @@ namespace MAT
 
     ///@name Packing and Unpacking
     /// @{
-    void PackAnisotropy(DRT::PackBuffer& data) const override;
+    void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackAnisotropy(
         const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -141,5 +144,7 @@ namespace MAT
     bool initialized_ = false;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_EXTENSION_DEFAULT_H

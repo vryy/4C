@@ -27,6 +27,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/11 |
@@ -104,7 +105,7 @@ namespace ADAPTER
   {
    public:
     /// virtual to get polymorph destruction
-    virtual ~Thermo();
+    virtual ~Thermo() = default;
 
     /// @name Vector access
     //@{
@@ -273,7 +274,7 @@ namespace ADAPTER
         const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ThermoBaseAlgorithm();
+    virtual ~ThermoBaseAlgorithm() = default;
 
     /// thermal field solver
     Thermo& ThermoField() { return *thermo_; }
@@ -300,4 +301,6 @@ namespace ADAPTER
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // ADAPTER_THERMO_H

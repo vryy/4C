@@ -19,6 +19,8 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_fluid_ele.H"
 #include "baci_inpar_structure.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -32,7 +34,7 @@ namespace DRT
 
       static FluidPoroEleType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -104,7 +106,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -122,11 +124,6 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volume of this element
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       //!@}
 
@@ -374,5 +371,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_PORO_H

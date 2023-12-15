@@ -23,6 +23,7 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declaration
 namespace STR
@@ -47,13 +48,13 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    template <DRT::Element::DiscretizationType distype2>
+    template <CORE::FE::CellType distype2>
     class MembraneLine;
 
     /*!
     \brief A C++ wrapper for the membrane element
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Membrane : public DRT::Element
     {
      public:
@@ -62,7 +63,7 @@ namespace DRT
       friend class Membrane_tri6Type;
       friend class Membrane_quad4Type;
       friend class Membrane_quad9Type;
-      template <DRT::Element::DiscretizationType distype2>
+      template <CORE::FE::CellType distype2>
       friend class MembraneLine;
 
       //@}
@@ -91,14 +92,13 @@ namespace DRT
       where the type of the derived class is unknown and a copy-constructor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       //! number of element nodes
-      static const int numnod_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int numdim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numdim_ = CORE::FE::dim<distype>;
 
       //! number of dofs per node
       static const int noddof_ = 3;
@@ -112,29 +112,29 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const;
+      int NumLine() const override;
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return 1; }
+      int NumSurface() const override { return 1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -142,23 +142,23 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case CORE::FE::CellType::tri3:
           {
             return Membrane_tri3Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::tri6:
+          case CORE::FE::CellType::tri6:
           {
             return Membrane_tri6Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::quad4:
+          case CORE::FE::CellType::quad4:
           {
             return Membrane_quad4Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::quad9:
+          case CORE::FE::CellType::quad9:
           {
             return Membrane_quad9Type::Instance().UniqueParObjectId();
           }
@@ -176,7 +176,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -184,13 +184,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~Membrane();
 
       //@}
 
@@ -216,7 +211,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return noddof_; }
+      int NumDofPerNode(const DRT::Node& node) const override { return noddof_; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -229,33 +224,33 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const
+      DRT::ElementType& ElementType() const override
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case CORE::FE::CellType::tri3:
           {
             return Membrane_tri3Type::Instance();
           }
           break;
-          case DRT::Element::tri6:
+          case CORE::FE::CellType::tri6:
           {
             return Membrane_tri6Type::Instance();
           }
           break;
-          case DRT::Element::quad4:
+          case CORE::FE::CellType::quad4:
           {
             return Membrane_quad4Type::Instance();
           }
           break;
-          case DRT::Element::quad9:
+          case CORE::FE::CellType::quad9:
           {
             return Membrane_quad9Type::Instance();
           }
@@ -289,7 +284,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -305,7 +300,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
       //@}
 
@@ -315,7 +310,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -352,7 +347,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
 
       /*!
@@ -370,10 +365,9 @@ namespace DRT
                                   to fill this vector
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
       //@}
@@ -392,19 +386,19 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
       /** \brief returns true if the parameter interface is defined and initialized, otherwise false
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual inline bool IsParamsInterface() const { return (not interface_ptr_.is_null()); }
+      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
 
      protected:
       /** \brief get access to the interface
@@ -483,7 +477,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdim_, numnod_>& derivs_ortho, double& G1G2_cn,
           CORE::LINALG::Matrix<noddof_, 1>& dXds1, CORE::LINALG::Matrix<noddof_, 1>& dXds2,
           CORE::LINALG::Matrix<noddof_, 1>& dxds1, CORE::LINALG::Matrix<noddof_, 1>& dxds2,
-          CORE::LINALG::Matrix<noddof_, noddof_>& Q_trafo) const;
+          CORE::LINALG::Matrix<noddof_, noddof_>& Q_localToGlobal) const;
 
       //! pushforward of 2nd Piola-Kirchhoff stresses to Cauchy stresses at Gauss point
       void mem_PK2toCauchy(const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,
@@ -503,7 +497,7 @@ namespace DRT
           CORE::LINALG::Matrix<noddof_, noddof_>& defgrd_global) const;
 
       // determine extrapolation matrix for postprocessing purposes
-      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+      CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>,
           THR::DisTypeToNumGaussPoints<distype>::nquad>
       mem_extrapolmat() const;
 
@@ -521,19 +515,19 @@ namespace DRT
     class Membrane_line2Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Membrane_line2Type"; }
+      std::string Name() const override { return "Membrane_line2Type"; }
 
       static Membrane_line2Type& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
@@ -550,19 +544,19 @@ namespace DRT
     class Membrane_line3Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Membrane_line3Type"; }
+      std::string Name() const override { return "Membrane_line3Type"; }
 
       static Membrane_line3Type& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
@@ -582,7 +576,7 @@ namespace DRT
           the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
     */
-    template <DRT::Element::DiscretizationType distype2>
+    template <CORE::FE::CellType distype2>
     class MembraneLine : public DRT::FaceElement
     {
      public:
@@ -615,8 +609,8 @@ namespace DRT
       MembraneLine(const MembraneLine<distype2>& old);
 
       //! number of nodes per line
-      static const int numnod_line_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-          CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape>::numNodePerElement;
+      static const int numnod_line_ =
+          CORE::FE::num_nodes<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape>;
 
       static const int noddof_ = 3;
 
@@ -627,7 +621,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -635,15 +629,15 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
         {
-          case DRT::Element::line2:
+          case CORE::FE::CellType::line2:
           {
             return Membrane_line2Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::line3:
+          case CORE::FE::CellType::line3:
           {
             return Membrane_line3Type::Instance().UniqueParObjectId();
           }
@@ -662,7 +656,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -670,13 +664,8 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~MembraneLine();
 
       //@}
 
@@ -685,7 +674,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -696,7 +685,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -709,7 +698,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
        * \brief Return pointer to the parent element
@@ -726,17 +715,17 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const
+      DRT::ElementType& ElementType() const override
       {
         switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
         {
-          case DRT::Element::line2:
+          case CORE::FE::CellType::line2:
           {
             return Membrane_line2Type::Instance();
           }
-          case DRT::Element::line3:
+          case CORE::FE::CellType::line3:
           {
             return Membrane_line3Type::Instance();
           }
@@ -766,10 +755,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -783,5 +771,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

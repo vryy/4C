@@ -10,11 +10,13 @@
 
 #include "baci_lib_elementreader.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_elementdefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_rebalance_utils.H"
+
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -223,7 +225,7 @@ void DRT::INPUT::ElementReader::GetAndDistributeElements(const int nblock, const
           if (elementtypes_.size() == 0 or elementtypes_.count(eletype) > 0)
           {
             // let the factory create a matching empty element
-            Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype, distype, elenumber, 0);
+            Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(eletype, distype, elenumber, 0);
             if (ele.is_null()) dserror("element creation failed");
 
             // For the time being we support old and new input facilities. To
@@ -279,3 +281,5 @@ void DRT::INPUT::ElementReader::GetAndDistributeElements(const int nblock, const
     dis_->ProcZeroDistributeElementsToAll(*roweles_, gidlist);
   }
 }
+
+BACI_NAMESPACE_CLOSE

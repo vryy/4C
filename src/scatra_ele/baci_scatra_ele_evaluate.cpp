@@ -22,6 +22,8 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_parameter_turbulence.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*---------------------------------------------------------------------*
@@ -262,9 +264,6 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::Action::calc_elch_electrode_soc_and_c_rate:
     case SCATRA::Action::calc_elch_elctrode_mean_concentration:
     case SCATRA::Action::calc_elch_domain_kinetics:
-    case SCATRA::Action::recon_gradients_at_nodes:
-    case SCATRA::Action::recon_curvature_at_nodes:
-    case SCATRA::Action::calc_grad_ele_center:
     case SCATRA::Action::calc_mass_center_smoothingfunct:
     case SCATRA::Action::get_material_internal_state:
     case SCATRA::Action::set_material_internal_state:
@@ -326,3 +325,5 @@ int DRT::ELEMENTS::Transport::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

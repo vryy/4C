@@ -11,6 +11,8 @@
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mixture_growth_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class AnisotropicGrowthStrategy;
@@ -44,7 +46,7 @@ namespace MIXTURE
    public:
     explicit AnisotropicGrowthStrategy(MIXTURE::PAR::AnisotropicGrowthStrategy* params);
 
-    void PackMixtureGrowthStrategy(DRT::PackBuffer& data) const override;
+    void PackMixtureGrowthStrategy(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackMixtureGrowthStrategy(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
@@ -72,5 +74,7 @@ namespace MIXTURE
     MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_H

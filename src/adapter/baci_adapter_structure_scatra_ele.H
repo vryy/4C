@@ -14,6 +14,8 @@
 
 #include "baci_inpar_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -24,5 +26,7 @@ namespace ADAPTER
   INPAR::SCATRA::ImplType GetScaTraImplType(DRT::Element* ele);
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

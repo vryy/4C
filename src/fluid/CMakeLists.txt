@@ -4,7 +4,6 @@ set(_fluid_dependencies
     # cmake-format: sortable
     adapter
     art_net
-    comm
     core
     fluid_ele
     fluid_turbulence

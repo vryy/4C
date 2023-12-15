@@ -18,6 +18,8 @@
 #include <map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class ConstraintEnforcerFactory;
@@ -185,5 +187,7 @@ namespace FBI
     bool edgebased_fluidstabilization_;
   };
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

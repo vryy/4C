@@ -19,6 +19,8 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
@@ -37,11 +39,6 @@ SCATRA::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
   return;
 }
 
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                              rasthofer 09/13 |
-*-----------------------------------------------------------------------*/
-SCATRA::LevelSetTimIntOneStepTheta::~LevelSetTimIntOneStepTheta() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -142,7 +139,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::SetOldPartOfRighthandside()
  | extended version for coupled level-set problems                      |
  | including reinitialization                           rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
+void SCATRA::LevelSetTimIntOneStepTheta::Update()
 {
   // -----------------------------------------------------------------
   //                     reinitialize level-set
@@ -291,3 +288,5 @@ Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phidtnptheta(
   phidt_tmp->Update((1.0 - theta_inter), *phidtn_, theta_inter, *phidtnp_, 0.0);
   return phidt_tmp;
 }
+
+BACI_NAMESPACE_CLOSE

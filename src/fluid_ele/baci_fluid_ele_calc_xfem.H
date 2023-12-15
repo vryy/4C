@@ -18,6 +18,8 @@
 #include "baci_utils_singleton_owner.H"
 #include "baci_xfem_condition_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   class CouplingBase;
@@ -62,7 +64,7 @@ namespace DRT
       \author schott
       \date 04/12
      */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcXFEM : public FluidEleCalc<distype>
     {
       /// private Constructor since we are a Singleton.
@@ -112,8 +114,6 @@ namespace DRT
       }
 
      public:
-      virtual ~FluidEleCalcXFEM() {}
-
       /// Singleton access method
       static FluidEleCalcXFEM<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
@@ -284,25 +284,24 @@ namespace DRT
 
       //! compute viscous part of Nitsche's penalty term scaling for Nitsche's method
       double NIT_Compute_ViscPenalty_Stabfac(
-          const DRT::Element::DiscretizationType
-              ele_distype,      ///< the discretization type of the element w.r.t which the
-                                ///< stabilization factor is computed
-          const double inv_hk,  ///< the inverse characteristic element length
-          const double kappa1,  ///< Weight parameter (parameter +/master side)
-          const double kappa2   ///< Weight parameter (parameter -/slave  side)
+          const CORE::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t
+                                                 ///< which the stabilization factor is computed
+          const double inv_hk,                   ///< the inverse characteristic element length
+          const double kappa1,                   ///< Weight parameter (parameter +/master side)
+          const double kappa2                    ///< Weight parameter (parameter -/slave  side)
       );
 
       //! get the constant which satisfies the trace inequality depending on the spatial dimension
       //! and polynomial order of the element
-      double NIT_getTraceEstimateConstant(const DRT::Element::DiscretizationType ele_distype);
+      double NIT_getTraceEstimateConstant(const CORE::FE::CellType ele_distype);
 
       //! prepare coupling matrices, that include contributions from convective stabilization
       void HybridLM_CreateSpecialContributionMatrices(
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           std::set<int>& begids,  ///< ids of intersecting boundary elements
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
-              conv_side_coupling  ///< contributions to coupling matrices from convective
-                                  ///< stabilizations
+              side_coupling_extra  ///< contributions to coupling matrices from convective
+                                   ///< stabilizations
       );
 
       //! evaluate Neumann boundary condition
@@ -468,5 +467,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -30,6 +30,7 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
 
 namespace BEAMINTERACTION
 {
@@ -117,7 +118,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     void PeriodicBoundaryConsistentDisVector(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& pbb,
-        Teuchos::RCP<const ::DRT::Discretization> const& discret)
+        Teuchos::RCP<const BACI::DRT::Discretization> const& discret)
     {
       CORE::LINALG::Matrix<3, 1> d;
       CORE::LINALG::Matrix<3, 1> X;
@@ -217,7 +218,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------*/
     template <typename T>
     void SetFilamentBindingSpotPositions(
-        Teuchos::RCP<::DRT::Discretization> discret, Teuchos::RCP<T> params)
+        Teuchos::RCP<BACI::DRT::Discretization> discret, Teuchos::RCP<T> params)
     {
       // todo: set somewhere else
       double const tol = CORE::GEO::TOL7;
@@ -313,7 +314,7 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void ExtendGhostingForFilamentBspotSetup(
-        std::set<int>& relevantfilaments, Teuchos::RCP<::DRT::Discretization> discret)
+        std::set<int>& relevantfilaments, Teuchos::RCP<BACI::DRT::Discretization> discret)
     {
       std::set<int> setofnodegidswithrequiredelecloud;
       DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
@@ -376,7 +377,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
         std::set<int>& relevantfilaments, std::set<int>& setofrequirednodes,
-        Teuchos::RCP<::DRT::Discretization> discret)
+        Teuchos::RCP<BACI::DRT::Discretization> discret)
     {
       // loop over all row nodes
       for (int rown = 0; rown < discret->NumMyRowNodes(); ++rown)
@@ -409,7 +410,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void ComputeFilamentLengthAndSortItsElements(std::vector<DRT::Element*>& sortedfilamenteles,
         std::vector<int> const* nodeids, double& filreflength,
-        Teuchos::RCP<::DRT::Discretization> discret)
+        Teuchos::RCP<BACI::DRT::Discretization> discret)
     {
       // loop over all nodes associated with current filament
       for (int nodei = 0; nodei < static_cast<int>(nodeids->size()); ++nodei)
@@ -575,7 +576,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void FEAssembleEleForceStiffIntoSystemVectorMatrix(const ::DRT::Discretization& discret,
+    void FEAssembleEleForceStiffIntoSystemVectorMatrix(const BACI::DRT::Discretization& discret,
         std::vector<int> const& elegid, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
@@ -1153,7 +1154,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void SetupEleTypeMapExtractor(Teuchos::RCP<const ::DRT::Discretization> const& discret,
+    void SetupEleTypeMapExtractor(Teuchos::RCP<const BACI::DRT::Discretization> const& discret,
         Teuchos::RCP<CORE::LINALG::MultiMapExtractor>& eletypeextractor)
     {
       std::vector<std::set<int>> eletypeset(3);
@@ -1196,7 +1197,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void UpdateDofMapOfVector(Teuchos::RCP<::DRT::Discretization> discret,
+    void UpdateDofMapOfVector(Teuchos::RCP<BACI::DRT::Discretization> discret,
         Teuchos::RCP<Epetra_Vector>& dofmapvec, Teuchos::RCP<Epetra_Vector> old)
     {
       if (dofmapvec != Teuchos::null)
@@ -1248,8 +1249,8 @@ namespace BEAMINTERACTION
     // explicit template instantiation (to please every compiler)
     //-----------------------------------------------------------------------------
     template void SetFilamentBindingSpotPositions(
-        Teuchos::RCP<::DRT::Discretization>, Teuchos::RCP<BEAMINTERACTION::CrosslinkingParams>);
-    template void SetFilamentBindingSpotPositions(Teuchos::RCP<::DRT::Discretization>,
+        Teuchos::RCP<BACI::DRT::Discretization>, Teuchos::RCP<BEAMINTERACTION::CrosslinkingParams>);
+    template void SetFilamentBindingSpotPositions(Teuchos::RCP<BACI::DRT::Discretization>,
         Teuchos::RCP<BEAMINTERACTION::SphereBeamLinkingParams>);
 
     template void
@@ -1302,3 +1303,5 @@ namespace BEAMINTERACTION
 
   }  // namespace UTILS
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

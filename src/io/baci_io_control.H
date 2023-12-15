@@ -8,6 +8,8 @@
 #ifndef BACI_IO_CONTROL_H
 #define BACI_IO_CONTROL_H
 
+#include "baci_discretization_fem_general_shape_function_type.H"
+
 #include <Epetra_Comm.h>
 
 #include <fstream>
@@ -18,8 +20,7 @@ extern "C"
 #include "baci_io_legacy_types.h"
 }
 
-//  Forward declaration
-enum class ShapeFunctionType;
+BACI_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -28,12 +29,13 @@ namespace IO
   {
    public:
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        ShapeFunctionType type_of_spatial_approx, std::string inputfile,
-        const std::string& filename, int ndim, int restart, int filesteps, int create_controlfile);
+        CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+        const std::string& outputname, int ndim, int restart, int filesteps,
+        int create_controlfile);
 
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        ShapeFunctionType type_of_spatial_approx, std::string inputfile,
-        const std::string& restartfilename, std::string outputfilename, int ndim, int restart,
+        CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+        const std::string& restartname, std::string outputname, int ndim, int restart,
         int filesteps, int create_controlfile, bool adaptname = true);
 
     /// \brief copy constructor
@@ -87,21 +89,22 @@ namespace IO
     int BinIO() const { return create_controlfile_; }
 
     /// overwrites result files
-    void OverwriteResultFile(const ShapeFunctionType& spatial_approx);
+    void OverwriteResultFile(const CORE::FE::ShapeFunctionType& spatial_approx);
     /// creates new result files
-    void NewResultFile(int numb_run, const ShapeFunctionType& spatial_approx);
+    void NewResultFile(int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx);
     /// creates new result files for the mlmc
-    void NewResultFile(
-        const std::string& name_appendix, int numb_run, const ShapeFunctionType& spatial_approx);
+    void NewResultFile(const std::string& name_appendix, int numb_run,
+        const CORE::FE::ShapeFunctionType& spatial_approx);
 
     /// creates new result files
-    void NewResultFile(std::string name, const ShapeFunctionType& spatial_approx);
+    void NewResultFile(std::string name, const CORE::FE::ShapeFunctionType& spatial_approx);
 
     /// return my processor ID
     inline int MyRank() const { return myrank_; };
 
    private:
-    void WriteHeader(const std::string& control_file_name, const ShapeFunctionType& spatial_approx);
+    void WriteHeader(
+        const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx);
 
     void InsertRestartBackReference(int restart, const std::string& outputname);
 
@@ -140,48 +143,13 @@ namespace IO
   };
 
 
-  /// Controller for error files
-  ///
-  /// This object determines the names of error files #errname_, e.g. 'xxx2.err',
-  /// and attaches file handles #errfile_ to them.
-  ///
-  /// \author bborn
-  /// \date 11/08
-  class ErrorFileControl
-  {
-   public:
-    /// constructor
-    ErrorFileControl(const Epetra_Comm& comm,  ///< communicator
-        std::string filename,                  ///< output file name prefix
-        int restart,                           ///< restart step
-        int create_errorfiles                  // do we need to create errorfiles
-    );
-
-    /// destructor
-    ~ErrorFileControl();
-
-    /// the error file name
-    std::string Name() { return errname_; }
-
-    /// the error file handle
-    FILE* Handle() { return errfile_; }
-
-   private:
-    /// output file name prefix
-    std::string filename_;
-
-    /// name of error file on processor
-    std::string errname_;
-
-    /// file handle to error file
-    FILE* errfile_;
-  };
-
   /// find position of restart number in filename (if existing):
   /// for "outname-5" will return position of the "-"
   /// returns std::string::npos if not found
   size_t RestartFinder(const std::string& filename);
 
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -7,7 +7,6 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -15,10 +14,14 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_tet4av.H"
+#include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -145,14 +148,14 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
             lm, mydisp, nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -202,7 +205,14 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return StrParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOTET4av)
@@ -233,7 +243,7 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -246,8 +256,8 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
   /* ================================================= Loop over Gauss Points */
   for (int gp = 0; gp < NUMGPT_SOTET4av; gp++)
   {
-    CORE::DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
     jac.Multiply(deriv, xrefe);
 
     // material/reference co-ordinates of Gauss point
@@ -272,7 +282,7 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -299,7 +309,7 @@ void DRT::ELEMENTS::So_tet4av::InitJacobianMapping()
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -318,7 +328,7 @@ void DRT::ELEMENTS::So_tet4av::InitJacobianMapping()
     const double* gpcoord = (intpoints.IP().qxg)[gp];
     for (int idim = 0; idim < 3; idim++) xsi_[gp](idim) = gpcoord[idim];
 
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
 
     invJ_[gp].Multiply(deriv, xrefe);
 
@@ -354,7 +364,7 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,  // location m
   CORE::LINALG::Matrix<NUMNOD_SOTET4av, 1> nodalVol;
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -380,8 +390,8 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,  // location m
   for (int gp = 0; gp < numgpt_; gp++)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
 
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -565,7 +575,7 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,  // location m
     for (int gp = 0; gp < intpoints.IP().nquad; gp++)
     {
       for (int i = 0; i < NUMDIM_SOTET4av; ++i) xsi(i) = (intpoints.IP().qxg)[gp][i];
-      CORE::DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
+      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
       const double factor = detJ_[0] * density * (intpoints.IP().qwgt)[gp];
       for (int inod = 0; inod < 4; ++inod)
       {
@@ -599,3 +609,5 @@ int DRT::ELEMENTS::So_tet4avType::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

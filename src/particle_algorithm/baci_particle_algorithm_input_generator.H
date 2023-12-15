@@ -19,6 +19,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -49,9 +51,6 @@ namespace PARTICLEALGORITHM
      * \param[in] params particle simulation parameter list
      */
     explicit InputGenerator(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~InputGenerator() = default;
 
     /*!
      * \brief init input generator
@@ -109,4 +108,6 @@ namespace PARTICLEALGORITHM
 }  // namespace PARTICLEALGORITHM
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

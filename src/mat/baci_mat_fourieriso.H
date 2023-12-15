@@ -13,9 +13,11 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_thermo.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -35,9 +37,6 @@ namespace MAT
       /// standard constructor
       FourierIso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~FourierIso() { ; }
-
       /// @name material parameters
       //@{
 
@@ -49,20 +48,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class FourierIso
 
   }  // namespace PAR
 
-  class FourierIsoType : public DRT::ParObjectType
+  class FourierIsoType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "FourierIsoType"; }
+    std::string Name() const override { return "FourierIsoType"; }
 
     static FourierIsoType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FourierIsoType instance_;
@@ -96,7 +95,10 @@ namespace MAT
     ///
     ///  every class implementing ParObject needs a unique id defined at the
     ///  top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return FourierIsoType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override
+    {
+      return FourierIsoType::Instance().UniqueParObjectId();
+    }
 
     /// Pack this class so it can be communicated
     ///
@@ -104,8 +106,8 @@ namespace MAT
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    virtual void Pack(DRT::PackBuffer& data  ///< (in/out): char vector to store class information
-    ) const;
+    void Pack(CORE::COMM::PackBuffer& data  ///< (in/out): char vector to store class information
+    ) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -115,9 +117,8 @@ namespace MAT
     /// parobject id defined at the top of this file and delivered by
     /// UniqueParObjectId().
     ///
-    virtual void Unpack(
-        const std::vector<char>& data  ///< vector storing all data to be unpacked into this
-    );
+    void Unpack(const std::vector<char>& data  ///< vector storing all data to be unpacked into this
+        ) override;
 
     //@}
 
@@ -131,10 +132,10 @@ namespace MAT
     double Capacity() const override { return params_->capa_; }
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_th_fourier_iso; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_th_fourier_iso; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new FourierIso(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new FourierIso(*this)); }
 
     //@}
 
@@ -171,7 +172,7 @@ namespace MAT
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
@@ -182,4 +183,6 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_FOURIERISO_H

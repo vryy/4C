@@ -29,8 +29,10 @@
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    const Teuchos::RCP<BACI::DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
+  using namespace BACI;
+
   // refcountpointer to vector of all coordinates
   // distributed among all procs
   Teuchos::RCP<Epetra_MultiVector> nodecoords;
@@ -147,7 +149,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
 
     switch (actele->Shape())
     {
-      case DRT::Element::nurbs4:
+      case CORE::FE::CellType::nurbs4:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(2);
@@ -243,7 +245,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
 
         break;
       }
-      case DRT::Element::nurbs9:
+      case CORE::FE::CellType::nurbs9:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(2);
@@ -504,7 +506,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
         }
         break;
       }
-      case DRT::Element::nurbs27:
+      case CORE::FE::CellType::nurbs27:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(3);
@@ -1405,10 +1407,13 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
          cells) is computed from the local patch numbering and
          the patch offset.                             (gammi)
 ----------------------------------------------------------------------*/
-void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distype, const int gid,
+void EnsightWriter::WriteNurbsCell(const BACI::CORE::FE::CellType distype, const int gid,
     std::ofstream& geofile, std::vector<int>& nodevector,
-    const Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const
+    const Teuchos::RCP<BACI::DRT::Discretization> dis,
+    const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
+  using namespace BACI;
+
   // cast dis to NurbsDiscretisation
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
@@ -1447,7 +1452,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
 
   switch (distype)
   {
-    case DRT::Element::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
       // get dimension
       const int dim = 2;
@@ -1490,7 +1495,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
       }
     }
     break;
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       // get dimension
       const int dim = 2;
@@ -1607,7 +1612,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
       }
     }
     break;
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
       //               v
       //              /
@@ -1715,6 +1720,8 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
 void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int numdf,
     const Teuchos::RCP<Epetra_Vector> data, const std::string name, const int offset) const
 {
+  using namespace BACI;
+
   // a multivector for the interpolated data
   Teuchos::RCP<Epetra_MultiVector> idata;
   idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_, numdf));
@@ -2155,12 +2162,14 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
 /*----------------------------------------------------------------------*/
 void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiVector> idata,
     const int dim, const int npatch, const std::vector<int>& vpoff,
-    const std::vector<int>& ele_cart_id, const DRT::Element* actele,
-    DRT::NURBS::NurbsDiscretization* nurbsdis,
-    const std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
-    const CORE::LINALG::SerialDenseVector& weights, const int numdf,
+    const std::vector<int>& ele_cart_id, const BACI::DRT::Element* actele,
+    BACI::DRT::NURBS::NurbsDiscretization* nurbsdis,
+    const std::vector<BACI::CORE::LINALG::SerialDenseVector>& eleknots,
+    const BACI::CORE::LINALG::SerialDenseVector& weights, const int numdf,
     const std::vector<double>& my_data) const
 {
+  using namespace BACI;
+
   // number of all control points of the element
   const int numnp = actele->NumNode();
 
@@ -2175,7 +2184,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
 
   switch (actele->Shape())
   {
-    case DRT::Element::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
       // number of visualisation points in u direction
       int nvpu = (nurbsdis->Return_nele_x_mele_x_lele(npatch))[0] + 1;
@@ -2260,7 +2269,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
       }
       break;
     }
-    case DRT::Element::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       int idu;
       int idv;
@@ -2496,7 +2505,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
       }
       break;
     }
-    case DRT::Element::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
       // element local point position
       CORE::LINALG::SerialDenseVector uv(3);
@@ -3334,6 +3343,8 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
 void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int numdf,
     const Teuchos::RCP<Epetra_MultiVector> data, const std::string name, const int offset) const
 {
+  using namespace BACI;
+
   // a multivector for the interpolated data
   Teuchos::RCP<Epetra_MultiVector> idata;
   idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_, numdf));

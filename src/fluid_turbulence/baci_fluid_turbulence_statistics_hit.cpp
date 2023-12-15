@@ -15,13 +15,15 @@
 #include <fftw3.h>
 #endif
 
+#include "baci_comm_exporter.H"
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_turbulence_statistics_hit.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace FLD
 {
@@ -128,23 +130,23 @@ namespace FLD
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      DRT::Exporter exporter(discret_->Comm());
+      CORE::COMM::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          DRT::ParObject::AddtoPack(data, *x1line);
+          CORE::COMM::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          DRT::ParObject::AddtoPack(data, *x1line);
+          CORE::COMM::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -186,7 +188,7 @@ namespace FLD
           while (index < rblock.size())
           {
             double onecoord;
-            DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }
@@ -347,12 +349,6 @@ namespace FLD
 
     return;
   }
-
-
-  /*--------------------------------------------------------------*
-   | deconstructor                                rasthofer 04/13 |
-   *--------------------------------------------------------------*/
-  TurbulenceStatisticsHit::~TurbulenceStatisticsHit() { return; }
 
 
   /*--------------------------------------------------------------*
@@ -1824,11 +1820,6 @@ namespace FLD
   }
 
   /*--------------------------------------------------------------*
-   | deconstructor                                       bk 03/15 |
-   *--------------------------------------------------------------*/
-  TurbulenceStatisticsHitHDG::~TurbulenceStatisticsHitHDG() { return; }
-
-  /*--------------------------------------------------------------*
    | do sampling                                         bk 03/15 |
    *--------------------------------------------------------------*/
   void TurbulenceStatisticsHitHDG::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
@@ -2203,3 +2194,5 @@ namespace FLD
 
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE

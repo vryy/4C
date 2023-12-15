@@ -18,6 +18,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -47,9 +49,6 @@ namespace PARTICLEALGORITHM
      * \param[in] params particle simulation parameter list
      */
     explicit TemperatureBoundaryConditionHandler(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~TemperatureBoundaryConditionHandler() = default;
 
     /*!
      * \brief init temperature boundary condition handler
@@ -124,4 +123,6 @@ namespace PARTICLEALGORITHM
 }  // namespace PARTICLEALGORITHM
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

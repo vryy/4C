@@ -7,6 +7,8 @@
 
 #include "baci_shell7p_line.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::Shell7pLineType DRT::ELEMENTS::Shell7pLineType::instance_;
 
 DRT::ELEMENTS::Shell7pLineType& DRT::ELEMENTS::Shell7pLineType::Instance() { return instance_; }
@@ -26,10 +28,10 @@ DRT::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int*
   // type of gaussian integration
   switch (Shape())
   {
-    case line2:
+    case CORE::FE::CellType::line2:
       gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case CORE::FE::CellType::line3:
       gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -48,20 +50,20 @@ DRT::Element* DRT::ELEMENTS::Shell7pLine::Clone() const
   return newelement;
 }
 
-DRT::Element::DiscretizationType DRT::ELEMENTS::Shell7pLine::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Shell7pLine::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
 }
 
-void DRT::ELEMENTS::Shell7pLine::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Shell7pLine::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Shell7line element does not support communication");
 }
@@ -78,3 +80,5 @@ void DRT::ELEMENTS::Shell7pLine::Print(std::ostream& os) const
   os << "Shell7pLine ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

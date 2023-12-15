@@ -11,18 +11,20 @@
 
 #include "baci_lib_domainreader.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_io_pstream.H"
+#include "baci_io_utils_reader.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elementdefinition.H"
 #include "baci_lib_gridgenerator.H"
-#include "baci_lib_parobject.H"
 #include "baci_lib_utils_parallel.H"
-#include "baci_lib_utils_reader.H"
 #include "baci_rebalance_utils.H"
 
 #include <Teuchos_Time.hpp>
 
 #include <algorithm>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -168,24 +170,24 @@ namespace DRT
       std::vector<char> data;
       if (myrank == 0)
       {
-        DRT::PackBuffer buffer;
-        DRT::ParObject::AddtoPack<double, 3>(buffer, inputData.bottom_corner_point_);
-        DRT::ParObject::AddtoPack<double, 3>(buffer, inputData.top_corner_point_);
-        DRT::ParObject::AddtoPack<int, 3>(buffer, inputData.interval_);
-        DRT::ParObject::AddtoPack<double, 3>(buffer, inputData.rotation_angle_);
-        DRT::ParObject::AddtoPack(buffer, static_cast<int>(inputData.autopartition_));
-        DRT::ParObject::AddtoPack(buffer, inputData.elementtype_);
-        DRT::ParObject::AddtoPack(buffer, inputData.distype_);
-        DRT::ParObject::AddtoPack(buffer, inputData.elearguments_);
+        CORE::COMM::PackBuffer buffer;
+        CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.bottom_corner_point_);
+        CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.top_corner_point_);
+        CORE::COMM::ParObject::AddtoPack<int, 3>(buffer, inputData.interval_);
+        CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.rotation_angle_);
+        CORE::COMM::ParObject::AddtoPack(buffer, static_cast<int>(inputData.autopartition_));
+        CORE::COMM::ParObject::AddtoPack(buffer, inputData.elementtype_);
+        CORE::COMM::ParObject::AddtoPack(buffer, inputData.distype_);
+        CORE::COMM::ParObject::AddtoPack(buffer, inputData.elearguments_);
         buffer.StartPacking();
-        DRT::ParObject::AddtoPack<double, 3>(buffer, inputData.bottom_corner_point_);
-        DRT::ParObject::AddtoPack<double, 3>(buffer, inputData.top_corner_point_);
-        DRT::ParObject::AddtoPack<int, 3>(buffer, inputData.interval_);
-        DRT::ParObject::AddtoPack<double, 3>(buffer, inputData.rotation_angle_);
-        DRT::ParObject::AddtoPack(buffer, static_cast<int>(inputData.autopartition_));
-        DRT::ParObject::AddtoPack(buffer, inputData.elementtype_);
-        DRT::ParObject::AddtoPack(buffer, inputData.distype_);
-        DRT::ParObject::AddtoPack(buffer, inputData.elearguments_);
+        CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.bottom_corner_point_);
+        CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.top_corner_point_);
+        CORE::COMM::ParObject::AddtoPack<int, 3>(buffer, inputData.interval_);
+        CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.rotation_angle_);
+        CORE::COMM::ParObject::AddtoPack(buffer, static_cast<int>(inputData.autopartition_));
+        CORE::COMM::ParObject::AddtoPack(buffer, inputData.elementtype_);
+        CORE::COMM::ParObject::AddtoPack(buffer, inputData.distype_);
+        CORE::COMM::ParObject::AddtoPack(buffer, inputData.elearguments_);
         std::swap(data, buffer());
       }
 
@@ -197,16 +199,17 @@ namespace DRT
       if (myrank != 0)
       {
         size_t pos = 0;
-        DRT::ParObject::ExtractfromPack<double, 3>(pos, data, inputData.bottom_corner_point_);
-        DRT::ParObject::ExtractfromPack<double, 3>(pos, data, inputData.top_corner_point_);
-        DRT::ParObject::ExtractfromPack<int, 3>(pos, data, inputData.interval_);
-        DRT::ParObject::ExtractfromPack<double, 3>(pos, data, inputData.rotation_angle_);
+        CORE::COMM::ParObject::ExtractfromPack<double, 3>(
+            pos, data, inputData.bottom_corner_point_);
+        CORE::COMM::ParObject::ExtractfromPack<double, 3>(pos, data, inputData.top_corner_point_);
+        CORE::COMM::ParObject::ExtractfromPack<int, 3>(pos, data, inputData.interval_);
+        CORE::COMM::ParObject::ExtractfromPack<double, 3>(pos, data, inputData.rotation_angle_);
         int autopartitionInteger;
-        DRT::ParObject::ExtractfromPack(pos, data, autopartitionInteger);
+        CORE::COMM::ParObject::ExtractfromPack(pos, data, autopartitionInteger);
         inputData.autopartition_ = autopartitionInteger;
-        DRT::ParObject::ExtractfromPack(pos, data, inputData.elementtype_);
-        DRT::ParObject::ExtractfromPack(pos, data, inputData.distype_);
-        DRT::ParObject::ExtractfromPack(pos, data, inputData.elearguments_);
+        CORE::COMM::ParObject::ExtractfromPack(pos, data, inputData.elementtype_);
+        CORE::COMM::ParObject::ExtractfromPack(pos, data, inputData.distype_);
+        CORE::COMM::ParObject::ExtractfromPack(pos, data, inputData.elearguments_);
       }
     }
 
@@ -233,3 +236,5 @@ namespace DRT
 
   }  // namespace INPUT
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

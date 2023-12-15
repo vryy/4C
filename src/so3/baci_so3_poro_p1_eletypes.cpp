@@ -10,8 +10,10 @@
 #include "baci_so3_poro_p1_eletypes.H"
 
 #include "baci_fluid_ele_nullspace.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_so3_poro_p1.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                                       |
@@ -20,9 +22,10 @@ DRT::ELEMENTS::So_hex8PoroP1Type DRT::ELEMENTS::So_hex8PoroP1Type::instance_;
 
 DRT::ELEMENTS::So_hex8PoroP1Type& DRT::ELEMENTS::So_hex8PoroP1Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex8PoroP1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8PoroP1Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
+  auto* object =
+      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -33,7 +36,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroP1Type::Create(
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
+        new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(
+            id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -42,7 +46,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroP1Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroP1Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
+      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 }
 
@@ -81,10 +85,10 @@ int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
+        dynamic_cast<DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So3_Poro_P1* failed");
-    actele->So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>::InitElement();
+    actele->So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>::InitElement();
   }
   return 0;
 }
@@ -97,9 +101,10 @@ DRT::ELEMENTS::So_tet4PoroP1Type DRT::ELEMENTS::So_tet4PoroP1Type::instance_;
 
 DRT::ELEMENTS::So_tet4PoroP1Type& DRT::ELEMENTS::So_tet4PoroP1Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_tet4PoroP1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4PoroP1Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
+  auto* object =
+      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -110,7 +115,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroP1Type::Create(
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
+        new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(
+            id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -119,7 +125,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroP1Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroP1Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
+      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }
 
@@ -143,10 +149,10 @@ int DRT::ELEMENTS::So_tet4PoroP1Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
+        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>::InitElement();
+    actele->So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>::InitElement();
   }
   return 0;
 }
@@ -164,3 +170,5 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpa
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
+
+BACI_NAMESPACE_CLOSE

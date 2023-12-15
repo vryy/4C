@@ -14,12 +14,14 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "baci_fluid_ele_parameter_xfem.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
 #include "baci_mat_newtonianfluid.H"
+#include "baci_utils_function.H"
 #include "baci_xfem_interface_utils.H"
 #include "baci_xfem_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& condname)
 {
@@ -571,7 +573,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
     if (functnum > 0)
     {
       functionfac = DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                         .Evaluate(x, time, dof % numdof);
     }
 
@@ -632,7 +634,7 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
     if (functnum > 0)
     {
       functionfac = DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                         .Evaluate(x, time, dof % numdof);
     }
 
@@ -750,3 +752,5 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xflu
       IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac_tang);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

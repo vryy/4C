@@ -39,6 +39,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   /*!
@@ -212,5 +214,7 @@ namespace IO
   };
 }  // namespace IO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

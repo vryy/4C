@@ -14,6 +14,8 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  store the required ghosting within a round              farah 10/13 |
  |  robin iteration for current interface (public)                      |
@@ -115,10 +117,10 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
   // get exporter
-  DRT::Exporter exporter(idiscret_->Comm());
+  CORE::COMM::Exporter exporter(idiscret_->Comm());
 
   // create data buffer
-  DRT::PackBuffer dataeles;
+  CORE::COMM::PackBuffer dataeles;
 
   // pack data - first just reserving the mem.
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
@@ -131,7 +133,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
     mele->Pack(dataeles);
 
     int ghost = 0;
-    DRT::ParObject::AddtoPack(dataeles, ghost);
+    CORE::COMM::ParObject::AddtoPack(dataeles, ghost);
   }
 
   dataeles.StartPacking();
@@ -153,7 +155,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
     else
       ghost = 0;
 
-    DRT::ParObject::AddtoPack(dataeles, ghost);
+    CORE::COMM::ParObject::AddtoPack(dataeles, ghost);
   }
   std::swap(sdataeles, dataeles());
 
@@ -193,12 +195,12 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
     {
       std::vector<char> data;
       int ghost = -1;
-      DRT::ParObject::ExtractfromPack(index, rdataeles, data);
-      DRT::ParObject::ExtractfromPack(index, rdataeles, ghost);
+      CORE::COMM::ParObject::ExtractfromPack(index, rdataeles, data);
+      CORE::COMM::ParObject::ExtractfromPack(index, rdataeles, ghost);
       if (ghost == -1) dserror("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the ele
-      Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+      Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
       Teuchos::RCP<MORTAR::MortarElement> ele =
           Teuchos::rcp_dynamic_cast<MORTAR::MortarElement>(object);
       if (ele == Teuchos::null) dserror("Received object is not an ele");
@@ -231,9 +233,9 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   std::vector<char> rdatanodes;
 
   // get exporter
-  DRT::Exporter exportern(idiscret_->Comm());
+  CORE::COMM::Exporter exportern(idiscret_->Comm());
 
-  DRT::PackBuffer datanodes;
+  CORE::COMM::PackBuffer datanodes;
 
   // pack data -- col map --> should prevent further ghosting!
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
@@ -254,7 +256,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
     }
 
     int ghost = 0;
-    DRT::ParObject::AddtoPack(datanodes, ghost);
+    CORE::COMM::ParObject::AddtoPack(datanodes, ghost);
   }
 
   datanodes.StartPacking();
@@ -288,7 +290,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
         ghost = 0;
     }
 
-    DRT::ParObject::AddtoPack(datanodes, ghost);
+    CORE::COMM::ParObject::AddtoPack(datanodes, ghost);
   }
   std::swap(sdatanodes, datanodes());
 
@@ -333,12 +335,12 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
       std::vector<char> data;
 
       int ghost = -1;
-      DRT::ParObject::ExtractfromPack(index, rdatanodes, data);
-      DRT::ParObject::ExtractfromPack(index, rdatanodes, ghost);
+      CORE::COMM::ParObject::ExtractfromPack(index, rdatanodes, data);
+      CORE::COMM::ParObject::ExtractfromPack(index, rdatanodes, ghost);
       if (ghost == -1) dserror("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the node
-      Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+      Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
 
       if (ftype == INPAR::CONTACT::friction_none)
       {
@@ -519,3 +521,5 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

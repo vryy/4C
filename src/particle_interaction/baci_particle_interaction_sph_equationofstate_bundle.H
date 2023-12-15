@@ -19,6 +19,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -38,9 +40,6 @@ namespace PARTICLEINTERACTION
    public:
     //! constructor
     explicit SPHEquationOfStateBundle(const Teuchos::ParameterList& params);
-
-    //! destructor
-    ~SPHEquationOfStateBundle() = default;
 
     //! init equation of state bundle
     void Init(const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial);
@@ -70,4 +69,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

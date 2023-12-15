@@ -20,6 +20,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// preconditioner base class
@@ -31,12 +33,11 @@ namespace CORE::LINEAR_SOLVER
   class PreconditionerType
   {
    public:
-    /// construction with output on proc 0 (might be nullptr)
     /*!
        No setup is done upon construction, only the preconditioner object is
        created.
     */
-    explicit PreconditionerType(FILE* outfile) : outfile_(outfile) {}
+    PreconditionerType() = default;
 
     /// virtual destruction
     virtual ~PreconditionerType() = default;
@@ -74,34 +75,17 @@ namespace CORE::LINEAR_SOLVER
     virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) {}
 
     /// linear operator used for preconditioning
-    /*!
-      This is how the iterative solver sees the linear operator to be used for preconditioning.
-    */
-    virtual Epetra_Operator* PrecOperator() const = 0;
-
-    /// linear operator used for preconditioning
-    virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const = 0;
-
-    /// Apply inverse of the preconditioner
-    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-    {
-      return PrecOperator()->ApplyInverse(X, Y);
-    }
-
-    /// debug output
-    virtual void Print(std::ostream& stream) const = 0;
+    virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    /// e.g. "IFPACK parameters" for an Ifpack preconditioner
-    virtual const std::string getParameterListName() const { return "unknown"; }
+    virtual std::string getParameterListName() const = 0;
 
    protected:
     //! a linear problem wrapper class used by Trilinos and for scaling of the system
     Epetra_LinearProblem lp_;
-
-    //! file to write output to (proc 0 only, can be nullptr on input)
-    FILE* outfile_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

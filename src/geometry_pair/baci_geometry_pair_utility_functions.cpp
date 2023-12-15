@@ -13,6 +13,7 @@
 
 #include "baci_geometry_pair_element_classes.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -40,3 +41,5 @@ std::string GEOMETRYPAIR::DiscretizationTypeGeometryToString(
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

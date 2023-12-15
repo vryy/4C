@@ -27,6 +27,8 @@ coupling matrices M and D first.
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /**
  *
  */
@@ -77,3 +79,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
   mortar_manager_->AddGlobalForceStiffnessContributions(ff, fb, cbb, cbf,
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(cff, true), cfb, beam_vel, fluid_vel);
 }
+
+BACI_NAMESPACE_CLOSE

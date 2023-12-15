@@ -15,6 +15,8 @@
 
 #include "baci_lib_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -29,19 +31,16 @@ namespace DRT
       //! constructor
       ParamsMinimal() : ele_action_(none), total_time_(-1.0), delta_time_(-1.0){};
 
-      //! destructor
-      virtual ~ParamsMinimal(){};
-
       //! @name Access general control parameters
       //! @{
       //! get the desired action type
-      virtual enum ActionType GetActionType() const { return ele_action_; };
+      enum ActionType GetActionType() const override { return ele_action_; };
 
       //! get the current total time for the evaluate call
-      virtual double GetTotalTime() const { return total_time_; };
+      double GetTotalTime() const override { return total_time_; };
 
       //! get the current time step
-      virtual double GetDeltaTime() const { return delta_time_; };
+      double GetDeltaTime() const override { return delta_time_; };
       //! @}
 
       /*! @name set routines which are used to set the parameters of the data container
@@ -79,5 +78,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_ELEMENTS_PARAMSMINIMAL_H

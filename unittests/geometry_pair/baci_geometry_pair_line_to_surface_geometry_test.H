@@ -14,6 +14,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   /**
    * Setup the surface geometry for the tri4 tests.
    */

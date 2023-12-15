@@ -16,6 +16,8 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::MatList::MatList(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -71,7 +73,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatList::MaterialById(const int id) const
 MAT::MatListType MAT::MatListType::instance_;
 
 
-DRT::ParObject* MAT::MatListType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MatListType::Create(const std::vector<char>& data)
 {
   MAT::MatList* matlist = new MAT::MatList();
   matlist->Unpack(data);
@@ -130,9 +132,9 @@ void MAT::MatList::Clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::Pack(DRT::PackBuffer& data) const
+void MAT::MatList::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -168,10 +170,8 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
   Clear();
 
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid(-1);
@@ -253,3 +253,5 @@ Teuchos::RCP<MAT::Material> MAT::MatList::MaterialById(const int id) const
   else  // material is global (stored in material parameters)
     return params_->MaterialById(id);
 }
+
+BACI_NAMESPACE_CLOSE

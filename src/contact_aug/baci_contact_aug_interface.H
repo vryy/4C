@@ -14,6 +14,8 @@
 #include "baci_contact_interface.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   // forward declaration
@@ -31,9 +33,6 @@ namespace CONTACT
     /** container for the element evaluation times */
     struct EleEvaluateTimes
     {
-      EleEvaluateTimes() = default;
-      ~EleEvaluateTimes() = default;
-
       /// vector containing the evaluation times of all column slave elements
       Teuchos::RCP<Epetra_Vector> sele_col_;
 
@@ -50,14 +49,11 @@ namespace CONTACT
      *  data between different interface objects w/o the need of copying them.
      *
      *  \author hiermeier \date 03/17 */
-    class InterfaceDataContainer : public ::CONTACT::InterfaceDataContainer
+    class InterfaceDataContainer : public CONTACT::InterfaceDataContainer
     {
      public:
       /// constructor
       InterfaceDataContainer();
-
-      /// destructor
-      virtual ~InterfaceDataContainer(){};
 
       /// @name Accessors
       /// @{
@@ -195,7 +191,7 @@ namespace CONTACT
     /** \brief Augmented contact interface class
      *
      *  \author hiermeier \date 03/17 */
-    class Interface : public ::CONTACT::CoInterface
+    class Interface : public CONTACT::CoInterface
     {
      public:
       /** \brief Alternative constructor
@@ -214,9 +210,6 @@ namespace CONTACT
           const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
           bool selfcontact);
 
-      //! Destructor
-      virtual ~Interface() {}
-
       //! @name Accessors
       //! @{
 
@@ -227,7 +220,7 @@ namespace CONTACT
       }
 
       //! Get row map of slave normal dofs
-      const Teuchos::RCP<Epetra_Map> SlaveRowNDofs() const
+      Teuchos::RCP<Epetra_Map> SlaveRowNDofs() const
       {
         if (Filled())
           return interfaceData_.SNDofRowMap();
@@ -237,7 +230,7 @@ namespace CONTACT
       }
 
       //! Get row map of slave tangential dofs
-      const Teuchos::RCP<Epetra_Map> SlaveRowTDofs() const
+      Teuchos::RCP<Epetra_Map> SlaveRowTDofs() const
       {
         if (Filled())
           return interfaceData_.STDofRowMap();
@@ -379,7 +372,7 @@ namespace CONTACT
       //! @{
 
       //! Update augmented active set for each interface
-      virtual bool BuildActiveSet(bool init = false);
+      bool BuildActiveSet(bool init = false) override;
 
       //! Split augmented active dof set for each interface
       void SplitAugActiveDofs();
@@ -558,7 +551,7 @@ namespace CONTACT
         explicit AssembleStrategy(Interface* inter);
 
         /// destructor
-        virtual ~AssembleStrategy(){};
+        virtual ~AssembleStrategy() = default;
 
         /** \brief Assemble Dn and Mn matrices
          *
@@ -634,9 +627,6 @@ namespace CONTACT
         /// constructor
         explicit NodeBasedAssembleStrategy(Interface* inter);
 
-        /// destructor
-        ~NodeBasedAssembleStrategy() override{};
-
         /// derived
         void AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const override;
 
@@ -667,9 +657,7 @@ namespace CONTACT
       class EmptyAssemblePolicy
       {
        public:
-        EmptyAssemblePolicy(){/* empty */};
-
-        ~EmptyAssemblePolicy(){/* empty */};
+        EmptyAssemblePolicy() = default;
 
         inline void Add_Var_A_Lin_GG(const double scale, const double a_inv,
             const NodeDataContainer& augdata,
@@ -707,14 +695,12 @@ namespace CONTACT
       class CompleteAssemblePolicy : public IncompleteAssemblePolicy
       {
        public:
-        CompleteAssemblePolicy(){/* empty */};
+        CompleteAssemblePolicy() = default;
 
-        ~CompleteAssemblePolicy(){/* empty */};
-
-        inline void Add_Var_A_Lin_GG(const double scale, const double a_inv,
+        inline void Add_Var_A_Lin_GG(const double cn_awgap_ainv, const double awgap,
             const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
 
-        inline void Add_DD_A_GG(const double scale, const NodeDataContainer& augdata,
+        inline void Add_DD_A_GG(const double cn_awgap_awgap, const NodeDataContainer& augdata,
             CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
 
         void AssembleInactiveDDMatrix(const double scale, const NodeDataContainer& augdata,
@@ -758,5 +744,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_INTERFACE_H

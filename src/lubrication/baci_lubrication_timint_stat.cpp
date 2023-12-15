@@ -17,6 +17,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    wirtz 11/15 |
  *----------------------------------------------------------------------*/
@@ -31,11 +33,6 @@ LUBRICATION::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization
   return;
 }
 
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  wirtz 11/15 |
-*----------------------------------------------------------------------*/
-LUBRICATION::TimIntStationary::~TimIntStationary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -156,3 +153,5 @@ void LUBRICATION::TimIntStationary::UpdateIterIncrementally()
   //! bye
   return;
 }  // UpdateIterIncrementally()
+
+BACI_NAMESPACE_CLOSE

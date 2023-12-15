@@ -18,6 +18,7 @@
 // #define INSERT_AND_SORT
 #define QUICK_INSERT
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -36,7 +37,7 @@ namespace CONTACT
     typedef std::vector<Teuchos::RCP<CONTACT::CoInterface>> plain_interface_set;
     typedef std::vector<Teuchos::RCP<CORE::LINALG::Solver>> plain_lin_solver_set;
     typedef std::vector<plain_interface_set> plain_interface_sets;
-    typedef std::vector<INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
+    typedef std::vector<BACI::INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
 
 #if defined(INSERT_AND_SORT)
     typedef CORE::GEN::pairedvector<int, double, GEN::insert_and_sort_policy<int, double>>
@@ -44,8 +45,8 @@ namespace CONTACT
     typedef CORE::GEN::pairedmatrix<int, double, GEN::insert_and_sort_policy<int, double>>
         Deriv2ndMap;
 #elif defined(QUICK_INSERT)
-    typedef CORE::GEN::quick_pairedvector<int, double> Deriv1stMap;
-    typedef CORE::GEN::quick_pairedmatrix<int, double> Deriv2ndMap;
+    typedef BACI::CORE::GEN::quick_pairedvector<int, double> Deriv1stMap;
+    typedef BACI::CORE::GEN::quick_pairedmatrix<int, double> Deriv2ndMap;
 #else
     typedef GEN::default_pairedvector<int, double> Deriv1stMap;
     typedef GEN::default_pairedmatrix<int, double> Deriv2ndMap;
@@ -74,5 +75,7 @@ namespace CONTACT
 
   }  // namespace AUG
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_UTILS_H

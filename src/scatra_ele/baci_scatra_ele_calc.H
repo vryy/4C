@@ -16,9 +16,11 @@
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_scatra_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
-  template <DRT::Element::DiscretizationType distype, int numdofpernode,
+  template <CORE::FE::CellType distype, int numdofpernode,
       DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
   class RotationallySymmetricPeriodicBC;
 }
@@ -70,8 +72,7 @@ namespace DRT
       Scatra object.
     */
 
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalc : public ScaTraEleInterface
     {
      protected:
@@ -139,12 +140,11 @@ namespace DRT
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const unsigned nen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const unsigned nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
       static const unsigned nsd_ = probdim;
-      static const unsigned nsd_ele_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const unsigned nsd_ele_ = CORE::FE::dim<distype>;
 
       //! element-type specific flag if second derivatives are needed
       static const bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;
@@ -181,7 +181,7 @@ namespace DRT
       //! calculate matrix. Here the whole thing is hidden.
       virtual void SysmatODMesh(DRT::Element* ele,  //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix& emat,    //!< element matrix to calculate
-          const int numdofpernode_mesh              //!< number of DOF of mesh displacement field
+          const int ndofpernodemesh                 //!< number of DOF of mesh displacement field
       );
 
       //! calculate matrix . Here the whole thing is hidden.
@@ -292,39 +292,6 @@ namespace DRT
           CORE::LINALG::SerialDenseVector&
               momandvol,  //!< element (volume) momentum vector and minus domain volume
           const double interface_thickness  //!< interface thickness of smoothing function.
-      );
-
-      //! calculate/reconstruct gradient(s) at nodes using L2-projection.
-      virtual void CalcGradientAtNodes(
-          const DRT::Element* ele,                   //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          CORE::LINALG::SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
-          CORE::LINALG::SerialDenseVector& elevec2,  //!< element RHS vector (y-direction)
-          CORE::LINALG::SerialDenseVector& elevec3   //!< element RHS vector (z-direction)
-      );
-
-      //! calculate/reconstruct gradient(s) at nodes using L2-projection.
-      virtual void CalcGradientAtNodes(
-          const DRT::Element* ele,                   //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< element RHS vector (x-direction)
-          const INPAR::SCATRA::L2ProjectionSystemType& systemtype  //!< system type
-      );
-
-      //! calculate/reconstruct gradient at element center
-      virtual void CalcGradientEleCenter(
-          const DRT::Element* ele,                   //!< the element we are dealing with
-          CORE::LINALG::SerialDenseVector& elevec1,  //!< gradient at element center
-          CORE::LINALG::SerialDenseVector& elevec2   //!< gauss point at element center
-      );
-
-      //! calculate/reconstruct gradient(s) at nodes using L2-projection.
-      virtual void CalcCurvatureAtNodes(
-          const DRT::Element* ele,                   //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          CORE::LINALG::SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
-          const std::vector<CORE::LINALG::Matrix<nen_, nsd_>>&
-              egradphinp  //!< the gradient of phi in the x-direction
       );
 
       //! calculate filtered fields for turbulent Prandtl number
@@ -1263,6 +1230,11 @@ namespace DRT
     class ScaTraEleReaManager
     {
      public:
+      /**
+       * Virtual destructor.
+       */
+      virtual ~ScaTraEleReaManager() = default;
+
       ScaTraEleReaManager(int numscal)
           : include_me_(false),      // is reaction manager active?
             reacoeff_(numscal, 0.0)  // size of vector + initialized to zero
@@ -1455,5 +1427,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

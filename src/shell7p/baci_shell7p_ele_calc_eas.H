@@ -19,6 +19,8 @@
 #include <string>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace STR::ELEMENTS
@@ -28,14 +30,6 @@ namespace STR::ELEMENTS
 
 namespace DRT
 {
-  namespace UTILS
-  {
-    template <DRT::Element::DiscretizationType>
-    struct DisTypeToNumNodePerEle;
-    template <DRT::Element::DiscretizationType>
-    struct DisTypeToDim;
-  }  // namespace UTILS
-
   namespace ELEMENTS
   {
     /*!
@@ -54,7 +48,7 @@ namespace DRT
       CORE::LINALG::SerialDenseMatrix alpha_;
     };
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Shell7pEleCalcEas : public Shell7pEleCalcInterface, public SHELL::Serializable
     {
      public:
@@ -65,7 +59,7 @@ namespace DRT
           const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) override;
 
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
@@ -130,5 +124,7 @@ namespace DRT
     };  // class Shell7pEleCalcEas
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -8,15 +8,12 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_discretization_geometric_search_params.H"
 #include "baci_inpar_browniandyn.H"
-#include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
@@ -27,6 +24,8 @@
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_CrsMatrix.h>
+
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
@@ -334,15 +333,14 @@ int DRT::ELEMENTS::Rigidsphere::HowManyRandomNumbersINeed()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
-    const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
 {
   // Get the element displacements.
   std::vector<int> lm, lmowner, lmstride;
   this->LocationVector(discret, lm, lmowner, lmstride);
   std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*result_data_dofbased, mydisp, lm);
+  DRT::UTILS::ExtractMyValues(result_data_dofbased, mydisp, lm);
 
   // Add reference position.
   if (mydisp.size() != 3)
@@ -355,7 +353,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
   bounding_volume.AddPoint(sphere_center);
 
   // Add the radius times a safety factor.
-  const double safety_factor = params->GetSphereBoundingVolumeScaling();
+  const double safety_factor = params.GetSphereBoundingVolumeScaling();
   const double radius = Radius();
   bounding_volume.ExtendBoundaries(radius * safety_factor);
 
@@ -412,3 +410,5 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

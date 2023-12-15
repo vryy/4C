@@ -15,11 +15,14 @@
 #include "baci_xfem_neumann.H"
 
 #include "baci_fluid_ele.H"
-#include "baci_lib_function_of_time.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -146,7 +149,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
     double functfac = 1.0;
     if (functnum >= 0)
       functfac =
-          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(
+          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(
               time);
     for (int i = 0; i < nnode; ++i)
     {
@@ -211,3 +214,5 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

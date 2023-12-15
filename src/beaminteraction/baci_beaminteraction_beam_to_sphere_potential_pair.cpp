@@ -11,15 +11,11 @@
 #include "baci_beaminteraction_beam_to_sphere_potential_pair.H"
 
 #include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_beaminteraction_potential_params.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_beampotential.H"
-#include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -27,8 +23,11 @@
 #include "baci_rigidsphere.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -256,14 +255,14 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 
   if (function_number != -1)
     q1 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = chargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     q2 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
 
@@ -514,7 +513,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
     CORE::DRT::UTILS::IntegrationPoints1D& gausspoints)
 {
   // get discretization type
-  const DRT::Element::DiscretizationType distype1 = Element1()->Shape();
+  const CORE::FE::CellType distype1 = Element1()->Shape();
 
   if (numnodalvalues == 1)
   {
@@ -529,7 +528,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
   {
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
+    const CORE::FE::CellType distype1herm = CORE::FE::CellType::line2;
 
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
@@ -601,3 +600,5 @@ template class BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>;
 template class BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>;
 template class BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>;
 template class BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>;
+
+BACI_NAMESPACE_CLOSE

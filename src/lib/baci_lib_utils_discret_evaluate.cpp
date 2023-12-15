@@ -15,6 +15,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
@@ -70,7 +72,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
   // that does nothing
   {
     TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate PreEvaluate");
-    ParObjectFactory::Instance().PreEvaluate(discret, eparams, strategy.Systemmatrix1(),
+    CORE::COMM::ParObjectFactory::Instance().PreEvaluate(discret, eparams, strategy.Systemmatrix1(),
         strategy.Systemmatrix2(), strategy.Systemvector1(), strategy.Systemvector2(),
         strategy.Systemvector3());
   }
@@ -135,3 +137,5 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

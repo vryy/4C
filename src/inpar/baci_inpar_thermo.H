@@ -19,6 +19,8 @@
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -50,8 +52,7 @@ namespace INPAR
     };                    // DynamicType()
 
     //! Map time integrator to std::string
-    static inline const std::string DynamicTypeString(
-        const enum DynamicType name  //!< enum to convert
+    static inline std::string DynamicTypeString(const enum DynamicType name  //!< enum to convert
     )
     {
       switch (name)
@@ -107,8 +108,7 @@ namespace INPAR
     };                   // MidAverageEnum()
 
     /// Map mid-averaging to std::string
-    static inline const std::string MidAverageString(
-        const enum MidAverageEnum name  ///< enum to convert
+    static inline std::string MidAverageString(const enum MidAverageEnum name  ///< enum to convert
     )
     {
       switch (name)
@@ -140,7 +140,7 @@ namespace INPAR
     };
 
     //! Map solution technique enum to std::string
-    static inline const std::string NonlinSolTechString(
+    static inline std::string NonlinSolTechString(
         const enum NonlinSolTech name  //!< enum to convert
     )
     {
@@ -180,8 +180,7 @@ namespace INPAR
 
 
     /// Map  enum to string
-    static inline const std::string DivContActString(
-        const enum DivContAct name  ///< enum to convert
+    static inline std::string DivContActString(const enum DivContAct name  ///< enum to convert
     )
     {
       switch (name)
@@ -221,7 +220,7 @@ namespace INPAR
     };
 
     //! Map predictor enum term to std::string
-    static inline const std::string PredEnumString(const PredEnum name  //!< identifier
+    static inline std::string PredEnumString(const PredEnum name  //!< identifier
     )
     {
       switch (name)
@@ -274,7 +273,7 @@ namespace INPAR
     };
 
     //! Map predictor enum term to std::string
-    static inline const std::string HeatFluxString(const HeatFluxType& name  //!< identifier
+    static inline std::string HeatFluxString(const HeatFluxType& name  //!< identifier
     )
     {
       switch (name)
@@ -304,7 +303,7 @@ namespace INPAR
     };
 
     //! Map predictor enum term to std::string
-    static inline const std::string TempGradString(const TempGradType& name  //!< identifier
+    static inline std::string TempGradString(const TempGradType& name  //!< identifier
     )
     {
       switch (name)
@@ -340,8 +339,7 @@ namespace INPAR
     };
 
     //! map enum term to std::string
-    static inline const std::string VectorNormString(
-        const enum VectorNorm norm  //!< input enum term
+    static inline std::string VectorNormString(const enum VectorNorm norm  //!< input enum term
     )
     {
       switch (norm)
@@ -387,4 +385,6 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // INPAR_THERMO_H

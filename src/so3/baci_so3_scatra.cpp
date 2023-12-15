@@ -12,21 +12,23 @@
 #include "baci_so3_scatra.H"
 
 #include "baci_inpar_ssi.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_element_integration_select.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/12|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(int id, int owner)
     : so3_ele(id, owner),
       impltype_(INPAR::SCATRA::impltype_undefined),
-      intpoints_(distype == DRT::Element::tet4
+      intpoints_(distype == CORE::FE::CellType::tet4
                      ? CORE::DRT::UTILS::GaussRule3D::tet_1point
-                     : (distype == DRT::Element::tet10
+                     : (distype == CORE::FE::CellType::tet10
                                ? CORE::DRT::UTILS::GaussRule3D::tet_4point
                                : DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule)),
       numgpt_(intpoints_.nquad),
@@ -42,7 +44,7 @@ DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(int id, int owner)
  |  copy-ctor (public)                                       vuong 03/12|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(
     const DRT::ELEMENTS::So3_Scatra<so3_ele, distype>& old)
     : so3_ele(old),
@@ -60,7 +62,7 @@ DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::Element* DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3_Scatra<so3_ele, distype>(*this);
@@ -71,10 +73,10 @@ DRT::Element* DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Clone() const
  |  Pack data                                                  (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(DRT::PackBuffer& data) const
+template <class so3_ele, CORE::FE::CellType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -83,8 +85,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(DRT::PackBuffer& data) co
 
   // pack scalar transport impltype
   so3_ele::AddtoPack(data, impltype_);
-  // data_
-  // so3_ele::AddtoPack(data,data_);
 
   // detJ_
   so3_ele::AddtoPack(data, detJ_);
@@ -102,32 +102,21 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(DRT::PackBuffer& data) co
 
   // add base class Element
   so3_ele::Pack(data);
-
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  so3_ele::ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype_
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(so3_ele::ExtractInt(position, data));
-
-  // data_
-  // vector<char> tmp(0);
-  // so3_ele::ExtractfromPack(position,data,tmp);
-  // data_.Unpack(tmp);
 
   // detJ_
   so3_ele::ExtractfromPack(position, data, detJ_);
@@ -152,17 +141,16 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Unpack(const std::vector<char>
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              vuong 03/12|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_scatra ";
-  os << " Discretization type: " << DRT::DistypeToString(distype).c_str();
+  os << " Discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
   Element::Print(os);
   return;
 }
@@ -170,7 +158,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -208,7 +196,7 @@ bool DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::ReadElement(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 inline DRT::Node** DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
@@ -216,7 +204,7 @@ inline DRT::Node** DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Nodes()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Material() const
 {
   return so3_ele::Material();
@@ -224,7 +212,7 @@ inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 inline int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Id() const
 {
   return so3_ele::Id();
@@ -234,7 +222,7 @@ inline int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Id() const
 /*--------------------------------------------------------------------------*
  | set the material  (public)                                 schmidt 10/17 |
  *                                                                          */
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::SetMaterial(int matnum)
 {
   // call base class
@@ -257,9 +245,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::SetMaterial(int matnum)
 }
 
 
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>;
+
+BACI_NAMESPACE_CLOSE

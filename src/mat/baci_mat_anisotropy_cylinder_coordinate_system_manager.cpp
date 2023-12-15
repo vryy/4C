@@ -11,29 +11,31 @@
 
 #include "baci_mat_anisotropy_cylinder_coordinate_system_manager.H"
 
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_parobject.H"
+#include "baci_comm_parobject.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::CylinderCoordinateSystemManager::CylinderCoordinateSystemManager() = default;
 
-void MAT::CylinderCoordinateSystemManager::Pack(DRT::PackBuffer& data) const
+void MAT::CylinderCoordinateSystemManager::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::ParObject::AddtoPack(data, radial_);
-  DRT::ParObject::AddtoPack(data, axial_);
-  DRT::ParObject::AddtoPack(data, circumferential_);
-  DRT::ParObject::AddtoPack(data, static_cast<int>(isDefined_));
+  CORE::COMM::ParObject::AddtoPack(data, radial_);
+  CORE::COMM::ParObject::AddtoPack(data, axial_);
+  CORE::COMM::ParObject::AddtoPack(data, circumferential_);
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(isDefined_));
 }
 
 void MAT::CylinderCoordinateSystemManager::Unpack(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  DRT::ParObject::ExtractfromPack(position, data, radial_);
-  DRT::ParObject::ExtractfromPack(position, data, axial_);
-  DRT::ParObject::ExtractfromPack(position, data, circumferential_);
-  isDefined_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, radial_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, axial_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, circumferential_);
+  isDefined_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
 void MAT::CylinderCoordinateSystemManager::ReadFromElementLineDefinition(
@@ -70,3 +72,4 @@ const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::GetGPCylinderCoordi
 {
   return gpCylinderCoordinateSystemManagers_[gp];
 }
+BACI_NAMESPACE_CLOSE

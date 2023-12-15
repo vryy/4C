@@ -15,9 +15,9 @@
 #include "baci_beam3_reissner.H"
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_utils.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_geometry_pair_element_functions.H"
@@ -27,6 +27,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+
+BACI_NAMESPACE_OPEN
 
 
 
@@ -86,13 +88,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
 
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryPair(
+    const DRT::Element* element1, const DRT::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  // Make sure that the contact pair is not initialized yet
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
   // Set up the geometry pair
   this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, fluid>(
-      geometry_evaluation_data_ptr);
+      element1, element2, geometry_evaluation_data_ptr);
 }
 
 /**
@@ -164,7 +165,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
  */
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualization(
-    Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.
@@ -172,7 +173,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
 
 
   // If a writer exists for integration point data, add the integration point data.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
       visualization_writer->GetVisualizationWriter("integration-points");
   if (visualization != Teuchos::null)
   {
@@ -276,3 +277,5 @@ template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_her
 // Hermite beam element, tet10 solid element.
 template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
+
+BACI_NAMESPACE_CLOSE

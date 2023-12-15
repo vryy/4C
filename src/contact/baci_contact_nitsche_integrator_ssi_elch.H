@@ -12,6 +12,8 @@ electrochemistry
 
 #include "baci_contact_nitsche_integrator_ssi.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -38,8 +40,8 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param[in] comm     contact interface communicator
      */
-    CoIntegratorNitscheSsiElch(Teuchos::ParameterList& params,
-        DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm);
+    CoIntegratorNitscheSsiElch(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
    private:
     //! data bundle of current element
@@ -79,8 +81,8 @@ namespace CONTACT
         const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
         const CORE::LINALG::Matrix<dim, 1>& master_normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
-        bool& slave_is_electrode, ElementDataBundle<dim>& electrode_data,
-        ElementDataBundle<dim>& electrolyte_data);
+        bool& slave_is_electrode, ElementDataBundle<dim>& electrode_quantitites,
+        ElementDataBundle<dim>& electrolyte_quantities);
 
     /*!
      * @brief calculate the determinant of the deformation gradient in the parent element at the
@@ -119,7 +121,7 @@ namespace CONTACT
      * @param[out] d_detF_dd             derivative of the determinant of the deformation gradient
      *                                   w.r.t. displacement
      */
-    template <DRT::Element::DiscretizationType distype, int dim>
+    template <CORE::FE::CellType distype, int dim>
     void CalculateSpatialDerivativeOfDetF(double detF,
         const ElementDataBundle<dim>& electrode_quantities,
         CORE::GEN::pairedvector<int, double>& d_detF_dd);
@@ -294,4 +296,6 @@ namespace CONTACT
     static const int numdofpernode_ = 2;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H

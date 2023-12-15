@@ -14,6 +14,8 @@
 #include "baci_ssi_monolithic.H"
 #include "baci_ssi_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
@@ -48,7 +50,7 @@ void SSI::ContactStrategyBase::ApplyContactToScatraResidual(
     Teuchos::RCP<Epetra_Vector> scatra_residual)
 {
   scatra_residual->Update(
-      1.0, *CoNitscheStrategySsi()->GetRhsBlockPtr(DRT::UTILS::VecBlockType::scatra), 1.0);
+      1.0, *CoNitscheStrategySsi()->GetRhsBlockPtr(CONTACT::VecBlockType::scatra), 1.0);
 }
 
 /*-------------------------------------------------------------------------*
@@ -60,7 +62,7 @@ void SSI::ContactStrategySparse::ApplyContactToScatraScatra(
       CORE::LINALG::CastToSparseMatrixAndCheckSuccess(scatra_scatra_matrix);
 
   const auto& scatra_scatra_sparsematrix =
-      CoNitscheStrategySsi()->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_scatra);
+      CoNitscheStrategySsi()->GetMatrixBlockPtr(CONTACT::MatBlockType::scatra_scatra);
 
   scatra_scatra_matrix_sparse->Add(*scatra_scatra_sparsematrix, false, 1.0, 1.0);
 }
@@ -76,7 +78,7 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraScatra(
   // get scatra-scatra block matrix and complete split matrix
   const auto& scatra_scatra_blockmatrix =
       CoNitscheStrategySsi()
-          ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_scatra)
+          ->GetMatrixBlockPtr(CONTACT::MatBlockType::scatra_scatra)
           ->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
               *SSIMaps()->BlockMapScaTra(), *SSIMaps()->BlockMapScaTra());
   scatra_scatra_blockmatrix->Complete();
@@ -94,7 +96,7 @@ void SSI::ContactStrategySparse::ApplyContactToScatraStructure(
   scatra_structure_matrix_sparse->UnComplete();
 
   const auto& scatra_struct_matrix =
-      CoNitscheStrategySsi()->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_displ);
+      CoNitscheStrategySsi()->GetMatrixBlockPtr(CONTACT::MatBlockType::scatra_displ);
 
   scatra_structure_matrix_sparse->Add(*scatra_struct_matrix, false, 1.0, 1.0);
 }
@@ -110,7 +112,7 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraStructure(
   // get scatra-structure block matrix and complete split matrix
   const auto& scatra_struct_blockmatrix =
       CoNitscheStrategySsi()
-          ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_displ)
+          ->GetMatrixBlockPtr(CONTACT::MatBlockType::scatra_displ)
           ->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
               *SSIMaps()->BlockMapStructure(), *SSIMaps()->BlockMapScaTra());
   scatra_struct_blockmatrix->Complete();
@@ -129,7 +131,7 @@ void SSI::ContactStrategySparse::ApplyContactToStructureScatra(
   structure_scatra_matrix_sparse->UnComplete();
 
   const auto& struct_scatra_matrix =
-      CoNitscheStrategySsi()->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_scatra);
+      CoNitscheStrategySsi()->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_scatra);
 
   structure_scatra_matrix_sparse->Add(*struct_scatra_matrix, false, 1.0, 1.0);
 }
@@ -145,7 +147,7 @@ void SSI::ContactStrategyBlock::ApplyContactToStructureScatra(
   // get structure-scatra block matrix and complete split matrix
   const auto& struct_scatra_blockmatrix =
       CoNitscheStrategySsi()
-          ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_scatra)
+          ->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_scatra)
           ->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
               *SSIMaps()->BlockMapScaTra(), *SSIMaps()->BlockMapStructure());
   struct_scatra_blockmatrix->Complete();
@@ -186,3 +188,4 @@ Teuchos::RCP<SSI::ContactStrategyBase> SSI::BuildContactStrategy(
 
   return contact_strategy;
 }
+BACI_NAMESPACE_CLOSE

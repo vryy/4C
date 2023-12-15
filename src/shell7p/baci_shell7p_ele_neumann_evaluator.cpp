@@ -7,10 +7,13 @@
 
 #include "baci_shell7p_ele_neumann_evaluator.H"
 
-#include "baci_lib_function.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_shell7p_ele_calc_lib.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
     const DRT::Discretization& discretization, DRT::Condition& condition,
@@ -19,21 +22,21 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
 {
   switch (ele.Shape())
   {
-    case DRT::Element::quad4:
-      return EvaluateNeumann<DRT::Element::quad4>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::quad8:
-      return EvaluateNeumann<DRT::Element::quad8>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::quad9:
-      return EvaluateNeumann<DRT::Element::quad9>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::tri3:
-      return EvaluateNeumann<DRT::Element::tri3>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::tri6:
-      return EvaluateNeumann<DRT::Element::tri6>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
+    case CORE::FE::CellType::quad4:
+      return EvaluateNeumann<CORE::FE::CellType::quad4>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case CORE::FE::CellType::quad8:
+      return EvaluateNeumann<CORE::FE::CellType::quad8>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case CORE::FE::CellType::quad9:
+      return EvaluateNeumann<CORE::FE::CellType::quad9>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case CORE::FE::CellType::tri3:
+      return EvaluateNeumann<CORE::FE::CellType::tri3>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case CORE::FE::CellType::tri6:
+      return EvaluateNeumann<CORE::FE::CellType::tri6>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     default:
       dserror(
           "The discretization type you are trying to evaluate the Neumann condition for is not yet "
@@ -41,7 +44,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
     const DRT::Discretization& discretization, DRT::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
@@ -236,7 +239,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
         function_scale_factors[dim] =
             (function_number > 0)
                 ? DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(function_number - 1)
                       .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                 : 1.0;
       }
@@ -341,3 +344,4 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
     }
   }
 }
+BACI_NAMESPACE_CLOSE

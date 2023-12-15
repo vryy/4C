@@ -11,14 +11,15 @@
 
 #include "baci_lib_element.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_discretization_geometric_search_params.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_element_append_visualization.H"
 #include "baci_lib_element_vtk_cell_type_register.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_node.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_material.H"
 #include "baci_utils_exceptions.H"
 
@@ -26,132 +27,93 @@
 
 #include <utility>
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::StringToDistype(const std::string& name)
-{
-  static std::map<std::string, DRT::Element::DiscretizationType> gid2distype;
-  if (gid2distype.empty())
-  {
-    gid2distype["HEX8"] = DRT::Element::hex8;
-    gid2distype["HEX18"] = DRT::Element::hex18;
-    gid2distype["HEX20"] = DRT::Element::hex20;
-    gid2distype["HEX27"] = DRT::Element::hex27;
-    gid2distype["TET4"] = DRT::Element::tet4;
-    gid2distype["TET10"] = DRT::Element::tet10;
-    gid2distype["WEDGE6"] = DRT::Element::wedge6;
-    gid2distype["WEDGE15"] = DRT::Element::wedge15;
-    gid2distype["PYRAMID5"] = DRT::Element::pyramid5;
-    gid2distype["QUAD4"] = DRT::Element::quad4;
-    gid2distype["QUAD8"] = DRT::Element::quad8;
-    gid2distype["QUAD9"] = DRT::Element::quad9;
-    gid2distype["TRI3"] = DRT::Element::tri3;
-    gid2distype["TRI6"] = DRT::Element::tri6;
-    gid2distype["NURBS2"] = DRT::Element::nurbs2;
-    gid2distype["NURBS3"] = DRT::Element::nurbs3;
-    gid2distype["NURBS4"] = DRT::Element::nurbs4;
-    gid2distype["NURBS8"] = DRT::Element::nurbs8;
-    gid2distype["NURBS9"] = DRT::Element::nurbs9;
-    gid2distype["NURBS27"] = DRT::Element::nurbs27;
-    gid2distype["LINE2"] = DRT::Element::line2;
-    gid2distype["LINE3"] = DRT::Element::line3;
-    gid2distype["POINT1"] = DRT::Element::point1;
-    gid2distype["DIS_NONE"] = DRT::Element::dis_none;
-    gid2distype["MAX_DISTYPE"] = DRT::Element::max_distype;
-  }
-
-  std::map<std::string, DRT::Element::DiscretizationType>::iterator i;
-  i = gid2distype.find(name);
-  if (i != gid2distype.end()) return i->second;
-  dserror("unsupported distype '%s'", name.c_str());
-  return DRT::Element::dis_none;
-}
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ShardsKeyToDisType(const unsigned& key)
+CORE::FE::CellType DRT::ShardsKeyToDisType(const unsigned& key)
 {
-  DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
+  CORE::FE::CellType distype = CORE::FE::CellType::dis_none;
   switch (key)
   {
     case shards::Particle::key:
     {
-      distype = DRT::Element::point1;
+      distype = CORE::FE::CellType::point1;
       break;
     }
     case shards::Line<2>::key:
     {
-      distype = DRT::Element::line2;
+      distype = CORE::FE::CellType::line2;
       break;
     }
     case shards::Line<3>::key:
     {
-      distype = DRT::Element::line3;
+      distype = CORE::FE::CellType::line3;
       break;
     }
     case shards::Quadrilateral<4>::key:
     {
-      distype = DRT::Element::quad4;
+      distype = CORE::FE::CellType::quad4;
       break;
     }
     case shards::Quadrilateral<8>::key:
     {
-      distype = DRT::Element::quad8;
+      distype = CORE::FE::CellType::quad8;
       break;
     }
     case shards::Quadrilateral<9>::key:
     {
-      distype = DRT::Element::quad9;
+      distype = CORE::FE::CellType::quad9;
       break;
     }
     case shards::Triangle<3>::key:
     {
-      distype = DRT::Element::tri3;
+      distype = CORE::FE::CellType::tri3;
       break;
     }
     case shards::Triangle<6>::key:
     {
-      distype = DRT::Element::tri6;
+      distype = CORE::FE::CellType::tri6;
       break;
     }
     case shards::Hexahedron<8>::key:
     {
-      distype = DRT::Element::hex8;
+      distype = CORE::FE::CellType::hex8;
       break;
     }
     case shards::Hexahedron<20>::key:
     {
-      distype = DRT::Element::hex20;
+      distype = CORE::FE::CellType::hex20;
       break;
     }
     case shards::Hexahedron<27>::key:
     {
-      distype = DRT::Element::hex27;
+      distype = CORE::FE::CellType::hex27;
       break;
     }
     case shards::Tetrahedron<4>::key:
     {
-      distype = DRT::Element::tet4;
+      distype = CORE::FE::CellType::tet4;
       break;
     }
     case shards::Tetrahedron<10>::key:
     {
-      distype = DRT::Element::tet10;
+      distype = CORE::FE::CellType::tet10;
       break;
     }
     case shards::Wedge<6>::key:
     {
-      distype = DRT::Element::wedge6;
+      distype = CORE::FE::CellType::wedge6;
       break;
     }
     case shards::Wedge<15>::key:
     {
-      distype = DRT::Element::wedge15;
+      distype = CORE::FE::CellType::wedge15;
       break;
     }
     case shards::Pyramid<5>::key:
     {
-      distype = DRT::Element::pyramid5;
+      distype = CORE::FE::CellType::pyramid5;
       break;
     }
     default:
@@ -200,11 +162,6 @@ DRT::Element::Element(const DRT::Element& old)
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Element::~Element() = default;
 
 
 /*----------------------------------------------------------------------*
@@ -308,9 +265,9 @@ int DRT::Element::AddMaterial(const Teuchos::RCP<MAT::Material>& mat)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::Pack(DRT::PackBuffer& data) const
+void DRT::Element::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -345,10 +302,9 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
 void DRT::Element::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // id_
   ExtractfromPack(position, data, id_);
   // owner_
@@ -360,7 +316,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, tmp);
   if (!tmp.empty())
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(tmp);
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(tmp);
     auto* mat = dynamic_cast<MAT::Material*>(o);
     if (mat == nullptr) dserror("failed to unpack material");
     // unpack only first material
@@ -466,7 +422,8 @@ void DRT::Element::NodalConnectivity(
     }
   }
   else
-    dserror("implementation is missing for this distype (%s)", DistypeToString(Shape()).c_str());
+    dserror("implementation is missing for this distype (%s)",
+        CORE::FE::CellTypeToString(Shape()).c_str());
 
   return;
 }
@@ -986,7 +943,7 @@ int DRT::Element::NumFace() const
       return NumSurface();
     default:
       dserror("faces for discretization type %s not yet implemented",
-          (DRT::DistypeToString(Shape())).c_str());
+          (CORE::FE::CellTypeToString(Shape())).c_str());
       return 0;
   }
 }
@@ -1083,22 +1040,12 @@ bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
 unsigned int DRT::Element::AppendVisualizationGeometry(const DRT::Discretization& discret,
     std::vector<uint8_t>& cell_types, std::vector<double>& point_coordinates) const
 {
-  const unsigned int num_spatial_dimensions = 3;
-  auto vtk_cell_info = DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(this->Shape());
-  const std::vector<int>& numbering = vtk_cell_info.second;
-
-  // Add the cell type to the output.
-  cell_types.push_back(vtk_cell_info.first);
-
-  // Add each node to the output.
-  const DRT::Node* const* nodes = this->Nodes();
-
-  for (int inode = 0; inode < this->NumNode(); ++inode)
-    for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
-      point_coordinates.push_back(nodes[numbering[inode]]->X()[idim]);
-
-  // Return the number of added points.
-  return this->NumNode();
+  if (IsNurbsElement())
+    return DRT::ELEMENTS::AppendVisualizationGeometryNURBSEle(
+        *this, discret, cell_types, point_coordinates);
+  else
+    return DRT::ELEMENTS::AppendVisualizationGeometryLagrangeEle(
+        *this, discret, cell_types, point_coordinates);
 }
 
 /*----------------------------------------------------------------------*
@@ -1108,44 +1055,21 @@ unsigned int DRT::Element::AppendVisualizationDofBasedResultDataVector(
     unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
     std::vector<double>& vtu_point_result_data) const
 {
-  const std::vector<int>& numbering =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(this->Shape()).second;
-
-  for (unsigned int inode = 0; inode < (unsigned int)this->NumNode(); ++inode)
-  {
-    std::vector<int> nodedofs;
-    nodedofs.clear();
-
-    // local storage position of desired dof gid
-    discret.Dof(this->Nodes()[numbering[inode]], nodedofs);
-
-    // adjust resultdofs according to elements dof
-    if (nodedofs.size() < result_num_dofs_per_node)
-    {
-      result_num_dofs_per_node = nodedofs.size();
-    }
-
-    for (unsigned int idof = 0; idof < result_num_dofs_per_node; ++idof)
-    {
-      const int lid =
-          result_data_dofbased->Map().LID(nodedofs[idof + read_result_data_from_dofindex]);
-
-      if (lid > -1)
-        vtu_point_result_data.push_back((*result_data_dofbased)[lid]);
-      else
-        dserror("received illegal dof local id: %d", lid);
-    }
-  }
-
-  return this->NumNode();
+  if (IsNurbsElement())
+    return DRT::ELEMENTS::AppendVisualizationDofBasedResultDataVectorNURBSEle(*this, discret,
+        result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
+        vtu_point_result_data);
+  else
+    return DRT::ELEMENTS::AppendVisualizationDofBasedResultDataVectorLagrangeEle(*this, discret,
+        result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
+        vtu_point_result_data);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
-    const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
 {
   CORE::GEOMETRICSEARCH::BoundingVolume bounding_box;
   CORE::LINALG::Matrix<3, 1, double> point;
@@ -1162,10 +1086,10 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
 
     for (unsigned int i_dir = 0; i_dir < 3; ++i_dir)
     {
-      const int lid = result_data_dofbased->Map().LID(nodedofs[i_dir]);
+      const int lid = result_data_dofbased.Map().LID(nodedofs[i_dir]);
 
       if (lid > -1)
-        point(i_dir) = node->X()[i_dir] + (*result_data_dofbased)[lid];
+        point(i_dir) = node->X()[i_dir] + result_data_dofbased[lid];
       else
         dserror("received illegal dof local id: %d", lid);
     }
@@ -1207,9 +1131,9 @@ DRT::FaceElement::FaceElement(const DRT::FaceElement& old)
  |  Pack data                                                  (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void DRT::FaceElement::Pack(DRT::PackBuffer& data) const
+void DRT::FaceElement::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -1233,10 +1157,9 @@ void DRT::FaceElement::Pack(DRT::PackBuffer& data) const
 void DRT::FaceElement::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class DRT::Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -1256,3 +1179,5 @@ void DRT::FaceElement::Unpack(const std::vector<char>& data)
  |  set the local trafo map (protected)                kronbichler 03/15|
  *----------------------------------------------------------------------*/
 void DRT::FaceElement::SetLocalTrafoMap(const std::vector<int>& trafo) { localtrafomap_ = trafo; }
+
+BACI_NAMESPACE_CLOSE

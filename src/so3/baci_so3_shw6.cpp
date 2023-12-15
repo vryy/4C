@@ -8,11 +8,13 @@
 
 #include "baci_so3_shw6.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_utils.H"
 #include "baci_so3_weg6.H"
+
+BACI_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
@@ -20,7 +22,7 @@ DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
 DRT::ELEMENTS::So_shw6Type& DRT::ELEMENTS::So_shw6Type::Instance() { return instance_; }
 
 
-DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_shw6(-1, -1);
   object->Unpack(data);
@@ -59,7 +61,6 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_shw6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
-  ;
 }
 
 void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition(
@@ -125,9 +126,9 @@ DRT::Element* DRT::ELEMENTS::So_shw6::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_shw6::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -154,10 +155,9 @@ void DRT::ELEMENTS::So_shw6::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class So_weg6 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -176,11 +176,6 @@ void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_shw6::~So_shw6() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
@@ -193,3 +188,5 @@ void DRT::ELEMENTS::So_shw6::Print(std::ostream& os) const
   std::cout << data_;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

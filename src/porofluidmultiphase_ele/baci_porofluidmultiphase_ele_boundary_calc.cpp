@@ -11,16 +11,18 @@
 
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"  // for curves and functions
 #include "baci_porofluidmultiphase_ele_action.H"
 #include "baci_porofluidmultiphase_ele_parameter.H"
+#include "baci_utils_function.H"
 #include "baci_utils_singleton_owner.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
 DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
     const int numdofpernode, const std::string& disname)
@@ -40,7 +42,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseEleBoundaryCalc(
     const int numdofpernode, const std::string& disname)
     : params_(DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname)),
@@ -62,7 +64,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseE
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
@@ -76,7 +78,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
 /*----------------------------------------------------------------------*
  * Evaluate element                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
@@ -104,7 +106,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::El
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::ExtractElementAndNodeValues(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -140,7 +142,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::ExtractElementA
 /*----------------------------------------------------------------------*
  * Action type: Evaluate                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     POROFLUIDMULTIPHASE::BoundaryAction action, DRT::Element::LocationArray& la,
@@ -169,7 +171,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(D
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition                        vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1)
@@ -220,7 +222,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, dof);
         }
         else
@@ -240,7 +242,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
 /*----------------------------------------------------------------------*
  | evaluate shape functions and int. factor at int. point     vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int iquad,                                               ///< id of current Gauss point
@@ -271,10 +273,12 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFunc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::quad4>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::tri3>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::line2>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::line3>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::line3>;
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 /* headers */
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::PAR::ParMaterialType MAT::PAR::ParMaterialType::instance_;
 
@@ -51,10 +53,6 @@ MAT::PAR::Material::Material(const MAT::PAR::Material& old)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-MAT::PAR::Material::~Material() { return; }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -79,9 +77,9 @@ void MAT::PAR::Material::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PAR::Material::Pack(DRT::PackBuffer& data) const
+void MAT::PAR::Material::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -105,10 +103,9 @@ void MAT::PAR::Material::Pack(DRT::PackBuffer& data) const
 void MAT::PAR::Material::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Container
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
@@ -126,3 +123,5 @@ void MAT::PAR::Material::Unpack(const std::vector<char>& data)
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

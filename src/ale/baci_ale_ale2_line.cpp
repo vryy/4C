@@ -13,6 +13,8 @@
 #include "baci_lib_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::Ale2LineType DRT::ELEMENTS::Ale2LineType::instance_;
 
@@ -47,24 +49,23 @@ DRT::Element* DRT::ELEMENTS::Ale2Line::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2Line::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Ale2Line::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Line::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Ale2Line::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Ale2Line element does not support communication");
 
@@ -81,13 +82,11 @@ void DRT::ELEMENTS::Ale2Line::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale2Line::~Ale2Line() { return; }
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2Line::Print(std::ostream& os) const
 {
   os << "Ale2Line ";
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 #include "baci_io.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 12/14 |
@@ -26,11 +28,6 @@ FLD::TimIntAC::TimIntAC(const Teuchos::RCP<DRT::Discretization>& actdis,
 {
   return;
 }
-
-/*----------------------------------------------------------------------*
-| Destructor (public)                                        Thon 12/14 |
-*-----------------------------------------------------------------------*/
-FLD::TimIntAC::~TimIntAC() { return; }
 
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                        Thon 12/14 |
@@ -64,3 +61,5 @@ void FLD::TimIntAC::Output()
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

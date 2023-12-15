@@ -19,6 +19,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 UTILS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis)
     : actdisc_(dis), havespringdashpot_(false)
 {
@@ -176,3 +178,5 @@ void UTILS::SpringDashpotManager::ReadRestart(IO::DiscretizationReader& reader, 
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -8,11 +8,13 @@
 
 #include "baci_matelast_anisoactivestress_evolution.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_material.H"
+#include "baci_utils_function.H"
+
+BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
@@ -45,7 +47,7 @@ MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
                                              FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 }
 
-void MAT::ELASTIC::AnisoActiveStress_Evolution::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::AnisoActiveStress_Evolution::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, tauc_n_);
   anisotropyExtension_.PackAnisotropy(data);
@@ -143,7 +145,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     const double* coordgpref_ = pos_->data();
     activationFunction =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
+            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
             .Evaluate(coordgpref_, totaltime, 0);
   }
 
@@ -221,3 +223,5 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::SetFiberVecs(const double newgam
 {
   anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
+
+BACI_NAMESPACE_CLOSE

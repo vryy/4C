@@ -16,14 +16,16 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   //! calculates the length of an element in given configuration
-  template <::DRT::Element::DiscretizationType distype, class matrixtype>
+  template <CORE::FE::CellType distype, class matrixtype>
   double ElementLengthT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
-    static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int numnode = CORE::FE::num_nodes<distype>;
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
     CORE::LINALG::Matrix<1, 1> eleCoord;
@@ -57,11 +59,11 @@ namespace CORE::GEO
   }
 
   //! calculates the area of an element in given configuration
-  template <::DRT::Element::DiscretizationType distype, class matrixtype>
+  template <CORE::FE::CellType distype, class matrixtype>
   double ElementAreaT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
-    static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int numnode = CORE::FE::num_nodes<distype>;
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
     CORE::LINALG::Matrix<2, 1> eleCoord;
@@ -100,12 +102,12 @@ namespace CORE::GEO
   }
 
   //! calculates the volume of an element in given configuration          u.may
-  template <::DRT::Element::DiscretizationType distype, class matrixtype>
+  template <CORE::FE::CellType distype, class matrixtype>
   double ElementVolumeT(const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes)
   )
   {
     // number of nodes for element
-    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numnode = CORE::FE::num_nodes<distype>;
     // gaussian points
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
@@ -149,12 +151,11 @@ namespace CORE::GEO
    *  \params distype (in) : discretization type of the given element
    *  \params xyze    (in) : spatial coordinates of the elememnt nodes
    *                         (row = dim, col = number of nodes)
-   *
-   *  \author hiermeier \date 11/16 */
+   */
   template <class matrixtype>
-  double ElementLength(const ::DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
+  double ElementLength(const CORE::FE::CellType& distype, const matrixtype& xyze)
   {
-    if (distype != ::DRT::Element::line2 or xyze.numCols() != 2)
+    if (distype != CORE::FE::CellType::line2 or xyze.numCols() != 2)
       dserror("Currently only line2 elements are supported!");
 
     // calculate the distance between the two given nodes and return
@@ -168,29 +169,28 @@ namespace CORE::GEO
 
 
   /** \brief calculates the area of a surface element in given configuration
-   *
-   *  \author hiermeier \date 11/16 */
+   */
   template <class matrixtype>
-  double ElementArea(const ::DRT::Element::DiscretizationType distype, const matrixtype& xyze)
+  double ElementArea(const CORE::FE::CellType distype, const matrixtype& xyze)
   {
     switch (distype)
     {
       // --- 2-D boundary elements
-      case ::DRT::Element::line2:
+      case CORE::FE::CellType::line2:
         return ElementLength(distype, xyze);
-      case ::DRT::Element::line3:
-        return ElementLengthT<::DRT::Element::line3>(xyze);
+      case CORE::FE::CellType::line3:
+        return ElementLengthT<CORE::FE::CellType::line3>(xyze);
       // --- 3-D boundary elements
-      case ::DRT::Element::tri3:
-        return ElementAreaT<::DRT::Element::tri3>(xyze);
-      case ::DRT::Element::tri6:
-        return ElementAreaT<::DRT::Element::tri6>(xyze);
-      case ::DRT::Element::quad4:
-        return ElementAreaT<::DRT::Element::quad4>(xyze);
-      case ::DRT::Element::quad8:
-        return ElementAreaT<::DRT::Element::quad8>(xyze);
-      case ::DRT::Element::quad9:
-        return ElementAreaT<::DRT::Element::quad9>(xyze);
+      case CORE::FE::CellType::tri3:
+        return ElementAreaT<CORE::FE::CellType::tri3>(xyze);
+      case CORE::FE::CellType::tri6:
+        return ElementAreaT<CORE::FE::CellType::tri6>(xyze);
+      case CORE::FE::CellType::quad4:
+        return ElementAreaT<CORE::FE::CellType::quad4>(xyze);
+      case CORE::FE::CellType::quad8:
+        return ElementAreaT<CORE::FE::CellType::quad8>(xyze);
+      case CORE::FE::CellType::quad9:
+        return ElementAreaT<CORE::FE::CellType::quad9>(xyze);
       default:
         dserror("Unsupported surface element type!");
         exit(EXIT_FAILURE);
@@ -201,36 +201,36 @@ namespace CORE::GEO
 
   //! calculates the volume of an element in given configuration          u.may
   template <class matrixtype>
-  double ElementVolume(const ::DRT::Element::DiscretizationType distype,
+  double ElementVolume(const CORE::FE::CellType distype,
       const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes
   )
   {
     switch (distype)
     {
       // --- 1-D elements -----------------------------------------------------
-      case ::DRT::Element::line2:
+      case CORE::FE::CellType::line2:
         return ElementLength(distype, xyze);
       // --- 2-D elements -----------------------------------------------------
-      case ::DRT::Element::quad4:
-      case ::DRT::Element::tri3:
+      case CORE::FE::CellType::quad4:
+      case CORE::FE::CellType::tri3:
         return ElementArea(distype, xyze);
       // --- 3-D elements -----------------------------------------------------
-      case ::DRT::Element::hex8:
-        return ElementVolumeT<::DRT::Element::hex8>(xyze);
-      case ::DRT::Element::hex20:
-        return ElementVolumeT<::DRT::Element::hex20>(xyze);
-      case ::DRT::Element::hex27:
-        return ElementVolumeT<::DRT::Element::hex27>(xyze);
-      case ::DRT::Element::tet4:
-        return ElementVolumeT<::DRT::Element::tet4>(xyze);
-      case ::DRT::Element::tet10:
-        return ElementVolumeT<::DRT::Element::tet10>(xyze);
-      case ::DRT::Element::wedge6:
-        return ElementVolumeT<::DRT::Element::wedge6>(xyze);
-      case ::DRT::Element::wedge15:
-        return ElementVolumeT<::DRT::Element::wedge15>(xyze);
-      case ::DRT::Element::pyramid5:
-        return ElementVolumeT<::DRT::Element::pyramid5>(xyze);
+      case CORE::FE::CellType::hex8:
+        return ElementVolumeT<CORE::FE::CellType::hex8>(xyze);
+      case CORE::FE::CellType::hex20:
+        return ElementVolumeT<CORE::FE::CellType::hex20>(xyze);
+      case CORE::FE::CellType::hex27:
+        return ElementVolumeT<CORE::FE::CellType::hex27>(xyze);
+      case CORE::FE::CellType::tet4:
+        return ElementVolumeT<CORE::FE::CellType::tet4>(xyze);
+      case CORE::FE::CellType::tet10:
+        return ElementVolumeT<CORE::FE::CellType::tet10>(xyze);
+      case CORE::FE::CellType::wedge6:
+        return ElementVolumeT<CORE::FE::CellType::wedge6>(xyze);
+      case CORE::FE::CellType::wedge15:
+        return ElementVolumeT<CORE::FE::CellType::wedge15>(xyze);
+      case CORE::FE::CellType::pyramid5:
+        return ElementVolumeT<CORE::FE::CellType::pyramid5>(xyze);
       default:
         dserror("add you distype here");
     }
@@ -239,5 +239,7 @@ namespace CORE::GEO
 
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_H

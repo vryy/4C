@@ -18,6 +18,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -112,3 +114,5 @@ void PARTICLEINTERACTION::SPHHeatLossEvaporation::EvaluateEvaporationInducedHeat
                     thermomaterial_i->invThermalCapacity_ / dens_i[0];
   }
 }
+
+BACI_NAMESPACE_CLOSE

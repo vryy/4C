@@ -20,6 +20,8 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class MultiMapExtractor;
@@ -54,9 +56,6 @@ namespace DRT
       ConditionSelector translates between nodes and dofs.
 
       \see DRT::UTILS::MultiConditionSelector
-
-      \author u.kue
-      \date 08/09
      */
     class ConditionSelector
     {
@@ -106,9 +105,6 @@ namespace DRT
 
       This selector is used most often. It can be applied e.g. to extract the
       velocity dofs from a fluid node (with velocity and pressure dofs)
-
-      \author u.kue
-      \date 08/09
      */
     class NDimConditionSelector : public ConditionSelector
     {
@@ -128,25 +124,6 @@ namespace DRT
       int enddim_;
     };
 
-
-    /// select all dirichlet dofs
-    class DirichletSelector : public ConditionSelector
-    {
-     public:
-      DirichletSelector(const DRT::Discretization& dis) : ConditionSelector(dis, "Dirichlet") {}
-
-      /// select all matching dofs of the node and put them into conddofset
-      /*!
-        Dirichlet condition are special since lower rank conditions override
-        higher rank conditions. Thus if a node is covered by e.g. a line
-        condition, the node is considered to be selected and not processed by
-        surface or volume conditions, even if the line condition selects no dofs
-        at all. This way nodes can be freed explicitly by Dirichlet conditions.
-       */
-      bool SelectDofs(DRT::Node* node, std::set<int>& conddofset) override;
-    };
-
-
     /// a collection of ConditionSelector objects used to create a CORE::LINALG::MultiMapExtractor
     /*!
       Oftentimes the dofs of a field need to be split into a set of disjoint
@@ -161,9 +138,6 @@ namespace DRT
 
       \note Each node ends up in one condition only, independent of whether all
       its dofs are selected or not.
-
-      \author u.kue
-      \date 08/09
      */
     class MultiConditionSelector
     {
@@ -200,5 +174,7 @@ namespace DRT
 
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -15,6 +15,8 @@
 #include "baci_so3_plast_ssn_eletypes.H"
 #include "baci_so3_sh18.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -30,7 +32,7 @@ namespace DRT
 
       static So_sh18PlastType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -49,7 +51,7 @@ namespace DRT
       std::string GetElementTypeString() const { return "SOLIDSH18PLAST"; }
     };  // class So_sh18PlastType
 
-    class So_sh18Plast : public virtual So3_Plast<DRT::Element::hex18>, public virtual So_sh18
+    class So_sh18Plast : public virtual So3_Plast<CORE::FE::CellType::hex18>, public virtual So_sh18
     {
      public:
       //! @name Friends
@@ -69,12 +71,11 @@ namespace DRT
 
       //! resolve "no unique final overrider"
       int NumVolume() const override { return So_sh18::NumVolume(); }
-      DiscretizationType Shape() const override { return hex18; };
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::hex18; };
       int NumSurface() const override { return So_sh18::NumSurface(); }
       int NumLine() const override { return So_sh18::NumLine(); }
       std::vector<Teuchos::RCP<DRT::Element>> Lines() override { return So_sh18::Lines(); }
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override { return So_sh18::Surfaces(); }
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override { return So_sh18::Volumes(); }
       int NumDofPerNode(const DRT::Node& node) const override
       {
         return So_sh18::NumDofPerNode(node);
@@ -98,8 +99,6 @@ namespace DRT
       //! where the type of the derived class is unknown and a copy-ctor is needed
       DRT::Element* Clone() const override;
 
-      //! Destructor
-      ~So_sh18Plast() override;
 
       //! Return unique ParObject id
       //!
@@ -112,7 +111,7 @@ namespace DRT
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
@@ -153,8 +152,8 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
           ) override
       {
-        return DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::Evaluate(params, discretization, la,
-            elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
+        return DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::Evaluate(params, discretization,
+            la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
       }
 
 
@@ -205,5 +204,7 @@ namespace DRT
 
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_SSN_PLAST_SOSH18_H

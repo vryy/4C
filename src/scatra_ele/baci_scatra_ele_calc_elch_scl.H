@@ -12,6 +12,8 @@
 #include "baci_scatra_ele_calc_elch_diffcond.H"
 #include "baci_scatra_ele_parameter_elch_diffcond.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -20,12 +22,11 @@ namespace DRT
     class ScaTraEleDiffManagerElchScl;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchScl;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchScl;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcElchScl : public ScaTraEleCalcElchDiffCond<distype, probdim>
     {
      protected:
@@ -317,4 +318,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

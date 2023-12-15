@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::WeaklyCompressibleFluid::WeaklyCompressibleFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -37,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::WeaklyCompressibleFluid::CreateMaterial()
 MAT::WeaklyCompressibleFluidType MAT::WeaklyCompressibleFluidType::instance_;
 
 
-DRT::ParObject* MAT::WeaklyCompressibleFluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::WeaklyCompressibleFluidType::Create(const std::vector<char>& data)
 {
   MAT::WeaklyCompressibleFluid* fluid = new MAT::WeaklyCompressibleFluid();
   fluid->Unpack(data);
@@ -60,9 +62,9 @@ MAT::WeaklyCompressibleFluid::WeaklyCompressibleFluid(MAT::PAR::WeaklyCompressib
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::WeaklyCompressibleFluid::Pack(DRT::PackBuffer& data) const
+void MAT::WeaklyCompressibleFluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -81,10 +83,8 @@ void MAT::WeaklyCompressibleFluid::Pack(DRT::PackBuffer& data) const
 void MAT::WeaklyCompressibleFluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -125,3 +125,5 @@ double MAT::WeaklyCompressibleFluid::ComputePressure(const double dens) const
 
   return pressure;
 }
+
+BACI_NAMESPACE_CLOSE

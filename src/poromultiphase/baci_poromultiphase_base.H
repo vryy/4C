@@ -14,6 +14,8 @@
 #include "baci_adapter_poromultiphase.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class PoroFluidMultiphaseWrapper;
@@ -35,126 +37,126 @@ namespace POROMULTIPHASE
     PoroMultiPhaseBase(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
-    /// virtual destructor
-    virtual ~PoroMultiPhaseBase(){};
-
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
         const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
         const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
         int nds_solidpressure, int ndsporofluid_scatra,
-        const std::map<int, std::set<int>>* nearbyelepairs) = 0;
+        const std::map<int, std::set<int>>* nearbyelepairs) override = 0;
 
     /// read restart
-    virtual void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     /// test results (if necessary)
-    void CreateFieldTest();
+    void CreateFieldTest() override;
 
     /// setup
-    virtual void SetupSystem() = 0;
+    void SetupSystem() override = 0;
 
     /// prepare timeloop of coupled problem
-    void PrepareTimeLoop();
+    void PrepareTimeLoop() override;
 
     /// timeloop of coupled problem
-    void Timeloop();
+    void Timeloop() override;
 
     /// time step of coupled problem
-    virtual void TimeStep() = 0;
+    void TimeStep() override = 0;
 
     /// prepare time step of coupled problem
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! update fields after convergence
-    virtual void UpdateAndOutput();
+    void UpdateAndOutput() override;
 
     /// dof map of vector of unknowns of structure field
-    virtual Teuchos::RCP<const Epetra_Map> StructDofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> StructDofRowMap() const override;
 
     /// dof map of vector of unknowns of fluid field
-    virtual Teuchos::RCP<const Epetra_Map> FluidDofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> FluidDofRowMap() const override;
 
     /// dof map of vector of unknowns of artery field
-    virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     /// system matrix of coupled artery porofluid problem
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
+    const Teuchos::RCP<ADAPTER::Structure>& StructureField() override { return structure_; }
 
     //! access to fluid field
-    const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField() override
+    {
+      return fluid_;
+    }
 
     /// set structure solution on scatra field
     void SetStructSolution(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel);
+        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     /// set scatra solution on fluid field
-    void SetScatraSolution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars);
+    void SetScatraSolution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars) override;
 
     //! setup solver (for monolithic only)
-    virtual bool SetupSolver() { return false; };
+    bool SetupSolver() override { return false; };
 
     /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> StructDispnp() const;
+    Teuchos::RCP<const Epetra_Vector> StructDispnp() const override;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> StructVelnp() const;
+    Teuchos::RCP<const Epetra_Vector> StructVelnp() const override;
 
     /// return fluid flux
-    Teuchos::RCP<const Epetra_MultiVector> FluidFlux() const;
+    Teuchos::RCP<const Epetra_MultiVector> FluidFlux() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Epetra_Vector> FluidPhinp() const;
+    Teuchos::RCP<const Epetra_Vector> FluidPhinp() const override;
 
     /// return relaxed fluid solution variable (partitioned coupling will overwrite this method)
-    virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const { return FluidPhinp(); };
+    Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const override { return FluidPhinp(); };
 
     /// set (relaxed) fluid solution on structure field (partitioned coupling will overwrite this
     /// method)
-    virtual void SetRelaxedFluidSolution()
+    void SetRelaxedFluidSolution() override
     {
       dserror("SetRelaxedFluidSolution() only available for partitioned schemes!");
       return;
     };
 
     /// return fluid solution variable
-    Teuchos::RCP<const Epetra_Vector> FluidSaturation() const;
+    Teuchos::RCP<const Epetra_Vector> FluidSaturation() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Epetra_Vector> FluidPressure() const;
+    Teuchos::RCP<const Epetra_Vector> FluidPressure() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Epetra_Vector> SolidPressure() const;
+    Teuchos::RCP<const Epetra_Vector> SolidPressure() const override;
 
     //! unique map of all dofs that should be constrained with DBC
-    virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
+    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const override
     {
       dserror("CombinedDBCMap() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
     //! build the block null spaces
-    virtual void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver)
+    void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override
     {
       dserror("BuildBlockNullSpaces() only available for monolithic schemes!");
       return;
     };
 
     //! build the block null spaces
-    virtual void BuildArteryBlockNullSpace(
-        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum)
+    void BuildArteryBlockNullSpace(
+        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) override
     {
       dserror("BuildArteryBlockNullSpace() only available for monolithic schemes!");
       return;
     };
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> sx,
-        Teuchos::RCP<const Epetra_Vector> fx, const bool firstcall)
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
+        const bool firstcall) override
     {
       dserror("Evaluate() only available for monolithic schemes!");
       return;
@@ -162,36 +164,36 @@ namespace POROMULTIPHASE
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
-    virtual void UpdateFieldsAfterConvergence(
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx)
+    void UpdateFieldsAfterConvergence(
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override
     {
       dserror("UpdateFieldsAfterConvergence() only available for monolithic schemes!");
       return;
     };
 
     /// perform relaxaton (only for partitioned schemes)
-    virtual void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum)
+    void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) override
     {
       dserror("PerformRelaxation() only available for partitioned schemes!");
       return;
     };
 
     //! get monolithic rhs vector
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const
+    Teuchos::RCP<const Epetra_Vector> RHS() const override
     {
       dserror("RHS() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
     //! get extractor
-    virtual Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const override
     {
       dserror("Extractor() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
     //! get monolithic block system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const override
     {
       dserror("BlockSystemMatrix() only available for monolithic schemes!");
       return Teuchos::null;
@@ -229,5 +231,7 @@ namespace POROMULTIPHASE
 }  // namespace POROMULTIPHASE
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_BASE_H

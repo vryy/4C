@@ -8,6 +8,8 @@
 
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Node;
@@ -25,5 +27,7 @@ namespace FLD
   CORE::LINALG::SerialDenseMatrix ComputeFluidNullSpace(
       const DRT::Node& node, const int numdof, const int dimnsp);
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -16,9 +16,11 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType celltype>
   DRT::ELEMENTS::SolidCalcVariant CreateFBarSolidCalculationInterface(
       INPAR::STR::KinemType kinem_type)
   {
@@ -27,17 +29,16 @@ namespace
       dserror("FBAR only usable for KINEM nonlinear (you are using %s).", kinem_type);
     }
 
-    if constexpr (distype == DRT::Element::DiscretizationType::hex8 ||
-                  distype == DRT::Element::pyramid5)
+    if constexpr (celltype == CORE::FE::CellType::hex8 || celltype == CORE::FE::CellType::pyramid5)
     {
-      return DRT::ELEMENTS::SolidEleCalcFbar<distype>();
+      return DRT::ELEMENTS::SolidEleCalcFbar<celltype>();
     }
 
     dserror("FBAR is only implemented for hex8 and pyramid5 elements.");
     return {};
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType celltype>
   DRT::ELEMENTS::SolidCalcVariant CreateMulfSolidCalculationInterface(
       INPAR::STR::KinemType kinem_type)
   {
@@ -45,7 +46,7 @@ namespace
     {
       dserror("MULF only usable for KINEM nonlinear (you are using %s).", kinem_type);
     }
-    return DRT::ELEMENTS::SolidEleCalcMulf<distype>();
+    return DRT::ELEMENTS::SolidEleCalcMulf<celltype>();
   }
 }  // namespace
 
@@ -55,44 +56,50 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
 {
   switch (ele.Shape())
   {
-    case DRT::Element::hex8:
-      return CreateSolidCalculationInterface<DRT::Element::hex8>(ele, eletech, kinem_type, eastype);
-      break;
-    case DRT::Element::hex27:
-      return CreateSolidCalculationInterface<DRT::Element::hex27>(
+    case CORE::FE::CellType::hex8:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::hex8>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::hex20:
-      return CreateSolidCalculationInterface<DRT::Element::hex20>(
+    case CORE::FE::CellType::hex27:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::hex27>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::hex18:
-      return CreateSolidCalculationInterface<DRT::Element::hex18>(
+    case CORE::FE::CellType::hex20:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::hex20>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::pyramid5:
-      return CreateSolidCalculationInterface<DRT::Element::pyramid5>(
+    case CORE::FE::CellType::hex18:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::hex18>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::wedge6:
-      return CreateSolidCalculationInterface<DRT::Element::wedge6>(
+    case CORE::FE::CellType::nurbs27:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::nurbs27>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::tet4:
-      return CreateSolidCalculationInterface<DRT::Element::tet4>(ele, eletech, kinem_type, eastype);
+    case CORE::FE::CellType::pyramid5:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::pyramid5>(
+          ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::tet10:
-      return CreateSolidCalculationInterface<DRT::Element::tet10>(
+    case CORE::FE::CellType::wedge6:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::wedge6>(
+          ele, eletech, kinem_type, eastype);
+      break;
+    case CORE::FE::CellType::tet4:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::tet4>(
+          ele, eletech, kinem_type, eastype);
+      break;
+    case CORE::FE::CellType::tet10:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::tet10>(
           ele, eletech, kinem_type, eastype);
       break;
     default:
-      dserror("unknown distype provided");
+      dserror("unknown celltype provided");
       break;
   }
   return {};
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType celltype>
 DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
     const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech,
     INPAR::STR::KinemType kinem_type, STR::ELEMENTS::EasType eastype)
@@ -102,14 +109,14 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
   {
     // no element technology
     case 0:
-      return DRT::ELEMENTS::SolidEleCalc<distype>();
+      return DRT::ELEMENTS::SolidEleCalc<celltype>();
       break;
     // simple: just one element technology
     case 1:
       switch (*eletech.begin())
       {
         case INPAR::STR::EleTech::eas:
-          if constexpr (distype != DRT::Element::hex8)
+          if constexpr (celltype != CORE::FE::CellType::hex8)
           {
             dserror("EAS is only implemented for hex8 elements.");
           }
@@ -117,20 +124,20 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
           {
             switch (eastype)
             {
-              case ::STR::ELEMENTS::EasType::eastype_h8_9:
-                return DRT::ELEMENTS::SolidEleCalcEas<distype,
-                    ::STR::ELEMENTS::EasType::eastype_h8_9>();
-              case ::STR::ELEMENTS::EasType::eastype_h8_21:
-                return DRT::ELEMENTS::SolidEleCalcEas<distype,
-                    ::STR::ELEMENTS::EasType::eastype_h8_21>();
+              case STR::ELEMENTS::EasType::eastype_h8_9:
+                return DRT::ELEMENTS::SolidEleCalcEas<celltype,
+                    STR::ELEMENTS::EasType::eastype_h8_9>();
+              case STR::ELEMENTS::EasType::eastype_h8_21:
+                return DRT::ELEMENTS::SolidEleCalcEas<celltype,
+                    STR::ELEMENTS::EasType::eastype_h8_21>();
               default:
                 dserror("EAS type %d is not implemented %d.", (int)eastype);
             }
           }
         case INPAR::STR::EleTech::fbar:
-          return CreateFBarSolidCalculationInterface<distype>(kinem_type);
+          return CreateFBarSolidCalculationInterface<celltype>(kinem_type);
         case INPAR::STR::EleTech::ps_mulf:
-          return CreateMulfSolidCalculationInterface<distype>(kinem_type);
+          return CreateMulfSolidCalculationInterface<celltype>(kinem_type);
         default:
           dserror("unknown element technology");
       }
@@ -142,3 +149,5 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
   }
   return {};
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,15 +15,17 @@
 #include "baci_io.H"
 #include "baci_io_pstream.H"  // has to go before io.H
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_truss3.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <iostream>
 #include <utility>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                         pfaller Apr15|
@@ -239,20 +241,20 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
               (*numfuncstiff)[dof] != 0
                   ? (*springstiff)[dof] *
                         DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
+                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
                             .Evaluate(total_time)
                   : (*springstiff)[dof];
           const double dof_viscosity =
               (*numfuncvisco)[dof] != 0
                   ? (*dashpotvisc)[dof] *
                         DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
+                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
                             .Evaluate(total_time)
                   : (*dashpotvisc)[dof];
           const double dof_disploffset =
               (*numfuncdisploffset)[dof] != 0
                   ? (*disploffset)[dof] * DRT::Problem::Instance()
-                                              ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                              ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                   (*numfuncdisploffset)[dof] - 1)
                                               .Evaluate(total_time)
                   : (*disploffset)[dof];
@@ -270,11 +272,11 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
             std::array<double, 3> displ = {(*disp)[0], (*disp)[1], (*disp)[2]};
             force_disp =
                 DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
                     .Evaluate(displ.data(), total_time, 0);
 
             force_disp_deriv = (DRT::Problem::Instance()
-                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                         (*numfuncnonlinstiff)[dof] - 1)
                                     .EvaluateSpatialDerivative(displ.data(), total_time, 0))[dof];
           }
@@ -310,7 +312,7 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
-    const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo,
+    const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
     const Teuchos::ParameterList& p)
 {
   if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
@@ -424,7 +426,7 @@ void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff,
     Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
-    const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p)
+    const Teuchos::RCP<const Epetra_Vector> vel, Teuchos::ParameterList p)
 {
   if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
 
@@ -746,7 +748,10 @@ void UTILS::SpringDashpot::OutputPrestrOffsetOld(
 void UTILS::SpringDashpot::InitializeCurSurfNormal()
 {
   // create MORTAR interface
-  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar());
+  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(BACI::DRT::Problem::Instance()->NDim(),
+      BACI::DRT::Problem::Instance()->MortarCouplingParams(),
+      BACI::DRT::Problem::Instance()->ContactDynamicParams(),
+      BACI::DRT::Problem::Instance()->SpatialApproximationType()));
 
   // create CONTACT elements at interface for normal and gap calculation
   mortar_->SetupSpringDashpot(actdisc_, actdisc_, spring_, coupling_, actdisc_->Comm());
@@ -791,7 +796,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
     eparams.set("area", 0.0);
     element->Evaluate(eparams, *(actdisc_), lm, dummat, dummat, dumvec, dumvec, dumvec);
 
-    DRT::Element::DiscretizationType shape = element->Shape();
+    CORE::FE::CellType shape = element->Shape();
 
     double a = eparams.get("area", -1.0);
 
@@ -806,10 +811,10 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
 
       switch (shape)
       {
-        case DRT::Element::tri3:
+        case CORE::FE::CellType::tri3:
           apernode = a / element->NumNode();
           break;
-        case DRT::Element::tri6:
+        case CORE::FE::CellType::tri6:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = 0.;
@@ -827,10 +832,10 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::quad4:
+        case CORE::FE::CellType::quad4:
           apernode = a / element->NumNode();
           break;
-        case DRT::Element::quad8:
+        case CORE::FE::CellType::quad8:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = -1. / 3.;
@@ -848,7 +853,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::quad9:
+        case CORE::FE::CellType::quad9:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = 1. / 9.;
@@ -871,7 +876,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::nurbs9:
+        case CORE::FE::CellType::nurbs9:
           dserror(
               "Not yet implemented for Nurbs! To do: Apply the correct weighting of the area per "
               "node!");
@@ -981,3 +986,5 @@ void UTILS::SpringDashpot::Update()
 }
 
 void UTILS::SpringDashpot::ResetStepState() { gap_ = gapn_; }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // Several parameters which are fixed for Solid Wedge6
 const int NUMNOD_WEG6 = 6;   ///< number of nodes
 const int NODDOF_WEG6 = 3;   ///< number of dofs per node
@@ -42,7 +44,7 @@ namespace DRT
 
       static So_weg6Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -108,7 +110,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element
@@ -138,12 +140,6 @@ namespace DRT
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
-      /*!
         \brief Get coordinates of element center
 
         */
@@ -166,7 +162,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -176,11 +172,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_weg6() override;
 
       //@}
 
@@ -413,11 +404,11 @@ namespace DRT
           const Teuchos::RCP<MAT::Material>& mat);  // material
 
       //! Evaluate Wedge6 Shapefcts to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> sow6_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> sow6_shapefcts();
       //! Evaluate Wedge6 Derivs to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> sow6_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> sow6_derivs();
       //! Evaluate Wedge6 Weights to keep them static
-      const std::vector<double> sow6_weights();
+      std::vector<double> sow6_weights();
 
 
       //! calculate static shape functions and derivatives for sow6
@@ -436,5 +427,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_WEG6_H

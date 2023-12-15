@@ -14,6 +14,8 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_scatra_resulttest.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   // forward declaration
@@ -28,9 +30,9 @@ namespace SCATRA
 
    private:
     //! get nodal result to be tested
-    virtual double ResultNode(const std::string quantity,  //! name of quantity to be tested
-        DRT::Node* node                                    //! node carrying the result to be tested
-    ) const;
+    double ResultNode(const std::string quantity,  //! name of quantity to be tested
+        DRT::Node* node                            //! node carrying the result to be tested
+    ) const override;
 
     //! time integrator
     Teuchos::RCP<const TimIntHDG> scatratiminthdg_;
@@ -39,4 +41,6 @@ namespace SCATRA
 
   };  // class HDGResultTest : public ScaTraResultTest
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif

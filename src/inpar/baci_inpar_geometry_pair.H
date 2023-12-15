@@ -18,9 +18,9 @@
 namespace Teuchos
 {
   class ParameterList;
-
 }  // namespace Teuchos
 
+BACI_NAMESPACE_OPEN
 
 namespace INPAR
 {
@@ -37,6 +37,16 @@ namespace INPAR
                                                      ///< that poke out of the volume.
       gauss_point_projection_cross_section,  ///< Project the Gauss points on the beam surface.
       segmentation                           ///< Segment the line with the volume.
+    };
+
+    /**
+     * Flag on what to do if not all Gauss points of a segment project
+     */
+    enum class NotAllGaussPointsProjectValidAction
+    {
+      fail,     // Raise an error
+      warning,  // Print a warning message to the terminal
+      proceed   // Continue the evaluation of the geometry pair
     };
 
     /**
@@ -77,5 +87,7 @@ namespace INPAR
 
 }  // namespace INPAR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

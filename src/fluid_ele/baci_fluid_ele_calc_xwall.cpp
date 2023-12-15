@@ -21,11 +21,13 @@
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_newtonianfluid.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------*
  | Constructor                                                      bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
     : DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc(),
       ewdist_(true),
@@ -54,7 +56,7 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
 {
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
 DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(CORE::UTILS::SingletonAction action)
 {
@@ -72,7 +74,7 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(CORE::UTILS::Single
 /*-----------------------------------------------------------------------------*
  | Entry supporting methods of the element                          bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -139,7 +141,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateServiceXWall(
     DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -191,7 +193,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateServiceXWall(
 /*-----------------------------------------------------------------------------*
  | Action type: Evaluate                                            bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -271,7 +273,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(DRT::ELEMENTS::
 /*-----------------------------------------------------------------------------*
  | Get properties for this element                                  bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat)
@@ -422,7 +424,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
 /*-----------------------------------------------------------------------------*
  | Go wall shear stress increment backwards                         bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallTauWIncBack()
 {
   for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
@@ -438,7 +440,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallTauWIncBack()
 /*-----------------------------------------------------------------------------*
  | Go wall shear stress increment forward                           bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallTauWIncForward()
 {
   for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
@@ -454,7 +456,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallTauWIncForward()
 /*-----------------------------------------------------------------------------*
  | Calculate shape functions at integration point                   bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalShapeFuncAndDerivsAtIntPoint(
     const double* gpcoord,  // actual integration point (coords)
     double gpweight         // actual integration point (weight)
@@ -469,7 +471,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalShapeFuncAndDerivsA
 /*-----------------------------------------------------------------------------*
  | Calculate shape functions at integration point                   bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDerivsAtIntPoint(
     const double* gpcoord,  // actual integration point (coords)
     double gpweight         // actual integration point (weight)
@@ -494,7 +496,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDeri
   // shape functions and their first derivatives
   CORE::DRT::UTILS::shape_function<distype>(my::xsi_, funct_);
   CORE::DRT::UTILS::shape_function_deriv1<distype>(my::xsi_, deriv_);
-  if (my::is_higher_order_ele_ && distype == DRT::Element::hex8)
+  if (my::is_higher_order_ele_ && distype == CORE::FE::CellType::hex8)
   {
     // get the second derivatives of standard element at current GP
     CORE::DRT::UTILS::shape_function_deriv2<distype>(my::xsi_, deriv2_);
@@ -535,7 +537,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDeri
   //--------------------------------------------------------------
   //             compute global second derivatives
   //--------------------------------------------------------------
-  if (my::is_higher_order_ele_ && distype == DRT::Element::hex8)
+  if (my::is_higher_order_ele_ && distype == CORE::FE::CellType::hex8)
   {
     CORE::DRT::UTILS::gder2<distype, enren_>(my::xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
@@ -548,7 +550,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDeri
 /*-----------------------------------------------------------------------------*
  | Calculate enrichment shape functions                             bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalEnrichment()
 {
   // first clear everything
@@ -653,7 +655,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalEnrichment()
  | Calculate enrichment shape functions and derivatives                        |
  | including transformation from y+ to (x,y,z)                      bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EnrichmentShapeDer(
     CORE::LINALG::Matrix<nsd_, 1>& derpsigp, CORE::LINALG::Matrix<numderiv2_, 1>& der2psigp)
 {
@@ -727,7 +729,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EnrichmentShapeDer(
 /*-----------------------------------------------------------------------------*
  | Enrichment function (modification of Spalding's law)             bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::SpaldingsLaw(double dist, double utau)
 {
   // watch out, this is not exactly Spalding's law but psi=u_+*k, which saves quite some
@@ -770,7 +772,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::SpaldingsLaw(double d
 /*-----------------------------------------------------------------------------*
  | Derivative of enrichment function w.r.t. y+                         bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::DerSpaldingsLaw(
     double dist, double utau, double psi)
 {
@@ -788,7 +790,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::DerSpaldingsLaw(
 /*-----------------------------------------------------------------------------*
  | Second derivative of enrichment function w.r.t. y+               bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Der2SpaldingsLaw(
     double dist, double utau, double psi, double derpsi)
 {
@@ -805,7 +807,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Der2SpaldingsLaw(
 /*-----------------------------------------------------------------------------*
  | Calculate matrix for l2 projection                               bk 07/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
@@ -905,7 +907,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
 /*-----------------------------------------------------------------------------*
  | Calculate stabilization parameter mk                             bk 07/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetMK()
 {
   if (mk_ < 0.0)
@@ -920,21 +922,21 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetMK()
 /*-----------------------------------------------------------------------------*
  | Calculate stabilization parameter mk                             bk 07/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
 {
   if (my::is_higher_order_ele_ == false)
     dserror("It is essential that the second derivatives exist!");
 
-  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::hex8, 1);
-  if (distype == DRT::Element::hex8)
+  CORE::DRT::UTILS::GaussIntegration intpoints(CORE::FE::CellType::hex8, 1);
+  if (distype == CORE::FE::CellType::hex8)
   {
     CORE::DRT::UTILS::GaussIntegration intpointstmp(cgp_);
     intpoints = intpointstmp;
   }
-  else if (distype == DRT::Element::tet4)
+  else if (distype == CORE::FE::CellType::tet4)
   {
-    CORE::DRT::UTILS::GaussIntegration intpointsplane(DRT::Element::tet4, 2 * numgpnorm_ - 1);
+    CORE::DRT::UTILS::GaussIntegration intpointsplane(CORE::FE::CellType::tet4, 2 * numgpnorm_ - 1);
     intpoints = intpointsplane;
   }
 
@@ -1035,7 +1037,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
  | Calculate stabilization parameter mk                             bk 07/2014 |
  | (call for action type)                                                      |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
@@ -1058,7 +1060,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK(DRT::ELEMENTS::Fl
 /*-----------------------------------------------------------------------------*
  | Calculate matrix for l2 projection                               bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
@@ -1095,7 +1097,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
   CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
 
-  //  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::line6);
+  //  CORE::DRT::UTILS::GaussIntegration intpoints(CORE::FE::CellType::line6);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -1304,7 +1306,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
 /*---------------------------------------------------------------------------*
  | get ALE grid displacements only for element                      bk 02/15 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetGridDispALE(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::Matrix<nsd_, nen_>& edispnp)
@@ -1319,7 +1321,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetGridDispALE(
     for (int sdm = 0; sdm < nsd_; ++sdm) my::xyze_(sdm, inode) += edispnp(sdm, inode * 2);
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::LinMeshMotion_3D(
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
@@ -1332,5 +1334,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::LinMeshMotion_3D(
   return;
 }
 
-template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4, DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
+    DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::hex8,
+    DRT::ELEMENTS::Fluid::xwall>;
+
+BACI_NAMESPACE_CLOSE

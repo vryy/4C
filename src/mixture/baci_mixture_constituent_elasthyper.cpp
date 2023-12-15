@@ -18,6 +18,8 @@
 #include "baci_mat_service.H"
 #include "baci_mixture_prestress_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -79,3 +81,4 @@ void MIXTURE::MixtureConstituent_ElastHyper::EvaluateElasticPart(
   MAT::ElastHyperEvaluateElasticPart(
       F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
 }
+BACI_NAMESPACE_CLOSE

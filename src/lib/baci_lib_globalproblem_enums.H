@@ -8,6 +8,8 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_ENUMS_H
 #define BACI_LIB_GLOBALPROBLEM_ENUMS_H
 
+BACI_NAMESPACE_OPEN
+
 /**
  * A global definition of available problem types.
  */
@@ -62,29 +64,8 @@ enum class ProblemType
   thermo,                // thermal problem
   thermo_fsi,            // thermo-fluid-structure-interaction problem
   tsi,                   // thermal structure interaction
-  tutorial,              // student's c++/baci tutorial
 };
 
-
-/*----------------------------------------------------------------------*/
-/* The known nptypes for nested parallelism                 ghamm 02/12 */
-/*----------------------------------------------------------------------*/
-typedef enum _NP_TYPE
-{
-  copy_dat_file,
-  every_group_read_dat_file,
-  separate_dat_files,
-  no_nested_parallelism
-} NestedParallelismType;
-
-
-/// Type of shape functions used in spatial discretization
-enum class ShapeFunctionType
-{
-  shapefunction_undefined,   ///< Undefined
-  shapefunction_polynomial,  ///< Polynomial shape functions
-  shapefunction_nurbs,       ///< NURBS shape functions
-  shapefunction_hdg          ///< Hybridizable Discontinuous Galerkin
-};
+BACI_NAMESPACE_CLOSE
 
 #endif

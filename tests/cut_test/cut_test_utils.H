@@ -15,6 +15,8 @@
 #include <map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -25,6 +27,10 @@ namespace CORE::GEO
     class Side;
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
+
+using namespace BACI;
 
 class SimpleWrapper
 {
@@ -60,14 +66,11 @@ class SimpleWrapper
   void AssumeVolumeCells(unsigned num);
 
  private:
-  void CreateElement(
-      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateElement(CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateElementSides(
-      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateElementSides(CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateSide(
-      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateSide(CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
   int GetId(const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points);
 
@@ -76,9 +79,9 @@ class SimpleWrapper
 
   CORE::GEO::CUT::MeshIntersection* mesh_;
 
-  std::map<DRT::Element::DiscretizationType, int> element_count_;
+  std::map<CORE::FE::CellType, int> element_count_;
 
-  // std::map<DRT::Element::DiscretizationType, int> side_count_;
+  // std::map<CORE::FE::CellType, int> side_count_;
   int side_count_;
 
   std::vector<CORE::LINALG::Matrix<3, 1>> element_points_;

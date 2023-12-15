@@ -17,11 +17,13 @@
 #include "baci_contact_paramsinterface.H"
 #include "baci_inpar_structure.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_matrix_transform.H"
 #include "baci_mortar_utils.H"
+#include "baci_utils_epetra_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 // #define LAGRANGE_FUNC
 
@@ -56,7 +58,7 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AddContributionsToConstrRHS(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
 CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep()) return Teuchos::null;
 
@@ -64,13 +66,13 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
 
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
     {
       dserror("Unused!");
 
       break;
     }
-    case DRT::UTILS::VecBlockType::constraint:
+    case CONTACT::VecBlockType::constraint:
     {
       rhs_block = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true), true));
 
@@ -92,7 +94,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
@@ -100,7 +102,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy:
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
     {
       mat_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
 
@@ -118,19 +120,19 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy:
 
       break;
     }
-    case DRT::UTILS::MatBlockType::displ_lm:
+    case CONTACT::MatBlockType::displ_lm:
     {
       // do nothing
 
       break;
     }
-    case DRT::UTILS::MatBlockType::lm_displ:
+    case CONTACT::MatBlockType::lm_displ:
     {
       // do nothing
 
       break;
     }
-    case DRT::UTILS::MatBlockType::lm_lm:
+    case CONTACT::MatBlockType::lm_lm:
     {
       // do nothing
 
@@ -345,3 +347,5 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::RemoveCondensedContributionsFromRhs
   CORE::LINALG::Export(regforce, regforce_exp);
   CATCH_EPETRA_ERROR(str_rhs.Update(-1.0, regforce_exp, 1.0));
 }
+
+BACI_NAMESPACE_CLOSE

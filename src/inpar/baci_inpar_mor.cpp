@@ -13,6 +13,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::MOR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -23,3 +25,5 @@ void INPAR::MOR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   StringParameter("POD_MATRIX", "none", "filename of file containing projection matrix", &mor);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,7 @@ problems.
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // Forward declarations.
 namespace DRT
@@ -35,25 +36,16 @@ namespace GEOMETRYPAIR
    public:
     /**
      * \brief Constructor.
+     * @param element1 Pointer to the first element.
+     * @param element2 Pointer to the second element.
      */
-    GeometryPair();
+    GeometryPair(const DRT::Element* element1, const DRT::Element* element2)
+        : element1_(element1), element2_(element2){};
 
     /**
      * \brief Destructor.
      */
-    virtual ~GeometryPair(){};
-
-    /**
-     * \brief Initialize the pair.
-     * @param element1 Pointer to the first element.
-     * @param element2 Pointer to the second element.
-     */
-    virtual void Init(const DRT::Element* element1, const DRT::Element* element2);
-
-    /**
-     * \brief Setup the pair.
-     */
-    virtual void Setup();
+    virtual ~GeometryPair() = default;
 
     /**
      * \brief Pointer to the first element.
@@ -73,31 +65,6 @@ namespace GEOMETRYPAIR
      */
     virtual inline void SetElement2(const DRT::Element* element2) { element2_ = element2; };
 
-   protected:
-    /**
-     * \brief Check if Init was already called.
-     */
-    inline void CheckInit() const
-    {
-      if (!isinit_) dserror("Init() has not been called yet!");
-    };
-
-    /**
-     * \brief Check if Init and Setup were already called.
-     */
-    inline void CheckInitSetup() const
-    {
-      if (!isinit_ || !issetup_) dserror("Init() and Setup() have not been called yet!");
-    };
-
-   protected:
-    //! Indicates if the Init() function has been called.
-    bool isinit_;
-
-    //! Indicates if the Setup() function has been called.
-    bool issetup_;
-
-
    private:
     //! Link to the element containing the first geometry.
     const DRT::Element* element1_;
@@ -106,5 +73,7 @@ namespace GEOMETRYPAIR
     const DRT::Element* element2_;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

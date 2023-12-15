@@ -20,30 +20,30 @@
 #include "baci_inpar_elemag.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
     /// Electromagnetic diffusion element implementation
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ElemagDiffEleCalc : public ElemagEleInterface
     {
      public:
       /// nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       /// number of space dimensions
-      static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
       /// number of faces on element
-      static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
       /// Integrate shape functions (not implemented)
-      virtual int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1)
+      int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1) override
       {
         dserror("Not implemented");
         return 1;
@@ -62,13 +62,13 @@ namespace DRT
 
       /// Evaluate the element.
       /// Generic virtual interface function.Called via base pointer.
-      virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points.
       virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
@@ -79,9 +79,6 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
-
-      /// Deconstructor
-      virtual ~ElemagDiffEleCalc() {}
 
       /// Singleton access method.
       static ElemagDiffEleCalc<distype>* Instance(
@@ -303,5 +300,7 @@ namespace DRT
     };  // class ElemagDiffEleCalc
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_DIFF_ELE_CALC_H

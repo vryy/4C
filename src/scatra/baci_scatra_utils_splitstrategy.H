@@ -14,6 +14,8 @@
 
 #include "baci_linalg_blocksparsematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /*!
@@ -304,5 +306,7 @@ namespace SCATRA
   };  // class SplitStrategy
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

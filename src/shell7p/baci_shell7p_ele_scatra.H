@@ -21,6 +21,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   class Shell7pEleCalcInterface;
@@ -33,7 +35,7 @@ namespace DRT::ELEMENTS
         std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
         override;
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
         const int id, const int owner) override;
@@ -71,7 +73,7 @@ namespace DRT::ELEMENTS
      */
     Shell7pScatra(int id, int owner)
         : DRT::Element(id, owner),
-          distype_(DRT::Element::dis_none),
+          distype_(CORE::FE::CellType::dis_none),
           interface_ptr_(Teuchos::null),
           thickness_(0.0),
           material_post_setup_(false),
@@ -84,8 +86,6 @@ namespace DRT::ELEMENTS
     //! copy Constructor
     Shell7pScatra(const Shell7pScatra& other);
 
-    //! destructor
-    ~Shell7pScatra() override = default;
 
     //! copy assignment operator
     Shell7pScatra& operator=(const Shell7pScatra& other);
@@ -116,7 +116,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
@@ -128,7 +128,7 @@ namespace DRT::ELEMENTS
       return Shell7pScatraType::Instance();
     }
 
-    [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
+    [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
     bool ReadElement(const std::string& eletype, const std::string& distype,
         DRT::INPUT::LineDefinition* linedef) override;
@@ -142,8 +142,7 @@ namespace DRT::ELEMENTS
         CORE::LINALG::SerialDenseVector& elevec3) override;
 
     int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Condition& condition, std::vector<int>& dof_index_array,
-        CORE::LINALG::SerialDenseVector& elevec1,
+        DRT::Condition& condition, std::vector<int>& la, CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
     //@}
@@ -195,7 +194,7 @@ namespace DRT::ELEMENTS
 
    private:
     //! discretization type
-    DRT::Element::DiscretizationType distype_;
+    CORE::FE::CellType distype_;
 
     //! interface ptr, data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
@@ -221,5 +220,7 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SHELL7P_ELE_SCATRA_H

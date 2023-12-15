@@ -29,9 +29,11 @@
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -44,9 +46,6 @@ namespace MAT
      public:
       //! standard constructor
       PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      //! destructor
-      virtual ~PlasticNlnLogNeoHooke() { ; }
 
       //! @name material parameters
       //@{
@@ -73,21 +72,21 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class PlasticNlnLogNeoHooke
 
   }  // namespace PAR
 
 
-  class PlasticNlnLogNeoHookeType : public DRT::ParObjectType
+  class PlasticNlnLogNeoHookeType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const { return "PlasticNlnLogNeoHookeType"; }
+    std::string Name() const override { return "PlasticNlnLogNeoHookeType"; }
 
     static PlasticNlnLogNeoHookeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static PlasticNlnLogNeoHookeType instance_;
@@ -113,7 +112,7 @@ namespace MAT
     every class implementing ParObject needs a unique id defined at the
     top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return PlasticNlnLogNeoHookeType::Instance().UniqueParObjectId();
     }
@@ -128,7 +127,7 @@ namespace MAT
 
     \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -142,33 +141,36 @@ namespace MAT
     \param data (in) : vector storing all data to be unpacked into this
     instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     //! @name Access methods
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_plnlnlogneohooke; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_plnlnlogneohooke;
+    }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new PlasticNlnLogNeoHooke(*this));
     }
 
     //! density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     //! return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
@@ -181,27 +183,27 @@ namespace MAT
     bool Initialized() const { return (isinit_ and (accplstraincurr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    virtual bool NeedsDefgrd() { return true; };
+    bool NeedsDefgrd() override { return true; };
 
     //@}
 
     //! @name Evaluation methods
 
     //! initialise internal stress variables
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    virtual void Update();
+    void Update() override;
 
     //! evaluate material law
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>*
-                              defgrd,  //!< input deformation gradient for multiplicative sp
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>*
+                      defgrd,  //!< input deformation gradient for multiplicative sp
         const CORE::LINALG::Matrix<6, 1>*
             glstrain,                        //!< input Green-Lagrange strain (redundant with defo
                                              //   but used for neo-hooke evaluation; maybe remove
@@ -209,7 +211,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
         CORE::LINALG::Matrix<6, 6>* cmat,    //!< output (mandatory) material stiffness matrix
         int gp,                              //!< Gazss point
-        int eleGID);
+        int eleGID) override;
 
     //@}
 
@@ -236,4 +238,6 @@ namespace MAT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_PLASTICNLNLOGNEOHOOKE_H

@@ -13,12 +13,13 @@
 
 #include "baci_scatra_ele_boundary_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype, probdim>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
@@ -38,13 +39,14 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       //! compute integral of convective mass/heat flux over boundary surface
-      virtual std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
+      std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, CORE::LINALG::SerialDenseVector& erhs);
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
+          CORE::LINALG::SerialDenseVector& erhs) override;
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
       virtual double ComputePorosity(
@@ -68,4 +70,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcPoro
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

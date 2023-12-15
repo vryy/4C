@@ -17,11 +17,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------*
- | Destructor (public)                                   rasthofer 06/11|
- *----------------------------------------------------------------------*/
-FLD::TurbulentFlowAlgorithm::~TurbulentFlowAlgorithm() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -226,3 +223,5 @@ void FLD::TurbulentFlowAlgorithm::ReadRestart(const int restart)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

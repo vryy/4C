@@ -13,6 +13,8 @@
 #include "baci_inpar_bio.H"
 #include "baci_io.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -39,7 +41,7 @@ namespace ART
     /// constructor
     explicit ArteryScatraCloneStrategy() {}
     /// destructor
-    virtual ~ArteryScatraCloneStrategy() {}
+    virtual ~ArteryScatraCloneStrategy() = default;
 
    protected:
     /// determine element type string and whether element is copied or not
@@ -66,7 +68,7 @@ namespace ART
     Teuchos::RCP<ADAPTER::ArtNet> CreateAlgorithm(INPAR::ARTDYN::TimeIntegrationScheme timintscheme,
         Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        FILE* errfile, Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! exchange material pointers of discretizations
     void AssignMaterialPointers(
@@ -79,5 +81,7 @@ namespace ART
 }  // namespace ART
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_UTILS_H

@@ -10,7 +10,11 @@
 
  *----------------------------------------------------------------------*/
 
-template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
+BACI_NAMESPACE_OPEN
+
+template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
+
+BACI_NAMESPACE_CLOSE
 
 #endif

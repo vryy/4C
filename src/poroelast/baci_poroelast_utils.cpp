@@ -26,9 +26,11 @@
 #include "baci_poroelast_utils_clonestrategy.H"
 #include "baci_so3_poro_eletypes.H"
 #include "baci_so3_poro_p1_eletypes.H"
-#include "baci_solid_ele_poro.H"
+#include "baci_solid_poro_ele.H"
 #include "baci_w1_poro_eletypes.H"
 #include "baci_w1_poro_p1_eletypes.H"
+
+BACI_NAMESPACE_OPEN
 
 bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 {
@@ -473,3 +475,5 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
     dserror("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -10,12 +10,14 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_dem_history_pairs.H"
 
+#include "baci_comm_pack_buffer.H"
 #include "baci_io.H"
-#include "baci_lib_pack_buffer.H"
 #include "baci_particle_engine_communication_utils.H"
 #include "baci_particle_engine_interface.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -335,8 +337,8 @@ void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs(const std::vector<
   while (position < buffer.size())
   {
     // get global ids
-    int globalid_i = DRT::ParObject::ExtractInt(position, buffer);
-    int globalid_j = DRT::ParObject::ExtractInt(position, buffer);
+    int globalid_i = CORE::COMM::ParObject::ExtractInt(position, buffer);
+    int globalid_j = CORE::COMM::ParObject::ExtractInt(position, buffer);
 
     // unpack history pair data
     historypairtype historypair = historypairtype();
@@ -353,7 +355,7 @@ template <typename historypairtype>
 void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer(std::vector<char>& buffer,
     int globalid_i, int globalid_j, const historypairtype& historypair) const
 {
-  DRT::PackBuffer data;
+  CORE::COMM::PackBuffer data;
   data.StartPacking();
 
   // add global ids
@@ -426,3 +428,5 @@ template void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer<
 template void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer<
     PARTICLEINTERACTION::DEMHistoryPairAdhesion>(
     std::vector<char>&, int, int, const PARTICLEINTERACTION::DEMHistoryPairAdhesion&) const;
+
+BACI_NAMESPACE_CLOSE

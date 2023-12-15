@@ -45,6 +45,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -284,16 +286,18 @@ void FS3I::PartFS3I::Init()
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
 
-  fluidscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  fluidscatra_->Init(fs3idyn, problem->ScalarTransportDynamicParams(),
-      problem->SolverParams(linsolver1number), "scatra1", true);
+  fluidscatra_ = Teuchos::rcp(
+      new ADAPTER::ScaTraBaseAlgorithm(fs3idyn, problem->ScalarTransportDynamicParams(),
+          problem->SolverParams(linsolver1number), "scatra1", true));
+  fluidscatra_->Init();
   fluidscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);
 
-  structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  structscatra_->Init(fs3idyn, problem->ScalarTransportDynamicParams(),
-      problem->SolverParams(linsolver2number), "scatra2", true);
+  structscatra_ = Teuchos::rcp(
+      new ADAPTER::ScaTraBaseAlgorithm(fs3idyn, problem->ScalarTransportDynamicParams(),
+          problem->SolverParams(linsolver2number), "scatra2", true));
+  structscatra_->Init();
   structscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);
@@ -326,7 +330,7 @@ void FS3I::PartFS3I::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
+Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis)
 {
   // copy conditions
@@ -367,13 +371,13 @@ Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObj
 
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
-  Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volume_coupling_object =
+  Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volume_coupling_object =
       Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // setup projection matrices (use default material strategy)
-  volume_coupling_object->Init(masterdis, slavedis);
+  volume_coupling_object->Init(DRT::Problem::Instance()->NDim(), masterdis, slavedis);
   volume_coupling_object->Redistribute();
-  volume_coupling_object->Setup();
+  volume_coupling_object->Setup(DRT::Problem::Instance()->VolmortarParams());
 
   return volume_coupling_object;
 }
@@ -537,9 +541,9 @@ void FS3I::PartFS3I::SetupSystem()
       (scatravec_[0])->ScaTraField()->Discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
-  scatrasolvparams->set("solver", "umfpack");
-  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      scatrasolvparams, firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      "SOLVER", INPAR::SOLVER::SolverType::umfpack, scatrasolvparams);
+  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(scatrasolvparams, firstscatradis->Comm()));
 #else
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
   // get solver number used for fs3i
@@ -564,8 +568,8 @@ void FS3I::PartFS3I::SetupSystem()
     dserror("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(coupledscatrasolvparams,
-      firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  scatrasolver_ =
+      Teuchos::rcp(new CORE::LINALG::Solver(coupledscatrasolvparams, firstscatradis->Comm()));
 
   // get the solver number used for fluid ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
@@ -771,7 +775,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 /*----------------------------------------------------------------------*
  |  transport quantity from fluid to fluid-scalar            Thon 08/16 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidToFluidScalar(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidToFluidScalar(
     const Teuchos::RCP<const Epetra_Vector> fluidvector) const
 {
   return VolMortarMasterToSlavei(0, fluidvector);
@@ -780,7 +784,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidToFluidScalar(
 /*----------------------------------------------------------------------*
  |  transport quantity from fluid-scalar to fluid            Thon 08/16 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidScalarToFluid(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidScalarToFluid(
     const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const
 {
   return VolMortarSlaveToMasteri(0, fluidscalarvector);
@@ -789,7 +793,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidScalarToFluid(
 /*----------------------------------------------------------------------*
  |  transport quantity from structure to structure-scalar    Thon 08/16 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureToStructureScalar(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureToStructureScalar(
     const Teuchos::RCP<const Epetra_Vector> structurevector) const
 {
   return VolMortarMasterToSlavei(1, structurevector);
@@ -798,7 +802,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureToStructureScal
 /*----------------------------------------------------------------------*
  |  transport quantity from structure-scalar to structure    Thon 08/16 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureScalarToStructure(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureScalarToStructure(
     const Teuchos::RCP<const Epetra_Vector> structurescalavector) const
 {
   return VolMortarSlaveToMasteri(1, structurescalavector);
@@ -807,7 +811,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureScalarToStructu
 /*-------------------------------------------------------------------------------------*
  |  transport quantity from i-th volmortar master to i-th volmortar slave   Thon 08/16 |
  *-------------------------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarMasterToSlavei(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarMasterToSlavei(
     const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const
 {
   switch (volume_fieldcouplings_[i])
@@ -828,7 +832,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarMasterToSlavei(
 /*-------------------------------------------------------------------------------------*
  |  transport quantity from i-th volmortar slave to i-th volmortar master   Thon 08/16 |
  *-------------------------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarSlaveToMasteri(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarSlaveToMasteri(
     const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const
 {
   switch (volume_fieldcouplings_[i])
@@ -845,3 +849,5 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarSlaveToMasteri(
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

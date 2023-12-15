@@ -24,6 +24,7 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |
@@ -66,15 +67,13 @@ namespace WEAR
     //! create using a Epetra_Comm
     explicit Algorithm(const Epetra_Comm& comm);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
 
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
 
     //! read restart data
-    virtual void ReadRestart(int step  //!< step number where the calculation is continued
-        ) = 0;
+    void ReadRestart(int step  //!< step number where the calculation is continued
+        ) override = 0;
 
     //! access to structural field
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> StructureField() { return structure_; }
@@ -90,8 +89,8 @@ namespace WEAR
     void CreateMaterialInterface();
 
     //! @name Underlying fields
-    Teuchos::RCP<::ADAPTER::FSIStructureWrapper> structure_;  //! underlying structure
-    Teuchos::RCP<ADAPTER::AleWearWrapper> ale_;               //! underlying ALE
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;  //! underlying structure
+    Teuchos::RCP<ADAPTER::AleWearWrapper> ale_;             //! underlying ALE
 
    protected:
     int dim_;  //! problem dimension
@@ -106,4 +105,6 @@ namespace WEAR
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // WEAR_ALGORITHM_H

@@ -20,6 +20,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 std::map<std::string, std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCopy() const
@@ -128,3 +130,5 @@ bool ALE::UTILS::AleCloneStrategy::DetermineEleType(
 
   return cloneit;
 }
+
+BACI_NAMESPACE_CLOSE

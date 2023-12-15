@@ -19,6 +19,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -34,8 +36,13 @@ namespace DRT
     class LubricationEleInterface
     {
      public:
-      /// Empty constructor
-      LubricationEleInterface() { return; };
+      /**
+       * Virtual destructor.
+       */
+      virtual ~LubricationEleInterface() = default;
+
+      /// Default constructor.
+      LubricationEleInterface() = default;
 
       /// Setup element evaluation
       virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) = 0;
@@ -79,5 +86,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_ELE_INTERFACE_H

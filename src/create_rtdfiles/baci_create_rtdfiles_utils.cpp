@@ -10,13 +10,16 @@
 
 #include "baci_create_rtdfiles_utils.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_discretization_fem_general_cell_type_traits.H"
+#include "baci_io_linedefinition.H"
+#include "baci_io_utils_reader.H"
 #include "baci_lib_utils_createdis.H"
-#include "baci_lib_utils_reader.H"
 #include "baci_utils_exceptions.H"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+
+BACI_NAMESPACE_OPEN
 
 
 namespace DRT
@@ -25,7 +28,7 @@ namespace DRT
   {
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    Table::Table(const unsigned &t) : tablewidth_(t)
+    Table::Table(const unsigned &size) : tablewidth_(size)
     {
       for (unsigned i = 0; i < tablewidth_; ++i)
       {
@@ -141,7 +144,7 @@ namespace DRT
       const std::vector<char> headerchar{'=', '-', '~', '^'};
       unsigned headerlength = line.length();
       stream << line << "\n";
-      if (level < 0 or level > headerchar.size())
+      if (level > headerchar.size())
       {
         dserror("Header level for ReadTheDocs output must be [0,3], but is %i", level);
       }
@@ -196,6 +199,38 @@ namespace DRT
       table.Print(stream);
       return stream;
     }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteCelltypeReference(std::ostream &stream)
+    {
+      WriteLinktarget(stream, "celltypes");
+      WriteHeader(stream, 1, "Cell types");
+
+      for (auto celltype : CORE::FE::celltype_array<CORE::FE::all_physical_celltypes>)
+      {
+        std::string celltypename = CORE::FE::CellTypeToString(celltype);
+        std::string celltypelinkname = boost::algorithm::to_lower_copy(celltypename);
+        WriteLinktarget(stream, celltypelinkname);
+        WriteHeader(stream, 2, celltypename);
+
+        std::stringstream celltypeinfostream;
+        celltypeinfostream << "- Nodes: " << CORE::DRT::UTILS::getNumberOfElementNodes(celltype)
+                           << std::endl;
+        celltypeinfostream << "- Dimension: " << CORE::DRT::UTILS::getDimension(celltype)
+                           << std::endl;
+        if (CORE::DRT::UTILS::getOrder(celltype, -1) >= 0)
+        {
+          celltypeinfostream << "- Shape function order (element): "
+                             << CORE::DRT::UTILS::getDegree(celltype) << std::endl;
+          celltypeinfostream << "- Shape function order (edges): "
+                             << CORE::DRT::UTILS::getOrder(celltype) << std::endl;
+        }
+        std::string celltypeinformation = celltypeinfostream.str();
+        WriteParagraph(stream, celltypeinformation);
+      }
+    }
+
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
     void WriteMaterialReference(
@@ -256,7 +291,7 @@ namespace DRT
 
       for (auto &parameterterm : material->Inputline())
       {
-        if (auto *separator = dynamic_cast<::INPUT::SeparatorComponent *>(parameterterm.get()))
+        if (auto *separator = dynamic_cast<BACI::INPUT::SeparatorComponent *>(parameterterm.get()))
         {
           parametertable.AddRow(separator->WriteReadTheDocsTableRow());
 
@@ -471,14 +506,14 @@ namespace DRT
         conditioncodeline += " " + condparameter->WriteReadTheDocs();
         isNewlinePossible = (conditioncodeline.length() > 60);
         if (auto *previousparameter =
-                dynamic_cast<::INPUT::SeparatorComponent *>(condparameter.get()))
+                dynamic_cast<BACI::INPUT::SeparatorComponent *>(condparameter.get()))
         {
           previousparameter->GetOptions();  // just needed to prevent an unusedVariable warning
           isNewlinePossible = false;
         }
         // If the component is a string component, store the admissible parameters in the table:
         if (auto *stringComponent =
-                dynamic_cast<::INPUT::SelectionComponent *>(condparameter.get()))
+                dynamic_cast<BACI::INPUT::SelectionComponent *>(condparameter.get()))
         {
           tablerow[0] = stringComponent->Name();
           std::ostringstream parametercell;
@@ -490,7 +525,7 @@ namespace DRT
         }
         // if the component is a bundleselector (bundle of variables following a string keyword):
         if (auto *compBundleSelector =
-                dynamic_cast<::INPUT::SwitchComponent *>(condparameter.get()))
+                dynamic_cast<BACI::INPUT::SwitchComponent *>(condparameter.get()))
         {
           condCompName = compBundleSelector->Name();
           std::vector<std::string> bundle = compBundleSelector->WriteReadTheDocsLines();
@@ -591,7 +626,7 @@ namespace DRT
 
       for (auto &parameterterm : contactlaw->Inputline())
       {
-        if (auto *separator = dynamic_cast<::INPUT::SeparatorComponent *>(parameterterm.get()))
+        if (auto *separator = dynamic_cast<BACI::INPUT::SeparatorComponent *>(parameterterm.get()))
         {
           parametertable.AddRow(separator->WriteReadTheDocsTableRow());
 
@@ -647,7 +682,7 @@ namespace DRT
       {
         WriteLinktarget(stream, "functionreference");
         WriteHeader(stream, 0, "Functions reference");
-        const auto lines = DRT::UTILS::FunctionManager().ValidFunctionLines();
+        const auto lines = CORE::UTILS::FunctionManager().ValidFunctionLines();
         std::string sectionDescription = lines.Description();
         WriteParagraph(stream, sectionDescription);
         std::stringstream functionStream;
@@ -659,3 +694,5 @@ namespace DRT
   }  // namespace RTD
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

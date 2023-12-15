@@ -22,6 +22,8 @@
 
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -1848,3 +1850,5 @@ template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<3>;
 template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<1>;
 template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<2>;
 template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<3>;
+
+BACI_NAMESPACE_CLOSE

@@ -17,12 +17,15 @@
 #include "baci_coupling_volmortar_utils.H"
 #include "baci_inpar_scatra.H"
 #include "baci_lib_dofset_gidbased_wrapper.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_poroelast_base.H"
 #include "baci_poroelast_scatra_utils.H"
 #include "baci_scatra_timint_implicit.H"
 
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
@@ -82,11 +85,12 @@ POROELASTSCATRA::PoroScatraBase::PoroScatraBase(
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   // 2. scatra problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+      timeparams, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true));
 
   // now we can call Init() on the base algo.
   // time integrator is constructed and initialized inside.
-  scatra_->Init(timeparams, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true);
+  scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(2);
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(2);
 
@@ -288,12 +292,14 @@ void POROELASTSCATRA::PoroScatraBase::SetupCoupling(Teuchos::RCP<DRT::Discretiza
     std::pair<int, int> dofsets21_fluidscatra = std::pair<int, int>(2, 0);
 
     // setup projection matrices (use default material strategy)
-    volcoupl_structurescatra_->Init(structdis, scatradis, nullptr, nullptr,
-        &dofsets12_structurescatra, &dofsets21_structurescatra, Teuchos::null);
-    volcoupl_fluidscatra_->Init(fluiddis, scatradis, nullptr, nullptr, &dofsets12_fluidscatra,
-        &dofsets21_fluidscatra, Teuchos::null);
+    volcoupl_structurescatra_->Init(DRT::Problem::Instance()->NDim(), structdis, scatradis, nullptr,
+        nullptr, &dofsets12_structurescatra, &dofsets21_structurescatra, Teuchos::null);
+    volcoupl_fluidscatra_->Init(DRT::Problem::Instance()->NDim(), fluiddis, scatradis, nullptr,
+        nullptr, &dofsets12_fluidscatra, &dofsets21_fluidscatra, Teuchos::null);
 
-    volcoupl_structurescatra_->Setup();
-    volcoupl_fluidscatra_->Setup();
+    volcoupl_structurescatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
+    volcoupl_fluidscatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
   }
 }
+
+BACI_NAMESPACE_CLOSE

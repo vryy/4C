@@ -14,6 +14,7 @@
 
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -50,5 +51,7 @@ namespace GEOMETRYPAIR
       typename CORE::FADUTILS::HigherOrderFadType<2,
           Sacado::ELRFad::SLFad<double, line::n_dof_ + surface::n_dof_>>::type;
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

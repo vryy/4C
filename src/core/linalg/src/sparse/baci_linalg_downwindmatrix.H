@@ -22,6 +22,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /*!
@@ -46,8 +48,7 @@ namespace CORE::LINALG
     /*!
     \brief Destructor
     */
-    virtual ~DownwindMatrix() {}
-
+    virtual ~DownwindMatrix() = default;
     /*!
     \brief reindex a given matrix
     */
@@ -116,7 +117,7 @@ namespace CORE::LINALG
 
     /// sets an index in the Hackbusch method
     void SetL(
-        const int i, int& nf, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec);
+        const int i, int& nl, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec);
 
     /// Do downwinding according to Bey & Wittum
     void DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index,
@@ -154,5 +155,7 @@ namespace CORE::LINALG
   };  // class  DownwindMatrix
 }  // namespace CORE::LINALG
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_DOWNWINDMATRIX_H

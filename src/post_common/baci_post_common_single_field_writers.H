@@ -34,9 +34,9 @@ class StructureFilter : public PostFilterBase
   }
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 
-  virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep);
+  void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep) override;
 
   /*!
   \brief postprocess gauss point stresses and write results
@@ -83,7 +83,7 @@ class MortarFilter : public PostFilterBase
 
   \sa WriteDofResults(), WriteNodeResults(), WriteElementResults()
   */
-  virtual void WriteAllResults(PostField* field) final;
+  void WriteAllResults(PostField* field) final;
 };
 
 /*!
@@ -95,7 +95,7 @@ class FluidFilter : public PostFilterBase
   FluidFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 /*!
@@ -107,7 +107,7 @@ class XFluidFilter : public PostFilterBase
   XFluidFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 /*!
@@ -119,7 +119,7 @@ class AleFilter : public PostFilterBase
   AleFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 
@@ -132,7 +132,7 @@ class InterfaceFilter : public PostFilterBase
   InterfaceFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 
@@ -149,7 +149,7 @@ class LubricationFilter : public PostFilterBase
   LubricationFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 /*!
@@ -165,7 +165,7 @@ class PoroFluidMultiPhaseFilter : public PostFilterBase
   PoroFluidMultiPhaseFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 /*!
@@ -181,7 +181,7 @@ class ScaTraFilter : public PostFilterBase
   ScaTraFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 
@@ -198,7 +198,7 @@ class ElchFilter : public PostFilterBase
   ElchFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 
@@ -219,7 +219,7 @@ class ThermoFilter : public PostFilterBase
   }
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 
   /*!
   \brief postprocess gauss point heatfluxes and write results
@@ -245,7 +245,7 @@ class ElemagFilter : public PostFilterBase
   ElemagFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
 
 /// Writer for undefined problem types
@@ -258,8 +258,7 @@ class AnyFilter : public PostFilterBase
   AnyFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
  protected:
-  virtual void WriteAllResults(PostField* field);
+  void WriteAllResults(PostField* field) override;
 };
-
 
 #endif  // POST_COMMON_SINGLE_FIELD_WRITERS_H

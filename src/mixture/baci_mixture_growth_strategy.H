@@ -14,6 +14,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class MixtureGrowthStrategy;
@@ -63,7 +65,7 @@ namespace MIXTURE
     MixtureGrowthStrategy(MixtureGrowthStrategy&&) noexcept = default;
     MixtureGrowthStrategy& operator=(MixtureGrowthStrategy&&) noexcept = default;
 
-    virtual void PackMixtureGrowthStrategy(DRT::PackBuffer& data) const {}
+    virtual void PackMixtureGrowthStrategy(CORE::COMM::PackBuffer& data) const {}
 
     virtual void UnpackMixtureGrowthStrategy(
         std::vector<char>::size_type& position, const std::vector<char>& data)
@@ -120,5 +122,7 @@ namespace MIXTURE
         CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const = 0;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_GROWTH_STRATEGY_H

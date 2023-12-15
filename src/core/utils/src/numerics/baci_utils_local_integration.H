@@ -13,8 +13,27 @@
 #include <iterator>
 #include <tuple>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
+  /*!
+   * @brief Integrate the interval of equidistant 3 datapoints using the Simpson's rule.
+   *
+   * @tparam Number
+   * @param dt Timestep between each datapoint
+   * @param value1 Value at t_0
+   * @param value2 Value at t_1
+   * @param value3 Value at t_2
+   * @return auto Approximation of the integral from t_0 to t_1
+   */
+  template <typename Number>
+  auto IntegrateSimpsonStep(
+      const double dt, const Number value1, const Number value2, const Number value3)
+  {
+    return 1.0 / 3.0 * dt * (value1 + 4 * value2 + value3);
+  }
+
   /*!
    * @brief Integrate the interval of 3 datapoints using the Simpson's rule.
    *
@@ -25,9 +44,8 @@ namespace CORE::UTILS
    * @return ValueType Result of the integration
    */
   template <typename StepData>
-  auto IntegrateSimpsonStep(
-      const StepData& step_data_a, const StepData& step_data_b, const StepData& step_data_c)
-      -> std::tuple_element_t<1, std::remove_reference_t<decltype(step_data_a)>>
+  auto IntegrateSimpsonStep(const StepData& step_data_a, const StepData& step_data_b,
+      const StepData& step_data_c) -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
     const auto& [time1, value1] = step_data_a;
     const auto& [time2, value2] = step_data_b;
@@ -93,9 +111,8 @@ namespace CORE::UTILS
    * @return auto
    */
   template <typename StepData>
-  auto IntegrateSimpsonStepBC(
-      const StepData& step_data_a, const StepData& step_data_b, const StepData& step_data_c)
-      -> std::tuple_element_t<1, std::remove_reference_t<decltype(step_data_a)>>
+  auto IntegrateSimpsonStepBC(const StepData& step_data_a, const StepData& step_data_b,
+      const StepData& step_data_c) -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
     return std::get<0>(
         IntegrateSimpsonStepBCAndReturnDerivativeC(step_data_a, step_data_b, step_data_c));
@@ -142,7 +159,7 @@ namespace CORE::UTILS
    */
   template <typename StepData>
   auto IntegrateTrapezoidalStep(const StepData& step_data_a, const StepData& step_data_b)
-      -> std::tuple_element_t<1, std::remove_reference_t<decltype(step_data_a)>>
+      -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
     return std::get<0>(IntegrateTrapezoidalStepAndReturnDerivativeB(step_data_a, step_data_b));
   }
@@ -159,7 +176,7 @@ namespace CORE::UTILS
    */
   template <typename Integrand, typename Container>
   inline auto IntegrateSimpsonTrapezoidal(Container indexable_container, Integrand integrand)
-      -> std::tuple_element_t<1, decltype(integrand(indexable_container[0]))>
+      -> std::decay_t<std::tuple_element_t<1, decltype(integrand(indexable_container[0]))>>
   {
     using TupleType = decltype(integrand(indexable_container[0]));
     using ValueType = std::tuple_element_t<1, TupleType>;
@@ -203,5 +220,7 @@ namespace CORE::UTILS
     return integration_result;
   }
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

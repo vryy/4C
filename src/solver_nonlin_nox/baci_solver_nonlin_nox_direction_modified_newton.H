@@ -20,6 +20,12 @@ class Epetra_Vector;
 namespace NOX
 {
   class Utils;
+}
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     enum class CorrectionType : int;
@@ -28,7 +34,6 @@ namespace NOX
       namespace Test
       {
         class Generic;
-        ;
       }  // namespace Test
 
       /** \brief Modified Newton method
@@ -49,13 +54,11 @@ namespace NOX
       {
        public:
         /// constructor
-        ModifiedNewton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& p);
+        ModifiedNewton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& p);
 
-        /// destructor
-        ~ModifiedNewton() override = default;
 
-        bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-            const NOX::Solver::Generic& solver) override;
+        bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+            const ::NOX::Solver::Generic& solver) override;
 
        private:
         /** \brief compute the direction in case of a correction step
@@ -63,8 +66,8 @@ namespace NOX
          *  In difference to a default attempt the correction parameter is not
          *  changed but instead used as it is. If the solver fails, the correction
          *  fails and the line search method takes care. */
-        bool computeCorrectionDirection(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-            const NOX::Solver::Generic& solver, NOX::NLN::CorrectionType corr_type);
+        bool computeCorrectionDirection(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+            const ::NOX::Solver::Generic& solver, NOX::NLN::CorrectionType corr_type);
 
         /** \brief update the successive correction counter
          *
@@ -81,28 +84,28 @@ namespace NOX
         void fillDefaultStepTests(Teuchos::ParameterList& pmodnewton);
 
         /// test the default step, i.e. the (modified) Newton direction of length 1.0
-        bool testDefaultStepQuality(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+        bool testDefaultStepQuality(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
             Teuchos::RCP<Epetra_Vector>& diagonal, bool first_test = false);
 
         /// compute the modified Newton direction
-        bool computeModifiedNewton(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-            const NOX::Solver::Generic& solver, Epetra_Vector* diagonal = nullptr);
+        bool computeModifiedNewton(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+            const ::NOX::Solver::Generic& solver, Epetra_Vector* diagonal = nullptr);
 
         /// solve the unmodified system
-        bool solveUnmodifiedSystem(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-            const NOX::Solver::Generic& solver);
+        bool solveUnmodifiedSystem(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+            const ::NOX::Solver::Generic& solver);
 
         /// solve the modified system
-        bool solveModifiedSystem(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-            const NOX::Solver::Generic& solver);
+        bool solveModifiedSystem(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+            const ::NOX::Solver::Generic& solver);
 
         /// detect a stagnation, update the counter and inform the user if necessary
-        void setStagnationCounter(NOX::Abstract::Vector& dir);
+        void setStagnationCounter(::NOX::Abstract::Vector& dir);
 
         /// modify the system matrix
-        bool modifySystem(NOX::Abstract::Group& grp, Epetra_Vector* diagonal);
+        bool modifySystem(::NOX::Abstract::Group& grp, Epetra_Vector* diagonal);
         bool modifySystem(
-            NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr);
+            ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr);
 
         /// return the primal diagonal correction
         double getPrimalDiagCorrection(const bool first) const;
@@ -118,7 +121,7 @@ namespace NOX
         void storeCorrectionFactor();
 
         /// get diagonal vector (currently unused)
-        Teuchos::RCP<Epetra_Vector> getDiagonal(const NOX::Abstract::Group& grp) const;
+        Teuchos::RCP<Epetra_Vector> getDiagonal(const ::NOX::Abstract::Group& grp) const;
 
         /// print info to stream
         void print(std::ostream& os, const NOX::NLN::CorrectionType* corr_type = nullptr) const;
@@ -173,7 +176,7 @@ namespace NOX
         Teuchos::RCP<const Epetra_Vector> original_diag_ptr_ = Teuchos::null;
 
         //! NOX_Utils pointer
-        Teuchos::RCP<NOX::Utils> utils_;
+        Teuchos::RCP<::NOX::Utils> utils_;
 
         /// pointer to the parameter list
         Teuchos::ParameterList* params_;
@@ -186,5 +189,7 @@ namespace NOX
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_DIRECTION_MODIFIED_NEWTON_H

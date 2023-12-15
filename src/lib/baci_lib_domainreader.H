@@ -14,13 +14,15 @@
 #ifndef BACI_LIB_DOMAINREADER_H
 #define BACI_LIB_DOMAINREADER_H
 
-#include "baci_lib_inputreader.H"
+#include "baci_io_inputreader.H"
 
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
 #include <memory>
 #include <set>
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -58,8 +60,7 @@ namespace DRT
           Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname);
 
       //! Destructor
-      virtual ~DomainReader() { ; }
-
+      virtual ~DomainReader() = default;
       /// give the discretization this reader fills
       Teuchos::RCP<Discretization> MyDis() const { return dis_; }
 
@@ -106,4 +107,6 @@ namespace DRT
 
   }  // namespace INPUT
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

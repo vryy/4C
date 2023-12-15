@@ -7,11 +7,15 @@
 #ifndef BACI_SO3_SSN_PLAST_FWD_HPP
 #define BACI_SO3_SSN_PLAST_FWD_HPP
 
+BACI_NAMESPACE_OPEN
+
 // template classes
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE
 
 #endif

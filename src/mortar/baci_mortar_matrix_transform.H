@@ -11,7 +11,7 @@ distributions
 #ifndef BACI_MORTAR_MATRIX_TRANSFORM_H
 #define BACI_MORTAR_MATRIX_TRANSFORM_H
 
-#include "baci_lib_utils_matrix_vector_enums.H"
+#include "baci_contact_utils.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_pairedvector.H"
 
@@ -19,6 +19,9 @@ distributions
 
 class Epetra_Map;
 class Epetra_Export;
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -27,19 +30,17 @@ namespace MORTAR
 {
   class MatrixRowColTransformer
   {
-    typedef CORE::GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Export>>
+    typedef CORE::GEN::pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Export>>
         plain_block_export_pairs;
 
    public:
-    typedef CORE::GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Map>*>
+    typedef CORE::GEN::pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Map>*>
         plain_block_map_pairs;
 
    public:
     /// constructor
     MatrixRowColTransformer(const unsigned num_transformer);
 
-    /// destructor
-    ~MatrixRowColTransformer(){};
 
     void Init(const plain_block_map_pairs& redistributed_row,
         const plain_block_map_pairs& redistributed_column,
@@ -49,15 +50,15 @@ namespace MORTAR
     void Setup();
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> RedistributedToUnredistributed(
-        const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
+        const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
 
-    void RedistributedToUnredistributed(const DRT::UTILS::MatBlockType bt,
+    void RedistributedToUnredistributed(const CONTACT::MatBlockType bt,
         const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> UnredistributedToRedistributed(
-        const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
+        const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
 
-    void UnredistributedToRedistributed(const DRT::UTILS::MatBlockType bt,
+    void UnredistributedToRedistributed(const CONTACT::MatBlockType bt,
         const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
 
    private:
@@ -101,5 +102,7 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_MATRIX_TRANSFORM_H
