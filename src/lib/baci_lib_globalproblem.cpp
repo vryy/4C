@@ -857,7 +857,16 @@ void DRT::Problem::ReadParticles(DRT::INPUT::DatFileReader& reader)
 void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile,
     std::string prefix, const std::string& restartkenner)
 {
-  if (Restart()) inputcontrol_ = Teuchos::rcp(new IO::InputControl(restartkenner, comm));
+  if (Restart())
+  {
+    inputcontrol_ = Teuchos::rcp(new IO::InputControl(restartkenner, comm));
+
+    if (restartstep_ < 0)
+    {
+      int r = IO::GetLastPossibleRestartStep(*inputcontrol_);
+      SetRestartStep(r);
+    }
+  }
 
   outputcontrol_ =
       Teuchos::rcp(new IO::OutputControl(comm, ProblemName(), SpatialApproximationType(), inputfile,
@@ -2593,12 +2602,7 @@ bool DRT::Problem::DoesExistDis(const std::string& name) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::SetRestartStep(int r)
-{
-  if (r < 0) dserror("Negative restart step not allowed");
-
-  restartstep_ = r;
-}
+void DRT::Problem::SetRestartStep(int r) { restartstep_ = r; }
 
 
 /*----------------------------------------------------------------------*/

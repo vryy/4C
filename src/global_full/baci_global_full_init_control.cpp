@@ -136,7 +136,19 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
 
     if (restart.substr(0, 8) == "restart=")
     {
-      int r = atoi(restart.substr(8, std::string::npos).c_str());
+      const std::string option = restart.substr(8, std::string::npos);
+      int r;
+      if (option.compare("last_possible") == 0)
+      {
+        r = -1;  // here we use a negative value to trigger the search in the control file in the
+                 // later step. It does not mean a restart from a negative number is allowed from
+                 // the user point of view.
+      }
+      else
+      {
+        r = atoi(option.c_str());
+        if (r < 0) dserror("Restart number must be a positive value");
+      }
       // tell the global problem about the restart step given in the command line
       problem->SetRestartStep(r);
       restartIsGiven = true;

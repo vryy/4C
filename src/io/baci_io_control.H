@@ -11,6 +11,7 @@
 #include "baci_discretization_fem_general_shape_function_type.H"
 
 #include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
 
 #include <fstream>
 #include <string>
@@ -148,6 +149,8 @@ namespace IO
   /// returns std::string::npos if not found
   size_t RestartFinder(const std::string& filename);
 
+  /// find the last possible restart step in the control file
+  int GetLastPossibleRestartStep(IO::InputControl& inputcontrol);
 }  // namespace IO
 
 BACI_NAMESPACE_CLOSE
