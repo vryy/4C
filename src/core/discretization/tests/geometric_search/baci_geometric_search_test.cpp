@@ -19,6 +19,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class GeometricSearch : public ::testing::Test
   {
    public:

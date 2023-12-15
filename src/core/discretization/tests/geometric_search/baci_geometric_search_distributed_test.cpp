@@ -22,6 +22,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class GeometricSearchDistributed : public ::testing::Test
   {
    public:
