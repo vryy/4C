@@ -27,6 +27,8 @@
 #include <fstream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1777,6 +1779,8 @@ void PoroMultiElastScatraArteryScatraMonWriter::WriteHeader(std::ofstream& outfi
 {
   outfile << "# PoroMultiElastScatra problem, writing nodal data of artery_scatra node ";
 }
+
+BACI_NAMESPACE_CLOSE
 
 /*!
  * \brief filter main routine for monitoring filter

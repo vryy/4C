@@ -17,6 +17,8 @@
 #include <filesystem>
 #include <iomanip>
 
+BACI_NAMESPACE_OPEN
+
 // deactivate for ascii output. Only do this for debugging.
 // #define BIN_VTK_OUT
 
@@ -445,3 +447,5 @@ void PostVtkWriter::WriteVtkMasterFile(
     masterfile.flush();
   }
 }
+
+BACI_NAMESPACE_CLOSE

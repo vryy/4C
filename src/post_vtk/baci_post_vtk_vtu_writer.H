@@ -19,11 +19,12 @@
 #include <vector>
 
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 class PostField;
 class PostResult;
 
-BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -36,7 +37,6 @@ namespace DRT
   }
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
 
 /*
  \brief Base class for VTU output generation
@@ -146,5 +146,7 @@ class PostVtuWriter : public PostVtkWriter
   ///! width of the proc identifier number in the processor specific file names
   const int proc_file_padding_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

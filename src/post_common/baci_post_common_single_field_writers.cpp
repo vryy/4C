@@ -17,6 +17,7 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -652,3 +653,5 @@ void AnyFilter::WriteAllResults(PostField* field)
   WriteNodeResults(field);
   WriteElementResults(field);
 }
+
+BACI_NAMESPACE_CLOSE

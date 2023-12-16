@@ -20,10 +20,9 @@
 
 
 // forward declarations
+BACI_NAMESPACE_OPEN
 class PostField;
 class PostResult;
-
-BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -35,8 +34,6 @@ namespace DRT
     class Beam3Base;
   }
 }  // namespace DRT
-
-BACI_NAMESPACE_CLOSE
 
 /*
  \brief Base class for VTU node based output generation
@@ -114,5 +111,7 @@ class PostVtuWriterNode : public PostVtuWriter
   virtual void WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData);
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

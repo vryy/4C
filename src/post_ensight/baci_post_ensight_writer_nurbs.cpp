@@ -19,6 +19,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*
     Write the coordinates for a Nurbs discretization
@@ -3556,3 +3558,6 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
   }  // if (myrank_==0)
 
 }  // EnsightWriter::WriteNodalResultStepForNurbs
+
+
+BACI_NAMESPACE_CLOSE

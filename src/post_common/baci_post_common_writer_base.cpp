@@ -13,6 +13,7 @@
 
 #include "baci_post_common.H"
 
+BACI_NAMESPACE_OPEN
 
 PostWriterBase::PostWriterBase(PostField* field, const std::string& filename)
     : field_(field),
@@ -21,3 +22,5 @@ PostWriterBase::PostWriterBase(PostField* field, const std::string& filename)
       numproc_(field->problem()->comm()->NumProc())
 {
 }
+
+BACI_NAMESPACE_CLOSE

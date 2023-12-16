@@ -26,6 +26,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filename)
     : PostVtuWriter(field, filename)
 {
@@ -462,3 +464,5 @@ void PostVtuWriterNode::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* e
 {
   dserror("VTU node based filter cannot handle NURBS elements");
 }
+
+BACI_NAMESPACE_CLOSE

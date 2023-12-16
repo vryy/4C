@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 class PostField;
 class PostResult;
@@ -98,5 +100,7 @@ class PostFilterBase
   //! The actual writer object
   Teuchos::RCP<PostWriterBase> writer_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POST_COMMON_FILTER_BASE_H

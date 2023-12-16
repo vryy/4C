@@ -30,6 +30,8 @@ extern "C"
 #include "baci_io_legacy_table_iter.h"
 }
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  * The main part of this file. All the functions of the three classes
  * PostProblem, PostField and PostResult are defined here.
@@ -1356,3 +1358,5 @@ int PostResult::step() const { return map_read_int(group_, "step"); }
 
 //! returns the number of global Dof-Ids
 int PostField::global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
+
+BACI_NAMESPACE_CLOSE

@@ -15,10 +15,10 @@
 #include "baci_post_common_writer_base.H"
 #include "baci_utils_exceptions.H"
 
-#include <stdint.h>
 #include <Teuchos_RCP.hpp>
 #include <zlib.h>
 
+#include <cstdint>
 #include <fstream>
 #include <map>
 #include <string>
@@ -27,10 +27,11 @@
 // forward declarations
 class Epetra_Vector;
 class Epetra_MultiVector;
+
+BACI_NAMESPACE_OPEN
 class PostField;
 class PostResult;
 
-BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -38,7 +39,6 @@ namespace DRT
   class Node;
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
 
 /*
  \brief Base class for VTK output generation
@@ -205,5 +205,7 @@ class PostVtkWriter : public PostWriterBase
   //! toggle between text and binary output
   bool write_binary_output_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

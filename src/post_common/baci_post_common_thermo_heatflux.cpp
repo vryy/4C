@@ -25,6 +25,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               dano 11/09 |
  *----------------------------------------------------------------------*/
@@ -310,5 +312,6 @@ void ThermoFilter::WriteHeatflux(
     dserror("Unknown heatflux type");
 }  // ThermoFilter::WriteNodalHeatflux
 
+BACI_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*/

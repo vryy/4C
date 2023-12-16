@@ -42,16 +42,16 @@ extern "C"
 #include <Teuchos_RCP.hpp>
 
 class Epetra_Comm;
-class PostField;
 
 BACI_NAMESPACE_OPEN
+
+class PostField;
+
 
 namespace DRT
 {
   class Discretization;
 }
-
-BACI_NAMESPACE_CLOSE
 
 /*!
   \brief Foundation class of the filter
@@ -504,5 +504,7 @@ class PostResult
   MAP* group_;
   BACI::IO::HDFReader file_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif
