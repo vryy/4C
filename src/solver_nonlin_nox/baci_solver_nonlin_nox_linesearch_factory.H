@@ -13,29 +13,10 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_LINESEARCH_FACTORY_H
 #define BACI_SOLVER_NONLIN_NOX_LINESEARCH_FACTORY_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
+
 #include <NOX_Common.H>
 #include <Teuchos_RCP.hpp>
-
-// Forward declarations
-namespace Teuchos
-{
-  class ParameterList;
-}
-namespace NOX
-{
-  class Utils;
-
-  namespace LineSearch
-  {
-    class Generic;
-  }
-
-  class GlobalData;
-  namespace StatusTest
-  {
-    class Generic;
-  }
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 

@@ -5,8 +5,6 @@
        increment. A detailed description can be found in the NOX
        documentation.
 
-
-
 \level 3
 
 */
@@ -111,7 +109,6 @@ namespace NOX
     }  // namespace StatusTest
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

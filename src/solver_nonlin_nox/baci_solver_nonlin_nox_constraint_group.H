@@ -142,7 +142,6 @@ namespace NOX
   }       // namespace NLN
 }  // end namespace  NOX
 
-
 BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_CONSTRAINT_GROUP_H

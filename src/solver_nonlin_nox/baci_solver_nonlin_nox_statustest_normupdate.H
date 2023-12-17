@@ -16,20 +16,13 @@
 #define BACI_SOLVER_NONLIN_NOX_STATUSTEST_NORMUPDATE_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_StatusTest_Generic.H>
 #include <NOX_Utils.H>
 
 #include <vector>
-
-namespace NOX
-{
-  namespace Abstract
-  {
-    class Group;
-  }  // namespace Abstract
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 

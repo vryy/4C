@@ -17,6 +17,7 @@
 /*----------------------------------------------------------------------------*/
 /* headers */
 #include "baci_linalg_serialdensevector.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_statustest_normupdate.H"
 
 #include <NOX_Epetra_Group.H>  // base class
@@ -24,16 +25,14 @@
 
 #include <set>
 
-// forward declarations
-class Epetra_BlockMap;
-class Epetra_Map;
-
 BACI_NAMESPACE_OPEN
 
+// forward declaration
 namespace CORE::LINALG
 {
   class SparseMatrix;
 }  // namespace CORE::LINALG
+
 namespace NOX
 {
   namespace NLN
@@ -335,7 +334,6 @@ namespace NOX
     };  // class Group
   }     // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

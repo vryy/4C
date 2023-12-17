@@ -15,18 +15,11 @@
 #define BACI_SOLVER_NONLIN_NOX_INTERFACE_JACOBIAN_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <NOX_Epetra_Interface_Jacobian.H>  // base class
 #include <NOX_Epetra_Interface_Required.H>
 #include <Teuchos_RCPDecl.hpp>
-
-namespace NOX
-{
-  namespace Abstract
-  {
-    class Group;
-  }  // namespace Abstract
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -70,7 +63,6 @@ namespace NOX
     }  // end namespace Interface
   }    // end namespace NLN
 }  // end namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

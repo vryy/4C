@@ -20,21 +20,15 @@
 
 #include <NOX_Abstract_Vector.H>
 
-namespace NOX
-{
-  namespace Epetra
-  {
-    class Vector;
-  }  // namespace  Epetra
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
+// forward declaration
 namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
 }  // namespace CORE::LINALG
+
 namespace NOX
 {
   namespace NLN

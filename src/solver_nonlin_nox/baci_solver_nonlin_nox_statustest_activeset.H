@@ -15,14 +15,12 @@
 #define BACI_SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <NOX_StatusTest_Generic.H>  // base class
 #include <Teuchos_RCP.hpp>
 
 #include <deque>
-
-// forward declarations
-class Epetra_Map;
 
 BACI_NAMESPACE_OPEN
 
@@ -67,7 +65,6 @@ namespace NOX
     }     // namespace StatusTest
   }       // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

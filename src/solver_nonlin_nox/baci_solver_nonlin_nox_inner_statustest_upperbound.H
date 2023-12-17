@@ -12,19 +12,11 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_UPPERBOUND_H
 #define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_UPPERBOUND_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"  // base class
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_StatusTest_Generic.H>
-
-namespace NOX
-{
-  namespace Abstract
-  {
-    class Group;
-    class Vector;
-  }  // namespace Abstract
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 

@@ -21,6 +21,7 @@
 
 #include "baci_linalg_serialdensevector.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"
 #include "baci_solver_nonlin_nox_meritfunction_infeasibility.H"
 
@@ -28,15 +29,6 @@
 
 #include <set>
 #include <vector>
-
-namespace NOX
-{
-  class Utils;
-  namespace Epetra
-  {
-    class Vector;
-  }  // namespace Epetra
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -790,7 +782,6 @@ namespace NOX
     }       // namespace INNER
   }         // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

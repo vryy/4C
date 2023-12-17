@@ -18,42 +18,14 @@
 #include "baci_solver_nonlin_nox_constraint_interface_preconditioner.H"
 #include "baci_solver_nonlin_nox_constraint_interface_required.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
-// forward declaration
-namespace Teuchos
-{
-  class ParameterList;
-}
-namespace NOX
-{
-  class Utils;
-  class Observer;
-
-  namespace Epetra
-  {
-    class Scaling;
-    namespace Interface
-    {
-      class Required;
-      class Jacobian;
-      class Preconditioner;
-    }  // namespace Interface
-  }    // namespace Epetra
-  namespace MeritFunction
-  {
-    class Generic;
-  }  // namespace MeritFunction
-  namespace Direction
-  {
-    class UserDefinedFactory;
-  }  // namespace Direction
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
+// forward declaration
 namespace CORE::LINALG
 {
   class Solver;
@@ -230,7 +202,6 @@ namespace NOX
     };  // namespace GlobalData
   }     // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

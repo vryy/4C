@@ -14,15 +14,9 @@
 #define BACI_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_H
 
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <Teuchos_RCP.hpp>
-
-// forward declarations
-class Epetra_Vector;
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 BACI_NAMESPACE_OPEN
 

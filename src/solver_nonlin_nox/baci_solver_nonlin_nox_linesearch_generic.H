@@ -69,7 +69,6 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
-
 BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_H

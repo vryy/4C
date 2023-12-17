@@ -14,18 +14,11 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_INFEASIBILITY_H
 #define BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_INFEASIBILITY_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
+
 #include <NOX_MeritFunction_Generic.H>
 
 #include <map>
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
-namespace NOX
-{
-  class Utils;
-}
 
 BACI_NAMESPACE_OPEN
 
@@ -98,7 +91,6 @@ namespace NOX
     }  // namespace MeritFunction
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

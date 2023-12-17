@@ -13,23 +13,22 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_PRECONDITIONER_H
 #define BACI_SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_PRECONDITIONER_H
 
-
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
 
-// forward declarations...
-class Epetra_Map;
-
 BACI_NAMESPACE_OPEN
 
+// forward declaration
 namespace CORE::LINALG
 {
   class Solver;
 }
+
 namespace NOX
 {
   namespace NLN
@@ -86,7 +85,6 @@ namespace NOX
     }    // namespace CONSTRAINT
   }      // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

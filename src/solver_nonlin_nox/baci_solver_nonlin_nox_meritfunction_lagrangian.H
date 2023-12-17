@@ -15,22 +15,12 @@
 #define BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_LAGRANGIAN_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_utils_exceptions.H"
 
 #include <NOX_LineSearch_Utils_Slope.H>
 #include <NOX_MeritFunction_Generic.H>  // base class
 #include <Teuchos_RCP.hpp>
-
-// forward declaration
-namespace NOX
-{
-  class Utils;
-  namespace Abstract
-  {
-    class Vector;
-    class Group;
-  }  // namespace Abstract
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -133,7 +123,6 @@ namespace NOX
     }  // namespace MeritFunction
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

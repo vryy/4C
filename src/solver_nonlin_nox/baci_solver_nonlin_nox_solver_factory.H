@@ -13,29 +13,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_SOLVER_FACTORY_H
 #define BACI_SOLVER_NONLIN_NOX_SOLVER_FACTORY_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
+
 #include <Teuchos_RCP.hpp>
-
-namespace NOX
-{
-  namespace Abstract
-  {
-    class Group;
-  }  // namespace Abstract
-
-  namespace StatusTest
-  {
-    class Generic;
-  }  // namespace StatusTest
-
-  namespace Solver
-  {
-    class Generic;
-  }  // namespace Solver
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
-// forward declaration
 namespace NOX
 {
   namespace NLN
@@ -88,7 +71,6 @@ namespace NOX
     }  // namespace Solver
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 
