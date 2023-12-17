@@ -152,7 +152,7 @@ namespace DRT
     \author u.kue
     \date 06/07
    */
-  class Problem : public Teuchos::ParameterListAcceptorDefaultBase
+  class Problem
   {
    public:
     /// @name Instances
@@ -273,11 +273,13 @@ namespace DRT
     /// @name Parameters read from file
 
     /// Set parameters from a parameter list and return with default values.
-    void setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& paramList) override;
+    void setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list);
 
     /// Return a const parameter list of all of the valid parameters that
     /// this->setParameterList(...) will accept.
-    Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const override;
+    Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const;
+
+    Teuchos::RCP<const Teuchos::ParameterList> getParameterList() const;
 
     /// @name Communicators and their parallel groups
 
@@ -294,210 +296,207 @@ namespace DRT
 
     const Teuchos::ParameterList& BinningStrategyParams() const
     {
-      return getParameterList()->sublist("BINNING STRATEGY");
+      return parameters_->sublist("BINNING STRATEGY");
     }
     const Teuchos::ParameterList& GeometricSearchParams() const
     {
-      return getParameterList()->sublist("BOUNDINGVOLUME STRATEGY");
+      return parameters_->sublist("BOUNDINGVOLUME STRATEGY");
     }
-    const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
+    const Teuchos::ParameterList& IOParams() const { return parameters_->sublist("IO"); }
     const Teuchos::ParameterList& StructuralDynamicParams() const
     {
-      return getParameterList()->sublist("STRUCTURAL DYNAMIC");
+      return parameters_->sublist("STRUCTURAL DYNAMIC");
     }
     const Teuchos::ParameterList& Cardiovascular0DStructuralParams() const
     {
-      return getParameterList()->sublist("CARDIOVASCULAR 0D-STRUCTURE COUPLING");
+      return parameters_->sublist("CARDIOVASCULAR 0D-STRUCTURE COUPLING");
     }
     const Teuchos::ParameterList& MortarCouplingParams() const
     {
-      return getParameterList()->sublist("MORTAR COUPLING");
+      return parameters_->sublist("MORTAR COUPLING");
     }
     const Teuchos::ParameterList& ContactDynamicParams() const
     {
-      return getParameterList()->sublist("CONTACT DYNAMIC");
+      return parameters_->sublist("CONTACT DYNAMIC");
     }
     const Teuchos::ParameterList& BeamInteractionParams() const
     {
-      return getParameterList()->sublist("BEAM INTERACTION");
+      return parameters_->sublist("BEAM INTERACTION");
     }
     const Teuchos::ParameterList& BrownianDynamicsParams() const
     {
-      return getParameterList()->sublist("BROWNIAN DYNAMICS");
+      return parameters_->sublist("BROWNIAN DYNAMICS");
     }
     const Teuchos::ParameterList& ThermalDynamicParams() const
     {
-      return getParameterList()->sublist("THERMAL DYNAMIC");
+      return parameters_->sublist("THERMAL DYNAMIC");
     }
     const Teuchos::ParameterList& TSIDynamicParams() const
     {
-      return getParameterList()->sublist("TSI DYNAMIC");
+      return parameters_->sublist("TSI DYNAMIC");
     }
     const Teuchos::ParameterList& FluidDynamicParams() const
     {
-      return getParameterList()->sublist("FLUID DYNAMIC");
+      return parameters_->sublist("FLUID DYNAMIC");
     }
     const Teuchos::ParameterList& LubricationDynamicParams() const
     {
-      return getParameterList()->sublist("LUBRICATION DYNAMIC");
+      return parameters_->sublist("LUBRICATION DYNAMIC");
     }
     const Teuchos::ParameterList& ScalarTransportDynamicParams() const
     {
-      return getParameterList()->sublist("SCALAR TRANSPORT DYNAMIC");
+      return parameters_->sublist("SCALAR TRANSPORT DYNAMIC");
     }
     const Teuchos::ParameterList& STIDynamicParams() const
     {
-      return getParameterList()->sublist("STI DYNAMIC");
+      return parameters_->sublist("STI DYNAMIC");
     }
     const Teuchos::ParameterList& FS3IDynamicParams() const
     {
-      return getParameterList()->sublist("FS3I DYNAMIC");
+      return parameters_->sublist("FS3I DYNAMIC");
     }
     const Teuchos::ParameterList& AleDynamicParams() const
     {
-      return getParameterList()->sublist("ALE DYNAMIC");
+      return parameters_->sublist("ALE DYNAMIC");
     }
     const Teuchos::ParameterList& FSIDynamicParams() const
     {
-      return getParameterList()->sublist("FSI DYNAMIC");
+      return parameters_->sublist("FSI DYNAMIC");
     }
     const Teuchos::ParameterList& FPSIDynamicParams() const
     {
-      return getParameterList()->sublist("FPSI DYNAMIC");
+      return parameters_->sublist("FPSI DYNAMIC");
     }
     const Teuchos::ParameterList& ImmersedMethodParams() const
     {
-      return getParameterList()->sublist("IMMERSED METHOD");
+      return parameters_->sublist("IMMERSED METHOD");
     }
     const Teuchos::ParameterList& CutGeneralParams() const
     {
-      return getParameterList()->sublist("CUT GENERAL");
+      return parameters_->sublist("CUT GENERAL");
     }
     const Teuchos::ParameterList& XFEMGeneralParams() const
     {
-      return getParameterList()->sublist("XFEM GENERAL");
+      return parameters_->sublist("XFEM GENERAL");
     }
     const Teuchos::ParameterList& XFluidDynamicParams() const
     {
-      return getParameterList()->sublist("XFLUID DYNAMIC");
+      return parameters_->sublist("XFLUID DYNAMIC");
     }
     const Teuchos::ParameterList& FBIParams() const
     {
-      return getParameterList()->sublist("FLUID BEAM INTERACTION");
+      return parameters_->sublist("FLUID BEAM INTERACTION");
     }
     const Teuchos::ParameterList& LOMAControlParams() const
     {
-      return getParameterList()->sublist("LOMA CONTROL");
+      return parameters_->sublist("LOMA CONTROL");
     }
     const Teuchos::ParameterList& BIOFILMControlParams() const
     {
-      return getParameterList()->sublist("BIOFILM CONTROL");
+      return parameters_->sublist("BIOFILM CONTROL");
     }
     const Teuchos::ParameterList& ELCHControlParams() const
     {
-      return getParameterList()->sublist("ELCH CONTROL");
+      return parameters_->sublist("ELCH CONTROL");
     }
     const Teuchos::ParameterList& EPControlParams() const
     {
-      return getParameterList()->sublist("CARDIAC MONODOMAIN CONTROL");
+      return parameters_->sublist("CARDIAC MONODOMAIN CONTROL");
     }
     const Teuchos::ParameterList& ArterialDynamicParams() const
     {
-      return getParameterList()->sublist("ARTERIAL DYNAMIC");
+      return parameters_->sublist("ARTERIAL DYNAMIC");
     }
     const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const
     {
-      return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC");
+      return parameters_->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC");
     }
     const Teuchos::ParameterList& RedAirwayTissueDynamicParams() const
     {
-      return getParameterList()->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC");
+      return parameters_->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC");
     }
     const Teuchos::ParameterList& PoroelastDynamicParams() const
     {
-      return getParameterList()->sublist("POROELASTICITY DYNAMIC");
+      return parameters_->sublist("POROELASTICITY DYNAMIC");
     }
     const Teuchos::ParameterList& PoroFluidMultiPhaseDynamicParams() const
     {
-      return getParameterList()->sublist("POROFLUIDMULTIPHASE DYNAMIC");
+      return parameters_->sublist("POROFLUIDMULTIPHASE DYNAMIC");
     }
     const Teuchos::ParameterList& PoroMultiPhaseScatraDynamicParams() const
     {
-      return getParameterList()->sublist("POROMULTIPHASESCATRA DYNAMIC");
+      return parameters_->sublist("POROMULTIPHASESCATRA DYNAMIC");
     }
     const Teuchos::ParameterList& PoroMultiPhaseDynamicParams() const
     {
-      return getParameterList()->sublist("POROMULTIPHASE DYNAMIC");
+      return parameters_->sublist("POROMULTIPHASE DYNAMIC");
     }
     const Teuchos::ParameterList& PoroScatraControlParams() const
     {
-      return getParameterList()->sublist("POROSCATRA CONTROL");
+      return parameters_->sublist("POROSCATRA CONTROL");
     }
     const Teuchos::ParameterList& ElastoHydroDynamicParams() const
     {
-      return getParameterList()->sublist("ELASTO HYDRO DYNAMIC");
+      return parameters_->sublist("ELASTO HYDRO DYNAMIC");
     }
     const Teuchos::ParameterList& SSIControlParams() const
     {
-      return getParameterList()->sublist("SSI CONTROL");
+      return parameters_->sublist("SSI CONTROL");
     }
     const Teuchos::ParameterList& SSTIControlParams() const
     {
-      return getParameterList()->sublist("SSTI CONTROL");
+      return parameters_->sublist("SSTI CONTROL");
     }
     const Teuchos::ParameterList& SearchtreeParams() const
     {
-      return getParameterList()->sublist("SEARCH TREE");
+      return parameters_->sublist("SEARCH TREE");
     }
     const Teuchos::ParameterList& StructuralNoxParams() const
     {
-      return getParameterList()->sublist("STRUCT NOX");
+      return parameters_->sublist("STRUCT NOX");
     }
-    const Teuchos::ParameterList& LocaParams() const { return getParameterList()->sublist("LOCA"); }
+    const Teuchos::ParameterList& LocaParams() const { return parameters_->sublist("LOCA"); }
     const Teuchos::ParameterList& ParticleParams() const
     {
-      return getParameterList()->sublist("PARTICLE DYNAMIC");
+      return parameters_->sublist("PARTICLE DYNAMIC");
     }
     const Teuchos::ParameterList& PASIDynamicParams() const
     {
-      return getParameterList()->sublist("PASI DYNAMIC");
+      return parameters_->sublist("PASI DYNAMIC");
     }
     const Teuchos::ParameterList& LevelSetControl() const
     {
-      return getParameterList()->sublist("LEVEL-SET CONTROL");
+      return parameters_->sublist("LEVEL-SET CONTROL");
     }
-    const Teuchos::ParameterList& WearParams() const { return getParameterList()->sublist("WEAR"); }
+    const Teuchos::ParameterList& WearParams() const { return parameters_->sublist("WEAR"); }
     const Teuchos::ParameterList& TSIContactParams() const
     {
-      return getParameterList()->sublist("TSI CONTACT");
+      return parameters_->sublist("TSI CONTACT");
     }
     const Teuchos::ParameterList& BeamContactParams() const
     {
-      return getParameterList()->sublist("BEAM CONTACT");
+      return parameters_->sublist("BEAM CONTACT");
     }
     const Teuchos::ParameterList& BeamPotentialParams() const
     {
-      return getParameterList()->sublist("BEAM POTENTIAL");
+      return parameters_->sublist("BEAM POTENTIAL");
     }
     const Teuchos::ParameterList& SemiSmoothPlastParams() const
     {
-      return getParameterList()->sublist("SEMI-SMOOTH PLASTICITY");
+      return parameters_->sublist("SEMI-SMOOTH PLASTICITY");
     }
     const Teuchos::ParameterList& ElectromagneticParams() const
     {
-      return getParameterList()->sublist("ELECTROMAGNETIC DYNAMIC");
+      return parameters_->sublist("ELECTROMAGNETIC DYNAMIC");
     }
     const Teuchos::ParameterList& VolmortarParams() const
     {
-      return getParameterList()->sublist("VOLMORTAR COUPLING");
+      return parameters_->sublist("VOLMORTAR COUPLING");
     }
-    const Teuchos::ParameterList& MORParams() const
-    {
-      return getParameterList()()->sublist("MOR");
-    };
+    const Teuchos::ParameterList& MORParams() const { return parameters_->sublist("MOR"); };
     const Teuchos::ParameterList& MeshPartitioningParams() const
     {
-      return getParameterList()->sublist("MESH PARTITIONING");
+      return parameters_->sublist("MESH PARTITIONING");
     }
 
     const Teuchos::ParameterList& SolverParams(int solverNr) const;
@@ -605,13 +604,13 @@ namespace DRT
     /// for internal use only! Use Restart(), SpatialApproximation() etc. instead !!!
     const Teuchos::ParameterList& ProblemTypeParams() const
     {
-      return getParameterList()->sublist("PROBLEM TYP");
+      return parameters_->sublist("PROBLEM TYP");
     }
 
     /// for internal use only! Use NDim() to access the number of space dimensions
     const Teuchos::ParameterList& ProblemSizeParams() const
     {
-      return getParameterList()->sublist("PROBLEM SIZE");
+      return parameters_->sublist("PROBLEM SIZE");
     }
     //@}
 
@@ -667,6 +666,9 @@ namespace DRT
 
     /// handles restart
     DRT::UTILS::RestartManager restartmanager_;
+
+    //! The central list of all paramters read from input.
+    Teuchos::RCP<Teuchos::ParameterList> parameters_;
   };
 
 }  // namespace DRT

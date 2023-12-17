@@ -455,20 +455,18 @@ const Teuchos::ParameterList& DRT::Problem::SolverParams(int solverNr) const
 {
   std::stringstream ss;
   ss << "SOLVER " << solverNr;
-  return getParameterList()->sublist(ss.str());
+  return parameters_->sublist(ss.str());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 const Teuchos::ParameterList& DRT::Problem::UMFPACKSolverParams()
 {
-  Teuchos::RCP<Teuchos::ParameterList> params = getNonconstParameterList();
-
-  Teuchos::ParameterList& subParams = params->sublist("UMFPACK SOLVER");
+  Teuchos::ParameterList& subParams = parameters_->sublist("UMFPACK SOLVER");
   subParams.set("SOLVER", "UMFPACK");
   subParams.set("NAME", "temporary UMFPACK solver");
 
-  return getParameterList()->sublist("UMFPACK SOLVER");
+  return parameters_->sublist("UMFPACK SOLVER");
 }
 
 /*----------------------------------------------------------------------*/
@@ -507,7 +505,6 @@ void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
   // check if every material was identified
   const std::string material_section = "--MATERIALS";
   std::vector<const char*> section = reader.Section(material_section);
-  int nummat = 0;
   if (section.size() > 0)
   {
     for (auto& section_i : section)
@@ -533,9 +530,6 @@ void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
       // processed?
       if (materials_->Find(matid) == -1)
         dserror("Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
-
-      // count number of materials provided in file
-      nummat += 1;
     }
   }
 
@@ -563,7 +557,6 @@ void DRT::Problem::ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader
   // check if every contact constitutive law was identified
   const std::string contact_const_laws = "--CONTACT CONSTITUTIVE LAWS";
   std::vector<const char*> section = reader.Section(contact_const_laws);
-  int numlaws = 0;
   if (section.size() > 0)
   {
     for (auto& section_i : section)
@@ -590,9 +583,6 @@ void DRT::Problem::ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader
       if (contactconstitutivelaws_->Find(coconstlawid) == -1)
         dserror("Contact constitutive law 'LAW %d' with name '%s' could not be identified",
             coconstlawid, name.c_str());
-
-      // count number of contact constitutive laws provided in file
-      numlaws += 1;
     }
   }
 
@@ -890,7 +880,7 @@ void DRT::Problem::WriteInputParameters()
   std::string s = OutputControlFile()->FileName();
   s.append(".parameter");
   std::ofstream stream(s.c_str());
-  DRT::INPUT::PrintDatHeader(stream, *getParameterList(), "", false);
+  DRT::INPUT::PrintDatHeader(stream, *parameters_, "", false);
 }
 
 
@@ -2498,14 +2488,14 @@ void DRT::Problem::ReadMicrofieldsNPsupport()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& paramList)
+void DRT::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list)
 {
   try
   {
     // Test parameter list against valid parameters, set default values
     // and set validator objects to extract numerical values for string
     // parameters.
-    paramList->validateParametersAndSetDefaults(*this->getValidParameters());
+    parameter_list->validateParametersAndSetDefaults(*getValidParameters());
   }
   catch (Teuchos::Exceptions::InvalidParameter& err)
   {
@@ -2513,8 +2503,7 @@ void DRT::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& 
     dserror("Input parameter validation failed. Fix your input file.");
   }
 
-  // yes, it is my list
-  setMyParamList(paramList);
+  parameters_ = parameter_list;
 }
 
 
@@ -2525,6 +2514,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() co
   // call the external method to get the valid parameters
   // this way the parameter configuration is separate from the source
   return DRT::INPUT::ValidParameters();
+}
+
+
+Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getParameterList() const
+{
+  return parameters_;
 }
 
 
