@@ -22,6 +22,7 @@ is handed to a c++ object mesh.
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 12/07|
@@ -612,7 +613,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       }
     }
     std::vector<int> childmap =
-        BACI::CORE::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        CORE::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
     // child gets its node ids
     std::vector<int> child;
     for (unsigned int j = 0; j < childmap.size(); ++j) child.push_back(parent_ele[childmap[j]]);
@@ -742,7 +743,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
       }
     }
     std::vector<int> childmap =
-        BACI::CORE::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        CORE::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
 
     std::vector<int> child;
     if (checkoutside)
@@ -1450,7 +1451,7 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype,
   for (std::map<int, std::vector<int>>::const_iterator elem = eleconn->begin();
        elem != eleconn->end(); ++elem)
   {
-    if (BACI::CORE::FE::getNumberOfElementNodes(PreShapeToDrt(Distype)) != (int)elem->second.size())
+    if (CORE::FE::getNumberOfElementNodes(PreShapeToDrt(Distype)) != (int)elem->second.size())
     {
       dserror("number of read nodes does not fit the distype");
     }
@@ -1854,3 +1855,5 @@ int EXODUS::PyrSideNumberExoToBaci(const int exoface)
   constexpr std::array<int, 5> map = {1, 2, 3, 4, 0};
   return map[exoface];
 }
+
+BACI_NAMESPACE_CLOSE

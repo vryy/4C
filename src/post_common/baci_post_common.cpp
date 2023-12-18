@@ -47,7 +47,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 
   MPI_Init(&argc, &argv);
 
-  BACI::GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
+  GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   std::string file = "xxx";
   std::string output;
@@ -1076,7 +1076,7 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 /*----------------------------------------------------------------------*
  * Constructor of PostField.
  *----------------------------------------------------------------------*/
-PostField::PostField(Teuchos::RCP<BACI::DRT::Discretization> dis, PostProblem* problem,
+PostField::PostField(Teuchos::RCP<DRT::Discretization> dis, PostProblem* problem,
     std::string field_name, const int numnd, const int numele)
     : dis_(dis), problem_(problem), field_name_(field_name), numnd_(numnd), numele_(numele)
 {
@@ -1289,7 +1289,7 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, Teuchos::RCP<BACI::CORE::LINALG::SerialDenseMatrix>>>
+Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
 PostResult::read_result_serialdensematrix(const std::string name)
 {
   using namespace BACI;

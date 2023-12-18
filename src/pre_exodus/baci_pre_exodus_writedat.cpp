@@ -17,6 +17,7 @@ Here is everything related with writing a dat-file
 #include "baci_pre_exodus_reader.H"
 #include "baci_pre_exodus_soshextrusion.H"  // to calculate normal
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -573,7 +574,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLIDH8"
-    dat << " " << BACI::CORE::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
+    dat << " " << CORE::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"
@@ -597,3 +598,5 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     datfile << dat.str();  // only one access to the outfile (saves system time)
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,7 @@ Here is everything related with reading a bc file
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -845,3 +846,5 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

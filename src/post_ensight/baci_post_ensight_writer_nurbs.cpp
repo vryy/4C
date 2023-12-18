@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<BACI::DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
   using namespace BACI;
 
@@ -1405,10 +1405,9 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
          cells) is computed from the local patch numbering and
          the patch offset.                             (gammi)
 ----------------------------------------------------------------------*/
-void EnsightWriter::WriteNurbsCell(const BACI::CORE::FE::CellType distype, const int gid,
+void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int gid,
     std::ofstream& geofile, std::vector<int>& nodevector,
-    const Teuchos::RCP<BACI::DRT::Discretization> dis,
-    const Teuchos::RCP<Epetra_Map>& proc0map) const
+    const Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
   using namespace BACI;
 
@@ -2160,10 +2159,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
 /*----------------------------------------------------------------------*/
 void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiVector> idata,
     const int dim, const int npatch, const std::vector<int>& vpoff,
-    const std::vector<int>& ele_cart_id, const BACI::DRT::Element* actele,
-    BACI::DRT::NURBS::NurbsDiscretization* nurbsdis,
-    const std::vector<BACI::CORE::LINALG::SerialDenseVector>& eleknots,
-    const BACI::CORE::LINALG::SerialDenseVector& weights, const int numdf,
+    const std::vector<int>& ele_cart_id, const DRT::Element* actele,
+    DRT::NURBS::NurbsDiscretization* nurbsdis,
+    const std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
+    const CORE::LINALG::SerialDenseVector& weights, const int numdf,
     const std::vector<double>& my_data) const
 {
   using namespace BACI;

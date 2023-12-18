@@ -16,6 +16,8 @@
 #include <iostream>
 #include <list>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::map<int, std::map<int, std::vector<std::vector<double>>>> EXODUS::EleCenterlineInfo(
@@ -1120,3 +1122,5 @@ void EXODUS::PlotCosys(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

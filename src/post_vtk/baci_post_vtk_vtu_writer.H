@@ -93,45 +93,45 @@ class PostVtuWriter : public PostVtkWriter
   void WriteGeo() override;
 
   //! write the geometry of Nurbs Element
-  virtual void WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes,
+  virtual void WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
       int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
   /*! Generalization of the former non-template method for all implemented NURBS
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <BACI::CORE::FE::CellType nurbs_type>
-  void WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes,
-      int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+  template <CORE::FE::CellType nurbs_type>
+  void WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+      std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
-  BACI::CORE::FE::CellType MapNurbsDisTypeToLagrangeDisType(
-      const BACI::CORE::FE::CellType nurbs_dis_type) const;
+  CORE::FE::CellType MapNurbsDisTypeToLagrangeDisType(
+      const CORE::FE::CellType nurbs_dis_type) const;
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
-  virtual void WriteGeoBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
+  virtual void WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
       std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
       std::vector<double>& coordinates);
 
   //! Write a single result step for one Nurbs Element
-  virtual void WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
-      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
-      const int from, const bool fillzeros) const;
+  virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
+      std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+      const bool fillzeros) const;
 
   /*! Generalization of the former non-template method for all implemented NURBS
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <BACI::CORE::FE::CellType nurbs_type>
-  void WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents, const int numdf,
+  template <CORE::FE::CellType nurbs_type>
+  void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
       std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
       const bool fillzeros) const;
 
-  virtual void WriteDofResultStepBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
+  virtual void WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros);
 
   //! Write a single result step for one Nurbs Element
-  virtual void WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
+  virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
@@ -139,8 +139,8 @@ class PostVtuWriter : public PostVtkWriter
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <BACI::CORE::FE::CellType nurbs_type>
-  void WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents, const int numdf,
+  template <CORE::FE::CellType nurbs_type>
+  void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
       std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
   ///! width of the proc identifier number in the processor specific file names

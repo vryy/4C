@@ -21,7 +21,7 @@ Here is everything related with reading a bc file
 #include <string>
 #include <vector>
 
-
+BACI_NAMESPACE_OPEN
 
 namespace EXODUS
 {
@@ -63,7 +63,7 @@ namespace EXODUS
     std::string sec;   ///< see valid_condition 'sectionname'
     std::string desc;  ///< see valid_condition 'description'
     int e_id;          ///< refers to datfile 'E num -'
-    BACI::DRT::Condition::GeometryType gtype;
+    DRT::Condition::GeometryType gtype;
   };
 
   void ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>& eledefs,
@@ -108,5 +108,7 @@ namespace EXODUS
       EXODUS::Mesh& mesh, const std::vector<EXODUS::cond_def>& condefs);
 
 }  // namespace EXODUS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // PRE_EXODUS_READBC_H

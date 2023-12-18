@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
 PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filename)
     : PostVtuWriter(field, filename)
 {
-  static_assert(29 == static_cast<int>(BACI::CORE::FE::CellType::max_distype),
+  static_assert(29 == static_cast<int>(CORE::FE::CellType::max_distype),
       "The number of element types defined by CORE::FE::CellType does not match the "
       "number of element types supported by the post vtu filter.");
   if (myrank_ != 0) dserror("Node based filtering only works in serial mode");
@@ -431,35 +431,34 @@ void PostVtuWriterNode::WriteElementResultStep(std::ofstream& file,
   }
 }
 
-void PostVtuWriterNode::WriteGeoNurbsEle(const BACI::DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates)
+void PostVtuWriterNode::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
+    int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates)
 {
   dserror("VTU node based filter cannot handle NURBS elements");
 }
 
-void PostVtuWriterNode::WriteGeoBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriterNode::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
   dserror("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
+void PostVtuWriterNode::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros)
 {
   dserror("VTU node based filter cannot handle NURBS elements");
 }
 
-void PostVtuWriterNode::WriteDofResultStepBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriterNode::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
 {
   dserror("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
+void PostVtuWriterNode::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData)
 {
   dserror("VTU node based filter cannot handle NURBS elements");
