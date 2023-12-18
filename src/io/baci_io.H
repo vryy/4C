@@ -15,6 +15,7 @@
 
 #include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_io_hdf.H"
+#include "baci_io_legacy_types.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Teuchos_RCP.hpp>
@@ -22,11 +23,6 @@
 #include <map>
 #include <string>
 #include <vector>
-
-extern "C"
-{
-#include "baci_io_legacy_types.h"  // typedef struct MAP etc.
-}
 
 class Epetra_Vector;
 class Epetra_MultiVector;

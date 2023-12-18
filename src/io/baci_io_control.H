@@ -9,6 +9,7 @@
 #define BACI_IO_CONTROL_H
 
 #include "baci_discretization_fem_general_shape_function_type.H"
+#include "baci_io_legacy_types.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
@@ -16,10 +17,6 @@
 #include <fstream>
 #include <string>
 
-extern "C"
-{
-#include "baci_io_legacy_types.h"
-}
 
 BACI_NAMESPACE_OPEN
 

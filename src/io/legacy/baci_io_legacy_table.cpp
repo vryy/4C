@@ -40,12 +40,16 @@ table. This table can be queried for those values quite easily.
 
 */
 
+#include "baci_io_legacy_table.H"
+
+#include "baci_io_legacy_types.H"
 #include "baci_utils_exceptions.H"
 
-#include <ctype.h>
-#include <string.h>
-#include "baci_io_legacy_table.h"
+#include <cctype>
+#include <cstring>
+#include <string_view>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -57,7 +61,7 @@ table. This table can be queried for those values quite easily.
 /*----------------------------------------------------------------------*/
 static void destroy_symbol(SYMBOL* symbol)
 {
-  while (symbol != NULL)
+  while (symbol != nullptr)
   {
     SYMBOL* next;
 
@@ -68,10 +72,10 @@ static void destroy_symbol(SYMBOL* symbol)
     if (symbol->type == sym_map)
     {
       destroy_map(symbol->s.dir);
-      free(symbol->s.dir);
+      delete symbol->s.dir;
     }
     next = symbol->next;
-    free(symbol);
+    delete symbol;
     symbol = next;
   }
 }
@@ -87,22 +91,23 @@ static void destroy_symbol(SYMBOL* symbol)
 /*----------------------------------------------------------------------*/
 static void destroy_node(MAP_NODE* node)
 {
-  if (node != NULL)
+  if (node != nullptr)
   {
     destroy_node(node->lhs);
     destroy_node(node->rhs);
-    if (node->symbol != NULL)
+    if (node->symbol != nullptr)
     {
       destroy_symbol(node->symbol);
     }
-    free(node->key);
 
-    node->lhs = 0;
-    node->rhs = 0;
-    node->symbol = 0;
-    node->key = 0;
+    if (node->key) free(node->key);
 
-    free(node);
+    node->key = nullptr;
+    node->lhs = nullptr;
+    node->rhs = nullptr;
+    node->symbol = nullptr;
+
+    delete node;
   }
 }
 
@@ -121,10 +126,10 @@ void init_map(MAP* map)
 {
   /* We have a dummy node at the root to make life easier. The empty
    * key is not legal. */
-  map->root.key = "";
-  map->root.symbol = NULL; /*calloc(1, sizeof(SYMBOL));*/
-  map->root.lhs = NULL;
-  map->root.rhs = NULL;
+  map->root.key = nullptr;
+  map->root.symbol = nullptr;
+  map->root.lhs = nullptr;
+  map->root.rhs = nullptr;
   map->count = 0;
 }
 
@@ -141,7 +146,6 @@ void destroy_map(MAP* map)
 {
   destroy_node(map->root.lhs);
   destroy_node(map->root.rhs);
-  /*free(map->root.symbol);*/
 }
 
 
@@ -155,6 +159,7 @@ void destroy_map(MAP* map)
 /*----------------------------------------------------------------------*/
 static int map_cmp_nodes(const MAP_NODE* lhs, const char* rhs_key)
 {
+  if (lhs->key == nullptr) return -1;
   return strcmp(lhs->key, rhs_key);
 }
 
@@ -163,7 +168,7 @@ static int map_cmp_nodes(const MAP_NODE* lhs, const char* rhs_key)
 /*!
   \brief Find the node in the map that matches the \a key.
 
-  \return NULL if there's no such node.
+  \return nullptr if there's no such node.
 
   \author u.kue
   \date 09/04
@@ -175,18 +180,15 @@ static MAP_NODE* map_find_node(MAP* map, const char* key)
 
   node = &(map->root);
 
-  /* we keep hitting this problem */
-  dsassert(node->key != NULL, "input system not initialized");
-
   for (;;)
   {
     int cmp;
     cmp = map_cmp_nodes(node, key);
     if (cmp < 0)
     {
-      if (node->rhs == NULL)
+      if (node->rhs == nullptr)
       {
-        node = NULL;
+        node = nullptr;
         goto end;
       }
       else
@@ -196,9 +198,9 @@ static MAP_NODE* map_find_node(MAP* map, const char* key)
     }
     else if (cmp > 0)
     {
-      if (node->lhs == NULL)
+      if (node->lhs == nullptr)
       {
-        node = NULL;
+        node = nullptr;
         goto end;
       }
       else
@@ -221,7 +223,7 @@ end:
 /*!
   \brief Find the first symbol in the map that matches the \a key.
 
-  \return NULL if there's no such symbol.
+  \return nullptr if there's no such symbol.
 
   \author u.kue
   \date 08/04
@@ -230,10 +232,10 @@ end:
 SYMBOL* map_find_symbol(MAP* map, const char* key)
 {
   MAP_NODE* node;
-  SYMBOL* symbol = NULL;
+  SYMBOL* symbol = nullptr;
 
   node = map_find_node(map, key);
-  if (node != NULL)
+  if (node != nullptr)
   {
     symbol = node->symbol;
   }
@@ -250,7 +252,7 @@ SYMBOL* map_find_symbol(MAP* map, const char* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-int map_find_string(MAP* map, const char* key, char** string)
+int map_find_string(MAP* map, const char* key, const char** string)
 {
   SYMBOL* symbol;
   int ret;
@@ -332,9 +334,9 @@ int map_find_map(MAP* map, const char* key, MAP** dir)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-char* map_read_string(MAP* map, const char* key)
+const char* map_read_string(MAP* map, const char* key)
 {
-  char* string;
+  const char* string;
 
   if (!map_find_string(map, key, &string))
   {
@@ -427,11 +429,11 @@ MAP* map_read_map(MAP* map, const char* key)
 int map_has_string(MAP* map, const char* key, const char* value)
 {
   SYMBOL* symbol;
-  char* string;
+  const char* string;
   int ret;
 
   symbol = map_find_symbol(map, key);
-  if (symbol != NULL)
+  if (symbol != nullptr)
   {
     ret = symbol_get_string(symbol, &string);
     if (ret)
@@ -463,7 +465,7 @@ int map_has_int(MAP* map, const char* key, const int value)
   int ret;
 
   symbol = map_find_symbol(map, key);
-  if (symbol != NULL)
+  if (symbol != nullptr)
   {
     ret = symbol_get_int(symbol, &integer);
     if (ret)
@@ -495,7 +497,7 @@ int map_has_real(MAP* map, const char* key, const double value)
   int ret;
 
   symbol = map_find_symbol(map, key);
-  if (symbol != NULL)
+  if (symbol != nullptr)
   {
     ret = symbol_get_real(symbol, &real);
     if (ret)
@@ -528,7 +530,7 @@ int map_has_map(MAP* map, const char* key)
   int ret;
 
   symbol = map_find_symbol(map, key);
-  if (symbol != NULL)
+  if (symbol != nullptr)
   {
     ret = symbol_is_map(symbol);
   }
@@ -565,14 +567,14 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, char* key)
     cmp = map_cmp_nodes(node, key);
     if (cmp < 0)
     {
-      if (node->rhs == NULL)
+      if (node->rhs == nullptr)
       {
-        node->rhs = calloc(1, sizeof(MAP_NODE));
+        node->rhs = new MAP_NODE;
         node->rhs->key = key;
         node->rhs->symbol = symbol;
         node->rhs->count = 1;
-        node->rhs->lhs = NULL;
-        node->rhs->rhs = NULL;
+        node->rhs->lhs = nullptr;
+        node->rhs->rhs = nullptr;
         map->count++;
         goto end;
       }
@@ -583,14 +585,14 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, char* key)
     }
     else if (cmp > 0)
     {
-      if (node->lhs == NULL)
+      if (node->lhs == nullptr)
       {
-        node->lhs = calloc(1, sizeof(MAP_NODE));
+        node->lhs = new MAP_NODE;
         node->lhs->key = key;
         node->lhs->symbol = symbol;
         node->lhs->count = 1;
-        node->lhs->lhs = NULL;
-        node->lhs->rhs = NULL;
+        node->lhs->lhs = nullptr;
+        node->lhs->rhs = nullptr;
         map->count++;
         goto end;
       }
@@ -630,9 +632,10 @@ void map_insert_string(MAP* map, char* string, char* key)
 {
   SYMBOL* symbol;
 
-  symbol = calloc(1, sizeof(SYMBOL));
+  symbol = new SYMBOL;
   symbol->type = sym_string;
   symbol->s.string = string;
+  symbol->next = nullptr;
 
   map_insert_symbol(map, symbol, key);
 }
@@ -650,9 +653,10 @@ void map_insert_int(MAP* map, int integer, char* key)
 {
   SYMBOL* symbol;
 
-  symbol = calloc(1, sizeof(SYMBOL));
+  symbol = new SYMBOL;
   symbol->type = sym_int;
   symbol->s.integer = integer;
+  symbol->next = nullptr;
 
   map_insert_symbol(map, symbol, key);
 }
@@ -670,9 +674,10 @@ void map_insert_real(MAP* map, double real, char* key)
 {
   SYMBOL* symbol;
 
-  symbol = calloc(1, sizeof(SYMBOL));
+  symbol = new SYMBOL;
   symbol->type = sym_real;
   symbol->s.real = real;
+  symbol->next = nullptr;
 
   map_insert_symbol(map, symbol, key);
 }
@@ -690,9 +695,10 @@ void map_insert_map(MAP* map, MAP* dir, char* key)
 {
   SYMBOL* symbol;
 
-  symbol = calloc(1, sizeof(SYMBOL));
+  symbol = new SYMBOL;
   symbol->type = sym_map;
   symbol->s.dir = dir;
+  symbol->next = nullptr;
 
   map_insert_symbol(map, symbol, key);
 }
@@ -712,7 +718,7 @@ int map_symbol_count(MAP* map, const char* key)
   int count = 0;
 
   const MAP_NODE* node = map_find_node(map, key);
-  if (node != NULL)
+  if (node != nullptr)
   {
     count = node->count;
   }
@@ -737,9 +743,9 @@ int map_symbol_count(MAP* map, const char* key)
 void map_disconnect_symbols(MAP* map, const char* key)
 {
   MAP_NODE* node = map_find_node(map, key);
-  if (node != NULL)
+  if (node != nullptr)
   {
-    node->symbol = NULL;
+    node->symbol = nullptr;
     node->count = 0;
   }
 }
@@ -763,14 +769,14 @@ void map_prepend_symbols(MAP* map, const char* key, SYMBOL* symbol, int count)
   MAP_NODE* node;
 
   node = map_find_node(map, key);
-  if (node != NULL)
+  if (node != nullptr)
   {
-    if (node->symbol != NULL)
+    if (node->symbol != nullptr)
     {
       SYMBOL* s;
       s = node->symbol;
 
-      while (s->next != NULL)
+      while (s->next != nullptr)
       {
         s = s->next;
       }
@@ -802,7 +808,7 @@ void map_prepend_symbols(MAP* map, const char* key, SYMBOL* symbol, int count)
 /*----------------------------------------------------------------------*/
 int symbol_is_string(const SYMBOL* symbol)
 {
-  return (symbol != NULL) && (symbol->type == sym_string);
+  return (symbol != nullptr) && (symbol->type == sym_string);
 }
 
 
@@ -814,7 +820,7 @@ int symbol_is_string(const SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-int symbol_is_int(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->type == sym_int); }
+int symbol_is_int(const SYMBOL* symbol) { return (symbol != nullptr) && (symbol->type == sym_int); }
 
 
 /*----------------------------------------------------------------------*/
@@ -825,7 +831,10 @@ int symbol_is_int(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->ty
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-int symbol_is_real(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->type == sym_real); }
+int symbol_is_real(const SYMBOL* symbol)
+{
+  return (symbol != nullptr) && (symbol->type == sym_real);
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -836,7 +845,7 @@ int symbol_is_real(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->t
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-int symbol_is_map(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->type == sym_map); }
+int symbol_is_map(const SYMBOL* symbol) { return (symbol != nullptr) && (symbol->type == sym_map); }
 
 
 
@@ -848,7 +857,7 @@ int symbol_is_map(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->ty
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-int symbol_get_string(const SYMBOL* symbol, char** string)
+int symbol_get_string(const SYMBOL* symbol, const char** string)
 {
   int ret;
 
@@ -966,7 +975,7 @@ int symbol_get_map(const SYMBOL* symbol, MAP** map)
   }
   else
   {
-    *map = NULL;
+    *map = nullptr;
     ret = 0;
   }
 
@@ -984,7 +993,7 @@ int symbol_get_map(const SYMBOL* symbol, MAP** map)
 /*----------------------------------------------------------------------*/
 MAP* symbol_map(const SYMBOL* symbol)
 {
-  MAP* ret = NULL;
+  MAP* ret = nullptr;
 
   if (symbol->type == sym_map)
   {
@@ -1035,7 +1044,7 @@ typedef enum _TOKEN_TYPE
   \date 08/04
  */
 /*----------------------------------------------------------------------*/
-typedef struct _PARSER_DATA
+struct PARSER_DATA
 {
   TOKEN_TYPE tok;
   char* token_string;
@@ -1050,7 +1059,7 @@ typedef struct _PARSER_DATA
   int lineno;
   int indent_level;
   int indent_step;
-} PARSER_DATA;
+};
 
 
 /*----------------------------------------------------------------------*/
@@ -1063,7 +1072,7 @@ typedef struct _PARSER_DATA
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void init_parser_data(struct _PARSER_DATA* data, const char* filename, MPI_Comm comm)
+static void init_parser_data(PARSER_DATA* data, const char* filename, MPI_Comm comm)
 {
   data->tok = tok_none;
   data->lineno = 1;
@@ -1090,7 +1099,7 @@ static void init_parser_data(struct _PARSER_DATA* data, const char* filename, MP
     FILE* file;
     file = fopen(filename, "rb");
 
-    if (file == NULL)
+    if (file == nullptr)
     {
       dserror("cannot read file '%s'", filename);
     }
@@ -1100,7 +1109,7 @@ static void init_parser_data(struct _PARSER_DATA* data, const char* filename, MP
     data->file_size = ftell(file);
 
     /* read file to local buffer */
-    data->file_buffer = malloc((data->file_size + 1) * sizeof(char));
+    data->file_buffer = (char*)malloc((data->file_size + 1) * sizeof(char));
     fseek(file, 0, SEEK_SET);
     /*bytes_read = fread(data->file_buffer, sizeof(char), data->file_size, file);*/
     bytes_read = fread(data->file_buffer, sizeof(char), (size_t)data->file_size, file);
@@ -1124,7 +1133,7 @@ static void init_parser_data(struct _PARSER_DATA* data, const char* filename, MP
     }
     if (myrank > 0)
     {
-      data->file_buffer = malloc((data->file_size + 1) * sizeof(char));
+      data->file_buffer = (char*)malloc((data->file_size + 1) * sizeof(char));
     }
     err = MPI_Bcast(data->file_buffer, data->file_size + 1, MPI_CHAR, 0, comm);
     if (err != 0)
@@ -1143,7 +1152,7 @@ static void init_parser_data(struct _PARSER_DATA* data, const char* filename, MP
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void destroy_parser_data(struct _PARSER_DATA* data) { free(data->file_buffer); }
+static void destroy_parser_data(PARSER_DATA* data) { free(data->file_buffer); }
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1335,7 +1344,7 @@ static void lexan(PARSER_DATA* data)
           {
             data->pos--;
           }
-          data->token_real = strtod(data->token_string, NULL);
+          data->token_real = strtod(data->token_string, nullptr);
           data->tok = tok_real;
           goto end;
         }
@@ -1424,7 +1433,7 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
          * The string is not null terminated as it's a simple pointer
          * into the file buffer. However, we know its length so we can
          * handle that. */
-        name = malloc((data->token_int + 1) * sizeof(char));
+        name = (char*)malloc((data->token_int + 1) * sizeof(char));
         /*strncpy(name, data->token_string, data->token_int);*/
         strncpy(name, data->token_string, (size_t)data->token_int);
         name[data->token_int] = '\0';
@@ -1442,7 +1451,7 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
               dserror("Syntaxerror at line %d: single indention expected", data->lineno);
             }
 
-            map = calloc(1, sizeof(MAP));
+            map = new MAP;
             init_map(map);
             parse_definitions(data, map);
 
@@ -1465,7 +1474,7 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
                 char* string;
 
                 /* Again, be carefully with those pointers... */
-                string = malloc((data->token_int + 1) * sizeof(char));
+                string = (char*)malloc((data->token_int + 1) * sizeof(char));
                 /*strncpy(string, data->token_string, data->token_int);*/
                 strncpy(string, data->token_string, (size_t)data->token_int);
                 string[data->token_int] = '\0';
@@ -1532,7 +1541,7 @@ void parse_control_file_serial(MAP* map, const char* filename)
   FILE* file;
   file = fopen(filename, "rb");
 
-  if (file == NULL)
+  if (file == nullptr)
   {
     dserror("cannot read file '%s'", filename);
   }
@@ -1542,7 +1551,7 @@ void parse_control_file_serial(MAP* map, const char* filename)
   data.file_size = ftell(file);
 
   /* read file to local buffer */
-  data.file_buffer = malloc((data.file_size + 1) * sizeof(char));
+  data.file_buffer = (char*)malloc((data.file_size + 1) * sizeof(char));
   fseek(file, 0, SEEK_SET);
   /*bytes_read = fread(data.file_buffer, sizeof(char), data.file_size, file);*/
   bytes_read = fread(data.file_buffer, sizeof(char), (size_t)data.file_size, file);
@@ -1583,3 +1592,5 @@ void parse_control_file(MAP* map, const char* filename, MPI_Comm comm)
   parse_definitions(&data, map);
   destroy_parser_data(&data);
 }
+
+BACI_NAMESPACE_CLOSE
