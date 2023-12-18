@@ -195,19 +195,16 @@ DRT::ELEMENTS::Solid::Solid(int id, int owner) : DRT::Element(id, owner) {}
 
 DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new Solid(*this); }
 
-int DRT::ELEMENTS::Solid::NumLine() const
-{
-  return CORE::DRT::UTILS::getNumberOfElementLines(celltype_);
-}
+int DRT::ELEMENTS::Solid::NumLine() const { return CORE::FE::getNumberOfElementLines(celltype_); }
 
 int DRT::ELEMENTS::Solid::NumSurface() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementSurfaces(celltype_);
+  return CORE::FE::getNumberOfElementSurfaces(celltype_);
 }
 
 int DRT::ELEMENTS::Solid::NumVolume() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementVolumes(celltype_);
+  return CORE::FE::getNumberOfElementVolumes(celltype_);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Lines()

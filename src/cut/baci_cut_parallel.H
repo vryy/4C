@@ -51,7 +51,7 @@ namespace CORE::GEO
       /*!
       \brief Basic CUT parallel constructor
        */
-      explicit Parallel(const Teuchos::RCP<BACI::DRT::Discretization>& discret,
+      explicit Parallel(const Teuchos::RCP<DRT::Discretization>& discret,
           CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::ParentIntersection& parentintersection);
 
       /*!
@@ -160,7 +160,7 @@ namespace CORE::GEO
       // data accessing
 
       //! discretization
-      Teuchos::RCP<BACI::DRT::Discretization> discret_;
+      Teuchos::RCP<DRT::Discretization> discret_;
 
       //! current processor id
       const int myrank_;

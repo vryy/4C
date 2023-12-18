@@ -140,9 +140,9 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at int. point
       void EvalShapeFuncAndIntFac(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-          const int& iquad,  //!< id of current Gauss point
-          const int& eleid   //!< the element id
+          const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+          const int& iquad,                                      //!< id of current Gauss point
+          const int& eleid                                       //!< the element id
       );
 
       //! integral of shape functions over boundary surface

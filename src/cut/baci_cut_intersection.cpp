@@ -226,7 +226,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 {
   // calculate the normal at the side element center
   const CORE::LINALG::Matrix<dimside, 1> rst_side_center(
-      CORE::DRT::UTILS::getLocalCenterPosition<dimside>(sidetype));
+      CORE::FE::getLocalCenterPosition<dimside>(sidetype));
 
   CORE::LINALG::Matrix<probdim, numNodesSide> side_deriv1;
   CORE::LINALG::Matrix<probdim, probdim> xjm;
@@ -434,7 +434,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   {
     pos = r_endpoints[i];
 
-    CORE::DRT::UTILS::shape_function_1D(lineFunct, pos, edgetype);
+    CORE::FE::shape_function_1D(lineFunct, pos, edgetype);
     dist.MultiplyNN(xyze_lineElement_, lineFunct);
 
     dist.Update(1.0, xyz, -1.0);
@@ -1383,7 +1383,7 @@ Teuchos::RCP<CORE::GEO::CUT::IntersectionBase>
 CORE::GEO::CUT::IntersectionFactory::CreateIntersection(
     CORE::FE::CellType edge_type, CORE::FE::CellType side_type) const
 {
-  const int probdim = BACI::DRT::Problem::Instance()->NDim();
+  const int probdim = DRT::Problem::Instance()->NDim();
   switch (edge_type)
   {
     case CORE::FE::CellType::line2:

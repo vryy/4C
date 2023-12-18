@@ -60,7 +60,7 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
   Discret().Evaluate(
       [&](DRT::Element& ele)
       {
-        CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+        CORE::FE::ExtrapolateGaussPointQuantityToNodes(
             ele, *stresses->at(ele.Id()), Discret(), nodal_stresses_source);
       });
 

@@ -400,7 +400,7 @@ void DRT::Element::NodalConnectivity(
   // put squared weight on edges
   weight *= weight;
 
-  std::vector<std::vector<int>> lines = CORE::DRT::UTILS::getEleNodeNumberingLines(Shape());
+  std::vector<std::vector<int>> lines = CORE::FE::getEleNodeNumberingLines(Shape());
   size_t nodesperline = lines[0].size();
   if (nodesperline == 2)
   {
@@ -935,7 +935,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
  *----------------------------------------------------------------------*/
 int DRT::Element::NumFace() const
 {
-  switch (CORE::DRT::UTILS::getDimension(this->Shape()))
+  switch (CORE::FE::getDimension(this->Shape()))
   {
     case 2:
       return NumLine();
@@ -1011,7 +1011,7 @@ int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& 
   return -1;
 }
 
-int DRT::Element::Degree() const { return CORE::DRT::UTILS::getDegree(Shape()); }
+int DRT::Element::Degree() const { return CORE::FE::getDegree(Shape()); }
 
 /*----------------------------------------------------------------------*
  |  check if the element has only ghost nodes (public)       vuong 09/14|

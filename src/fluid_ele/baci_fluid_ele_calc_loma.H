@@ -52,7 +52,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::FE::GaussIntegration& intpoints);
 
      private:
       /// private Constructor since we are a Singleton.
@@ -81,7 +81,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
           const CORE::LINALG::Matrix<nsd_, nen_>& egridv, Teuchos::RCP<MAT::Material> mat,
           bool isale, double CsDeltaSq, double CiDeltaSq,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::FE::GaussIntegration& intpoints);
 
       /*!
           \brief calculate element matrix for off-diagonal matrix block for monolithic
@@ -123,7 +123,7 @@ namespace DRT
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
           Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
-          bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          bool isale, const CORE::FE::GaussIntegration& intpoints);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

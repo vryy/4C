@@ -72,8 +72,8 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
   for (int node = 0; node < nnodetriad; node++)
     for (int dim = 0; dim < 3; dim++) theta0node_[node](dim) = nodal_rotvecs[3 * node + dim];
 
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints_force(MyGaussRule(res_elastic_force));
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints_moment(MyGaussRule(res_elastic_moment));
+  CORE::FE::IntegrationPoints1D gausspoints_force(MyGaussRule(res_elastic_force));
+  CORE::FE::IntegrationPoints1D gausspoints_moment(MyGaussRule(res_elastic_moment));
 
   GetBeamMaterial().Setup(gausspoints_force.NumPoints(), gausspoints_moment.NumPoints());
 

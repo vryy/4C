@@ -21,7 +21,7 @@ the Baci guide in the Convention chapter.
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   // use std::pow directly to allow resolving the overload with FAD types
   using std::pow;
@@ -3060,17 +3060,17 @@ namespace CORE::DRT::UTILS
     {
       case 1:
       {
-        CORE::DRT::UTILS::shape_function_1D(f, xsi(0), distype);
+        CORE::FE::shape_function_1D(f, xsi(0), distype);
         break;
       }
       case 2:
       {
-        CORE::DRT::UTILS::shape_function_2D(f, xsi(0), xsi(1), distype);
+        CORE::FE::shape_function_2D(f, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        CORE::DRT::UTILS::shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
+        CORE::FE::shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3099,17 +3099,17 @@ namespace CORE::DRT::UTILS
     {
       case 1:
       {
-        CORE::DRT::UTILS::shape_function_1D_deriv1(d, xsi(0), distype);
+        CORE::FE::shape_function_1D_deriv1(d, xsi(0), distype);
         break;
       }
       case 2:
       {
-        CORE::DRT::UTILS::shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
+        CORE::FE::shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        CORE::DRT::UTILS::shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
+        CORE::FE::shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3129,17 +3129,17 @@ namespace CORE::DRT::UTILS
     {
       case 1:
       {
-        CORE::DRT::UTILS::shape_function_1D_deriv2(d2, xsi(0), distype);
+        CORE::FE::shape_function_1D_deriv2(d2, xsi(0), distype);
         break;
       }
       case 2:
       {
-        CORE::DRT::UTILS::shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
+        CORE::FE::shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        CORE::DRT::UTILS::shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
+        CORE::FE::shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3169,7 +3169,7 @@ namespace CORE::DRT::UTILS
       const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
       const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xyze,
       const CORE::LINALG::Matrix<probdim, 1>& normal);
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

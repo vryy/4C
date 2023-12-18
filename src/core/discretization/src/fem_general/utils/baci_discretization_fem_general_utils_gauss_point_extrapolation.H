@@ -14,7 +14,7 @@ shape functions
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   /*!
    * @brief Evaluates the linear operator that extrapolates quantities from the Gauss points to
@@ -68,8 +68,7 @@ namespace CORE::DRT::UTILS
    */
   template <CORE::FE::CellType distype, class GaussIntegration>
   CORE::LINALG::SerialDenseMatrix EvaluateGaussPointsToNURBSKnotsExtrapolationMatrix(
-      const BACI::DRT::Discretization& dis, const BACI::DRT::Element& ele,
-      const GaussIntegration& intpoints);
+      const DRT::Discretization& dis, const DRT::Element& ele, const GaussIntegration& intpoints);
 
   /*!
    * @brief Extrapolates Gauss point data to the nodes and assembles it into a global data vector
@@ -85,7 +84,7 @@ namespace CORE::DRT::UTILS
    * @param integration (in) : Container that holds the integration points
    */
   template <CORE::FE::CellType distype, class GaussIntegration>
-  void ExtrapolateGPQuantityToNodesAndAssemble(const BACI::DRT::Element& ele,
+  void ExtrapolateGPQuantityToNodesAndAssemble(const DRT::Element& ele,
       const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
       bool nodal_average, const GaussIntegration& integration);
 
@@ -107,10 +106,10 @@ namespace CORE::DRT::UTILS
    * @param integration (in) : Container that holds the integration points
    */
   template <CORE::FE::CellType distype, class GaussIntegration>
-  void ExtrapolateGPQuantityToNURBSKnotsAndAssemble(const BACI::DRT::Discretization& dis,
-      const BACI::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+  void ExtrapolateGPQuantityToNURBSKnotsAndAssemble(const DRT::Discretization& dis,
+      const DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
       Epetra_MultiVector& global_data, bool nodal_average, const GaussIntegration& integration);
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

@@ -153,7 +153,7 @@ namespace DRT
       // 1 component  for nsd=1:  (N,xx)
       // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
       // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-      static const unsigned numderiv2_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const unsigned numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       using varmanager = ScaTraEleInternalVariableManager<nsd_, nen_>;
 
@@ -208,8 +208,8 @@ namespace DRT
 
       //! evaluate shape functions and their derivatives at current integration point
       virtual double EvalShapeFuncAndDerivsAtIntPoint(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
-          const int iquad  //!< id of current Gauss point
+          const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
+          const int iquad                                            //!< id of current Gauss point
       );
 
       //! evaluate determinant of deformation gradient from displacements at integration point
@@ -218,7 +218,7 @@ namespace DRT
       //! \param iquad       ID of current integration point
       //! \return  determinant of deformation gradient at integration point
       virtual double EvalDetFAtIntPoint(const DRT::Element* const& ele,
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
+          const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
 
       //! evaluate shape functions and their derivatives at current integration point
       double EvalShapeFuncAndDerivsInParameterSpace();

@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
  *
  */
 void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets(
-    const Teuchos::RCP<const BACI::DRT::Discretization>& discretization)
+    const Teuchos::RCP<const DRT::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamInteractionConditionBase::BuildIdSets(discretization);

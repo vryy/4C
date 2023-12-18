@@ -46,20 +46,20 @@ namespace CORE::VOLMORTAR
     );
 
     template <CORE::FE::CellType distype>
-    bool LocalToGlobal(const BACI::DRT::Element& ele,  ///< element which is considered
-        const double* xi,                              ///< para. coordinates
+    bool LocalToGlobal(const DRT::Element& ele,  ///< element which is considered
+        const double* xi,                        ///< para. coordinates
         double* globcoord);
 
     template <CORE::FE::CellType distype>
-    double Jacobian(const double* xi,    ///< para. coordinates
-        const BACI::DRT::Element& ele);  ///< element which is considered
+    double Jacobian(const double* xi,  ///< para. coordinates
+        const DRT::Element& ele);      ///< element which is considered
 
     template <CORE::FE::CellType distype, class V, class W, class U, class T>
     double nurbs_Jacobian(W& deriv,  ///< to be filled with shape function deriv
         const U* xi,                 ///< xi coordinates
         T& weights,                  ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     );
 
     template <class V>
@@ -118,7 +118,7 @@ namespace CORE::VOLMORTAR
 
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
-        const BACI::DRT::Element& ele,              ///< element which is considered
+        const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
         INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
     );
@@ -130,12 +130,12 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     );
 
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
-        const BACI::DRT::Element& ele,              ///< element which is considered
+        const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
         INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
     );
@@ -147,12 +147,12 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     );
 
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_3D(V& funct,  ///< to be filled with shape function values
-        const BACI::DRT::Element& ele,              ///< element which is considered
+        const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
         INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
     );
@@ -164,7 +164,7 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     );
 
     // general evaluation routine for std shape functions
@@ -175,9 +175,9 @@ namespace CORE::VOLMORTAR
 
     // general evaluation routine for dual shape functions
     template <CORE::FE::CellType distype, class V, class T>
-    void dual_shape_function(V& f,      ///< to be filled with shape function values
-        const T& xi,                    ///< para. coordinates
-        const BACI::DRT::Element& ele,  ///< element which is considered
+    void dual_shape_function(V& f,  ///< to be filled with shape function values
+        const T& xi,                ///< para. coordinates
+        const DRT::Element& ele,    ///< element which is considered
         INPAR::VOLMORTAR::DualQuad dualquad = INPAR::VOLMORTAR::dualquad_no_mod);
 
     template <CORE::FE::CellType distype, class V, class W, class U, class T>
@@ -194,7 +194,7 @@ namespace CORE::VOLMORTAR
         const U* xi,                         ///< xi coordinates
         T& weights,                          ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     );
     //=====================================================================================
     //=====================================================================================
@@ -209,108 +209,107 @@ namespace CORE::VOLMORTAR
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::hex8>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_8point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::hex20>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_64point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_64point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::hex27>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_64point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_64point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::tet4>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::tet_4point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::tet10>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::tet_45point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::tet_45point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::wedge6>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::wedge_6point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::wedge15>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::wedge_9point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::wedge_9point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::pyramid5>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule =
-          CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::pyramid_8point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs8>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_8point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs27>
     {
-      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+      static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::quad4>
     {
-      static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
+      static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_4point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::quad8>
     {
-      static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+      static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::quad9>
     {
-      static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+      static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::tri3>
     {
-      static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
+      static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_3point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::tri6>
     {
-      static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
+      static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_6point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs4>
     {
-      static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
+      static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_4point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs9>
     {
-      static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+      static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::line2>
     {
-      static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
+      static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_2point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::line3>
     {
-      static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
+      static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_3point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs2>
     {
-      static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
+      static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_2point;
     };
     template <>
     struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs3>
     {
-      static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
+      static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_3point;
     };
 
     /*----------------------------------------------------------------------*
@@ -358,7 +357,7 @@ namespace CORE::VOLMORTAR
      |  Evaluate Jacobian determinant                            farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    double Jacobian(const double* xi, const BACI::DRT::Element& ele)
+    double Jacobian(const double* xi, const DRT::Element& ele)
     {
       //! nn_: number of master element nodes
       static const int nn = CORE::FE::num_nodes<distype>;
@@ -379,7 +378,7 @@ namespace CORE::VOLMORTAR
           CORE::LINALG::Matrix<ndim, nn> deriv;
 
           // get shape function values and derivatives at xi
-          CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, xi[0], distype);
+          CORE::FE::shape_function_1D_deriv1(deriv, xi[0], distype);
 
           // build basis vectors gxi and geta
           for (int i = 0; i < nn; ++i)
@@ -412,7 +411,7 @@ namespace CORE::VOLMORTAR
           CORE::LINALG::Matrix<ndim, nn> deriv;
 
           // get shape function values and derivatives at xi
-          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          CORE::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
 
           // build basis vectors gxi and geta
           for (int i = 0; i < nn; ++i)
@@ -459,12 +458,12 @@ namespace CORE::VOLMORTAR
           const double s = xi[1];
           const double t = xi[2];
 
-          CORE::DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, distype);
+          CORE::FE::shape_function_3D_deriv1(derivs, r, s, t, distype);
 
           CORE::LINALG::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
           {
-            const BACI::DRT::Node* const* nodes = ele.Nodes();
+            const DRT::Node* const* nodes = ele.Nodes();
             if (!nodes) dserror("Nodes() returned null pointer");
 
             xrefe(i, 0) = nodes[i]->X()[0];
@@ -497,7 +496,7 @@ namespace CORE::VOLMORTAR
         const U* xi,                 ///< xi coordinates
         T& weights,                  ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     )
     {
       //! nn_: number of master element nodes
@@ -570,7 +569,7 @@ namespace CORE::VOLMORTAR
           CORE::LINALG::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
           {
-            const BACI::DRT::Node* const* nodes = ele.Nodes();
+            const DRT::Node* const* nodes = ele.Nodes();
             if (!nodes) dserror("Nodes() returned null pointer");
 
             xrefe(i, 0) = nodes[i]->X()[0];
@@ -649,8 +648,7 @@ namespace CORE::VOLMORTAR
         case CORE::FE::CellType::nurbs2:
         case CORE::FE::CellType::nurbs3:
         {
-          CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
-              funct, deriv, xi, knots, weights, distype);
+          CORE::FE::NURBS::nurbs_get_1D_funct_deriv(funct, deriv, xi, knots, weights, distype);
 
           break;
         }
@@ -748,8 +746,7 @@ namespace CORE::VOLMORTAR
         case CORE::FE::CellType::nurbs4:
         case CORE::FE::CellType::nurbs9:
         {
-          CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-              funct, deriv, xi, knots, weights, distype);
+          CORE::FE::NURBS::nurbs_get_2D_funct_deriv(funct, deriv, xi, knots, weights, distype);
 
           break;
         }
@@ -908,7 +905,7 @@ namespace CORE::VOLMORTAR
         }
         case CORE::FE::CellType::pyramid5:
         {
-          CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, shape);
+          CORE::FE::shape_function_3D(funct, r, s, t, shape);
 
           break;
         }
@@ -935,8 +932,7 @@ namespace CORE::VOLMORTAR
         case CORE::FE::CellType::nurbs8:
         case CORE::FE::CellType::nurbs27:
         {
-          CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-              funct, deriv, xi, knots, weights, distype);
+          CORE::FE::NURBS::nurbs_get_3D_funct_deriv(funct, deriv, xi, knots, weights, distype);
 
           break;
         }
@@ -1083,7 +1079,7 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
-        const BACI::DRT::Element& ele,              ///< element which is considered
+        const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
         INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
     )
@@ -1113,8 +1109,7 @@ namespace CORE::VOLMORTAR
           static const int nnodes = CORE::FE::num_nodes<distype>;
 
           // get gauss rule
-          const CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
-              DisTypeToOptGaussRule<distype>::rule);
+          const CORE::FE::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
 
           double detg = 0.0;
 
@@ -1173,7 +1168,7 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     )
     {
       switch (distype)
@@ -1190,8 +1185,7 @@ namespace CORE::VOLMORTAR
           static const int nnodes = CORE::FE::num_nodes<distype>;
 
           // get gauss rule
-          const CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
-              DisTypeToOptGaussRule<distype>::rule);
+          const CORE::FE::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
           CORE::LINALG::Matrix<nnodes, 1> stdval;
@@ -1253,7 +1247,7 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
-        const BACI::DRT::Element& ele,              ///< element which is considered
+        const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
         INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
     )
@@ -1287,8 +1281,7 @@ namespace CORE::VOLMORTAR
           static const int nnodes = CORE::FE::num_nodes<distype>;
 
           // get gauss rule
-          const CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
-              DisTypeToOptGaussRule<distype>::rule);
+          const CORE::FE::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
           CORE::LINALG::Matrix<nnodes, 1> stdval;
@@ -1345,7 +1338,7 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     )
     {
       switch (distype)
@@ -1362,8 +1355,7 @@ namespace CORE::VOLMORTAR
           static const int nnodes = CORE::FE::num_nodes<distype>;
 
           // get gauss rule
-          const CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
-              DisTypeToOptGaussRule<distype>::rule);
+          const CORE::FE::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
           CORE::LINALG::Matrix<nnodes, 1> stdval;
@@ -1427,7 +1419,7 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_3D(V& funct,  ///< to be filled with shape function values
-        const BACI::DRT::Element& ele,              ///< element which is considered
+        const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
         INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
     )
@@ -1449,8 +1441,7 @@ namespace CORE::VOLMORTAR
           static const int nnodes = CORE::FE::num_nodes<distype>;
 
           // get gauss rule
-          const CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
-              DisTypeToOptGaussRule<distype>::rule);
+          const CORE::FE::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
           CORE::LINALG::Matrix<nnodes, 1> stdval;
@@ -1522,7 +1513,7 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     )
     {
       switch (distype)
@@ -1539,8 +1530,7 @@ namespace CORE::VOLMORTAR
           static const int nnodes = CORE::FE::num_nodes<distype>;
 
           // get gauss rule
-          const CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
-              DisTypeToOptGaussRule<distype>::rule);
+          const CORE::FE::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
           CORE::LINALG::Matrix<nnodes, 1> stdval;
@@ -1816,7 +1806,7 @@ namespace CORE::VOLMORTAR
      |  Get global coords for given local coords (ref pos)       farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    bool LocalToGlobal(const BACI::DRT::Element& ele, const double* xi, double* globcoord)
+    bool LocalToGlobal(const DRT::Element& ele, const double* xi, double* globcoord)
     {
       // check input
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
@@ -1826,7 +1816,7 @@ namespace CORE::VOLMORTAR
       static const int n = CORE::FE::num_nodes<distype>;
       static const int ndim = CORE::FE::dim<distype>;
 
-      const BACI::DRT::Node* const* mynodes = ele.Nodes();
+      const DRT::Node* const* mynodes = ele.Nodes();
       if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
@@ -1931,7 +1921,7 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
     void dual_shape_function(
-        V& f, const T& xi, const BACI::DRT::Element& ele, INPAR::VOLMORTAR::DualQuad dualquad)
+        V& f, const T& xi, const DRT::Element& ele, INPAR::VOLMORTAR::DualQuad dualquad)
     {
       switch (CORE::FE::dim<distype>)
       {
@@ -1966,7 +1956,7 @@ namespace CORE::VOLMORTAR
         const U* xi,                         ///< xi coordinates
         T& weights,                          ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const BACI::DRT::Element& ele                         ///< element which is considered
+        const DRT::Element& ele                               ///< element which is considered
     )
     {
       switch (CORE::FE::dim<distype>)

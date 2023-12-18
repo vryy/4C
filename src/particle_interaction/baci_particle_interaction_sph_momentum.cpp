@@ -684,7 +684,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
         walldatastate->GetForceCol() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
-      CORE::DRT::UTILS::shape_function_2D(
+      CORE::FE::shape_function_2D(
           funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
 
       // get location vector of wall element

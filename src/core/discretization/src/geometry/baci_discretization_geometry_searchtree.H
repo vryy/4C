@@ -154,7 +154,7 @@ namespace CORE::GEO
        \param currentpositions     current nodal positions in discretization
        \return vector of children ids
        */
-      std::vector<int> classifyElement(const BACI::DRT::Element* element,
+      std::vector<int> classifyElement(const DRT::Element* element,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
@@ -163,8 +163,8 @@ namespace CORE::GEO
        \param xyze_element         coordinates of element
        \return vector of children ids
        */
-      std::vector<int> classifyElement(const BACI::DRT::Element* element,
-          const CORE::LINALG::SerialDenseMatrix& xyze_element) const;
+      std::vector<int> classifyElement(
+          const DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze_element) const;
 
       /*!
        \brief return child(ren) of this tree node in which the ele has to be inserted
@@ -172,7 +172,7 @@ namespace CORE::GEO
        \param xyze_element         coordinates of element
        \return vector of children ids
        */
-      std::vector<int> classifyElement(const Teuchos::RCP<BACI::DRT::Element> element,
+      std::vector<int> classifyElement(const Teuchos::RCP<DRT::Element> element,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
@@ -187,7 +187,7 @@ namespace CORE::GEO
        \param dis                  discretization
        \param currentpositions     current nodal positions in discretization
        */
-      void createChildren(const BACI::DRT::Discretization& dis,
+      void createChildren(const DRT::Discretization& dis,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
@@ -300,7 +300,7 @@ namespace CORE::GEO
        \param label                label of structure the query point belongs to
        \return set of node gids
        */
-      std::map<int, std::set<int>> searchElementsInRadius(const BACI::DRT::Discretization& dis,
+      std::map<int, std::set<int>> searchElementsInRadius(const DRT::Discretization& dis,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
           const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -372,8 +372,8 @@ namespace CORE::GEO
      \param dis                  discretization
      \param treetype             octtree or quadtree
      */
-    void initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox,
-        const BACI::DRT::Discretization& dis, const TreeType treetype);
+    void initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox, const DRT::Discretization& dis,
+        const TreeType treetype);
 
     void initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox, const TreeType treetype);
 
@@ -386,7 +386,7 @@ namespace CORE::GEO
      \param treetype             quadtree
      */
     void initializeTreeSlideALE(const CORE::LINALG::Matrix<3, 2>& nodeBox,
-        std::map<int, Teuchos::RCP<BACI::DRT::Element>>& elements, const TreeType treetype);
+        std::map<int, Teuchos::RCP<DRT::Element>>& elements, const TreeType treetype);
 
     void insertElement(const int eid);
 
@@ -399,7 +399,7 @@ namespace CORE::GEO
      \param label                label
      \return set of node gids
      */
-    std::map<int, std::set<int>> searchElementsInRadius(const BACI::DRT::Discretization& dis,
+    std::map<int, std::set<int>> searchElementsInRadius(const DRT::Discretization& dis,
         const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
         const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label);
 

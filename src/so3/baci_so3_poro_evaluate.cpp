@@ -1242,7 +1242,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
 
     if (not isNurbs_)
     {
-      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+      CORE::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
       invJ_[gp].Multiply(deriv, xrefe);
       detJ_[gp] = invJ_[gp].Invert();
@@ -1673,13 +1673,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeShapeFunctionsAndDerivati
 {
   if (!isNurbs_)
   {
-    CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefct);
-    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+    CORE::FE::shape_function<distype>(xsi_[gp], shapefct);
+    CORE::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
   }
   else
   {
-    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
-        shapefct, deriv, xsi_[gp], myknots_, weights_, distype);
+    CORE::FE::NURBS::nurbs_get_funct_deriv(shapefct, deriv, xsi_[gp], myknots_, weights_, distype);
 
     CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
     for (int i = 0; i < numnod_; ++i)
@@ -2799,7 +2798,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
   if (fabs(dot) > 1e-30)
   {
     CORE::LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
-    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex8>(xi, shapefcts);
+    CORE::FE::shape_function<CORE::FE::CellType::hex8>(xi, shapefcts);
 
     for (unsigned nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
       cauchy_n_dir -= pres[nlid] * shapefcts(nlid, 0) * dot;
@@ -2807,7 +2806,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
     if (d_cauchyndir_dp || d_cauchyndir_dn || d_cauchyndir_ddir || d_cauchyndir_dxi)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv;
-      CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(xi, deriv);
+      CORE::FE::shape_function_deriv1<CORE::FE::CellType::hex8>(xi, deriv);
 
       d_cauchyndir_dp->reshape(NUMNOD_SOH8, 1);
       CORE::LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(d_cauchyndir_dp->values(), true);

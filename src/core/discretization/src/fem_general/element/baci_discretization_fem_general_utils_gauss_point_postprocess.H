@@ -22,7 +22,7 @@ namespace DRT
   class Element;
 }
 
-namespace CORE::DRT::ELEMENTS
+namespace CORE::FE
 {
 
   /*!
@@ -36,8 +36,8 @@ namespace CORE::DRT::ELEMENTS
    * @param dis (in) : Reference to the discretization
    * @param nodal_data (out) : Assembled data
    */
-  void ExtrapolateGaussPointQuantityToNodes(BACI::DRT::Element& ele,
-      const CORE::LINALG::SerialDenseMatrix& data, const BACI::DRT::Discretization& dis,
+  void ExtrapolateGaussPointQuantityToNodes(DRT::Element& ele,
+      const CORE::LINALG::SerialDenseMatrix& data, const DRT::Discretization& dis,
       Epetra_MultiVector& nodal_data);
 
   /*!
@@ -48,7 +48,7 @@ namespace CORE::DRT::ELEMENTS
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
    * @param element_data (out) : Assembled data
    */
-  void EvaluateGaussPointQuantityAtElementCenter(BACI::DRT::Element& ele,
+  void EvaluateGaussPointQuantityAtElementCenter(DRT::Element& ele,
       const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data);
 
   /*!
@@ -61,13 +61,13 @@ namespace CORE::DRT::ELEMENTS
    */
   template <class T>
   void AssembleAveragedElementValues(
-      Epetra_MultiVector& global_data, const T& gp_data, const BACI::DRT::Element& ele);
+      Epetra_MultiVector& global_data, const T& gp_data, const DRT::Element& ele);
 
 
   // --- template and inline functions --- //
   template <class T>
-  void DRT::ELEMENTS::AssembleAveragedElementValues(
-      Epetra_MultiVector& global_data, const T& gp_data, const BACI::DRT::Element& ele)
+  void AssembleAveragedElementValues(
+      Epetra_MultiVector& global_data, const T& gp_data, const DRT::Element& ele)
   {
     const Epetra_BlockMap& elemap = global_data.Map();
     int lid = elemap.LID(ele.Id());
@@ -86,7 +86,7 @@ namespace CORE::DRT::ELEMENTS
     }
   }
 
-}  // namespace CORE::DRT::ELEMENTS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

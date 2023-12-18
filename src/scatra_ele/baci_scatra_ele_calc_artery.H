@@ -57,8 +57,8 @@ namespace DRT
 
       //! evaluate shape functions and their derivatives at current integration point
       double EvalShapeFuncAndDerivsAtIntPoint(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
-          const int iquad  //!< id of current Gauss point
+          const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
+          const int iquad                                            //!< id of current Gauss point
           ) override
       {
         const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
@@ -71,7 +71,7 @@ namespace DRT
       double EvalShapeFuncAndDerivsAtEleCenter() override
       {
         // use one-point Gauss rule to do calculations at the element center
-        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+        const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
             SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
         // volume of the element (2D: element surface area; 1D: element length)

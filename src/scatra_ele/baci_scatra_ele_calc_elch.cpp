@@ -111,7 +111,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)

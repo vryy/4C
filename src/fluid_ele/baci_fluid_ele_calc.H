@@ -96,12 +96,12 @@ namespace DRT
 
       int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
+          const CORE::FE::GaussIntegration& intpoints) override;
 
 
       int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-          const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+          const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
         dserror("Implemented in derived xfem class!");
@@ -142,7 +142,7 @@ namespace DRT
           //    Teuchos::ParameterList&              params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra
-          //    const CORE::DRT::UTILS::GaussIntegration & intpoints
+          //    const CORE::FE::GaussIntegration & intpoints
       );
 
       /*! \brief Interpolate velocity gradient and pressure to given point
@@ -268,7 +268,7 @@ namespace DRT
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints2) override;
+          const CORE::FE::GaussIntegration& intpoints2) override;
 
       /*!
        \brief Evaluates the analytic solution in the given point
@@ -299,7 +299,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false) override;
+          const CORE::FE::GaussIntegration& intpoints, bool offdiag = false) override;
 
       int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
@@ -309,7 +309,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
               bintpoints,                                     ///< boundary integration points
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
           Teuchos::ParameterList& params                      ///< parameter list
@@ -327,7 +327,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+          const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override
       {
         dserror("Implemented in derived xfem class!");
@@ -366,11 +366,10 @@ namespace DRT
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::vector<CORE::DRT::UTILS::GaussIntegration>&
-              intpoints,  ///< element gauss points
+          const std::vector<CORE::FE::GaussIntegration>& intpoints,  ///< element gauss points
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
@@ -397,7 +396,7 @@ namespace DRT
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
           Teuchos::ParameterList& params,                     ///< parameter list
@@ -418,7 +417,7 @@ namespace DRT
 
       void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints) override
+          const CORE::FE::GaussIntegration& intpoints) override
       {
         dserror("Implemented in derived xfem class!");
         return;
@@ -492,8 +491,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
           const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, Teuchos::RCP<MAT::Material> mat,
           bool isale, bool isowned, double CsDeltaSq, double CiDeltaSq, double* saccn,
-          double* sveln, double* svelnp, const CORE::DRT::UTILS::GaussIntegration& intpoints,
-          bool offdiag);
+          double* sveln, double* svelnp, const CORE::FE::GaussIntegration& intpoints, bool offdiag);
 
       /*!
         \brief calculate element matrix and rhs
@@ -570,7 +568,7 @@ namespace DRT
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
           Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
           double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::FE::GaussIntegration& intpoints);
 
 
       virtual void SysmatOSTNew(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
@@ -605,7 +603,7 @@ namespace DRT
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
           Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
           double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::FE::GaussIntegration& intpoints);
 
 
 
@@ -617,7 +615,7 @@ namespace DRT
 
        6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
       */
-      static const int numderiv2_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! calculate body force from nodal conditions
       void BodyForce(DRT::ELEMENTS::Fluid* ele,       //< pointer to element
@@ -1338,7 +1336,7 @@ namespace DRT
       //! knot vector for nurbs elements
       std::vector<CORE::LINALG::SerialDenseVector> myknots_;
       //! Gaussian integration points
-      CORE::DRT::UTILS::GaussIntegration intpoints_;
+      CORE::FE::GaussIntegration intpoints_;
       //! identify elements of inflow section
       //! required for turbulence modeling
       bool is_inflow_ele_;

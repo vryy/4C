@@ -52,9 +52,9 @@ double LineIntegration::integrate_line()
 
   // 8 is the order of Gauss integration used in the line integration
   // since we integrate 6th order polynomial in volume, 8th order must be used for line
-  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::line2, (DIRECTDIV_GAUSSRULE + 1));
+  CORE::FE::GaussIntegration gi(CORE::FE::CellType::line2, (DIRECTDIV_GAUSSRULE + 1));
 
-  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
+  for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
   {
     const CORE::LINALG::Matrix<1, 1> eta(iquad.Point());
     double weight = iquad.Weight();
@@ -98,9 +98,9 @@ void LineIntegration::Transform(const CORE::LINALG::Matrix<2, 2> &xyze, const do
   CORE::LINALG::Matrix<1, numnodes> deriv;
   CORE::LINALG::Matrix<1, 1> metrictensor;
 
-  CORE::DRT::UTILS::shape_function_1D(funct, eta, CORE::FE::CellType::line2);
-  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta, CORE::FE::CellType::line2);
-  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::line2>(
+  CORE::FE::shape_function_1D(funct, eta, CORE::FE::CellType::line2);
+  CORE::FE::shape_function_1D_deriv1(deriv, eta, CORE::FE::CellType::line2);
+  CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::line2>(
       xyze, deriv, metrictensor, drs, &normal);
 
   x_gp_lin.Multiply(xyze, funct);

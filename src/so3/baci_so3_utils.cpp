@@ -31,7 +31,7 @@ void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<doub
   if (disp.size() != nsd * nen) dserror("mismatch in dimensions");
 
   CORE::LINALG::Matrix<nsd, 1> xi_ele_center =
-      CORE::DRT::UTILS::getLocalCenterPosition<nsd>(distype);  // depending on distype
+      CORE::FE::getLocalCenterPosition<nsd>(distype);  // depending on distype
 
   CORE::LINALG::Matrix<nen, nsd> xrefe;  // X, material coord. of element
   CORE::LINALG::Matrix<nen, nsd> xcurr;  // x, current  coord. of element
@@ -44,7 +44,7 @@ void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<doub
     }
   }
   CORE::LINALG::Matrix<nsd, nen> deriv;
-  CORE::DRT::UTILS::shape_function_deriv1<distype>(xi_ele_center, deriv);
+  CORE::FE::shape_function_deriv1<distype>(xi_ele_center, deriv);
 
   CORE::LINALG::Matrix<nsd, nsd> jac;
   CORE::LINALG::Matrix<nsd, nsd> defgrd;
@@ -99,7 +99,7 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
   EvaluateCurrentNodalCoordinates<distype, probdim>(xrefe, xdisp, xcurr);
 
   CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>> N_rst(true);
-  CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi, N_rst);
+  CORE::FE::shape_function_deriv1<distype>(xsi, N_rst);
 
   static CORE::LINALG::Matrix<probdim, probdim> inv_detFJ;
   inv_detFJ.Multiply(N_rst, xrefe);

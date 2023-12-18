@@ -112,27 +112,27 @@ void EXODUS::ValidateElementJacobian(
   using namespace BACI;
 
   // use one point gauss rule to calculate jacobian at element center
-  CORE::DRT::UTILS::GaussRule3D integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::undefined;
+  CORE::FE::GaussRule3D integrationrule_1point = CORE::FE::GaussRule3D::undefined;
   switch (distype)
   {
     case CORE::FE::CellType::hex8:
     case CORE::FE::CellType::hex20:
-      integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::hex_1point;
+      integrationrule_1point = CORE::FE::GaussRule3D::hex_1point;
       break;
     case CORE::FE::CellType::hex27:
       integrationrule_1point =
-          CORE::DRT::UTILS::GaussRule3D::hex_27point;  // one point is not enough for hex27!!
+          CORE::FE::GaussRule3D::hex_27point;  // one point is not enough for hex27!!
       break;
     case CORE::FE::CellType::tet4:
     case CORE::FE::CellType::tet10:
-      integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::tet_1point;
+      integrationrule_1point = CORE::FE::GaussRule3D::tet_1point;
       break;
     case CORE::FE::CellType::wedge6:
     case CORE::FE::CellType::wedge15:
-      integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::wedge_1point;
+      integrationrule_1point = CORE::FE::GaussRule3D::wedge_1point;
       break;
     case CORE::FE::CellType::pyramid5:
-      integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::pyramid_1point;
+      integrationrule_1point = CORE::FE::GaussRule3D::pyramid_1point;
       break;
     // do nothing for 2D, 1D and 0D elements
     case CORE::FE::CellType::quad4:
@@ -148,7 +148,7 @@ void EXODUS::ValidateElementJacobian(
       dserror("Unknown element type, validation failed!");
       break;
   }
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_1point);
+  const CORE::FE::IntegrationPoints3D intpoints(integrationrule_1point);
   const int iel = eb->GetEleNodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
@@ -163,7 +163,7 @@ void EXODUS::ValidateElementJacobian(
     int rewcount = 0;
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
-      CORE::DRT::UTILS::shape_function_3D_deriv1(
+      CORE::FE::shape_function_3D_deriv1(
           deriv, intpoints.qxg[igp][0], intpoints.qxg[igp][1], intpoints.qxg[igp][2], distype);
       if (!PositiveEle(i_ele->first, i_ele->second, mymesh, deriv))
       {
@@ -194,30 +194,30 @@ int EXODUS::ValidateElementJacobian_fullgp(
 {
   using namespace BACI;
 
-  CORE::DRT::UTILS::GaussRule3D integrationrule = CORE::DRT::UTILS::GaussRule3D::undefined;
+  CORE::FE::GaussRule3D integrationrule = CORE::FE::GaussRule3D::undefined;
   switch (distype)
   {
     case CORE::FE::CellType::hex8:
-      integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
+      integrationrule = CORE::FE::GaussRule3D::hex_8point;
       break;
     case CORE::FE::CellType::hex20:
-      integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+      integrationrule = CORE::FE::GaussRule3D::hex_27point;
       break;
     case CORE::FE::CellType::hex27:
-      integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+      integrationrule = CORE::FE::GaussRule3D::hex_27point;
       break;
     case CORE::FE::CellType::tet4:
-      integrationrule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
+      integrationrule = CORE::FE::GaussRule3D::tet_4point;
       break;
     case CORE::FE::CellType::tet10:
-      integrationrule = CORE::DRT::UTILS::GaussRule3D::tet_10point;
+      integrationrule = CORE::FE::GaussRule3D::tet_10point;
       break;
     case CORE::FE::CellType::wedge6:
     case CORE::FE::CellType::wedge15:
-      integrationrule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
+      integrationrule = CORE::FE::GaussRule3D::wedge_6point;
       break;
     case CORE::FE::CellType::pyramid5:
-      integrationrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
+      integrationrule = CORE::FE::GaussRule3D::pyramid_8point;
       break;
     // do nothing for 2D, 1D and 0D elements
     case CORE::FE::CellType::quad4:
@@ -233,7 +233,7 @@ int EXODUS::ValidateElementJacobian_fullgp(
       dserror("Unknown element type, validation failed!");
       break;
   }
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(integrationrule);
+  const CORE::FE::IntegrationPoints3D intpoints(integrationrule);
   const int iel = eb->GetEleNodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
@@ -247,7 +247,7 @@ int EXODUS::ValidateElementJacobian_fullgp(
   {
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
-      CORE::DRT::UTILS::shape_function_3D_deriv1(
+      CORE::FE::shape_function_3D_deriv1(
           deriv, intpoints.qxg[igp][0], intpoints.qxg[igp][1], intpoints.qxg[igp][2], distype);
       if (PositiveEle(i_ele->first, i_ele->second, mymesh, deriv) == false)
       {
@@ -380,7 +380,7 @@ int EXODUS::EleSaneSign(
 
   for (int i = 0; i < iel; ++i)
   {
-    CORE::DRT::UTILS::shape_function_3D_deriv1(
+    CORE::FE::shape_function_3D_deriv1(
         deriv, local_nodecoords(i, 0), local_nodecoords(i, 1), local_nodecoords(i, 2), distype);
     CORE::LINALG::multiplyNT(xjm, deriv, xyze);
     const double det = xjm(0, 0) * xjm(1, 1) * xjm(2, 2) + xjm(0, 1) * xjm(1, 2) * xjm(2, 0) +

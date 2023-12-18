@@ -25,7 +25,7 @@ mapping
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   //! 2 surfaces on a Hex16 element with 8 nodes per surface
   const int eleNodeNumbering_hex16_surfaces_q8[2][8] = {
@@ -1159,7 +1159,7 @@ namespace CORE::DRT::UTILS
   /// return TRUE if the given dis_type is a NURBS type
   bool IsNurbsDisType(const CORE::FE::CellType dis_type);
 
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

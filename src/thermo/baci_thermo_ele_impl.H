@@ -362,9 +362,9 @@ namespace DRT
 
       //! evaluate shape functions and their derivatives at current integration point
       virtual void EvalShapeFuncAndDerivsAtIntPoint(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-          int iquad,  //!< id of current Gauss point
-          int eleid   //!< the element id
+          const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+          int iquad,                                             //!< id of current Gauss point
+          int eleid                                              //!< the element id
       );
 
       //! compute heatflux and temperature gradient in linear case

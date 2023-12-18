@@ -223,7 +223,7 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType celltype>
   CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinate(
-      const CORE::DRT::UTILS::GaussIntegration& intpoints, const int gp)
+      const CORE::FE::GaussIntegration& intpoints, const int gp)
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi;
     for (int d = 0; d < DETAIL::num_dim<celltype>; ++d) xi(d) = intpoints.Point(gp)[d];
@@ -342,7 +342,7 @@ namespace DRT::ELEMENTS
         EvaluateParameterCoordinateCentroid<celltype>();
 
     CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1> shape_functions_centroid(true);
-    CORE::DRT::UTILS::shape_function<celltype>(xi_centroid, shape_functions_centroid);
+    CORE::FE::shape_function<celltype>(xi_centroid, shape_functions_centroid);
 
     const CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> centroid_coordinates_reference =
         EvaluateReferenceCoordinate<celltype>(
@@ -359,7 +359,7 @@ namespace DRT::ELEMENTS
         EvaluateParameterCoordinateCentroid<celltype>();
 
     CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1> shape_functions_centroid(true);
-    CORE::DRT::NURBS::UTILS::nurbs_shape_function_dim(shape_functions_centroid, xi_centroid,
+    CORE::FE::NURBS::nurbs_shape_function_dim(shape_functions_centroid, xi_centroid,
         nodal_coordinates.knots_, nodal_coordinates.weights_, celltype);
 
     const CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> centroid_coordinates_reference =
@@ -398,8 +398,8 @@ namespace DRT::ELEMENTS
       const ElementNodes<celltype>& nodal_coordinates)
   {
     ShapeFunctionsAndDerivatives<celltype> shapefcns;
-    CORE::DRT::UTILS::shape_function<celltype>(xi, shapefcns.shapefunctions_);
-    CORE::DRT::UTILS::shape_function_deriv1<celltype>(xi, shapefcns.derivatives_);
+    CORE::FE::shape_function<celltype>(xi, shapefcns.shapefunctions_);
+    CORE::FE::shape_function_deriv1<celltype>(xi, shapefcns.derivatives_);
 
     return shapefcns;
   }
@@ -411,8 +411,8 @@ namespace DRT::ELEMENTS
       const ElementNodes<celltype>& nodal_coordinates)
   {
     ShapeFunctionsAndDerivatives<celltype> shapefcns;
-    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(shapefcns.shapefunctions_,
-        shapefcns.derivatives_, xi, nodal_coordinates.knots_, nodal_coordinates.weights_, celltype);
+    CORE::FE::NURBS::nurbs_get_funct_deriv(shapefcns.shapefunctions_, shapefcns.derivatives_, xi,
+        nodal_coordinates.knots_, nodal_coordinates.weights_, celltype);
 
     return shapefcns;
   }
@@ -862,7 +862,7 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType celltype, typename GaussPointEvaluator>
   inline void ForEachGaussPoint(const ElementNodes<celltype>& nodal_coordinates,
-      const CORE::DRT::UTILS::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
+      const CORE::FE::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
   {
     for (int gp = 0; gp < integration.NumPoints(); ++gp)
     {
@@ -927,8 +927,8 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType celltype>
   inline void InterpolateFibersToGaussPointsAndAddToParameterList(
-      const CORE::DRT::UTILS::GaussIntegration& stiffness_matrix_integration,
-      const DRT::Element& ele, Teuchos::ParameterList& params)
+      const CORE::FE::GaussIntegration& stiffness_matrix_integration, const DRT::Element& ele,
+      Teuchos::ParameterList& params)
   {
     if (DRT::FIBER::UTILS::HaveNodalFibers<celltype>(ele.Nodes()))
     {
@@ -946,7 +946,7 @@ namespace DRT::ELEMENTS
                 {
                   CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi(
                       stiffness_matrix_integration.Point(gp), true);
-                  CORE::DRT::UTILS::shape_function<celltype>(xi, shapefcns[gp]);
+                  CORE::FE::shape_function<celltype>(xi, shapefcns[gp]);
                 }
                 return shapefcns;
               });

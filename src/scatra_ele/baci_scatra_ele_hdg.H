@@ -156,7 +156,7 @@ namespace DRT
       //! Get number of dofs per component per face
       int NumDofPerComponent(const unsigned face) const override
       {
-        return CORE::DRT::UTILS::getBasisSize(CORE::DRT::UTILS::getEleFaceShapeType(this->distype_),
+        return CORE::FE::getBasisSize(CORE::FE::getEleFaceShapeType(this->distype_),
             (this->Faces()[face])->Degree(), completepol_);
       }
 
@@ -217,8 +217,8 @@ namespace DRT
       //! Returns the degree of the element for the interior DG space
       int NumDofPerElementAuxiliary() const
       {
-        return (CORE::DRT::UTILS::getDimension(distype_) + 1) *
-               CORE::DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+        return (CORE::FE::getDimension(distype_) + 1) *
+               CORE::FE::getBasisSize(distype_, degree_, completepol_);
       }
 
       //! Get vector of Teuchos::RCPs to the lines of this element
@@ -438,15 +438,12 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
-      }
+      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(Shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -719,15 +716,12 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
-      }
+      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(Shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element

@@ -50,7 +50,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
-  const unsigned num_nodes_ele = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
+  const unsigned num_nodes_ele = CORE::FE::getNumberOfElementNodes(distype);
 
   if (rdim < probdim or cdim != num_nodes_ele)
     dserror(
@@ -87,7 +87,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
-  const unsigned num_nodes_ele = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
+  const unsigned num_nodes_ele = CORE::FE::getNumberOfElementNodes(distype);
 
   if (static_cast<unsigned>(xyze.numRows()) < probdim or
       static_cast<unsigned>(xyze.numCols()) != num_nodes_ele)
@@ -273,10 +273,7 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::PositionFactory::PositionFactory()
-    : probdim_(BACI::DRT::Problem::Instance()->NDim())
-{
-}
+CORE::GEO::CUT::PositionFactory::PositionFactory() : probdim_(DRT::Problem::Instance()->NDim()) {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

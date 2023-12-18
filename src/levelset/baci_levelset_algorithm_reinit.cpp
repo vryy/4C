@@ -1321,11 +1321,11 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3,
     // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the
     // patch
     funct.Clear();
-    CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
+    CORE::FE::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
     // evaluate derivatives of shape functions in boundary cell space at current position
     // \eta_1,\eta_2 on the patch
     deriv.Clear();
-    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
+    CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
 
     // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
     // projX(i,j) = patchcoord(i,k)*funct(k,1)

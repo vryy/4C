@@ -146,7 +146,7 @@ double CORE::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
 }
 
 Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfTime.
   // This line accepts optional components in the beginning although this is not directly supported
@@ -186,7 +186,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    const BACI::DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
+    const DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
@@ -203,7 +203,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    const BACI::DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
+    const DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;

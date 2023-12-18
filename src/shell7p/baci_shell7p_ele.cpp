@@ -198,10 +198,7 @@ DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::S
 DRT::Element* DRT::ELEMENTS::Shell7p::Clone() const { return new Shell7p(*this); }
 
 
-int DRT::ELEMENTS::Shell7p::NumLine() const
-{
-  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
-}
+int DRT::ELEMENTS::Shell7p::NumLine() const { return CORE::FE::getNumberOfElementLines(distype_); }
 
 
 int DRT::ELEMENTS::Shell7p::NumSurface() const { return 1; }

@@ -434,8 +434,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
 #ifndef BEAM3EBDISCRETELINENEUMANN
     // gaussian points
-    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-        CORE::DRT::UTILS::IntegrationPoints1D(mygaussruleeb);
+    CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(mygaussruleeb);
 #endif
 
     CORE::LINALG::Matrix<1, NODALDOFS * nnodes> N_i;
@@ -457,12 +456,12 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 // evaluation of shape funcitons at Gauss points
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
 // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       // specific-for----------------------------------Frenet Serret
       // Get hermite derivatives N'xi, N''xi and N'''xi
-      CORE::DRT::UTILS::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #else
       dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
@@ -547,12 +546,12 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       // evaluation of shape funcitons at Gauss points
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       // specific-for----------------------------------Frenet Serret
       // Get hermite derivatives N'xi, N''xi and N'''xi
-      CORE::DRT::UTILS::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #else
       dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
@@ -690,8 +689,8 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
 
     // Get integrationpoints for exact integration
-    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-        CORE::DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
+    CORE::FE::IntegrationPoints1D gausspoints =
+        CORE::FE::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
     // Get DiscretizationType of beam element
     const CORE::FE::CellType distype = Shape();
@@ -734,7 +733,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     lin_epsilon_cp.Clear();
 
     N_i_x.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
+    CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
     for (int i = 0; i < 2 * NODALDOFS; i++)
     {
       N_i_x(i) = N_i_x(i) / jacobi_;
@@ -766,13 +765,13 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       switch (k)
       {
         case 0:
-          CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, -1.0, jacobi_ * 2.0, distype);
+          CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, -1.0, jacobi_ * 2.0, distype);
           break;
         case 1:
-          CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, 1.0, jacobi_ * 2.0, distype);
+          CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, 1.0, jacobi_ * 2.0, distype);
           break;
         case 2:
-          CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
+          CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
           break;
         default:
           dserror("Index k should only run from 1 to 3 (three collocation points)!");
@@ -842,16 +841,16 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       // specific-for----------------------------------Frenet Serret
       // Get hermite derivatives N'xi, N''xi and N'''xi
-      CORE::DRT::UTILS::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
-      CORE::DRT::UTILS::shape_function_hermite_1D_order5_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
-      CORE::DRT::UTILS::shape_function_hermite_1D_order5_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_order5_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_order5_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #else
       dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
@@ -902,7 +901,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       }
 
 #ifdef ANS_BEAM3EB
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
+      CORE::FE::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
       epsilon_ANS = 0.0;
       lin_epsilon_ANS.Clear();
       for (int i = 0; i < ANSVALUES; i++)
@@ -1123,8 +1122,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 #endif
 
     // Get integrationpoints for exact integration
-    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-        CORE::DRT::UTILS::IntegrationPoints1D(mygaussruleeb);
+    CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(mygaussruleeb);
 
     // Get DiscretizationType of beam element
     const CORE::FE::CellType distype = Shape();
@@ -1188,7 +1186,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 #endif
 
     N_i_x.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
+    CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
 
     for (int i = 0; i < 2 * NODALDOFS; i++) N_i_x(i) = N_i_x(i) / jacobi_;
 
@@ -1233,13 +1231,13 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       switch (k)
       {
         case 0:
-          CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, -1.0, jacobi_ * 2.0, distype);
+          CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, -1.0, jacobi_ * 2.0, distype);
           break;
         case 1:
-          CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, 1.0, jacobi_ * 2.0, distype);
+          CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, 1.0, jacobi_ * 2.0, distype);
           break;
         case 2:
-          CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
+          CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
           break;
         default:
           dserror("Index k should only run from 1 to 3 (three collocation points)!");
@@ -1387,15 +1385,15 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       // specific-for----------------------------------Frenet Serret
       // Get hermite derivatives N'xi, N''xi and N'''xi
-      CORE::DRT::UTILS::shape_function_hermite_1D_order5_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
-      CORE::DRT::UTILS::shape_function_hermite_1D_order5_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_order5_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D_order5_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #else
       dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
@@ -1499,7 +1497,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
       // calculate quantities necessary for ANS approach
 #ifdef ANS_BEAM3EB
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
+      CORE::FE::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
       epsilon_ANS = 0.0;
       lin_epsilon_ANS.Clear();
       for (int i = 0; i < ANSVALUES; i++)
@@ -1773,7 +1771,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
+      CORE::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       dserror("massmatrix only implemented for the case NODALDOFS == 2!!!");
@@ -1964,8 +1962,7 @@ void DRT::ELEMENTS::Beam3eb::lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 int DRT::ELEMENTS::Beam3eb::HowManyRandomNumbersINeed() const
 {
   // get Gauss points and weights for evaluation of damping matrix
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-      CORE::DRT::UTILS::IntegrationPoints1D(mygaussruleeb);
+  CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(mygaussruleeb);
 /* at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e.
  * three random numbers for the translational degrees of freedom */
 #ifdef BEAM3EBCONSTSTOCHFORCE
@@ -2014,8 +2011,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(
   CORE::LINALG::Matrix<ndim, ndim> damp_mat(true);
 
   // get Gauss points and weights
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-      CORE::DRT::UTILS::IntegrationPoints1D(mygaussruleeb);
+  CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(mygaussruleeb);
 
   // matrix to store individual Hermite shape functions and their derivatives evaluated at a certain
   // Gauss point
@@ -2122,8 +2118,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(
 
 
   // get Gauss points and weights for evaluation of damping matrix
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-      CORE::DRT::UTILS::IntegrationPoints1D(mygaussruleeb);
+  CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(mygaussruleeb);
 
   // matrix to store hermite shape functions and their derivatives evaluated at a certain Gauss
   // point
@@ -2233,7 +2228,7 @@ double DRT::ELEMENTS::Beam3eb::GetAxialStrain(
   CORE::LINALG::Matrix<1, 4> N_i_x(true);
   const CORE::FE::CellType distype = Shape();
   // First get shape functions
-  CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
+  CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
 
   for (int i = 0; i < 2 * NODALDOFS; i++) N_i_x(i) = N_i_x(i) / jacobi_;
 
@@ -2255,7 +2250,7 @@ double DRT::ELEMENTS::Beam3eb::GetAxialStrain(
   }
 
   CORE::LINALG::Matrix<1, 3> L_i(true);
-  CORE::DRT::UTILS::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
+  CORE::FE::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
   double epsilon = 0.0;
   for (int i = 0; i < ANSVALUES; i++) epsilon += L_i(i) * epsilon_cp(i);
 

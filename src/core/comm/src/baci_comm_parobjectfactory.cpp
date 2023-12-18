@@ -136,7 +136,7 @@ Teuchos::RCP<DRT::Element> CORE::COMM::ParObjectFactory::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   FinalizeRegistration();
-  std::map<std::string, BACI::DRT::ElementType*>::iterator c = element_cache_.find(eletype);
+  std::map<std::string, DRT::ElementType*>::iterator c = element_cache_.find(eletype);
   if (c != element_cache_.end())
   {
     return c->second->Create(eletype, eledistype, id, owner);
@@ -147,10 +147,10 @@ Teuchos::RCP<DRT::Element> CORE::COMM::ParObjectFactory::Create(
   for (std::map<int, ParObjectType*>::iterator i = type_map_.begin(); i != type_map_.end(); ++i)
   {
     ParObjectType* pot = i->second;
-    BACI::DRT::ElementType* eot = dynamic_cast<BACI::DRT::ElementType*>(pot);
+    DRT::ElementType* eot = dynamic_cast<DRT::ElementType*>(pot);
     if (eot != nullptr)
     {
-      Teuchos::RCP<BACI::DRT::Element> ele = eot->Create(eletype, eledistype, id, owner);
+      Teuchos::RCP<DRT::Element> ele = eot->Create(eletype, eledistype, id, owner);
       if (ele != Teuchos::null)
       {
         element_cache_[eletype] = eot;
@@ -207,7 +207,7 @@ void CORE::COMM::ParObjectFactory::FinalizeRegistration() { ParObjectPreRegister
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::InitializeElements(BACI::DRT::Discretization& dis)
+void CORE::COMM::ParObjectFactory::InitializeElements(DRT::Discretization& dis)
 {
   FinalizeRegistration();
 
@@ -228,14 +228,14 @@ void CORE::COMM::ParObjectFactory::InitializeElements(BACI::DRT::Discretization&
 
   CORE::LINALG::AllreduceVector(localtypeids, globaltypeids, dis.Comm());
 
-  std::set<BACI::DRT::ElementType*>& ae = active_elements_[&dis];
+  std::set<DRT::ElementType*>& ae = active_elements_[&dis];
 
   // This is element specific code. Thus we need a down cast.
 
   for (std::vector<int>::iterator i = globaltypeids.begin(); i != globaltypeids.end(); ++i)
   {
     ParObjectType* pot = type_map_[*i];
-    BACI::DRT::ElementType* eot = dynamic_cast<BACI::DRT::ElementType*>(pot);
+    DRT::ElementType* eot = dynamic_cast<DRT::ElementType*>(pot);
     if (eot != nullptr)
     {
       ae.insert(eot);
@@ -252,17 +252,17 @@ void CORE::COMM::ParObjectFactory::InitializeElements(BACI::DRT::Discretization&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::PreEvaluate(BACI::DRT::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+void CORE::COMM::ParObjectFactory::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   FinalizeRegistration();
 
-  std::set<BACI::DRT::ElementType*>& ae = active_elements_[&dis];
+  std::set<DRT::ElementType*>& ae = active_elements_[&dis];
 
-  for (std::set<BACI::DRT::ElementType*>::iterator i = ae.begin(); i != ae.end(); ++i)
+  for (std::set<DRT::ElementType*>::iterator i = ae.begin(); i != ae.end(); ++i)
   {
     (*i)->PreEvaluate(
         dis, p, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -273,7 +273,7 @@ void CORE::COMM::ParObjectFactory::PreEvaluate(BACI::DRT::Discretization& dis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COMM::ParObjectFactory::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, BACI::DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
   FinalizeRegistration();
 
@@ -284,7 +284,7 @@ void CORE::COMM::ParObjectFactory::SetupElementDefinition(
   for (std::map<int, ParObjectType*>::iterator i = type_map_.begin(); i != type_map_.end(); ++i)
   {
     ParObjectType* pot = i->second;
-    BACI::DRT::ElementType* eot = dynamic_cast<BACI::DRT::ElementType*>(pot);
+    DRT::ElementType* eot = dynamic_cast<DRT::ElementType*>(pot);
     if (eot != nullptr)
     {
       eot->SetupElementDefinition(definitions);

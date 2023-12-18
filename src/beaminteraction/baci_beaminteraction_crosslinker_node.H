@@ -163,7 +163,7 @@ namespace CROSSLINKING
     /*!
      \brief The Discretization is a friend of MortarNode
      */
-    friend class BACI::DRT::Discretization;
+    friend class DRT::Discretization;
 
     //@}
 

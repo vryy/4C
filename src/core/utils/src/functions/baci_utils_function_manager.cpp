@@ -88,7 +88,7 @@ namespace
 void PrintFunctionDatHeader()
 {
   CORE::UTILS::FunctionManager functionmanager;
-  BACI::DRT::INPUT::Lines lines = functionmanager.ValidFunctionLines();
+  DRT::INPUT::Lines lines = functionmanager.ValidFunctionLines();
 
   lines.Print(std::cout);
 }
@@ -97,7 +97,7 @@ void PrintFunctionDatHeader()
 
 void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  using namespace BACI::DRT::INPUT;
+  using namespace DRT::INPUT;
 
   std::vector<LineDefinition> possible_lines = {
       LineDefinition::Builder().AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME").Build(),
@@ -152,7 +152,7 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
 
 DRT::INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
 {
-  BACI::DRT::INPUT::Lines lines(
+  DRT::INPUT::Lines lines(
       "FUNCT", "Definition of functions for various cases, mainly boundary conditions");
 
   for (const auto& [possible_lines, _] : attached_function_data_)
@@ -168,13 +168,13 @@ DRT::INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
 
 
 void CORE::UTILS::FunctionManager::AddFunctionDefinition(
-    std::vector<BACI::DRT::INPUT::LineDefinition> possible_lines, FunctionFactory function_factory)
+    std::vector<DRT::INPUT::LineDefinition> possible_lines, FunctionFactory function_factory)
 {
   attached_function_data_.emplace_back(std::move(possible_lines), std::move(function_factory));
 }
 
 
-void CORE::UTILS::FunctionManager::ReadInput(BACI::DRT::INPUT::DatFileReader& reader)
+void CORE::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
   functions_.clear();
 
@@ -188,7 +188,7 @@ void CORE::UTILS::FunctionManager::ReadInput(BACI::DRT::INPUT::DatFileReader& re
         {
           for (auto& [possible_lines, function_factory] : attached_function_data_)
           {
-            auto [parsed_lines, unparsed_lines] = BACI::DRT::INPUT::ReadMatchingLines(
+            auto [parsed_lines, unparsed_lines] = DRT::INPUT::ReadMatchingLines(
                 reader, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop

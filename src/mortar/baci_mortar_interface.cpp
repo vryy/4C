@@ -3796,7 +3796,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
         int index1 = 0;
         int index2 = 0;
         int hoindex = mrtrele->GetLocalNodeId(gid);
-        CORE::DRT::UTILS::getCornerNodeIndices(index1, index2, hoindex, shape);
+        CORE::FE::getCornerNodeIndices(index1, index2, hoindex, shape);
 
         // find adjacent corner nodes globally
         int gindex1 = mrtrele->NodeIds()[index1];
@@ -3981,7 +3981,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           int index1 = 0;
           int index2 = 0;
           int hoindex = mrtrele->GetLocalNodeId(gid);
-          CORE::DRT::UTILS::getCornerNodeIndices(index1, index2, hoindex, shape);
+          CORE::FE::getCornerNodeIndices(index1, index2, hoindex, shape);
 
           // find adjacent corner nodes globally
           int gindex1 = mrtrele->NodeIds()[index1];

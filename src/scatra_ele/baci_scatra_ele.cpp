@@ -640,7 +640,7 @@ void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::NumLine() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
+  return CORE::FE::getNumberOfElementLines(distype_);
 }
 
 
@@ -649,7 +649,7 @@ int DRT::ELEMENTS::Transport::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::NumSurface() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
+  return CORE::FE::getNumberOfElementSurfaces(distype_);
 }
 
 
@@ -658,7 +658,7 @@ int DRT::ELEMENTS::Transport::NumSurface() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::NumVolume() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
+  return CORE::FE::getNumberOfElementVolumes(distype_);
 }
 
 
@@ -799,8 +799,8 @@ int DRT::ELEMENTS::Transport::Initialize()
       deg = 4 * this->Degree();
     else
       deg = 3 * this->Degree();
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature(
-        CORE::DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(), deg));
+    Teuchos::RCP<CORE::FE::GaussPoints> quadrature(
+        CORE::FE::GaussPointCache::Instance().Create(this->Shape(), deg));
     int gp = quadrature->NumPoints();
     if (actmat->Parameter() != nullptr and
         !actmat->MyocardMat())  // in case we are not in post-process mode
@@ -856,7 +856,7 @@ DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::TransportBoundary::Shape() const
 {
-  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -898,7 +898,7 @@ void DRT::ELEMENTS::TransportBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::NumLine() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementLines(Shape());
+  return CORE::FE::getNumberOfElementLines(Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -906,7 +906,7 @@ int DRT::ELEMENTS::TransportBoundary::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::NumSurface() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+  return CORE::FE::getNumberOfElementSurfaces(Shape());
 }
 
 /*----------------------------------------------------------------------*

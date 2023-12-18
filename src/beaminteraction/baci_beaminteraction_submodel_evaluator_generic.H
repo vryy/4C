@@ -88,8 +88,8 @@ namespace BEAMINTERACTION
       virtual ~Generic() = default;
 
       //! initialize the class variables
-      virtual void Init(Teuchos::RCP<BACI::DRT::Discretization> const& ia_discret,
-          Teuchos::RCP<BACI::DRT::Discretization> const& bindis,
+      virtual void Init(Teuchos::RCP<DRT::Discretization> const& ia_discret,
+          Teuchos::RCP<DRT::Discretization> const& bindis,
           Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
           Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
@@ -200,13 +200,13 @@ namespace BEAMINTERACTION
       //! @{
       //! Returns the (structural) discretization
       DRT::Discretization& Discret();
-      Teuchos::RCP<BACI::DRT::Discretization>& DiscretPtr();
-      Teuchos::RCP<const BACI::DRT::Discretization> DiscretPtr() const;
+      Teuchos::RCP<DRT::Discretization>& DiscretPtr();
+      Teuchos::RCP<const DRT::Discretization> DiscretPtr() const;
       DRT::Discretization const& Discret() const;
 
       DRT::Discretization& BinDiscret();
-      Teuchos::RCP<BACI::DRT::Discretization>& BinDiscretPtr();
-      Teuchos::RCP<const BACI::DRT::Discretization> BinDiscretPtr() const;
+      Teuchos::RCP<DRT::Discretization>& BinDiscretPtr();
+      Teuchos::RCP<const DRT::Discretization> BinDiscretPtr() const;
       DRT::Discretization const& BinDiscret() const;
 
       //! Returns the global state data container
@@ -249,10 +249,10 @@ namespace BEAMINTERACTION
 
      private:
       //! pointer to the interaction discretization
-      Teuchos::RCP<BACI::DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
       //! pointer to the interaction discretization
-      Teuchos::RCP<BACI::DRT::Discretization> bindis_ptr_;
+      Teuchos::RCP<DRT::Discretization> bindis_ptr_;
 
       //! pointer to the global state data container
       Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;

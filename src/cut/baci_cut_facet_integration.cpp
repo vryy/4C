@@ -177,12 +177,12 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
     {
       case CORE::FE::CellType::hex8:
       {
-        elecen = CORE::DRT::UTILS::getLocalCenterPosition<3>(CORE::FE::CellType::hex8);
+        elecen = CORE::FE::getLocalCenterPosition<3>(CORE::FE::CellType::hex8);
         break;
       }
       case CORE::FE::CellType::tet4:
       {
-        elecen = CORE::DRT::UTILS::getLocalCenterPosition<3>(CORE::FE::CellType::tet4);
+        elecen = CORE::FE::getLocalCenterPosition<3>(CORE::FE::CellType::tet4);
         break;
       }
       default:
@@ -545,7 +545,7 @@ void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
       directly to generate Gauss integration rule for the facet
 *--------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
-    Mesh &mesh, Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> &cgp)
+    Mesh &mesh, Teuchos::RCP<CORE::FE::CollectedGaussPoints> &cgp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule");
 
@@ -595,13 +595,13 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
         file, midpt, CORE::GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
 #endif
 
-    CORE::DRT::UTILS::GaussIntegration gi_temp =
-        CORE::DRT::UTILS::GaussIntegration(bcell->Shape(), DIRECTDIV_GAUSSRULE);
+    CORE::FE::GaussIntegration gi_temp =
+        CORE::FE::GaussIntegration(bcell->Shape(), DIRECTDIV_GAUSSRULE);
 
     if (bcell->Area() < REF_AREA_BCELL) continue;
 
-    for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi_temp.begin();
-         iquad != gi_temp.end(); ++iquad)
+    for (CORE::FE::GaussIntegration::iterator iquad = gi_temp.begin(); iquad != gi_temp.end();
+         ++iquad)
     {
       double drs = 0.0;
       CORE::LINALG::Matrix<3, 1> x_gp_loc(true), normal(true);
@@ -904,7 +904,7 @@ void CORE::GEO::CUT::FacetIntegration::DebugAreaCheck(
       directly to generate Gauss integration rule for the facet
 *--------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
-    Mesh &mesh, Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> &cgp)
+    Mesh &mesh, Teuchos::RCP<CORE::FE::CollectedGaussPoints> &cgp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule");
 
@@ -1054,13 +1054,13 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
     }
 #endif
 
-    CORE::DRT::UTILS::GaussIntegration gi_temp =
-        CORE::DRT::UTILS::GaussIntegration(bcell->Shape(), DIRECTDIV_GAUSSRULE);
+    CORE::FE::GaussIntegration gi_temp =
+        CORE::FE::GaussIntegration(bcell->Shape(), DIRECTDIV_GAUSSRULE);
 
     if (bcell->Area() < REF_AREA_BCELL) continue;
 
-    for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi_temp.begin();
-         iquad != gi_temp.end(); ++iquad)
+    for (CORE::FE::GaussIntegration::iterator iquad = gi_temp.begin(); iquad != gi_temp.end();
+         ++iquad)
     {
       double drs = 0.0;
       CORE::LINALG::Matrix<3, 1> x_gp_loc(true), normal(true);

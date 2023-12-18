@@ -149,10 +149,10 @@ namespace DRT
       static const int niel = CORE::FE::num_nodes<ndistype>;
 
       /// number of second order derivatives for master element
-      static const int numderiv2_p = CORE::DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
+      static const int numderiv2_p = CORE::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
       /// number of second order derivatives for slave element
-      static const int numderiv2_n = CORE::DRT::UTILS::DisTypeToNumDeriv2<ndistype>::numderiv2;
+      static const int numderiv2_n = CORE::FE::DisTypeToNumDeriv2<ndistype>::numderiv2;
 
 
 
@@ -252,10 +252,10 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at integr. point
       double EvalShapeFuncAndDerivsAtIntPoint(
-          CORE::DRT::UTILS::GaussIntegration::iterator& iquad,  ///< actual integration point
-          int master_eid,                                       ///< master parent element
-          int slave_eid,                                        ///< slave parent element
-          bool use2ndderiv = false  ///< flag to use 2nd order derivatives
+          CORE::FE::GaussIntegration::iterator& iquad,  ///< actual integration point
+          int master_eid,                               ///< master parent element
+          int slave_eid,                                ///< slave parent element
+          bool use2ndderiv = false                      ///< flag to use 2nd order derivatives
       );
 
       //! evaluate velocity and pressure and derivatives at integr. point
@@ -1090,7 +1090,7 @@ namespace DRT
 
 
       //! face/edge integration points
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> intpoints_;
+      Teuchos::RCP<CORE::FE::GaussPoints> intpoints_;
 
       //! number of Gaussian points
       unsigned int numgp_;

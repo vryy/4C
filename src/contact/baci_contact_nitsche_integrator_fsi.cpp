@@ -299,16 +299,16 @@ void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wg
     const double* gpcoord, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtrafo)
 {
-  CORE::DRT::UTILS::CollectedGaussPoints intpoints =
-      CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+  CORE::FE::CollectedGaussPoints intpoints =
+      CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
   intpoints.Append(gpcoord[0], gpcoord[1], 0.0, wgt);
 
   // get coordinates of gauss point w.r.t. local parent coordinate system
   CORE::LINALG::SerialDenseMatrix pqxg(1, dim);
   derivtrafo.Clear();
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints,
-      sele.ParentElement()->Shape(), sele.Shape(), sele.FaceParentNumber());
+  CORE::FE::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints, sele.ParentElement()->Shape(),
+      sele.Shape(), sele.FaceParentNumber());
 
   // coordinates of the current integration point in parent coordinate system
   for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);

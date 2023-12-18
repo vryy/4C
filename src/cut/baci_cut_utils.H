@@ -158,7 +158,7 @@ namespace CORE::GEO
       // ---------------------------------------------------------------
       if (dim == probdim)
       {
-        CORE::DRT::UTILS::shape_function_deriv1<distype>(rst, deriv1);
+        CORE::FE::shape_function_deriv1<distype>(rst, deriv1);
         // compute transposed Jacobian matrix
         xjm.MultiplyNT(deriv1, xyze);
         // compute the inverse Jacobian and the determinant
@@ -182,12 +182,12 @@ namespace CORE::GEO
               "jacobian!");
 
         CORE::LINALG::Matrix<dim, numNodesElement, valtype> deriv1_red;
-        CORE::DRT::UTILS::shape_function_deriv1<distype>(rst, deriv1_red);
+        CORE::FE::shape_function_deriv1<distype>(rst, deriv1_red);
         // the metric tensor and the area of an infinitesimal surface/line element
         // optional-1 : get unit normal at integration point as well
         /* optional-2 : the throw_error flag is off, if the the normal is not going
          *              to be normalized. */
-        CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
+        CORE::FE::ComputeMetricTensorForBoundaryEle<distype, probdim>(
             xyze, deriv1_red, metrictensor, det, unit_normal, normalvec1, unit_normal);
 
         /* transform the derivatives and Jacobians to the higher dimensional

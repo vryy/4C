@@ -80,7 +80,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::CreateMap(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::CreateMapExtractorFromDiscretization(
-    const BACI::DRT::Discretization& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor)
+    const DRT::Discretization& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor)
 {
   std::set<int> conddofset;
   std::set<int> otherdofset;
@@ -88,7 +88,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    BACI::DRT::Node* node = dis.lRowNode(i);
+    DRT::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dis.Dof(0, node);
     for (unsigned j = 0; j < dof.size(); ++j)
@@ -129,8 +129,8 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::CreateMapExtractorFromDiscretization(const BACI::DRT::Discretization& dis,
-    const BACI::DRT::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor)
+void CORE::LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
+    const DRT::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor)
 {
   std::set<int> conddofset;
   std::set<int> otherdofset;
@@ -138,7 +138,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(const BACI::DRT::Discret
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    BACI::DRT::Node* node = dis.lRowNode(i);
+    DRT::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dofset.Dof(node);
     for (unsigned j = 0; j < dof.size(); ++j)
@@ -176,7 +176,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(const BACI::DRT::Discret
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::CreateMapExtractorFromDiscretization(const BACI::DRT::Discretization& dis,
+void CORE::LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
     int ndim_field1, int ndim_field2, CORE::LINALG::MultiMapExtractor& extractor)
 {
   unsigned fp_dim = static_cast<unsigned>(ndim_field1 + ndim_field2);
@@ -187,7 +187,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(const BACI::DRT::Discret
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    BACI::DRT::Node* node = dis.lRowNode(i);
+    DRT::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dis.Dof(0, node);
 

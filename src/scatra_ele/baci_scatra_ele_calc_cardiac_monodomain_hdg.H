@@ -121,7 +121,7 @@ namespace DRT
 
       /// polynomial space for element interior for various Gauss Points for the evaluation of the
       /// material
-      Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<probdim>> polySpace_;
+      Teuchos::RCP<CORE::FE::PolynomialSpace<probdim>> polySpace_;
     };
 
   }  // namespace ELEMENTS

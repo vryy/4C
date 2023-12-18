@@ -21,7 +21,7 @@
 BACI_NAMESPACE_OPEN
 
 
-namespace CORE::DRT::NURBS::UTILS
+namespace CORE::FE::NURBS
 {
   /*!
         \class BsplinePolynomial
@@ -1448,7 +1448,7 @@ namespace CORE::DRT::NURBS::UTILS
     void Throwerror(const std::string errormessage);
   };
 
-}  // namespace CORE::DRT::NURBS::UTILS
+}  // namespace CORE::FE::NURBS
 
 BACI_NAMESPACE_CLOSE
 

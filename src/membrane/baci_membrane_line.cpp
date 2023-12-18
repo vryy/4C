@@ -40,25 +40,25 @@ DRT::ELEMENTS::Membrane_line3Type& DRT::ELEMENTS::Membrane_line3Type::Instance()
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Membrane<distype>* parent, const int lline)
-    : DRT::FaceElement(id, owner), intpointsline_(CORE::DRT::UTILS::GaussRule1D::line_2point)
+    : DRT::FaceElement(id, owner), intpointsline_(CORE::FE::GaussRule1D::line_2point)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
   SetParentMasterElement(parent, lline);
-  switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
+  switch (CORE::FE::DisTypeToFaceShapeType<distype>::shape)
   {
     case CORE::FE::CellType::line2:
     {
-      CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::line_2point;
+      CORE::FE::GaussRule1D gaussrule = CORE::FE::GaussRule1D::line_2point;
       // get gauss integration points
-      intpointsline_ = CORE::DRT::UTILS::IntegrationPoints1D(gaussrule);
+      intpointsline_ = CORE::FE::IntegrationPoints1D(gaussrule);
       break;
     }
     case CORE::FE::CellType::line3:
     {
-      CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::line_3point;
+      CORE::FE::GaussRule1D gaussrule = CORE::FE::GaussRule1D::line_3point;
       // get gauss integration points
-      intpointsline_ = CORE::DRT::UTILS::IntegrationPoints1D(gaussrule);
+      intpointsline_ = CORE::FE::IntegrationPoints1D(gaussrule);
       break;
     }
     break;
@@ -98,7 +98,7 @@ DRT::Element* DRT::ELEMENTS::MembraneLine<distype>::Clone() const
 template <CORE::FE::CellType distype>
 CORE::FE::CellType DRT::ELEMENTS::MembraneLine<distype>::Shape() const
 {
-  return CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
+  return CORE::FE::DisTypeToFaceShapeType<distype>::shape;
 }
 
 /*----------------------------------------------------------------------*
@@ -133,8 +133,7 @@ void DRT::ELEMENTS::MembraneLine<distype>::Print(std::ostream& os) const
 {
   os << "MembraneLine ";
   os << " Discretization type: "
-     << CORE::FE::CellTypeToString(CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
-            .c_str();
+     << CORE::FE::CellTypeToString(CORE::FE::DisTypeToFaceShapeType<distype>::shape).c_str();
   Element::Print(os);
   return;
 }

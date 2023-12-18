@@ -67,7 +67,7 @@ namespace DRT
       static const int numstr_ = 3;
 
       //! number or second derivatives
-      static const int numderiv2_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! number of degrees of freedom of element
       static const int numdof_ = numnod_ * noddof_;
@@ -622,7 +622,7 @@ namespace DRT
           const CORE::LINALG::Matrix<numnod_, 1>& shapefct) const;
 
       //! Gauss integration rule
-      CORE::DRT::UTILS::GaussIntegration intpoints_;
+      CORE::FE::GaussIntegration intpoints_;
 
       //! flag indicating initialization of element
       bool init_;

@@ -168,11 +168,11 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   }
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(
+  const CORE::FE::IntPointsAndWeights<pnsd> pintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
@@ -188,11 +188,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   // distinguish 2- and 3-D case
   CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
   if (pnsd == 2)
-    CORE::DRT::UTILS::BoundaryGPToParentGP2(
-        pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
+    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
   else if (pnsd == 3)
-    CORE::DRT::UTILS::BoundaryGPToParentGP3(
-        pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
+    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
 
 
   CORE::LINALG::Matrix<pnsd, 1> pxsi(true);
@@ -205,7 +203,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   }
 
   // parent element shape functions and local derivatives
-  CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+  CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
   // Jacobian matrix and determinant of parent element (including check)
   CORE::LINALG::Matrix<pnsd, pnsd> dxds(true);

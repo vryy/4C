@@ -25,37 +25,37 @@ namespace LUBRICATION
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::quad4>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::quad8>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_25point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::quad9>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_25point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::tri3>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_7point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::tri6>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_16point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_16point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::line2>
   {
-    static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
+    static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_3point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::line3>
   {
-    static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_5point;
+    static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_5point;
   };
 
   //! Template Meta Programming version of switch over discretization type
@@ -66,37 +66,37 @@ namespace LUBRICATION
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad4>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad8>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_25point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad9>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_25point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tri3>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_7point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tri6>
   {
-    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_16point;
+    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_16point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::line2>
   {
-    static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
+    static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_3point;
   };  // not tested
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::line3>
   {
-    static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_5point;
+    static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_5point;
   };  // not tested
 
 

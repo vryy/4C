@@ -209,7 +209,7 @@ void BEAMINTERACTION::GetMortarGID(const BeamToSolidMortarManager* mortar_manage
 /**
  *
  */
-void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const BACI::DRT::Discretization& discret,
+void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const DRT::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector, const DRT::Element* ele,
     LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
     LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
@@ -788,7 +788,7 @@ void BEAMINTERACTION::CheckPlaneRotations(
  */
 template <typename beam, typename other, typename mortar>
 void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
-    const BACI::DRT::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
+    const DRT::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
     CORE::LINALG::SparseMatrix& global_G_B, CORE::LINALG::SparseMatrix& global_G_S,
     CORE::LINALG::SparseMatrix& global_FB_L, CORE::LINALG::SparseMatrix& global_FS_L,
     Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
@@ -932,7 +932,7 @@ namespace BEAMINTERACTION
 
 #define initialize_template_assemble_local_mortar_contributions(beam, other, mortar)             \
   template void AssembleLocalMortarContributions<beam, other, mortar>(                           \
-      const BEAMINTERACTION::BeamContactPair*, const BACI::DRT::Discretization&,                 \
+      const BEAMINTERACTION::BeamContactPair*, const DRT::Discretization&,                       \
       const BeamToSolidMortarManager*, CORE::LINALG::SparseMatrix&, CORE::LINALG::SparseMatrix&, \
       CORE::LINALG::SparseMatrix&, CORE::LINALG::SparseMatrix&, Epetra_FEVector&,                \
       Epetra_FEVector&, Epetra_FEVector&,                                                        \

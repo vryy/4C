@@ -228,8 +228,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
   // integration loop for one element
   //----------------------------------------------------------------------
   // integrations points and weights
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -521,8 +520,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -792,8 +790,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integrations points and weights
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -1193,7 +1190,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
   // evaluate shape functions at the cut position
   // --------------------------------------------------------------------------
   my::funct_.Clear();
-  CORE::DRT::UTILS::shape_function<distype>(posXiDomain, my::funct_);
+  CORE::FE::shape_function<distype>(posXiDomain, my::funct_);
 
   //--------------------------------------------------------------------------
   // evaluate element matrix (mass matrix-like)
@@ -1241,8 +1238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
   // integration loop over Gaussian points
   //----------------------------------------------------------------------------------------------
   // integrations points and weights
-  CORE::DRT::UTILS::IntegrationPoints2D intpoints(
-      SCATRA::CellTypeToOptGaussRule<celldistype>::rule);
+  CORE::FE::IntegrationPoints2D intpoints(SCATRA::CellTypeToOptGaussRule<celldistype>::rule);
 
   for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
   {
@@ -1258,8 +1254,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     // Jacobian for coupled transformation
     // get derivatives dxi_3D/deta_2D
     static CORE::LINALG::Matrix<nsd_cell, numvertices> deriv_eta2D;
-    CORE::DRT::UTILS::shape_function_2D_deriv1(
-        deriv_eta2D, gpinEta2D(0, 0), gpinEta2D(1, 0), celldistype);
+    CORE::FE::shape_function_2D_deriv1(deriv_eta2D, gpinEta2D(0, 0), gpinEta2D(1, 0), celldistype);
 
     // calculate dxi3Ddeta2D
     static CORE::LINALG::Matrix<nsd, nsd_cell> dXi3Ddeta2D;
@@ -1280,7 +1275,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     CORE::GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
 
     static CORE::LINALG::Matrix<nsd, nen_> deriv_xi3D;
-    CORE::DRT::UTILS::shape_function_3D_deriv1(
+    CORE::FE::shape_function_3D_deriv1(
         deriv_xi3D, gpinXi3D(0, 0), gpinXi3D(1, 0), gpinXi3D(2, 0), distype);
 
     // calculate dx3Ddxi3D
@@ -1320,7 +1315,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     // evaluate shape functions and their first derivatives at this Gaussian point
     //--------------------------------------------------------------------------------------------
     my::funct_.Clear();
-    CORE::DRT::UTILS::shape_function_3D(
+    CORE::FE::shape_function_3D(
         my::funct_, posXiDomain(0), posXiDomain(1), posXiDomain(2), distype);
 
     //--------------------------------------------------------------------------------------------

@@ -247,7 +247,7 @@ namespace
 
 template <int dim>
 Teuchos::RCP<CORE::UTILS::FunctionOfAnything> CORE::UTILS::TryCreateSymbolicFunctionOfAnything(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -276,7 +276,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfAnything> CORE::UTILS::TryCreateSymbolicFunc
 
 template <int dim>
 Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfSpaceTime.
   // This line accepts optional components in the beginning although this is not directly supported
@@ -317,7 +317,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    const BACI::DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
+    const DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
@@ -335,7 +335,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    const BACI::DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
+    const DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;
@@ -705,22 +705,22 @@ template class CORE::UTILS::SymbolicFunctionOfAnything<3>;
 
 template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
 CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<1>(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
 CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<2>(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
 CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<3>(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
 template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
 CORE::UTILS::TryCreateSymbolicFunctionOfAnything<1>(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
 CORE::UTILS::TryCreateSymbolicFunctionOfAnything<2>(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
 CORE::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
-    const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
 BACI_NAMESPACE_CLOSE

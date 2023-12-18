@@ -70,7 +70,7 @@ namespace CORE::UTILS
 
    private:
     //! internal polynomial representation
-    const CORE::DRT::UTILS::Polynomial mypoly_;
+    const CORE::FE::Polynomial mypoly_;
   };
 
   /**

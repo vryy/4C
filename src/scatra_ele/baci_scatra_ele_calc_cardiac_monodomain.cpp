@@ -187,7 +187,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
       deg = 4 * ele->Degree();
     else
       deg = 3 * ele->Degree();
-    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+    const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
         SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
 
     // loop over integration points
@@ -226,7 +226,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)

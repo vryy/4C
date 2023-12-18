@@ -303,9 +303,9 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
 
       static const int probdim = DRT::Problem::Instance()->NDim();
       const CORE::FE::CellType distype = actele->Shape();
-      const int dim = CORE::DRT::UTILS::getDimension(distype);
+      const int dim = CORE::FE::getDimension(distype);
       const bool isboundary = (dim != probdim);
-      const int nen = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
+      const int nen = CORE::FE::getNumberOfElementNodes(distype);
 
       // access elements knot span
       std::vector<CORE::LINALG::SerialDenseVector> eleknots(dim);
@@ -559,7 +559,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   CORE::LINALG::Matrix<dim + 1, 1> unitnormal;
 
   // gaussian points
-  const CORE::DRT::UTILS::IntPointsAndWeights<dim> intpoints(
+  const CORE::FE::IntPointsAndWeights<dim> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -568,7 +568,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
     double fac = 0.0;
     double drs = 0.0;
 
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(
         shpfunct, deriv, fac, unitnormal, drs, xsi, xyze, intpoints, iquad, knots, &weights, true);
 
     // get real physical coordinates of integration point
@@ -699,7 +699,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   std::vector<CORE::LINALG::SerialDenseVector> value(deg + 1, dofblock);
 
   // gaussian points
-  const CORE::DRT::UTILS::IntPointsAndWeights<dim> intpoints(
+  const CORE::FE::IntPointsAndWeights<dim> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -710,7 +710,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
     }
 
     // evaluate shape function and derivatevs at integration point
-    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(shpfunct, deriv, xsi, *knots, weights, distype);
+    CORE::FE::NURBS::nurbs_get_funct_deriv(shpfunct, deriv, xsi, *knots, weights, distype);
 
     xjm.MultiplyNT(deriv, xyze);
     double det = xjm.Determinant();

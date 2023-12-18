@@ -421,7 +421,7 @@ namespace DRT
        * \param derivs First derivatives of the shape functions
        * \param gp Gauss point
        */
-      template <CORE::DRT::UTILS::GaussRule3D intrule>
+      template <CORE::FE::GaussRule3D intrule>
       void so_tet10_derivs(
           CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& derivs, int gp) const;
 

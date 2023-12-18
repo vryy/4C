@@ -112,7 +112,7 @@ namespace BEAMINTERACTION
    * @param triad_interpolation_scheme (out) Interpolation of current triad field..
    * @param ref_triad_interpolation_scheme (out) Interpolation of reference triad field.
    */
-  void GetBeamTriadInterpolationScheme(const BACI::DRT::Discretization& discret,
+  void GetBeamTriadInterpolationScheme(const DRT::Discretization& discret,
       const Teuchos::RCP<const Epetra_Vector>& displacement_vector, const DRT::Element* ele,
       LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
       LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
@@ -304,7 +304,7 @@ namespace BEAMINTERACTION
    */
   template <typename beam, typename other, typename mortar>
   void AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
-      const BACI::DRT::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
+      const DRT::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
       CORE::LINALG::SparseMatrix& global_G_B, CORE::LINALG::SparseMatrix& global_G_S,
       CORE::LINALG::SparseMatrix& global_FB_L, CORE::LINALG::SparseMatrix& global_FS_L,
       Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,

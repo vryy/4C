@@ -87,7 +87,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
+          const CORE::FE::GaussIntegration& intpoints) override;
 
       /*!
       \brief Evaluate coupling terms (off diagonal terms) of the element at specified gauss points
@@ -113,7 +113,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
+          const CORE::FE::GaussIntegration& intpoints) override;
 
      protected:
       /*!
@@ -159,7 +159,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>& egridvn,
           const CORE::LINALG::Matrix<nen_, 1>& escaaf,
           const CORE::LINALG::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<MAT::Material> mat,
-          bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          bool isale, const CORE::FE::GaussIntegration& intpoints);
 
       /*!
         \brief calculate off diagonal element matrix and rhs for porous flow
@@ -201,7 +201,7 @@ namespace DRT
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& ecoupl,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
           Teuchos::RCP<const MAT::Material> material, bool isale,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::FE::GaussIntegration& intpoints);
 
       /*!
         \brief Gauss point loop for evaluation of off-diagonal terms
@@ -249,7 +249,7 @@ namespace DRT
           CORE::LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
           CORE::LINALG::Matrix<nen_ * nsd_, nen_>& ecouplp1_u,
           CORE::LINALG::Matrix<nen_, nen_>& ecouplp1_p, Teuchos::RCP<const MAT::Material> material,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::FE::GaussIntegration& intpoints);
 
       /*!
        \brief evaluate pressure equation (i.e. continuity equation for standard poro elements)

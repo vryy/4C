@@ -26,7 +26,7 @@ namespace CORE::GEO
   {
     // gaussian points
     static const int numnode = CORE::FE::num_nodes<distype>;
-    const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
+    const CORE::FE::GaussIntegration intpoints(distype);
 
     CORE::LINALG::Matrix<1, 1> eleCoord;
     CORE::LINALG::Matrix<1, numnode> deriv;
@@ -41,7 +41,7 @@ namespace CORE::GEO
       eleCoord(0) = intpoints.Point(iquad)[0];
 
       // shape functions and their first derivatives
-      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eleCoord(0), distype);
+      CORE::FE::shape_function_1D_deriv1(deriv, eleCoord(0), distype);
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;
@@ -64,7 +64,7 @@ namespace CORE::GEO
   {
     // gaussian points
     static const int numnode = CORE::FE::num_nodes<distype>;
-    const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
+    const CORE::FE::GaussIntegration intpoints(distype);
 
     CORE::LINALG::Matrix<2, 1> eleCoord;
     CORE::LINALG::Matrix<2, numnode> deriv;
@@ -81,7 +81,7 @@ namespace CORE::GEO
       eleCoord(1) = intpoints.Point(iquad)[1];
 
       // shape functions and their first derivatives
-      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
+      CORE::FE::shape_function_2D_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;
@@ -109,7 +109,7 @@ namespace CORE::GEO
     // number of nodes for element
     const int numnode = CORE::FE::num_nodes<distype>;
     // gaussian points
-    const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
+    const CORE::FE::GaussIntegration intpoints(distype);
 
     CORE::LINALG::Matrix<3, 1> eleCoord;
     CORE::LINALG::Matrix<3, numnode> deriv;
@@ -126,8 +126,7 @@ namespace CORE::GEO
       eleCoord(2) = intpoints.Point(iquad)[2];
 
       // shape functions and their first derivatives
-      CORE::DRT::UTILS::shape_function_3D_deriv1(
-          deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
+      CORE::FE::shape_function_3D_deriv1(deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;

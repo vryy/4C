@@ -20,12 +20,12 @@ namespace
   template <CORE::FE::CellType distype>
   const auto& GetGaussIntegration(unsigned numgp)
   {
-    static std::unordered_map<unsigned, CORE::DRT::UTILS::IntegrationPoints<CORE::FE::dim<distype>>>
+    static std::unordered_map<unsigned, CORE::FE::IntegrationPoints<CORE::FE::dim<distype>>>
         gaussIntegrations = {};
 
     if (gaussIntegrations.find(numgp) == gaussIntegrations.end())
     {
-      auto rule = CORE::DRT::UTILS::NumGaussPointsToGaussRule<distype>(numgp);
+      auto rule = CORE::FE::NumGaussPointsToGaussRule<distype>(numgp);
       gaussIntegrations.emplace(numgp, rule);
     }
 
@@ -33,94 +33,93 @@ namespace
   }
 }  // namespace
 
-void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(BACI::DRT::Element& ele,
-    const CORE::LINALG::SerialDenseMatrix& data, const BACI::DRT::Discretization& dis,
+void CORE::FE::ExtrapolateGaussPointQuantityToNodes(DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& data, const DRT::Discretization& dis,
     Epetra_MultiVector& nodal_data)
 {
   switch (ele.Shape())
   {
     case CORE::FE::CellType::hex8:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex8>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex8>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::hex8>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::hex27:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex27>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex27>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::hex27>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::nurbs27:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<CORE::FE::CellType::nurbs27>(dis,
-          ele, data, nodal_data, true,
-          GetGaussIntegration<CORE::FE::CellType::nurbs27>(data.numRows()));
+      CORE::FE::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<CORE::FE::CellType::nurbs27>(dis, ele,
+          data, nodal_data, true, GetGaussIntegration<CORE::FE::CellType::nurbs27>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::tet10:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet10>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet10>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::tet10>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::tet4:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet4>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet4>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::tet4>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::hex20:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex20>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex20>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::hex20>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::wedge6:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge6>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge6>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::wedge6>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::wedge15:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge15>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge15>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::wedge15>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::pyramid5:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::pyramid5>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::pyramid5>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::pyramid5>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::quad4:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad4>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad4>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::quad4>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::quad8:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad8>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad8>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::quad8>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::quad9:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad9>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad9>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::quad9>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::tri3:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tri3>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tri3>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::tri3>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::tri6:
     {
-      DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tri6>(ele, data,
+      CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tri6>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::tri6>(data.numRows()));
     }
     break;
@@ -130,7 +129,7 @@ void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(BACI::DRT::Elemen
   }
 }
 
-void CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(BACI::DRT::Element& ele,
+void CORE::FE::EvaluateGaussPointQuantityAtElementCenter(DRT::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data)
 {
   AssembleAveragedElementValues(element_data, data, ele);

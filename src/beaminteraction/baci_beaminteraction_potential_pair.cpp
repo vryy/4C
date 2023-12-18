@@ -204,37 +204,37 @@ void BEAMINTERACTION::BeamPotentialPair::CheckInitSetup() const
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
+CORE::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
 {
   switch (Params()->NumberGaussPoints())
   {
     case 5:
     {
-      return CORE::DRT::UTILS::GaussRule1D::line_5point;
+      return CORE::FE::GaussRule1D::line_5point;
       break;
     }
 
     case 10:
     {
-      return CORE::DRT::UTILS::GaussRule1D::line_10point;
+      return CORE::FE::GaussRule1D::line_10point;
       break;
     }
 
     case 20:
     {
-      return CORE::DRT::UTILS::GaussRule1D::line_20point;
+      return CORE::FE::GaussRule1D::line_20point;
       break;
     }
 
     case 32:
     {
-      return CORE::DRT::UTILS::GaussRule1D::line_32point;
+      return CORE::FE::GaussRule1D::line_32point;
       break;
     }
 
     case 50:
     {
-      return CORE::DRT::UTILS::GaussRule1D::line_50point;
+      return CORE::FE::GaussRule1D::line_50point;
       break;
     }
 
@@ -242,7 +242,7 @@ CORE::DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule()
       dserror("%d Gauss points are not supported yet!", Params()->NumberGaussPoints());
   }
 
-  return CORE::DRT::UTILS::GaussRule1D::undefined;
+  return CORE::FE::GaussRule1D::undefined;
 }
 
 BACI_NAMESPACE_CLOSE

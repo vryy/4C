@@ -322,7 +322,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   if (displacements_n == Teuchos::null) dserror("Cannot get state vector 'displacements_n'");
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -539,7 +539,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
   CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(
+  CORE::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // //////////////////////////////////////////////////////////////////////////
@@ -562,10 +562,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
     // evalute parent element shape function at current integration point in parent coordinate
     // system
-    CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
+    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
     // evaluate derivatives of parent element shape functions at current integration point in parent
     // coordinate system
-    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     // transformation from parent element coordinate system to interface element coordinate system
     pderiv.MultiplyTN(derivtrafo, pderiv_loc);
 
@@ -645,12 +645,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 #endif
 
     // evaluate Base::unitnormal_ , Base::deriv_, ...
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_n_, Base::drs_, Base::xsi_, Base::xyze_n_, intpoints, gpid, nullptr,
         nullptr, IsNurbs<distype>::isnurbs);
 
     // evaluate Base::unitnormal_ , Base::deriv_, ...
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         IsNurbs<distype>::isnurbs);
 
@@ -1813,7 +1813,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -1897,7 +1897,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
   CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(
+  CORE::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
 
@@ -1945,13 +1945,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+      CORE::FE::NURBS::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
@@ -1971,7 +1971,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -2051,7 +2051,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     dserror("NoPenetration is only implemented for 3D and 2D!");
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -2100,7 +2100,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         IsNurbs<distype>::isnurbs);
 
@@ -2177,7 +2177,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points is not activated here Computation of nurb specific stuff is not activated here
-      CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+      CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
           Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
           IsNurbs<distype>::isnurbs);
 
@@ -2283,7 +2283,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
     dserror("NoPenetration is only implemented for 3D and 2D!");
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -2323,7 +2323,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         IsNurbs<distype>::isnurbs);
 
@@ -2517,7 +2517,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -2604,7 +2604,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
   CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(
+  CORE::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // --------------------------------------------------
@@ -2651,13 +2651,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+      CORE::FE::NURBS::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
     pderiv.MultiplyTN(derivtrafo, pderiv_loc);
@@ -2678,7 +2678,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -2869,7 +2869,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
   const bool offdiag(coupling == POROELAST::fluidstructure);
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -2947,7 +2947,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -3184,7 +3184,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     dserror("PressureCoupling is only implemented for 2D and 3D!");
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -3299,7 +3299,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
   CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(
+  CORE::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
@@ -3341,7 +3341,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -3359,13 +3359,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+      CORE::FE::NURBS::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
@@ -3551,7 +3551,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     dserror("PressureCoupling is only implemented for 2D and 3D!");
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -3692,7 +3692,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
   CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(
+  CORE::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
@@ -3740,7 +3740,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -3759,13 +3759,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+      CORE::FE::NURBS::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
@@ -4165,7 +4165,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
     dserror("PressureCoupling is only implemented for 2D and 3D!");
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -4281,7 +4281,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
   CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(
+  CORE::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
@@ -4321,7 +4321,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -4340,13 +4340,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+      CORE::FE::NURBS::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
@@ -4532,7 +4532,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // get integration rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -4642,7 +4642,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
   CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(
+  CORE::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
@@ -4680,7 +4680,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -4699,13 +4699,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+      CORE::FE::NURBS::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 

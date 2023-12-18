@@ -166,8 +166,8 @@ namespace DRT
       };
 
       //! local data object
-      Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
-      Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+      Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes_;
+      Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> shapesface_;
 
       //! extracted values from concentrations and gradients
       CORE::LINALG::SerialDenseVector interiorPhin_;
@@ -213,8 +213,8 @@ namespace DRT
         static const unsigned int nfaces_ = ScaTraEleCalcHDG<distype, probdim>::nfaces_;
         int onfdofs_;
 
-        LocalSolver(const DRT::Element* ele, CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
-            CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly,
+        LocalSolver(const DRT::Element* ele, CORE::FE::ShapeValues<distype>& shapeValues,
+            CORE::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly,
             const std::string& disname, int numscal);
 
         //! compute the residual
@@ -272,11 +272,10 @@ namespace DRT
         // first come the concentration, then the concentration  gradients, and finally the trace
 
         //! evaluated shape values
-        Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
+        Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes_;
 
         //! evaluated shape values on face
-        Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>
-            shapesface_;  /// evaluated shape values
+        Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> shapesface_;  /// evaluated shape values
 
         // Element matrices if one wants to compute them on the fly instead of storing them on the
         // element

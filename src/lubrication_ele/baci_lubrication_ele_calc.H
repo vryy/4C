@@ -185,8 +185,8 @@ namespace DRT
 
       //! evaluate shape functions and their derivatives at current integration point
       double EvalShapeFuncAndDerivsAtIntPoint(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
-          const int iquad  //!< id of current Gauss point
+          const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
+          const int iquad                                            //!< id of current Gauss point
       );
 
       //! evaluate shape functions and their derivatives at current integration point

@@ -17,7 +17,7 @@
 
 BACI_NAMESPACE_OPEN
 
-using namespace CORE::DRT::UTILS;
+using namespace CORE::FE;
 
 DRT::ELEMENTS::RedAirwayType DRT::ELEMENTS::RedAirwayType::instance_;
 

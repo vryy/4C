@@ -1827,7 +1827,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
   {
     for (int gp = 0; gp < numgpt_; ++gp)
     {
-      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+      CORE::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
       invJ_[gp].Multiply(deriv, xrefe);
       detJ_[gp] = invJ_[gp].Invert();
@@ -2003,14 +2003,13 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeShapeFunctionsAndDerivatives(con
   if (distype != CORE::FE::CellType::nurbs4 and distype != CORE::FE::CellType::nurbs9)
   {
     // shape functions and their derivatives for polynomials
-    CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefct);
-    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+    CORE::FE::shape_function<distype>(xsi_[gp], shapefct);
+    CORE::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
   }
   else
   {
     // nurbs version
-    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
-        shapefct, deriv, xsi_[gp], myknots_, weights_, distype);
+    CORE::FE::NURBS::nurbs_get_funct_deriv(shapefct, deriv, xsi_[gp], myknots_, weights_, distype);
 
     CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
     for (int i = 0; i < numnod_; ++i)

@@ -92,8 +92,8 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
     double gpweight = intpointsline_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    CORE::DRT::UTILS::shape_function_1D(shapefcts, xi_gp, Shape());
-    CORE::DRT::UTILS::shape_function_1D_deriv1(derivs, xi_gp, Shape());
+    CORE::FE::shape_function_1D(shapefcts, xi_gp, Shape());
+    CORE::FE::shape_function_1D_deriv1(derivs, xi_gp, Shape());
 
     switch (ltype)
     {

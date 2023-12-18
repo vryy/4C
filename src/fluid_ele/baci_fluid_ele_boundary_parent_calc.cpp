@@ -623,7 +623,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
         parent, pxyze);
 
     // get Gaussian integration points
-    const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
+    const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
         DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
     //---------------------------------------------------------------------
@@ -644,7 +644,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
         surfele, bxyze);
 
     // get Gaussian integration points
-    const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+    const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
         DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
     // get location vector and ownerships for boundary element
@@ -671,9 +671,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     // distinguish 2- and 3-D case
     CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
     if (nsd == 2)
-      CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+      CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
     else if (nsd == 3)
-      CORE::DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+      CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
 
     //---------------------------------------------------------------------
     // extract parent and boundary values from global distributed vectors
@@ -760,12 +760,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       }
 
       // shape functions and derivatives of parent element at integration point
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
       // shape functions and derivatives of boundary element at integration point
-      CORE::DRT::UTILS::shape_function<bdistype>(xsi, funct);
-      CORE::DRT::UTILS::shape_function_deriv1<bdistype>(xsi, deriv);
+      CORE::FE::shape_function<bdistype>(xsi, funct);
+      CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
       // compute (inverse of) Jacobian matrix and determinant for parent element
       // and check its value
@@ -778,7 +778,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       // for boundary element
       drs_ = 0.0;
       CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-      CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+      CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
           bxyze, deriv, metrictensor, drs_, &unitnormal);
 
       // compute integration factor for boundary element
@@ -1282,7 +1282,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
       parent, pxyze);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
+  const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
@@ -1303,7 +1303,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
       surfele, bxyze);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
@@ -1330,9 +1330,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   // distinguish 2- and 3-D case
   CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
-    CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    CORE::DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -1426,12 +1426,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // shape functions and derivatives of boundary element at integration point
-    CORE::DRT::UTILS::shape_function<bdistype>(xsi, funct);
-    CORE::DRT::UTILS::shape_function_deriv1<bdistype>(xsi, deriv);
+    CORE::FE::shape_function<bdistype>(xsi, funct);
+    CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // Compute pressure of boundary element at integration point
     pressint.Multiply(epressnp, funct);
@@ -1447,7 +1447,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     // for boundary element
     drs_ = 0.0;
     CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+    CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, deriv, metrictensor, drs_, &boundaryNormal);
 
     // compute integration factor for boundary element
@@ -1613,7 +1613,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
       parent, pxyze);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
+  const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
@@ -1634,7 +1634,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
       surfele, bxyze);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
@@ -1664,9 +1664,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   // distinguish 2- and 3-D case
   CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
-    CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    CORE::DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -1751,12 +1751,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // shape functions and derivatives of boundary element at integration point
-    CORE::DRT::UTILS::shape_function<bdistype>(xsi, funct);
-    CORE::DRT::UTILS::shape_function_deriv1<bdistype>(xsi, deriv);
+    CORE::FE::shape_function<bdistype>(xsi, funct);
+    CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // Compute velocity of parent element at integration point
     pvelint.Multiply(pevelaf, pfunct);
@@ -1772,7 +1772,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     // for boundary element
     drs_ = 0.0;
     CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+    CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, deriv, metrictensor, drs_, &boundaryNormal);
 
     // compute integration factor for boundary element
@@ -1951,7 +1951,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       parent, pxyze);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
+  const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
@@ -1972,7 +1972,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       surfele, bxyze);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
@@ -1999,9 +1999,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   // distinguish 2- and 3-D case
   CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
-    CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    CORE::DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -2107,19 +2107,19 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // NURBS shape functions and derivatives of parent element at integration point
     // (currently not activated)
     /*if (pdistype == CORE::FE::CellType::nurbs27)
-      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);
+      CORE::FE::NURBS::nurbs_get_3D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);
     else if (pdistype == CORE::FE::CellType::nurbs9)
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);*/
+      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);*/
 
     // shape functions and derivatives of boundary element at integration point
-    CORE::DRT::UTILS::shape_function<bdistype>(xsi, funct);
-    CORE::DRT::UTILS::shape_function_deriv1<bdistype>(xsi, deriv);
+    CORE::FE::shape_function<bdistype>(xsi, funct);
+    CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
@@ -2132,7 +2132,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     // for boundary element
     drs_ = 0.0;
     CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+    CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, deriv, metrictensor, drs_, &unitnormal);
 
     // compute integration factor for boundary element
@@ -3757,7 +3757,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
       parent, pxyze);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
+  const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   // get location vector and ownerships for parent element
@@ -3784,7 +3784,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
       surfele, bxyze);
 
   // get Gaussian integration points
-  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   //---------------------------------------------------------------------
@@ -3804,9 +3804,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
 
   CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 3)
-    CORE::DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 2)
-    CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else
     dserror("only 2D and 3D");
   //---------------------------------------------------------------------
@@ -3878,12 +3878,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // shape functions and derivatives of boundary element at integration point
-    CORE::DRT::UTILS::shape_function<bdistype>(xsi, funct);
-    CORE::DRT::UTILS::shape_function_deriv1<bdistype>(xsi, deriv);
+    CORE::FE::shape_function<bdistype>(xsi, funct);
+    CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
@@ -3896,7 +3896,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     // for boundary element
     drs_ = 0.0;
     CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+    CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, deriv, metrictensor, drs_, &unitnormal);
 
     // compute integration factor for boundary element
@@ -4148,8 +4148,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
@@ -4323,7 +4323,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of internal stress dofs is equivalent to number of second derivatives
-  static const int numstressdof_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
+  static const int numstressdof_ = CORE::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
   if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_afgenalpha)
     dserror(
@@ -4516,7 +4516,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
     //--------------------------------------------------
     // Gaussian integration points
-    const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
+    const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
         DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
     //--------------------------------------------------
@@ -4550,8 +4550,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
 
       // get parent elements shape functions
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
       // get Jacobian matrix and determinant
       // actually compute its transpose....
@@ -4777,10 +4777,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
       //--------------------------------------------------
       // Gaussian integration points
-      const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> intpoints(
+      const CORE::FE::IntPointsAndWeights<bnsd> intpoints(
           DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
-      const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
+      const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
           DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
       // coordinates of current integration point in reference coordinates
@@ -4804,8 +4804,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             gps(iquad, idim) = gpcoord[idim];
           }
         }
-        CORE::DRT::UTILS::BoundaryGPToParentGP3(
-            pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
+        CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
       }
 
 
@@ -4839,16 +4838,16 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           xsi(idim) = gpcoord[idim];
         }
 
-        CORE::DRT::UTILS::shape_function<bdistype>(xsi, funct);
-        CORE::DRT::UTILS::shape_function_deriv1<bdistype>(xsi, deriv);
+        CORE::FE::shape_function<bdistype>(xsi, funct);
+        CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
         for (int idim = 0; idim < nsd; idim++)
         {
           pxsi(idim) = pqxg(iquad, idim);
         }
 
-        CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-        CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+        CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+        CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
         drs_ = 0.0;
 
@@ -4856,7 +4855,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
         // area element drs for the integration
         CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
 
-        CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+        CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
             bxyze, deriv, metrictensor, drs_, &unitnormal);
 
         // compute integration factor
@@ -4988,16 +4987,16 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           xsi(idim) = gpcoord[idim];
         }
 
-        CORE::DRT::UTILS::shape_function<bdistype>(xsi, funct);
-        CORE::DRT::UTILS::shape_function_deriv1<bdistype>(xsi, deriv);
+        CORE::FE::shape_function<bdistype>(xsi, funct);
+        CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
         for (int idim = 0; idim < nsd; idim++)
         {
           pxsi(idim) = pqxg(iquad, idim);
         }
 
-        CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-        CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+        CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+        CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
         drs_ = 0.0;
 
@@ -5005,7 +5004,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
         // area element drs for the integration
         CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
 
-        CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+        CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
             bxyze, deriv, metrictensor, drs_, &unitnormal);
 
         // compute integration factor
@@ -5075,10 +5074,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
     //--------------------------------------------------
     // Gaussian integration points
-    const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> intpoints(
+    const CORE::FE::IntPointsAndWeights<bnsd> intpoints(
         DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
-    const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
+    const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
         DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
     // coordinates of current integration point in reference coordinates
@@ -5104,13 +5103,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
       if (nsd == 2)
       {
-        CORE::DRT::UTILS::BoundaryGPToParentGP2(
-            pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
+        CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
       }
       else if (nsd == 3)
       {
-        CORE::DRT::UTILS::BoundaryGPToParentGP3(
-            pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
+        CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
       }
     }
 
@@ -5145,16 +5142,16 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
         xsi(idim) = gpcoord[idim];
       }
 
-      CORE::DRT::UTILS::shape_function<bdistype>(xsi, funct);
-      CORE::DRT::UTILS::shape_function_deriv1<bdistype>(xsi, deriv);
+      CORE::FE::shape_function<bdistype>(xsi, funct);
+      CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
       for (int idim = 0; idim < nsd; idim++)
       {
         pxsi(idim) = pqxg(iquad, idim);
       }
 
-      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
       drs_ = 0.0;
 
@@ -5162,7 +5159,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       // area element drs for the integration
       CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
 
-      CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+      CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
           bxyze, deriv, metrictensor, drs_, &unitnormal);
 
       // compute integration factor

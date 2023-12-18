@@ -251,7 +251,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
     // Parameter coordinates corresponding to LIDs of nodes.
     CORE::LINALG::Matrix<3, 1, double> xi(true);
     CORE::LINALG::SerialDenseMatrix nodal_coordinates =
-        CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+        CORE::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
 
     // Loop over the connected faces and evaluate their nodal normals.
     CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type> q_other_face;
@@ -305,7 +305,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
   // Parameter coordinates corresponding to LIDs of nodes.
   CORE::LINALG::Matrix<3, 1, double> xi(true);
   CORE::LINALG::SerialDenseMatrix nodal_coordinates =
-      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+      CORE::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
 
   // Loop over the connected faces and evaluate their nodal normals.
   CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, double>> normals;
@@ -555,7 +555,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
   // Parameter coordinates corresponding to LIDs of nodes.
   CORE::LINALG::Matrix<2, 1, double> xi_surface(true);
   CORE::LINALG::SerialDenseMatrix nodal_coordinates =
-      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+      CORE::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
 
   // Loop over the faces and evaluate the "normals" at the nodes.
   CORE::LINALG::Matrix<3, 1, double> xi_volume(true);

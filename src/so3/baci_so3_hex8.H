@@ -40,12 +40,11 @@ const int NUMDIM_SOH8 = 3;   ///< number of dimensions
 /// Gauss integration rule
 struct GP_RULE_SOH8
 {
-  static const enum CORE::DRT::UTILS::GaussRule3D rule =
+  static const enum CORE::FE::GaussRule3D rule =
       DRT::ELEMENTS::DisTypeToOptGaussRule<CORE::FE::CellType::hex8>::rule;
 };
 /// total gauss points per element
-const unsigned NUMGPT_SOH8 =
-    CORE::DRT::UTILS::GaussRule3DToNumGaussPoints<GP_RULE_SOH8::rule>::value;
+const unsigned NUMGPT_SOH8 = CORE::FE::GaussRule3DToNumGaussPoints<GP_RULE_SOH8::rule>::value;
 
 namespace DRT
 {
@@ -743,7 +742,7 @@ namespace DRT
       void soh8_recover_from_eas_backup_state();
 
      private:
-      static const CORE::DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> gp_rule_;
+      static const CORE::FE::IntPointsAndWeights<NUMDIM_SOH8> gp_rule_;
     };  // class So_hex8
 
 

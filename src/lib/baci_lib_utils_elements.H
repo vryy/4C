@@ -39,14 +39,14 @@ namespace DRT
 
       // parametric coordinates of the HEX8 corners
       static const CORE::LINALG::SerialDenseMatrix rst =
-          CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(type);
+          CORE::FE::getEleNodeNumbering_nodes_paramspace(type);
       double min_detJ = std::numeric_limits<double>::max();
 
       for (unsigned c = 0; c < numnode; ++c)
       {
         const CORE::LINALG::Matrix<numdim, 1> rst_c(&rst(0, c), true);
 
-        CORE::DRT::UTILS::shape_function_deriv1<type>(rst_c, deriv_at_c);
+        CORE::FE::shape_function_deriv1<type>(rst_c, deriv_at_c);
         jac_at_c.MultiplyNT(deriv_at_c, xcurr);
 
         const double detJ_at_c = jac_at_c.Determinant();

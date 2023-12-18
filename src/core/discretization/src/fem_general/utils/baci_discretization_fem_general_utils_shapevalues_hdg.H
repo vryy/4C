@@ -18,7 +18,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   /*!
   \brief helper data type to evaluate only nonzero element shape functions on face
@@ -101,8 +101,7 @@ namespace CORE::DRT::UTILS
     static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
     ///! number of nodes on faces
-    static const unsigned int nfn_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    static const unsigned int nfn_ = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     /*!
     \brief Initialize the data structure for shape functions, set element-independent data
@@ -120,19 +119,19 @@ namespace CORE::DRT::UTILS
     \brief Compute element-dependent data, like gradients in real cell, integration weights, for
     element dofs
     */
-    void Evaluate(const BACI::DRT::Element &ele, const std::vector<double> &aleDis = {});
+    void Evaluate(const DRT::Element &ele, const std::vector<double> &aleDis = {});
 
     /// polynomial degree
     unsigned int degree_;
 
     /// underlying polynomial space for element interior, created in constructor
-    Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<nsd_>> polySpace_;
+    Teuchos::RCP<CORE::FE::PolynomialSpace<nsd_>> polySpace_;
 
     /// scalar dofs per element
     unsigned int ndofs_;
 
     /// quadrature rule
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature_;
+    Teuchos::RCP<CORE::FE::GaussPoints> quadrature_;
 
     /// complete poly
     bool usescompletepoly_;
@@ -184,8 +183,7 @@ namespace CORE::DRT::UTILS
     static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
     ///! number of nodes on faces
-    static const unsigned int nfn_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    static const unsigned int nfn_ = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     //! number of space dimensions
     static const unsigned int nsd_ = CORE::FE::dim<distype>;
@@ -203,13 +201,13 @@ namespace CORE::DRT::UTILS
     \brief Compute element-dependent data on faces, like integration weights, normal vectors,
     correctly oriented trace variables
     */
-    void EvaluateFace(const BACI::DRT::Element &ele, const unsigned int face,
-        const std::vector<double> &aleDis = {});
+    void EvaluateFace(
+        const DRT::Element &ele, const unsigned int face, const std::vector<double> &aleDis = {});
 
     /*!
     \brief Consider the orientation of faces for face degrees of freedom
      */
-    void AdjustFaceOrientation(const BACI::DRT::Element &ele, const unsigned int face);
+    void AdjustFaceOrientation(const DRT::Element &ele, const unsigned int face);
 
     /// Parameters underlying this structure, necessary for evaluating element basis functions on
     /// faces
@@ -219,13 +217,13 @@ namespace CORE::DRT::UTILS
     unsigned int degree_;
 
     /// underlying polynomial space for faces
-    Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<nsd_ - 1>> polySpace_;
+    Teuchos::RCP<CORE::FE::PolynomialSpace<nsd_ - 1>> polySpace_;
 
     /// scalar dofs per face
     unsigned int nfdofs_;
 
     /// quadrature rule
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature_;
+    Teuchos::RCP<CORE::FE::GaussPoints> quadrature_;
 
     /// number of integration points on face
     unsigned int nqpoints_;
@@ -277,7 +275,7 @@ namespace CORE::DRT::UTILS
 
     \Author: Berardocco
      */
-    void ComputeFaceReferenceSystem(const BACI::DRT::Element &ele, const unsigned int face);
+    void ComputeFaceReferenceSystem(const DRT::Element &ele, const unsigned int face);
   };
 
   /*!
@@ -324,7 +322,7 @@ namespace CORE::DRT::UTILS
     std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>> cache_;
   };
 
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

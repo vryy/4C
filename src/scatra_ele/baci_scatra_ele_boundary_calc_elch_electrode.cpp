@@ -98,7 +98,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   CORE::LINALG::SerialDenseVector dummyvector;
 
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   CORE::LINALG::Matrix<nsd_, 1> normal;
@@ -474,7 +474,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         my::scatraparams_->NdsTwoTensorQuantity());
 
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -603,7 +603,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   CORE::LINALG::Matrix<nsd_, 1> normal;
 
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -620,7 +620,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
     {
       static CORE::LINALG::Matrix<nen_, nsd_> xyze_transposed;
       xyze_transposed.UpdateT(my::xyze_);
-      CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
+      CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
     }
@@ -842,7 +842,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
   CORE::LINALG::Matrix<nsd_, 1> normal;
 
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1144,7 +1144,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
     my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)

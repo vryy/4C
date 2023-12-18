@@ -185,7 +185,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
   // values of individual shape functions at xi
   CORE::LINALG::Matrix<1, numnodes> I_i(true);
 
-  CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype_);
+  CORE::FE::shape_function_1D(I_i, xi, distype_);
 
   Calc_Psi_l(Psi_li_, I_i, Psi_l);
 }
@@ -210,7 +210,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
   // values of individual shape functions derivatives at xi
   CORE::LINALG::Matrix<1, numnodes> I_i_xi(true);
 
-  CORE::DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype_);
+  CORE::FE::shape_function_1D_deriv1(I_i_xi, xi, distype_);
 
   Calc_Psi_l_s(Psi_li_, I_i_xi, jacobifac, Psi_l_s);
 }
@@ -242,7 +242,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::
 
   // values of individual shape functions at xi
   CORE::LINALG::Matrix<1, numnodes> I_i(true);
-  CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype_);
+  CORE::FE::shape_function_1D(I_i, xi, distype_);
 
   // compute interpolated local relative rotation vector \Psi^l
   CORE::LINALG::Matrix<3, 1, T> Psi_l(true);

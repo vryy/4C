@@ -43,7 +43,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,
   CORE::LINALG::SerialDenseMatrix deriv0;
   deriv0.shape(2, NumNode());
 
-  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv0, 0.0, 0.0, distype);
+  CORE::FE::shape_function_2D_deriv1(deriv0, 0.0, 0.0, distype);
 
   // compute jacobian matrix at origin
   xjm0.putScalar(0.0);

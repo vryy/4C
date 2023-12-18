@@ -107,8 +107,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   {
     actmat->ResetDiffusionTensor();
 
-    Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes =
-        Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(1, false, 2 * hdgele->Degree()));
+    Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes =
+        Teuchos::rcp(new CORE::FE::ShapeValues<distype>(1, false, 2 * hdgele->Degree()));
 
     shapes->Evaluate(*ele);
 
@@ -193,7 +193,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   {
     actmat->ResetDiffusionTensor();
 
-    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+    const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
         SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
     const std::size_t numgp = intpoints.IP().nquad;
 
@@ -206,7 +206,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
       for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
         gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
-      CORE::DRT::UTILS::shape_function<distype>(gp_coord, shapefcns[q]);
+      CORE::FE::shape_function<distype>(gp_coord, shapefcns[q]);
     }
 
     FIBER::NodalFiberHolder gpFiberHolder;
@@ -279,9 +279,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
   ivecnpderiv.putScalar(0.0);
 
   // polynomial space to get the value of the shape function at the material gauss points
-  CORE::DRT::UTILS::PolynomialSpaceParams params(
-      distype, this->shapes_->degree_, this->usescompletepoly_);
-  polySpace_ = CORE::DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
+  CORE::FE::PolynomialSpaceParams params(distype, this->shapes_->degree_, this->usescompletepoly_);
+  polySpace_ = CORE::FE::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
   int nqpoints;
 
@@ -292,7 +291,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
       deg = 4 * this->shapes_->degree_;
     else
       deg = 3 * this->shapes_->degree_;
-    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+    const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
         SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
     nqpoints = intpoints.IP().nquad;
 
@@ -330,8 +329,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
     else
       deg = 3 * this->shapes_->degree_;
 
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature_(
-        CORE::DRT::UTILS::GaussPointCache::Instance().Create(distype, deg));
+    Teuchos::RCP<CORE::FE::GaussPoints> quadrature_(
+        CORE::FE::GaussPointCache::Instance().Create(distype, deg));
     nqpoints = quadrature_->NumPoints();
 
     if (nqpoints != actmat->GetNumberOfGP())
@@ -573,13 +572,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   else
     degold = 3 * hdgele->DegreeOld();
 
-  Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes =
-      Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
-          hdgele->DegreeOld(), this->usescompletepoly_, deg));
+  Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes = Teuchos::rcp(
+      new CORE::FE::ShapeValues<distype>(hdgele->DegreeOld(), this->usescompletepoly_, deg));
 
-  Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_old =
-      Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
-          hdgele->DegreeOld(), this->usescompletepoly_, degold));
+  Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes_old = Teuchos::rcp(
+      new CORE::FE::ShapeValues<distype>(hdgele->DegreeOld(), this->usescompletepoly_, degold));
 
   shapes->Evaluate(*ele);
   shapes_old->Evaluate(*ele);
@@ -660,10 +657,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
       dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
 
   // polynomial space to get the value of the shape function at the material gauss points
-  CORE::DRT::UTILS::PolynomialSpaceParams params(
-      distype, hdgele->DegreeOld(), this->usescompletepoly_);
-  Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<probdim>> polySpace =
-      CORE::DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
+  CORE::FE::PolynomialSpaceParams params(distype, hdgele->DegreeOld(), this->usescompletepoly_);
+  Teuchos::RCP<CORE::FE::PolynomialSpace<probdim>> polySpace =
+      CORE::FE::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
   int deg = 0;
   int degold = 0;
@@ -678,9 +674,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   else
     degold = 3 * hdgele->DegreeOld();
 
-  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints_old(
+  const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints_old(
       SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(degold));
-  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+  const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
       SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
 
 

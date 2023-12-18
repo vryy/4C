@@ -326,8 +326,8 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
     }
     else
     {
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature_(
-          CORE::DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(), deg));
+      Teuchos::RCP<CORE::FE::GaussPoints> quadrature_(
+          CORE::FE::GaussPointCache::Instance().Create(this->Shape(), deg));
       gp = quadrature_->NumPoints();
     }
     if (actmat->Parameter() != nullptr and
@@ -568,7 +568,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
 {
-  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 
@@ -782,7 +782,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
 CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*

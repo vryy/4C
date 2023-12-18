@@ -1971,7 +1971,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     CORE::LINALG::Matrix<3, 1> dx_ds(true);
 
     // get current values
-    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
+    CORE::FE::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
 
     CORE::LINALG::Matrix<3, numnode_side> xyz_side_new(xyze_new);
 
@@ -2048,7 +2048,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume(
   const int nsd = CORE::FE::dim<space_time_distype>;
 
   // use one-point Gauss rule
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints_stab(
+  CORE::FE::IntPointsAndWeights<nsd> intpoints_stab(
       DRT::ELEMENTS::DisTypeToStabGaussRule<space_time_distype>::rule);
 
   CORE::LINALG::Matrix<nsd, 1> xsi(true);
@@ -2064,7 +2064,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume(
   CORE::LINALG::Matrix<nsd, numnode_space_time> deriv(true);
   CORE::LINALG::Matrix<nsd, nsd> xjm(true);
 
-  CORE::DRT::UTILS::shape_function_deriv1<space_time_distype>(xsi, deriv);
+  CORE::FE::shape_function_deriv1<space_time_distype>(xsi, deriv);
 
   xjm.MultiplyNT(deriv, xyze_st);
 

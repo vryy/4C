@@ -158,7 +158,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
       material_(0),
       thickness_(0.0),
       old_step_length_(0.0),
-      gaussrule_(CORE::DRT::UTILS::GaussRule2D::undefined),
+      gaussrule_(CORE::FE::GaussRule2D::undefined),
       wtype_(plane_none),
       stresstype_(w1_none),
       iseas_(false),

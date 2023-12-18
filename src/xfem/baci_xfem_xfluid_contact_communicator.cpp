@@ -383,10 +383,10 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
       static CORE::LINALG::Matrix<3, 8> derxy;
 
       // evaluate shape functions
-      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex8>(fluidele_xsi, funct);
+      CORE::FE::shape_function<CORE::FE::CellType::hex8>(fluidele_xsi, funct);
 
       // evaluate the derivatives of shape functions
-      CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(fluidele_xsi, deriv);
+      CORE::FE::shape_function_deriv1<CORE::FE::CellType::hex8>(fluidele_xsi, deriv);
       xjm.MultiplyNT(deriv, xyze);
       // double det = xji.Invert(xjm); //if we need this at some point
       xji.Invert(xjm);
@@ -428,7 +428,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
 
     const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
     static CORE::LINALG::Matrix<numnodes, 1> funct(false);
-    CORE::DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), CORE::FE::CellType::quad4);
+    CORE::FE::shape_function_2D(funct, selexsi(0), selexsi(1), CORE::FE::CellType::quad4);
     vel_s.Multiply(vels, funct);
     if (isporo_) velpf_s.Multiply(velpfs, funct);
   }
@@ -450,7 +450,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
   {
     // 1 // Get Boundary Cells and Gausspoints of this Boundarycells for this fluid element!
     std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>> bcells;
-    std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> bintpoints;
+    std::map<int, std::vector<CORE::FE::GaussIntegration>> bintpoints;
 
     CORE::GEO::CUT::ElementHandle* cele = cutwizard_->GetElement(fluidele);
     if (cele == nullptr) dserror("Couldn't find cut element for ele %d", fluidele->Id());
@@ -458,7 +458,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
     std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
     {
       std::vector<std::vector<int>> nds_sets;
-      std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>> intpoints_sets;
+      std::vector<std::vector<CORE::FE::GaussIntegration>> intpoints_sets;
       cele->GetCellSets_DofSets_GaussPoints(cell_sets, nds_sets, intpoints_sets, false);
     }
 
@@ -675,7 +675,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
 
     sidehandle->Coordinates(xyze_m);
     CORE::LINALG::Matrix<3, numnodes> xyze(xyze_m.values(), true);
-    CORE::DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), CORE::FE::CellType::quad4);
+    CORE::FE::shape_function_2D(funct, xsi(0), xsi(1), CORE::FE::CellType::quad4);
     x.Multiply(xyze, funct);
   }
   else
@@ -1013,7 +1013,7 @@ double XFEM::XFluid_Contact_Comm::DistancetoSide(CORE::LINALG::Matrix<3, 1>& x,
     {
       static CORE::LINALG::Matrix<2, 1> funct;
       // evaluate shape functions
-      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::line2>(rst, funct);
+      CORE::FE::shape_function<CORE::FE::CellType::line2>(rst, funct);
       static CORE::LINALG::Matrix<3, 1> posx;
       posx.Multiply(xyzl, funct);
       posx.Update(-1, x, 1);
@@ -1346,13 +1346,12 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   double drs_sh = 0;
   for (std::size_t bc = 0; bc < bcs.size(); ++bc)
   {
-    CORE::DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(cutwizard_->Get_BC_Cubaturedegree());
+    CORE::FE::GaussIntegration gi = bcs[bc]->gaussRule(cutwizard_->Get_BC_Cubaturedegree());
     if (gi.NumPoints())
     {
       coords.reshape(weights.size() + gi.NumPoints(), 2);
       int idx = weights.size();
-      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
-           ++iquad)
+      for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
       {
         const CORE::LINALG::Matrix<2, 1> eta(iquad.Point(), false);
         XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bcs[bc].getRawPtr(), eta);
@@ -1367,9 +1366,9 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         coords(idx, 0) = rst(0);
         coords(idx, 1) = rst(1);
 
-        CORE::DRT::UTILS::shape_function_2D_deriv1(
+        CORE::FE::shape_function_2D_deriv1(
             deriv, coords(idx, 0), coords(idx, 1), CORE::FE::CellType::quad4);
-        CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad4>(
+        CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad4>(
             xquad_m, deriv, metrictensor, drs_sh, nullptr);
         weights.push_back(iquad.Weight() * drs / drs_sh);  // small tri3 to quad4 weight
         ++idx;

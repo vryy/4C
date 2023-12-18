@@ -78,7 +78,7 @@ namespace CORE::COUPLING
     \param   tol            (i) tolerance for octree
 
     \return void  */
-    virtual int Init(const BACI::DRT::Discretization& actdis, const std::vector<int>& masternodeids,
+    virtual int Init(const DRT::Discretization& actdis, const std::vector<int>& masternodeids,
         const int maxnodeperleaf = 150, const double tol = 1e-08);
 
     //! setup this class
@@ -113,20 +113,20 @@ namespace CORE::COUPLING
 
     //! calc unique coordinate of entity
     virtual void CalcPointCoordinate(
-        const BACI::DRT::Discretization* dis, const int id, double* coord) = 0;
+        const DRT::Discretization* dis, const int id, double* coord) = 0;
 
     //! calc unique coordinate of entity
     virtual void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) = 0;
 
     //! check if entity is on calling proc
-    virtual bool CheckHaveEntity(const BACI::DRT::Discretization* dis, const int id) = 0;
+    virtual bool CheckHaveEntity(const DRT::Discretization* dis, const int id) = 0;
 
     //! returns true if entity is owned by calling proc
-    virtual bool CheckEntityOwner(const BACI::DRT::Discretization* dis, const int id) = 0;
+    virtual bool CheckEntityOwner(const DRT::Discretization* dis, const int id) = 0;
 
     //! pack entity to PackPuffer
     virtual void PackEntity(
-        CORE::COMM::PackBuffer& data, const BACI::DRT::Discretization* dis, const int id) = 0;
+        CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) = 0;
 
     //! unpack entity to PackPuffer
     virtual void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
@@ -197,7 +197,7 @@ namespace CORE::COUPLING
       \param slavedis     (i) discretization the slave nodes belong to
       \param slavenodeids (i) gids of nodes to match
       \param coupling     (o) master node gid to (slave node gid, distance) */
-    virtual void FindMatch(const BACI::DRT::Discretization& slavedis,
+    virtual void FindMatch(const DRT::Discretization& slavedis,
         const std::vector<int>& slavenodeids, std::map<int, std::pair<int, double>>& coupling);
 
     /*! \brief find pairs of nearest nodes
@@ -213,14 +213,14 @@ namespace CORE::COUPLING
       \param slavedis     (i) discretization the slave entity belongs to
       \param slavenodeids (i) gids of entity to match
       \param coupling     (o) slave entity gid to (slave entity gid, distance, owned) */
-    virtual void FillSlaveToMasterGIDMapping(const BACI::DRT::Discretization& slavedis,
+    virtual void FillSlaveToMasterGIDMapping(const DRT::Discretization& slavedis,
         const std::vector<int>& slavenodeids, std::map<int, std::vector<double>>& coupling);
 
     //@}
 
    protected:
     //! \brief all nodes in leafs are nodes of this discretization
-    const BACI::DRT::Discretization* discret_;
+    const DRT::Discretization* discret_;
     //! \brief order of magnitude of smallest element size (used for tolerances)
     double tol_;
     //! \brief root of the local search tree
@@ -277,21 +277,20 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate, associated to node
-    void CalcPointCoordinate(
-        const BACI::DRT::Discretization* dis, const int id, double* coord) override;
+    void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord) override;
 
     //! calc unique coordinate of Node
     void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) override;
 
     //! check if node with gid = id is on calling proc
-    bool CheckHaveEntity(const BACI::DRT::Discretization* dis, const int id) override;
+    bool CheckHaveEntity(const DRT::Discretization* dis, const int id) override;
 
     //! returns true if node with gid = id is owned by calling proc
-    bool CheckEntityOwner(const BACI::DRT::Discretization* dis, const int id) override;
+    bool CheckEntityOwner(const DRT::Discretization* dis, const int id) override;
 
     //! pack node to PackPuffer
     void PackEntity(
-        CORE::COMM::PackBuffer& data, const BACI::DRT::Discretization* dis, const int id) override;
+        CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) override;
 
     //! unpack node from PackPuffer
     void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
@@ -316,21 +315,20 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate, associated to element
-    void CalcPointCoordinate(
-        const BACI::DRT::Discretization* dis, const int id, double* coord) override;
+    void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord) override;
 
     //! calc unique coordinate of entity
     void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) override;
 
     //! check if element with gid = id is on calling proc
-    bool CheckHaveEntity(const BACI::DRT::Discretization* dis, const int id) override;
+    bool CheckHaveEntity(const DRT::Discretization* dis, const int id) override;
 
     //! returns true if element is owned by calling proc
-    bool CheckEntityOwner(const BACI::DRT::Discretization* dis, const int id) override;
+    bool CheckEntityOwner(const DRT::Discretization* dis, const int id) override;
 
     //! pack element to PackPuffer
     void PackEntity(
-        CORE::COMM::PackBuffer& data, const BACI::DRT::Discretization* dis, const int id) override;
+        CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) override;
 
     //! unpack element from PackPuffer
     void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
@@ -359,7 +357,7 @@ namespace CORE::COUPLING
     //!
     //! \author Andreas Rauch
     //! \date   10/16
-    std::map<int, Teuchos::RCP<BACI::DRT::Node>> nodes_;
+    std::map<int, Teuchos::RCP<DRT::Node>> nodes_;
 
   };  // class ElementMatchingOctree
 
@@ -396,7 +394,7 @@ namespace CORE::COUPLING
     \param  tol             (i) Tolerance for octree
 
     \return  int  */
-    virtual int Init(const BACI::DRT::Discretization& actdis, std::vector<int>& nodeids,
+    virtual int Init(const DRT::Discretization& actdis, std::vector<int>& nodeids,
         const CORE::LINALG::SerialDenseMatrix& boundingbox, const int layer,
         const int maxnodeperleaf, const double tol);
 
@@ -476,7 +474,7 @@ namespace CORE::COUPLING
    protected:
     //! calc unique coordinate of entity
     virtual void CalcPointCoordinate(
-        const BACI::DRT::Discretization* dis, const int id, double* coord) = 0;
+        const DRT::Discretization* dis, const int id, double* coord) = 0;
 
     //! create an octree element
     virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
@@ -484,7 +482,7 @@ namespace CORE::COUPLING
 
    protected:
     //! all nodes belong to this discretisation
-    const BACI::DRT::Discretization* discret_;
+    const DRT::Discretization* discret_;
     //! the bounding box of the element
     CORE::LINALG::SerialDenseMatrix boundingbox_;
     //! the nodeids (needs to be a copy !)
@@ -545,8 +543,7 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate of node
-    void CalcPointCoordinate(
-        const BACI::DRT::Discretization* dis, const int id, double* coord) override;
+    void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
@@ -564,8 +561,7 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate of element
-    void CalcPointCoordinate(
-        const BACI::DRT::Discretization* dis, const int id, double* coord) override;
+    void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,

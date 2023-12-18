@@ -311,7 +311,7 @@ namespace DRT
       // line search parameter (old step length)
       double old_step_length_;
       /// gaussian points
-      CORE::DRT::UTILS::GaussRule2D gaussrule_;
+      CORE::FE::GaussRule2D gaussrule_;
       /// problem type
       DimensionalReduction wtype_;
       /// type of stress calculation
@@ -766,7 +766,7 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule2D getGaussrule(int* ngp  ///< number of Gauss points
+      CORE::FE::GaussRule2D getGaussrule(int* ngp  ///< number of Gauss points
       );
     };  // class Wall1
 
@@ -972,7 +972,7 @@ namespace DRT
           const CORE::LINALG::SerialDenseMatrix& deriv, std::vector<double>* unrm, const int iel);
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
+      CORE::FE::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
     };  // class Wall1Line
 

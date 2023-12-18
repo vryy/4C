@@ -237,7 +237,7 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType celltype>
   inline void CollectAndAssembleGaussPointDataOutput(
-      const CORE::DRT::UTILS::GaussIntegration& stiffness_matrix_integration,
+      const CORE::FE::GaussIntegration& stiffness_matrix_integration,
       const MAT::So3Material& solid_material, const DRT::Element& ele,
       STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
@@ -263,7 +263,7 @@ namespace DRT::ELEMENTS
             // compute average of the quantities
             Teuchos::RCP<Epetra_MultiVector> global_data =
                 gp_data_output_manager.GetElementCenterData().at(quantity_name);
-            CORE::DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, ele);
+            CORE::FE::AssembleAveragedElementValues(*global_data, gp_data, ele);
             break;
           }
           case INPAR::STR::GaussPointDataOutputType::nodes:
@@ -274,7 +274,7 @@ namespace DRT::ELEMENTS
             Epetra_IntVector& global_nodal_element_count =
                 *gp_data_output_manager.GetNodalDataCount().at(quantity_name);
 
-            CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<celltype>(
+            CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<celltype>(
                 ele, gp_data, *global_data, false, stiffness_matrix_integration);
             DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
             break;

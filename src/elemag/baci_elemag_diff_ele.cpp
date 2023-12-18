@@ -70,8 +70,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiffType::Create(const int id, c
 void DRT::ELEMENTS::ElemagDiffType::NodalBlockInformation(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = CORE::DRT::UTILS::getDimension(dwele->Shape()) -
-          1;  // 2;  // Bad Luca! Hard coding is not nice!
+  numdf = CORE::FE::getDimension(dwele->Shape()) - 1;  // 2;  // Bad Luca! Hard coding is not nice!
   dimns = numdf;
   nv = numdf;
   np = 0;

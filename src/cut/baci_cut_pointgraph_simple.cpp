@@ -248,7 +248,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FindCycles(Element *element, Cyc
 void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::CorrectRotationDirection(
     const Side *side, std::vector<Cycle> &cycles)
 {
-  CORE::LINALG::Matrix<2, 1> rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(side->Shape());
+  CORE::LINALG::Matrix<2, 1> rs = CORE::FE::getLocalCenterPosition<2>(side->Shape());
   CORE::LINALG::Matrix<3, 1> normal_side(false);
 
   CORE::LINALG::SerialDenseMatrix xyze_side(3, side->NumNodes());

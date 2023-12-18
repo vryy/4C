@@ -202,7 +202,7 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
     int indb = (indc + 2) % 3;
 
     // get gaussrule
-    const CORE::DRT::UTILS::IntegrationPoints2D intpoints(getOptimalGaussrule());
+    const CORE::FE::IntegrationPoints2D intpoints(getOptimalGaussrule());
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
@@ -218,8 +218,8 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
       const double e1 = intpoints.qxg[gpid][1];
 
       // get shape functions and derivatives of shape functions in the plane of the element
-      CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      CORE::FE::shape_function_2D(funct, e0, e1, Shape());
+      CORE::FE::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
     int indb = (indc + 2) % 3;
 
     // get gaussrule
-    const CORE::DRT::UTILS::IntegrationPoints2D intpoints(getOptimalGaussrule());
+    const CORE::FE::IntegrationPoints2D intpoints(getOptimalGaussrule());
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
@@ -291,8 +291,8 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
       const double e1 = intpoints.qxg[gpid][1];
 
       // get shape functions and derivatives of shape functions in the plane of the element
-      CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      CORE::FE::shape_function_2D(funct, e0, e1, Shape());
+      CORE::FE::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       // evaluate Jacobi determinant, for projected dA*
       std::vector<double> normal(numdim);

@@ -91,13 +91,13 @@ namespace WEAR
 
         if (ndim == 2)
         {
-          CORE::DRT::UTILS::shape_function_2D(funct, e[0], e[1], distype);
-          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e[0], e[1], distype);
+          CORE::FE::shape_function_2D(funct, e[0], e[1], distype);
+          CORE::FE::shape_function_2D_deriv1(deriv, e[0], e[1], distype);
         }
         else if (ndim == 3)
         {
-          CORE::DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
-          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
+          CORE::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
+          CORE::FE::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
         }
         else
           dserror("Wrong dimension!");
@@ -164,9 +164,9 @@ namespace WEAR
       for (int p = 0; p < ndim; ++p) xmat[p] = 0.0;
 
       if (ndim == 2)
-        CORE::DRT::UTILS::shape_function_2D(funct, e[0], e[1], distype);
+        CORE::FE::shape_function_2D(funct, e[0], e[1], distype);
       else
-        CORE::DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
+        CORE::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
 
       for (int k = 0; k < numnod; ++k)
         for (int p = 0; p < ndim; ++p)

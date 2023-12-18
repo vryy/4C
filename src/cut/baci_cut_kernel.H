@@ -1022,7 +1022,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<probDim, 1, floatType>& px,
             CORE::LINALG::Matrix<probDim, 1, floatType>& b)
         {
-          CORE::DRT::UTILS::shape_function<elementType>(xsi_, funct_);
+          CORE::FE::shape_function<elementType>(xsi_, funct_);
           b = *px_;
           b.Multiply(-1.0, xyze, funct_, 1.0);
         }
@@ -1077,7 +1077,7 @@ namespace CORE::GEO
           floatType det = 0.0;
           // ToDo check if it is possible to switch completely to the manifold case,
           // without too much loss in performance.
-          CORE::DRT::UTILS::shape_function_deriv1<elementType>(xsi_, deriv1_);
+          CORE::FE::shape_function_deriv1<elementType>(xsi_, deriv1_);
           A_.MultiplyNT(*xyze_, deriv1_);
           dx_ = 0.0;
           det = CORE::LINALG::gaussElimination<true, probDim, floatType>(A_, b_, dx_);
@@ -1497,7 +1497,7 @@ namespace CORE::GEO
 
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc;
           CORE::LINALG::Matrix<CORE::FE::num_nodes<elementType>, 1, ClnWrapper> shapeFunct;
-          CORE::DRT::UTILS::shape_function<elementType>(cln_loc_calc, shapeFunct);
+          CORE::FE::shape_function<elementType>(cln_loc_calc, shapeFunct);
           for (unsigned int inode = 0; inode < CORE::FE::num_nodes<elementType>; ++inode)
           {
             for (unsigned int isd = 0; isd < probDim; ++isd)
@@ -1936,7 +1936,7 @@ namespace CORE::GEO
             CORE::LINALG::Matrix<probDim, 1, floatType>& b)
         {
           CORE::LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
-          CORE::DRT::UTILS::shape_function<sideType>(xsi_side, sideFunct_);
+          CORE::FE::shape_function<sideType>(xsi_side, sideFunct_);
           b = px;
           b.Multiply(-1.0, xyze_side, sideFunct_, 1.0);
         }
@@ -2072,7 +2072,7 @@ namespace CORE::GEO
           // calculate the points
           CORE::LINALG::Matrix<numNodesSide, 1, floatType> surface;
 
-          CORE::DRT::UTILS::shape_function_2D(surface, xsi_(0), xsi_(1), sideType);
+          CORE::FE::shape_function_2D(surface, xsi_(0), xsi_(1), sideType);
 
           CORE::LINALG::Matrix<probDim, 1, floatType> x1;
 
@@ -2207,7 +2207,7 @@ namespace CORE::GEO
           for (unsigned r = 0; r < probDim; ++r) A(r, dimSide) *= n1norm_inv;
           // --- evaluate 2-nd derivatives at xsi w.r.t. the parameter space coordinates
           C = 0.0;
-          CORE::DRT::UTILS::shape_function_deriv2<sideType>(xsi_side, sideDeriv2_);
+          CORE::FE::shape_function_deriv2<sideType>(xsi_side, sideDeriv2_);
           C.MultiplyNT(xyze_side, sideDeriv2_);
 
           // reset B-matrix
@@ -2648,7 +2648,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> b;
 
           CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> clnxiside(clnxi.A(), true);
-          CORE::DRT::UTILS::shape_function<sideType>(clnxiside, surfaceFunct);
+          CORE::FE::shape_function<sideType>(clnxiside, surfaceFunct);
           b = clnpx;
           b.Multiply(-1.0, xyze_side, surfaceFunct, 1.0);
 
@@ -3087,7 +3087,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<probDim, 1> n1(n_vec.A(), true);
 
           CORE::LINALG::Matrix<dimSide, 1> xsi_side(xsi.A(), true);
-          CORE::DRT::UTILS::shape_function<sideType>(xsi_side, surfaceFunct);
+          CORE::FE::shape_function<sideType>(xsi_side, surfaceFunct);
           b = px;
 
           b.Multiply(-1.0, xyze_side, surfaceFunct, 1.0);
@@ -3459,8 +3459,8 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
             CORE::LINALG::Matrix<probDim, 1, floatType>& c)
         {
-          CORE::DRT::UTILS::shape_function<sideType>(xsi_side, sideFunct_);
-          CORE::DRT::UTILS::shape_function<edgeType>(xsi_edge, edgeFunct_);
+          CORE::FE::shape_function<sideType>(xsi_side, sideFunct_);
+          CORE::FE::shape_function<edgeType>(xsi_edge, edgeFunct_);
 
           c.Multiply(xyze_edge, edgeFunct_);
           c.Multiply(-1.0, xyze_side, sideFunct_, 1.0);
@@ -3536,8 +3536,8 @@ namespace CORE::GEO
             CORE::LINALG::Matrix<numNodesSide, 1> sideFunct;
             CORE::LINALG::Matrix<numNodesEdge, 1> edgeFunct;
 
-            CORE::DRT::UTILS::shape_function<sideType>(xsi_side, sideFunct);
-            CORE::DRT::UTILS::shape_function<edgeType>(xsi_edge, edgeFunct);
+            CORE::FE::shape_function<sideType>(xsi_side, sideFunct);
+            CORE::FE::shape_function<edgeType>(xsi_edge, edgeFunct);
 
             CORE::LINALG::Matrix<probDim, 1> x1;
             CORE::LINALG::Matrix<probDim, 1> x2;
@@ -3663,8 +3663,8 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<numNodesSide, 1, floatType> surface;
           CORE::LINALG::Matrix<numNodesEdge, 1, floatType> line;
 
-          CORE::DRT::UTILS::shape_function_2D(surface, xsi_(0), xsi_(1), sideType);
-          CORE::DRT::UTILS::shape_function_1D(line, xsi_(2), edgeType);
+          CORE::FE::shape_function_2D(surface, xsi_(0), xsi_(1), sideType);
+          CORE::FE::shape_function_1D(line, xsi_(2), edgeType);
 
           CORE::LINALG::Matrix<probDim, 1, floatType> x1;
           CORE::LINALG::Matrix<probDim, 1, floatType> x2;
@@ -3724,8 +3724,8 @@ namespace CORE::GEO
             CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>& b)
         {
           // --- compute the linearization
-          CORE::DRT::UTILS::shape_function_deriv1<sideType>(xsi_side, sideDeriv1_);
-          CORE::DRT::UTILS::shape_function_deriv1<edgeType>(xsi_edge, edgeDeriv1_);
+          CORE::FE::shape_function_deriv1<sideType>(xsi_side, sideDeriv1_);
+          CORE::FE::shape_function_deriv1<edgeType>(xsi_edge, edgeDeriv1_);
 
           A = 0.0;
           B = 0.0;
@@ -4102,7 +4102,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_glob_calc_side;
           CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc_side(
               cln_loc_calc.A(), true);
-          CORE::DRT::UTILS::shape_function<sideType>(cln_loc_calc_side, sideFunct);
+          CORE::FE::shape_function<sideType>(cln_loc_calc_side, sideFunct);
 
           for (unsigned int inode = 0; inode < CORE::FE::num_nodes<sideType>; ++inode)
           {
@@ -4118,7 +4118,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc_edge(
               cln_loc_calc.A() + CORE::FE::dim<sideType>, true);
 
-          CORE::DRT::UTILS::shape_function<edgeType>(cln_loc_calc_edge, edgeFunct);
+          CORE::FE::shape_function<edgeType>(cln_loc_calc_edge, edgeFunct);
           for (unsigned int inode = 0; inode < CORE::FE::num_nodes<edgeType>; ++inode)
           {
             for (unsigned int isd = 0; isd < (dimEdge + dimSide); ++isd)
@@ -4158,7 +4158,7 @@ namespace CORE::GEO
                 CORE::LINALG::Matrix<probDim, 1, ClnWrapper> xsi_global;
                 xsi_global = 0.0;
                 const CORE::LINALG::Matrix<dimSide, 1> xsi_side(xsi_.A(), true);
-                CORE::DRT::UTILS::shape_function<sideType>(xsi_side, sideFunct);
+                CORE::FE::shape_function<sideType>(xsi_side, sideFunct);
                 // taking latest cln based coordinate
                 const CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper>& clnxyze_side_latest =
                     clnxyze_side_;
@@ -4479,7 +4479,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<numNodesSide, 1> sideFunct;
           CORE::LINALG::Matrix<dimEdge + dimSide, 1> globxyz_side;
           CORE::LINALG::Matrix<dimEdge + dimSide, 1> locxyz_side(locxyz.A(), true);
-          CORE::DRT::UTILS::shape_function<sideType>(locxyz_side, sideFunct);
+          CORE::FE::shape_function<sideType>(locxyz_side, sideFunct);
           for (unsigned int inode = 0; inode < numNodesSide; ++inode)
           {
             for (unsigned int isd = 0; isd < dimEdge + dimSide; ++isd)
@@ -4494,7 +4494,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<numNodesEdge, 1> edgeFunct;
           CORE::LINALG::Matrix<probDim, 1> locxyz_edge(locxyz.A() + dimSide, true);
 
-          CORE::DRT::UTILS::shape_function<edgeType>(locxyz_edge, edgeFunct);
+          CORE::FE::shape_function<edgeType>(locxyz_edge, edgeFunct);
           for (unsigned int inode = 0; inode < numNodesEdge; ++inode)
           {
             for (unsigned int isd = 0; isd < dimEdge + dimSide; ++isd)

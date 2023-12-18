@@ -37,7 +37,7 @@ namespace CORE::GEO
     const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<numNodes, 1> funct;
 
-    CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+    CORE::FE::shape_function<DISTYPE>(xsi, funct);
 
     // set to zero
     x.Clear();
@@ -511,7 +511,7 @@ namespace CORE::GEO
       case FE::CellType::line2:
       case FE::CellType::line3:
       {
-        for (int i = 0; i < CORE::DRT::UTILS::getDimension(distype); i++)
+        for (int i = 0; i < CORE::FE::getDimension(distype); i++)
           if (eleCoord(i) > (1.0 + CORE::GEO::TOL7) || eleCoord(i) < (-1) * (1.0 + CORE::GEO::TOL7))
             return false;
 
@@ -586,7 +586,7 @@ namespace CORE::GEO
   {
     const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<dim, numNodes> deriv1;
-    CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
+    CORE::FE::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
     A.Clear();
     for (int isd = 0; isd < 3; ++isd)
@@ -611,7 +611,7 @@ namespace CORE::GEO
     const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<numNodes, 1> funct;
     funct.Clear();
-    CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+    CORE::FE::shape_function<DISTYPE>(xsi, funct);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -818,7 +818,7 @@ namespace CORE::GEO
     const int numNodes = CORE::FE::num_nodes<DISTYPE>;
 
     static CORE::LINALG::Matrix<2, numNodes> deriv1;
-    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
+    CORE::FE::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
 
     Jacobi.Clear();
     for (int isd = 0; isd < 3; isd++)
@@ -844,7 +844,7 @@ namespace CORE::GEO
   {
     const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<numNodes, 1> funct;
-    CORE::DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
+    CORE::FE::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
 
     F.Clear();
     for (int isd = 0; isd < 3; ++isd)
@@ -871,7 +871,7 @@ namespace CORE::GEO
   {
     const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<3, numNodes> deriv2;
-    CORE::DRT::UTILS::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
+    CORE::FE::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
 
     // third order tensor 3 x 2 x 2 stored as 3x2 and 3x2 so 3x4
     static CORE::LINALG::Matrix<3, 4> tensor3order;
@@ -1013,13 +1013,13 @@ namespace CORE::GEO
 
       // determine shapefunction, 1. and 2. derivative at current solutiom
       static CORE::LINALG::Matrix<numNodes, 1> funct;
-      CORE::DRT::UTILS::shape_function_1D(funct, eleCoord(0), DISTYPE);
+      CORE::FE::shape_function_1D(funct, eleCoord(0), DISTYPE);
 
       static CORE::LINALG::Matrix<1, numNodes> deriv1;
-      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, eleCoord(0), DISTYPE);
+      CORE::FE::shape_function_1D_deriv1(deriv1, eleCoord(0), DISTYPE);
 
       static CORE::LINALG::Matrix<1, numNodes> deriv2;
-      CORE::DRT::UTILS::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
+      CORE::FE::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
 
       // compute nonlinear system
       static CORE::LINALG::Matrix<3, 1> F;
@@ -1127,13 +1127,13 @@ namespace CORE::GEO
     startingValueCurrentToElementCoords<DISTYPE>(xsi);
 
     // update rhs b= -(x(xi)-x_point)
-    CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+    CORE::FE::shape_function<DISTYPE>(xsi, funct);
 
     // newton loop
     int iter = 0;
     while (residual > CORE::GEO::TOL12 or dx.Norm2() > CORE::GEO::TOL12)
     {
-      CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
+      CORE::FE::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
       // get the jacobian
       A.Clear();
@@ -1150,7 +1150,7 @@ namespace CORE::GEO
       }
 
       // update rhs b= -(x(xi)-x_point)
-      CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+      CORE::FE::shape_function<DISTYPE>(xsi, funct);
       for (int isd = 0; isd < numDim; ++isd)
       {
         b(isd) = x(isd);

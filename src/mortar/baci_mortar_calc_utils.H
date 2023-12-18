@@ -77,7 +77,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::DRT::UTILS::shape_function_1D(val, xi[0], distype);
+                  CORE::FE::shape_function_1D(val, xi[0], distype);
                   break;
                 }
               }
@@ -101,7 +101,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
+                  CORE::FE::shape_function_2D(val, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -153,7 +153,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, xi[0], distype);
+                  CORE::FE::shape_function_1D_deriv1(deriv1, xi[0], distype);
                   break;
                 }
               }
@@ -178,7 +178,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv1, xi[0], xi[1], distype);
+                  CORE::FE::shape_function_2D_deriv1(deriv1, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -228,7 +228,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv2, xi[0], distype);
+                  CORE::FE::shape_function_1D_deriv1(deriv2, xi[0], distype);
                   break;
                 }
               }
@@ -253,7 +253,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv2, xi[0], xi[1], distype);
+                  CORE::FE::shape_function_2D_deriv1(deriv2, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -317,9 +317,9 @@ namespace MORTAR
 
       CORE::LINALG::Matrix<n, 1> val;
       if (ndim == 2)
-        CORE::DRT::UTILS::shape_function_1D(val, xi[0], distype);
+        CORE::FE::shape_function_1D(val, xi[0], distype);
       else if (ndim == 3)
-        CORE::DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
+        CORE::FE::shape_function_2D(val, xi[0], xi[1], distype);
       else
         dserror("Wrong Dimension");
 
@@ -374,11 +374,11 @@ namespace MORTAR
 
       CORE::LINALG::Matrix<n, 1> val;
       if (ndim == 1)
-        CORE::DRT::UTILS::shape_function_1D(val, xi[0], distype);
+        CORE::FE::shape_function_1D(val, xi[0], distype);
       else if (ndim == 2)
-        CORE::DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
+        CORE::FE::shape_function_2D(val, xi[0], xi[1], distype);
       else if (ndim == 3)
-        CORE::DRT::UTILS::shape_function_3D(val, xi[0], xi[1], xi[2], distype);
+        CORE::FE::shape_function_3D(val, xi[0], xi[1], xi[2], distype);
 
       else
         dserror("Wrong Dimension");
@@ -460,13 +460,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          CORE::DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
-          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          CORE::FE::shape_function_2D(funct, xi[0], xi[1], distype);
+          CORE::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          CORE::DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          CORE::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           dserror("ERROR");
@@ -587,13 +587,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          CORE::DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
-          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          CORE::FE::shape_function_2D(funct, xi[0], xi[1], distype);
+          CORE::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          CORE::DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          CORE::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           dserror("ERROR");
@@ -691,13 +691,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          CORE::DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
-          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          CORE::FE::shape_function_2D(funct, xi[0], xi[1], distype);
+          CORE::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          CORE::DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          CORE::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           dserror("ERROR");

@@ -65,7 +65,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagType::Create(const int id, const
 void DRT::ELEMENTS::ElemagType::NodalBlockInformation(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  nv = CORE::DRT::UTILS::getDimension(dwele->Shape()) - 1;
+  nv = CORE::FE::getDimension(dwele->Shape()) - 1;
   dimns = nv;
   numdf = dimns;
   return;
@@ -341,7 +341,7 @@ DRT::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::ElemagBoundary::Shape() const
 {
-  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 
@@ -537,7 +537,7 @@ DRT::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
 CORE::FE::CellType DRT::ELEMENTS::ElemagIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*

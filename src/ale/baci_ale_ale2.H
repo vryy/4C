@@ -273,7 +273,7 @@ namespace DRT
       //! @name Other
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule(const CORE::FE::CellType& distype);
+      CORE::FE::GaussRule2D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       //@}
 

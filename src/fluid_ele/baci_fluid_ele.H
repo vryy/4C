@@ -145,23 +145,17 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(distype_); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(distype_); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
-      }
+      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(distype_); }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
-      }
+      int NumVolume() const override { return CORE::FE::getNumberOfElementVolumes(distype_); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -231,7 +225,7 @@ namespace DRT
       int NumDofPerNode(const DRT::Node& node) const override
       {
         // number of Dof's is fluid-specific.
-        const int nsd = CORE::DRT::UTILS::getDimension(distype_);
+        const int nsd = CORE::FE::getDimension(distype_);
         if (nsd > 1)
           return nsd + 1;
         else
@@ -486,15 +480,12 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
-      }
+      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(Shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -792,15 +783,12 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
-      }
+      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(Shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element

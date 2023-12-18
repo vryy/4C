@@ -20,8 +20,8 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Compare two Gauss integration rules for equality
    */
-  inline bool CompareGaussIntegration(const CORE::DRT::UTILS::GaussIntegration& integration_a,
-      const CORE::DRT::UTILS::GaussIntegration& integration_b)
+  inline bool CompareGaussIntegration(const CORE::FE::GaussIntegration& integration_a,
+      const CORE::FE::GaussIntegration& integration_b)
   {
     // currently this simple check is sufficient as we only use the same type of gauss integrations.
     return integration_a.NumPoints() == integration_b.NumPoints();
@@ -51,27 +51,27 @@ namespace DRT::ELEMENTS
   template <>
   constexpr auto GetGaussRuleStiffnessMatrix<CORE::FE::CellType::tet10>()
   {
-    return CORE::DRT::UTILS::GaussRule3D::tet_4point;
+    return CORE::FE::GaussRule3D::tet_4point;
   }
 
   template <>
   constexpr auto GetGaussRuleStiffnessMatrix<CORE::FE::CellType::tet4>()
   {
-    return CORE::DRT::UTILS::GaussRule3D::tet_1point;
+    return CORE::FE::GaussRule3D::tet_1point;
   }
 
   /*!
    * @brief Create a Gauss integration interface from a given Gauss rule type
    */
   template <CORE::FE::CellType celltype, typename GaussRuleType>
-  CORE::DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
+  CORE::FE::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
   {
     // setup default integration
-    CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<celltype>> intpoints(rule);
+    CORE::FE::IntPointsAndWeights<CORE::FE::dim<celltype>> intpoints(rule);
 
     // format as DRT::UTILS::GaussIntegration
-    Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> gp =
-        Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints);
+    Teuchos::RCP<CORE::FE::CollectedGaussPoints> gp =
+        Teuchos::rcp(new CORE::FE::CollectedGaussPoints);
 
     std::array<double, 3> xi = {0., 0., 0.};
     for (int i = 0; i < intpoints.IP().nquad; ++i)
@@ -80,7 +80,7 @@ namespace DRT::ELEMENTS
       gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
     }
 
-    return CORE::DRT::UTILS::GaussIntegration(gp);
+    return CORE::FE::GaussIntegration(gp);
   }
   /// @}
 }  // namespace DRT::ELEMENTS

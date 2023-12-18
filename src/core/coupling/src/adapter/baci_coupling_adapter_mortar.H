@@ -81,9 +81,9 @@ feel free to write your own tailored Setup() method.
      * meshtying
      *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
      */
-    void Setup(const Teuchos::RCP<BACI::DRT::Discretization>& masterdis,  ///< master discretization
-        const Teuchos::RCP<BACI::DRT::Discretization>& slavedis,          ///< slave discretization
-        const Teuchos::RCP<BACI::DRT::Discretization>& aledis,            ///< ALE discretization
+    void Setup(const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
+        const Teuchos::RCP<DRT::Discretization>& slavedis,          ///< slave discretization
+        const Teuchos::RCP<DRT::Discretization>& aledis,            ///< ALE discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::string& couplingcond,     ///< string for coupling condition
         const Epetra_Comm& comm,             ///< communicator
@@ -101,16 +101,14 @@ feel free to write your own tailored Setup() method.
      *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
      */
     void SetupInterface(
-        const Teuchos::RCP<BACI::DRT::Discretization>& masterdis,  ///< master discretization
-        const Teuchos::RCP<BACI::DRT::Discretization>& slavedis,   ///< slave discretization
+        const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
+        const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
-        const std::map<int, BACI::DRT::Node*>&
-            mastergnodes,  ///< master nodes, including ghosted nodes
-        const std::map<int, BACI::DRT::Node*>&
-            slavegnodes,  ///< slave nodes, including ghosted nodes
-        const std::map<int, Teuchos::RCP<BACI::DRT::Element>>& masterelements,  ///< master elements
-        const std::map<int, Teuchos::RCP<BACI::DRT::Element>>& slaveelements,   ///< slave elements
-        const Epetra_Comm& comm,                                                ///< communicator
+        const std::map<int, DRT::Node*>& mastergnodes,  ///< master nodes, including ghosted nodes
+        const std::map<int, DRT::Node*>& slavegnodes,   ///< slave nodes, including ghosted nodes
+        const std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,  ///< master elements
+        const std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,   ///< slave elements
+        const Epetra_Comm& comm,                                          ///< communicator
         const bool slavewithale = false,  ///< flag defining if slave is ALE
         const bool slidingale = false,    ///< flag indicating sliding ALE case
         const int nds_master = 0,         ///< master dofset number
@@ -136,11 +134,11 @@ feel free to write your own tailored Setup() method.
 
     //! Compute mortar matrices after performing a mesh correction step
     virtual void EvaluateWithMeshRelocation(
-        Teuchos::RCP<BACI::DRT::Discretization> slavedis,  ///< slave discretization
-        Teuchos::RCP<BACI::DRT::Discretization> aledis,    ///< ALE discretization
-        Teuchos::RCP<Epetra_Vector>& idisp,                ///< ALE displacements
-        const Epetra_Comm& comm,                           ///< communicator
-        bool slavewithale                                  ///< flag defining if slave is ALE
+        Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
+        Teuchos::RCP<DRT::Discretization> aledis,    ///< ALE discretization
+        Teuchos::RCP<Epetra_Vector>& idisp,          ///< ALE displacements
+        const Epetra_Comm& comm,                     ///< communicator
+        bool slavewithale                            ///< flag defining if slave is ALE
     );
 
     //! Get the mortar interface itself
@@ -299,8 +297,8 @@ feel free to write your own tailored Setup() method.
      *      Engineering Computation, 20:305-319 (2003)
      */
     void CheckSlaveDirichletOverlap(
-        const Teuchos::RCP<BACI::DRT::Discretization>& slavedis,  ///< [in] Slave discretization
-        const Epetra_Comm& comm                                   ///< [in] Communicator
+        const Teuchos::RCP<DRT::Discretization>& slavedis,  ///< [in] Slave discretization
+        const Epetra_Comm& comm                             ///< [in] Communicator
     );
 
     /// back transformation to initial parallel distribution
@@ -317,9 +315,8 @@ feel free to write your own tailored Setup() method.
 
    private:
     /// perform mesh relocation
-    void MeshRelocation(
-        Teuchos::RCP<BACI::DRT::Discretization> slavedis,  ///< [in] Slave discretization
-        Teuchos::RCP<BACI::DRT::Discretization> aledis,    ///< [in] ALE discretization
+    void MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,  ///< [in] Slave discretization
+        Teuchos::RCP<DRT::Discretization> aledis,                    ///< [in] ALE discretization
         Teuchos::RCP<const Epetra_Map>
             masterdofrowmap,  ///< [in] DOF row map of master discretization
         Teuchos::RCP<const Epetra_Map>

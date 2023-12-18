@@ -215,16 +215,15 @@ namespace DRT
         WriteHeader(stream, 2, celltypename);
 
         std::stringstream celltypeinfostream;
-        celltypeinfostream << "- Nodes: " << CORE::DRT::UTILS::getNumberOfElementNodes(celltype)
+        celltypeinfostream << "- Nodes: " << CORE::FE::getNumberOfElementNodes(celltype)
                            << std::endl;
-        celltypeinfostream << "- Dimension: " << CORE::DRT::UTILS::getDimension(celltype)
-                           << std::endl;
-        if (CORE::DRT::UTILS::getOrder(celltype, -1) >= 0)
+        celltypeinfostream << "- Dimension: " << CORE::FE::getDimension(celltype) << std::endl;
+        if (CORE::FE::getOrder(celltype, -1) >= 0)
         {
           celltypeinfostream << "- Shape function order (element): "
-                             << CORE::DRT::UTILS::getDegree(celltype) << std::endl;
-          celltypeinfostream << "- Shape function order (edges): "
-                             << CORE::DRT::UTILS::getOrder(celltype) << std::endl;
+                             << CORE::FE::getDegree(celltype) << std::endl;
+          celltypeinfostream << "- Shape function order (edges): " << CORE::FE::getOrder(celltype)
+                             << std::endl;
         }
         std::string celltypeinformation = celltypeinfostream.str();
         WriteParagraph(stream, celltypeinformation);

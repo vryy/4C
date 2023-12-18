@@ -95,15 +95,15 @@ namespace DRT
         CORE::LINALG::SerialDenseVector& elevec1_epetra,
         CORE::LINALG::SerialDenseVector& elevec2_epetra,
         CORE::LINALG::SerialDenseVector& elevec3_epetra,
-        const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+        const std::vector<CORE::FE::GaussIntegration>& intpoints,
         const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag)
     {
       int err = 0;
 
-      for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
+      for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = intpoints.begin();
            i != intpoints.end(); ++i)
       {
-        const CORE::DRT::UTILS::GaussIntegration intpoints_cell = *i;
+        const CORE::FE::GaussIntegration intpoints_cell = *i;
         err = my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
             elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_cell, offdiag);
         if (err) return err;
@@ -118,15 +118,15 @@ namespace DRT
     int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& discretization, const std::vector<int>& lm,
         CORE::LINALG::SerialDenseVector& elevec1_epetra,
-        const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+        const std::vector<CORE::FE::GaussIntegration>& intpoints,
         const CORE::GEO::CUT::plain_volumecell_set& cells)
     {
       int err = 0;
 
-      for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
+      for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = intpoints.begin();
            i != intpoints.end(); ++i)
       {
-        const CORE::DRT::UTILS::GaussIntegration gint = *i;
+        const CORE::FE::GaussIntegration gint = *i;
         err = my::IntegrateShapeFunction(ele, discretization, lm, elevec1_epetra, gint);
         if (err) return err;
       }
@@ -145,7 +145,7 @@ namespace DRT
       // integrations points and weights
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
       // degree 5
-      const CORE::DRT::UTILS::GaussIntegration intpoints(distype, 8);
+      const CORE::FE::GaussIntegration intpoints(distype, 8);
       return ComputeError(ele, params, mat, discretization, lm, ele_dom_norms, intpoints);
     }
 
@@ -154,7 +154,7 @@ namespace DRT
         Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
         CORE::LINALG::SerialDenseVector& ele_dom_norms,  // squared element domain norms
-        const CORE::DRT::UTILS::GaussIntegration& intpoints)
+        const CORE::FE::GaussIntegration& intpoints)
     {
       // analytical solution
       CORE::LINALG::Matrix<nsd_, 1> u_analyt(true);
@@ -222,8 +222,8 @@ namespace DRT
       //                       INTEGRATION LOOP
       //------------------------------------------------------------------
 
-      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
-           iquad != intpoints.end(); ++iquad)
+      for (CORE::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
+           ++iquad)
       {
         // evaluate shape functions and derivatives at integration point
         my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -790,7 +790,7 @@ namespace DRT
         CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
         const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
             bcells,  ///< boundary cells
-        const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+        const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
             bintpoints,                                     ///< boundary integration points
         const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
         Teuchos::ParameterList& params                      ///< parameter list
@@ -902,7 +902,7 @@ namespace DRT
       // loop intersecting sides
       //--------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<CORE::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
@@ -951,7 +951,7 @@ namespace DRT
         const XFEM::EleCoupCond& coupcond = cond_manager->GetCouplingCondition(coup_sid, my::eid_);
         const INPAR::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
-        const std::vector<CORE::DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<CORE::FE::GaussIntegration>& cutintpoints = i->second;
 
         std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
@@ -1033,19 +1033,17 @@ namespace DRT
         //--------------------------------------------
         // loop boundary cells w.r.t current cut side
         //--------------------------------------------
-        for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i =
-                 cutintpoints.begin();
+        for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const CORE::DRT::UTILS::GaussIntegration& gi = *i;
+          const CORE::FE::GaussIntegration& gi = *i;
           CORE::GEO::CUT::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //--------------------------------------------
           // loop gausspoints w.r.t current boundary cell
           //--------------------------------------------
-          for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
-               ++iquad)
+          for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
           {
             double drs =
                 0.0;  // transformation factor between reference cell and linearized boundary cell
@@ -1124,7 +1122,7 @@ namespace DRT
             }
             else
             {
-              CORE::DRT::UTILS::shape_function<distype>(rst, my::funct_);
+              CORE::FE::shape_function<distype>(rst, my::funct_);
             }
 
 
@@ -1279,10 +1277,10 @@ namespace DRT
         DRT::Discretization& dis,                                  ///< background discretization
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,  ///< element gauss points
+        const std::vector<CORE::FE::GaussIntegration>& intpoints,  ///< element gauss points
         const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
             bcells,  ///< boundary cells
-        const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+        const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
             bintpoints,  ///< boundary integration points
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
@@ -1541,7 +1539,7 @@ namespace DRT
       // loop intersecting sides
       //--------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<CORE::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
@@ -1587,7 +1585,7 @@ namespace DRT
         const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
         Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
 
-        const std::vector<CORE::DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<CORE::FE::GaussIntegration>& cutintpoints = i->second;
 
         // get side's boundary cells
         std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
@@ -1812,19 +1810,17 @@ namespace DRT
         //--------------------------------------------
         // loop boundary cells w.r.t current cut side
         //--------------------------------------------
-        for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i =
-                 cutintpoints.begin();
+        for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const CORE::DRT::UTILS::GaussIntegration& gi = *i;
+          const CORE::FE::GaussIntegration& gi = *i;
           CORE::GEO::CUT::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //--------------------------------------------
           // loop gausspoints w.r.t current boundary cell
           //--------------------------------------------
-          for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
-               ++iquad)
+          for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
           {
             double drs =
                 0.0;  // transformation factor between reference cell and linearized boundary cell
@@ -1907,7 +1903,7 @@ namespace DRT
             }
             else
             {
-              CORE::DRT::UTILS::shape_function<distype>(rst, my::funct_);
+              CORE::FE::shape_function<distype>(rst, my::funct_);
             }
 
 
@@ -2628,7 +2624,7 @@ namespace DRT
      *-------------------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
-        const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+        const std::vector<CORE::FE::GaussIntegration>& intpoints,
         const CORE::GEO::CUT::plain_volumecell_set& cells,
         const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
         const CORE::LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
@@ -2653,7 +2649,7 @@ namespace DRT
       if (fldparaxfem_->HybridLM_L2Proj() == INPAR::XFEM::Hybrid_LM_L2_Proj_full)
       {
         // get the standard set of gauss-points from the intersected element
-        for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
+        for (CORE::FE::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
              iquad != my::intpoints_.end(); ++iquad)
         {
           my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -2671,12 +2667,12 @@ namespace DRT
       }
       else
       {
-        for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
+        for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = intpoints.begin();
              i != intpoints.end(); ++i)
         {
-          const CORE::DRT::UTILS::GaussIntegration intcell = *i;
-          for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intcell.begin();
-               iquad != intcell.end(); ++iquad)
+          const CORE::FE::GaussIntegration intcell = *i;
+          for (CORE::FE::GaussIntegration::iterator iquad = intcell.begin(); iquad != intcell.end();
+               ++iquad)
           {
             // evaluate shape functions and derivatives at integration point
             my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -3185,7 +3181,7 @@ namespace DRT
         DRT::Discretization& dis, const std::vector<int>& lm,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
-        const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>& bintpoints,
+        const std::map<int, std::vector<CORE::FE::GaussIntegration>>& bintpoints,
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
         Teuchos::ParameterList& params,
@@ -3337,7 +3333,7 @@ namespace DRT
       //      surface integral --- loop sides
       //-----------------------------------------------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<CORE::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
@@ -3387,7 +3383,7 @@ namespace DRT
         Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
 
 
-        const std::vector<CORE::DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<CORE::FE::GaussIntegration>& cutintpoints = i->second;
 
         std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
@@ -3601,11 +3597,10 @@ namespace DRT
         //---------------------------------------------------------------------------------
         // loop boundary cells w.r.t current cut side
         //---------------------------------------------------------------------------------
-        for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i =
-                 cutintpoints.begin();
+        for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const CORE::DRT::UTILS::GaussIntegration& gi = *i;
+          const CORE::FE::GaussIntegration& gi = *i;
           CORE::GEO::CUT::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
@@ -3613,8 +3608,7 @@ namespace DRT
           // loop gausspoints w.r.t current boundary cell
           //-------------------------------------------------------------------------------
           //-------------------------------------------------------------------------------
-          for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
-               ++iquad)
+          for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
           {
             double drs =
                 0.0;  // transformation factor between reference cell and linearized boundary cell
@@ -4384,10 +4378,10 @@ namespace DRT
     void FluidEleCalcXFEM<distype>::EvalFuncAndDeriv(CORE::LINALG::Matrix<3, 1>& rst)
     {
       // evaluate shape functions
-      CORE::DRT::UTILS::shape_function<distype>(rst, my::funct_);
+      CORE::FE::shape_function<distype>(rst, my::funct_);
 
       // evaluate the derivatives of shape functions
-      CORE::DRT::UTILS::shape_function_deriv1<distype>(rst, my::deriv_);
+      CORE::FE::shape_function_deriv1<distype>(rst, my::deriv_);
       my::xjm_.MultiplyNT(my::deriv_, my::xyze_);
       my::det_ = my::xji_.Invert(my::xjm_);
 
@@ -4498,11 +4492,11 @@ namespace DRT
      *--------------------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
-        DRT::ELEMENTS::Fluid* ele,                           ///< fluid element
-        DRT::Discretization& dis,                            ///< discretization
-        const std::vector<int>& lm,                          ///< local map
-        CORE::LINALG::SerialDenseVector& elevec1_epetra,     ///< element vector
-        const CORE::DRT::UTILS::GaussIntegration& intpoints  ///< integration points
+        DRT::ELEMENTS::Fluid* ele,                        ///< fluid element
+        DRT::Discretization& dis,                         ///< discretization
+        const std::vector<int>& lm,                       ///< local map
+        CORE::LINALG::SerialDenseVector& elevec1_epetra,  ///< element vector
+        const CORE::FE::GaussIntegration& intpoints       ///< integration points
     )
     {
       CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> elevec1(elevec1_epetra, true);
@@ -4516,7 +4510,7 @@ namespace DRT
       //------------------------------------------------------------------------
       //  start loop over integration points
       //------------------------------------------------------------------------
-      for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+      for (CORE::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
         // evaluate shape functions and derivatives at integration point

@@ -56,7 +56,7 @@ std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
   const int numNodesPerElement = CORE::FE::num_nodes<distype>;
 
   CORE::LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
-  CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
+  CORE::FE::shape_function<distype>(xi, shapefunct);
 
   const int num_dof_per_node = static_cast<int>(nodal_quantity.size()) / numNodesPerElement;
   std::vector<double> projected_quantities(num_dof_per_node, 0.0);

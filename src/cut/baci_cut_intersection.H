@@ -466,7 +466,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<probdim, 1> x_edge_1;
         x_edge_1 = 0;
         CORE::LINALG::Matrix<numNodesEdge, 1> edge_funct_1;
-        CORE::DRT::UTILS::shape_function<edgetype>(xsi_edge_, edge_funct_1);
+        CORE::FE::shape_function<edgetype>(xsi_edge_, edge_funct_1);
         for (unsigned inode = 0; inode < numNodesEdge; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x_edge_1(isd) += xyze_lineElement_(isd, inode) * edge_funct_1(inode);
@@ -478,7 +478,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<probdim, 1> x_edge_2;
         x_edge_2 = 0;
         CORE::LINALG::Matrix<numNodesSide, 1> edge_funct_2;
-        CORE::DRT::UTILS::shape_function<sidetype>(xsi_side_, edge_funct_2);
+        CORE::FE::shape_function<sidetype>(xsi_side_, edge_funct_2);
         for (unsigned inode = 0; inode < numNodesSide; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x_edge_2(isd) += xyze_surfaceElement_(isd, inode) * edge_funct_2(inode);
@@ -533,7 +533,7 @@ namespace CORE::GEO
         // get final point
         x = 0;
         CORE::LINALG::Matrix<numNodesEdge, 1> lineFunct;
-        CORE::DRT::UTILS::shape_function<edgetype>(xsi_edge, lineFunct);
+        CORE::FE::shape_function<edgetype>(xsi_edge, lineFunct);
         for (unsigned inode = 0; inode < numNodesEdge; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x(isd) += xyze_lineElement_(isd, inode) * lineFunct(inode);

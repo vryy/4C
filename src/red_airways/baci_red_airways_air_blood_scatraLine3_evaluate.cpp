@@ -191,17 +191,17 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::EvaluateDirichlet(Teuchos::ParameterL
 
 
 // get optimal gaussrule for discretization type
-CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::RedAirBloodScatraLine3::getOptimalGaussrule(
+CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirBloodScatraLine3::getOptimalGaussrule(
     const CORE::FE::CellType& distype)
 {
-  CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
+  CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
   switch (distype)
   {
     case CORE::FE::CellType::line2:
-      rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
+      rule = CORE::FE::GaussRule1D::line_2point;
       break;
     case CORE::FE::CellType::line3:
-      rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
+      rule = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

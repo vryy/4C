@@ -90,7 +90,7 @@ namespace DRT
 
        6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
       */
-      static const int numderiv2_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! total gauss points per element
       int numgpt_;
@@ -652,7 +652,7 @@ namespace DRT
           const CORE::LINALG::Matrix<numnod_, 1>& shapefct) const;
 
       //! Gauss integration rule
-      CORE::DRT::UTILS::GaussIntegration intpoints_;
+      CORE::FE::GaussIntegration intpoints_;
 
       //! flag indicating if element has been initialized
       bool init_;

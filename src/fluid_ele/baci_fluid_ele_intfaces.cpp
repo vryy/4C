@@ -83,7 +83,7 @@ DRT::Element* DRT::ELEMENTS::FluidIntFace::Clone() const
 CORE::FE::CellType DRT::ELEMENTS::FluidIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*

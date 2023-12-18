@@ -281,9 +281,8 @@ namespace DRT
        * @param[out] normalvec  normal vector at Gauss point(optional)
        * @return domain integration factor
        */
-      double EvalShapeFuncAndIntFac(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
-          CORE::LINALG::Matrix<nsd_, 1>* normalvec = nullptr);
+      double EvalShapeFuncAndIntFac(const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,
+          const int iquad, CORE::LINALG::Matrix<nsd_, 1>* normalvec = nullptr);
 
       /*!
        * @brief evaluate shape functions and derivatives at integration point
@@ -292,7 +291,7 @@ namespace DRT
        * @param[in] iquad      id of current Gauss point
        */
       void EvaluateShapeFuncAndDerivativeAtIntPoint(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
+          const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
 
       /*!
        * @brief Calculate the derivative of the square root of the determinant of the metric tensor
@@ -304,7 +303,7 @@ namespace DRT
        *                           tensor w.r.t. spatial coordinates
        */
       void EvaluateSpatialDerivativeOfAreaIntegrationFactor(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, int iquad,
+          const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, int iquad,
           CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd);
 
       //! evaluate scatra-scatra interface coupling condition

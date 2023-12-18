@@ -61,7 +61,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::Setup()
  */
 template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
-    const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
+    const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
  */
 template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePositionalCoupling(
-    const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
+    const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
@@ -165,7 +165,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePosi
  */
 template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRotationalCoupling(
-    const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
+    const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
@@ -220,7 +220,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
     // Interpolation matrices.
     std::vector<CORE::LINALG::Matrix<3, 3, double>> I_tilde;
     CORE::LINALG::Matrix<3, n_dof_rot_, double> I_tilde_full;
-    CORE::DRT::UTILS::shape_function_1D(
+    CORE::FE::shape_function_1D(
         L_i[i_beam], position_in_parameterspace_[i_beam], CORE::FE::CellType::line3);
     triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
         I_tilde, position_in_parameterspace_[i_beam]);

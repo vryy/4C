@@ -78,8 +78,8 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at int. point
       double EvalShapeFuncAndIntFac(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          const int iquad,  ///< id of current Gauss point
+          const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          const int iquad,                                       ///< id of current Gauss point
           CORE::LINALG::Matrix<1 + nsd_, 1>* normalvec =
               nullptr  ///< normal vector at Gauss point(optional)
       );

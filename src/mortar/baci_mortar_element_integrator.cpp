@@ -26,7 +26,7 @@ MORTAR::ElementIntegrator::ElementIntegrator(CORE::FE::CellType eletype)
   // 9  points: for integrals on 2D 1st order quadrilaterals
   // 25 points: for integrals on 2D 2nd order quadrilaterals
   //**********************************************************************
-  Teuchos::RCP<CORE::DRT::UTILS::IntegrationPoints2D> rule2d;
+  Teuchos::RCP<CORE::FE::IntegrationPoints2D> rule2d;
 
   switch (eletype)
   {
@@ -35,8 +35,7 @@ MORTAR::ElementIntegrator::ElementIntegrator(CORE::FE::CellType eletype)
     case CORE::FE::CellType::nurbs2:
     case CORE::FE::CellType::nurbs3:
     {
-      const CORE::DRT::UTILS::IntegrationPoints1D intpoints(
-          CORE::DRT::UTILS::GaussRule1D::line_5point);
+      const CORE::FE::IntegrationPoints1D intpoints(CORE::FE::GaussRule1D::line_5point);
       ngp_ = intpoints.nquad;
       coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
@@ -49,23 +48,19 @@ MORTAR::ElementIntegrator::ElementIntegrator(CORE::FE::CellType eletype)
       break;
     }
     case CORE::FE::CellType::tri3:
-      rule2d = Teuchos::rcp(
-          new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::tri_7point));
+      rule2d = Teuchos::rcp(new CORE::FE::IntegrationPoints2D(CORE::FE::GaussRule2D::tri_7point));
       break;
     case CORE::FE::CellType::tri6:
-      rule2d = Teuchos::rcp(
-          new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::tri_16point));
+      rule2d = Teuchos::rcp(new CORE::FE::IntegrationPoints2D(CORE::FE::GaussRule2D::tri_16point));
       break;
     case CORE::FE::CellType::quad4:
-      rule2d = Teuchos::rcp(
-          new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::quad_9point));
+      rule2d = Teuchos::rcp(new CORE::FE::IntegrationPoints2D(CORE::FE::GaussRule2D::quad_9point));
       break;
     case CORE::FE::CellType::quad8:
     case CORE::FE::CellType::quad9:
     case CORE::FE::CellType::nurbs4:
     case CORE::FE::CellType::nurbs9:
-      rule2d = Teuchos::rcp(
-          new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::quad_25point));
+      rule2d = Teuchos::rcp(new CORE::FE::IntegrationPoints2D(CORE::FE::GaussRule2D::quad_25point));
       break;
     default:
       dserror("ElementIntegrator: This contact element type is not implemented!");

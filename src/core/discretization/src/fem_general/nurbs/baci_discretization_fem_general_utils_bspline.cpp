@@ -16,7 +16,7 @@ BACI_NAMESPACE_OPEN
 //--------------------------------------------------
 // Constructor
 //--------------------------------------------------
-CORE::DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
+CORE::FE::NURBS::BsplinePolynomial::BsplinePolynomial(
     const int degree, const CORE::LINALG::SerialDenseVector local_knotvector)
     : myknotvector_(local_knotvector),
       bspline_(degree + 1),
@@ -29,7 +29,7 @@ CORE::DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
 //--------------------------------------------------
 // Copy constructor
 //--------------------------------------------------
-CORE::DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(const BsplinePolynomial& old)
+CORE::FE::NURBS::BsplinePolynomial::BsplinePolynomial(const BsplinePolynomial& old)
     : degree_(old.degree_)
 {
   myknotvector_ = old.myknotvector_;
@@ -38,7 +38,7 @@ CORE::DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(const BsplinePolyn
 
 
 
-void CORE::DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const std::string errormessage)
+void CORE::FE::NURBS::BsplinePolynomial::Throwerror(const std::string errormessage)
 {
   // give some information on bspline
   PrintBspline();

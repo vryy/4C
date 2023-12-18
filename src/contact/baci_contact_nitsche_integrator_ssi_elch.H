@@ -33,7 +33,7 @@ namespace CONTACT
      * Constructs an instance of this class using a specific type of shape functions.<br> Note that
      * this is \b not a collective call as overlaps are integrated in parallel by individual
      * processes.<br> Note also that this constructor relies heavily on the
-     * CORE::DRT::UTILS::IntegrationPoints structs to get Gauss points and corresponding weights.
+     * CORE::FE::IntegrationPoints structs to get Gauss points and corresponding weights.
      *
      * @param[in] params   interface contact parameter list
      * @param[in] eletype  shape of integration cell for segment based integration or slave side

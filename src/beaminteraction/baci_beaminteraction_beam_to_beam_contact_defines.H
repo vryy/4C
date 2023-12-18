@@ -138,7 +138,7 @@ typedef double TYPE;
       M_PI  // angle above which it is assumed that a unique cpp can be found by the local Newton
 
 #define BEAMCONTACTGAUSSRULE \
-  CORE::DRT::UTILS::GaussRule1D::line_5point  // Gauss rule applied in each segment
+  CORE::FE::GaussRule1D::line_5point  // Gauss rule applied in each segment
 // default: 5 GP
 
 // #define CONSISTENTTRANSITION 2                    //apply moment based transition: 1 -> variant
@@ -233,8 +233,8 @@ dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
 #endif
 // #define GAP0 // GAP0 > 0                        // Decide if complete stiffness is used
 #define GAUSSRULE \
-  CORE::DRT::UTILS::GaussRule1D::line_6point  // Define gauss rule for integrating residual and
-                                              // stiffness terms
+  CORE::FE::GaussRule1D::line_6point  // Define gauss rule for integrating residual and
+                                      // stiffness terms
 
 // #define AUTOMATICDIFFBTS                        // Decide if automatic differentiation via Sacado
 //  is used default: Off

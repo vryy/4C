@@ -177,7 +177,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1)
 {
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_> intpoints(
       POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
@@ -244,8 +244,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
-    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int iquad,                                               ///< id of current Gauss point
+    const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+    const int iquad,                                       ///< id of current Gauss point
     CORE::LINALG::Matrix<1 + nsd_, 1>* normalvec  ///< normal vector at Gauss point(optional)
 )
 {
@@ -257,13 +257,13 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFunc
   }
 
   // shape functions and their first derivatives
-  CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
-  CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+  CORE::FE::shape_function<distype>(xsi_, funct_);
+  CORE::FE::shape_function_deriv1<distype>(xsi_, deriv_);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
   double drs(0.0);
-  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+  CORE::FE::ComputeMetricTensorForBoundaryEle<distype>(
       xyze_, deriv_, metrictensor_, drs, normalvec);
 
   // return the integration factor

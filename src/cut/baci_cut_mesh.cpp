@@ -518,8 +518,8 @@ CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
  * creates a new ??? boundary cell
  *-------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(VolumeCell* volume,
-    Facet* facet, const std::vector<Point*>& points,
-    const CORE::DRT::UTILS::GaussIntegration& gaussRule, const CORE::LINALG::Matrix<3, 1>& normal)
+    Facet* facet, const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
+    const CORE::LINALG::Matrix<3, 1>& normal)
 {
 #ifdef DEBUGCUTLIBRARY
   plain_point_set pointtest;

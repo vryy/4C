@@ -43,7 +43,7 @@ int CORE::GEO::CutWizard::BackMesh::NumMyColElements() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const BACI::DRT::Element* CORE::GEO::CutWizard::BackMesh::lColElement(int lid) const
+const DRT::Element* CORE::GEO::CutWizard::BackMesh::lColElement(int lid) const
 {
   return back_discret_->lColElement(lid);
 }
@@ -51,7 +51,7 @@ const BACI::DRT::Element* CORE::GEO::CutWizard::BackMesh::lColElement(int lid) c
 /*-------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------*/
-CORE::GEO::CutWizard::CutWizard(const Teuchos::RCP<BACI::DRT::Discretization>& backdis)
+CORE::GEO::CutWizard::CutWizard(const Teuchos::RCP<DRT::Discretization>& backdis)
     : back_mesh_(Teuchos::rcp(new CutWizard::BackMesh(backdis, this))),
       comm_(backdis->Comm()),
       myrank_(backdis->Comm().MyPID()),
@@ -149,8 +149,7 @@ void CORE::GEO::CutWizard::SetBackgroundState(
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
 void CORE::GEO::CutWizard::AddCutterState(const int mc_idx,
-    Teuchos::RCP<BACI::DRT::Discretization> cutter_dis,
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col)
+    Teuchos::RCP<DRT::Discretization> cutter_dis, Teuchos::RCP<const Epetra_Vector> cutter_disp_col)
 {
   AddCutterState(0, cutter_dis, cutter_disp_col, 0);
 }
@@ -159,8 +158,8 @@ void CORE::GEO::CutWizard::AddCutterState(const int mc_idx,
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
 void CORE::GEO::CutWizard::AddCutterState(const int mc_idx,
-    Teuchos::RCP<BACI::DRT::Discretization> cutter_dis,
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
+    Teuchos::RCP<DRT::Discretization> cutter_dis, Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+    const int start_ele_gid)
 {
   std::map<int, Teuchos::RCP<CutterMesh>>::iterator cm = cutter_meshes_.find(mc_idx);
 
@@ -177,7 +176,7 @@ void CORE::GEO::CutWizard::AddCutterState(const int mc_idx,
  *--------------------------------------------------------------*/
 void CORE::GEO::CutWizard::SetMarkedConditionSides(
     // const int mc_idx,                                       //Not needed (for now?)
-    Teuchos::RCP<BACI::DRT::Discretization> cutter_dis,
+    Teuchos::RCP<DRT::Discretization> cutter_dis,
     // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,      //Not needed (for now?)
     const int start_ele_gid)
 {
@@ -188,7 +187,7 @@ void CORE::GEO::CutWizard::SetMarkedConditionSides(
   //  ## WARNING: Not sure what happens if it doesn't find a surface?
   for (int lid = 0; lid < cutter_dis->NumMyRowElements(); ++lid)
   {
-    BACI::DRT::Element* cutter_dis_ele = cutter_dis->lRowElement(lid);
+    DRT::Element* cutter_dis_ele = cutter_dis->lRowElement(lid);
 
     const int numnode = cutter_dis_ele->NumNode();
     const int* nodeids = cutter_dis_ele->NodeIds();
@@ -357,8 +356,8 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide()
 /*-------------------------------------------------------------*
  * add all cutting sides from the cut-discretization
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<BACI::DRT::Discretization> cutterdis,
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+void CORE::GEO::CutWizard::AddMeshCuttingSide(
+    Teuchos::RCP<DRT::Discretization> cutterdis, Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
     const int start_ele_gid  ///< mesh coupling index
 )
 {
@@ -373,16 +372,16 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<BACI::DRT::Discretiza
 
   for (int lid = 0; lid < numcutelements; ++lid)
   {
-    BACI::DRT::Element* element = cutterdis->lColElement(lid);
+    DRT::Element* element = cutterdis->lColElement(lid);
 
     const int numnode = element->NumNode();
-    BACI::DRT::Node** nodes = element->Nodes();
+    DRT::Node** nodes = element->Nodes();
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
     for (int i = 0; i < numnode; ++i)
     {
-      BACI::DRT::Node& node = *nodes[i];
+      DRT::Node& node = *nodes[i];
 
       lm.clear();
       mydisp.clear();
@@ -394,7 +393,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<BACI::DRT::Discretiza
       {
         if (lm.size() == 3)  // case for BELE3 boundary elements
         {
-          BACI::DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm);
         }
         else if (lm.size() == 4)  // case for BELE3_4 boundary elements
         {
@@ -404,7 +403,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<BACI::DRT::Discretiza
           lm_red.clear();
           for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-          BACI::DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
+          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
         }
         else
           dserror("wrong number of dofs for node %i", lm.size());
@@ -428,8 +427,8 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<BACI::DRT::Discretiza
 /*-------------------------------------------------------------*
  * prepare the cut, add background elements and cutting sides
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddMeshCuttingSide(int mi, BACI::DRT::Element* ele,
-    const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid)
+void CORE::GEO::CutWizard::AddMeshCuttingSide(
+    int mi, DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid)
 {
   const int numnode = ele->NumNode();
   const int* nodeids = ele->NodeIds();
@@ -456,7 +455,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
 
   for (int lid = 0; lid < numelements; ++lid)
   {
-    const BACI::DRT::Element* element = back_mesh_->lColElement(lid);
+    const DRT::Element* element = back_mesh_->lColElement(lid);
 
     CORE::LINALG::SerialDenseMatrix xyze;
 
@@ -466,7 +465,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
     {
       myphinp.clear();
 
-      BACI::DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->BackLevelSetCol());
+      DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->BackLevelSetCol());
       AddElement(element, xyze, myphinp.data(), lsv_only_plus_domain_);
     }
     else
@@ -479,26 +478,26 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
-    const BACI::DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const
+    const DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const
 {
   std::vector<int> lm;
   std::vector<double> mydisp;
 
   const int numnode = element->NumNode();
-  const BACI::DRT::Node* const* nodes = element->Nodes();
+  const DRT::Node* const* nodes = element->Nodes();
 
   xyze.shape(3, numnode);
   for (int i = 0; i < numnode; ++i)
   {
-    const BACI::DRT::Node& node = *nodes[i];
+    const DRT::Node& node = *nodes[i];
 
     CORE::LINALG::Matrix<3, 1> x(node.X().data());
 
     if (back_mesh_->IsBackDisp())
     {
       // castt to DiscretizationXFEM
-      Teuchos::RCP<BACI::DRT::DiscretizationXFEM> xbackdis =
-          Teuchos::rcp_dynamic_cast<BACI::DRT::DiscretizationXFEM>(back_mesh_->GetPtr(), true);
+      Teuchos::RCP<DRT::DiscretizationXFEM> xbackdis =
+          Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(back_mesh_->GetPtr(), true);
 
       lm.clear();
       mydisp.clear();
@@ -508,7 +507,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
 
       if (lm.size() == 3)  // case used actually?
       {
-        BACI::DRT::UTILS::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm);
+        DRT::UTILS::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm);
       }
       else if (lm.size() == 4)  // case xFluid ... just take the first three
       {
@@ -517,7 +516,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
         lm_red.clear();
         for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-        BACI::DRT::UTILS::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm_red);
+        DRT::UTILS::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm_red);
       }
       else
         dserror("wrong number of dofs for node %i", lm.size());
@@ -537,7 +536,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
 /*-------------------------------------------------------------*
  * Add this background mesh element to the intersection class
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddElement(const BACI::DRT::Element* ele,
+void CORE::GEO::CutWizard::AddElement(const DRT::Element* ele,
     const CORE::LINALG::SerialDenseMatrix& xyze, double* myphinp, bool lsv_only_plus_domain)
 {
   const int numnode = ele->NumNode();
@@ -764,7 +763,7 @@ void CORE::GEO::CutWizard::PrintCellStats() { intersection_->PrintCellStats(); }
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::DumpGmshNumDOFSets(bool include_inner)
 {
-  std::string filename = BACI::DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << filename;
 
@@ -777,7 +776,7 @@ void CORE::GEO::CutWizard::DumpGmshNumDOFSets(bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::DumpGmshVolumeCells(bool include_inner)
 {
-  std::string name = BACI::DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << name << ".CUT_volumecells." << myrank_ << ".pos";
   intersection_->DumpGmshVolumeCells(str.str(), include_inner);
@@ -788,7 +787,7 @@ void CORE::GEO::CutWizard::DumpGmshVolumeCells(bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::DumpGmshIntegrationCells()
 {
-  std::string name = BACI::DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << name << ".CUT_integrationcells." << myrank_ << ".pos";
   intersection_->DumpGmshIntegrationCells(str.str());
@@ -823,7 +822,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CutWizard::GetElement(const int eleid)
   return intersection_->GetElement(eleid);
 }
 
-CORE::GEO::CUT::ElementHandle* CORE::GEO::CutWizard::GetElement(const BACI::DRT::Element* ele) const
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CutWizard::GetElement(const DRT::Element* ele) const
 {
   return GetElement(ele->Id());
 }
@@ -840,8 +839,7 @@ bool CORE::GEO::CutWizard::HasLSCuttingSide(int sid)
   return intersection_->HasLSCuttingSide(sid);
 }
 
-void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(
-    Teuchos::RCP<BACI::DRT::Discretization> cutterdis,
+void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> cutterdis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
 {
   if (cutterdis == Teuchos::null)
@@ -855,17 +853,17 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(
 
   for (int lid = 0; lid < numcutelements; ++lid)
   {
-    BACI::DRT::Element* element = cutterdis->lColElement(lid);
+    DRT::Element* element = cutterdis->lColElement(lid);
 
     const int numnode = element->NumNode();
-    BACI::DRT::Node** nodes = element->Nodes();
+    DRT::Node** nodes = element->Nodes();
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
     std::vector<int> dofs;
 
     for (int i = 0; i < numnode; ++i)
     {
-      BACI::DRT::Node& node = *nodes[i];
+      DRT::Node& node = *nodes[i];
 
       lm.clear();
       mydisp.clear();
@@ -882,7 +880,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(
       {
         if (lm.size() == 3)  // case for BELE3 boundary elements
         {
-          BACI::DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm);
         }
         else if (lm.size() == 4)  // case for BELE3_4 boundary elements
         {
@@ -892,7 +890,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(
           lm_red.clear();
           for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-          BACI::DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
+          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
         }
         else
           dserror("wrong number of dofs for node %i", lm.size());
@@ -936,7 +934,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(
 
             // eval shape function
             CORE::LINALG::Matrix<4, 1> funct;
-            CORE::DRT::UTILS::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->Shape());
+            CORE::FE::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->Shape());
 
             CORE::LINALG::Matrix<3, 1> newpos(true);
             newpos.Multiply(XYZE, funct);

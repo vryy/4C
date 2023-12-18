@@ -892,8 +892,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             {
               const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
               CORE::LINALG::Matrix<numnodes, 1> funct;
-              CORE::DRT::UTILS::shape_function_3D(
-                  funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex8);
+              CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex8);
               CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
               CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
               CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -908,8 +907,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
               // TODO: check the output for hex20
               const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex20>;
               CORE::LINALG::Matrix<numnodes, 1> funct;
-              CORE::DRT::UTILS::shape_function_3D(
-                  funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex20);
+              CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex20);
               CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
               CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
               CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -924,8 +922,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
               // TODO: check the output for hex27
               const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex27>;
               CORE::LINALG::Matrix<numnodes, 1> funct;
-              CORE::DRT::UTILS::shape_function_3D(
-                  funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex27);
+              CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex27);
               CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
               CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
               CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1022,8 +1019,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
             CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex8);
+            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex8);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1038,8 +1034,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             // TODO: check the output for hex20
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex20>;
             CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex20);
+            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex20);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1054,8 +1049,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             // TODO: check the output for hex27
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex27>;
             CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex27);
+            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex27);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1069,8 +1063,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::wedge6>;
             CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::wedge6);
+            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::wedge6);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1084,8 +1077,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::wedge15>;
             CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::wedge15);
+            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::wedge15);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1099,8 +1091,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::tet4>;
             CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::tet4);
+            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::tet4);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1114,8 +1105,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::tet10>;
             CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::tet10);
+            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::tet10);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1238,9 +1228,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
             CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             CORE::LINALG::Matrix<2, numnodes> deriv;
-            CORE::DRT::UTILS::shape_function_2D_deriv1(
-                deriv, eta(0), eta(1), CORE::FE::CellType::quad4);
-            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad4>(
+            CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), CORE::FE::CellType::quad4);
+            CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad4>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
@@ -1249,9 +1238,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::tri3>;
             CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             CORE::LINALG::Matrix<2, numnodes> deriv;
-            CORE::DRT::UTILS::shape_function_2D_deriv1(
-                deriv, eta(0), eta(1), CORE::FE::CellType::tri3);
-            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::tri3>(
+            CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), CORE::FE::CellType::tri3);
+            CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::tri3>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
@@ -1260,9 +1248,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad8>;
             CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             CORE::LINALG::Matrix<2, numnodes> deriv;
-            CORE::DRT::UTILS::shape_function_2D_deriv1(
-                deriv, eta(0), eta(1), CORE::FE::CellType::quad8);
-            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad8>(
+            CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), CORE::FE::CellType::quad8);
+            CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad8>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
@@ -1271,9 +1258,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
             const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad9>;
             CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             CORE::LINALG::Matrix<2, numnodes> deriv;
-            CORE::DRT::UTILS::shape_function_2D_deriv1(
-                deriv, eta(0), eta(1), CORE::FE::CellType::quad9);
-            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad9>(
+            CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), CORE::FE::CellType::quad9);
+            CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad9>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }

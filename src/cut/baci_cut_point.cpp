@@ -598,7 +598,7 @@ Teuchos::RCP<CORE::GEO::CUT::Point> CORE::GEO::CUT::CreatePoint(
     unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
 {
   const PointFactory factory;
-  const int probdim = BACI::DRT::Problem::Instance()->NDim();
+  const int probdim = DRT::Problem::Instance()->NDim();
   return factory.CreatePoint(pid, x, cut_edge, cut_side, tolerance, probdim);
 }
 

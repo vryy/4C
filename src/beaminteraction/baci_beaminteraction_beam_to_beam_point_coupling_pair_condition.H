@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
      * is in this condition.
      */
-    void BuildIdSets(const Teuchos::RCP<const BACI::DRT::Discretization>& discretization) override;
+    void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization) override;
 
 
    private:

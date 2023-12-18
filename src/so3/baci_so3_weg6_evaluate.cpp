@@ -1017,15 +1017,15 @@ std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::sow6_s
   std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::wedge_6point;
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::wedge6);
+    CORE::FE::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::wedge6);
   }
   return shapefcts;
 }
@@ -1038,15 +1038,15 @@ std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::So_we
   std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::wedge_6point;
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::wedge6);
+    CORE::FE::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::wedge6);
   }
   return derivs;
 }
@@ -1057,8 +1057,8 @@ std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::So_we
 std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
 {
   std::vector<double> weights(NUMGPT_WEG6);
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::wedge_6point;
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_WEG6; ++i)
   {
     weights[i] = intpoints.qwgt[i];
@@ -1094,8 +1094,8 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
     // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
-    const CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
-    const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
+    const CORE::FE::GaussRule3D gaussrule_ = CORE::FE::GaussRule3D::wedge_6point;
+    const CORE::FE::IntegrationPoints3D intpoints(gaussrule_);
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
       const double r = intpoints.qxg[igp][0];
@@ -1104,8 +1104,8 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 
       CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct;
       CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> deriv;
-      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, CORE::FE::CellType::wedge6);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::wedge6);
+      CORE::FE::shape_function_3D(funct, r, s, t, CORE::FE::CellType::wedge6);
+      CORE::FE::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::wedge6);
       for (int inode = 0; inode < NUMNOD_WEG6; ++inode)
       {
         f(inode, igp) = funct(inode);

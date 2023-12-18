@@ -126,24 +126,24 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule                                   gammi 04/07|
  *----------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
+CORE::FE::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
     const CORE::FE::CellType& distype) const
 {
-  CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
+  CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
   switch (distype)
   {
     case CORE::FE::CellType::quad4:
-      rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
+      rule = CORE::FE::GaussRule2D::quad_4point;
       break;
     case CORE::FE::CellType::quad8:
     case CORE::FE::CellType::quad9:
-      rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+      rule = CORE::FE::GaussRule2D::quad_9point;
       break;
     case CORE::FE::CellType::tri3:
-      rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
+      rule = CORE::FE::GaussRule2D::tri_3point;
       break;
     case CORE::FE::CellType::tri6:
-      rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
+      rule = CORE::FE::GaussRule2D::tri_6point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

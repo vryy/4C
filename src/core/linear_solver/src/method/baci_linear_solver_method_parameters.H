@@ -33,7 +33,7 @@ namespace CORE::LINEAR_SOLVER
       into the solver parameter list.
     */
     static void ComputeSolverParameters(
-        BACI::DRT::Discretization& dis, Teuchos::ParameterList& solverlist);
+        DRT::Discretization& dis, Teuchos::ParameterList& solverlist);
 
     /*!
      * \brief Fix the nullspace to match a new given map

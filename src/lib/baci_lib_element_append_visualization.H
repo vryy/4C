@@ -66,7 +66,7 @@ namespace DRT::ELEMENTS
 
     // Get the shape functions.
     CORE::LINALG::Matrix<n_points, 1, double> N;
-    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, knots, weights, distype);
+    CORE::FE::NURBS::nurbs_get_3D_funct(N, xi, knots, weights, distype);
 
     for (unsigned int i_node_nurbs = 0; i_node_nurbs < n_points; i_node_nurbs++)
     {
@@ -124,8 +124,7 @@ namespace DRT::ELEMENTS
       for (unsigned int i_node_nurbs = 0; i_node_nurbs < number_of_output_points; i_node_nurbs++)
       {
         for (unsigned int i = 0; i < 3; i++)
-          xi(i) =
-              CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_nurbs]][i];
+          xi(i) = CORE::FE::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_nurbs]][i];
 
         // Get the reference position at the parameter coordinate.
         point_result = EvalNurbs3DInterpolation(pos_controlpoints, xi, weights, knots, ele.Shape());
@@ -258,8 +257,7 @@ namespace DRT::ELEMENTS
       for (unsigned int i_node_nurbs = 0; i_node_nurbs < number_of_output_points; i_node_nurbs++)
       {
         for (unsigned int i = 0; i < 3; i++)
-          xi(i) =
-              CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_nurbs]][i];
+          xi(i) = CORE::FE::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_nurbs]][i];
 
         // Get the reference position at the parameter coordinate.
         point_result = EvalNurbs3DInterpolation(dof_result, xi, weights, knots, ele.Shape());

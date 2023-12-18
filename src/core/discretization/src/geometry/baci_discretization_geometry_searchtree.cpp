@@ -46,7 +46,7 @@ void CORE::GEO::SearchTree::initializeTree(const CORE::LINALG::Matrix<3, 2>& nod
  | discretization, elements are taken unsorted from discretization      |
  *----------------------------------------------------------------------*/
 void CORE::GEO::SearchTree::initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox,
-    const BACI::DRT::Discretization& dis, const TreeType treetype)
+    const DRT::Discretization& dis, const TreeType treetype)
 {
   treeRoot_ = Teuchos::null;
   treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
@@ -77,12 +77,12 @@ void CORE::GEO::SearchTree::insertElement(const int eid)
  | initialization of searchtree for SlipAle                 u.may 09/09 |
  *----------------------------------------------------------------------*/
 void CORE::GEO::SearchTree::initializeTreeSlideALE(const CORE::LINALG::Matrix<3, 2>& nodeBox,
-    std::map<int, Teuchos::RCP<BACI::DRT::Element>>& elements, const TreeType treetype)
+    std::map<int, Teuchos::RCP<DRT::Element>>& elements, const TreeType treetype)
 {
   treeRoot_ = Teuchos::null;
   treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
-  std::map<int, Teuchos::RCP<BACI::DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
     treeRoot_->insertElement(-1, elemiter->first);
@@ -93,7 +93,7 @@ void CORE::GEO::SearchTree::initializeTreeSlideALE(const CORE::LINALG::Matrix<3,
  | returns nodes in the radius of a given point              u.may 07/08|
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> CORE::GEO::SearchTree::searchElementsInRadius(
-    const BACI::DRT::Discretization& dis,
+    const DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label)
 {
@@ -391,7 +391,7 @@ void CORE::GEO::SearchTree::TreeNode::insertElement(const int label, const int e
   return;
 }
 
-void CORE::GEO::SearchTree::TreeNode::createChildren(const BACI::DRT::Discretization& dis,
+void CORE::GEO::SearchTree::TreeNode::createChildren(const DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
   // create empty children
@@ -1085,7 +1085,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
 /*----------------------------------------------------------------------*
  | classifiy element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(const BACI::DRT::Element* element,
+std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(const DRT::Element* element,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const
 {
   const CORE::LINALG::SerialDenseMatrix xyze(
@@ -1101,7 +1101,7 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(const BACI::DR
  | classifiy element in tree node                           u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(
-    const Teuchos::RCP<BACI::DRT::Element> element,
+    const Teuchos::RCP<DRT::Element> element,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const
 {
   const CORE::LINALG::SerialDenseMatrix xyze(
@@ -1117,7 +1117,7 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(
  | classifiy element in tree node                          u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(
-    const BACI::DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze_element) const
+    const DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze_element) const
 {
   CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
   CORE::GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
@@ -1157,7 +1157,7 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyRadius(
  | returns nodes in the radius of a given point              u.may 08/08|
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRadius(
-    const BACI::DRT::Discretization& dis,
+    const DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label)
 {

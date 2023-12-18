@@ -136,12 +136,12 @@ namespace CORE::GEO
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) = 0;
+      virtual CORE::FE::GaussIntegration gaussRule(int cubaturedegree) = 0;
 
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual CORE::DRT::UTILS::GaussIntegration gaussRule() { return gaussRule(CubatureDegree()); }
+      virtual CORE::FE::GaussIntegration gaussRule() { return gaussRule(CubatureDegree()); }
 
       /*!
       \brief Get the normal vector for the arbitrary boundarycell alone
@@ -175,12 +175,12 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<2, numnodes> deriv(false);
         CORE::LINALG::Matrix<2, 2> metrictensor(false);
 
-        CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
+        CORE::FE::shape_function_2D(funct, eta(0), eta(1), celldistype);
 
         if (celldistype != CORE::FE::CellType::tri3)
         {
-          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
-          CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
+          CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
+          CORE::FE::ComputeMetricTensorForBoundaryEle<celldistype>(
               xyze, deriv, metrictensor, drs, &normal);
         }
         else
@@ -226,7 +226,7 @@ namespace CORE::GEO
           bool shadow = false);
 
      protected:
-      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() = 0;
+      virtual CORE::FE::GaussRule2D MySimpleGaussRule() = 0;
 
       template <CORE::FE::CellType distype>
       double MyArea()
@@ -237,17 +237,17 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<2, numnodes> deriv;
         CORE::LINALG::Matrix<2, 2> metrictensor;
 
-        CORE::DRT::UTILS::GaussRule2D gaussrule = this->MySimpleGaussRule();
-        CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+        CORE::FE::GaussRule2D gaussrule = this->MySimpleGaussRule();
+        CORE::FE::IntegrationPoints2D intpoints(gaussrule);
 
         double area = 0;
         double drs;
         for (int i = 0; i < intpoints.nquad; ++i)
         {
           double* eta = intpoints.qxg[i];
-          CORE::DRT::UTILS::shape_function_2D(funct, eta[0], eta[1], distype);
-          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta[0], eta[1], distype);
-          CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+          CORE::FE::shape_function_2D(funct, eta[0], eta[1], distype);
+          CORE::FE::shape_function_2D_deriv1(deriv, eta[0], eta[1], distype);
+          CORE::FE::ComputeMetricTensorForBoundaryEle<distype>(
               xyze, deriv, metrictensor, drs, nullptr);
           if (not std::isnan(drs)) area += intpoints.qwgt[i] * drs;
         }
@@ -264,7 +264,7 @@ namespace CORE::GEO
         const int numnodes = CORE::FE::num_nodes<distype>;
         CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
         CORE::LINALG::Matrix<numnodes, 1> funct;
-        CORE::DRT::UTILS::shape_function<distype>(center, funct);
+        CORE::FE::shape_function<distype>(center, funct);
         midpoint.Multiply(xyze, funct);
       }
 
@@ -302,16 +302,16 @@ namespace CORE::GEO
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
+      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
       CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
       bool IsValidBoundaryCell() override { return true; };
 
      protected:
-      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D MySimpleGaussRule() override
       {
-        return CORE::DRT::UTILS::GaussRule2D::undefined;
+        return CORE::FE::GaussRule2D::undefined;
       }
     };
 
@@ -340,16 +340,16 @@ namespace CORE::GEO
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
+      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
       CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); };
 
      protected:
-      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D MySimpleGaussRule() override
       {
-        return CORE::DRT::UTILS::GaussRule2D::undefined;
+        return CORE::FE::GaussRule2D::undefined;
       }
     };
 
@@ -377,7 +377,7 @@ namespace CORE::GEO
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
+      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
       CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
@@ -388,9 +388,9 @@ namespace CORE::GEO
       bool IsValidBoundaryCell() override;
 
      protected:
-      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D MySimpleGaussRule() override
       {
-        return CORE::DRT::UTILS::GaussRule2D::tri_3point;
+        return CORE::FE::GaussRule2D::tri_3point;
       }
     };
 
@@ -419,7 +419,7 @@ namespace CORE::GEO
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
+      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
       CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
@@ -427,9 +427,9 @@ namespace CORE::GEO
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D MySimpleGaussRule() override
       {
-        return CORE::DRT::UTILS::GaussRule2D::quad_4point;
+        return CORE::FE::GaussRule2D::quad_4point;
       }
     };
 
@@ -439,7 +439,7 @@ namespace CORE::GEO
     {
      public:
       ArbitraryBoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
-          const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
+          const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
           const CORE::LINALG::Matrix<3, 1>& normal)
           : BoundaryCell(xyz, facet, points), gaussRule_(gaussRule), normal_(normal)
       {
@@ -458,20 +458,20 @@ namespace CORE::GEO
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
+      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
       CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D MySimpleGaussRule() override
       {
-        return CORE::DRT::UTILS::GaussRule2D::quad_4point;
+        return CORE::FE::GaussRule2D::quad_4point;
       }
 
      private:
-      CORE::DRT::UTILS::GaussIntegration gaussRule_;
+      CORE::FE::GaussIntegration gaussRule_;
       CORE::LINALG::Matrix<3, 1> normal_;
     };
 

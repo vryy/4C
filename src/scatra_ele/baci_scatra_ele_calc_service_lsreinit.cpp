@@ -141,7 +141,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
@@ -163,8 +163,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -236,7 +235,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
@@ -258,8 +257,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -345,7 +343,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_center(
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_center(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
@@ -367,8 +365,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {

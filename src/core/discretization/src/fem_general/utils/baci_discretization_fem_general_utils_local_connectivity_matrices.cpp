@@ -13,7 +13,7 @@
 BACI_NAMESPACE_OPEN
 
 
-int CORE::DRT::UTILS::getNumberOfElementNodes(const CORE::FE::CellType& distype)
+int CORE::FE::getNumberOfElementNodes(const CORE::FE::CellType& distype)
 {
   int numnodes = 0;
 
@@ -115,7 +115,7 @@ int CORE::DRT::UTILS::getNumberOfElementNodes(const CORE::FE::CellType& distype)
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementCornerNodes(const CORE::FE::CellType& distype)
+int CORE::FE::getNumberOfElementCornerNodes(const CORE::FE::CellType& distype)
 {
   int numCornerNodes = 0;
   switch (distype)
@@ -156,8 +156,7 @@ int CORE::DRT::UTILS::getNumberOfElementCornerNodes(const CORE::FE::CellType& di
 }
 
 
-std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
-    const CORE::FE::CellType& distype)
+std::vector<int> CORE::FE::getNumberOfFaceElementCornerNodes(const CORE::FE::CellType& distype)
 {
   std::vector<int> faceNodeMap;
   switch (distype)
@@ -219,8 +218,7 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
 }
 
 
-std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
-    const CORE::FE::CellType& distype)
+std::vector<int> CORE::FE::getNumberOfFaceElementInternalNodes(const CORE::FE::CellType& distype)
 {
   std::vector<int> faceNodeMap;
   switch (distype)
@@ -299,7 +297,7 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementLines(const CORE::FE::CellType& distype)
+int CORE::FE::getNumberOfElementLines(const CORE::FE::CellType& distype)
 {
   int numLines = 0;
   switch (distype)
@@ -348,7 +346,7 @@ int CORE::DRT::UTILS::getNumberOfElementLines(const CORE::FE::CellType& distype)
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementSurfaces(const CORE::FE::CellType& distype)
+int CORE::FE::getNumberOfElementSurfaces(const CORE::FE::CellType& distype)
 {
   int numSurf = 0;
   switch (distype)
@@ -394,7 +392,7 @@ int CORE::DRT::UTILS::getNumberOfElementSurfaces(const CORE::FE::CellType& disty
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementVolumes(const CORE::FE::CellType& distype)
+int CORE::FE::getNumberOfElementVolumes(const CORE::FE::CellType& distype)
 {
   int numVol = 0;
   switch (distype)
@@ -431,7 +429,7 @@ int CORE::DRT::UTILS::getNumberOfElementVolumes(const CORE::FE::CellType& distyp
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementFaces(const CORE::FE::CellType& distype)
+int CORE::FE::getNumberOfElementFaces(const CORE::FE::CellType& distype)
 {
   const int dim = getDimension(distype);
   if (dim == 3)
@@ -447,7 +445,7 @@ int CORE::DRT::UTILS::getNumberOfElementFaces(const CORE::FE::CellType& distype)
 }
 
 
-CORE::FE::CellType CORE::DRT::UTILS::getEleFaceShapeType(
+CORE::FE::CellType CORE::FE::getEleFaceShapeType(
     const CORE::FE::CellType& distype, const unsigned int face)
 {
   CORE::FE::CellType type = CORE::FE::CellType::dis_none;
@@ -532,8 +530,7 @@ CORE::FE::CellType CORE::DRT::UTILS::getEleFaceShapeType(
 }
 
 
-std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingFaces(
-    const CORE::FE::CellType& distype)
+std::vector<std::vector<int>> CORE::FE::getEleNodeNumberingFaces(const CORE::FE::CellType& distype)
 {
   const int nsd = getDimension(distype);
 
@@ -556,7 +553,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingFaces(
 }
 
 
-std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
+std::vector<std::vector<int>> CORE::FE::getEleNodeNumberingSurfaces(
     const CORE::FE::CellType& distype)
 {
   std::vector<std::vector<int>> map;
@@ -770,8 +767,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
 }
 
 
-std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
-    const CORE::FE::CellType& distype)
+std::vector<std::vector<int>> CORE::FE::getEleNodeNumberingLines(const CORE::FE::CellType& distype)
 {
   std::vector<std::vector<int>> map;
 
@@ -1012,7 +1008,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
 }
 
 
-std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_lines_surfaces(
+std::vector<std::vector<int>> CORE::FE::getEleNodeNumbering_lines_surfaces(
     const CORE::FE::CellType& distype)
 {
   int nLine;
@@ -1052,7 +1048,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_lines_surfac
 }
 
 
-CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+CORE::LINALG::SerialDenseMatrix CORE::FE::getEleNodeNumbering_nodes_paramspace(
     const CORE::FE::CellType distype)
 {
   const int nNode = getNumberOfElementNodes(distype);
@@ -1124,7 +1120,7 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
 
 
 template <int probdim>
-CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
+CORE::LINALG::Matrix<probdim, 1> CORE::FE::GetNodeCoordinates(
     const int nodeId, const CORE::FE::CellType distype)
 {
   dsassert(nodeId < getNumberOfElementNodes(distype), "node number is not correct");
@@ -1191,7 +1187,7 @@ CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
 }
 
 
-void CORE::DRT::UTILS::getCornerNodeIndices(
+void CORE::FE::getCornerNodeIndices(
     int& index1, int& index2, const int& hoindex, const CORE::FE::CellType distype)
 {
   switch (distype)
@@ -1262,7 +1258,7 @@ void CORE::DRT::UTILS::getCornerNodeIndices(
 }
 
 
-int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
+int CORE::FE::getDimension(const CORE::FE::CellType distype)
 {
   int dim = 0;
 
@@ -1360,7 +1356,7 @@ int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
 }
 
 
-int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype, std::optional<int> default_order)
+int CORE::FE::getOrder(const CORE::FE::CellType distype, std::optional<int> default_order)
 {
   int order = 0;
 
@@ -1450,7 +1446,7 @@ int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype, std::optional<i
 }
 
 
-int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype, std::optional<int> default_degree)
+int CORE::FE::getDegree(const CORE::FE::CellType distype, std::optional<int> default_degree)
 {
   int degree = 0;
 
@@ -1541,7 +1537,7 @@ int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype, std::optional<
 }
 
 
-CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
+CORE::FE::CellType CORE::FE::getShapeOfBoundaryElement(
     const int nen, const CORE::FE::CellType parentshape)
 {
   switch (nen)  // number of nodes for the boundary element
@@ -1644,7 +1640,7 @@ CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
 }
 
 
-int CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+int CORE::FE::getParentNodeNumberFromFaceNodeNumber(
     const CORE::FE::CellType parent_distype, const int faceId, const int faceNodeId)
 {
   switch (parent_distype)
@@ -1679,7 +1675,7 @@ int CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
 }
 
 
-bool CORE::DRT::UTILS::IsNurbsDisType(const CORE::FE::CellType dis_type)
+bool CORE::FE::IsNurbsDisType(const CORE::FE::CellType dis_type)
 {
   switch (dis_type)
   {
@@ -1696,6 +1692,6 @@ bool CORE::DRT::UTILS::IsNurbsDisType(const CORE::FE::CellType dis_type)
 }
 
 
-template CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::GetNodeCoordinates<3>(
+template CORE::LINALG::Matrix<3, 1> CORE::FE::GetNodeCoordinates<3>(
     const int nodeId, const CORE::FE::CellType distype);
 BACI_NAMESPACE_CLOSE

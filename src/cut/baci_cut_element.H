@@ -426,7 +426,7 @@ namespace CORE::GEO
 
         CORE::LINALG::Matrix<dim, nen> deriv;
         CORE::LINALG::Matrix<probdim, probdim> xjm;
-        CORE::DRT::UTILS::shape_function_deriv1<distype>(xei, deriv);
+        CORE::FE::shape_function_deriv1<distype>(xei, deriv);
 
         double det = 0;
         if (dim == probdim)
@@ -439,7 +439,7 @@ namespace CORE::GEO
         {
           CORE::LINALG::Matrix<dim, dim> metrictensor;
           const double throw_error_if_negative_determinant(true);
-          CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
+          CORE::FE::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
               xyze, deriv, metrictensor, det, throw_error_if_negative_determinant);
         }
         else
@@ -716,7 +716,7 @@ namespace CORE::GEO
           const CORE::LINALG::Matrix<dim, 1>& rst, CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
         CORE::LINALG::Matrix<numNodesElement, 1> funct;
-        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::FE::shape_function<elementtype>(rst, funct);
 
         xyz = 0;
 
@@ -741,7 +741,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<probdim, numNodesElement> xyze(true);
         this->Coordinates(xyze);
 
-        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::FE::shape_function<elementtype>(rst, funct);
         xyz.Multiply(xyze, funct);
       }
 
@@ -754,8 +754,7 @@ namespace CORE::GEO
       void ElementCenter(CORE::LINALG::Matrix<probdim, 1>& midpoint)
       {
         // get the element center in the parameter coordinates (dim)
-        CORE::LINALG::Matrix<dim, 1> center_rst(
-            CORE::DRT::UTILS::getLocalCenterPosition<dim>(elementtype));
+        CORE::LINALG::Matrix<dim, 1> center_rst(CORE::FE::getLocalCenterPosition<dim>(elementtype));
         PointAt(center_rst, midpoint);
       }
 
@@ -770,7 +769,7 @@ namespace CORE::GEO
       double Scalar(const std::vector<double>& ns, const CORE::LINALG::Matrix<dim, 1>& rst)
       {
         CORE::LINALG::Matrix<numNodesElement, 1> funct;
-        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::FE::shape_function<elementtype>(rst, funct);
 
         CORE::LINALG::Matrix<numNodesElement, 1> scalar(ns.data());
         CORE::LINALG::Matrix<1, 1> res;
@@ -797,7 +796,7 @@ namespace CORE::GEO
       {
         CORE::LINALG::Matrix<numNodesElement, 1> funct;
 
-        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::FE::shape_function<elementtype>(rst, funct);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
@@ -891,7 +890,7 @@ namespace CORE::GEO
       {
         CORE::LINALG::Matrix<dim, numNodesElement> deriv1;
 
-        CORE::DRT::UTILS::shape_function_deriv1<elementtype>(rst, deriv1);
+        CORE::FE::shape_function_deriv1<elementtype>(rst, deriv1);
 
         const std::vector<Node*> ele_node = this->Nodes();
 

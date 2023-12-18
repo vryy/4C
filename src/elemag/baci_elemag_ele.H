@@ -124,23 +124,17 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(distype_); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(distype_); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
-      }
+      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(distype_); }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
-      }
+      int NumVolume() const override { return CORE::FE::getNumberOfElementVolumes(distype_); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -213,7 +207,7 @@ namespace DRT
       */
       int NumDofPerFace(const unsigned face) const override
       {
-        return (CORE::DRT::UTILS::getDimension(distype_) - 1) *
+        return (CORE::FE::getDimension(distype_) - 1) *
                NumDofPerComponent(face);  // seems redundant, but this is different for
                                           // fluid_ele_hdg and Elemag_ele!
       }
@@ -226,8 +220,8 @@ namespace DRT
       */
       int NumDofPerComponent(const unsigned face) const override
       {
-        return CORE::DRT::UTILS::getBasisSize(CORE::DRT::UTILS::getEleFaceShapeType(distype_),
-            (this->Faces()[face])->Degree(), completepol_);
+        return CORE::FE::getBasisSize(
+            CORE::FE::getEleFaceShapeType(distype_), (this->Faces()[face])->Degree(), completepol_);
       }
 
       /*!
@@ -237,8 +231,8 @@ namespace DRT
       */
       virtual int NumDofPerElementAuxiliary() const
       {
-        return (CORE::DRT::UTILS::getDimension(distype_) * 2) *
-               CORE::DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+        return (CORE::FE::getDimension(distype_) * 2) *
+               CORE::FE::getBasisSize(distype_, degree_, completepol_);
       }
 
       /// Number of degrees of freedom per element
@@ -488,15 +482,12 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
-      }
+      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(Shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -768,15 +759,12 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
-      {
-        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
-      }
+      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(Shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element

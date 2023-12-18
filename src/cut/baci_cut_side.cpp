@@ -1598,8 +1598,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
   /* shrink/perturb the local coordinates around the center point with a given
    * tolerance to obtain points which are next to the corner points however slightly
    * inside */
-  CORE::LINALG::Matrix<dim, 1> rst_center =
-      CORE::DRT::UTILS::getLocalCenterPosition<dim>(this->Shape());
+  CORE::LINALG::Matrix<dim, 1> rst_center = CORE::FE::getLocalCenterPosition<dim>(this->Shape());
 
   //-----------------------------
   // get perturbed coordinates
@@ -1863,7 +1862,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(CORE::FE::CellType
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges) const
 {
   Side* s = nullptr;
-  const int probdim = BACI::DRT::Problem::Instance()->NDim();
+  const int probdim = DRT::Problem::Instance()->NDim();
   switch (sidetype)
   {
     case CORE::FE::CellType::line2:
@@ -1893,7 +1892,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::CreateLevelSetSide(const int& sid)
 {
   Side* lvs_side_ptr = nullptr;
 
-  const int probdim = BACI::DRT::Problem::Instance()->NDim();
+  const int probdim = DRT::Problem::Instance()->NDim();
   switch (probdim)
   {
     case 2:
@@ -1923,7 +1922,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(const CORE::FE::CellType& sid
 CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(const unsigned& shardskey, const int& sid,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
 {
-  return Create(BACI::DRT::ShardsKeyToDisType(shardskey), sid, nodes, edges);
+  return Create(DRT::ShardsKeyToDisType(shardskey), sid, nodes, edges);
 }
 
 

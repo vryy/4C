@@ -23,8 +23,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::IntCell::ComputePhysicalCenterPosition(
     const CORE::FE::CellType& distype, const CORE::LINALG::SerialDenseMatrix& xyze) const
 {
   // center in local coordinates
-  const CORE::LINALG::Matrix<3, 1> localcenterpos(
-      CORE::DRT::UTILS::getLocalCenterPosition<3>(distype));
+  const CORE::LINALG::Matrix<3, 1> localcenterpos(CORE::FE::getLocalCenterPosition<3>(distype));
   // center in physical coordinates
   static CORE::LINALG::Matrix<3, 1> pyhsicalcenterpos;
   CORE::GEO::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);

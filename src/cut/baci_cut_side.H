@@ -832,7 +832,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<dim, numNodesSide> deriv(true);
         CORE::LINALG::Matrix<dim, probdim> A(true);
 
-        CORE::DRT::UTILS::shape_function_deriv1<sidetype>(xsi, deriv);
+        CORE::FE::shape_function_deriv1<sidetype>(xsi, deriv);
         A.MultiplyNT(deriv, side_xyze);
 
         switch (dim)
@@ -878,8 +878,7 @@ namespace CORE::GEO
       void BasisAtCenter(CORE::LINALG::Matrix<probdim, 1>& t1, CORE::LINALG::Matrix<probdim, 1>& t2,
           CORE::LINALG::Matrix<probdim, 1>& n)
       {
-        CORE::LINALG::Matrix<dim, 1> center_rs(
-            CORE::DRT::UTILS::getLocalCenterPosition<dim>(sidetype));
+        CORE::LINALG::Matrix<dim, 1> center_rs(CORE::FE::getLocalCenterPosition<dim>(sidetype));
         Basis(center_rs, t1, t2, n);
       }
 
@@ -896,7 +895,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<dim, numNodesSide> deriv(true);
         CORE::LINALG::Matrix<dim, probdim> A(true);
 
-        CORE::DRT::UTILS::shape_function_deriv1<sidetype>(xsi, deriv);
+        CORE::FE::shape_function_deriv1<sidetype>(xsi, deriv);
         A.MultiplyNT(deriv, side_xyze);
 
         // set the first tangential vector

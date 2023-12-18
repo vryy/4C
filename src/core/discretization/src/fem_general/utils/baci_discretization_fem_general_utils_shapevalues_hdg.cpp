@@ -19,15 +19,15 @@ BACI_NAMESPACE_OPEN
  |  Constructor (public)                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
+CORE::FE::ShapeValues<distype>::ShapeValues(
     const unsigned int degree, const bool completepoly, const unsigned int quadratureDegree)
     : degree_(degree),
-      quadrature_(CORE::DRT::UTILS::GaussPointCache::Instance().Create(distype, quadratureDegree)),
+      quadrature_(CORE::FE::GaussPointCache::Instance().Create(distype, quadratureDegree)),
       usescompletepoly_(completepoly),
       nqpoints_(quadrature_->NumPoints())
 {
   PolynomialSpaceParams params(distype, degree, completepoly);
-  polySpace_ = CORE::DRT::UTILS::PolynomialSpaceCache<nsd_>::Instance().Create(params);
+  polySpace_ = CORE::FE::PolynomialSpaceCache<nsd_>::Instance().Create(params);
   ndofs_ = polySpace_->Size();
 
   CORE::LINALG::SerialDenseVector values(ndofs_);
@@ -60,7 +60,7 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
     }
 
     CORE::LINALG::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
-    CORE::DRT::UTILS::shape_function<distype>(xsi, myfunct);
+    CORE::FE::shape_function<distype>(xsi, myfunct);
   }
 
   // Fill support points
@@ -77,8 +77,8 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
  |  Evaluate element-dependent shape data (public)    kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
-    const BACI::DRT::Element& ele, const std::vector<double>& aleDis)
+void CORE::FE::ShapeValues<distype>::Evaluate(
+    const DRT::Element& ele, const std::vector<double>& aleDis)
 {
   dsassert(ele.Shape() == distype, "Internal error");
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
@@ -97,7 +97,7 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
     const double* gpcoord = quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
 
-    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi, deriv);
+    CORE::FE::shape_function_deriv1<distype>(xsi, deriv);
     xjm.MultiplyNT(deriv, xyze);
     jfac(q) = xji.Invert(xjm) * quadrature_->Weight(q);
 
@@ -134,8 +134,8 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = nodexyzunit(idim, i);
 
     CORE::LINALG::Matrix<nen_, 1> myfunct;
-    // CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
-    CORE::DRT::UTILS::shape_function<distype>(xsi, myfunct);
+    // CORE::FE::shape_function<CORE::FE::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+    CORE::FE::shape_function<distype>(xsi, myfunct);
     CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
@@ -145,23 +145,23 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
  |  Constructor (public)                                 schoeder 06/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
+CORE::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
     : params_(params), degree_(params.degree_)
 {
   if (nsd_ == 2)
-    faceNodeOrder = CORE::DRT::UTILS::getEleNodeNumberingLines(distype);
+    faceNodeOrder = CORE::FE::getEleNodeNumberingLines(distype);
   else if (nsd_ == 3)
-    faceNodeOrder = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+    faceNodeOrder = CORE::FE::getEleNodeNumberingSurfaces(distype);
   else
     dserror("Not implemented for dim != 2, 3");
 
   PolynomialSpaceParams polyparams(
-      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, degree_, params.completepoly_);
-  polySpace_ = CORE::DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
+      CORE::FE::DisTypeToFaceShapeType<distype>::shape, degree_, params.completepoly_);
+  polySpace_ = CORE::FE::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
 
   nfdofs_ = polySpace_->Size();
-  quadrature_ = CORE::DRT::UTILS::GaussPointCache::Instance().Create(
-      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, params.quadraturedegree_);
+  quadrature_ = CORE::FE::GaussPointCache::Instance().Create(
+      CORE::FE::DisTypeToFaceShapeType<distype>::shape, params.quadraturedegree_);
   nqpoints_ = quadrature_->NumPoints();
 
   faceValues.size(nfdofs_);
@@ -186,8 +186,7 @@ CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParam
     for (unsigned int i = 0; i < nfdofs_; ++i) shfunctNoPermute(i, q) = faceValues(i);
 
     CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
-    CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(
-        xsi, myfunct);
+    CORE::FE::shape_function<CORE::FE::DisTypeToFaceShapeType<distype>::shape>(xsi, myfunct);
   }
 }
 
@@ -195,10 +194,10 @@ CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParam
  |  Evaluate face-dependent shape data (public)       kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
-    const BACI::DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
+void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
+    const DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
-  const CORE::FE::CellType facedis = CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
+  const CORE::FE::CellType facedis = CORE::FE::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
   dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
@@ -226,8 +225,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
     for (unsigned int idim = 0; idim < nsd_ - 1; idim++) xsi(idim) = nodexyzunit(idim, i);
 
     CORE::LINALG::Matrix<nfn_, 1> myfunct;
-    CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(
-        xsi, myfunct);
+    CORE::FE::shape_function<CORE::FE::DisTypeToFaceShapeType<distype>::shape>(xsi, myfunct);
     CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
@@ -238,9 +236,9 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
     const double* gpcoord = quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_ - 1; idim++) xsi(idim) = gpcoord[idim];
 
-    CORE::DRT::UTILS::shape_function_deriv1<facedis>(xsi, deriv);
+    CORE::FE::shape_function_deriv1<facedis>(xsi, deriv);
     double jacdet = 0.0;
-    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<facedis>(
+    CORE::FE::ComputeMetricTensorForBoundaryEle<facedis>(
         xyze, deriv, metricTensor, jacdet, &normal);
     for (unsigned int d = 0; d < nsd_; ++d) normals(d, q) = normal(d);
     jfac(q) = jacdet * quadrature_->Weight(q);
@@ -253,7 +251,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
   AdjustFaceOrientation(ele, face);
   ComputeFaceReferenceSystem(ele, face);
 
-  CORE::DRT::UTILS::ShapeValuesFaceParams interiorparams = params_;
+  CORE::FE::ShapeValuesFaceParams interiorparams = params_;
   interiorparams.degree_ = ele.Degree();
   interiorparams.face_ = face;
   shfunctI = *(ShapeValuesInteriorOnFaceCache<distype>::Instance().Create(interiorparams));
@@ -265,8 +263,8 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
  |  Reorder evaluated face shape functions (private)  kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
-    const BACI::DRT::Element& ele, const unsigned int face)
+void CORE::FE::ShapeValuesFace<distype>::AdjustFaceOrientation(
+    const DRT::Element& ele, const unsigned int face)
 {
   // For the shape values on faces, we need to figure out how the master element of
   // a face walks over the face and how the current face element wants to walk over
@@ -481,8 +479,8 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
  |  Compute the face reference system       (private)  berardocco 09/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
-    const BACI::DRT::Element& ele, const unsigned int face)
+void CORE::FE::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
+    const DRT::Element& ele, const unsigned int face)
 {
   // In the case in which the element is not the master element for the face there is the need to
   // find the master element and build the face reference system from the master side.
@@ -537,10 +535,9 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
 
 
 template <CORE::FE::CellType distype>
-CORE::DRT::UTILS::ShapeValuesFaceCache<distype>&
-CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
+CORE::FE::ShapeValuesFaceCache<distype>& CORE::FE::ShapeValuesFaceCache<distype>::Instance()
 {
-  static CORE::UTILS::SingletonOwner<CORE::DRT::UTILS::ShapeValuesFaceCache<distype>> owner(
+  static CORE::UTILS::SingletonOwner<CORE::FE::ShapeValuesFaceCache<distype>> owner(
       []() {
         return std::unique_ptr<ShapeValuesFaceCache<distype>>(new ShapeValuesFaceCache<distype>);
       });
@@ -549,11 +546,11 @@ CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
 }
 
 template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>
-CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams params)
+Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> CORE::FE::ShapeValuesFaceCache<distype>::Create(
+    ShapeValuesFaceParams params)
 {
-  typename std::map<std::size_t, Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>>::iterator
-      i = svf_cache_.find(params.ToInt());
+  typename std::map<std::size_t, Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>>>::iterator i =
+      svf_cache_.find(params.ToInt());
   if (i != svf_cache_.end())
   {
     return i->second;
@@ -571,24 +568,23 @@ CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams pa
 
 
 template <CORE::FE::CellType distype>
-CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>&
-CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Instance()
+CORE::FE::ShapeValuesInteriorOnFaceCache<distype>&
+CORE::FE::ShapeValuesInteriorOnFaceCache<distype>::Instance()
 {
-  static CORE::UTILS::SingletonOwner<CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>>
-      owner(
-          []()
-          {
-            return std::unique_ptr<ShapeValuesInteriorOnFaceCache<distype>>(
-                new ShapeValuesInteriorOnFaceCache<distype>);
-          });
+  static CORE::UTILS::SingletonOwner<CORE::FE::ShapeValuesInteriorOnFaceCache<distype>> owner(
+      []()
+      {
+        return std::unique_ptr<ShapeValuesInteriorOnFaceCache<distype>>(
+            new ShapeValuesInteriorOnFaceCache<distype>);
+      });
 
   return *owner.Instance(CORE::UTILS::SingletonAction::create);
 }
 
 
 template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesInteriorOnFace>
-CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
+Teuchos::RCP<CORE::FE::ShapeValuesInteriorOnFace>
+CORE::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
 {
   typename std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>>::iterator i =
       cache_.find(params.ToInt());
@@ -602,11 +598,10 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
 
   PolynomialSpaceParams polyparams(distype, params.degree_, params.completepoly_);
   Teuchos::RCP<PolynomialSpace<nsd>> polySpace =
-      CORE::DRT::UTILS::PolynomialSpaceCache<nsd>::Instance().Create(polyparams);
+      CORE::FE::PolynomialSpaceCache<nsd>::Instance().Create(polyparams);
   CORE::LINALG::SerialDenseVector(polySpace->Size());
-  Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature =
-      CORE::DRT::UTILS::GaussPointCache::Instance().Create(
-          CORE::DRT::UTILS::getEleFaceShapeType(distype, params.face_), params.quadraturedegree_);
+  Teuchos::RCP<CORE::FE::GaussPoints> quadrature = CORE::FE::GaussPointCache::Instance().Create(
+      CORE::FE::getEleFaceShapeType(distype, params.face_), params.quadraturedegree_);
 
   Teuchos::RCP<ShapeValuesInteriorOnFace> container = Teuchos::rcp(new ShapeValuesInteriorOnFace());
   container->Shape(polySpace->Size(), quadrature->NumPoints());
@@ -614,8 +609,8 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
   CORE::LINALG::Matrix<nsd, nsd> trafo;
   CORE::LINALG::Matrix<nsd, 1> xsi;
   CORE::LINALG::SerialDenseMatrix faceQPoints;
-  CORE::DRT::UTILS::BoundaryGPToParentGP<nsd>(faceQPoints, trafo, *quadrature, distype,
-      CORE::DRT::UTILS::getEleFaceShapeType(distype, params.face_), params.face_);
+  CORE::FE::BoundaryGPToParentGP<nsd>(faceQPoints, trafo, *quadrature, distype,
+      CORE::FE::getEleFaceShapeType(distype, params.face_), params.face_);
   CORE::LINALG::SerialDenseVector faceValues(polySpace->Size());
   for (int q = 0; q < quadrature->NumPoints(); ++q)
   {
@@ -634,52 +629,52 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
 
 
 // explicit instantiation of template classes
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex8>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex20>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex27>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tet4>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tet10>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::wedge6>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::wedge15>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad4>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad8>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad9>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tri3>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tri6>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::nurbs27>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::hex8>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::hex20>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::hex27>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::tet4>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::tet10>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::wedge6>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::wedge15>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::pyramid5>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::quad4>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::quad8>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::quad9>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::tri3>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::tri6>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::nurbs9>;
+template class CORE::FE::ShapeValues<CORE::FE::CellType::nurbs27>;
 
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex8>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex20>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex27>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tet4>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tet10>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::wedge6>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::wedge15>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad4>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad8>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad9>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tri3>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tri6>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::nurbs27>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::hex8>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::hex20>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::hex27>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::tet4>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::tet10>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::wedge6>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::wedge15>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::pyramid5>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::quad4>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::quad8>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::quad9>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::tri3>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::tri6>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::nurbs9>;
+template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::nurbs27>;
 
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex8>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex20>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex27>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tet4>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tet10>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::wedge6>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::wedge15>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad4>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad8>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad9>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tri3>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tri6>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::nurbs27>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::hex8>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::hex20>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::hex27>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tet4>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tet10>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::wedge6>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::wedge15>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::pyramid5>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::quad4>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::quad8>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::quad9>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tri3>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tri6>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::nurbs9>;
+template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::nurbs27>;
 
 BACI_NAMESPACE_CLOSE

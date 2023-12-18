@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
  *
  */
 void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNodalReferencePosition(
-    const Teuchos::RCP<const BACI::DRT::Discretization>& discret)
+    const Teuchos::RCP<const DRT::Discretization>& discret)
 {
   auto& visualization_data = GetVisualizationData();
 

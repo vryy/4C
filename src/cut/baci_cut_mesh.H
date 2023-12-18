@@ -185,7 +185,7 @@ namespace CORE::GEO
 
       /// creates a new ??? boundary cell
       ArbitraryBoundaryCell* NewArbitraryCell(VolumeCell* volume, Facet* facet,
-          const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
+          const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
           const CORE::LINALG::Matrix<3, 1>& normal);
 
 

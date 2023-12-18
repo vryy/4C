@@ -94,7 +94,7 @@ namespace GEOMETRYPAIR
       CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      CORE::DRT::UTILS::shape_function_1D(N, xi, discretization);
+      CORE::FE::shape_function_1D(N, xi, discretization);
     };
 
     /**
@@ -118,7 +118,7 @@ namespace GEOMETRYPAIR
       CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      CORE::DRT::UTILS::shape_function_1D_deriv1(dN, xi, discretization);
+      CORE::FE::shape_function_1D_deriv1(dN, xi, discretization);
     };
 
     /**
@@ -141,7 +141,7 @@ namespace GEOMETRYPAIR
       CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      CORE::DRT::UTILS::shape_function_2D(N, xi(0), xi(1), discretization);
+      CORE::FE::shape_function_2D(N, xi(0), xi(1), discretization);
     };
 
     /**
@@ -165,7 +165,7 @@ namespace GEOMETRYPAIR
       CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      CORE::DRT::UTILS::shape_function_2D_deriv1(dN, xi(0), xi(1), discretization);
+      CORE::FE::shape_function_2D_deriv1(dN, xi(0), xi(1), discretization);
     };
 
     /**
@@ -188,7 +188,7 @@ namespace GEOMETRYPAIR
       CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      CORE::DRT::UTILS::shape_function_3D(N, xi(0), xi(1), xi(2), discretization);
+      CORE::FE::shape_function_3D(N, xi(0), xi(1), xi(2), discretization);
     };
 
     /**
@@ -211,7 +211,7 @@ namespace GEOMETRYPAIR
       CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      CORE::DRT::UTILS::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), discretization);
+      CORE::FE::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), discretization);
     };
   };  // namespace GEOMETRYPAIR
 
@@ -254,7 +254,7 @@ namespace GEOMETRYPAIR
       const double length = beam_element->RefLength();
 
       // Evaluate the shape functions.
-      CORE::DRT::UTILS::shape_function_hermite_1D(N, xi, length, discretization);
+      CORE::FE::shape_function_hermite_1D(N, xi, length, discretization);
     };
 
     /**
@@ -286,7 +286,7 @@ namespace GEOMETRYPAIR
       const double length = beam_element->RefLength();
 
       // Evaluate the shape functions.
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(dN, xi, length, discretization);
+      CORE::FE::shape_function_hermite_1D_deriv1(dN, xi, length, discretization);
     };
   };
 
@@ -339,7 +339,7 @@ namespace GEOMETRYPAIR
       CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct<V, T, type_weights, typename V::scalar_type>(
+      CORE::FE::NURBS::nurbs_get_2D_funct<V, T, type_weights, typename V::scalar_type>(
           N, xi, myknots, weights, discretization);
     };
 
@@ -373,7 +373,7 @@ namespace GEOMETRYPAIR
       CORE::FE::CellType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, discretization);
+      CORE::FE::NURBS::nurbs_get_3D_funct(N, xi, myknots, weights, discretization);
     };
 
     /**
@@ -417,7 +417,7 @@ namespace GEOMETRYPAIR
       // Evaluate the shape functions.
       using type_dummy = CORE::LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type>;
       type_dummy N_dummy;
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv<type_dummy, V, T, type_weights,
+      CORE::FE::NURBS::nurbs_get_2D_funct_deriv<type_dummy, V, T, type_weights,
           typename V::scalar_type>(N_dummy, dN, xi, myknots, weights, discretization);
     };
 
@@ -452,8 +452,7 @@ namespace GEOMETRYPAIR
 
       // Evaluate the shape functions.
       CORE::LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type> dummy;
-      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          dummy, dN, xi, myknots, weights, discretization);
+      CORE::FE::NURBS::nurbs_get_3D_funct_deriv(dummy, dN, xi, myknots, weights, discretization);
     };
   };
 

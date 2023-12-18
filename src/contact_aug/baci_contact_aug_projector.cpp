@@ -201,7 +201,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   alpha = 0.0;
 
   CORE::LINALG::Matrix<TAR_DIM, 1> txi_center(false);
-  CORE::DRT::UTILS::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
+  CORE::FE::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
   std::copy(txi_center.A(), txi_center.A() + TAR_DIM, txi.A());
 
   RhsGP(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha);

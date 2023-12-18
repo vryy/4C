@@ -197,24 +197,24 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Surfaces()
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule (public)                          u.may 05/09|
  *----------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
+CORE::FE::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
     const CORE::FE::CellType& distype) const
 {
-  CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
+  CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
   switch (distype)
   {
     case CORE::FE::CellType::hex8:
-      rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
+      rule = CORE::FE::GaussRule3D::hex_8point;
       break;
     case CORE::FE::CellType::hex20:
     case CORE::FE::CellType::hex27:
-      rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+      rule = CORE::FE::GaussRule3D::hex_27point;
       break;
     case CORE::FE::CellType::tet4:
-      rule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
+      rule = CORE::FE::GaussRule3D::tet_4point;
       break;
     case CORE::FE::CellType::tet10:
-      rule = CORE::DRT::UTILS::GaussRule3D::tet_10point;
+      rule = CORE::FE::GaussRule3D::tet_10point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

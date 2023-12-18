@@ -44,7 +44,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::DRT::UTILS::GaussIntegration&,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::FE::GaussIntegration&,
     bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
@@ -150,11 +150,9 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
       int sumindex = 0;
       for (int i = 0; i < face; ++i)
       {
-        CORE::DRT::UTILS::PolynomialSpaceParams params(
-            CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, ele->Faces()[i]->Degree(),
-            usescompletepoly_);
-        int nfdofs =
-            CORE::DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(params)->Size();
+        CORE::FE::PolynomialSpaceParams params(CORE::FE::DisTypeToFaceShapeType<distype>::shape,
+            ele->Faces()[i]->Degree(), usescompletepoly_);
+        int nfdofs = CORE::FE::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(params)->Size();
         sumindex += nfdofs;
       }
       ReadGlobalVectors(ele, discretization, lm);
@@ -275,18 +273,17 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ElemagEleCalc<distype>::InitializeShapes(const DRT::ELEMENTS::Elemag* ele)
 {
   if (shapes_ == Teuchos::null)
-    shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
-        ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
+    shapes_ = Teuchos::rcp(
+        new CORE::FE::ShapeValues<distype>(ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
   else if (shapes_->degree_ != unsigned(ele->Degree()) ||
            shapes_->usescompletepoly_ != usescompletepoly_)
-    shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
-        ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
+    shapes_ = Teuchos::rcp(
+        new CORE::FE::ShapeValues<distype>(ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
 
   if (shapesface_ == Teuchos::null)
   {
-    CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
-        ele->Degree(), usescompletepoly_, 2 * ele->Degree());
-    shapesface_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValuesFace<distype>(svfparams));
+    CORE::FE::ShapeValuesFaceParams svfparams(ele->Degree(), usescompletepoly_, 2 * ele->Degree());
+    shapesface_ = Teuchos::rcp(new CORE::FE::ShapeValuesFace<distype>(svfparams));
   }
 
   if (localSolver_ == Teuchos::null)
@@ -590,8 +587,8 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeError(DRT::ELEME
   const int func = params.get<int>("funcno");
   const double time = params.get<double>("time");
   // for the calculation of the error, we use a higher integration rule
-  Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> highquad =
-      CORE::DRT::UTILS::GaussPointCache::Instance().Create(distype, (ele->Degree() + 2) * 2);
+  Teuchos::RCP<CORE::FE::GaussPoints> highquad =
+      CORE::FE::GaussPointCache::Instance().Create(distype, (ele->Degree() + 2) * 2);
   CORE::LINALG::Matrix<nsd_, 1> xsi;
   CORE::LINALG::SerialDenseVector values(shapes_.ndofs_);
   CORE::LINALG::Matrix<nsd_, nen_> deriv;
@@ -606,7 +603,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeError(DRT::ELEME
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
     shapes_.polySpace_->Evaluate(xsi, values);
 
-    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi, deriv);
+    CORE::FE::shape_function_deriv1<distype>(xsi, deriv);
     xjm.MultiplyNT(deriv, shapes_.xyze);
     double highjfac = xjm.Determinant() * highquad->Weight(q);
 
@@ -620,7 +617,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeError(DRT::ELEME
       }
 
     CORE::LINALG::Matrix<nen_, 1> myfunct;
-    CORE::DRT::UTILS::shape_function<distype>(xsi, myfunct);
+    CORE::FE::shape_function<distype>(xsi, myfunct);
     CORE::LINALG::Matrix<nsd_, 1> xyzmat;
     xyzmat.MultiplyNN(shapes_.xyze, myfunct);
 
@@ -990,7 +987,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::InterpolateSolutionToNodes(DRT::ELEME
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
   CORE::LINALG::SerialDenseMatrix locations =
-      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+      CORE::FE::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
@@ -1040,21 +1037,21 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::InterpolateSolutionToNodes(DRT::ELEME
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
-      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
+  locations = CORE::FE::getEleNodeNumbering_nodes_paramspace(
+      CORE::FE::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = CORE::FE::getNumberOfFaceElementCornerNodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = CORE::FE::getNumberOfFaceElementInternalNodes(distype);
 
   // Cycling the faces of the element
   CORE::LINALG::SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
-    const int nfn = CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    const int nfn = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     shapesface_->EvaluateFace(*ele, f);
 
@@ -1160,8 +1157,8 @@ DRT::ELEMENTS::ElemagEleCalc<distype>* DRT::ELEMENTS::ElemagEleCalc<distype>::In
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::LocalSolver(const DRT::ELEMENTS::Elemag* ele,
-    CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
-    Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
+    CORE::FE::ShapeValues<distype>& shapeValues,
+    Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>>& shapeValuesFace,
     INPAR::ELEMAG::DynamicType& dyna)
     : ndofs_(shapeValues.ndofs_), shapes_(shapeValues), shapesface_(shapeValuesFace), dyna_(dyna)
 {
@@ -2107,10 +2104,10 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeMatrices(
   {
     /* This part is to be used for efficiency reasons, at the beginning the
     //standard procedure is used
-    CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
+    CORE::FE::ShapeValuesFaceParams svfparams(
         ele.Faces()[face]->Degree(),
         shapes_.usescompletepoly_, 2 * ele.Faces()[face]->Degree());
-    shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+    shapesface_ = CORE::FE::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
     */
 
     // Updating face data

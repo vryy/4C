@@ -284,7 +284,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::GetPairGID(
-    const BACI::DRT::Discretization& discret) const
+    const DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
   CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;

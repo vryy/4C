@@ -119,9 +119,8 @@ struct WriteNodalStressStep : public SpecialFieldInterface
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->Evaluate(
-        [&](DRT::Element& ele)
-        {
-          CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+        [&](DRT::Element& ele) {
+          CORE::FE::ExtrapolateGaussPointQuantityToNodes(
               ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
@@ -157,10 +156,8 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
     Epetra_MultiVector elestress(*(dis->ElementRowMap()), 6);
 
     dis->Evaluate(
-        [&](DRT::Element& ele)
-        {
-          CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
-              ele, *data->at(ele.Id()), elestress);
+        [&](DRT::Element& ele) {
+          CORE::FE::EvaluateGaussPointQuantityAtElementCenter(ele, *data->at(ele.Id()), elestress);
         });
 
     filter_.GetWriter().WriteElementResultStep(
@@ -406,9 +403,8 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->Evaluate(
-        [&](DRT::Element& ele)
-        {
-          CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+        [&](DRT::Element& ele) {
+          CORE::FE::ExtrapolateGaussPointQuantityToNodes(
               ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
@@ -522,9 +518,8 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     Epetra_MultiVector element_stress(*dis->ElementRowMap(), 6, true);
 
     dis->Evaluate(
-        [&](DRT::Element& ele)
-        {
-          CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
+        [&](DRT::Element& ele) {
+          CORE::FE::EvaluateGaussPointQuantityAtElementCenter(
               ele, *data->at(ele.Id()), element_stress);
         });
 

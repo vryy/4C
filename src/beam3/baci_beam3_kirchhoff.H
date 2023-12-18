@@ -78,8 +78,8 @@ dserror(
 #endif
 
 #define MYGAUSSRULEBEAM3K \
-  CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
-                                              // intrule_line_10point is implemented.
+  CORE::FE::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
+                                      // intrule_line_10point is implemented.
 // DEFAULT: intrule_line_4point
 
 #define BEAM3K_COLLOCATION_POINTS \

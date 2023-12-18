@@ -188,8 +188,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(const DRT::Discret
   // Calculate maximal length distance between two gauss points (the factor 1.5 takes into account
   // the not evenly distributed locations of the Gauss points -> this does hold for a number of
   // Gauss points <= 10!!!)
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-      CORE::DRT::UTILS::IntegrationPoints1D(BEAMCONTACTGAUSSRULE);
+  CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(BEAMCONTACTGAUSSRULE);
   int intintervals = bcparams_.get<int>("BEAMS_NUMINTEGRATIONINTERVAL");
 
   double deltal1 = 1.5 * l1 / (intintervals * gausspoints.nquad);
@@ -705,8 +704,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs(
 #endif
 
   // gaussian points
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-      CORE::DRT::UTILS::IntegrationPoints1D(BEAMCONTACTGAUSSRULE);
+  CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(BEAMCONTACTGAUSSRULE);
 
   // loop over all integration intervals
   for (int interval = imin; interval <= imax; interval++)
@@ -922,8 +920,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateActiveSmallAnglePa
 #endif
 
   // gaussian points
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-      CORE::DRT::UTILS::IntegrationPoints1D(BEAMCONTACTGAUSSRULE);
+  CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(BEAMCONTACTGAUSSRULE);
 
   // Evaluate all active Gauss points
   for (int numgptot = 0; numgptot < (int)gpvariables_.size(); numgptot++)
@@ -4385,12 +4382,12 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions(
   if (numnodalvalues == 1)
   {
     // get values and derivatives of shape functions
-    CORE::DRT::UTILS::shape_function_1D(N1_i, eta1, distype1);
-    CORE::DRT::UTILS::shape_function_1D(N2_i, eta2, distype2);
-    CORE::DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta1, distype1);
-    CORE::DRT::UTILS::shape_function_1D_deriv1(N2_i_xi, eta2, distype2);
-    CORE::DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta1, distype1);
-    CORE::DRT::UTILS::shape_function_1D_deriv2(N2_i_xixi, eta2, distype2);
+    CORE::FE::shape_function_1D(N1_i, eta1, distype1);
+    CORE::FE::shape_function_1D(N2_i, eta2, distype2);
+    CORE::FE::shape_function_1D_deriv1(N1_i_xi, eta1, distype1);
+    CORE::FE::shape_function_1D_deriv1(N2_i_xi, eta2, distype2);
+    CORE::FE::shape_function_1D_deriv2(N1_i_xixi, eta1, distype1);
+    CORE::FE::shape_function_1D_deriv2(N2_i_xixi, eta2, distype2);
   }
   else if (numnodalvalues == 2)
   {
@@ -4404,12 +4401,12 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions(
     const CORE::FE::CellType distype2herm = CORE::FE::CellType::line2;
 
     // get values and derivatives of shape functions
-    CORE::DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1herm);
-    CORE::DRT::UTILS::shape_function_hermite_1D(N2_i, eta2, length2, distype2herm);
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1herm);
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2herm);
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1herm);
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2herm);
+    CORE::FE::shape_function_hermite_1D(N1_i, eta1, length1, distype1herm);
+    CORE::FE::shape_function_hermite_1D(N2_i, eta2, length2, distype2herm);
+    CORE::FE::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1herm);
+    CORE::FE::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2herm);
+    CORE::FE::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1herm);
+    CORE::FE::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2herm);
   }
   else
     dserror(
@@ -4446,17 +4443,17 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions(
     {
       case 0:
       {
-        CORE::DRT::UTILS::shape_function_1D(N_i, eta, distype);
+        CORE::FE::shape_function_1D(N_i, eta, distype);
         break;
       }
       case 1:
       {
-        CORE::DRT::UTILS::shape_function_1D_deriv1(N_i, eta, distype);
+        CORE::FE::shape_function_1D_deriv1(N_i, eta, distype);
         break;
       }
       case 2:
       {
-        CORE::DRT::UTILS::shape_function_1D_deriv2(N_i, eta, distype);
+        CORE::FE::shape_function_1D_deriv2(N_i, eta, distype);
         break;
       }
     }
@@ -4474,17 +4471,17 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions(
     {
       case 0:
       {
-        CORE::DRT::UTILS::shape_function_hermite_1D(N_i, eta, length, distypeherm);
+        CORE::FE::shape_function_hermite_1D(N_i, eta, length, distypeherm);
         break;
       }
       case 1:
       {
-        CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i, eta, length, distypeherm);
+        CORE::FE::shape_function_hermite_1D_deriv1(N_i, eta, length, distypeherm);
         break;
       }
       case 2:
       {
-        CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i, eta, length, distypeherm);
+        CORE::FE::shape_function_hermite_1D_deriv2(N_i, eta, length, distypeherm);
         break;
       }
     }

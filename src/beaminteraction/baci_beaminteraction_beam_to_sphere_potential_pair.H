@@ -216,7 +216,7 @@ namespace BEAMINTERACTION
     */
     void GetShapeFunctions(std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
         std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
-        CORE::DRT::UTILS::IntegrationPoints1D& gausspoints);
+        CORE::FE::IntegrationPoints1D& gausspoints);
 
     /*!
     \brief Compute coordinates of centreline points from the discretization

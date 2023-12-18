@@ -59,7 +59,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingCondition::CreateContactPair(
  *
  */
 void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
-    const Teuchos::RCP<const BACI::DRT::Discretization>& discretization)
+    const Teuchos::RCP<const DRT::Discretization>& discretization)
 {
   // Set the IDs of the nodes to be coupled
   const std::vector<int> node_ids = *(condition_line_->Nodes());

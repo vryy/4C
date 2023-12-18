@@ -19,9 +19,9 @@ BACI_NAMESPACE_OPEN
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, BACI::DRT::Element* ele1,
-    const std::vector<int>& ids_2, Teuchos::RCP<BACI::DRT::Discretization> dis1,
-    Teuchos::RCP<BACI::DRT::Discretization> dis2)
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+    const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   if (ele1 == nullptr) dserror("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
@@ -29,15 +29,15 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
   if (ids_2.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  BACI::DRT::Element* ele2 = nullptr;
+  DRT::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords1 = BACI::DRT::UTILS::ElementCenterRefeCoords(ele1);
+    std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(ele1);
 
     for (unsigned i = 0; i < ids_2.size(); ++i)
     {
-      BACI::DRT::Element* actele2 = dis2->gElement(ids_2[i]);
-      std::vector<double> centercoords2 = BACI::DRT::UTILS::ElementCenterRefeCoords(actele2);
+      DRT::Element* actele2 = dis2->gElement(ids_2[i]);
+      std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(actele2);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
@@ -62,9 +62,9 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
  |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, BACI::DRT::Element* ele2,
-    const std::vector<int>& ids_1, Teuchos::RCP<BACI::DRT::Discretization> dis1,
-    Teuchos::RCP<BACI::DRT::Discretization> dis2)
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+    const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   if (ele2 == nullptr) dserror("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
@@ -72,15 +72,15 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
   if (ids_1.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  BACI::DRT::Element* ele1 = nullptr;
+  DRT::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords2 = BACI::DRT::UTILS::ElementCenterRefeCoords(ele2);
+    std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(ele2);
 
     for (unsigned i = 0; i < ids_1.size(); ++i)
     {
-      BACI::DRT::Element* actele1 = dis1->gElement(ids_1[i]);
-      std::vector<double> centercoords1 = BACI::DRT::UTILS::ElementCenterRefeCoords(actele1);
+      DRT::Element* actele1 = dis1->gElement(ids_1[i]);
+      std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(actele1);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
