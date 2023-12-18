@@ -23,10 +23,10 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
 }
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   struct IntegrationPoints1D;
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 namespace GEOMETRYPAIR
 {
   enum class ProjectionResult;

@@ -85,11 +85,11 @@ namespace DRT
      private:
       //! number of integration points in thickness direction (note: currently they are fixed to 2,
       //! otherwise the element would suffer from nonlinear poisson stiffening)
-      const CORE::DRT::UTILS::IntegrationPoints1D intpoints_thickness_ =
-          CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_2point);
+      const CORE::FE::IntegrationPoints1D intpoints_thickness_ =
+          CORE::FE::IntegrationPoints1D(CORE::FE::GaussRule1D::line_2point);
 
       //! integration points in mid-surface
-      CORE::DRT::UTILS::IntegrationPoints2D intpoints_midsurface_;
+      CORE::FE::IntegrationPoints2D intpoints_midsurface_;
 
       //! shell data (thickness, SDC, number of ANS parameter)
       STR::ELEMENTS::ShellData shell_data_ = {};

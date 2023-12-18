@@ -90,7 +90,7 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
 
       //  evalulate shape functions at given point
       CORE::LINALG::Matrix<Base::numnod_, 1> shapefct;
-      CORE::DRT::UTILS::shape_function<distype>(xsi[0], shapefct);
+      CORE::FE::shape_function<distype>(xsi[0], shapefct);
 
       CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
       CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);

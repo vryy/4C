@@ -31,7 +31,7 @@ std::vector<double> DRT::ELEMENTS::So_hex27::soh27_ElementCenterRefeCoords()
   const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOH27, 1> funct;
   // Element midpoint at r=s=t=0.0
-  CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  CORE::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   CORE::LINALG::Matrix<1, NUMDIM_SOH27> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

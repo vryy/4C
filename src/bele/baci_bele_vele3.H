@@ -283,7 +283,7 @@ namespace DRT
       Vele3& operator=(const Vele3& old);
 
       //! set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule3D getOptimalGaussrule(const CORE::FE::CellType& distype) const;
+      CORE::FE::GaussRule3D getOptimalGaussrule(const CORE::FE::CellType& distype) const;
 
     };  // class Bele3
 
@@ -427,7 +427,7 @@ namespace DRT
       Vele3Surface& operator=(const Vele3Surface& old);
 
       //! set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule(const CORE::FE::CellType& distype) const;
+      CORE::FE::GaussRule2D getOptimalGaussrule(const CORE::FE::CellType& distype) const;
 
     };  // class Vele3Surface
 
@@ -554,7 +554,7 @@ namespace DRT
       Vele3Line& operator=(const Vele3Line& old);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
+      CORE::FE::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
     };  // class Vele3Line
 

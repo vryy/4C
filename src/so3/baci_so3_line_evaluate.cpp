@@ -92,7 +92,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
   MaterialConfiguration(x);
 
   // integration parameters
-  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
+  const CORE::FE::IntegrationPoints1D intpoints(gaussrule_);
   CORE::LINALG::SerialDenseVector shapefcts(numnode);
   CORE::LINALG::SerialDenseMatrix deriv(1, numnode);
   const CORE::FE::CellType shape = Shape();
@@ -102,8 +102,8 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
   {
     // get shape functions and derivatives of element surface
     const double e = intpoints.qxg[gp][0];
-    CORE::DRT::UTILS::shape_function_1D(shapefcts, e, shape);
-    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e, shape);
+    CORE::FE::shape_function_1D(shapefcts, e, shape);
+    CORE::FE::shape_function_1D_deriv1(deriv, e, shape);
     switch (ltype)
     {
       case neum_live:

@@ -86,10 +86,9 @@ void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
   CORE::LINALG::Matrix<2, numnodes> deriv;
   CORE::LINALG::Matrix<2, 2> metrictensor;
 
-  CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
-  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
-  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
-      xyze, deriv, metrictensor, drs, &normal);
+  CORE::FE::shape_function_2D(funct, eta(0), eta(1), celldistype);
+  CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
+  CORE::FE::ComputeMetricTensorForBoundaryEle<celldistype>(xyze, deriv, metrictensor, drs, &normal);
 
   x_gp_lin.Multiply(xyze, funct);
 
@@ -336,7 +335,7 @@ void CORE::GEO::CUT::Tri3BoundaryCell::Normal(
   CORE::LINALG::Matrix<2, 3> deriv;
   CORE::LINALG::Matrix<2, 3> A;
 
-  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), CORE::FE::CellType::tri3);
+  CORE::FE::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), CORE::FE::CellType::tri3);
   A.MultiplyNT(deriv, side_xyze);
 
   // cross product to get the normal at the point
@@ -361,7 +360,7 @@ void CORE::GEO::CUT::Quad4BoundaryCell::Normal(
   CORE::LINALG::Matrix<2, 4> deriv;
   CORE::LINALG::Matrix<2, 3> A;
 
-  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), CORE::FE::CellType::quad4);
+  CORE::FE::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), CORE::FE::CellType::quad4);
   A.MultiplyNT(deriv, side_xyze);
 
   // cross product to get the normal at the point
@@ -391,40 +390,39 @@ void CORE::GEO::CUT::ArbitraryBoundaryCell::Normal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Point1BoundaryCell::gaussRule(int cubaturedegree)
+CORE::FE::GaussIntegration CORE::GEO::CUT::Point1BoundaryCell::gaussRule(int cubaturedegree)
 {
-  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::point1, cubaturedegree);
+  CORE::FE::GaussIntegration gi(CORE::FE::CellType::point1, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Line2BoundaryCell::gaussRule(int cubaturedegree)
+CORE::FE::GaussIntegration CORE::GEO::CUT::Line2BoundaryCell::gaussRule(int cubaturedegree)
 {
-  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::line2, cubaturedegree);
+  CORE::FE::GaussIntegration gi(CORE::FE::CellType::line2, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Tri3BoundaryCell::gaussRule(int cubaturedegree)
+CORE::FE::GaussIntegration CORE::GEO::CUT::Tri3BoundaryCell::gaussRule(int cubaturedegree)
 {
-  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::tri3, cubaturedegree);
+  CORE::FE::GaussIntegration gi(CORE::FE::CellType::tri3, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Quad4BoundaryCell::gaussRule(int cubaturedegree)
+CORE::FE::GaussIntegration CORE::GEO::CUT::Quad4BoundaryCell::gaussRule(int cubaturedegree)
 {
-  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::quad4, cubaturedegree);
+  CORE::FE::GaussIntegration gi(CORE::FE::CellType::quad4, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::ArbitraryBoundaryCell::gaussRule(
-    int cubaturedegree)
+CORE::FE::GaussIntegration CORE::GEO::CUT::ArbitraryBoundaryCell::gaussRule(int cubaturedegree)
 {
   return gaussRule_;
 }

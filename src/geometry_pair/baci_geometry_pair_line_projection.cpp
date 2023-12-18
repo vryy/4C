@@ -105,7 +105,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
     LineSegment<scalar_type>& segment, optional_type... optional_args)
 {
   const auto& evaluation_data = *(pair->GetEvaluationData());
-  const CORE::DRT::UTILS::IntegrationPoints1D& gauss_points = evaluation_data.GetGaussPoints();
+  const CORE::FE::IntegrationPoints1D& gauss_points = evaluation_data.GetGaussPoints();
 
   // Set up the vector with the projection points.
   std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
@@ -214,7 +214,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pa
   std::vector<bool>& line_projection_tracker = GetLineProjectionVector(pair);
 
   // Gauss rule.
-  CORE::DRT::UTILS::IntegrationPoints1D gauss_points = pair->GetEvaluationData()->GetGaussPoints();
+  CORE::FE::IntegrationPoints1D gauss_points = pair->GetEvaluationData()->GetGaussPoints();
 
   // Initialize variables for the projection.
   scalar_type eta;

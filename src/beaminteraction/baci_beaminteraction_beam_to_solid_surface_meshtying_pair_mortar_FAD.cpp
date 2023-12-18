@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, sur
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const BACI::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssemble(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -123,7 +123,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -462,7 +462,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const BACI::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssemble(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -622,8 +622,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Get the shape functions for the interpolation of the beam rotations. This is currently
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
-        CORE::DRT::UTILS::shape_function_1D(
-            L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
+        CORE::FE::shape_function_1D(L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -720,7 +719,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_GB,
     CORE::LINALG::SparseMatrix& global_GS, CORE::LINALG::SparseMatrix& global_FB,
     CORE::LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
@@ -862,8 +861,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Get the shape functions for the interpolation of the beam rotations. This is currently
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
-        CORE::DRT::UTILS::shape_function_1D(
-            L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
+        CORE::FE::shape_function_1D(L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -969,7 +967,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::GetPairRotationalGIDs(const BACI::DRT::Discretization& discret,
+    mortar>::GetPairRotationalGIDs(const DRT::Discretization& discret,
     std::vector<int>& gid_surface, CORE::LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const
 {
   // Get the GIDs of the surface and beam.

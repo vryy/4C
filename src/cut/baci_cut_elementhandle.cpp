@@ -34,9 +34,8 @@ BACI_NAMESPACE_OPEN
 // integation-cells to the local coordinates of background element
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::ElementHandle::CreateProjected(
-    const std::vector<CORE::GEO::CUT::Point*>& cpoints,
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic)
+Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::ElementHandle::CreateProjected(
+    const std::vector<CORE::GEO::CUT::Point*>& cpoints, Teuchos::RCP<CORE::FE::GaussPoints> gp_ic)
 {
   const unsigned nen = CORE::FE::num_nodes<distype>;
   const unsigned dim = CORE::FE::dim<distype>;
@@ -53,12 +52,12 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::ElementHandle::Creat
     std::copy(xi.A(), xi.A() + dim, &xie(0, i));
   }
 
-  CORE::DRT::UTILS::GaussIntegration intpoints(gp_ic);
-  Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(gp_ic->NumPoints()));
+  CORE::FE::GaussIntegration intpoints(gp_ic);
+  Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp =
+      Teuchos::rcp(new CORE::FE::CollectedGaussPoints(gp_ic->NumPoints()));
 
   // Perform actual mapping to correct local coordinates
-  CORE::DRT::UTILS::GaussIntegration::ProjectGaussPointsLocalToGlobal<distype>(xie, intpoints, cgp);
+  CORE::FE::GaussIntegration::ProjectGaussPointsLocalToGlobal<distype>(xie, intpoints, cgp);
   return cgp;
 }
 
@@ -68,7 +67,7 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::ElementHandle::Creat
 // that Gaussian rule for every volume-cell can be separated
 /*----------------------------------------------------------------------*/
 void CORE::GEO::CUT::ElementHandle::VolumeCellGaussPoints(
-    plain_volumecell_set& cells, std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints)
+    plain_volumecell_set& cells, std::vector<CORE::FE::GaussIntegration>& intpoints)
 {
   intpoints.clear();
   intpoints.reserve(cells.size());
@@ -77,8 +76,8 @@ void CORE::GEO::CUT::ElementHandle::VolumeCellGaussPoints(
   {
     CORE::GEO::CUT::VolumeCell* vc = *i;
 
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc =
-        Teuchos::rcp(new CORE::DRT::UTILS::GaussPointsComposite(0));
+    Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc =
+        Teuchos::rcp(new CORE::FE::GaussPointsComposite(0));
 
     switch (vc->ParentElement()->GetElementIntegrationType())
     {
@@ -112,28 +111,28 @@ void CORE::GEO::CUT::ElementHandle::VolumeCellGaussPoints(
       bool quad_comp_success = qc.PerformCompressionOfQuadrature(*gpc, vc);
       if (quad_comp_success)
       {
-        intpoints.push_back(CORE::DRT::UTILS::GaussIntegration(qc.GetCompressedQuadrature()));
+        intpoints.push_back(CORE::FE::GaussIntegration(qc.GetCompressedQuadrature()));
 
         // reset the Gauss points for the volumecell so that the compression need not be performed
         // for each iteration within the Newton loop
         vc->SetGaussRule(qc.GetCompressedQuadrature());
       }
       else
-        intpoints.push_back(CORE::DRT::UTILS::GaussIntegration(gpc));
+        intpoints.push_back(CORE::FE::GaussIntegration(gpc));
     }
     else
     {
-      intpoints.push_back(CORE::DRT::UTILS::GaussIntegration(gpc));
+      intpoints.push_back(CORE::FE::GaussIntegration(gpc));
     }
 #else
-    intpoints.push_back(CORE::DRT::UTILS::GaussIntegration(gpc));
+    intpoints.push_back(CORE::FE::GaussIntegration(gpc));
 #endif
   }
 }
 
 
 void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
+    Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
 {
   //---------------
   // For tessellation, we have Gauss points calculated at local coordinates of each integrationcells
@@ -145,51 +144,50 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(
   {
     CORE::GEO::CUT::IntegrationCell* ic = *i;
 
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic =
-        CORE::DRT::UTILS::GaussPointCache::Instance().Create(
-            ic->Shape(), ic->CubatureDegree(ic->Shape()));
+    Teuchos::RCP<CORE::FE::GaussPoints> gp_ic =
+        CORE::FE::GaussPointCache::Instance().Create(ic->Shape(), ic->CubatureDegree(ic->Shape()));
     const std::vector<CORE::GEO::CUT::Point*>& cpoints = ic->Points();
 
     switch (ic->Shape())
     {
       case CORE::FE::CellType::tri3:
       {
-        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+        Teuchos::RCP<CORE::FE::GaussPoints> gp =
             CreateProjected<CORE::FE::CellType::tri3>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::quad4:
       {
-        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+        Teuchos::RCP<CORE::FE::GaussPoints> gp =
             CreateProjected<CORE::FE::CellType::quad4>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::hex8:
       {
-        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+        Teuchos::RCP<CORE::FE::GaussPoints> gp =
             CreateProjected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::tet4:
       {
-        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+        Teuchos::RCP<CORE::FE::GaussPoints> gp =
             CreateProjected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::wedge6:
       {
-        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+        Teuchos::RCP<CORE::FE::GaussPoints> gp =
             CreateProjected<CORE::FE::CellType::wedge6>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::pyramid5:
       {
-        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+        Teuchos::RCP<CORE::FE::GaussPoints> gp =
             CreateProjected<CORE::FE::CellType::pyramid5>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
@@ -203,7 +201,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(
 }
 
 void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
+    Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
 {
   //-------------------
   // For MomentFitting, we have Gauss points that are calculated w.r to local coordinates of linear
@@ -213,7 +211,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(
 
   //---------------------------------------------
   const std::vector<CORE::GEO::CUT::Point*>& cpoints = vc->ParentElement()->Points();
-  Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic = vc->GetGaussRule();
+  Teuchos::RCP<CORE::FE::GaussPoints> gp_ic = vc->GetGaussRule();
 
 
   switch (Shape())
@@ -230,14 +228,14 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(
     case CORE::FE::CellType::hex20:
     case CORE::FE::CellType::hex27:
     {
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+      Teuchos::RCP<CORE::FE::GaussPoints> gp =
           CreateProjected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
       gpc->Append(gp);
       break;
     }
     case CORE::FE::CellType::tet10:
     {
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+      Teuchos::RCP<CORE::FE::GaussPoints> gp =
           CreateProjected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
       gpc->Append(gp);
       break;
@@ -252,7 +250,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(
 
 
 void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence(
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
+    Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
 {
   //-------------------
   // For DirectDivergence, we calculate Gauss points at the correct local coord. during construction
@@ -261,7 +259,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence
   //         --> element volume mapping as done for tessellation and moment fitting do not work
   // 2. Internal Gauss pts can be obtained only if we have correctly mapped main Gauss points
   //-------------------
-  Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
+  Teuchos::RCP<CORE::FE::GaussPoints> gp = vc->GetGaussRule();
 
   // volume cell gausspoints are identified to be negligible in
   // CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule
@@ -274,12 +272,11 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence
 // Collect the Gaussian points of all the volume-cells belonging to this element.
 // The integration rules over all the volume-cells are connected.
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite>
-CORE::GEO::CUT::ElementHandle::GaussPointsConnected(
+Teuchos::RCP<CORE::FE::GaussPointsComposite> CORE::GEO::CUT::ElementHandle::GaussPointsConnected(
     plain_volumecell_set& cells, INPAR::CUT::VCellGaussPts gausstype)
 {
-  Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc =
-      Teuchos::rcp(new CORE::DRT::UTILS::GaussPointsComposite(0));
+  Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc =
+      Teuchos::rcp(new CORE::FE::GaussPointsComposite(0));
 
   for (plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
   {
@@ -294,37 +291,36 @@ CORE::GEO::CUT::ElementHandle::GaussPointsConnected(
       {
         CORE::GEO::CUT::IntegrationCell* ic = *i;
 
-        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic =
-            CORE::DRT::UTILS::GaussPointCache::Instance().Create(
-                ic->Shape(), ic->CubatureDegree(ic->Shape()));
+        Teuchos::RCP<CORE::FE::GaussPoints> gp_ic = CORE::FE::GaussPointCache::Instance().Create(
+            ic->Shape(), ic->CubatureDegree(ic->Shape()));
         const std::vector<CORE::GEO::CUT::Point*>& cpoints = ic->Points();
 
         switch (ic->Shape())
         {
           case CORE::FE::CellType::hex8:
           {
-            Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+            Teuchos::RCP<CORE::FE::GaussPoints> gp =
                 CreateProjected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
             gpc->Append(gp);
             break;
           }
           case CORE::FE::CellType::tet4:
           {
-            Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+            Teuchos::RCP<CORE::FE::GaussPoints> gp =
                 CreateProjected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
             gpc->Append(gp);
             break;
           }
           case CORE::FE::CellType::wedge6:
           {
-            Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+            Teuchos::RCP<CORE::FE::GaussPoints> gp =
                 CreateProjected<CORE::FE::CellType::wedge6>(cpoints, gp_ic);
             gpc->Append(gp);
             break;
           }
           case CORE::FE::CellType::pyramid5:
           {
-            Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+            Teuchos::RCP<CORE::FE::GaussPoints> gp =
                 CreateProjected<CORE::FE::CellType::pyramid5>(cpoints, gp_ic);
             gpc->Append(gp);
             break;
@@ -339,7 +335,7 @@ CORE::GEO::CUT::ElementHandle::GaussPointsConnected(
     else if (gausstype == INPAR::CUT::VCellGaussPts_MomentFitting ||
              gausstype == INPAR::CUT::VCellGaussPts_DirectDivergence)
     {
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
+      Teuchos::RCP<CORE::FE::GaussPoints> gp = vc->GetGaussRule();
       gpc->Append(gp);
     }
   }
@@ -353,8 +349,7 @@ CORE::GEO::CUT::ElementHandle::GaussPointsConnected(
 /*----------------------------------------------------------------------*/
 void CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
-    std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>& intpoints,
-    const int bc_cubaturedegree)
+    std::map<int, std::vector<CORE::FE::GaussIntegration>>& intpoints, const int bc_cubaturedegree)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin" );
 
@@ -363,7 +358,7 @@ void CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
   {
     int sid = i->first;
     const std::vector<CORE::GEO::CUT::BoundaryCell*>& cells = i->second;
-    std::vector<CORE::DRT::UTILS::GaussIntegration>& cell_points = intpoints[sid];
+    std::vector<CORE::FE::GaussIntegration>& cell_points = intpoints[sid];
 
     //    // safety check
     //    if(sid < 0)
@@ -484,8 +479,7 @@ void CORE::GEO::CUT::LinearElementHandle::CollectVolumeCells(
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints(
     std::vector<plain_volumecell_set>& cell_sets, std::vector<std::vector<int>>& nds_sets,
-    std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>>& intpoints_sets,
-    bool include_inner)
+    std::vector<std::vector<CORE::FE::GaussIntegration>>& intpoints_sets, bool include_inner)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints");
 
@@ -517,7 +511,7 @@ bool CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints(
   {
     plain_volumecell_set& cells = *i;
 
-    std::vector<CORE::DRT::UTILS::GaussIntegration> gaussCellsets;
+    std::vector<CORE::FE::GaussIntegration> gaussCellsets;
     VolumeCellGaussPoints(cells, gaussCellsets);
 
     intpoints_sets.push_back(gaussCellsets);
@@ -895,7 +889,7 @@ CORE::GEO::CUT::Hex20ElementHandle::Hex20ElementHandle(
     // loop the eight nodes of each quad8 side of the hex20 element
     for (int i = 0; i < 8; ++i)
     {
-      int localnodeid = CORE::DRT::UTILS::eleNodeNumbering_hex27_surfaces[localsideid][i];
+      int localnodeid = CORE::FE::eleNodeNumbering_hex27_surfaces[localsideid][i];
       Node* n = mesh.GetNode(node_ids[localnodeid], static_cast<double*>(nullptr));
       side_nodes[i] = n;
       node_nids.insert(node_ids[localnodeid]);
@@ -903,7 +897,7 @@ CORE::GEO::CUT::Hex20ElementHandle::Hex20ElementHandle(
       side_lsvs(i) = n->LSV();
     }
 
-    CORE::DRT::UTILS::shape_function_2D(side_funct, 0.0, 0.0, CORE::FE::CellType::quad8);
+    CORE::FE::shape_function_2D(side_funct, 0.0, 0.0, CORE::FE::CellType::quad8);
     xyz.Multiply(side_xyze, side_funct);
     lsv.Multiply(side_lsvs, side_funct);
 
@@ -945,7 +939,7 @@ CORE::GEO::CUT::Hex20ElementHandle::Hex20ElementHandle(
   // node is the set of all 20 nodes of the hex20 element in contrast to the shadow nodes of sides,
   // for that the key are the eight nodes of the quad7 side
   CORE::LINALG::Matrix<20, 1> funct;
-  CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, CORE::FE::CellType::hex20);
+  CORE::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, CORE::FE::CellType::hex20);
 
   xyz.Multiply(xyze, funct);
   lsv.Multiply(lsvs, funct);
@@ -1372,7 +1366,7 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
     // loop the eight nodes of each quad8 side of the wedge15 element
     for (int i = 0; i < 8; ++i)
     {
-      int localnodeid = CORE::DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[localsideid][i];
+      int localnodeid = CORE::FE::eleNodeNumbering_wedge18_quadsurfaces[localsideid][i];
       Node* n = mesh.GetNode(node_ids[localnodeid], static_cast<double*>(nullptr));
       side_nodes[i] = n;
       node_nids.insert(node_ids[localnodeid]);
@@ -1380,7 +1374,7 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
       side_lsvs(i) = n->LSV();
     }
 
-    CORE::DRT::UTILS::shape_function_2D(side_funct, 0.0, 0.0, CORE::FE::CellType::quad8);
+    CORE::FE::shape_function_2D(side_funct, 0.0, 0.0, CORE::FE::CellType::quad8);
     xyz.Multiply(side_xyze, side_funct);
     lsv.Multiply(side_lsvs, side_funct);
 
@@ -1400,7 +1394,7 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
     // loop the 6 nodes of each tri6 side of the wedge15 element
     for (int i = 0; i < 6; ++i)
     {
-      int localnodeid = CORE::DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[localsideid][i];
+      int localnodeid = CORE::FE::eleNodeNumbering_wedge18_trisurfaces[localsideid][i];
       Node* n = mesh.GetNode(node_ids[localnodeid], static_cast<double*>(nullptr));
       tb_side_nodes[i] = n;
       node_nids.insert(node_ids[localnodeid]);

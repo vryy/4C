@@ -40,9 +40,8 @@ CORE::LINALG::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex,
-    Teuchos::RCP<BACI::DRT::Discretization> fdis, Teuchos::RCP<Epetra_Map> inodes,
-    bool structuresplit)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex, Teuchos::RCP<DRT::Discretization> fdis,
+    Teuchos::RCP<Epetra_Map> inodes, bool structuresplit)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Preconditioner::Setup");
 

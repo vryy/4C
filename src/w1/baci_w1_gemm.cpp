@@ -48,7 +48,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
   const int edof = numnode * Wall1::noddof_;
   const CORE::FE::CellType distype = Shape();
   // Gaussian points
-  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
   // GEMM coefficients
   const double gemmalphaf = params.get<double>("alpha f");
   const double gemmxi = params.get<double>("xi");
@@ -182,7 +182,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     CORE::LINALG::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
 
     // derivatives at origin
-    CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
+    CORE::FE::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
     // material-to-parameter space Jacobian at origin
     w1_jacobianmatrix(Xe, shpdrv, Xjm0, &Xjdet0, numnode);
     // calculate linear B-operator at origin
@@ -201,8 +201,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     const double wgt = intpoints.qwgt[ip];
 
     // shape functions and their derivatives
-    CORE::DRT::UTILS::shape_function_2D(shpfct, xi1, xi2, distype);
-    CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, xi1, xi2, distype);
+    CORE::FE::shape_function_2D(shpfct, xi1, xi2, distype);
+    CORE::FE::shape_function_2D_deriv1(shpdrv, xi1, xi2, distype);
 
     // compute Jacobian matrix
     w1_jacobianmatrix(Xe, shpdrv, Xjm, &Xjdet, numnode);

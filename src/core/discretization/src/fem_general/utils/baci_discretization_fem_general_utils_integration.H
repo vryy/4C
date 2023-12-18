@@ -21,7 +21,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   // forward declarations
   struct IntegrationPoints1D;
@@ -577,8 +577,8 @@ namespace CORE::DRT::UTILS
     );
 
    private:
-    static const int max_nquad = 1000;       ///< size of c array
-    CORE::DRT::UTILS::GaussRule3D intrule_;  ///< associated integration rule name
+    static const int max_nquad = 1000;  ///< size of c array
+    CORE::FE::GaussRule3D intrule_;     ///< associated integration rule name
    public:
     int nquad;                 ///< number of gausspoints
     double qxg[max_nquad][3];  ///< coordinates
@@ -594,7 +594,7 @@ namespace CORE::DRT::UTILS
     [[nodiscard]] int NumPoints() const { return nquad; }
 
     /// get used integration rule
-    CORE::DRT::UTILS::GaussRule3D GetIntRule() const { return intrule_; };
+    CORE::FE::GaussRule3D GetIntRule() const { return intrule_; };
   };
 
   /*!
@@ -614,8 +614,8 @@ namespace CORE::DRT::UTILS
     );
 
    private:
-    static const int max_nquad = 1024;       ///< size of c array
-    CORE::DRT::UTILS::GaussRule2D intrule_;  ///< associated integration rule name
+    static const int max_nquad = 1024;  ///< size of c array
+    CORE::FE::GaussRule2D intrule_;     ///< associated integration rule name
    public:
     int nquad;                 ///< number of gausspoints
     double qxg[max_nquad][2];  ///< coordinates
@@ -631,7 +631,7 @@ namespace CORE::DRT::UTILS
     [[nodiscard]] int NumPoints() const { return nquad; }
 
     /// get used integration rule
-    CORE::DRT::UTILS::GaussRule2D GetIntRule() const { return intrule_; };
+    CORE::FE::GaussRule2D GetIntRule() const { return intrule_; };
   };
 
   /*!
@@ -650,8 +650,8 @@ namespace CORE::DRT::UTILS
     );
 
    private:
-    static const int max_nquad = 50;         ///< size of c array
-    CORE::DRT::UTILS::GaussRule1D intrule_;  ///< associated integration rule name
+    static const int max_nquad = 50;  ///< size of c array
+    CORE::FE::GaussRule1D intrule_;   ///< associated integration rule name
    public:
     int nquad;                 ///< number of integration points
     double qxg[max_nquad][1];  ///< coordinates
@@ -667,7 +667,7 @@ namespace CORE::DRT::UTILS
     [[nodiscard]] int NumPoints() const { return nquad; }
 
     /// get used integration rule
-    CORE::DRT::UTILS::GaussRule1D GetIntRule() const { return intrule_; };
+    CORE::FE::GaussRule1D GetIntRule() const { return intrule_; };
   };
 
 
@@ -681,19 +681,19 @@ namespace CORE::DRT::UTILS
     template <>
     struct DimToIntegrationPoints<1>
     {
-      using type = CORE::DRT::UTILS::IntegrationPoints1D;
+      using type = CORE::FE::IntegrationPoints1D;
     };
 
     template <>
     struct DimToIntegrationPoints<2>
     {
-      using type = CORE::DRT::UTILS::IntegrationPoints2D;
+      using type = CORE::FE::IntegrationPoints2D;
     };
 
     template <>
     struct DimToIntegrationPoints<3>
     {
-      using type = CORE::DRT::UTILS::IntegrationPoints3D;
+      using type = CORE::FE::IntegrationPoints3D;
     };
   }  // namespace DETAIL
 
@@ -804,7 +804,7 @@ namespace CORE::DRT::UTILS
   };
 
 
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

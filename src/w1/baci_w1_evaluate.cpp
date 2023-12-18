@@ -387,7 +387,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
               discretization.GetState("material_displacement");
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
-        const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+        const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
         CORE::LINALG::SerialDenseMatrix stress(intpoints.nquad, Wall1::numstr_);
         CORE::LINALG::SerialDenseMatrix strain(intpoints.nquad, Wall1::numstr_);
 
@@ -482,7 +482,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::SerialDenseVector funct(numnode);
         CORE::LINALG::SerialDenseMatrix deriv;
         deriv.shape(2, numnode);
-        const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+        const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
 
         // get displacements and extract values of this element
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -526,8 +526,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
           {
             // shape functions and their derivatives for polynomials
-            CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+            CORE::FE::shape_function_2D(funct, e1, e2, distype);
+            CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
           }
           else
           {
@@ -536,8 +536,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             gp(0) = e1;
             gp(1) = e2;
 
-            CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-                funct, deriv, gp, myknots, weights, distype);
+            CORE::FE::NURBS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
           }
 
           /*--------------------------------------- compute jacobian Matrix */
@@ -727,7 +726,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::SerialDenseVector funct(numnode);
       CORE::LINALG::SerialDenseMatrix deriv;
       deriv.shape(2, numnode);
-      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+      const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
 
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -794,8 +793,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
         {
           // shape functions and their derivatives for polynomials
-          CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+          CORE::FE::shape_function_2D(funct, e1, e2, distype);
+          CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
         }
         else
         {
@@ -804,8 +803,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           gp(0) = e1;
           gp(1) = e2;
 
-          CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-              funct, deriv, gp, myknots, weights, distype);
+          CORE::FE::NURBS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
         }
 
         // REF ------------------------
@@ -996,7 +994,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
   const CORE::FE::CellType distype = Shape();
 
   // gaussian points
-  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
 
   //  std::vector<double>* thick = data_.Get<std::vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
@@ -1029,8 +1027,8 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
     if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      CORE::DRT::UTILS::shape_function_2D(shapefcts, e1, e2, distype);
-      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::FE::shape_function_2D(shapefcts, e1, e2, distype);
+      CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -1039,8 +1037,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
       gp(0) = e1;
       gp(1) = e2;
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-          shapefcts, deriv, gp, myknots, weights, distype);
+      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(shapefcts, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1262,7 +1259,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   const CORE::FE::CellType distype = Shape();
 
   // gaussian points
-  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
@@ -1360,8 +1357,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::FE::shape_function_2D(funct, e1, e2, distype);
+      CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -1370,8 +1367,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       gp(0) = e1;
       gp(1) = e2;
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-          funct, deriv, gp, myknots, weights, distype);
+      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1643,7 +1639,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   const CORE::FE::CellType distype = Shape();
 
   // gaussian points
-  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
@@ -1678,8 +1674,8 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::FE::shape_function_2D(funct, e1, e2, distype);
+      CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -1688,8 +1684,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
       gp(0) = e1;
       gp(1) = e2;
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-          funct, deriv, gp, myknots, weights, distype);
+      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -2154,7 +2149,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   const int edof = numnode * Wall1::noddof_;
   const CORE::FE::CellType distype = Shape();
   // Gaussian points
-  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
 
   // internal/strain energy
   double internal_energy = 0.0;
@@ -2215,7 +2210,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
     alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");
 
     // derivatives at origin
-    CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
+    CORE::FE::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
     // material-to-parameter space Jacobian at origin
     w1_jacobianmatrix(Xe, shpdrv, Xjm0, &Xjdet0, numnode);
     // calculate linear B-operator at origin
@@ -2233,8 +2228,8 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
     const double wgt = intpoints.qwgt[ip];
 
     // shape functions and their derivatives
-    CORE::DRT::UTILS::shape_function_2D(shpfct, xi1, xi2, distype);
-    CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, xi1, xi2, distype);
+    CORE::FE::shape_function_2D(shpfct, xi1, xi2, distype);
+    CORE::FE::shape_function_2D_deriv1(shpdrv, xi1, xi2, distype);
 
     // compute Jacobian matrix
     w1_jacobianmatrix(Xe, shpdrv, Xjm, &Xjdet, numnode);

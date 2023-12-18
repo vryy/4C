@@ -58,7 +58,7 @@ namespace CONTACT
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type shape_function(
         MORTAR::MortarElement& ele, T& xi, V& val)
     {
-      CORE::DRT::UTILS::shape_function<type>(xi, val);
+      CORE::FE::shape_function<type>(xi, val);
       return true;
     }
 
@@ -72,7 +72,7 @@ namespace CONTACT
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
     shape_function_deriv1(MORTAR::MortarElement& ele, T& xi, V& deriv)
     {
-      CORE::DRT::UTILS::shape_function_deriv1<type>(xi, deriv);
+      CORE::FE::shape_function_deriv1<type>(xi, deriv);
       return true;
     }
 
@@ -101,7 +101,7 @@ namespace CONTACT
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
     shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
     {
-      CORE::DRT::UTILS::shape_function_deriv2<type>(xi, deriv2);
+      CORE::FE::shape_function_deriv2<type>(xi, deriv2);
       return true;
     }
 
@@ -116,9 +116,9 @@ namespace CONTACT
     shape_function_and_deriv1_and_deriv2(
         MORTAR::MortarElement& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
-      CORE::DRT::UTILS::shape_function<type>(xi, val);
-      CORE::DRT::UTILS::shape_function_deriv1<type>(xi, deriv1);
-      CORE::DRT::UTILS::shape_function_deriv2<type>(xi, deriv2);
+      CORE::FE::shape_function<type>(xi, val);
+      CORE::FE::shape_function_deriv1<type>(xi, deriv1);
+      CORE::FE::shape_function_deriv2<type>(xi, deriv2);
       return true;
     }
 
@@ -184,7 +184,7 @@ namespace CONTACT
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return CORE::DRT::NURBS::UTILS::nurbs_shape_function_dim(val, xi, ele.Knots(), weights, type);
+      return CORE::FE::NURBS::nurbs_shape_function_dim(val, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the first derivative w.r.t. xi of the shape function
@@ -203,8 +203,7 @@ namespace CONTACT
       GetNurbsWeights(ele, weights);
 
       CORE::LINALG::Matrix<NUMNODE, 1> val(false);
-      return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
-          val, deriv, xi, ele.Knots(), weights, type);
+      return CORE::FE::NURBS::nurbs_get_funct_deriv(val, deriv, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the value as well as the first derivative w.r.t. xi of
@@ -222,8 +221,7 @@ namespace CONTACT
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
-          val, deriv, xi, ele.Knots(), weights, type);
+      return CORE::FE::NURBS::nurbs_get_funct_deriv(val, deriv, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the second order derivative w.r.t. xi and eta of the shape
@@ -244,7 +242,7 @@ namespace CONTACT
 
       CORE::LINALG::Matrix<NUMNODE, 1> val(false);
       CORE::LINALG::Matrix<DIM, NUMNODE> deriv1(false);
-      return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
+      return CORE::FE::NURBS::nurbs_get_funct_deriv_deriv2(
           val, deriv1, deriv2, xi, ele.Knots(), weights, type);
     }
 
@@ -264,7 +262,7 @@ namespace CONTACT
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
+      return CORE::FE::NURBS::nurbs_get_funct_deriv_deriv2(
           val, deriv1, deriv2, xi, ele.Knots(), weights, type);
     }
 

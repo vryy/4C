@@ -48,7 +48,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& dof_index_array)
 {
-  CORE::DRT::UTILS::IntegrationPoints2D intpoints_midsurface_ =
+  CORE::FE::IntegrationPoints2D intpoints_midsurface_ =
       CreateGaussIntegrationPoints<distype>(GetGaussRule<distype>());
 
   if (dof_index_array.Size() > 1)
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
         double eta_gp = intpoints_midsurface_.qxg[gp][1];
 
         // get shape functions and derivatives in the plane of the element
-        CORE::DRT::UTILS::shape_function_2D(shapefunctions, xi_gp, eta_gp, distype);
+        CORE::FE::shape_function_2D(shapefunctions, xi_gp, eta_gp, distype);
 
         // scalar at current gp
         std::vector<double> scalar_curr_gp(numscal, 0.0);

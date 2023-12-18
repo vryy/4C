@@ -87,7 +87,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  CORE::FE::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const INPAR::SCATRA::CalcError errortype =

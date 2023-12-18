@@ -46,7 +46,7 @@ namespace BEAMINTERACTION
      *
      * The BuildIdSets method from the base class is called to build the beam IDs.
      */
-    void BuildIdSets(const Teuchos::RCP<const BACI::DRT::Discretization>& discretization) override;
+    void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization) override;
 
     /**
      * \brief Check if a combination of beam and beam id is in this condition.

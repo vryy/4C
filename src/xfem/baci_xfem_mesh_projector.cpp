@@ -103,8 +103,7 @@ void XFEM::MeshProjector::FindSearchRadius()
   double max_diameter = 0.0;
 
   // build connectivity matrix for every surface of the embedded element
-  std::vector<std::vector<int>> connectivity =
-      CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+  std::vector<std::vector<int>> connectivity = CORE::FE::getEleNodeNumberingSurfaces(distype);
 
   //-----------------------------------------------------------------------------------
   // We have hex elements & the faces are quads:
@@ -355,7 +354,7 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
 
     // Evaluate elements shape function at this point and fill values
     CORE::LINALG::SerialDenseVector shp(src_numnodes);
-    CORE::DRT::UTILS::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
+    CORE::FE::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
 
     // extract state values and interpolate
     for (int in = 0; in < src_ele->NumNode(); ++in)

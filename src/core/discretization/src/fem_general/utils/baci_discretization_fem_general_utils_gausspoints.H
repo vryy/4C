@@ -15,7 +15,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   /// base class of gauss point collection
   class GaussPoints
@@ -310,14 +310,14 @@ namespace CORE::DRT::UTILS
       CORE::LINALG::Matrix<nsd, nsd> xjm;
       CORE::LINALG::Matrix<nsd, 1> xi;
 
-      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
-           iquad != intpoints.end(); ++iquad)
+      for (CORE::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
+           ++iquad)
       {
         CORE::LINALG::Matrix<nsd, 1> eta(iquad.Point());
 
         // cell shape functions and their first derivatives
-        CORE::DRT::UTILS::shape_function<distype>(eta, funct);
-        CORE::DRT::UTILS::shape_function_deriv1<distype>(eta, deriv);
+        CORE::FE::shape_function<distype>(eta, funct);
+        CORE::FE::shape_function_deriv1<distype>(eta, deriv);
 
         // local coordinates of gauss point w.r.to background element
         xi.Multiply(xie, funct);
@@ -348,11 +348,11 @@ namespace CORE::DRT::UTILS
       CORE::LINALG::Matrix<nsd, nsd> xjm;
       CORE::LINALG::Matrix<nsd, 1> xi;
 
-      Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
-          Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(intpoints.NumPoints()));
+      Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp =
+          Teuchos::rcp(new CORE::FE::CollectedGaussPoints(intpoints.NumPoints()));
 
-      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
-           iquad != intpoints.end(); ++iquad)
+      for (CORE::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
+           ++iquad)
       {
         CORE::LINALG::Matrix<nsd, 1> glo(iquad.Point());
 
@@ -363,8 +363,8 @@ namespace CORE::DRT::UTILS
         }
 
         // cell shape functions and their first derivatives
-        CORE::DRT::UTILS::shape_function<distype>(xi, funct);
-        CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, deriv);
+        CORE::FE::shape_function<distype>(xi, funct);
+        CORE::FE::shape_function_deriv1<distype>(xi, deriv);
 
         // get transposed of the jacobian matrix d x / d \xi
         // xjm(i,j) = deriv(i,k)*xyze(j,k)
@@ -382,7 +382,7 @@ namespace CORE::DRT::UTILS
     Teuchos::RCP<GaussPoints> gp_;
   };
 
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

@@ -409,7 +409,7 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
       for (int icomp = 0; icomp < dim; ++icomp)
       {
         node_Xicoordinates(icomp) =
-            CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[ID_param_space][icomp];
+            CORE::FE::eleNodeNumbering_hex27_nodes_reference[ID_param_space][icomp];
       }
 
       // get derivatives of shape functions at node
@@ -417,19 +417,19 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
       {
         case 3:
         {
-          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv3Dele, node_Xicoordinates(0),
+          CORE::FE::shape_function_3D_deriv1(deriv3Dele, node_Xicoordinates(0),
               node_Xicoordinates(1), node_Xicoordinates(2), DISTYPE);
           break;
         }
         case 2:
         {
-          CORE::DRT::UTILS::shape_function_2D_deriv1(
+          CORE::FE::shape_function_2D_deriv1(
               deriv3Dele, node_Xicoordinates(0), node_Xicoordinates(1), DISTYPE);
           break;
         }
         case 1:
         {
-          CORE::DRT::UTILS::shape_function_1D_deriv1(deriv3Dele, node_Xicoordinates(0), DISTYPE);
+          CORE::FE::shape_function_1D_deriv1(deriv3Dele, node_Xicoordinates(0), DISTYPE);
           break;
         }
         default:

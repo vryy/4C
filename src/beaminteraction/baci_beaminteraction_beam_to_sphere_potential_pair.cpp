@@ -220,10 +220,10 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   const double cutoff_radius = Params()->CutoffRadius();
 
   // Set gauss integration rule
-  CORE::DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
+  CORE::FE::GaussRule1D gaussrule = GetGaussRule();
 
   // Get gauss points (gp) for integration
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::FE::IntegrationPoints1D gausspoints(gaussrule);
   // number of gps
   const int numgp = gausspoints.nquad;
 
@@ -510,7 +510,7 @@ template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetShapeFunctions(
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
-    CORE::DRT::UTILS::IntegrationPoints1D& gausspoints)
+    CORE::FE::IntegrationPoints1D& gausspoints)
 {
   // get discretization type
   const CORE::FE::CellType distype1 = Element1()->Shape();
@@ -520,8 +520,8 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      CORE::DRT::UTILS::shape_function_1D(N1_i[gp], gausspoints.qxg[gp][0], distype1);
-      CORE::DRT::UTILS::shape_function_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
+      CORE::FE::shape_function_1D(N1_i[gp], gausspoints.qxg[gp][0], distype1);
+      CORE::FE::shape_function_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
     }
   }
   else if (numnodalvalues == 2)
@@ -533,9 +533,9 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      CORE::DRT::UTILS::shape_function_hermite_1D(
+      CORE::FE::shape_function_hermite_1D(
           N1_i[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+      CORE::FE::shape_function_hermite_1D_deriv1(
           N1_i_xi[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
     }
   }

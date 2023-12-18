@@ -173,12 +173,12 @@ namespace DRT::ELEMENTS::SHELL
    *
    * @tparam distype : The discretization type known at compile time
    * @tparam GaussRuleType (in) : Optimal gauss rule integration type
-   * @return CORE::DRT::UTILS::IntegrationPoints2D : Integration points
+   * @return CORE::FE::IntegrationPoints2D : Integration points
    */
   template <CORE::FE::CellType distype, typename GaussRuleType>
-  CORE::DRT::UTILS::IntegrationPoints2D CreateGaussIntegrationPoints(GaussRuleType gaussrule)
+  CORE::FE::IntegrationPoints2D CreateGaussIntegrationPoints(GaussRuleType gaussrule)
   {
-    return CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
+    return CORE::FE::IntegrationPoints2D(gaussrule);
   }
 
   /*!
@@ -279,10 +279,8 @@ namespace DRT::ELEMENTS::SHELL
       const std::array<double, 2>& xi_gp)
   {
     ShapefunctionsAndDerivatives<distype> shapefunctions;
-    CORE::DRT::UTILS::shape_function_2D(
-        shapefunctions.shapefunctions_, xi_gp[0], xi_gp[1], distype);
-    CORE::DRT::UTILS::shape_function_2D_deriv1(
-        shapefunctions.derivatives_, xi_gp[0], xi_gp[1], distype);
+    CORE::FE::shape_function_2D(shapefunctions.shapefunctions_, xi_gp[0], xi_gp[1], distype);
+    CORE::FE::shape_function_2D_deriv1(shapefunctions.derivatives_, xi_gp[0], xi_gp[1], distype);
     return shapefunctions;
   }
 
@@ -1591,7 +1589,7 @@ namespace DRT::ELEMENTS::SHELL
    */
   template <CORE::FE::CellType distype, typename GaussPointEvaluator>
   inline void ForEachGaussPoint(DRT::ELEMENTS::SHELL::NodalCoordinates<distype>& nodal_coordinates,
-      const CORE::DRT::UTILS::IntegrationPoints2D& intpoints_, GaussPointEvaluator gp_evaluator)
+      const CORE::FE::IntegrationPoints2D& intpoints_, GaussPointEvaluator gp_evaluator)
   {
     for (int gp = 0; gp < intpoints_.NumPoints(); ++gp)
     {

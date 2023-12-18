@@ -558,7 +558,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 4; ++j)
         {
-          int node = CORE::DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j];
+          int node = CORE::FE::eleNodeNumbering_hex27_surfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &side_xyze(0, j));
         }
         CreateSide(CORE::FE::CellType::quad4, side_xyze);
@@ -572,7 +572,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 3; ++j)
         {
-          int node = CORE::DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j];
+          int node = CORE::FE::eleNodeNumbering_tet10_surfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &side_xyze(0, j));
         }
         CreateSide(CORE::FE::CellType::tri3, side_xyze);
@@ -587,7 +587,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 3; ++j)
         {
-          int node = CORE::DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j];
+          int node = CORE::FE::eleNodeNumbering_pyramid5_trisurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &tri3_side_xyze(0, j));
         }
         CreateSide(CORE::FE::CellType::tri3, tri3_side_xyze);
@@ -596,7 +596,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 4; ++j)
         {
-          int node = CORE::DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j];
+          int node = CORE::FE::eleNodeNumbering_pyramid5_quadsurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &quad4_side_xyze(0, j));
         }
         CreateSide(CORE::FE::CellType::quad4, quad4_side_xyze);
@@ -611,7 +611,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 3; ++j)
         {
-          int node = CORE::DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j];
+          int node = CORE::FE::eleNodeNumbering_wedge18_trisurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &tri3_side_xyze(0, j));
         }
         CreateSide(CORE::FE::CellType::tri3, tri3_side_xyze);
@@ -620,7 +620,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 4; ++j)
         {
-          int node = CORE::DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j];
+          int node = CORE::FE::eleNodeNumbering_wedge18_quadsurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &quad4_side_xyze(0, j));
         }
         CreateSide(CORE::FE::CellType::quad4, quad4_side_xyze);

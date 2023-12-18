@@ -16,7 +16,7 @@
 
 BACI_NAMESPACE_OPEN
 
-using namespace CORE::DRT::UTILS;
+using namespace CORE::FE;
 
 DRT::ELEMENTS::RedInterAcinarDepType DRT::ELEMENTS::RedInterAcinarDepType::instance_;
 

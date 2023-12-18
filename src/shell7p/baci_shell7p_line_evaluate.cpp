@@ -60,7 +60,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   MaterialConfiguration(x);
 
   // integration parameters
-  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(CORE::DRT::UTILS::GaussRule1D::line_2point);
+  const CORE::FE::IntegrationPoints1D intpoints(CORE::FE::GaussRule1D::line_2point);
   CORE::LINALG::SerialDenseVector shape_functions(numnode);
   CORE::LINALG::SerialDenseMatrix derivatives(1, numnode);
   const CORE::FE::CellType shape = Shape();
@@ -70,8 +70,8 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     // get shape functions and derivatives of element surface
     const double e = intpoints.qxg[gp][0];
-    CORE::DRT::UTILS::shape_function_1D(shape_functions, e, shape);
-    CORE::DRT::UTILS::shape_function_1D_deriv1(derivatives, e, shape);
+    CORE::FE::shape_function_1D(shape_functions, e, shape);
+    CORE::FE::shape_function_1D_deriv1(derivatives, e, shape);
 
     // covariant basis vectors and metric of shell body
     // g1,g2,g3 stored in Jacobian matrix  = (g1,g2,g3)

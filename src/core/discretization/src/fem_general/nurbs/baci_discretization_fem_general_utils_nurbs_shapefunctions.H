@@ -19,7 +19,7 @@
 BACI_NAMESPACE_OPEN
 
 
-namespace CORE::DRT::NURBS::UTILS
+namespace CORE::FE::NURBS
 {
   /*
 
@@ -202,7 +202,7 @@ namespace CORE::DRT::NURBS::UTILS
     CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots);
 
     // get temporary double
     double bspline_xi_value;
@@ -484,7 +484,7 @@ namespace CORE::DRT::NURBS::UTILS
     CORE::LINALG::SerialDenseVector bezier_shape_deriv(size);
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots);
 
     // get temporary doubles
     double bspline_xi_value;
@@ -672,7 +672,7 @@ namespace CORE::DRT::NURBS::UTILS
     CORE::LINALG::SerialDenseVector bezier_shape_deriv2(size);
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots);
 
     // get temporary doubles
     double bspline_xi_value;
@@ -958,8 +958,8 @@ namespace CORE::DRT::NURBS::UTILS
     std::vector<scalar_type> bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
 
     // get temporary variables
     scalar_type bspline_xi_value;
@@ -1285,8 +1285,8 @@ namespace CORE::DRT::NURBS::UTILS
     std::vector<std::vector<scalar_type>> bezier_shape_deriv(2, std::vector<scalar_type>(size));
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
 
     // get temporary variables
     scalar_type bspline_xi_value;
@@ -1701,8 +1701,8 @@ namespace CORE::DRT::NURBS::UTILS
     CORE::LINALG::SerialDenseMatrix bezier_shape_deriv2(3, size);
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
 
     // get temporary doubles for derivatives and
     // values of the above devlared polynomials
@@ -2315,9 +2315,9 @@ namespace CORE::DRT::NURBS::UTILS
     CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_nu(degree, knots[2]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_nu(degree, knots[2]);
 
     // get temporary doubles for derivatives and
     // values of the above devlared polynomials
@@ -2722,9 +2722,9 @@ namespace CORE::DRT::NURBS::UTILS
     CORE::LINALG::SerialDenseMatrix bezier_shape_deriv(3, size);
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_nu(degree, knots[2]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_nu(degree, knots[2]);
 
     // get temporary doubles for derivatives and
     // values of the above devlared polynomials
@@ -3329,9 +3329,9 @@ namespace CORE::DRT::NURBS::UTILS
     CORE::LINALG::SerialDenseMatrix bezier_shape_deriv2(6, size);
 
     // allocate bspline polynomials for both direction
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_eta(degree, knots[1]);
-    CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_nu(degree, knots[2]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    CORE::FE::NURBS::BsplinePolynomial bspline_nu(degree, knots[2]);
 
     // get temporary doubles for derivatives and
     // values of the above declared polynomials
@@ -3821,21 +3821,21 @@ namespace CORE::DRT::NURBS::UTILS
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {
-    switch (CORE::DRT::UTILS::getDimension(distype))
+    switch (CORE::FE::getDimension(distype))
     {
       case 3:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
+        return CORE::FE::NURBS::nurbs_get_3D_funct_deriv_deriv2(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights, distype);
       }
       case 2:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
+        return CORE::FE::NURBS::nurbs_get_2D_funct_deriv_deriv2(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights, distype);
       }
       case 1:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(nurbs_shape_funct,
+        return CORE::FE::NURBS::nurbs_get_1D_funct_deriv_deriv2(nurbs_shape_funct,
             nurbs_shape_deriv, nurbs_shape_deriv2, uv(0), knots[0], weights, distype);
       }
       default:
@@ -3850,21 +3850,21 @@ namespace CORE::DRT::NURBS::UTILS
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {
-    switch (CORE::DRT::UTILS::getDimension(distype))
+    switch (CORE::FE::getDimension(distype))
     {
       case 3:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+        return CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights, distype);
       }
       case 2:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+        return CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights, distype);
       }
       case 1:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
+        return CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv(0), knots[0], weights, distype);
       }
       default:
@@ -3879,21 +3879,19 @@ namespace CORE::DRT::NURBS::UTILS
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {
-    switch (CORE::DRT::UTILS::getDimension(distype))
+    switch (CORE::FE::getDimension(distype))
     {
       case 3:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
-            nurbs_shape_funct, uv, knots, weights, distype);
+        return CORE::FE::NURBS::nurbs_get_3D_funct(nurbs_shape_funct, uv, knots, weights, distype);
       }
       case 2:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct(
-            nurbs_shape_funct, uv, knots, weights, distype);
+        return CORE::FE::NURBS::nurbs_get_2D_funct(nurbs_shape_funct, uv, knots, weights, distype);
       }
       case 1:
       {
-        return CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct(
+        return CORE::FE::NURBS::nurbs_get_1D_funct(
             nurbs_shape_funct, uv(0), knots[0], weights, distype);
       }
       default:
@@ -3902,7 +3900,7 @@ namespace CORE::DRT::NURBS::UTILS
     }
   }
 
-}  // namespace CORE::DRT::NURBS::UTILS
+}  // namespace CORE::FE::NURBS
 
 BACI_NAMESPACE_CLOSE
 

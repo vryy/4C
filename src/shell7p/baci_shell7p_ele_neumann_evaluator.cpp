@@ -54,7 +54,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
   constexpr auto numnod = SHELL::DETAIL::num_node<distype>;
   constexpr auto noddof = SHELL::DETAIL::node_dof;
 
-  CORE::DRT::UTILS::IntegrationPoints2D intpoints =
+  CORE::FE::IntegrationPoints2D intpoints =
       CreateGaussIntegrationPoints<distype>(GetGaussRule<distype>());
 
   // IMPORTANT: The 'neum_orthopressure' case represents a truly nonlinear follower-load

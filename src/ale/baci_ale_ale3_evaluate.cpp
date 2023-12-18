@@ -289,8 +289,8 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
   CORE::LINALG::Matrix<3, 3> xji;
 
   // gaussian points
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
 
   // integration loops
   for (int iquad = 0; iquad < intpoints.nquad; iquad++)
@@ -300,8 +300,8 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
     const double e3 = intpoints.qxg[iquad][2];
 
     // get values of shape functions and derivatives in the gausspoint
-    CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-    CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    CORE::FE::shape_function_3D(funct, e1, e2, e3, distype);
+    CORE::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
 
     // compute jacobian matrix
     // determine jacobian at point r,s,t
@@ -1412,8 +1412,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
   CORE::LINALG::Matrix<6, numdof> bop;
   CORE::LINALG::Matrix<6, 6> D(true);
   // gaussian points
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1427,8 +1427,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     if (distype != CORE::FE::CellType::nurbs8 && distype != CORE::FE::CellType::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+      CORE::FE::shape_function_3D(funct, e1, e2, e3, distype);
+      CORE::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
@@ -1438,8 +1438,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
       gp(1) = e2;
       gp(2) = e3;
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          funct, deriv, gp, myknots, weights, distype);
+      CORE::FE::NURBS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
     /* compute the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
@@ -1648,8 +1647,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
   double vol = 0.;
 
   // gaussian points
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
 
   // This whole method was copied from the ALE2 element and extended to 3D.
   // ToDo: proper computation and usage of min_detF. Is there any detailed literature
@@ -1667,8 +1666,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
     if (distype != CORE::FE::CellType::nurbs8 && distype != CORE::FE::CellType::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+      CORE::FE::shape_function_3D(funct, e1, e2, e3, distype);
+      CORE::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
@@ -1678,8 +1677,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
       gp(1) = e2;
       gp(2) = e3;
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          funct, deriv, gp, myknots, weights, distype);
+      CORE::FE::NURBS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     // determine jacobian matrix at point r,s,t
@@ -1728,30 +1726,30 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
+inline CORE::FE::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
 {
   switch (distype)
   {
     case CORE::FE::CellType::hex8:
     case CORE::FE::CellType::nurbs8:
-      return CORE::DRT::UTILS::GaussRule3D::hex_8point;
+      return CORE::FE::GaussRule3D::hex_8point;
     case CORE::FE::CellType::hex20:
     case CORE::FE::CellType::hex27:
     case CORE::FE::CellType::nurbs27:
-      return CORE::DRT::UTILS::GaussRule3D::hex_27point;
+      return CORE::FE::GaussRule3D::hex_27point;
     case CORE::FE::CellType::tet4:
-      return CORE::DRT::UTILS::GaussRule3D::tet_4point;
+      return CORE::FE::GaussRule3D::tet_4point;
     case CORE::FE::CellType::tet10:
-      return CORE::DRT::UTILS::GaussRule3D::tet_5point;
+      return CORE::FE::GaussRule3D::tet_5point;
     case CORE::FE::CellType::wedge6:
-      return CORE::DRT::UTILS::GaussRule3D::wedge_6point;
+      return CORE::FE::GaussRule3D::wedge_6point;
     case CORE::FE::CellType::wedge15:
-      return CORE::DRT::UTILS::GaussRule3D::wedge_9point;
+      return CORE::FE::GaussRule3D::wedge_9point;
     case CORE::FE::CellType::pyramid5:
-      return CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
+      return CORE::FE::GaussRule3D::pyramid_8point;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
-      return CORE::DRT::UTILS::GaussRule3D::undefined;
+      return CORE::FE::GaussRule3D::undefined;
   }
 }
 

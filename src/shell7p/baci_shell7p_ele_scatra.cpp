@@ -348,7 +348,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Surfaces()
 
 int DRT::ELEMENTS::Shell7pScatra::NumLine() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
+  return CORE::FE::getNumberOfElementLines(distype_);
 }
 
 

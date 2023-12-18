@@ -753,16 +753,16 @@ void inline CONTACT::CoIntegratorNitscheTsi::SoEleGP(MORTAR::MortarElement& sele
     const double* gpcoord, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtrafo)
 {
-  CORE::DRT::UTILS::CollectedGaussPoints intpoints =
-      CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+  CORE::FE::CollectedGaussPoints intpoints =
+      CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
   intpoints.Append(gpcoord[0], gpcoord[1], 0.0, wgt);
 
   // get coordinates of gauss point w.r.t. local parent coordinate system
   CORE::LINALG::SerialDenseMatrix pqxg(1, dim);
   derivtrafo.Clear();
 
-  CORE::DRT::UTILS::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints,
-      sele.ParentElement()->Shape(), sele.Shape(), sele.FaceParentNumber());
+  CORE::FE::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints, sele.ParentElement()->Shape(),
+      sele.Shape(), sele.FaceParentNumber());
 
   // coordinates of the current integration point in parent coordinate system
   for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);
@@ -857,7 +857,7 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateTest(const double fac, MORTAR::Mo
     {
       for (int d = 0; d < Dim(); ++d)
       {
-        row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
                 ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
             d] += fac * jac * wgt * test_dir(d) * p.second * shape(s);
@@ -908,7 +908,7 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateThermalTest(const double fac,
   double val = fac * jac * wgt * test_val;
 
   for (int s = 0; s < ele.NumNode(); ++s)
-    *(ele.GetNitscheContainer().RhsT(CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+    *(ele.GetNitscheContainer().RhsT(CORE::FE::getParentNodeNumberFromFaceNodeNumber(
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), s))) += val * shape(s);
 
   CORE::GEN::pairedvector<int, double> val_deriv_d(jacintcellmap.size() + test_deriv_d.size());
@@ -919,7 +919,7 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateThermalTest(const double fac,
   {
     double* row = ele.GetNitscheContainer().Ktd(p.first);
     for (int s = 0; s < ele.NumNode(); ++s)
-      row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
           ele.ParentElement()->Shape(), ele.FaceParentNumber(), s)] += p.second * shape(s);
   }
 
@@ -929,7 +929,7 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateThermalTest(const double fac,
     {
       double* row = ele.GetNitscheContainer().Ktd(p->first);
       for (int s = 0; s < ele.NumNode(); ++s)
-        row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
+        row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
             ele.FaceParentNumber(), s)] += val * deriv(s, e) * p->second;
     }
   }
@@ -938,7 +938,7 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateThermalTest(const double fac,
   {
     double* row = ele.GetNitscheContainer().Ktt(p.first);
     for (int s = 0; s < ele.NumNode(); ++s)
-      row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
+      row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
           ele.FaceParentNumber(), s)] += fac * jac * wgt * p.second * shape(s);
   }
 }
@@ -1026,18 +1026,16 @@ void CONTACT::CoIntegratorNitscheTsi::SetupGpTemp(MORTAR::MortarElement& moEle,
   CORE::LINALG::SerialDenseVector moele_temp(val.length());
   for (int i = 0; i < moEle.NumNode(); ++i)
   {
-    moele_temp(i) =
-        moEle.MoData().ParentTemp().at(CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-            moEle.ParentElement()->Shape(), moEle.FaceParentNumber(), i));
+    moele_temp(i) = moEle.MoData().ParentTemp().at(CORE::FE::getParentNodeNumberFromFaceNodeNumber(
+        moEle.ParentElement()->Shape(), moEle.FaceParentNumber(), i));
   }
   temp = val.dot(moele_temp);
 
   d_temp_dT.resize(val.length());
   d_temp_dT.clear();
   for (int i = 0; i < moEle.NumNode(); ++i)
-    d_temp_dT[moEle.MoData().ParentTempDof().at(
-        CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-            moEle.ParentElement()->Shape(), moEle.FaceParentNumber(), i))] = val(i);
+    d_temp_dT[moEle.MoData().ParentTempDof().at(CORE::FE::getParentNodeNumberFromFaceNodeNumber(
+        moEle.ParentElement()->Shape(), moEle.FaceParentNumber(), i))] = val(i);
 
   int deriv_size = 0.;
   for (int i = 0; i < dim - 1; ++i) deriv_size += dxi.at(i).size();

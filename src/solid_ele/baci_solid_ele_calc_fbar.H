@@ -81,8 +81,8 @@ namespace DRT
       static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
       static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
-      CORE::DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
-      CORE::DRT::UTILS::GaussIntegration mass_matrix_integration_;
+      CORE::FE::GaussIntegration stiffness_matrix_integration_;
+      CORE::FE::GaussIntegration mass_matrix_integration_;
     };  // class SolidEleCalcFbar
   }     // namespace ELEMENTS
 }  // namespace DRT

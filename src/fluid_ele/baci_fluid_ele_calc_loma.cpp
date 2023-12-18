@@ -76,8 +76,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra,
-    const CORE::DRT::UTILS::GaussIntegration& intpoints)
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::FE::GaussIntegration& intpoints)
 {
   // rotationally symmetric periodic bc's: do setup for current element
   my::rotsymmpbc_->Setup(ele);
@@ -220,7 +219,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(Teuchos::ParameterList&
     const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nen_, 1>& escaam,
     const CORE::LINALG::Matrix<nsd_, nen_>& edispnp, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
     Teuchos::RCP<MAT::Material> mat, bool isale, double CsDeltaSq, double CiDeltaSq,
-    const CORE::DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::FE::GaussIntegration& intpoints)
 {
   // flag for higher order elements
   my::is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
@@ -282,7 +281,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
     Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
-    bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints)
+    bool isale, const CORE::FE::GaussIntegration& intpoints)
 {
   // definition of temperature-based residual vector for continuity
   // and energy-conservation equation
@@ -336,7 +335,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
-  for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+  for (CORE::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point

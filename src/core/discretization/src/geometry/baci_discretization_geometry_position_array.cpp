@@ -15,11 +15,11 @@
 
 BACI_NAMESPACE_OPEN
 
-CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const BACI::DRT::Element* const ele)
+CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const DRT::Element* const ele)
 {
   const int numnode = ele->NumNode();
   CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
-  const BACI::DRT::Node* const* nodes = ele->Nodes();
+  const DRT::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
   {
     dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
@@ -34,11 +34,11 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const BACI::DRT:
 
 
 void CORE::GEO::InitialPositionArray(
-    CORE::LINALG::SerialDenseMatrix& xyze, const BACI::DRT::Element* const ele)
+    CORE::LINALG::SerialDenseMatrix& xyze, const DRT::Element* const ele)
 {
   const int numnode = ele->NumNode();
   xyze.shape(3, numnode);
-  const BACI::DRT::Node* const* nodes = ele->Nodes();
+  const DRT::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
   {
     dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
@@ -52,7 +52,7 @@ void CORE::GEO::InitialPositionArray(
 
 
 CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
-    const BACI::DRT::Element* const ele,  ///< element with nodal pointers
+    const DRT::Element* const ele,  ///< element with nodal pointers
     const std::map<int, CORE::LINALG::Matrix<3, 1>>&
         currentcutterpositions  ///< current positions of all cutter nodes
 )
@@ -72,7 +72,7 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
 
 
 CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
-    const Teuchos::RCP<const BACI::DRT::Element> ele,  ///< pointer on element
+    const Teuchos::RCP<const DRT::Element> ele,  ///< pointer on element
     const std::map<int, CORE::LINALG::Matrix<3, 1>>&
         currentpositions  ///< current positions of all cutter nodes
 )

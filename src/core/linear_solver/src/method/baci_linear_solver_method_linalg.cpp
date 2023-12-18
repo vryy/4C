@@ -380,7 +380,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
         SchurCompList = TranslateSolverParameters(
-            BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       }
       break;
       case 11:  // SIMPLE smoother  (only for MueLu with BlockedOperators)
@@ -395,10 +395,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
         predictList = TranslateSolverParameters(
-            BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
         SchurCompList = TranslateSolverParameters(
-            BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
       case 13:  // IBD: indefinite block diagonal preconditioner
@@ -408,10 +408,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
         predictList = TranslateSolverParameters(
-            BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
         SchurCompList = TranslateSolverParameters(
-            BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
       case 14:  // Uzawa: inexact Uzawa smoother
@@ -421,10 +421,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
         predictList = TranslateSolverParameters(
-            BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
         SchurCompList = TranslateSolverParameters(
-            BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
       default:
@@ -486,7 +486,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
       SchurCompList = TranslateSolverParameters(
-          BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
     case 11:  // SIMPLE smoother  (only for MueLu with BlockedOperators)
@@ -501,10 +501,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
       predictList = TranslateSolverParameters(
-          BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
       SchurCompList = TranslateSolverParameters(
-          BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
     case 13:  // IBD: indefinite block diagonal preconditioner
@@ -514,10 +514,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
       predictList = TranslateSolverParameters(
-          BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
       SchurCompList = TranslateSolverParameters(
-          BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
     case 14:  // Uzawa: inexact Uzawa smoother
@@ -527,10 +527,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
       predictList = TranslateSolverParameters(
-          BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
       SchurCompList = TranslateSolverParameters(
-          BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
     default:
@@ -575,7 +575,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
 
   // set verbosity
   auto verbosityLevel = DRT::INPUT::IntegralValue<IO::verbositylevel>(
-      BACI::DRT::Problem::Instance()->IOParams(), "VERBOSITY");
+      DRT::Problem::Instance()->IOParams(), "VERBOSITY");
 
   switch (verbosityLevel)
   {
@@ -725,10 +725,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
     simplelist.set("Prec Type", "CheapSIMPLE");  // not used
     Teuchos::ParameterList& predictList = simplelist.sublist("Inverse1");
     predictList = TranslateSolverParameters(
-        BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+        DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
     Teuchos::ParameterList& schurList = simplelist.sublist("Inverse2");
     schurList = TranslateSolverParameters(
-        BACI::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+        DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
   }
 
   // set parameters for ML if used

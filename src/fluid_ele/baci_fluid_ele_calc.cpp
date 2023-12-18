@@ -224,8 +224,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra,
-    const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag)
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::FE::GaussIntegration& intpoints,
+    bool offdiag)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::FluidEleCalc::Evaluate" );
 
@@ -417,7 +417,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
         {
           // Intpoints are changed. For sine and cosine, this new rule is utilized for error
           // computation compared to analytical solution.
-          CORE::DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree() * 2 + 3);
+          CORE::FE::GaussIntegration intpoints_tmp(distype, ele->Degree() * 2 + 3);
           intpoints_ = intpoints_tmp;
           break;
         }
@@ -430,7 +430,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
             {
               // Intpoints are changed. For sine and cosine, this new rule is utilized for error
               // computation compared to analytical solution.
-              CORE::DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree() * 2 + 3);
+              CORE::FE::GaussIntegration intpoints_tmp(distype, ele->Degree() * 2 + 3);
               intpoints_ = intpoints_tmp;
               break;
             }
@@ -561,7 +561,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterLi
     const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
     const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, Teuchos::RCP<MAT::Material> mat,
     bool isale, bool isowned, double CsDeltaSq, double CiDeltaSq, double* saccn, double* sveln,
-    double* svelnp, const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag)
+    double* svelnp, const CORE::FE::GaussIntegration& intpoints, bool offdiag)
 {
   if (offdiag) dserror("No-off-diagonal matrix evaluation in standard fluid implementation!!");
 
@@ -665,7 +665,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
     Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
     double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-    const CORE::DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::FE::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
   //  preliminary definitions and evaluations
@@ -789,8 +789,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
   }
 
   // get Gaussian integration points
-  // const CORE::DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
-  // const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>
+  // const CORE::FE::IntegrationPoints3D intpoints(ele->gaussrule_);
+  // const CORE::FE::IntPointsAndWeights<nsd_>
   // intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   //------------------------------------------------------------------------
@@ -798,7 +798,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
   //------------------------------------------------------------------------
   // for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
 
-  for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+  for (CORE::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
@@ -1631,7 +1631,7 @@ template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrty
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   // use one-point Gauss rule
-  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_stab(
+  CORE::FE::IntPointsAndWeights<nsd_> intpoints_stab(
       DRT::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
   EvalShapeFuncAndDerivsAtIntPoint((intpoints_stab.IP().qxg)[0], intpoints_stab.IP().qwgt[0]);
@@ -1657,23 +1657,22 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvalShapeFuncAndDerivsAtIntP
   if (not isNurbs_)
   {
     // shape functions and their first derivatives
-    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
-    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+    CORE::FE::shape_function<distype>(xsi_, funct_);
+    CORE::FE::shape_function_deriv1<distype>(xsi_, deriv_);
     derxy2_.Clear();
     if (is_higher_order_ele_)
     {
       // get the second derivatives of standard element at current GP
-      CORE::DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
+      CORE::FE::shape_function_deriv2<distype>(xsi_, deriv2_);
     }
   }
   else
   {
     if (is_higher_order_ele_)
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
+      CORE::FE::NURBS::nurbs_get_funct_deriv_deriv2(
           funct_, deriv_, deriv2_, xsi_, myknots_, weights_, distype);
     else
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
-          funct_, deriv_, xsi_, myknots_, weights_, distype);
+      CORE::FE::NURBS::nurbs_get_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
   }
 
   //
@@ -1712,7 +1711,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvalShapeFuncAndDerivsAtIntP
   //--------------------------------------------------------------
   if (is_higher_order_ele_)
   {
-    CORE::DRT::UTILS::gder2<distype, nen_>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
+    CORE::FE::gder2<distype, nen_>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
     derxy2_.Clear();

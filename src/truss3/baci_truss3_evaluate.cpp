@@ -501,7 +501,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
     iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
   }
 
-  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
+  const CORE::FE::IntegrationPoints1D intpoints(gaussrule_);
 
   CORE::LINALG::SerialDenseMatrix stress(intpoints.nquad, 1);
 

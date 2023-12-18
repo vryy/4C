@@ -40,13 +40,13 @@ namespace CORE::GEO
       QuadratureCompression();
 
       bool PerformCompressionOfQuadrature(
-          CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
+          CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 
-      // CORE::DRT::UTILS::GaussIntegration GetCompressedQuadrature(){ return *gout_; }
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GetCompressedQuadrature() { return gout_; }
+      // CORE::FE::GaussIntegration GetCompressedQuadrature(){ return *gout_; }
+      Teuchos::RCP<CORE::FE::GaussPoints> GetCompressedQuadrature() { return gout_; }
 
      private:
-      void FormMatrixSystem(CORE::DRT::UTILS::GaussPointsComposite& gin,
+      void FormMatrixSystem(CORE::FE::GaussPointsComposite& gin,
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs);
 
@@ -70,12 +70,12 @@ namespace CORE::GEO
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
-      bool Compress_Leja_points(CORE::DRT::UTILS::GaussPointsComposite& gin,
+      bool Compress_Leja_points(CORE::FE::GaussPointsComposite& gin,
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
-      void ComputeAndPrintError(CORE::DRT::UTILS::GaussPointsComposite& gin,
+      void ComputeAndPrintError(CORE::FE::GaussPointsComposite& gin,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na);
 
@@ -85,17 +85,16 @@ namespace CORE::GEO
       bool isThisValueAlreadyInDenseVector(
           int& input, std::vector<int>& vec, int upper_range, int& index);
 
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> FormNewQuadratureRule(
-          CORE::DRT::UTILS::GaussPointsComposite& gin,
+      Teuchos::RCP<CORE::FE::GaussPoints> FormNewQuadratureRule(CORE::FE::GaussPointsComposite& gin,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na);
       int GetCorrectIndex(int& input, std::vector<int>& vec, int upper_range);
 
       void WriteCompressedQuadratureGMSH(
-          CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
+          CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 
-      void IntegratePredefinedPolynomials(CORE::DRT::UTILS::GaussPointsComposite& gin);
+      void IntegratePredefinedPolynomials(CORE::FE::GaussPointsComposite& gin);
 
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gout_;
+      Teuchos::RCP<CORE::FE::GaussPoints> gout_;
     };
 
   }  // namespace CUT

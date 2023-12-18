@@ -1625,7 +1625,7 @@ int BeamDiscretizationRuntimeVtuWriter::GetGlobalNumberOfGaussPointsPerBeam(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients(
-    const CORE::DRT::UTILS::GaussRule1D& gauss_rule, const std::vector<double>& gauss_point_values,
+    const CORE::FE::GaussRule1D& gauss_rule, const std::vector<double>& gauss_point_values,
     std::vector<double>& polynomial_coefficients) const
 {
   // Get the coefficients for the interpolation functions at the Gauss points.
@@ -1633,7 +1633,7 @@ void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients
   std::array<std::array<double, 3>, 3> lagrange_coefficients;
   switch (gauss_rule)
   {
-    case CORE::DRT::UTILS::GaussRule1D::line_3point:
+    case CORE::FE::GaussRule1D::line_3point:
     {
       lagrange_coefficients[0][0] = 0.0;
       lagrange_coefficients[0][1] = -0.645497224367889;
@@ -1648,7 +1648,7 @@ void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients
       lagrange_coefficients[2][2] = 0.8333333333333333;
     }
     break;
-    case CORE::DRT::UTILS::GaussRule1D::line_lobatto3point:
+    case CORE::FE::GaussRule1D::line_lobatto3point:
     {
       lagrange_coefficients[0][0] = 0.0;
       lagrange_coefficients[0][1] = -0.5;
@@ -1743,12 +1743,12 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
     }
 
     // Calculate the interpolated coefficients
-    CORE::DRT::UTILS::GaussRule1D force_int_rule =
+    CORE::FE::GaussRule1D force_int_rule =
         sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_force);
     for (std::size_t i = 0; i < 3; i++)
       CalcInterpolationPolynomialCoefficients(
           force_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);
-    CORE::DRT::UTILS::GaussRule1D moment_int_rule =
+    CORE::FE::GaussRule1D moment_int_rule =
         sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_moment);
     for (std::size_t i = 3; i < 6; i++)
       CalcInterpolationPolynomialCoefficients(

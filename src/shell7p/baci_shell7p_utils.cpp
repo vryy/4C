@@ -401,9 +401,9 @@ void STR::UTILS::SHELL::DIRECTOR::SetupDirectorForElement(
   {
     // get shape functions and derivatives at nodes
     CORE::LINALG::Matrix<num_dim, 1> nodal_coordinates =
-        CORE::DRT::UTILS::GetNodeCoordinates(i, ele.Shape());
+        CORE::FE::GetNodeCoordinates(i, ele.Shape());
     CORE::LINALG::SerialDenseMatrix derivatives(num_dim, num_node);
-    CORE::DRT::UTILS::shape_function_2D_deriv1(
+    CORE::FE::shape_function_2D_deriv1(
         derivatives, nodal_coordinates(0), nodal_coordinates(1), ele.Shape());
 
     // get a1, a2 direction derivatives in r and s direction

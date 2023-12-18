@@ -95,8 +95,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
   my::BodyForce(ele);
 
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const CORE::FE::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)

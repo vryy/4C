@@ -1509,15 +1509,15 @@ std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20::soh2
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> shapefcts(NUMGPT_SOH20);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 20
   // fill up nodal f at each gp
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::hex20);
+    CORE::FE::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::hex20);
   }
   return shapefcts;
 }
@@ -1532,15 +1532,15 @@ DRT::ELEMENTS::So_hex20::soh20_derivs()
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs(NUMGPT_SOH20);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 20
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::hex20);
+    CORE::FE::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::hex20);
   }
   return derivs;
 }
@@ -1551,8 +1551,8 @@ DRT::ELEMENTS::So_hex20::soh20_derivs()
 std::vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
 {
   std::vector<double> weights(NUMGPT_SOH20);
-  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
-  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
+  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_SOH20; ++i)
   {
     weights[i] = intpoints.qwgt[i];
@@ -1586,8 +1586,8 @@ void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
     // (r,s,t) gp-locations of fully integrated quadratic Hex 20
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
-    const CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::hex_27point;
-    const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
+    const CORE::FE::GaussRule3D gaussrule_ = CORE::FE::GaussRule3D::hex_27point;
+    const CORE::FE::IntegrationPoints3D intpoints(gaussrule_);
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
       const double r = intpoints.qxg[igp][0];
@@ -1596,8 +1596,8 @@ void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
 
       CORE::LINALG::Matrix<NUMNOD_SOH20, 1> funct;
       CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20> deriv;
-      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, CORE::FE::CellType::hex20);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::hex20);
+      CORE::FE::shape_function_3D(funct, r, s, t, CORE::FE::CellType::hex20);
+      CORE::FE::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::hex20);
       for (int inode = 0; inode < NUMNOD_SOH20; ++inode)
       {
         f(inode, igp) = funct(inode);

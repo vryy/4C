@@ -51,7 +51,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 01/17 */
       template <CORE::FE::CellType celltype,
-          CORE::FE::CellType facetype = CORE::DRT::UTILS::DisTypeToFaceShapeType<celltype>::shape,
+          CORE::FE::CellType facetype = CORE::FE::DisTypeToFaceShapeType<celltype>::shape,
           unsigned numfaces = CORE::FE::num_faces<celltype>>
       bool Create2DCell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 

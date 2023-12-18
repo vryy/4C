@@ -60,15 +60,13 @@ namespace CORE::VOLMORTAR
 
       //! assign material of discretization B
       virtual void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          BACI::DRT::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<BACI::DRT::Discretization> dis1,
-          Teuchos::RCP<BACI::DRT::Discretization> dis2);
+          DRT::Element* ele1, const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
+          Teuchos::RCP<DRT::Discretization> dis2);
 
       //! assign material of discretization B
       virtual void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          BACI::DRT::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<BACI::DRT::Discretization> dis1,
-          Teuchos::RCP<BACI::DRT::Discretization> dis2);
+          DRT::Element* ele2, const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
+          Teuchos::RCP<DRT::Discretization> dis2);
     };
   }  // namespace UTILS
 }  // namespace CORE::VOLMORTAR

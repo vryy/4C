@@ -104,7 +104,7 @@ namespace DRT
       };
 
       //! \brief Return number of lines of this element
-      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(distype_); }
+      int NumLine() const override { return CORE::FE::getNumberOfElementLines(distype_); }
 
       //! \brief Return number of surfaces of this element
       int NumSurface() const override
@@ -432,7 +432,7 @@ namespace DRT
       int NumLine() const override
       {
         // get spatial dimension of boundary
-        const int nsd = CORE::DRT::UTILS::getDimension(ParentElement()->Shape()) - 1;
+        const int nsd = CORE::FE::getDimension(ParentElement()->Shape()) - 1;
 
         if ((NumNode() == 4) or (NumNode() == 8) or (NumNode() == 9))
           return 4;
@@ -455,7 +455,7 @@ namespace DRT
       int NumSurface() const override
       {
         // get spatial dimension of parent element
-        const int nsd = CORE::DRT::UTILS::getDimension(ParentElement()->Shape());
+        const int nsd = CORE::FE::getDimension(ParentElement()->Shape());
 
         if (nsd == 3)
           return 1;

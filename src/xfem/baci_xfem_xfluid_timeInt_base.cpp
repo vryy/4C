@@ -589,7 +589,7 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
   shapeFcnDerivXY.Clear();
 
   //-------------------------------------------------------
-  CORE::DRT::UTILS::shape_function_3D(
+  CORE::FE::shape_function_3D(
       shapeFcn, xi(0), xi(1), xi(2), DISTYPE);  // evaluate shape functions at xi
 
   if (compute_deriv)
@@ -628,7 +628,7 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
 
     // shape function derivatives w.r.t local coordinates
     CORE::LINALG::Matrix<3, numnode> shapeFcnDeriv;
-    CORE::DRT::UTILS::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), DISTYPE);
+    CORE::FE::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), DISTYPE);
 
     CORE::LINALG::Matrix<nsd, nsd> xjm(true);   // jacobi matrix
     xjm.MultiplyNT(shapeFcnDeriv, nodecoords);  // jacobian J = (dx/dxi)^T
@@ -1937,7 +1937,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer
 
 
   for (int i = 0; i < side1->NumNode(); i++)
-    xi_1_avg.Update(1.0, CORE::DRT::UTILS::GetNodeCoordinates(i, side1->Shape()), 1.0);
+    xi_1_avg.Update(1.0, CORE::FE::GetNodeCoordinates(i, side1->Shape()), 1.0);
 
   xi_1_avg.Scale(1.0 / side1->NumNode());
 
@@ -1951,7 +1951,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer
   if (side2 != nullptr)  // in case we have side2, use averaged normal
   {
     for (int i = 0; i < side2->NumNode(); i++)
-      xi_2_avg.Update(1.0, CORE::DRT::UTILS::GetNodeCoordinates(i, side2->Shape()), 1.0);
+      xi_2_avg.Update(1.0, CORE::FE::GetNodeCoordinates(i, side2->Shape()), 1.0);
 
     xi_2_avg.Scale(1.0 / side2->NumNode());
 
@@ -1998,7 +1998,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_AVG(
     // get the side-center
     for (int i = 0; i < side->NumNode(); i++)
     {
-      local_node_coord = CORE::DRT::UTILS::GetNodeCoordinates(i, side->Shape());
+      local_node_coord = CORE::FE::GetNodeCoordinates(i, side->Shape());
       side_center(0) += local_node_coord(0);
       side_center(1) += local_node_coord(1);
     }
@@ -2136,8 +2136,8 @@ void XFEM::XFLUID_STD::getNormalSide_tn(
   CORE::LINALG::Matrix<3, 1> dx_ds(true);
 
   // get current values
-  CORE::DRT::UTILS::shape_function_2D(funct, xi_side(0), xi_side(1), side_distype);
-  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
+  CORE::FE::shape_function_2D(funct, xi_side(0), xi_side(1), side_distype);
+  CORE::FE::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
 
   proj_x_n.Multiply(xyze_, funct);
 
@@ -2249,7 +2249,7 @@ void XFEM::XFLUID_STD::get_projxn_Line(
 
 
   // get current values
-  CORE::DRT::UTILS::shape_function_1D(funct, xi_line, line_distype);
+  CORE::FE::shape_function_1D(funct, xi_line, line_distype);
 
   // projected point tracked back at t^n
   proj_x_n.Multiply(xyze_, funct);
@@ -2787,9 +2787,9 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
 
 
     // get current values
-    CORE::DRT::UTILS::shape_function_2D(funct, sol(0), sol(1), side_distype);
-    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, sol(0), sol(1), side_distype);
-    CORE::DRT::UTILS::shape_function_2D_deriv2(deriv2, sol(0), sol(1), side_distype);
+    CORE::FE::shape_function_2D(funct, sol(0), sol(1), side_distype);
+    CORE::FE::shape_function_2D_deriv1(deriv, sol(0), sol(1), side_distype);
+    CORE::FE::shape_function_2D_deriv2(deriv2, sol(0), sol(1), side_distype);
 
     x.Multiply(xyze_, funct);
 
@@ -2928,7 +2928,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
       dist = -sol(2) * normal_length;  // negative sol(2)!!! and scaling with normal length
 
       // evaluate shape function at solution
-      CORE::DRT::UTILS::shape_function_2D(funct, sol(0), sol(1), side_distype);
+      CORE::FE::shape_function_2D(funct, sol(0), sol(1), side_distype);
 
       // get projected gauss point
       x_side.Multiply(xyze_, funct);

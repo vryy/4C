@@ -48,7 +48,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   Teuchos::RCP<MAT::Material> mat = Material();
 
   {
-    const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+    const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
     const int numgp = intpoints.nquad;
     SolidMaterial()->Setup(numgp, linedef);
   }
@@ -153,9 +153,9 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
 /*----------------------------------------------------------------------*
  |  Get gaussrule on dependance of gausspoints                     mgit |
  *----------------------------------------------------------------------*/
-CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
+CORE::FE::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
 {
-  CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
+  CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
 
   switch (Shape())
   {
@@ -165,11 +165,11 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
+        rule = CORE::FE::GaussRule2D::quad_4point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 3))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+        rule = CORE::FE::GaussRule2D::quad_9point;
       }
       else
         dserror("Unknown number of Gauss points for quad element");
@@ -180,23 +180,23 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
+        rule = CORE::FE::GaussRule2D::quad_4point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 3))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+        rule = CORE::FE::GaussRule2D::quad_9point;
       }
       else if ((ngp[0] == 4) && (ngp[1] == 4))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::quad_16point;
+        rule = CORE::FE::GaussRule2D::quad_16point;
       }
       else if ((ngp[0] == 5) && (ngp[1] == 5))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
+        rule = CORE::FE::GaussRule2D::quad_25point;
       }
       else if ((ngp[0] == 10) && (ngp[1] == 10))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::quad_100point;
+        rule = CORE::FE::GaussRule2D::quad_100point;
       }
       else
         dserror("Unknown number of Gauss points for nurbs element");
@@ -207,15 +207,15 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     {
       if ((ngp[0] == 1) && (ngp[1] == 0))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::tri_1point;
+        rule = CORE::FE::GaussRule2D::tri_1point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 0))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
+        rule = CORE::FE::GaussRule2D::tri_3point;
       }
       else if ((ngp[0] == 6) && (ngp[1] == 0))
       {
-        rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
+        rule = CORE::FE::GaussRule2D::tri_6point;
       }
       else
         dserror("Unknown number of Gauss points for tri element");

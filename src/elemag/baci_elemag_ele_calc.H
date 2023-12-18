@@ -75,7 +75,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
+          const CORE::FE::GaussIntegration& intpoints, bool offdiag = false);
 
 
 
@@ -100,9 +100,8 @@ namespace DRT
         static const unsigned int nfaces_ = ElemagEleCalc<distype>::nfaces_;
 
         /// Init function for the struct members
-        LocalSolver(const DRT::ELEMENTS::Elemag* ele,
-            CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
-            Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
+        LocalSolver(const DRT::ELEMENTS::Elemag* ele, CORE::FE::ShapeValues<distype>& shapeValues,
+            Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>>& shapeValuesFace,
             INPAR::ELEMAG::DynamicType& dyna);
 
         /// Compute the residual
@@ -172,9 +171,9 @@ namespace DRT
         const unsigned int ndofs_;
 
         /// evaluated shape values
-        CORE::DRT::UTILS::ShapeValues<distype>& shapes_;
+        CORE::FE::ShapeValues<distype>& shapes_;
         /// evaluated shape values
-        Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+        Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> shapesface_;
 
         // System matrices
         /// magnetic evolution matrix
@@ -230,9 +229,9 @@ namespace DRT
       double EstimateError(DRT::ELEMENTS::Elemag& ele, CORE::LINALG::SerialDenseVector& p);
 
       /// Local data object for element.
-      Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
+      Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes_;
       /// Local data object for face element.
-      Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+      Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> shapesface_;
 
       /// Local solver object.
       Teuchos::RCP<LocalSolver> localSolver_;

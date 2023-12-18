@@ -4201,7 +4201,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
-    MORTAR::IntCell& cell, const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,
+    MORTAR::IntCell& cell, const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,
     const int iquad)
 {
   // reference coordinates of integration point
@@ -4303,8 +4303,8 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
-    MORTAR::MortarElement& element,
-    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints, const int iquad)
+    MORTAR::MortarElement& element, const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,
+    const int iquad)
 {
   // extract global coordinates of element nodes
   CORE::LINALG::Matrix<nsd_slave_ + 1, nen_slave_> coordinates_nodes;
@@ -4316,8 +4316,8 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
 
   // evaluate slave-side shape functions and their first derivatives at integration point
   CORE::LINALG::Matrix<nsd_slave_, nen_slave_> deriv_slave;
-  CORE::DRT::UTILS::shape_function<distypeS>(coordinates_ref, funct_slave_);
-  CORE::DRT::UTILS::shape_function_deriv1<distypeS>(coordinates_ref, deriv_slave);
+  CORE::FE::shape_function<distypeS>(coordinates_ref, funct_slave_);
+  CORE::FE::shape_function_deriv1<distypeS>(coordinates_ref, deriv_slave);
 
   // evaluate transposed Jacobian matrix at integration point
   CORE::LINALG::Matrix<nsd_slave_, nsd_slave_ + 1> jacobian;
@@ -4386,8 +4386,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(MORTAR::
     dserror("Must have same number of degrees of freedom per node on slave and master sides!");
 
   // determine quadrature rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
-      CORE::DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
 
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -4516,8 +4515,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
   const double pseudo_contact_fac = 1.0;
 
   // determine quadrature rule
-  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
-      CORE::DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
 
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -4586,7 +4584,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNodalAreaFractions(
     MORTAR::MortarElement& slaveelement, CORE::LINALG::SerialDenseVector& areafractions)
 {
   // integration points and weights
-  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_> intpoints(
+  const CORE::FE::IntPointsAndWeights<nsd_slave_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distypeS>::rule);
 
   // loop over integration points

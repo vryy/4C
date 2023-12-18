@@ -392,7 +392,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
 
               // use one-point Gauss rule to do calculations at the element center
               // used here to get center coordinates
-              CORE::DRT::UTILS::IntPointsAndWeights<nsd> centercoord(
+              CORE::FE::IntPointsAndWeights<nsd> centercoord(
                   SCATRA::DisTypeToStabGaussRule<distype>::rule);
               CORE::LINALG::Matrix<nsd, 1> xsi(true);
               const double* gpcoord = (centercoord.IP().qxg)[0];
@@ -400,7 +400,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
 
               // compute shape functions at element center
               CORE::LINALG::Matrix<nen, 1> funct(true);
-              CORE::DRT::UTILS::shape_function<distype>(xsi, funct);
+              CORE::FE::shape_function<distype>(xsi, funct);
 
               // get velocity at integration point
               CORE::LINALG::Matrix<nsd, 1> velint(true);

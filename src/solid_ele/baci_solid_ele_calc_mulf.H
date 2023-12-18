@@ -111,8 +111,8 @@ namespace DRT::ELEMENTS
 
     std::vector<MulfHistoryData<celltype>> history_data_;
 
-    CORE::DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
-    CORE::DRT::UTILS::GaussIntegration mass_matrix_integration_;
+    CORE::FE::GaussIntegration stiffness_matrix_integration_;
+    CORE::FE::GaussIntegration mass_matrix_integration_;
 
   };  // class SolidEleCalc
 

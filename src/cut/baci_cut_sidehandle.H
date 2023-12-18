@@ -64,7 +64,7 @@ namespace CORE::GEO
       \brief Get the Gaussian rule projected on the side. Not used now
        */
       template <CORE::FE::CellType distype>
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(BoundaryCell* bc)
+      Teuchos::RCP<CORE::FE::GaussPoints> CreateProjected(BoundaryCell* bc)
       {
         const unsigned nen = CORE::FE::num_nodes<distype>;
 
@@ -80,8 +80,8 @@ namespace CORE::GEO
           std::copy(xi.A(), xi.A() + 2, &xie(0, i));
         }
 
-        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
-            CORE::DRT::UTILS::GaussIntegration::CreateProjected<distype>(xie, bc->CubatureDegree());
+        Teuchos::RCP<CORE::FE::GaussPoints> gp =
+            CORE::FE::GaussIntegration::CreateProjected<distype>(xie, bc->CubatureDegree());
         return gp;
       }
 

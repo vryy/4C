@@ -203,7 +203,7 @@ void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
   CORE::FE::CellType distype_bc = bcell.Shape();
   CheckBoundaryCellType(distype_bc);
 
-  const int numnodebc = CORE::DRT::UTILS::getNumberOfElementNodes(distype_bc);
+  const int numnodebc = CORE::FE::getNumberOfElementNodes(distype_bc);
 
   // get physical coordinates of this cell
   CORE::LINALG::SerialDenseMatrix coord = bcell.Coordinates();
@@ -297,7 +297,7 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
     std::vector<int>& node_ids) const
 {
   const CORE::FE::CellType distype = ele->Shape();
-  unsigned numnode = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
+  unsigned numnode = CORE::FE::getNumberOfElementNodes(distype);
   const unsigned probdim = DRT::Problem::Instance()->NDim();
 
   xyze.shape(3, numnode);

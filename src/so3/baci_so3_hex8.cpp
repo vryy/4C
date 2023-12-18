@@ -107,9 +107,9 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(
 }
 
 // initialization of static gauss point rule for the so_hex8 element
-const CORE::DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> DRT::ELEMENTS::So_hex8::gp_rule_(
-    CORE::DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8>(
-        static_cast<enum CORE::DRT::UTILS::GaussRule3D>(GP_RULE_SOH8::rule)));
+const CORE::FE::IntPointsAndWeights<NUMDIM_SOH8> DRT::ELEMENTS::So_hex8::gp_rule_(
+    CORE::FE::IntPointsAndWeights<NUMDIM_SOH8>(
+        static_cast<enum CORE::FE::GaussRule3D>(GP_RULE_SOH8::rule)));
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -396,7 +396,7 @@ std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
   const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOH8, 1> funct;
   // Element midpoint at r=s=t=0.0
-  CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  CORE::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   CORE::LINALG::Matrix<1, NUMDIM_SOH8> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

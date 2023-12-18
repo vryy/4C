@@ -541,8 +541,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
     {
       case 8:
       {
-        CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
-            CORE::DRT::UTILS::GaussRule3D::hex_8point);
+        CORE::FE::IntPointsAndWeights<nsd_> intpoints(CORE::FE::GaussRule3D::hex_8point);
         numgpt_ = intpoints.IP().nquad;
         xsi_.resize(numgpt_);
         wgt_.resize(numgpt_);
@@ -556,7 +555,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
       }
       case 9:
       {
-        CORE::DRT::UTILS::GaussIntegration ip(distype, 3);
+        CORE::FE::GaussIntegration ip(distype, 3);
         numgpt_ = ip.NumPoints() + 1;
         xsi_.resize(numgpt_);
         wgt_.resize(numgpt_);
@@ -575,8 +574,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
       }
       case 27:
       {
-        CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
-            CORE::DRT::UTILS::GaussRule3D::hex_27point);
+        CORE::FE::IntPointsAndWeights<nsd_> intpoints(CORE::FE::GaussRule3D::hex_27point);
         numgpt_ = intpoints.IP().nquad;
         xsi_.resize(numgpt_);
         wgt_.resize(numgpt_);
@@ -595,8 +593,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   }
   else  // default integration
   {
-    CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
-        THR::DisTypeToOptGaussRule<distype>::rule);
+    CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
     numgpt_ = intpoints.IP().nquad;
     xsi_.resize(numgpt_);
     wgt_.resize(numgpt_);

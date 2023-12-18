@@ -35,7 +35,7 @@ CORE::GEO::CUT::QuadratureCompression::QuadratureCompression() {}
  * Only computing Leja points (from LU-decomposition) is checked
  *---------------------------------------------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::QuadratureCompression::PerformCompressionOfQuadrature(
-    CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc)
+    CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc)
 {
   const double t_start = Teuchos::Time::wallTime();
 
@@ -59,8 +59,8 @@ bool CORE::GEO::CUT::QuadratureCompression::PerformCompressionOfQuadrature(
 /*---------------------------------------------------------------------------------------------------------------*
  * Compute the Vandermonde matrix and RHS of the matrix system sudhakar 08/15
  *---------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadratureCompression::FormMatrixSystem(
-    CORE::DRT::UTILS::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+void CORE::GEO::CUT::QuadratureCompression::FormMatrixSystem(CORE::FE::GaussPointsComposite& gin,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs)
 {
   mat->shape(gin.NumPoints(), 56);
@@ -219,7 +219,7 @@ void CORE::GEO::CUT::QuadratureCompression::FormMatrixSystem(
  *points by numerical linear algebra. SIAM J Numer Anal. 48:1984--1999, 2010.
  *-----------------------------------------------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::QuadratureCompression::Compress_Leja_points(
-    CORE::DRT::UTILS::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+    CORE::FE::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
 {
@@ -315,13 +315,12 @@ bool CORE::GEO::CUT::QuadratureCompression::Compress_Leja_points(
  * Form new quadrature rule from the quadrature points and weights obtained from compression
  *sudhakar 08/15 (just creating the required data structure)
  *-------------------------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::DRT::UTILS::GaussPoints>
-CORE::GEO::CUT::QuadratureCompression::FormNewQuadratureRule(
-    CORE::DRT::UTILS::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol,
+Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::QuadratureCompression::FormNewQuadratureRule(
+    CORE::FE::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol,
     std::vector<int>& work, int& na)
 {
-  Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(0));
+  Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp =
+      Teuchos::rcp(new CORE::FE::CollectedGaussPoints(0));
 
   for (int pt = 0; pt < na; pt++)
   {
@@ -385,7 +384,7 @@ int CORE::GEO::CUT::QuadratureCompression::GetCorrectIndex(
  *08/15 base functions (either Chebyshev or monomial) and print the maximum absolute error
  *--------------------------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::QuadratureCompression::ComputeAndPrintError(
-    CORE::DRT::UTILS::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+    CORE::FE::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na)
 {
   /*-------------------------------------------------------------------*/
@@ -697,7 +696,7 @@ void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_LAPACK(
  * into GMSH output
  *------------------------------------------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::QuadratureCompression::WriteCompressedQuadratureGMSH(
-    CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc)
+    CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc)
 {
   static int sideno = 0;
   sideno++;
@@ -783,7 +782,7 @@ void CORE::GEO::CUT::QuadratureCompression::WriteCompressedQuadratureGMSH(
  *error         sudhakar 08/15 between these values
  *---------------------------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::QuadratureCompression::IntegratePredefinedPolynomials(
-    CORE::DRT::UTILS::GaussPointsComposite& gin)
+    CORE::FE::GaussPointsComposite& gin)
 {
   std::vector<double> intOri(6, 0.0), intCom(6, 0.0), err(6, 0.0);
 

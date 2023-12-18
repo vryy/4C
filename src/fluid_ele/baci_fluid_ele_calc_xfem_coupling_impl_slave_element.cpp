@@ -339,7 +339,7 @@ namespace DRT
         if (slave_nsd_ == nsd_ - 1)
         {
           // evaluate shape function at solution
-          CORE::DRT::UTILS::shape_function_2D(slave_funct_, xslave(0), xslave(1), slave_distype);
+          CORE::FE::shape_function_2D(slave_funct_, xslave(0), xslave(1), slave_distype);
           rst_slave(0) = xslave(0);
           rst_slave(1) = xslave(1);
           //    dserror("You called 3D evaluation routine when coupling with a 2D element.");
@@ -355,9 +355,9 @@ namespace DRT
         if (slave_nsd_ == nsd_)
         {
           pos->LocalCoordinates(rst_slave);
-          CORE::DRT::UTILS::shape_function_3D(
+          CORE::FE::shape_function_3D(
               slave_funct_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
-          CORE::DRT::UTILS::shape_function_3D_deriv1(
+          CORE::FE::shape_function_3D_deriv1(
               slave_deriv_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
         }
         else
@@ -466,11 +466,10 @@ namespace DRT
           ++iter;
 
           // get current values
-          CORE::DRT::UTILS::shape_function_2D(
-              proj_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
-          CORE::DRT::UTILS::shape_function_2D_deriv1(
+          CORE::FE::shape_function_2D(proj_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
+          CORE::FE::shape_function_2D_deriv1(
               proj_deriv_, proj_sol_(0), proj_sol_(1), slave_distype);
-          CORE::DRT::UTILS::shape_function_2D_deriv2(
+          CORE::FE::shape_function_2D_deriv2(
               proj_deriv2_, proj_sol_(0), proj_sol_(1), slave_distype);
 
           proj_x_.Multiply(slave_xyze_, proj_funct_);
@@ -578,8 +577,7 @@ namespace DRT
         }
 
         // evaluate shape function at solution
-        CORE::DRT::UTILS::shape_function_2D(
-            slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
+        CORE::FE::shape_function_2D(slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
 
         // get projected gauss point
         x_side.Multiply(slave_xyze_, slave_funct_);

@@ -45,14 +45,13 @@ namespace CORE::UTILS
     /**
      * Type used to pass functions that create BACI Functions from a number of parsed lines.
      */
-    using FunctionFactory =
-        std::function<std::any(const std::vector<BACI::DRT::INPUT::LineDefinition>&)>;
+    using FunctionFactory = std::function<std::any(const std::vector<DRT::INPUT::LineDefinition>&)>;
 
     /// Return all known input lines that define a DRT::Function.
-    BACI::DRT::INPUT::Lines ValidFunctionLines();
+    DRT::INPUT::Lines ValidFunctionLines();
 
     /// read the baci input file and set up all functions
-    void ReadInput(BACI::DRT::INPUT::DatFileReader& reader);
+    void ReadInput(DRT::INPUT::DatFileReader& reader);
 
     /**
      * Tell the FunctionManager how to parse a set of @p possoble_lines into a Function object.
@@ -62,8 +61,8 @@ namespace CORE::UTILS
      * that was passed alongside these lines is called with the parsed data. @p function_factory
      * needs to return the actual function object wrapped in a Teuchos::RCP.
      */
-    void AddFunctionDefinition(std::vector<BACI::DRT::INPUT::LineDefinition> possible_lines,
-        FunctionFactory function_factory);
+    void AddFunctionDefinition(
+        std::vector<DRT::INPUT::LineDefinition> possible_lines, FunctionFactory function_factory);
 
     /**
      * Get a Function by its @p id in the input file. In addition, you need to specify the type of
@@ -87,7 +86,7 @@ namespace CORE::UTILS
     /**
      * Store the lines we can read and how to convert them into a BACI Function.
      */
-    std::vector<std::pair<std::vector<BACI::DRT::INPUT::LineDefinition>, FunctionFactory>>
+    std::vector<std::pair<std::vector<DRT::INPUT::LineDefinition>, FunctionFactory>>
         attached_function_data_;
   };
 

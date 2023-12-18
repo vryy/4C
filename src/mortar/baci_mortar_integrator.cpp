@@ -381,7 +381,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
     case CORE::FE::CellType::nurbs3:
     {
       // set default value for segment-based version first
-      CORE::DRT::UTILS::GaussRule1D mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_5point;
+      CORE::FE::GaussRule1D mygaussrule = CORE::FE::GaussRule1D::line_5point;
 
       // GP switch if element-based version and non-zero value provided by user
       if (integrationtype == INPAR::MORTAR::inttype_elements ||
@@ -398,62 +398,62 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
             }
             case 2:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_2point;
+              mygaussrule = CORE::FE::GaussRule1D::line_2point;
               break;
             }
             case 3:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_3point;
+              mygaussrule = CORE::FE::GaussRule1D::line_3point;
               break;
             }
             case 4:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_4point;
+              mygaussrule = CORE::FE::GaussRule1D::line_4point;
               break;
             }
             case 5:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_5point;
+              mygaussrule = CORE::FE::GaussRule1D::line_5point;
               break;
             }
             case 6:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_6point;
+              mygaussrule = CORE::FE::GaussRule1D::line_6point;
               break;
             }
             case 7:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_7point;
+              mygaussrule = CORE::FE::GaussRule1D::line_7point;
               break;
             }
             case 8:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_8point;
+              mygaussrule = CORE::FE::GaussRule1D::line_8point;
               break;
             }
             case 9:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_9point;
+              mygaussrule = CORE::FE::GaussRule1D::line_9point;
               break;
             }
             case 10:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_10point;
+              mygaussrule = CORE::FE::GaussRule1D::line_10point;
               break;
             }
             case 16:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_16point;
+              mygaussrule = CORE::FE::GaussRule1D::line_16point;
               break;
             }
             case 20:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_20point;
+              mygaussrule = CORE::FE::GaussRule1D::line_20point;
               break;
             }
             case 32:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_32point;
+              mygaussrule = CORE::FE::GaussRule1D::line_32point;
               break;
             }
             default:
@@ -465,7 +465,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
         }
       }
 
-      const CORE::DRT::UTILS::IntegrationPoints1D intpoints(mygaussrule);
+      const CORE::FE::IntegrationPoints1D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
@@ -481,22 +481,22 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
     case CORE::FE::CellType::tri6:
     {
       // set default value for segment-based version first
-      CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
+      CORE::FE::GaussRule2D mygaussrule = CORE::FE::GaussRule2D::tri_7point;
       if (integrationtype == INPAR::MORTAR::inttype_segments)
       {
         if (numgp > 0) switch (numgp)
           {
             case 7:
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_7point;
               break;
             case 12:
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_12point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_12point;
               break;
             case 16:
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_16point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_16point;
               break;
             case 37:
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_37point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_37point;
               break;
             default:
               dserror("unknown tri gauss rule");
@@ -513,57 +513,57 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
           {
             case 1:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_3point;
               break;
             }
             case 2:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_6point;
               break;
             }
             case 3:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_7point;
               break;
             }
             case 4:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_12point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_12point;
               break;
             }
             case 5:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_12point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_12point;
               break;
             }
             case 6:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_37point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_37point;
               break;
             }
             case 7:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_37point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_37point;
               break;
             }
             case 8:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_64point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_64point;
               break;
             }
             case 9:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_64point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_64point;
               break;
             }
             case 10:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_64point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_64point;
               break;
             }
             case 20:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_64point;
+              mygaussrule = CORE::FE::GaussRule2D::tri_64point;
               break;
             }
             default:
@@ -577,7 +577,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
       else
         dserror("unknown integration type!");
 
-      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+      const CORE::FE::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
@@ -597,7 +597,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
     case CORE::FE::CellType::nurbs9:
     {
       // set default value for segment-based version first
-      CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
+      CORE::FE::GaussRule2D mygaussrule = CORE::FE::GaussRule2D::quad_25point;
 
       // GP switch if element-based version and non-zero value provided by user
       if (integrationtype == INPAR::MORTAR::inttype_elements ||
@@ -614,62 +614,62 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
             }
             case 2:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_4point;
               break;
             }
             case 3:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_9point;
               break;
             }
             case 4:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_16point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_16point;
               break;
             }
             case 5:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_25point;
               break;
             }
             case 6:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_36point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_36point;
               break;
             }
             case 7:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_49point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_49point;
               break;
             }
             case 8:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_64point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_64point;
               break;
             }
             case 9:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_81point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_81point;
               break;
             }
             case 10:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_100point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_100point;
               break;
             }
             case 16:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_256point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_256point;
               break;
             }
             case 20:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_400point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_400point;
               break;
             }
             case 32:
             {
-              mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_1024point;
+              mygaussrule = CORE::FE::GaussRule2D::quad_1024point;
               break;
             }
             default:
@@ -681,7 +681,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
         }
       }
 
-      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+      const CORE::FE::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(nGP(), 2);
       weights_.resize(nGP());

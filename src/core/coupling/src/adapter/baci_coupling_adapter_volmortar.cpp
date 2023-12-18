@@ -50,8 +50,8 @@ CORE::ADAPTER::MortarVolCoupl::MortarVolCoupl()
  |  init                                                     farah 10/13|
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::MortarVolCoupl::Init(int spatial_dimension,
-    Teuchos::RCP<BACI::DRT::Discretization> dis1,  // masterdis - on Omega_1
-    Teuchos::RCP<BACI::DRT::Discretization> dis2,  // slavedis  - on Omega_2
+    Teuchos::RCP<DRT::Discretization> dis1,  // masterdis - on Omega_1
+    Teuchos::RCP<DRT::Discretization> dis2,  // slavedis  - on Omega_2
     std::vector<int>* coupleddof12, std::vector<int>* coupleddof21, std::pair<int, int>* dofsets12,
     std::pair<int, int>* dofsets21,
     Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy,
@@ -108,13 +108,13 @@ void CORE::ADAPTER::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
 
   //-----------------------
   // Evaluate volmortar coupling:
-  if (BACI::DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params, "COUPLINGTYPE") ==
+  if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params, "COUPLINGTYPE") ==
       INPAR::VOLMORTAR::couplingtype_volmortar)
     coupdis->EvaluateVolmortar();
   //-----------------------
   // consistent interpolation (NO CORE::VOLMORTAR)
-  else if (BACI::DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(
-               params, "COUPLINGTYPE") == INPAR::VOLMORTAR::couplingtype_coninter)
+  else if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params, "COUPLINGTYPE") ==
+           INPAR::VOLMORTAR::couplingtype_coninter)
     coupdis->EvaluateConsistentInterpolation();
   //-----------------------
   else
@@ -143,11 +143,11 @@ void CORE::ADAPTER::MortarVolCoupl::Redistribute()
   CheckInit();
 
   // create vector of discr.
-  std::vector<Teuchos::RCP<BACI::DRT::Discretization>> dis;
+  std::vector<Teuchos::RCP<DRT::Discretization>> dis;
   dis.push_back(masterdis_);
   dis.push_back(slavedis_);
 
-  BACI::DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+  DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
 
   return;
 }
@@ -156,8 +156,8 @@ void CORE::ADAPTER::MortarVolCoupl::Redistribute()
 /*----------------------------------------------------------------------*
  |  Create Auxiliary dofsets for multiphysics                farah 06/15|
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<BACI::DRT::Discretization> dis1,
-    Teuchos::RCP<BACI::DRT::Discretization> dis2, std::vector<int>* coupleddof12,
+void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2, std::vector<int>* coupleddof12,
     std::vector<int>* coupleddof21)
 {
   // first call FillComplete for single discretizations.
@@ -167,12 +167,10 @@ void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<BACI::DRT::Dis
 
   // build auxiliary dofsets, i.e. pseudo dofs on each discretization
   // add proxy of velocity related degrees of freedom to scatra discretization
-  Teuchos::RCP<BACI::DRT::DofSetInterface> dofsetaux;
-  dofsetaux =
-      Teuchos::rcp(new BACI::DRT::DofSetPredefinedDoFNumber(coupleddof21->size(), 0, 0, true));
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(coupleddof21->size(), 0, 0, true));
   if (dis2->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in fluid field");
-  dofsetaux =
-      Teuchos::rcp(new BACI::DRT::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
+  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
   if (dis1->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in structure field");
 
   // call AssignDegreesOfFreedom also for auxiliary dofsets
@@ -188,8 +186,8 @@ void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<BACI::DRT::Dis
 /*----------------------------------------------------------------------*
  |  AssignMaterials                                          vuong 09/14|
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::MortarVolCoupl::AssignMaterials(Teuchos::RCP<BACI::DRT::Discretization> dis1,
-    Teuchos::RCP<BACI::DRT::Discretization> dis2,
+void CORE::ADAPTER::MortarVolCoupl::AssignMaterials(Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2,
     Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy)
 {
   if (materialstrategy == Teuchos::null)

@@ -234,7 +234,7 @@ namespace DRT
       //! vector of coordinates of current integration point in reference coordinates
       std::vector<CORE::LINALG::Matrix<nsd_, 1>> xsi_;
 
-      CORE::DRT::UTILS::GaussIntegration intpoints_;
+      CORE::FE::GaussIntegration intpoints_;
 
       //! @name TSI related stuff
 

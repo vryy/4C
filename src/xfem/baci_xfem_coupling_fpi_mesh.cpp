@@ -958,15 +958,15 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
 
     const unsigned int SLAVE_NUMDOF = 3;
 
-    CORE::DRT::UTILS::CollectedGaussPoints intpoints =
-        CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+    CORE::FE::CollectedGaussPoints intpoints =
+        CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
     intpoints.Append(rst_slave(0, 0), rst_slave(1, 0), 0.0, 1.0);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
     CORE::LINALG::SerialDenseMatrix pqxg(1, SLAVE_NUMDOF);
     CORE::LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> derivtrafo(true);
 
-    CORE::DRT::UTILS::BoundaryGPToParentGP<SLAVE_NUMDOF>(
+    CORE::FE::BoundaryGPToParentGP<SLAVE_NUMDOF>(
         pqxg, derivtrafo, intpoints, coupl_ele->Shape(), fele->Shape(), fele->FaceParentNumber());
 
     CORE::LINALG::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
@@ -988,8 +988,8 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
 
       // evaluate derivatives of parent element shape functions at current integration point in
       // parent coordinate system
-      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex8>(pxsi, pfunc_loc);
-      CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(pxsi, pderiv_loc);
+      CORE::FE::shape_function<CORE::FE::CellType::hex8>(pxsi, pfunc_loc);
+      CORE::FE::shape_function_deriv1<CORE::FE::CellType::hex8>(pxsi, pderiv_loc);
       //
       // get Jacobian matrix and determinant w.r.t. spatial configuration
       //

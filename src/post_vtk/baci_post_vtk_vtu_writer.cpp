@@ -107,7 +107,7 @@ void PostVtuWriter::WriteGeo()
     // check for beam element that potentially needs special treatment due to Hermite interpolation
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    if (CORE::DRT::UTILS::IsNurbsDisType(ele->Shape()))
+    if (CORE::FE::IsNurbsDisType(ele->Shape()))
     {
       WriteGeoNurbsEle(ele, celltypes, outNodeId, celloffset, coordinates);
     }
@@ -290,7 +290,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     // check for beam element that potentially needs special treatment due to Hermite interpolation
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    if (CORE::DRT::UTILS::IsNurbsDisType(ele->Shape()))
+    if (CORE::FE::IsNurbsDisType(ele->Shape()))
     {
       WirteDofResultStepNurbsEle(ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
     }
@@ -394,7 +394,7 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
   {
     const DRT::Element* ele = dis->lRowElement(e);
 
-    if (CORE::DRT::UTILS::IsNurbsDisType(ele->Shape()))
+    if (CORE::FE::IsNurbsDisType(ele->Shape()))
     {
       WriteNodalResultStepNurbsEle(ele, ncomponents, numdf, solution, ghostedData);
     }
@@ -614,9 +614,9 @@ void PostVtuWriter::WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<
     CORE::LINALG::Matrix<DIM, NUMNODES> deriv;  // dummy
     CORE::LINALG::Matrix<3, 1> gpa;
 
-    gpa = CORE::DRT::UTILS::GetNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = CORE::FE::GetNodeCoordinates(numbering[n], mapped_dis_type);
 
-    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
+    CORE::FE::NURBS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
     std::array<double, 3> X = {0., 0., 0.};
     for (unsigned i = 0; i < 3; ++i)
@@ -781,9 +781,9 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, in
     CORE::LINALG::Matrix<DIM, NUMNODES> deriv;
     CORE::LINALG::Matrix<3, 1> gpa;
 
-    gpa = CORE::DRT::UTILS::GetNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = CORE::FE::GetNodeCoordinates(numbering[n], mapped_dis_type);
 
-    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
+    CORE::FE::NURBS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
     std::vector<double> val(numdf, 0.0);
 
@@ -969,9 +969,9 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, 
     CORE::LINALG::Matrix<DIM, NUMNODES> deriv;
     CORE::LINALG::Matrix<3, 1> gpa;
 
-    gpa = CORE::DRT::UTILS::GetNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = CORE::FE::GetNodeCoordinates(numbering[n], mapped_dis_type);
 
-    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
+    CORE::FE::NURBS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
     for (int i = 0; i < numdf; ++i) val[i] = 0.;
 

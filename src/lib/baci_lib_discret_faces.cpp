@@ -138,13 +138,13 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       case CORE::COMM::buildSurfaces:
       {
         nele = ele->NumSurface();
-        connectivity = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+        connectivity = CORE::FE::getEleNodeNumberingSurfaces(distype);
         break;
       }
       case CORE::COMM::buildLines:
       {
         nele = ele->NumLine();
-        connectivity = CORE::DRT::UTILS::getEleNodeNumberingLines(distype);
+        connectivity = CORE::FE::getEleNodeNumberingLines(distype);
         break;
       }
       default:

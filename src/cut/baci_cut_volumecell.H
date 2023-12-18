@@ -231,7 +231,7 @@ namespace CORE::GEO
       \brief Create boundary cell which contains more than 4 corner points
       */
       void NewArbitraryCell(Mesh& mesh, Facet* f, const std::vector<Point*>& x,
-          const CORE::DRT::UTILS::GaussIntegration& gp, const CORE::LINALG::Matrix<3, 1>& normal);
+          const CORE::FE::GaussIntegration& gp, const CORE::LINALG::Matrix<3, 1>& normal);
 
       /*!
       \brief Return the volume of the cell
@@ -272,13 +272,13 @@ namespace CORE::GEO
       \brief return the integration rule for this volumecell when MomentFitting or DirectDivergence
       is used
        */
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GetGaussRule() { return gp_; }
+      Teuchos::RCP<CORE::FE::GaussPoints> GetGaussRule() { return gp_; }
 
       /*!
       \brief replace the integration rule for this volumecell when MomentFitting or DirectDivergence
       is used
        */
-      void SetGaussRule(Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gps) { gp_ = gps; }
+      void SetGaussRule(Teuchos::RCP<CORE::FE::GaussPoints> gps) { gp_ = gps; }
 
       /*!
       \brief Set the volume of this cell
@@ -321,8 +321,7 @@ namespace CORE::GEO
       void integrateSpecificFunctionsTessellation();
 
       template <CORE::FE::CellType distype>
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(
-          CORE::GEO::CUT::IntegrationCell* ic);
+      Teuchos::RCP<CORE::FE::GaussPoints> CreateProjected(CORE::GEO::CUT::IntegrationCell* ic);
 
       /*!
       \brief Returns whether this volumecell is negligibly small (used only in DirectDIvergence
@@ -350,14 +349,14 @@ namespace CORE::GEO
       /*!
       \brief return the Gauss points computed using moment fitting equations
       */
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GaussPointsFitting();
+      Teuchos::RCP<CORE::FE::GaussPoints> GaussPointsFitting();
 
       /*!
       \brief Generate internal gauss rule for every integration point on the facet when
       DirectDivergence method is used
        */
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GenerateInternalGaussRule(
-          Teuchos::RCP<CORE::DRT::UTILS::GaussPoints>& gp);
+      Teuchos::RCP<CORE::FE::GaussPoints> GenerateInternalGaussRule(
+          Teuchos::RCP<CORE::FE::GaussPoints>& gp);
 
       /// the element this is a part of
       Element* element_;
@@ -405,7 +404,7 @@ namespace CORE::GEO
 
       /// Gauss rule for this volumecell. In case of DirectDivergence method, this just stores main
       /// Gauss points
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_;
+      Teuchos::RCP<CORE::FE::GaussPoints> gp_;
     };
 
   }  // namespace CUT

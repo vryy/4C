@@ -98,7 +98,7 @@ namespace XFEM
     );
 
     //! pre-compute the measure of the element's intersecting surface
-    double ComputeMeasCutSurf(const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+    double ComputeMeasCutSurf(const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
                                   bintpoints,  ///< boundary cell integration points
         const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells  ///< boundary cells
     );
@@ -134,7 +134,7 @@ namespace XFEM
             vcSet,  ///< volumecell sets for volume integration
         const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
             bcells,  ///< bcells for boundary cell integration
-        const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+        const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
             bintpoints,  ///< integration points for boundary cell integration
         const INPAR::XFEM::ViscStab_hk visc_stab_hk,  ///< h definition
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> emb =

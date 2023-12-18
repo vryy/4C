@@ -41,7 +41,7 @@ namespace DRT
 
 }  // namespace DRT
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   template <const int NSD>
   class IntPointsAndWeights;
@@ -968,17 +968,17 @@ namespace SCATRA
     //! evaluate slave-side and master-side shape functions and domain integration factor at cell
     //! integration point
     double EvalShapeFuncAndDomIntFacAtIntPoint(
-        MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,  //!< master-side mortar element
-        MORTAR::IntCell& cell,                 //!< mortar integration cell
-        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
-        const int iquad  //!< ID of integration point
+        MORTAR::MortarElement& slaveelement,                         //!< slave-side mortar element
+        MORTAR::MortarElement& masterelement,                        //!< master-side mortar element
+        MORTAR::IntCell& cell,                                       //!< mortar integration cell
+        const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
+        const int iquad                                              //!< ID of integration point
     );
 
     //! evaluate slave-side shape functions and domain integration factor at element integration
     //! point
     double EvalShapeFuncAndDomIntFacAtIntPoint(MORTAR::MortarElement& element,  //!< mortar element
-        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,     //!< quadrature rule
+        const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,             //!< quadrature rule
         const int iquad  //!< ID of integration point
     );
 

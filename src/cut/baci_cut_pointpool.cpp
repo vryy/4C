@@ -598,7 +598,7 @@ void CORE::GEO::CUT::OctTreeNode::Print(int level, std::ostream& stream)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::PointPool::PointPool(double norm)
-    : tree_(norm), probdim_(BACI::DRT::Problem::Instance()->NDim())
+    : tree_(norm), probdim_(DRT::Problem::Instance()->NDim())
 {
 }
 

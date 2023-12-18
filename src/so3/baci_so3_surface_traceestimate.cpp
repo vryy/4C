@@ -117,7 +117,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
   CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, 6> bc;
   CORE::LINALG::Matrix<dim, CORE::FE::num_nodes<dt_vol>> N_XYZ;
 
-  CORE::DRT::UTILS::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
+  CORE::FE::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
@@ -164,21 +164,20 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
   CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, 6> bc;
   CORE::LINALG::Matrix<dim, CORE::FE::num_nodes<dt_vol>> N_XYZ;
 
-  CORE::DRT::UTILS::IntPointsAndWeights<dim - 1> ip(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
+  CORE::FE::IntPointsAndWeights<dim - 1> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
   CORE::LINALG::SerialDenseMatrix deriv_surf(2, CORE::FE::num_nodes<dt_surf>);
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
-    CORE::DRT::UTILS::CollectedGaussPoints intpoints =
-        CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+    CORE::FE::CollectedGaussPoints intpoints =
+        CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
     intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], 0.0, ip.IP().qwgt[gp]);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
     CORE::LINALG::SerialDenseMatrix pqxg(1, 3);
     CORE::LINALG::Matrix<3, 3> derivtrafo;
 
-    CORE::DRT::UTILS::BoundaryGPToParentGP<3>(
+    CORE::FE::BoundaryGPToParentGP<3>(
         pqxg, derivtrafo, intpoints, ParentElement()->Shape(), Shape(), FaceParentNumber());
 
     CORE::LINALG::Matrix<3, 1> xi;
@@ -209,11 +208,11 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
       CORE::LINALG::Matrix<2, 1> xi_surf;
       xi_surf(0) = ip.IP().qxg[gp][0];
       xi_surf(1) = ip.IP().qxg[gp][1];
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
           shapefcn, deriv_surf, xi_surf, boundaryknots, weights, dt_surf);
     }
     else
-      CORE::DRT::UTILS::shape_function_2D_deriv1(
+      CORE::FE::shape_function_2D_deriv1(
           deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
 
     SurfaceIntegration(detA, n, xrefe_surf, deriv_surf);
@@ -265,10 +264,10 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
     for (int i = 0; i < CORE::FE::num_nodes<dt_vol>; ++i)
       weights(i) = dynamic_cast<DRT::NURBS::ControlPoint*>(ParentElement()->Nodes()[i])->W();
 
-    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
+    CORE::FE::NURBS::nurbs_get_3D_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
   }
   else
-    CORE::DRT::UTILS::shape_function_deriv1<dt_vol>(xi, deriv);
+    CORE::FE::shape_function_deriv1<dt_vol>(xi, deriv);
 
   CORE::LINALG::Matrix<dim, dim> invJ;
   invJ.Multiply(deriv, xrefe);
@@ -486,7 +485,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
   CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, 6> bc;
   CORE::LINALG::Matrix<dim, num_node> N_XYZ, iC_N_XYZ;
 
-  CORE::DRT::UTILS::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
+  CORE::FE::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
   if (ParentElement()->NumMaterial() < 2) dserror("where's my second material");
   Teuchos::RCP<MAT::FourierIso> mat_thr =
@@ -535,8 +534,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
   CORE::LINALG::Matrix<3, 1> n_v(n.data(), true), iCn;
   double detA;
 
-  CORE::DRT::UTILS::IntPointsAndWeights<dim - 1> ip(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
+  CORE::FE::IntPointsAndWeights<dim - 1> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
   CORE::LINALG::SerialDenseMatrix deriv_surf(2, CORE::FE::num_nodes<dt_surf>);
 
   if (ParentElement()->NumMaterial() < 2) dserror("where's my second material");
@@ -546,20 +544,19 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
-    CORE::DRT::UTILS::shape_function_2D_deriv1(
-        deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
+    CORE::FE::shape_function_2D_deriv1(deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
     SurfaceIntegration(detA, n, xrefe_surf, deriv_surf);
     n_v.Scale(1. / n_v.Norm2());
 
-    CORE::DRT::UTILS::CollectedGaussPoints intpoints =
-        CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+    CORE::FE::CollectedGaussPoints intpoints =
+        CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
     intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], 0.0, ip.IP().qwgt[gp]);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
     CORE::LINALG::SerialDenseMatrix pqxg(1, 3);
     CORE::LINALG::Matrix<3, 3> derivtrafo;
 
-    CORE::DRT::UTILS::BoundaryGPToParentGP<3>(
+    CORE::FE::BoundaryGPToParentGP<3>(
         pqxg, derivtrafo, intpoints, ParentElement()->Shape(), Shape(), FaceParentNumber());
 
     CORE::LINALG::Matrix<3, 1> xi;

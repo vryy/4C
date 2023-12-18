@@ -530,7 +530,7 @@ namespace DRT
           const CORE::LINALG::Matrix<3, iel>& xyze);
 
 
-      inline CORE::DRT::UTILS::GaussRule3D getOptimalGaussrule();
+      inline CORE::FE::GaussRule3D getOptimalGaussrule();
 
       Ale3_Impl<distype> operator=(const Ale3_Impl<distype> other);
     };
@@ -854,7 +854,7 @@ namespace DRT
       //               const CORE::LINALG::Matrix<3,iel>& xyze);
       //
       //
-      //  inline CORE::DRT::UTILS::GaussRule3D getOptimalGaussrule();
+      //  inline CORE::FE::GaussRule3D getOptimalGaussrule();
 
       // Ale3Surface_Impl<distype> operator=(const Ale3Surface_Impl<distype> other);
 

@@ -230,7 +230,7 @@ namespace DRT
           std::map<std::string, std::vector<double>>& ele_state);
 
       //! determine Gauss rule from required type of integration
-      CORE::DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
+      CORE::FE::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
       //! calculation of elastic energy
       //!
@@ -250,7 +250,7 @@ namespace DRT
       double lrefe_;
 
       //! gaussrule_ will be initialized automatically to a 2 point integration rule
-      CORE::DRT::UTILS::GaussRule1D gaussrule_;
+      CORE::FE::GaussRule1D gaussrule_;
 
      private:
       //! possible kinematic types

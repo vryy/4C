@@ -238,7 +238,7 @@ namespace STR
 
      private:
       //! pointer to the problem discretization (cast of base class member)
-      Teuchos::RCP<BACI::DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
       //! data container holding all beaminteraction related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamInteractionParams> beaminteraction_params_ptr_;
@@ -270,7 +270,7 @@ namespace STR
       //! @{
       //! interaction discretization handling all interactions (e.g. crosslinker to beam,
       //! beam to beam, potential ...)
-      Teuchos::RCP<BACI::DRT::Discretization> ia_discret_;
+      Teuchos::RCP<DRT::Discretization> ia_discret_;
 
       /// map extractor for split of different element types
       Teuchos::RCP<CORE::LINALG::MultiMapExtractor> eletypeextractor_;
@@ -294,7 +294,7 @@ namespace STR
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
       //! crosslinker and bin discretization
-      Teuchos::RCP<BACI::DRT::Discretization> bindis_;
+      Teuchos::RCP<DRT::Discretization> bindis_;
 
       //! elerowmap of bindis
       Teuchos::RCP<Epetra_Map> rowbins_;

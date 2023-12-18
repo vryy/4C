@@ -33,7 +33,7 @@ CORE::COUPLING::MatchingOctree::MatchingOctree()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::MatchingOctree::Init(const BACI::DRT::Discretization& actdis,
+int CORE::COUPLING::MatchingOctree::Init(const DRT::Discretization& actdis,
     const std::vector<int>& masternodeids, const int maxnodeperleaf, const double tol)
 {
   SetIsSetup(false);
@@ -411,7 +411,7 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::MatchingOctree::FindMatch(const BACI::DRT::Discretization& slavedis,
+void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
     const std::vector<int>& slavenodeids, std::map<int, std::pair<int, double>>& coupling)
 {
   CheckIsInit();
@@ -583,7 +583,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const BACI::DRT::Discretization& 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
-    const BACI::DRT::Discretization& slavedis, const std::vector<int>& slavenodeids,
+    const DRT::Discretization& slavedis, const std::vector<int>& slavenodeids,
     std::map<int, std::vector<double>>& coupling)
 {
   CheckIsInit();
@@ -753,9 +753,9 @@ CORE::COUPLING::NodeMatchingOctree::NodeMatchingOctree()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::NodeMatchingOctree::CalcPointCoordinate(
-    const BACI::DRT::Discretization* dis, const int id, double* coord)
+    const DRT::Discretization* dis, const int id, double* coord)
 {
-  BACI::DRT::Node* actnode = dis->gNode(id);
+  DRT::Node* actnode = dis->gNode(id);
 
   const int dim = 3;
 
@@ -768,7 +768,7 @@ void CORE::COUPLING::NodeMatchingOctree::CalcPointCoordinate(
 void CORE::COUPLING::NodeMatchingOctree::CalcPointCoordinate(
     CORE::COMM::ParObject* entity, double* coord)
 {
-  auto* actnode = dynamic_cast<BACI::DRT::Node*>(entity);
+  auto* actnode = dynamic_cast<DRT::Node*>(entity);
   if (actnode == nullptr) dserror("dynamic_cast failed");
 
   const int dim = 3;
@@ -779,7 +779,7 @@ void CORE::COUPLING::NodeMatchingOctree::CalcPointCoordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool CORE::COUPLING::NodeMatchingOctree::CheckHaveEntity(
-    const BACI::DRT::Discretization* dis, const int id)
+    const DRT::Discretization* dis, const int id)
 {
   return dis->HaveGlobalNode(id);
 }  // NodeMatchingOctree::CheckHaveEntity
@@ -787,7 +787,7 @@ bool CORE::COUPLING::NodeMatchingOctree::CheckHaveEntity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool CORE::COUPLING::NodeMatchingOctree::CheckEntityOwner(
-    const BACI::DRT::Discretization* dis, const int id)
+    const DRT::Discretization* dis, const int id)
 {
   return (dis->gNode(id)->Owner() == dis->Comm().MyPID());
 }  // NodeMatchingOctree::CheckEntityOwner
@@ -795,10 +795,10 @@ bool CORE::COUPLING::NodeMatchingOctree::CheckEntityOwner(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::NodeMatchingOctree::PackEntity(
-    CORE::COMM::PackBuffer& data, const BACI::DRT::Discretization* dis, const int id)
+    CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id)
 {
   // get the slavenode
-  BACI::DRT::Node* actnode = dis->gNode(id);
+  DRT::Node* actnode = dis->gNode(id);
   // Add node to list of nodes which will be sent to the next proc
   CORE::COMM::ParObject::AddtoPack(data, actnode);
 }  // NodeMatchingOctree::PackEntity
@@ -816,7 +816,7 @@ void CORE::COUPLING::NodeMatchingOctree::UnPackEntity(
 int CORE::COUPLING::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o)
 {
   // cast ParObject to Node
-  auto* actnode = dynamic_cast<BACI::DRT::Node*>(o.get());
+  auto* actnode = dynamic_cast<DRT::Node*>(o.get());
   if (actnode == nullptr) dserror("unpack of invalid data");
 
   return actnode->Id();
@@ -847,9 +847,9 @@ CORE::COUPLING::ElementMatchingOctree::ElementMatchingOctree()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
-    const BACI::DRT::Discretization* dis, const int id, double* coord)
+    const DRT::Discretization* dis, const int id, double* coord)
 {
-  BACI::DRT::Element* actele = dis->gElement(id);
+  DRT::Element* actele = dis->gElement(id);
 
   const int numnode = actele->NumNode();
   const int dim = 3;
@@ -865,10 +865,10 @@ void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
 void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
     CORE::COMM::ParObject* entity, double* coord)
 {
-  auto* actele = dynamic_cast<BACI::DRT::Element*>(entity);
+  auto* actele = dynamic_cast<DRT::Element*>(entity);
   if (actele == nullptr) dserror("dynamic_cast failed");
 
-  BACI::DRT::Node** nodes = actele->Nodes();
+  DRT::Node** nodes = actele->Nodes();
   if (nodes == nullptr) dserror("could not get pointer to nodes");
 
   const int numnode = actele->NumNode();
@@ -883,7 +883,7 @@ void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool CORE::COUPLING::ElementMatchingOctree::CheckHaveEntity(
-    const BACI::DRT::Discretization* dis, const int id)
+    const DRT::Discretization* dis, const int id)
 {
   return dis->HaveGlobalElement(id);
 }  // ElementMatchingOctree::CheckHaveEntity
@@ -891,7 +891,7 @@ bool CORE::COUPLING::ElementMatchingOctree::CheckHaveEntity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool CORE::COUPLING::ElementMatchingOctree::CheckEntityOwner(
-    const BACI::DRT::Discretization* dis, const int id)
+    const DRT::Discretization* dis, const int id)
 {
   return (dis->gElement(id)->Owner() == dis->Comm().MyPID());
 }  // ElementMatchingOctree::CheckHaveEntity
@@ -899,11 +899,11 @@ bool CORE::COUPLING::ElementMatchingOctree::CheckEntityOwner(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::ElementMatchingOctree::PackEntity(
-    CORE::COMM::PackBuffer& data, const BACI::DRT::Discretization* dis, const int id)
+    CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id)
 {
   // get the slavenode
-  BACI::DRT::Element* actele = dis->gElement(id);
-  BACI::DRT::Node** nodes = actele->Nodes();
+  DRT::Element* actele = dis->gElement(id);
+  DRT::Node** nodes = actele->Nodes();
   // Add node to list of nodes which will be sent to the next proc
   CORE::COMM::ParObject::AddtoPack(data, actele->NumNode());
   CORE::COMM::ParObject::AddtoPack(data, actele);
@@ -925,9 +925,9 @@ void CORE::COUPLING::ElementMatchingOctree::UnPackEntity(
     std::vector<char> nodedata;
     CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, nodedata);
     Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(nodedata));
-    Teuchos::RCP<BACI::DRT::Node> actnode = Teuchos::rcp_dynamic_cast<BACI::DRT::Node>(o);
+    Teuchos::RCP<DRT::Node> actnode = Teuchos::rcp_dynamic_cast<DRT::Node>(o);
     if (actnode == Teuchos::null) dserror("cast from ParObject to Node failed");
-    nodes_.insert(std::pair<int, Teuchos::RCP<BACI::DRT::Node>>(actnode->Id(), actnode));
+    nodes_.insert(std::pair<int, Teuchos::RCP<DRT::Node>>(actnode->Id(), actnode));
   }
 
 }  // ElementMatchingOctree::UnPackEntity
@@ -938,7 +938,7 @@ int CORE::COUPLING::ElementMatchingOctree::CheckValidEntityType(
     Teuchos::RCP<CORE::COMM::ParObject> o)
 {
   // cast ParObject to element
-  auto* actele = dynamic_cast<BACI::DRT::Element*>(o.get());
+  auto* actele = dynamic_cast<DRT::Element*>(o.get());
   if (actele == nullptr) dserror("unpack of invalid data");
 
   // set nodal pointers for this element
@@ -972,9 +972,9 @@ CORE::COUPLING::OctreeNodalElement::OctreeNodalElement() : OctreeElement() {}  /
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::OctreeNodalElement::CalcPointCoordinate(
-    const BACI::DRT::Discretization* dis, const int id, double* coord)
+    const DRT::Discretization* dis, const int id, double* coord)
 {
-  BACI::DRT::Node* actnode = dis->gNode(id);
+  DRT::Node* actnode = dis->gNode(id);
 
   const int dim = 3;
 
@@ -1006,9 +1006,9 @@ CORE::COUPLING::OctreeElementElement::OctreeElementElement()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::OctreeElementElement::CalcPointCoordinate(
-    const BACI::DRT::Discretization* dis, const int id, double* coord)
+    const DRT::Discretization* dis, const int id, double* coord)
 {
-  BACI::DRT::Element* actele = dis->gElement(id);
+  DRT::Element* actele = dis->gElement(id);
 
   const int numnode = actele->NumNode();
   const int dim = 3;
@@ -1051,7 +1051,7 @@ CORE::COUPLING::OctreeElement::OctreeElement()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::OctreeElement::Init(const BACI::DRT::Discretization& actdis,
+int CORE::COUPLING::OctreeElement::Init(const DRT::Discretization& actdis,
     std::vector<int>& nodeidstoadd, const CORE::LINALG::SerialDenseMatrix& boundingboxtoadd,
     const int layer, const int maxnodeperleaf, const double tol)
 {

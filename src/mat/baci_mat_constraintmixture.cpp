@@ -3150,24 +3150,24 @@ void MAT::ConstraintMixtureOutputToGmsh(
     CORE::LINALG::SerialDenseVector funct(numnode);
 
     // define gauss rule
-    CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::undefined;
+    CORE::FE::GaussRule3D gaussrule_ = CORE::FE::GaussRule3D::undefined;
     switch (distype)
     {
       case CORE::FE::CellType::hex8:
       {
-        gaussrule_ = CORE::DRT::UTILS::GaussRule3D::hex_8point;
+        gaussrule_ = CORE::FE::GaussRule3D::hex_8point;
         if (ngp != 8) dserror("hex8 has not 8 gauss points: %d", ngp);
         break;
       }
       case CORE::FE::CellType::wedge6:
       {
-        gaussrule_ = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
+        gaussrule_ = CORE::FE::GaussRule3D::wedge_6point;
         if (ngp != 6) dserror("wedge6 has not 6 gauss points: %d", ngp);
         break;
       }
       case CORE::FE::CellType::tet4:
       {
-        gaussrule_ = CORE::DRT::UTILS::GaussRule3D::tet_1point;
+        gaussrule_ = CORE::FE::GaussRule3D::tet_1point;
         if (ngp != 1) dserror("tet4 has not 1 gauss point: %d", ngp);
         break;
       }
@@ -3176,11 +3176,11 @@ void MAT::ConstraintMixtureOutputToGmsh(
         break;
     }
 
-    const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
+    const CORE::FE::IntegrationPoints3D intpoints(gaussrule_);
 
     for (int gp = 0; gp < ngp; ++gp)
     {
-      CORE::DRT::UTILS::shape_function_3D(
+      CORE::FE::shape_function_3D(
           funct, intpoints.qxg[gp][0], intpoints.qxg[gp][1], intpoints.qxg[gp][2], distype);
       CORE::LINALG::SerialDenseMatrix point(1, 3);
       CORE::LINALG::multiplyTN(point, funct, xcurr);

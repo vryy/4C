@@ -136,7 +136,7 @@ namespace DRT
        */
       int NumDofPerNodeAuxiliary() const override
       {
-        return (CORE::DRT::UTILS::getDimension(distype_) + 0);
+        return (CORE::FE::getDimension(distype_) + 0);
         // maybe + 1 to mimic the standard fluid dofset with velocity + pressure
         // this is maybe needed for the fluid-ALE coupling
       }
@@ -147,7 +147,7 @@ namespace DRT
       */
       int NumDofPerFace(const unsigned face) const override
       {
-        return (1 + CORE::DRT::UTILS::getDimension(distype_)) * NumDofPerComponent(face);
+        return (1 + CORE::FE::getDimension(distype_)) * NumDofPerComponent(face);
       }
 
       /*!
@@ -155,8 +155,8 @@ namespace DRT
       */
       int NumDofPerComponent(const unsigned face) const override
       {
-        return CORE::DRT::UTILS::getBasisSize(
-            CORE::DRT::UTILS::getEleFaceShapeType(distype_), this->Degree(), completepol_);
+        return CORE::FE::getBasisSize(
+            CORE::FE::getEleFaceShapeType(distype_), this->Degree(), completepol_);
       }
 
       /*!
@@ -170,10 +170,9 @@ namespace DRT
        */
       int NumDofPerElementAuxiliary() const override
       {
-        const int nsd_ = CORE::DRT::UTILS::getDimension(distype_);
+        const int nsd_ = CORE::FE::getDimension(distype_);
         const int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
-        return (msd_ + nsd_ + 1.0) *
-               CORE::DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+        return (msd_ + nsd_ + 1.0) * CORE::FE::getBasisSize(distype_, degree_, completepol_);
       }
 
       /*!

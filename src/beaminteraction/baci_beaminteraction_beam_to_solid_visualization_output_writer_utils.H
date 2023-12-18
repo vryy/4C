@@ -55,7 +55,7 @@ namespace BEAMINTERACTION
    */
   void AddBeamInteractionNodalForces(
       const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
-      const Teuchos::RCP<const BACI::DRT::Discretization>& discret_ptr,
+      const Teuchos::RCP<const DRT::Discretization>& discret_ptr,
       const Teuchos::RCP<const Epetra_MultiVector>& displacement,
       const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids = false);
 
@@ -86,7 +86,7 @@ namespace BEAMINTERACTION
    * @param beam_resultant (out) Matrix with the force and moment resultants for the beam nodes.
    * @param solid_resultant (out) Matrix with the force and moment resultants for the solid nodes.
    */
-  void GetGlobalCouplingForceResultants(const BACI::DRT::Discretization& discret,
+  void GetGlobalCouplingForceResultants(const DRT::Discretization& discret,
       const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
       CORE::LINALG::Matrix<3, 2, double>& beam_resultant,
       CORE::LINALG::Matrix<3, 2, double>& solid_resultant);

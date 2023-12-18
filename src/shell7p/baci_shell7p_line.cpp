@@ -29,10 +29,10 @@ DRT::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int*
   switch (Shape())
   {
     case CORE::FE::CellType::line2:
-      gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_2point;
+      gaussrule_ = CORE::FE::GaussRule1D::line_2point;
       break;
     case CORE::FE::CellType::line3:
-      gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_3point;
+      gaussrule_ = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
       dserror("shape type unknown!\n");

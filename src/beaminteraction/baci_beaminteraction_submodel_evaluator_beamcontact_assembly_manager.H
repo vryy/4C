@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      virtual void EvaluateForceStiff(Teuchos::RCP<BACI::DRT::Discretization> discret,
+      virtual void EvaluateForceStiff(Teuchos::RCP<DRT::Discretization> discret,
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)

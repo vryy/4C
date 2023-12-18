@@ -27,7 +27,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   struct IntegrationPoints1D;
   struct IntegrationPoints2D;
@@ -515,21 +515,21 @@ namespace CORE::DRT::UTILS
   template <const int NSD>
   void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+      const CORE::FE::IntPointsAndWeights<NSD - 1>& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
   void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
       const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
   void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
       const CORE::FE::CellType distype, const int surfaceid);
 
 
@@ -537,22 +537,20 @@ namespace CORE::DRT::UTILS
   template <const int NSD>
   void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
       CORE::LINALG::Matrix<NSD, NSD>& derivtrafo,
-      const CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+      const CORE::FE::IntPointsAndWeights<NSD - 1>& intpoints, const CORE::FE::CellType pdistype,
+      const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
   void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::Matrix<3, 3>& derivtrafo,
-      const CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
-      const CORE::FE::CellType distype, const int surfaceid);
+      CORE::LINALG::Matrix<3, 3>& derivtrafo, const CORE::FE::IntPointsAndWeights<2>& intpoints,
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
   void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::Matrix<2, 2>& derivtrafo,
-      const CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
-      const CORE::FE::CellType distype, const int surfaceid);
+      CORE::LINALG::Matrix<2, 2>& derivtrafo, const CORE::FE::IntPointsAndWeights<1>& intpoints,
+      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
 
 
 
@@ -604,7 +602,7 @@ namespace CORE::DRT::UTILS
    */
   template <int parent_ele_dim>
   CORE::LINALG::Matrix<parent_ele_dim, 1> CalculateParentGPFromFaceElementData(
-      const double* faceele_xi, const BACI::DRT::FaceElement* faceele);
+      const double* faceele_xi, const DRT::FaceElement* faceele);
 
   //! compute covariant metric tensor for surface element
   void ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatrix& xyze,
@@ -1583,8 +1581,8 @@ namespace CORE::DRT::UTILS
       double& fac, CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
       CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xsi,
       CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, CORE::FE::num_nodes<distype>>& xyze,
-      const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>>& intpoints,
-      const int gpid, const std::vector<CORE::LINALG::SerialDenseVector>* myknots,
+      const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>>& intpoints, const int gpid,
+      const std::vector<CORE::LINALG::SerialDenseVector>* myknots,
       const CORE::LINALG::SerialDenseVector* weights, const bool isnurbs)
   {
     // Obtain number of spatial dimensions of boundary element
@@ -1601,20 +1599,19 @@ namespace CORE::DRT::UTILS
     if (not isnurbs)
     {
       // shape functions and their first derivatives of boundary element
-      CORE::DRT::UTILS::shape_function<distype>(xsi, funct);
-      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi, deriv);
+      CORE::FE::shape_function<distype>(xsi, funct);
+      CORE::FE::shape_function_deriv1<distype>(xsi, deriv);
     }
     // only for NURBS!!!
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
-          funct, deriv, xsi, *myknots, *weights, distype);
+      CORE::FE::NURBS::nurbs_get_funct_deriv(funct, deriv, xsi, *myknots, *weights, distype);
     }
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
     CORE::LINALG::Matrix<bdrynsd, bdrynsd> metrictensor(true);
-    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+    CORE::FE::ComputeMetricTensorForBoundaryEle<distype>(
         xyze, deriv, metrictensor, drs, &unitnormal);
 
     // compute integration factor
@@ -1631,7 +1628,7 @@ namespace CORE::DRT::UTILS
       double& fac, CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
       CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xsi,
       CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, CORE::FE::num_nodes<distype>>& xyze,
-      BACI::DRT::Element* ele, BACI::DRT::Discretization& discretization,
+      DRT::Element* ele, DRT::Discretization& discretization,
       CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
       const bool isnurbs, const bool isale)
   {
@@ -1662,8 +1659,8 @@ namespace CORE::DRT::UTILS
     }
 
     // Get gaussrule
-    const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd> intpoints(
-        BACI::DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+    const CORE::FE::IntPointsAndWeights<bdrynsd> intpoints(
+        DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // Get node coordinates
     CORE::GEO::fillInitialPositionArray<distype, nsd, CORE::LINALG::Matrix<nsd, bdrynen>>(
@@ -1691,8 +1688,8 @@ namespace CORE::DRT::UTILS
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points Computation of nurb specific stuff is not activated here
-      CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct, deriv, fac, unitnormal, drs, xsi,
-          xyze, intpoints, gpid, nullptr, nullptr, isnurbs);
+      CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(funct, deriv, fac, unitnormal, drs, xsi, xyze,
+          intpoints, gpid, nullptr, nullptr, isnurbs);
 
       for (int inode = 0; inode < bdrynen; ++inode)
       {
@@ -1709,7 +1706,7 @@ namespace CORE::DRT::UTILS
     } /* end of loop over integration points gpid */
   }   // ElementNodeNormal
 
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

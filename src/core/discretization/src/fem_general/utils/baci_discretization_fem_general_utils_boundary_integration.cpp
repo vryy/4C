@@ -49,7 +49,7 @@ BACI_NAMESPACE_OPEN
  they are needed for the integration over the surface element
 
 */
-void CORE::DRT::UTILS::ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatrix& xyze,
+void CORE::FE::ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatrix& xyze,
     const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& metrictensor,
     double* sqrtdetg)
 {
@@ -115,8 +115,8 @@ void CORE::DRT::UTILS::ComputeMetricTensorForSurface(const CORE::LINALG::SerialD
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int parent_ele_dim>
-CORE::LINALG::Matrix<parent_ele_dim, 1> CORE::DRT::UTILS::CalculateParentGPFromFaceElementData(
-    const double* faceele_xi, const BACI::DRT::FaceElement* faceele)
+CORE::LINALG::Matrix<parent_ele_dim, 1> CORE::FE::CalculateParentGPFromFaceElementData(
+    const double* faceele_xi, const DRT::FaceElement* faceele)
 {
   static CORE::LINALG::Matrix<parent_ele_dim - 1, 1> xi;
   for (int i = 0; i < parent_ele_dim - 1; ++i)
@@ -124,13 +124,13 @@ CORE::LINALG::Matrix<parent_ele_dim, 1> CORE::DRT::UTILS::CalculateParentGPFromF
     xi(i) = faceele_xi[i];
   }
   const double dummy_gp_wgt(0.0);
-  CORE::DRT::UTILS::CollectedGaussPoints intpoints;
+  CORE::FE::CollectedGaussPoints intpoints;
   intpoints.Append(xi, dummy_gp_wgt);
 
   // get coordinates of gauss point w.r.t. local parent coordinate system
   CORE::LINALG::SerialDenseMatrix pqxg(1, parent_ele_dim);
   CORE::LINALG::Matrix<parent_ele_dim, parent_ele_dim> derivtrafo(true);
-  CORE::DRT::UTILS::BoundaryGPToParentGP<parent_ele_dim>(pqxg, derivtrafo, intpoints,
+  CORE::FE::BoundaryGPToParentGP<parent_ele_dim>(pqxg, derivtrafo, intpoints,
       faceele->ParentElement()->Shape(), faceele->Shape(), faceele->FaceParentNumber());
 
   CORE::LINALG::Matrix<parent_ele_dim, 1> xi_parent(true);
@@ -151,7 +151,7 @@ CORE::LINALG::Matrix<parent_ele_dim, 1> CORE::DRT::UTILS::CalculateParentGPFromF
 
   -----------------------------------------------------------------*/
 template <class V, class W, typename IntegrationPoints>
-void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints& intpoints,
+void CORE::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints& intpoints,
     const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int lineid)
 {
   // resize output array
@@ -505,123 +505,119 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
 
 //! specialization for 3D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-    CORE::LINALG::SerialDenseMatrix& derivtrafo,
-    const CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
-    const CORE::FE::CellType distype, const int surfaceid)
+void CORE::FE::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::SerialDenseMatrix& derivtrafo, const CORE::FE::IntPointsAndWeights<2>& intpoints,
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 3);
   if (derivtrafo.numRows() != 3 || derivtrafo.numCols() != 3) derivtrafo.shape(3, 3);
 
-  DRT::UTILS::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
+  CORE::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
   return;
 }
 
 //! specialization for 2D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-    CORE::LINALG::SerialDenseMatrix& derivtrafo,
-    const CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
-    const CORE::FE::CellType distype, const int surfaceid)
+void CORE::FE::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::SerialDenseMatrix& derivtrafo, const CORE::FE::IntPointsAndWeights<1>& intpoints,
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 2);
   if (derivtrafo.numRows() != 2 || derivtrafo.numCols() != 2) derivtrafo.shape(2, 2);
 
-  DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
+  CORE::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
   return;
 }
 
 //! specialization for 3D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-    CORE::LINALG::Matrix<3, 3>& derivtrafo,
-    const CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
-    const CORE::FE::CellType distype, const int surfaceid)
+void CORE::FE::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::Matrix<3, 3>& derivtrafo, const CORE::FE::IntPointsAndWeights<2>& intpoints,
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 3);
   derivtrafo.Clear();
 
-  DRT::UTILS::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
+  CORE::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
   return;
 }
 
 //! specialization for 2D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-    CORE::LINALG::Matrix<2, 2>& derivtrafo,
-    const CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
-    const CORE::FE::CellType distype, const int surfaceid)
+void CORE::FE::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::Matrix<2, 2>& derivtrafo, const CORE::FE::IntPointsAndWeights<1>& intpoints,
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 2);
   derivtrafo.Clear();
 
-  DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
+  CORE::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
   return;
 }
 
 //! specializations for GaussPoint quadrature rules
 //! specialization for 3D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-    CORE::LINALG::SerialDenseMatrix& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
+void CORE::FE::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::SerialDenseMatrix& derivtrafo, const CORE::FE::GaussPoints& intpoints,
     const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 3);
   if (derivtrafo.numRows() != 3 || derivtrafo.numCols() != 3) derivtrafo.shape(3, 3);
 
-  DRT::UTILS::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
+  CORE::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;
 }
 
 //! specialization for 2D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-    CORE::LINALG::SerialDenseMatrix& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
+void CORE::FE::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::SerialDenseMatrix& derivtrafo, const CORE::FE::GaussPoints& intpoints,
     const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 2);
   if (derivtrafo.numRows() != 2 || derivtrafo.numCols() != 2) derivtrafo.shape(2, 2);
 
-  DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
+  CORE::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;
 }
 
 //! specialization for 3D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-    CORE::LINALG::Matrix<3, 3>& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
+void CORE::FE::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::Matrix<3, 3>& derivtrafo, const CORE::FE::GaussPoints& intpoints,
     const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 3);
   derivtrafo.Clear();
 
-  DRT::UTILS::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
+  CORE::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;
 }
 
 //! specialization for 2D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-    CORE::LINALG::Matrix<2, 2>& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
+void CORE::FE::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::Matrix<2, 2>& derivtrafo, const CORE::FE::GaussPoints& intpoints,
     const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 2);
   derivtrafo.Clear();
 
-  DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
+  CORE::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;
 }
 
 
-template CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::CalculateParentGPFromFaceElementData<3>(
-    const double* faceele_xi, const BACI::DRT::FaceElement* faceele);
+template CORE::LINALG::Matrix<3, 1> CORE::FE::CalculateParentGPFromFaceElementData<3>(
+    const double* faceele_xi, const DRT::FaceElement* faceele);
 
 BACI_NAMESPACE_CLOSE

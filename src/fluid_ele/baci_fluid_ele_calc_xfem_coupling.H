@@ -412,8 +412,7 @@ namespace DRT
         /// number of nodal dof for master element (coupling master is always a fluid element!)
         static const unsigned master_numdof_ = nsd_ + 1;
         /// number of independent stress-dof
-        static const unsigned numstressdof_ =
-            CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+        static const unsigned numstressdof_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems

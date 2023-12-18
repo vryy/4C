@@ -517,7 +517,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
             uv(0) = -1.0;
             uv(1) = -1.0;
             uv(2) = -1.0;
-            CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
+            CORE::FE::NURBS::nurbs_get_3D_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->Shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -548,7 +548,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
             {
               uv(1) += 2.0 / (numsubdivisions_ - 1);
 
-              CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
+              CORE::FE::NURBS::nurbs_get_3D_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->Shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -570,7 +570,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
               uv(0) = 1.0;
               uv(1) = 1.0;
               uv(2) = 1.0;
-              CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
+              CORE::FE::NURBS::nurbs_get_3D_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->Shape());
               for (int isd = 0; isd < 3; ++isd)
               {

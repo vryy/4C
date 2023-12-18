@@ -20,7 +20,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   /*!
    \brief helper holding the parameters, which we need to know, to construct a polynomial space
@@ -626,27 +626,27 @@ namespace CORE::DRT::UTILS
    public:
     PolynomialSpace(
         const CORE::FE::CellType distype, const unsigned int degree, const bool completeSpace)
-        : polyspace_((CORE::DRT::UTILS::getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1)
-                         ? static_cast<CORE::DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                               new DRT::UTILS::LagrangeBasisTet<nsd_>(degree))
-                     : completeSpace ? static_cast<CORE::DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                                           new DRT::UTILS::LegendreBasis<nsd_>(degree))
-                                     : static_cast<CORE::DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                                           new DRT::UTILS::LagrangeBasis<nsd_>(degree)))
+        : polyspace_((CORE::FE::getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1)
+                         ? static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
+                               new CORE::FE::LagrangeBasisTet<nsd_>(degree))
+                     : completeSpace ? static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
+                                           new CORE::FE::LegendreBasis<nsd_>(degree))
+                                     : static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
+                                           new CORE::FE::LagrangeBasis<nsd_>(degree)))
     {
-      if (nsd_ != CORE::DRT::UTILS::getDimension(distype))
+      if (nsd_ != CORE::FE::getDimension(distype))
         dserror("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
     }
 
     PolynomialSpace(PolynomialSpaceParams params)
-        : polyspace_(
-              (CORE::DRT::UTILS::getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1)
-                  ? static_cast<CORE::DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                        new DRT::UTILS::LagrangeBasisTet<nsd_>(params.degree_))
-              : params.completeSpace_ ? static_cast<CORE::DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                                            new DRT::UTILS::LegendreBasis<nsd_>(params.degree_))
-                                      : static_cast<CORE::DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
-                                            new DRT::UTILS::LagrangeBasis<nsd_>(params.degree_)))
+        : polyspace_((CORE::FE::getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1)
+                         ? static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
+                               new CORE::FE::LagrangeBasisTet<nsd_>(params.degree_))
+                     : params.completeSpace_
+                         ? static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
+                               new CORE::FE::LegendreBasis<nsd_>(params.degree_))
+                         : static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
+                               new CORE::FE::LagrangeBasis<nsd_>(params.degree_)))
     {
     }
 
@@ -729,8 +729,8 @@ namespace CORE::DRT::UTILS
   inline int getBasisSize(
       const CORE::FE::CellType distype, const int degree, const bool completeSpace)
   {
-    const int dim = CORE::DRT::UTILS::getDimension(distype);
-    const int nfaces = CORE::DRT::UTILS::getNumberOfElementFaces(distype);
+    const int dim = CORE::FE::getDimension(distype);
+    const int nfaces = CORE::FE::getNumberOfElementFaces(distype);
     switch (dim)
     {
       case 3:
@@ -754,7 +754,7 @@ namespace CORE::DRT::UTILS
     }
   }
 
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 

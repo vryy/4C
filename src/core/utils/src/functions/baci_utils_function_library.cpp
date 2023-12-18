@@ -70,7 +70,7 @@ namespace
 /*----------------------------------------------------------------------*/
 void CORE::UTILS::AddValidLibraryFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  using namespace BACI::DRT::INPUT;
+  using namespace DRT::INPUT;
 
   LineDefinition fastpolynomial_funct =
       LineDefinition::Builder()

@@ -47,7 +47,7 @@ namespace DRT
 
       int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints) override
+          const CORE::FE::GaussIntegration& intpoints) override
       {
         dserror("Not implemented!");
         return 1;
@@ -55,7 +55,7 @@ namespace DRT
 
       int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-          const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+          const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
         dserror("Not implemented!");
@@ -96,7 +96,7 @@ namespace DRT
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec,
-          const CORE::DRT::UTILS::GaussIntegration&) override
+          const CORE::FE::GaussIntegration&) override
       {
         return ComputeError(ele, params, mat, discretization, lm, elevec);
       }
@@ -154,7 +154,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false) override;
+          const CORE::FE::GaussIntegration& intpoints, bool offdiag = false) override;
 
       int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
@@ -164,7 +164,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
               bintpoints,                                     ///< boundary integration points
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
           Teuchos::ParameterList& params                      ///< parameter list
@@ -182,7 +182,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+          const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override
       {
         dserror("Not implemented!");
@@ -194,11 +194,10 @@ namespace DRT
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::vector<CORE::DRT::UTILS::GaussIntegration>&
-              intpoints,  ///< element gauss points
+          const std::vector<CORE::FE::GaussIntegration>& intpoints,  ///< element gauss points
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
@@ -224,7 +223,7 @@ namespace DRT
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
           Teuchos::ParameterList& params,                     ///< parameter list
@@ -245,7 +244,7 @@ namespace DRT
 
       void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints) override
+          const CORE::FE::GaussIntegration& intpoints) override
       {
         dserror("Not implemented!");
         return;
@@ -290,8 +289,8 @@ namespace DRT
         static const unsigned int nfaces_ = FluidEleCalcHDG<distype>::nfaces_;
 
         LocalSolver(const DRT::ELEMENTS::Fluid* ele,
-            const CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
-            CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly);
+            const CORE::FE::ShapeValues<distype>& shapeValues,
+            CORE::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly);
 
         void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
             const std::vector<double>& valnp, const std::vector<double>& accel,
@@ -342,8 +341,8 @@ namespace DRT
         // closest to each other. I.e. the blocks are in 2D for g_00, g_01, g_10, g_11, v_0, v_1, p
         // and similarly for 3D
 
-        const CORE::DRT::UTILS::ShapeValues<distype>& shapes_;    /// evaluated shape values
-        CORE::DRT::UTILS::ShapeValuesFace<distype>& shapesface_;  /// evaluated shape values
+        const CORE::FE::ShapeValues<distype>& shapes_;    /// evaluated shape values
+        CORE::FE::ShapeValuesFace<distype>& shapesface_;  /// evaluated shape values
 
         double stabilization[nfaces_];  /// stabilization parameters
 
@@ -420,8 +419,8 @@ namespace DRT
           CORE::LINALG::Matrix<nsd_, nsd_>& grad, double& p) const;
 
       /// local data object
-      Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
-      Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+      Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes_;
+      Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> shapesface_;
 
       /// local solver object
       Teuchos::RCP<LocalSolver> localSolver_;

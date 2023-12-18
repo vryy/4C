@@ -151,17 +151,17 @@ DRT::Element* DRT::ELEMENTS::SolidPoro::Clone() const
 
 int DRT::ELEMENTS::SolidPoro::NumLine() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementLines(celltype_);
+  return CORE::FE::getNumberOfElementLines(celltype_);
 }
 
 int DRT::ELEMENTS::SolidPoro::NumSurface() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementSurfaces(celltype_);
+  return CORE::FE::getNumberOfElementSurfaces(celltype_);
 }
 
 int DRT::ELEMENTS::SolidPoro::NumVolume() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementVolumes(celltype_);
+  return CORE::FE::getNumberOfElementVolumes(celltype_);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Lines()

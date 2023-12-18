@@ -42,8 +42,8 @@ CORE::ADAPTER::Coupling::Coupling()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupConditionCoupling(const BACI::DRT::Discretization& masterdis,
-    Teuchos::RCP<const Epetra_Map> mastercondmap, const BACI::DRT::Discretization& slavedis,
+void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
+    Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
     Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname,
     const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, bool matchall,
     const int nds_master, const int nds_slave)
@@ -54,9 +54,9 @@ void CORE::ADAPTER::Coupling::SetupConditionCoupling(const BACI::DRT::Discretiza
     dserror("Received %d master DOFs, but %d slave DOFs", numdof, numdof_slave);
 
   std::vector<int> masternodes;
-  BACI::DRT::UTILS::FindConditionedNodes(masterdis, condname, masternodes);
+  DRT::UTILS::FindConditionedNodes(masterdis, condname, masternodes);
   std::vector<int> slavenodes;
-  BACI::DRT::UTILS::FindConditionedNodes(slavedis, condname, slavenodes);
+  DRT::UTILS::FindConditionedNodes(slavedis, condname, slavenodes);
 
   int localmastercount = static_cast<int>(masternodes.size());
   int mastercount;
@@ -102,8 +102,8 @@ void CORE::ADAPTER::Coupling::SetupConditionCoupling(const BACI::DRT::Discretiza
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupConditionCoupling(const BACI::DRT::Discretization& masterdis,
-    Teuchos::RCP<const Epetra_Map> mastercondmap, const BACI::DRT::Discretization& slavedis,
+void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
+    Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
     Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname, const int numdof,
     bool matchall, const int nds_master, const int nds_slave)
 {
@@ -114,8 +114,8 @@ void CORE::ADAPTER::Coupling::SetupConditionCoupling(const BACI::DRT::Discretiza
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& masterdis,
-    const BACI::DRT::Discretization& slavedis, const std::vector<int>& masternodes,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, const std::vector<int>& masternodes,
     const std::vector<int>& slavenodes, const std::vector<int>& masterdofs,
     const std::vector<int>& slavedofs, const bool matchall, const double tolerance,
     const int nds_master, const int nds_slave)
@@ -142,8 +142,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& mas
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& masterdis,
-    const BACI::DRT::Discretization& slavedis, const std::vector<int>& masternodes,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, const std::vector<int>& masternodes,
     const std::vector<int>& slavenodes, const int numdof, const bool matchall,
     const double tolerance, const int nds_master, const int nds_slave)
 {
@@ -154,19 +154,19 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& mas
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::ADAPTER::Coupling::SetupConstrainedConditionCoupling(
-    const BACI::DRT::Discretization& masterdis, Teuchos::RCP<const Epetra_Map> mastercondmap,
-    const BACI::DRT::Discretization& slavedis, Teuchos::RCP<const Epetra_Map> slavecondmap,
+    const DRT::Discretization& masterdis, Teuchos::RCP<const Epetra_Map> mastercondmap,
+    const DRT::Discretization& slavedis, Teuchos::RCP<const Epetra_Map> slavecondmap,
     const std::string& condname1, const std::string& condname2, const int numdof, bool matchall)
 {
   std::vector<int> masternodes1;
-  BACI::DRT::UTILS::FindConditionedNodes(masterdis, condname1, masternodes1);
+  DRT::UTILS::FindConditionedNodes(masterdis, condname1, masternodes1);
   std::vector<int> slavenodes1;
-  BACI::DRT::UTILS::FindConditionedNodes(slavedis, condname1, slavenodes1);
+  DRT::UTILS::FindConditionedNodes(slavedis, condname1, slavenodes1);
 
   std::set<int> masternodes2;
-  BACI::DRT::UTILS::FindConditionedNodes(masterdis, condname2, masternodes2);
+  DRT::UTILS::FindConditionedNodes(masterdis, condname2, masternodes2);
   std::set<int> slavenodes2;
-  BACI::DRT::UTILS::FindConditionedNodes(slavedis, condname2, slavenodes2);
+  DRT::UTILS::FindConditionedNodes(slavedis, condname2, slavenodes2);
 
   // now find all those elements of slavenodes1 and masternodes1 that
   // do not belong to slavenodes2 and masternodes2 at the same time
@@ -240,8 +240,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(Teuchos::RCP<const Epetra_Map> slave
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& masterdis,
-    const BACI::DRT::Discretization& slavedis, const Epetra_Map& masternodes,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, const Epetra_Map& masternodes,
     const Epetra_Map& slavenodes, const int numdof, const bool matchall, const double tolerance,
     const int nds_master, const int nds_slave)
 {
@@ -274,8 +274,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& mas
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& masterdis,
-    const BACI::DRT::Discretization& slavedis, const Epetra_Map& masternodemap,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, const Epetra_Map& masternodemap,
     const Epetra_Map& slavenodemap, const Epetra_Map& permslavenodemap, const int numdof)
 {
   if (masternodemap.NumGlobalElements() != slavenodemap.NumGlobalElements())
@@ -298,7 +298,7 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& mas
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::ADAPTER::Coupling::SetupCoupling(
-    const BACI::DRT::Discretization& masterdis, const BACI::DRT::Discretization& slavedis)
+    const DRT::Discretization& masterdis, const DRT::Discretization& slavedis)
 {
   // safety check
   if (masterdis.DofRowMap()->NumGlobalElements() != slavedis.DofRowMap()->NumGlobalElements())
@@ -318,8 +318,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& masterdis,
-    const BACI::DRT::Discretization& slavedis, const std::vector<std::vector<int>>& masternodes_vec,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, const std::vector<std::vector<int>>& masternodes_vec,
     const std::vector<std::vector<int>>& slavenodes_vec, const int numdof, const bool matchall,
     const double tolerance, const int nds_master, const int nds_slave)
 {
@@ -359,8 +359,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const BACI::DRT::Discretization& mas
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::MatchNodes(const BACI::DRT::Discretization& masterdis,
-    const BACI::DRT::Discretization& slavedis, std::vector<int>& masternodes,
+void CORE::ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, std::vector<int>& masternodes,
     std::vector<int>& permslavenodes, const std::vector<int>& slavenodes, const bool matchall,
     const double tolerance)
 {
@@ -402,8 +402,8 @@ void CORE::ADAPTER::Coupling::MatchNodes(const BACI::DRT::Discretization& master
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::FinishCoupling(const BACI::DRT::Discretization& masterdis,
-    const BACI::DRT::Discretization& slavedis, Teuchos::RCP<Epetra_Map> masternodemap,
+void CORE::ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, Teuchos::RCP<Epetra_Map> masternodemap,
     Teuchos::RCP<Epetra_Map> slavenodemap, Teuchos::RCP<Epetra_Map> permslavenodemap,
     const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, const int nds_master,
     const int nds_slave)
@@ -442,8 +442,8 @@ void CORE::ADAPTER::Coupling::FinishCoupling(const BACI::DRT::Discretization& ma
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::BuildDofMaps(const BACI::DRT::Discretization& masterdis,
-    const BACI::DRT::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
+void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
@@ -474,7 +474,7 @@ std::vector<int> CORE::ADAPTER::Coupling::BuildDofVectorFromNumDof(const int num
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::BuildDofMaps(const BACI::DRT::Discretization& dis,
+void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
     Teuchos::RCP<const Epetra_Map> nodemap, Teuchos::RCP<const Epetra_Map> permnodemap,
     Teuchos::RCP<const Epetra_Map>& dofmap, Teuchos::RCP<const Epetra_Map>& permdofmap,
     Teuchos::RCP<Epetra_Export>& exporter, const std::vector<int>& coupled_dofs,
@@ -490,13 +490,13 @@ void CORE::ADAPTER::Coupling::BuildDofMaps(const BACI::DRT::Discretization& dis,
 
   for (int i = 0; i < numnode; ++i)
   {
-    const BACI::DRT::Node* actnode = dis.gNode(nodes[i]);
+    const DRT::Node* actnode = dis.gNode(nodes[i]);
 
     // ----------------------------------------------------------------
     // get all periodic boundary conditions on this node
     // slave nodes do not contribute dofs, we skip them
     // ----------------------------------------------------------------
-    std::vector<BACI::DRT::Condition*> thiscond;
+    std::vector<DRT::Condition*> thiscond;
     actnode->GetCondition("SurfacePeriodic", thiscond);
 
     if (thiscond.empty())

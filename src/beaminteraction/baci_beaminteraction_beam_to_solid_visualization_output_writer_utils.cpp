@@ -26,7 +26,7 @@ BACI_NAMESPACE_OPEN
  */
 void BEAMINTERACTION::AddBeamInteractionNodalForces(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
-    const Teuchos::RCP<const BACI::DRT::Discretization>& discret_ptr,
+    const Teuchos::RCP<const DRT::Discretization>& discret_ptr,
     const Teuchos::RCP<const Epetra_MultiVector>& displacement,
     const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids)
 {
@@ -106,7 +106,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       // Set the element parameter coordinates.
       CORE::LINALG::Matrix<2, 1, double> xi(true);
       CORE::LINALG::SerialDenseMatrix nodal_coordinates =
-          CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+          CORE::FE::getEleNodeNumbering_nodes_paramspace(
               face_element_iterator.second->GetDrtFaceElement()->Shape());
 
       // Loop over element nodes.
@@ -142,7 +142,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
 /**
  *
  */
-void BEAMINTERACTION::GetGlobalCouplingForceResultants(const BACI::DRT::Discretization& discret,
+void BEAMINTERACTION::GetGlobalCouplingForceResultants(const DRT::Discretization& discret,
     const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
     CORE::LINALG::Matrix<3, 2, double>& beam_resultant,
     CORE::LINALG::Matrix<3, 2, double>& solid_resultant)

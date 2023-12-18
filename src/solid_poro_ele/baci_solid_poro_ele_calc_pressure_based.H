@@ -60,7 +60,7 @@ namespace DRT
       static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
       static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
-      CORE::DRT::UTILS::GaussIntegration gauss_integration_;
+      CORE::FE::GaussIntegration gauss_integration_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

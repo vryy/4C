@@ -310,7 +310,7 @@ std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
   const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOTET4, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
-  CORE::DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
+  CORE::FE::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
   CORE::LINALG::Matrix<1, NUMDIM_SOTET4> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

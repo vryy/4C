@@ -69,8 +69,8 @@ namespace DRT
       So3_Scatra& operator=(const So3_Scatra& old) = delete;
       //@}
 
-      // static const CORE::DRT::UTILS::GaussIntegration intpoints_ =
-      // CORE::DRT::UTILS::GaussIntegration(distype);
+      // static const CORE::FE::GaussIntegration intpoints_ =
+      // CORE::FE::GaussIntegration(distype);
 
 
       //! number of element nodes (
@@ -340,7 +340,7 @@ namespace DRT
       };
 
       // integration points
-      const CORE::DRT::UTILS::IntegrationPoints3D intpoints_;
+      const CORE::FE::IntegrationPoints3D intpoints_;
       //! total gauss points per element
       const int numgpt_;
       //! vector of coordinates of current integration point in reference coordinates

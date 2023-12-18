@@ -21,7 +21,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace CORE::DRT::UTILS
+namespace CORE::FE
 {
   namespace
   {
@@ -156,9 +156,9 @@ namespace CORE::DRT::UTILS
     };
 
   }  // namespace
-}  // namespace CORE::DRT::UTILS
+}  // namespace CORE::FE
 
-CORE::DRT::UTILS::GaussIntegration::GaussIntegration(CORE::FE::CellType distype)
+CORE::FE::GaussIntegration::GaussIntegration(CORE::FE::CellType distype)
 {
   switch (distype)
   {
@@ -230,12 +230,12 @@ CORE::DRT::UTILS::GaussIntegration::GaussIntegration(CORE::FE::CellType distype)
   }
 }
 
-CORE::DRT::UTILS::GaussIntegration::GaussIntegration(CORE::FE::CellType distype, int degree)
+CORE::FE::GaussIntegration::GaussIntegration(CORE::FE::CellType distype, int degree)
 {
   gp_ = GaussPointCache::Instance().Create(distype, degree);
 }
 
-CORE::DRT::UTILS::GaussPointCache& CORE::DRT::UTILS::GaussPointCache::Instance()
+CORE::FE::GaussPointCache& CORE::FE::GaussPointCache::Instance()
 {
   static std::unique_ptr<GaussPointCache> instance;
   if (instance == nullptr)
@@ -246,7 +246,7 @@ CORE::DRT::UTILS::GaussPointCache& CORE::DRT::UTILS::GaussPointCache::Instance()
 }
 
 
-Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::DRT::UTILS::GaussPointCache::Create(
+Teuchos::RCP<CORE::FE::GaussPoints> CORE::FE::GaussPointCache::Create(
     CORE::FE::CellType distype, int degree)
 {
   std::map<std::pair<CORE::FE::CellType, int>, Teuchos::RCP<GaussPoints>>::iterator i =

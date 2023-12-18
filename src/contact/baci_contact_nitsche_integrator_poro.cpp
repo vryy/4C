@@ -247,7 +247,7 @@ void CONTACT::CoIntegratorNitschePoro::IntegrateTest(const double fac, MORTAR::M
     {
       for (int d = 0; d < Dim(); ++d)
       {
-        row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
                 ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
             d] -= fac * jac * wgt * test_dir(d) * p.second * shape(s);
@@ -278,7 +278,7 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac,
   double srelveln = 0;
   for (int j = 0; j < ele.NumNode(); ++j)
   {
-    int pj = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+    int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), j);
     spresgp += ele.MoData().ParentPFPres()[pj] * shape(j);
     for (int d = 0; d < dim; ++d)
@@ -303,7 +303,7 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac,
     oweight = 1 - sweight;
     for (int j = 0; j < otherele.NumNode(); ++j)
     {
-      int pj = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
           otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
       opresgp += otherele.MoData().ParentPFPres()[pj] * othershape(j);
     }
@@ -312,11 +312,11 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac,
   double val = fac * jac * wgt / dv_dd_;  //*1./dv_dd_;
   for (int i = 0; i < ele.NumNode(); ++i)
   {
-    int pi = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+    int pi = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), i);
     for (int j = 0; j < ele.NumNode(); ++j)
     {
-      int pj = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
           ele.ParentElement()->Shape(), ele.FaceParentNumber(), j);
       for (int d = 0; d < dim; ++d)
       {
@@ -367,11 +367,11 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac,
   {
     for (int i = 0; i < ele.NumNode(); ++i)
     {
-      int pi = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      int pi = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
           ele.ParentElement()->Shape(), ele.FaceParentNumber(), i);
       for (int j = 0; j < otherele.NumNode(); ++j)
       {
-        int pj = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
             otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
         for (int d = 0; d < dim; ++d)
         {
@@ -415,7 +415,7 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac,
     }
     for (int j = 0; j < otherele.NumNode(); ++j)
     {
-      int pj = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
           otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
       for (auto& dJit : sJLin)
       {
@@ -449,7 +449,7 @@ bool CONTACT::CoIntegratorNitschePoro::GetPoroPressure(MORTAR::MortarElement& el
   {
     for (int j = 0; j < ele.NumNode(); ++j)
     {
-      int pj = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
           ele.ParentElement()->Shape(), ele.FaceParentNumber(), j);
       poropressure += w1 * ele.MoData().ParentPFPres()[pj] * shape(j);
     }
@@ -459,7 +459,7 @@ bool CONTACT::CoIntegratorNitschePoro::GetPoroPressure(MORTAR::MortarElement& el
   {
     for (int j = 0; j < otherele.NumNode(); ++j)
     {
-      int pj = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
           otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
       poropressure += w2 * otherele.MoData().ParentPFPres()[pj] * othershape(j);
     }

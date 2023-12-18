@@ -99,7 +99,7 @@ namespace DRT
       int NumDofPerNode(const DRT::Node& node) const override
       {
         // number of Dof's is fluid-specific.
-        const int nsd = CORE::DRT::UTILS::getDimension(distype_);
+        const int nsd = CORE::FE::getDimension(distype_);
         if (nsd > 1)
           return 2 * nsd + 2;  // The enrichment dofs have to be a multiple of the usual dofs for
                                // the nullspace

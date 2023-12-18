@@ -330,7 +330,7 @@ namespace DRT
     {
       // Reserve nodeids for this element type
       std::vector<int> nodeids(
-          CORE::DRT::UTILS::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
+          CORE::FE::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
 
       // current element position
       const size_t ex = 2 * (eleid % interval[0]);
@@ -400,7 +400,7 @@ namespace DRT
     {
       // Reserve nodeids for this element type
       std::vector<int> nodeids(
-          CORE::DRT::UTILS::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
+          CORE::FE::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
 
       // HEX-equivalent element
       int hex_equiv_eleid = int(eleid / 2);

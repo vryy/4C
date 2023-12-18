@@ -874,11 +874,11 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
               node->Id());
         }
 
-        const bool nurbs = CORE::DRT::UTILS::IsNurbsDisType(node->Elements()[0]->Shape());
+        const bool nurbs = CORE::FE::IsNurbsDisType(node->Elements()[0]->Shape());
         for (unsigned elid = 0; elid < static_cast<unsigned>(node->NumElement()); ++elid)
         {
           const DRT::Element* adj_ele = node->Elements()[elid];
-          if (nurbs != CORE::DRT::UTILS::IsNurbsDisType(adj_ele->Shape()))
+          if (nurbs != CORE::FE::IsNurbsDisType(adj_ele->Shape()))
           {
             dserror(
                 "There are NURBS and non-NURBS adjacent elements to this "
@@ -1070,13 +1070,12 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       Comm().SumAll(&lsize, &gsize, 1);
 
       bool nurbs = false;
-      if (currele.size() > 0)
-        nurbs = CORE::DRT::UTILS::IsNurbsDisType(currele.begin()->second->Shape());
+      if (currele.size() > 0) nurbs = CORE::FE::IsNurbsDisType(currele.begin()->second->Shape());
 
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<DRT::Element> ele = fool->second;
-        if (CORE::DRT::UTILS::IsNurbsDisType(ele->Shape()) != nurbs)
+        if (CORE::FE::IsNurbsDisType(ele->Shape()) != nurbs)
         {
           dserror(
               "All elements of one interface side (i.e. slave or master) "

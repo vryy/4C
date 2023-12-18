@@ -43,7 +43,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -162,7 +162,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
         {
           // Get the local coordinate of this node.
-          xi_mortar_node = CORE::DRT::UTILS::GetNodeCoordinates(i_node, mortar::discretization_);
+          xi_mortar_node = CORE::FE::GetNodeCoordinates(i_node, mortar::discretization_);
 
           // Get position and displacement of the mortar node.
           GEOMETRYPAIR::EvaluatePosition<beam>(

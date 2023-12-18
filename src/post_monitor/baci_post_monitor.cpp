@@ -876,9 +876,8 @@ void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, 
   Epetra_MultiVector nodal_stress(*dis->NodeRowMap(), 6, true);
 
   dis->Evaluate(
-      [&](DRT::Element& ele)
-      {
-        CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+      [&](DRT::Element& ele) {
+        CORE::FE::ExtrapolateGaussPointQuantityToNodes(
             ele, *data->at(ele.Id()), *dis, nodal_stress);
       });
 

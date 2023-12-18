@@ -248,7 +248,7 @@ namespace DRT
       int numdofpernode_;
 
       //! gaussian integration to be used
-      CORE::DRT::UTILS::GaussRule2D gaussrule_;
+      CORE::FE::GaussRule2D gaussrule_;
 
       /*!
       \brief Evaluate a Neumann boundary condition

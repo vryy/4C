@@ -23,18 +23,18 @@ BACI_NAMESPACE_OPEN
  |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
-void CORE::GEO::checkGeoType(const BACI::DRT::Element* element,
+void CORE::GEO::checkGeoType(const DRT::Element* element,
     const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
 {
   bool cartesian = true;
   int CartesianCount = 0;
   const int dimCoord = 3;
   const CORE::FE::CellType distype = element->Shape();
-  const int eleDim = CORE::DRT::UTILS::getDimension(distype);
+  const int eleDim = CORE::FE::getDimension(distype);
 
-  if (CORE::DRT::UTILS::getOrder(distype) == 1)
+  if (CORE::FE::getOrder(distype) == 1)
     eleGeoType = LINEAR;
-  else if (CORE::DRT::UTILS::getOrder(distype) == 2)
+  else if (CORE::FE::getOrder(distype) == 2)
     eleGeoType = HIGHERORDER;
   else
     dserror("order of element shapefuntion is not correct");
@@ -43,13 +43,13 @@ void CORE::GEO::checkGeoType(const BACI::DRT::Element* element,
   if (eleDim == 3)
   {
     const std::vector<std::vector<int>> eleNodeNumbering =
-        CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-    std::vector<Teuchos::RCP<BACI::DRT::Element>> surfaces =
-        (const_cast<BACI::DRT::Element*>(element))->Surfaces();
+        CORE::FE::getEleNodeNumberingSurfaces(distype);
+    std::vector<Teuchos::RCP<DRT::Element>> surfaces =
+        (const_cast<DRT::Element*>(element))->Surfaces();
     for (int i = 0; i < element->NumSurface(); i++)
     {
       CartesianCount = 0;
-      const BACI::DRT::Element* surfaceP = surfaces[i].get();
+      const DRT::Element* surfaceP = surfaces[i].get();
 
       for (int k = 0; k < dimCoord; k++)
       {
@@ -103,14 +103,14 @@ void CORE::GEO::checkGeoType(const BACI::DRT::Element* element,
  | discretization                                                       |
  *----------------------------------------------------------------------*/
 std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
-    const BACI::DRT::Discretization& dis,
+    const DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
   std::map<int, CORE::LINALG::Matrix<3, 2>> currentXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j = 0; j < dis.NumMyColElements(); ++j)
   {
-    const BACI::DRT::Element* element = dis.lColElement(j);
+    const DRT::Element* element = dis.lColElement(j);
     const CORE::LINALG::SerialDenseMatrix xyze_element(
         CORE::GEO::getCurrentNodalPositions(element, currentpositions));
     CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);

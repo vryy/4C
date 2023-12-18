@@ -436,8 +436,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
     CORE::FE::CellType distype = Shape();
 
     // Get integrationpoints for exact integration
-    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-        CORE::DRT::UTILS::IntegrationPoints1D(mygaussruleeb);
+    CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(mygaussruleeb);
 
     Tref_.resize(gausspoints.nquad);
 
@@ -469,7 +468,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
       // instead of Hermite polynomials used to calculate the reference geometry. Since the
       // reference geometry for this beam element must always be a straight line there is no
       // difference between theses to types of interpolation functions.
-      CORE::DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
+      CORE::FE::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
 
       Tref_[numgp].Clear();
 

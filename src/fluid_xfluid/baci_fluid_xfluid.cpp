@@ -876,7 +876,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
     {
       std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
-      std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>> intpoints_sets;
+      std::vector<std::vector<CORE::FE::GaussIntegration>> intpoints_sets;
 
       bool has_xfem_integration_rule =
           e->GetCellSets_DofSets_GaussPoints(cell_sets, nds_sets, intpoints_sets, include_inner_);
@@ -1018,7 +1018,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         {
           std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells =
               coupling_bcells[coupl_idx];
-          std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> bintpoints;
+          std::map<int, std::vector<CORE::FE::GaussIntegration>> bintpoints;
 
           // for each side that is involved in the cut for this element,
           // the coupling matrices C_fs_, C_sf_ and the rhs_s has to be built
@@ -1388,7 +1388,7 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
     {
       std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
-      std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>> intpoints_sets;
+      std::vector<std::vector<CORE::FE::GaussIntegration>> intpoints_sets;
 
       bool has_xfem_integration_rule = e->GetCellSets_DofSets_GaussPoints(
           cell_sets, nds_sets, intpoints_sets, false);  //(include_inner=false)
@@ -1974,7 +1974,7 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
     {
       std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
-      std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>> intpoints_sets;
+      std::vector<std::vector<CORE::FE::GaussIntegration>> intpoints_sets;
 
       bool has_xfem_integration_rule = e->GetCellSets_DofSets_GaussPoints(
           cell_sets, nds_sets, intpoints_sets, false);  //(include_inner=false)
@@ -2000,7 +2000,7 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
         // maps of sid and corresponding boundary cells ( for quadratic elements: collected via
         // volumecells of subelements)
         std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>> bcells;
-        std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> bintpoints;
+        std::map<int, std::vector<CORE::FE::GaussIntegration>> bintpoints;
 
         for (CORE::GEO::CUT::plain_volumecell_set::iterator i = cells.begin(); i != cells.end();
              ++i)

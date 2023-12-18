@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  * basic CUT parallel constructor                                                    schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Parallel::Parallel(const Teuchos::RCP<BACI::DRT::Discretization>& discret,
+CORE::GEO::CUT::Parallel::Parallel(const Teuchos::RCP<DRT::Discretization>& discret,
     CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::ParentIntersection& parentintersection)
     : discret_(discret),
       myrank_(discret_->Comm().MyPID()),
@@ -623,7 +623,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
 
         if (haveGlobalNode)
         {
-          BACI::DRT::Node* node = discret_->gNode(nid);
+          DRT::Node* node = discret_->gNode(nid);
 
           if (node->Owner() == myrank_)
           {
@@ -674,7 +674,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
         if (haveGlobalNode)  // node on this proc available as row or col node
         {
           // std::cout << "in haveGlobalNode for node " << nid << std::endl;
-          BACI::DRT::Node* node = discret_->gNode(nid);
+          DRT::Node* node = discret_->gNode(nid);
           if (node->Owner() == myrank_)
           {
             int new_dofset_number = -1;
@@ -1254,7 +1254,7 @@ void CORE::GEO::CUT::Parallel::printDofSetData()
  *------------------------------------------------------------------------------------------------*/
 int CORE::GEO::CUT::Parallel::getDofSetVecIndex(int nid, int eid)
 {
-  BACI::DRT::Element* ele = discret_->gElement(eid);
+  DRT::Element* ele = discret_->gElement(eid);
 
   if (ele == nullptr) dserror("element %d not available on proc %d", eid, myrank_);
 

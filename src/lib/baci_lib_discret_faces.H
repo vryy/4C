@@ -33,7 +33,7 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  class DiscretizationFaces : public BACI::DRT::Discretization
+  class DiscretizationFaces : public DRT::Discretization
   {
    public:
     /*!

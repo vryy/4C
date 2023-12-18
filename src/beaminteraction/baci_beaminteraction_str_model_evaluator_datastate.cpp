@@ -64,7 +64,7 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Init()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
-    Teuchos::RCP<const BACI::DRT::Discretization> const& ia_discret)
+    Teuchos::RCP<const DRT::Discretization> const& ia_discret)
 {
   // safety check
   CheckInit();

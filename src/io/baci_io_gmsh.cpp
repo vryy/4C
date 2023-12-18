@@ -210,7 +210,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     const DRT::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    const int nsd = CORE::DRT::UTILS::getDimension(distype);
+    const int nsd = CORE::FE::getDimension(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
@@ -275,7 +275,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
     const DRT::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    const int nsd = CORE::DRT::UTILS::getDimension(distype);
+    const int nsd = CORE::FE::getDimension(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
@@ -396,7 +396,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
     const DRT::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    const int nsd = CORE::DRT::UTILS::getDimension(distype);
+    const int nsd = CORE::FE::getDimension(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
@@ -487,7 +487,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
     const DRT::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = ele->NumNode();
-    const int nsd = CORE::DRT::UTILS::getDimension(distype);
+    const int nsd = CORE::FE::getDimension(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 

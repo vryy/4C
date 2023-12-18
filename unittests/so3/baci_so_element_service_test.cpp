@@ -82,12 +82,12 @@ namespace
     constexpr CORE::FE::CellType distype = CORE::FE::CellType::hex8;
     constexpr int nsd = 3;
 
-    CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints(
+    CORE::FE::IntPointsAndWeights<nsd> intpoints(
         DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // format as DRT::UTILS::GaussIntegration
-    Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> gp =
-        Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints);
+    Teuchos::RCP<CORE::FE::CollectedGaussPoints> gp =
+        Teuchos::rcp(new CORE::FE::CollectedGaussPoints);
 
     std::array<double, nsd> xi{};
     for (int i = 0; i < intpoints.IP().nquad; ++i)
@@ -97,9 +97,9 @@ namespace
     }
 
     // save default integration rule
-    CORE::DRT::UTILS::GaussIntegration integration(gp);
+    CORE::FE::GaussIntegration integration(gp);
     CORE::LINALG::SerialDenseMatrix m =
-        CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration);
+        CORE::FE::EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration);
   }
 
 }  // namespace

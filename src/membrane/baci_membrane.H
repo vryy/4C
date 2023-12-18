@@ -445,7 +445,7 @@ namespace DRT
       DimensionalReduction planetype_;
 
      protected:
-      CORE::DRT::UTILS::IntegrationPoints2D intpoints_;
+      CORE::FE::IntegrationPoints2D intpoints_;
 
      private:
       // internal calculation methods
@@ -610,7 +610,7 @@ namespace DRT
 
       //! number of nodes per line
       static const int numnod_line_ =
-          CORE::FE::num_nodes<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape>;
+          CORE::FE::num_nodes<CORE::FE::DisTypeToFaceShapeType<distype2>::shape>;
 
       static const int noddof_ = 3;
 
@@ -631,7 +631,7 @@ namespace DRT
       */
       int UniqueParObjectId() const override
       {
-        switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
+        switch (CORE::FE::DisTypeToFaceShapeType<distype2>::shape)
         {
           case CORE::FE::CellType::line2:
           {
@@ -719,7 +719,7 @@ namespace DRT
 
       DRT::ElementType& ElementType() const override
       {
-        switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
+        switch (CORE::FE::DisTypeToFaceShapeType<distype2>::shape)
         {
           case CORE::FE::CellType::line2:
           {
@@ -765,7 +765,7 @@ namespace DRT
       // don't want = operator
       MembraneLine<distype2>& operator=(const MembraneLine<distype2>& old);
 
-      CORE::DRT::UTILS::IntegrationPoints1D intpointsline_;
+      CORE::FE::IntegrationPoints1D intpointsline_;
 
     };  // class MembraneLine
 

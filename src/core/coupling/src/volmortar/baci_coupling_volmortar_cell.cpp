@@ -64,7 +64,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
   const double s = xi[1];
   const double t = xi[2];
 
-  CORE::DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, CORE::FE::CellType::hex8);
+  CORE::FE::shape_function_3D_deriv1(derivs, r, s, t, CORE::FE::CellType::hex8);
 
 
   CORE::LINALG::Matrix<8, 3> xrefe;
@@ -101,7 +101,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
     CORE::LINALG::Matrix<n, 1> val;
-    CORE::DRT::UTILS::shape_function_3D(val, local[0], local[1], local[2], shape_);
+    CORE::FE::shape_function_3D(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
     {
@@ -124,7 +124,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
     CORE::LINALG::Matrix<n, 1> val;
-    CORE::DRT::UTILS::shape_function_3D(val, local[0], local[1], local[2], shape_);
+    CORE::FE::shape_function_3D(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
     {

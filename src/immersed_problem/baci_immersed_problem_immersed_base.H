@@ -1255,8 +1255,7 @@ namespace IMMERSED
     static const int fluid_dim = CORE::FE::dim<fluiddistype>;
 
     // get integration rule of structural surface element
-    const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
-        CORE::DRT::UTILS::GaussRule2D::quad_36point);
+    const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::quad_36point);
 
     // initialize structural shape functions matrix
     CORE::LINALG::Matrix<4, 1> shapefcts(true);
@@ -1455,8 +1454,7 @@ namespace IMMERSED
                     stored_dist = dist;
 
                     // evaluate shape functions of structure dis at gp
-                    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::quad4>(
-                        struct_xi, shapefcts);
+                    CORE::FE::shape_function<CORE::FE::CellType::quad4>(struct_xi, shapefcts);
                     CORE::LINALG::Matrix<4, 3> myvelocitynp(true);
                     for (int node = 0; node < 4; ++node)
                       for (int dim = 0; dim < 3; ++dim)

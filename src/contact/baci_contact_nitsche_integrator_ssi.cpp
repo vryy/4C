@@ -287,7 +287,7 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateTest(const double fac, MORTAR::Mo
     {
       for (int d = 0; d < dim; ++d)
       {
-        row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
                 ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
             d] -= fac * jac * wgt * d_testval_ds.second * normal(d) * shape(s);
@@ -308,9 +308,8 @@ void CONTACT::CoIntegratorNitscheSsi::SetupGpConcentrations(MORTAR::MortarElemen
 {
   CORE::LINALG::SerialDenseVector ele_conc(shape_func.length());
   for (int i = 0; i < ele.NumNode(); ++i)
-    ele_conc(i) =
-        ele.MoData().ParentScalar().at(CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-            ele.ParentElement()->Shape(), ele.FaceParentNumber(), i));
+    ele_conc(i) = ele.MoData().ParentScalar().at(CORE::FE::getParentNodeNumberFromFaceNodeNumber(
+        ele.ParentElement()->Shape(), ele.FaceParentNumber(), i));
 
   // calculate gp concentration
   gp_conc = shape_func.dot(ele_conc);
@@ -319,9 +318,8 @@ void CONTACT::CoIntegratorNitscheSsi::SetupGpConcentrations(MORTAR::MortarElemen
   d_conc_dc.resize(shape_func.length());
   d_conc_dc.clear();
   for (int i = 0; i < ele.NumNode(); ++i)
-    d_conc_dc[ele.MoData().ParentScalarDof().at(
-        CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-            ele.ParentElement()->Shape(), ele.FaceParentNumber(), i))] = shape_func(i);
+    d_conc_dc[ele.MoData().ParentScalarDof().at(CORE::FE::getParentNodeNumberFromFaceNodeNumber(
+        ele.ParentElement()->Shape(), ele.FaceParentNumber(), i))] = shape_func(i);
 
   // calculate derivative of concentration w.r.t. displacements
   std::size_t deriv_size = 0;
@@ -430,7 +428,7 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
 
   for (int s = 0; s < ele.NumNode(); ++s)
   {
-    *(ele.GetNitscheContainer().RhsS(CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+    *(ele.GetNitscheContainer().RhsS(CORE::FE::getParentNodeNumberFromFaceNodeNumber(
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), s))) +=
         time_fac_rhs * val * shape_func(s);
   }
@@ -440,7 +438,7 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
     double* row = ele.GetNitscheContainer().Kss(d_testval_ds.first);
     for (int s = 0; s < ele.NumNode(); ++s)
     {
-      row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
           ele.ParentElement()->Shape(), ele.FaceParentNumber(), s)] -=
           time_fac * fac * jac * wgt * d_testval_ds.second * shape_func(s);
     }
@@ -456,7 +454,7 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
   {
     double* row = ele.GetNitscheContainer().Ksd(dval_dd.first);
     for (int s = 0; s < ele.NumNode(); ++s)
-      row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
+      row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
           ele.FaceParentNumber(), s)] -= time_fac * dval_dd.second * shape_func(s);
   }
 
@@ -466,7 +464,7 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
     {
       double* row = ele.GetNitscheContainer().Ksd(d_xi_dd_e.first);
       for (int s = 0; s < ele.NumNode(); ++s)
-        row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
+        row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
             ele.FaceParentNumber(), s)] -= time_fac * val * shape_deriv(s, e) * d_xi_dd_e.second;
     }
   }

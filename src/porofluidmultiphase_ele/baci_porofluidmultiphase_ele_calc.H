@@ -76,7 +76,7 @@ namespace DRT
       // 1 component  for nsd=1:  (N,xx)
       // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
       // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-      static const int numderiv2_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! element-type specific flag if second derivatives are needed
       static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::ELEUTILS::Use2ndDerivs<distype>::use;
@@ -116,8 +116,8 @@ namespace DRT
       );
 
       void GaussPointLoop(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          DRT::Element* ele,                                             //!< current element
+          const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
+          DRT::Element* ele,                                      //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate
@@ -126,8 +126,8 @@ namespace DRT
       );
 
       void GaussPointLoopODStruct(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          DRT::Element* ele,                                             //!< current element
+          const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
+          DRT::Element* ele,                                      //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate
@@ -136,8 +136,8 @@ namespace DRT
       );
 
       void GaussPointLoopODScatra(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          DRT::Element* ele,                                             //!< current element
+          const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
+          DRT::Element* ele,                                      //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate
@@ -174,8 +174,8 @@ namespace DRT
 
       //! evaluate shape functions and their derivatives at current integration point
       double EvalShapeFuncAndDerivsAtIntPoint(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-          const int iquad  //!< id of current Gauss point
+          const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+          const int iquad                                        //!< id of current Gauss point
       );
 
       //! evaluate shape functions and their derivatives at current integration point

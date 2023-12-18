@@ -41,7 +41,7 @@ namespace DRT
       static CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1> funct(true);
       static CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>> nodecoords(true);
 
-      CORE::DRT::UTILS::shape_function<distype>(xi, funct);
+      CORE::FE::shape_function<distype>(xi, funct);
 
       const DRT::Node* const* nodes = element->Nodes();
       const int nodedim = nodes[0]->Dim();
@@ -86,7 +86,7 @@ namespace DRT
       static CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>> deriv(true);
       static CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> nodecoords(true);
 
-      CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, deriv);
+      CORE::FE::shape_function_deriv1<distype>(xi, deriv);
 
       const DRT::Node* const* nodes = element->Nodes();
       const int nodedim = nodes[0]->Dim();

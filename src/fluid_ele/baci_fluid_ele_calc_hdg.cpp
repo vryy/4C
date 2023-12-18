@@ -48,7 +48,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::DRT::UTILS::GaussIntegration&,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::FE::GaussIntegration&,
     bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
@@ -65,18 +65,18 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
   {
     usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
     if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new CORE::FE::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * ele->Degree()));
     else if (shapes_->degree_ != unsigned(ele->Degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new CORE::FE::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * ele->Degree()));
 
     if (shapesface_ == Teuchos::null)
     {
-      CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
+      CORE::FE::ShapeValuesFaceParams svfparams(
           ele->Degree(), usescompletepoly_, 2 * ele->Degree());
-      shapesface_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValuesFace<distype>(svfparams));
+      shapesface_ = Teuchos::rcp(new CORE::FE::ShapeValuesFace<distype>(svfparams));
     }
 
     if (localSolver_ == Teuchos::null)
@@ -669,7 +669,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
   CORE::LINALG::SerialDenseMatrix locations =
-      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+      CORE::FE::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
@@ -740,14 +740,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
-      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
+  locations = CORE::FE::getEleNodeNumbering_nodes_paramspace(
+      CORE::FE::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = CORE::FE::getNumberOfFaceElementCornerNodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = CORE::FE::getNumberOfFaceElementInternalNodes(distype);
 
   // Now the vector "matrix_state" contains the trace velocity values following
   // the local id numbers
@@ -769,7 +769,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
-    const int nfn = CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    const int nfn = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     // As already said, the dimension of the coordinate matrix is now nsd_-1
     // times the number of nodes in the face.
@@ -899,7 +899,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
 
     // also save coordinates
     CORE::LINALG::Matrix<nen_, 1> myfunct;
-    CORE::DRT::UTILS::shape_function<distype>(shapes_->xsi, myfunct);
+    CORE::FE::shape_function<distype>(shapes_->xsi, myfunct);
 
     CORE::LINALG::Matrix<nsd_, 1> mypoint(true);
     mypoint.MultiplyNN(xyze, myfunct);
@@ -938,7 +938,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
       }
 #endif
 
-  std::vector<CORE::DRT::UTILS::LagrangePolynomial> poly1d;
+  std::vector<CORE::FE::LagrangePolynomial> poly1d;
   const unsigned int degree = 4;
   std::vector<double> points(degree);
   for (unsigned int i = 0; i <= degree; ++i)
@@ -949,10 +949,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
         points[c] = loc1D[j];
         ++c;
       }
-    poly1d.push_back(CORE::DRT::UTILS::LagrangePolynomial(points, loc1D[i]));
+    poly1d.push_back(CORE::FE::LagrangePolynomial(points, loc1D[i]));
   }
 
-  CORE::DRT::UTILS::PolynomialSpaceTensor<nsd_, CORE::DRT::UTILS::LagrangePolynomial> poly(poly1d);
+  CORE::FE::PolynomialSpaceTensor<nsd_, CORE::FE::LagrangePolynomial> poly(poly1d);
 
 #ifdef DEBUG
   // check if we have the right number of polynomials
@@ -1054,7 +1054,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
       }
 #endif
 
-  std::vector<CORE::DRT::UTILS::LagrangePolynomial> poly1d;
+  std::vector<CORE::FE::LagrangePolynomial> poly1d;
   const unsigned int degree = 4;
   std::vector<double> points(degree);
   for (unsigned int i = 0; i <= degree; ++i)
@@ -1065,10 +1065,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
         points[c] = loc1D[j];
         ++c;
       }
-    poly1d.push_back(CORE::DRT::UTILS::LagrangePolynomial(points, loc1D[i]));
+    poly1d.push_back(CORE::FE::LagrangePolynomial(points, loc1D[i]));
   }
 
-  CORE::DRT::UTILS::PolynomialSpaceTensor<nsd_, CORE::DRT::UTILS::LagrangePolynomial> poly(poly1d);
+  CORE::FE::PolynomialSpaceTensor<nsd_, CORE::FE::LagrangePolynomial> poly(poly1d);
 
   InitializeShapes(ele);
   shapes_->Evaluate(*ele);
@@ -1149,8 +1149,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
 
     CORE::LINALG::Matrix<nsd_, nsd_> trafo;
     CORE::LINALG::SerialDenseMatrix faceQPoints;
-    CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_,
-        distype, CORE::DRT::UTILS::getEleFaceShapeType(distype, face), face);
+    CORE::FE::BoundaryGPToParentGP<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_, distype,
+        CORE::FE::getEleFaceShapeType(distype, face), face);
 
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
@@ -1377,8 +1377,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMEN
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELEMENTS::Fluid* ele,
-    const CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
-    CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
+    const CORE::FE::ShapeValues<distype>& shapeValues,
+    CORE::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
     : ndofs_(shapeValues.ndofs_),
       stokes(false),
       weaklycompressible(false),

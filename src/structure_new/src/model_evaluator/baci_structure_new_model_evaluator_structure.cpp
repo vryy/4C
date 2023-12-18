@@ -881,7 +881,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
           [&](DRT::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
-              CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+              CORE::FE::ExtrapolateGaussPointQuantityToNodes(
                   ele, *map_data.at(ele.Id()), Discret(), assembled_data);
           });
     };
@@ -894,7 +894,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
           [&](DRT::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
-              CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
+              CORE::FE::EvaluateGaussPointQuantityAtElementCenter(
                   ele, *map_data.at(ele.Id()), assembled_data);
           });
     };

@@ -536,8 +536,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     }
 
     // Get integration points for exact integration
-    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-        CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
+    CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
     // Vector holding angle theta of triads
     std::vector<CORE::LINALG::Matrix<3, 1>> theta_cp;
@@ -598,8 +597,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
       // Get values of shape functions
       N_i_xi.Clear();
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-          N_i_xi, xi, length_, CORE::FE::CellType::line2);
+      CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, CORE::FE::CellType::line2);
 
       // Determine storage position for the node colpt
       ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -653,11 +651,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       L_i_xi.Clear();
       N_i_xi.Clear();
       N_i.Clear();
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-      CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-          N_i_xi, xi, length_, CORE::FE::CellType::line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
+      CORE::FE::shape_function_1D(L_i, xi, Shape());
+      CORE::FE::shape_function_1D_deriv1(L_i_xi, xi, Shape());
+      CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, CORE::FE::CellType::line2);
+      CORE::FE::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.Clear();
@@ -749,8 +746,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
     }
 
     // Get integration points for exact integration
-    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
-        CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
+    CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
     // Vector holding angle theta of triads
     std::vector<double> phi_cp;
@@ -819,11 +815,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       L_i.Clear();
       N_i_xi.Clear();
       N_i_xixi.Clear();
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-          N_i_xi, xi, length_, CORE::FE::CellType::line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
-          N_i_xixi, xi, length_, CORE::FE::CellType::line2);
+      CORE::FE::shape_function_1D(L_i, xi, Shape());
+      CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, CORE::FE::CellType::line2);
+      CORE::FE::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, CORE::FE::CellType::line2);
 
       // Determine storage position for the node colpt
       ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -897,13 +891,11 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       N_i_xi.Clear();
       N_i_xixi.Clear();
 
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-      CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-          N_i_xi, xi, length_, CORE::FE::CellType::line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
-          N_i_xixi, xi, length_, CORE::FE::CellType::line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
+      CORE::FE::shape_function_1D(L_i, xi, Shape());
+      CORE::FE::shape_function_1D_deriv1(L_i_xi, xi, Shape());
+      CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, CORE::FE::CellType::line2);
+      CORE::FE::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, CORE::FE::CellType::line2);
+      CORE::FE::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.Clear();
@@ -967,8 +959,7 @@ double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
 
   // Matrices to store the the Hermite shape function derivative values
   CORE::LINALG::Matrix<1, 2 * nnode> N_i_xi;
-  CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-      N_i_xi, xi, length_, CORE::FE::CellType::line2);
+  CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, CORE::FE::CellType::line2);
 
   // jacobi = ds/dxi = ||r'_0||
   CORE::LINALG::Matrix<3, 1> r_xi;
@@ -1128,7 +1119,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   CORE::LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
+  CORE::FE::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
   AssembleShapefunctionsN(N_i, N);
 
   // this part is associated with the variation of the centerline position
@@ -1201,15 +1192,14 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.Clear();
-    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::FE::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
+    CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1232,7 +1222,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   // *******************************************************************************
 
   L_i.Clear();
-  CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+  CORE::FE::shape_function_1D(L_i, xi, Shape());
 
   v_theta_bar.Clear();
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
@@ -1349,15 +1339,14 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.Clear();
-    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::FE::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
+    CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1384,7 +1373,7 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
   // re-interpolation of quantities at xi based on CP values
   // *******************************************************************************
   L_i.Clear();
-  CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+  CORE::FE::shape_function_1D(L_i, xi, Shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -1425,7 +1414,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   CORE::LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
+  CORE::FE::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
   AssembleShapefunctionsN(N_i, N);
 
   // this part is associated with the increment of the centerline position
@@ -1506,14 +1495,13 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.Clear();
-    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::FE::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
+    CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1907,10 +1895,9 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
     // node=0->xi=-1  node=1->xi=0 node=2->xi=1
     xi = (double)node / (double)(BEAM3K_COLLOCATION_POINTS - 1) * 2.0 - 1.0;
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi, length_, CORE::FE::CellType::line2);
+    CORE::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, CORE::FE::CellType::line2);
     L_i.Clear();
-    CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+    CORE::FE::shape_function_1D(L_i, xi, Shape());
 
     // Determine storage position for the node node
     ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);

@@ -736,11 +736,11 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
 
     if (s->Shape() == CORE::FE::CellType::tri3)
     {
-      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(CORE::FE::CellType::tri3);
+      rs = CORE::FE::getLocalCenterPosition<2>(CORE::FE::CellType::tri3);
     }
     else if (s->Shape() == CORE::FE::CellType::quad4)
     {
-      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(CORE::FE::CellType::quad4);
+      rs = CORE::FE::getLocalCenterPosition<2>(CORE::FE::CellType::quad4);
     }
     else
       throw std::runtime_error("unsupported side-shape");
@@ -1328,7 +1328,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElem
     const std::vector<Node*>& nodes, bool active) const
 {
   Teuchos::RCP<Element> e = Teuchos::null;
-  const int probdim = BACI::DRT::Problem::Instance()->NDim();
+  const int probdim = DRT::Problem::Instance()->NDim();
   switch (elementtype)
   {
     case CORE::FE::CellType::line2:
@@ -1385,7 +1385,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(const unsi
     const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
     const bool& active)
 {
-  return Create(BACI::DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
+  return Create(DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
 }
 
 template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::line2>;

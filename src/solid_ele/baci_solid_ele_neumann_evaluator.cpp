@@ -76,7 +76,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
 {
   constexpr auto numdim = CORE::FE::dim<celltype>;
   constexpr auto numnod = CORE::FE::num_nodes<celltype>;
-  CORE::DRT::UTILS::GaussIntegration gauss_integration =
+  CORE::FE::GaussIntegration gauss_integration =
       CreateGaussIntegration<celltype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<celltype>());
 
   // get values and switches from the condition

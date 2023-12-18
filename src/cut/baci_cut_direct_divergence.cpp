@@ -25,7 +25,7 @@ BACI_NAMESPACE_OPEN
   Create integration points on the facets of the volumecell by triangulating the facets
   A reference facet is identified on which integration weights are set to zero Sudhakar 04/12
 *--------------------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrationRule(
+Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrationRule(
     std::vector<double>& RefPlaneEqn)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::DirectDivergence::VCIntegrationRule" );
@@ -90,8 +90,8 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::DirectDivergence::VC
     }
   }
 
-  Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(0));
+  Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp =
+      Teuchos::rcp(new CORE::FE::CollectedGaussPoints(0));
 
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
   std::cout << "Number of facets: " << volcell_->Facets().size() << std::endl;
@@ -310,8 +310,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
                    Geometry of volumecell and main Gauss pts for visualization sudhakar 04/12
 *---------------------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
-    const CORE::DRT::UTILS::GaussIntegration& gpv,
-    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints>& gpmain)
+    const CORE::FE::GaussIntegration& gpv, Teuchos::RCP<CORE::FE::GaussPoints>& gpmain)
 {
 #ifdef LOCAL
   static int sideno = 0;
@@ -342,8 +341,7 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
   // write main Gauss points
   file << "Geometry.PointSize=8.0;\n";  // Increase the point size
   file << "View \"Main points \" {\n";
-  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end();
-       ++iquad)
+  for (CORE::FE::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
   {
     const CORE::LINALG::Matrix<3, 1> etaFacet(iquad.Point());
 #ifndef OUTPUT_GLOBAL_DIVERGENCE_CELLS
@@ -369,10 +367,10 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
   /*file<<"Geometry.PointSize=8.0;\n";      // Increase the point size
   file<<"View \"Internal points \" {\n";
   int nu = 0;
-  for ( CORE::DRT::UTILS::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
+  for ( CORE::FE::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
   {
-    CORE::DRT::UTILS::GaussIntegration gi = intGRule[nu];
-    for ( CORE::DRT::UTILS::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
+    CORE::FE::GaussIntegration gi = intGRule[nu];
+    for ( CORE::FE::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
     {
       const CORE::LINALG::Matrix<3,1> eta( iqu.Point() );
       file<<"SP("<<eta(0,0)<<","<<eta(1,0)<<","<<eta(2,0)<<","<<"1"<<"){0.0};"<<std::endl;
@@ -441,8 +439,8 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
   // Line joining main Gauss points to reference point
   file<<"Geometry.LineWidth=1.0;\n";
   file<<"View \"Connecting lines \" {\n";
-  CORE::DRT::UTILS::GaussIntegration grule(gpmain);
-  for ( CORE::DRT::UTILS::GaussIntegration::iterator iquad=grule.begin(); iquad!=grule.end();
+  CORE::FE::GaussIntegration grule(gpmain);
+  for ( CORE::FE::GaussIntegration::iterator iquad=grule.begin(); iquad!=grule.end();
   ++iquad )
   {
     const CORE::LINALG::Matrix<3,1> eta( iquad.Point() );
@@ -490,8 +488,7 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
   file << "View \"Main points \" {\n";
   if (gpv.NumPoints() > 0)
   {
-    for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end();
-         ++iquad)
+    for (CORE::FE::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
     {
       const CORE::LINALG::Matrix<3, 1> etaFacet(iquad.Point());
       file << "SP(" << etaFacet(0, 0) << "," << etaFacet(1, 0) << "," << etaFacet(2, 0) << ","
@@ -514,13 +511,12 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
 sudhakar 04/12 Then the volume in local coordinates is converted to global coordinate value
 *---------------------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::DirectDivergence::DebugVolume(
-    const CORE::DRT::UTILS::GaussIntegration& gpv, bool& isNeg)
+    const CORE::FE::GaussIntegration& gpv, bool& isNeg)
 {
   int numint = 0;
   double TotalInteg = 0.0;
 
-  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end();
-       ++iquad)
+  for (CORE::FE::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
   {
     const CORE::LINALG::Matrix<3, 1> etaFacet(iquad.Point());
     const double weiFacet = iquad.Weight();

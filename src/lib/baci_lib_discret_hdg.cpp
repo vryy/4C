@@ -90,7 +90,7 @@ int DRT::DiscretizationHDG::FillComplete(
     const int* nodeIds = f->second->NodeIds();
 
     std::vector<std::vector<int>> faceNodeOrder =
-        CORE::DRT::UTILS::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
+        CORE::FE::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
 
     bool exchangeMasterAndSlave = false;
     for (int i = 0; i < f->second->NumNode(); ++i)

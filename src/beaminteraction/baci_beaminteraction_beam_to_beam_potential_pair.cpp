@@ -211,10 +211,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
   // Set Gauss integration rule applied in each integration segment
-  CORE::DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
+  CORE::FE::GaussRule1D gaussrule = GetGaussRule();
 
   // Get Gauss points (gp) for integration
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::FE::IntegrationPoints1D gausspoints(gaussrule);
   // number of Gauss points per integration segment and in total per element
   int numgp_persegment = gausspoints.nquad;
   int numgp_perelement = num_integration_segments * numgp_persegment;
@@ -590,10 +590,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
   // Set Gauss integration rule applied in each integration segment
-  CORE::DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
+  CORE::FE::GaussRule1D gaussrule = GetGaussRule();
 
   // Get Gauss points (gp) for integration
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::FE::IntegrationPoints1D gausspoints(gaussrule);
   // number of Gauss points per integration segment and in total per element
   int numgp_persegment = gausspoints.nquad;
   int numgp_perelement = num_integration_segments * numgp_persegment;
@@ -1099,10 +1099,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
   // Set Gauss integration rule applied in each integration segment
-  CORE::DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
+  CORE::FE::GaussRule1D gaussrule = GetGaussRule();
 
   // Get Gauss points (gp) for integration
-  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::FE::IntegrationPoints1D gausspoints(gaussrule);
 
   // number of Gauss points per integration segment and in total
   int numgp_persegment = gausspoints.nquad;
@@ -3563,7 +3563,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::GetS
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i,
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i_xi,
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i_xi,
-    CORE::DRT::UTILS::IntegrationPoints1D& gausspoints) const
+    CORE::FE::IntegrationPoints1D& gausspoints) const
 {
   DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
       gausspoints, N1_i, N1_i_xi, BeamElement1()->Shape(), ele1length_);

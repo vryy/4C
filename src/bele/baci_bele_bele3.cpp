@@ -242,23 +242,23 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Surfaces()
 }
 
 
-CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
+CORE::FE::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
 {
-  CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
+  CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
   switch (Shape())
   {
     case CORE::FE::CellType::quad4:
-      rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
+      rule = CORE::FE::GaussRule2D::quad_4point;
       break;
     case CORE::FE::CellType::quad8:
     case CORE::FE::CellType::quad9:
-      rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
+      rule = CORE::FE::GaussRule2D::quad_9point;
       break;
     case CORE::FE::CellType::tri3:
-      rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
+      rule = CORE::FE::GaussRule2D::tri_3point;
       break;
     case CORE::FE::CellType::tri6:
-      rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
+      rule = CORE::FE::GaussRule2D::tri_6point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

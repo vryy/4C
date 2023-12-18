@@ -604,8 +604,8 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   const CORE::FE::CellType distype = Shape();
 
   // gaussian points
-  const CORE::DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+  const CORE::FE::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const CORE::FE::IntegrationPoints2D intpoints(gaussrule);
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
@@ -648,8 +648,8 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::FE::shape_function_2D(funct, e1, e2, distype);
+      CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -811,8 +811,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
   CORE::LINALG::SerialDenseMatrix xji(2, 2);
 
   // Gauss quadrature points
-  const CORE::DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+  const CORE::FE::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const CORE::FE::IntegrationPoints2D intpoints(gaussrule);
   //  double min_detF = 0.0;         /* minimal Jacobian determinant   */
   //  ale2_min_jaco(Shape(),xyze,&min_detF);
 
@@ -827,8 +827,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
     if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::FE::shape_function_2D(funct, e1, e2, distype);
+      CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -837,8 +837,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
       gp(0) = e1;
       gp(1) = e2;
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-          funct, deriv, gp, myknots, weights, distype);
+      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     // compute jacobian matrix
@@ -1306,8 +1305,8 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& eleve
 
     // get values of shape functions and derivatives in the gausspoint
     // shape functions and their derivatives for polynomials
-    CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+    CORE::FE::shape_function_2D(funct, e1, e2, distype);
+    CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
 
     /*--------------------------------------- compute jacobian Matrix */
     JacobianMatrix(xrefe, deriv, xjm, &det, numnode);

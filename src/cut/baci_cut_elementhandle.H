@@ -118,23 +118,23 @@ namespace CORE::GEO
        way that Gaussian rule for every volume-cell can be separated
         */
       void VolumeCellGaussPoints(
-          plain_volumecell_set& cells, std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints);
+          plain_volumecell_set& cells, std::vector<CORE::FE::GaussIntegration>& intpoints);
 
       void AppendVolumeCellGaussPoints_Tessellation(
-          Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
       void AppendVolumeCellGaussPoints_MomentFitting(
-          Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
       void AppendVolumeCellGaussPoints_DirectDivergence(
-          Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
 
       /*!
        \brief Collect the Gaussian points of all the volume-cells belonging to this element.
               The integration rules over all the volume-cells are connected.
        */
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> GaussPointsConnected(
+      Teuchos::RCP<CORE::FE::GaussPointsComposite> GaussPointsConnected(
           plain_volumecell_set& cells, INPAR::CUT::VCellGaussPts gausstype);
 
 
@@ -156,7 +156,7 @@ namespace CORE::GEO
        */
       void BoundaryCellGaussPointsLin(
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
-          std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>& intpoints,
+          std::map<int, std::vector<CORE::FE::GaussIntegration>>& intpoints,
           const int bc_cubaturedegree);
 
       //@}
@@ -168,8 +168,7 @@ namespace CORE::GEO
       //! get all the element' sets of volume-cells, nds-vectors and integration points
       virtual bool GetCellSets_DofSets_GaussPoints(std::vector<plain_volumecell_set>& cell_sets,
           std::vector<std::vector<int>>& nds_sets,
-          std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>>& intpoints_sets,
-          bool include_inner);
+          std::vector<std::vector<CORE::FE::GaussIntegration>>& intpoints_sets, bool include_inner);
 
 
       //! get the element's sets of volume-cells ordered by inside/outside position
@@ -239,9 +238,9 @@ namespace CORE::GEO
        integation-cells to the local coordinates of background element
        */
       template <CORE::FE::CellType distype>
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(
+      Teuchos::RCP<CORE::FE::GaussPoints> CreateProjected(
           const std::vector<CORE::GEO::CUT::Point*>& cpoints,
-          Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic);
+          Teuchos::RCP<CORE::FE::GaussPoints> gp_ic);
 
       std::map<Point*, CORE::LINALG::Matrix<3, 1>> local_coordinates_;
 

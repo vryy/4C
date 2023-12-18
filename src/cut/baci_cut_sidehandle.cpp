@@ -76,7 +76,7 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(
   // create middle node
 
   CORE::LINALG::Matrix<4, 1> funct;
-  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad4);
+  CORE::FE::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad4);
 
   CORE::LINALG::Matrix<3, 1> xyz;
   xyz.Multiply(xyze, funct);
@@ -173,7 +173,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     // create middle node
 
     CORE::LINALG::Matrix<8, 1> funct;
-    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad8);
+    CORE::FE::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad8);
 
     CORE::LINALG::Matrix<3, 1> xyz;
     xyz.Multiply(xyze, funct);
