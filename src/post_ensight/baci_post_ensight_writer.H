@@ -69,9 +69,9 @@ const int subhex18map[4][8] = {{0, 4, 8, 7, 9, 13, 17, 16}, {4, 1, 5, 8, 13, 10,
 class EnsightWriter : public PostWriterBase
 {
  public:
-  typedef std::map<BACI::CORE::FE::CellType, int> NumElePerDisType;
+  typedef std::map<CORE::FE::CellType, int> NumElePerDisType;
 
-  typedef std::map<BACI::CORE::FE::CellType, std::vector<int>> EleGidPerDisType;
+  typedef std::map<CORE::FE::CellType, std::vector<int>> EleGidPerDisType;
 
   //! constructor, does nothing (SetField must be called before usage)
   EnsightWriter(PostField* field, const std::string& name);
@@ -179,7 +179,7 @@ class EnsightWriter : public PostWriterBase
 
   Teuchos::RCP<Epetra_Map> WriteCoordinates(
       std::ofstream& geofile,  ///< filestream for the geometry
-      const Teuchos::RCP<BACI::DRT::Discretization>
+      const Teuchos::RCP<DRT::Discretization>
           dis  ///< discretization where the nodal positions are take from
   );
 
@@ -189,7 +189,7 @@ class EnsightWriter : public PostWriterBase
       coordinates of the nodes in the discretization.
     */
   void WriteCoordinatesForPolynomialShapefunctions(std::ofstream& geofile,
-      const Teuchos::RCP<BACI::DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
+      const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
 
   /*! \brief Write the coordinates for a Nurbs discretization
     The coordinates of the vizualisation points (i.e. the corner
@@ -198,10 +198,10 @@ class EnsightWriter : public PostWriterBase
     knot values are mapped to.
   */
   void WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofile,
-      const Teuchos::RCP<BACI::DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
+      const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
 
   virtual void WriteCells(std::ofstream& geofile,  ///< filestream for the geometry
-      const Teuchos::RCP<BACI::DRT::Discretization>
+      const Teuchos::RCP<DRT::Discretization>
           dis,  ///< discretization where the nodal positions are take from
       const Teuchos::RCP<Epetra_Map>&
           proc0map  ///< current proc0 node map, created by WriteCoordinatesPar
@@ -222,8 +222,8 @@ class EnsightWriter : public PostWriterBase
     \param Teuchos::RCP<Epetra_Map>          (i)          an allreduced nodemap
 
   */
-  void WriteNurbsCell(const BACI::CORE::FE::CellType distype, const int gid, std::ofstream& geofile,
-      std::vector<int>& nodevector, const Teuchos::RCP<BACI::DRT::Discretization> dis,
+  void WriteNurbsCell(const CORE::FE::CellType distype, const int gid, std::ofstream& geofile,
+      std::vector<int>& nodevector, const Teuchos::RCP<DRT::Discretization> dis,
       const Teuchos::RCP<Epetra_Map>& proc0map) const;
 
   /*! \brief Quadratic nurbs split one nurbs27 element
@@ -270,9 +270,8 @@ class EnsightWriter : public PostWriterBase
   };
 
 
-  void WriteNodeConnectivityPar(std::ofstream& geofile,
-      const Teuchos::RCP<BACI::DRT::Discretization> dis, const std::vector<int>& nodevector,
-      const Teuchos::RCP<Epetra_Map> proc0map) const;
+  void WriteNodeConnectivityPar(std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis,
+      const std::vector<int>& nodevector, const Teuchos::RCP<Epetra_Map> proc0map) const;
   void WriteDofResultStep(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
@@ -314,9 +313,9 @@ class EnsightWriter : public PostWriterBase
   //! perform interpolation of result data to visualization points.
   void InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiVector> idata, const int dim,
       const int npatch, const std::vector<int>& vpoff, const std::vector<int>& ele_cart_id,
-      const BACI::DRT::Element* actele, BACI::DRT::NURBS::NurbsDiscretization* nurbsdis,
-      const std::vector<BACI::CORE::LINALG::SerialDenseVector>& eleknots,
-      const BACI::CORE::LINALG::SerialDenseVector& weights, const int numdf,
+      const DRT::Element* actele, DRT::NURBS::NurbsDiscretization* nurbsdis,
+      const std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
+      const CORE::LINALG::SerialDenseVector& weights, const int numdf,
       const std::vector<double>& my_data) const;
 
   void WriteNodalResultStepForNurbs(std::ofstream& file, const int numdf,
@@ -363,9 +362,9 @@ class EnsightWriter : public PostWriterBase
    * \brief estimate, how many elements of each distype will be written
    * \return map between distype and number of elements to be written
    */
-  NumElePerDisType GetNumElePerDisType(const Teuchos::RCP<BACI::DRT::Discretization> dis) const;
+  NumElePerDisType GetNumElePerDisType(const Teuchos::RCP<DRT::Discretization> dis) const;
 
-  std::string GetEnsightString(const BACI::CORE::FE::CellType distype) const;
+  std::string GetEnsightString(const CORE::FE::CellType distype) const;
 
   /*!
    * \brief if files become to big, this routine switches to a new file
@@ -379,17 +378,17 @@ class EnsightWriter : public PostWriterBase
       const std::string filename  ///< constant part of the filename
   ) const;
 
-  int GetNumEleOutput(const BACI::CORE::FE::CellType distype, const int numele) const;
+  int GetNumEleOutput(const CORE::FE::CellType distype, const int numele) const;
 
   //! number of subelements (equals 1 if no element splitting has to be done)
-  int GetNumSubEle(const BACI::CORE::FE::CellType distype) const;
+  int GetNumSubEle(const CORE::FE::CellType distype) const;
 
   /*!
    * \brief store, which elements are belonging to each present distype
    * \return map between distype and vector containing the global ids of th corresponding elements
    */
   EleGidPerDisType GetEleGidPerDisType(
-      const Teuchos::RCP<BACI::DRT::Discretization> dis, NumElePerDisType numeleperdistype) const;
+      const Teuchos::RCP<DRT::Discretization> dis, NumElePerDisType numeleperdistype) const;
 
   //! create string for one TIME section in the case file
   std::string GetTimeSectionString(const int timeset,  ///< number of timeset to be written
@@ -432,7 +431,7 @@ class EnsightWriter : public PostWriterBase
   std::map<std::string, std::vector<std::ofstream::pos_type>> resultfilepos_;
 
   //! maps a distype to the corresponding Ensight cell type
-  std::map<BACI::CORE::FE::CellType, std::string> distype2ensightstring_;
+  std::map<CORE::FE::CellType, std::string> distype2ensightstring_;
 
   //! maximum file size
   static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff;  // 2GB

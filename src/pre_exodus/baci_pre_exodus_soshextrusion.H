@@ -22,6 +22,8 @@ Here everything related with solid-shell body extrusion
 #include <vector>
 
 
+BACI_NAMESPACE_OPEN
+
 namespace EXODUS
 {
   Mesh SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid,
@@ -110,5 +112,7 @@ namespace EXODUS
       const std::map<int, std::vector<int>>& leftovers);
 
 }  // namespace EXODUS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // PRE_EXODUS_SOSHEXTRUSION_H

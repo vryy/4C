@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // Helper function to sort list of pairs according to second entry of the pair
 bool MyDataSortPredicate(std::pair<int, double> lhs, std::pair<int, double> rhs);
 
@@ -91,5 +93,7 @@ namespace EXODUS
   // bool MyDataSortPredicate(const pair<int, double>& lhs, const pair<int, double>& rhs);
 
 }  // namespace EXODUS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // PRE_EXODUS_CENTERLINE_H

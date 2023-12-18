@@ -17,6 +17,7 @@ Here everything related with solid-shell body extrusion
 #include "baci_pre_exodus_reader.H"
 #include "baci_pre_exodus_validate.H"
 
+BACI_NAMESPACE_OPEN
 
 /* Method to extrude a surface to become a volumetric body */
 EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers,
@@ -2053,3 +2054,5 @@ void EXODUS::PlotEleConnGmsh(const std::map<int, std::vector<int>>& conn,
   f_system << gmshfilecontent.str();
   f_system.close();
 }
+
+BACI_NAMESPACE_CLOSE

@@ -136,10 +136,10 @@ class PostProblem
   std::string input_dir() { return input_dir_; }
 
   //! returns type of the simulation
-  BACI::ProblemType Problemtype() { return problemtype_; }
+  ProblemType Problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
-  BACI::CORE::FE::ShapeFunctionType SpatialApproximationType() { return spatial_approx_; }
+  CORE::FE::ShapeFunctionType SpatialApproximationType() { return spatial_approx_; }
 
   //! returns stress type
   std::string stresstype() { return stresstype_; }
@@ -206,10 +206,10 @@ class PostProblem
   std::string filter_;
 
   //! type of the problem we post process
-  BACI::ProblemType problemtype_;
+  ProblemType problemtype_;
 
   //! type of the spatial approximation of theproblem we post process
-  BACI::CORE::FE::ShapeFunctionType spatial_approx_;
+  CORE::FE::ShapeFunctionType spatial_approx_;
 
   //! number of dimensions
   int ndim_;
@@ -302,11 +302,11 @@ class PostField
   // @{ \name Constructors and destructors
 
   //! Constructor
-  PostField(Teuchos::RCP<BACI::DRT::Discretization> dis,  ///< [in] Discretization
-      PostProblem* problem,                               ///< [in] Instance of PostProblem
-      std::string field_name,                             ///< [in] Name of the field
-      const int numnd,                                    ///< [in] Number of nodes
-      const int numele                                    ///< [in] Number of elements
+  PostField(Teuchos::RCP<DRT::Discretization> dis,  ///< [in] Discretization
+      PostProblem* problem,                         ///< [in] Instance of PostProblem
+      std::string field_name,                       ///< [in] Name of the field
+      const int numnd,                              ///< [in] Number of nodes
+      const int numele                              ///< [in] Number of elements
   );
 
   //@}
@@ -314,8 +314,8 @@ class PostField
   // @{ \name Access methods
 
   //! returns the discretization of this field
-  Teuchos::RCP<BACI::DRT::Discretization> discretization() { return dis_; }
-  Teuchos::RCP<const BACI::DRT::Discretization> discretization() const { return dis_; }
+  Teuchos::RCP<DRT::Discretization> discretization() { return dis_; }
+  Teuchos::RCP<const DRT::Discretization> discretization() const { return dis_; }
 
   //! returns the number of output processors
   int num_output_procs() const { return num_output_procs_; }
@@ -350,7 +350,7 @@ class PostField
 
  private:
   //! Discretization of underlying field
-  Teuchos::RCP<BACI::DRT::Discretization> dis_;
+  Teuchos::RCP<DRT::Discretization> dis_;
 
   //! PostProblem of underlying field
   PostProblem* problem_;
@@ -449,7 +449,7 @@ class PostResult
    *
    * \returns vector with results read
    */
-  Teuchos::RCP<std::map<int, Teuchos::RCP<BACI::CORE::LINALG::SerialDenseMatrix>>>
+  Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
   read_result_serialdensematrix(const std::string name);
 
   /*! \brief Reads the data of the result vector 'name' from the current result block
@@ -497,7 +497,7 @@ class PostResult
   PostField* field_;
   int pos_;
   MAP* group_;
-  BACI::IO::HDFReader file_;
+  IO::HDFReader file_;
 };
 
 BACI_NAMESPACE_CLOSE

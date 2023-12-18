@@ -17,6 +17,8 @@ or the well-known .dat file is created.
 #ifndef BACI_PRE_EXODUS_H
 #define BACI_PRE_EXODUS_H
 
+BACI_NAMESPACE_OPEN
+
 namespace EXODUS
 {
   // forward declaration
@@ -26,5 +28,7 @@ namespace EXODUS
   int CreateDefaultBCFile(EXODUS::Mesh& mesh);
 
 }  // namespace EXODUS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // PRE_EXODUS_H

@@ -519,7 +519,7 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void PostVtuWriter::WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes,
+void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
   using namespace BACI;
@@ -572,8 +572,8 @@ void PostVtuWriter::WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <BACI::CORE::FE::CellType nurbs_type>
-void PostVtuWriter::WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes,
+template <CORE::FE::CellType nurbs_type>
+void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
   using namespace BACI;
@@ -632,8 +632,8 @@ void PostVtuWriter::WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BACI::CORE::FE::CellType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
-    const BACI::CORE::FE::CellType nurbs_dis_type) const
+CORE::FE::CellType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
+    const CORE::FE::CellType nurbs_dis_type) const
 {
   using namespace BACI;
 
@@ -657,7 +657,7 @@ BACI::CORE::FE::CellType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
   }
 }
 
-void PostVtuWriter::WriteGeoBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
@@ -686,7 +686,7 @@ void PostVtuWriter::WriteGeoBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamel
   celloffset.push_back(outNodeId);
 }
 
-void PostVtuWriter::WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
+void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
@@ -740,8 +740,8 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, in
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <BACI::CORE::FE::CellType nurbs_type>
-void PostVtuWriter::WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
+template <CORE::FE::CellType nurbs_type>
+void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
@@ -815,7 +815,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, in
 }
 
 
-void PostVtuWriter::WriteDofResultStepBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
 {
@@ -875,7 +875,7 @@ void PostVtuWriter::WriteDofResultStepBeamEle(const BACI::DRT::ELEMENTS::Beam3Ba
   }
 }
 
-void PostVtuWriter::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
+void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
@@ -928,8 +928,8 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <BACI::CORE::FE::CellType nurbs_type>
-void PostVtuWriter::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
+template <CORE::FE::CellType nurbs_type>
+void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
@@ -998,63 +998,63 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, 
 }
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs2>(
-    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
-    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs3>(
-    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
-    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs4>(
-    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
-    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs9>(
-    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
-    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs8>(
-    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
-    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<BACI::CORE::FE::CellType::nurbs27>(
-    const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
-    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs2>(const DRT::Element* ele,
+    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs3>(const DRT::Element* ele,
+    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs4>(const DRT::Element* ele,
+    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs9>(const DRT::Element* ele,
+    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs8>(const DRT::Element* ele,
+    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs27>(const DRT::Element* ele,
+    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs2>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs2>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs3>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs3>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs4>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs4>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs9>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs9>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs8>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs8>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs27>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs27>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs2>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs2>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs3>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs3>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs4>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs4>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs9>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs9>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs8>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs8>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs27>(
-    const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs27>(
+    const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
 BACI_NAMESPACE_CLOSE

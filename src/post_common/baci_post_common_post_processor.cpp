@@ -430,9 +430,8 @@ namespace
         if (problem.num_discr() != 2)
           dserror("Must have exactly two discretizations for scatra-thermo interaction problems!");
 
-        BACI::DRT::ELEMENTS::Transport* transport_element =
-            dynamic_cast<BACI::DRT::ELEMENTS::Transport*>(
-                problem.get_discretization(0)->discretization()->lRowElement(0));
+        DRT::ELEMENTS::Transport* transport_element = dynamic_cast<DRT::ELEMENTS::Transport*>(
+            problem.get_discretization(0)->discretization()->lRowElement(0));
         if (transport_element == nullptr)
           dserror("Elements of unknown type on scalar transport discretization!");
 
@@ -931,7 +930,7 @@ int main(int argc, char** argv)
     std::cout << "\n\n" << line << err.what() << "\n" << line << "\n" << std::endl;
 
     // proper cleanup
-    BACI::DRT::Problem::Done();
+    DRT::Problem::Done();
 #ifdef DSERROR_DUMP
     abort();
 #endif
@@ -940,7 +939,7 @@ int main(int argc, char** argv)
   }  // catch
 
   // proper cleanup
-  BACI::DRT::Problem::Done();
+  DRT::Problem::Done();
 
   return 0;
 }

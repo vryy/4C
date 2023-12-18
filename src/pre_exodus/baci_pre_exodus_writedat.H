@@ -14,6 +14,8 @@ Here is everything related with writing a dat-file
 
 #include "baci_pre_exodus_readbc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace EXODUS
 {
   //! write datfile
@@ -63,15 +65,15 @@ namespace EXODUS
   {
     switch (def.gtype)
     {
-      case BACI::DRT::Condition::Volume:
+      case DRT::Condition::Volume:
         return "DVOL  ";
-      case BACI::DRT::Condition::Surface:
+      case DRT::Condition::Surface:
         return "DSURF ";
-      case BACI::DRT::Condition::Line:
+      case DRT::Condition::Line:
         return "DLINE ";
-      case BACI::DRT::Condition::Point:
+      case DRT::Condition::Point:
         return "DPOINT";
-      case BACI::DRT::Condition::NoGeom:
+      case DRT::Condition::NoGeom:
         return "";
       default:
         dserror("Unknown Condition GeometryType");
@@ -81,5 +83,6 @@ namespace EXODUS
 
 }  // namespace EXODUS
 
+BACI_NAMESPACE_CLOSE
 
 #endif  // PRE_EXODUS_WRITEDAT_H
