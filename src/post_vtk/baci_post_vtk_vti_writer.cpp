@@ -20,6 +20,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 #ifdef TOL_N
 #undef TOL_N
 #endif
@@ -468,3 +470,5 @@ void PostVtiWriter::WriterPrepTimestep()
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

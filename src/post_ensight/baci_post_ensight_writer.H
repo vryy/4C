@@ -22,13 +22,13 @@
 #include <string>
 #include <vector>
 
-// class PostProblem;
+BACI_NAMESPACE_OPEN
+
 class PostField;
 class PostResult;
 
 
 // forward declaration
-BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -41,7 +41,6 @@ namespace DRT
   }
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
 
 //! defines how 2 line2 elements are constructed from a line3
 const int sublinemap[2][2] = {{0, 2}, {2, 1}};
@@ -439,5 +438,7 @@ class EnsightWriter : public PostWriterBase
   static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff;  // 2GB
   // static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POST_ENSIGHT_WRITER_H

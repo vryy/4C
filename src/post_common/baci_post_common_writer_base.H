@@ -17,6 +17,9 @@
 #include <vector>
 
 class Epetra_MultiVector;
+
+BACI_NAMESPACE_OPEN
+
 class PostField;
 
 //! Special writer class that is used to invoke a particular method in the output writer
@@ -135,5 +138,7 @@ class PostWriterBase
   unsigned int myrank_;   ///< global processor id
   unsigned int numproc_;  ///< number of processors
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POST_COMMON_WRITER_BASE_H

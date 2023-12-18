@@ -23,6 +23,7 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -582,3 +583,5 @@ class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
 
 #endif  // POST_MONITOR_H
 /*! @} (documentation module close)*/
+
+BACI_NAMESPACE_CLOSE

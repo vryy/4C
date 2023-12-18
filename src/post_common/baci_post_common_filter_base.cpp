@@ -23,6 +23,8 @@ extern "C"
 #include "baci_io_legacy_table_iter.h"
 }
 
+BACI_NAMESPACE_OPEN
+
 PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
 {
   if (field->problem()->filter() == "ensight")
@@ -94,3 +96,5 @@ void PostFilterBase::WriteAnyResults(PostField* field, const char* type, const R
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 class PostWriterBase;
 
 /*!
@@ -260,5 +262,7 @@ class AnyFilter : public PostFilterBase
  protected:
   void WriteAllResults(PostField* field) override;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POST_COMMON_SINGLE_FIELD_WRITERS_H

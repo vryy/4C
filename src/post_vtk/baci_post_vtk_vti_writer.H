@@ -21,10 +21,11 @@
 
 // forward declarations
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
 class PostField;
 class PostResult;
 
-BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -32,7 +33,6 @@ namespace DRT
   class Node;
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
 
 /*
  \brief Base class for VTU output generation
@@ -106,5 +106,7 @@ class PostVtiWriter : public PostVtkWriter
   //! Mapping between elementids and their position on an ImageData-grid in a (z*Ny+y)*Nx+x form
   std::map<int, int> eidmapping_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

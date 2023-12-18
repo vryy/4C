@@ -24,6 +24,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 //! Number of linear subsegments used for visualization of beam centerline.
 #define BEAMSVTUVISUALSUBSEGMENTS 5
 
@@ -1054,3 +1056,5 @@ template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellTy
 template void PostVtuWriter::WriteNodalResultStepNurbsEle<BACI::CORE::FE::CellType::nurbs27>(
     const BACI::DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+
+BACI_NAMESPACE_CLOSE

@@ -37,9 +37,9 @@ namespace Teuchos
   class RCP;
 }  // namespace Teuchos
 
-class PostProblem;
-
 BACI_NAMESPACE_OPEN
+
+class PostProblem;
 
 namespace CORE::COMM
 {

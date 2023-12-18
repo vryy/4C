@@ -20,6 +20,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void StructureFilter::PostStress(const std::string groupname, const std::string stresstype)
@@ -724,3 +726,6 @@ void StructureFilter::WriteEigenStress(
   else
     dserror("Unknown heatflux type");
 }
+
+
+BACI_NAMESPACE_CLOSE
