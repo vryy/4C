@@ -71,7 +71,7 @@ static void pop_map_node(MAP_ITERATOR* iterator)
     tmp_free = iterator->stack.head.snext;
     iterator->stack.head.snext = iterator->stack.head.snext->snext;
     iterator->stack.count--;
-    free(tmp_free);
+    delete tmp_free;
   }
 }
 
