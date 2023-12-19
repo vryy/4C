@@ -137,10 +137,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::EvaluateNonlinearForceStiffnessM
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
 
-  const CORE::LINALG::Matrix<num_nodes<celltype>, num_dim<celltype>> nodal_displacements =
-      GetNodalDisplacements<celltype>(discretization, lm);
-
-  const ElementNodes<celltype> nodal_coordinates =
+  const ElementNodes<celltype> element_nodes =
       EvaluateElementNodes<celltype>(ele, discretization, lm);
 
   bool equal_integration_mass_stiffness =
@@ -148,9 +145,9 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::EvaluateNonlinearForceStiffnessM
 
   double mean_density = 0.0;
 
-  EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
+  EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(element_nodes, params);
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  ForEachGaussPoint<celltype>(element_nodes, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -162,7 +159,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::EvaluateNonlinearForceStiffnessM
         }
         const SpatialMaterialMapping<celltype> spatial_material_mapping =
             EvaluateMulfSpatialMaterialMapping(
-                jacobian_mapping, shape_functions, nodal_displacements, history_data_[gp]);
+                jacobian_mapping, shape_functions, element_nodes.displacements_, history_data_[gp]);
 
         const CORE::LINALG::Matrix<num_dim_, num_dim_> cauchygreen =
             EvaluateCauchyGreen<celltype>(spatial_material_mapping);
@@ -174,7 +171,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::EvaluateNonlinearForceStiffnessM
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
         EvaluateGPCoordinatesAndAddToParameterList<celltype>(
-            nodal_coordinates, shape_functions, params);
+            element_nodes, shape_functions, params);
 
         const Stress<celltype> stress = EvaluateMaterialStress<celltype>(solid_material,
             spatial_material_mapping.deformation_gradient_, gl_strain, params, gp, ele.Id());
@@ -204,7 +201,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::EvaluateNonlinearForceStiffnessM
   {
     // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
-    ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
+    ForEachGaussPoint<celltype>(element_nodes, mass_matrix_integration_,
         [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -224,24 +221,22 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::Update(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  const CORE::LINALG::Matrix<num_nodes<celltype>, num_dim<celltype>> nodal_displacements =
-      GetNodalDisplacements<celltype>(discretization, lm);
-  const ElementNodes<celltype> nodal_coordinates =
+  const ElementNodes<celltype> element_nodes =
       EvaluateElementNodes<celltype>(ele, discretization, lm);
 
-  EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
+  EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(element_nodes, params);
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  ForEachGaussPoint<celltype>(element_nodes, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         const SpatialMaterialMapping<celltype> spatial_material_mapping =
             EvaluateMulfSpatialMaterialMapping(
-                jacobian_mapping, shape_functions, nodal_displacements, history_data_[gp]);
+                jacobian_mapping, shape_functions, element_nodes.displacements_, history_data_[gp]);
 
         EvaluateGPCoordinatesAndAddToParameterList<celltype>(
-            nodal_coordinates, shape_functions, params);
+            element_nodes, shape_functions, params);
 
         solid_material.Update(spatial_material_mapping.deformation_gradient_, gp, params, ele.Id());
       });
@@ -254,25 +249,23 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::UpdatePrestress(const DRT::Eleme
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  const CORE::LINALG::Matrix<num_nodes<celltype>, num_dim<celltype>> nodal_displacements =
-      GetNodalDisplacements<celltype>(discretization, lm);
-  const ElementNodes<celltype> nodal_coordinates =
+  const ElementNodes<celltype> element_nodes =
       EvaluateElementNodes<celltype>(ele, discretization, lm);
 
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  ForEachGaussPoint<celltype>(element_nodes, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         const SpatialMaterialMapping<celltype> spatial_material_mapping =
             EvaluateMulfSpatialMaterialMapping(
-                jacobian_mapping, shape_functions, nodal_displacements, history_data_[gp]);
+                jacobian_mapping, shape_functions, element_nodes.displacements_, history_data_[gp]);
 
 
         CORE::LINALG::Matrix<num_dim<celltype>, num_dim<celltype>> delta_defgrd =
             EvaluateMulfDeformationGradientUpdate(
-                jacobian_mapping, shape_functions, nodal_displacements, history_data_[gp]);
+                jacobian_mapping, shape_functions, element_nodes.displacements_, history_data_[gp]);
 
         // update mulf history data only if prestress is active
         CORE::LINALG::Matrix<num_dim<celltype>, num_dim<celltype>> inv_delta_defgrd(delta_defgrd);
@@ -299,20 +292,17 @@ double DRT::ELEMENTS::SolidEleCalcMulf<celltype>::CalculateInternalEnergy(const 
 {
   double intenergy = 0.0;
 
-  const CORE::LINALG::Matrix<num_nodes_, num_dim_> nodal_displacements =
-      GetNodalDisplacements<celltype>(discretization, lm);
-
-  const ElementNodes<celltype> nodal_coordinates =
+  const ElementNodes<celltype> element_nodes =
       EvaluateElementNodes<celltype>(ele, discretization, lm);
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  ForEachGaussPoint<celltype>(element_nodes, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         const SpatialMaterialMapping<celltype> spatial_material_mapping =
             EvaluateMulfSpatialMaterialMapping(
-                jacobian_mapping, shape_functions, nodal_displacements, history_data_[gp]);
+                jacobian_mapping, shape_functions, element_nodes.displacements_, history_data_[gp]);
 
         const CORE::LINALG::Matrix<num_dim_, num_dim_> cauchygreen =
             EvaluateCauchyGreen<celltype>(spatial_material_mapping);
@@ -342,22 +332,19 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::CalculateStress(const DRT::Eleme
   CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
   CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
 
-  const CORE::LINALG::Matrix<num_nodes<celltype>, num_dim<celltype>> nodal_displacements =
-      GetNodalDisplacements<celltype>(discretization, lm);
-
-  const ElementNodes<celltype> nodal_coordinates =
+  const ElementNodes<celltype> element_nodes =
       EvaluateElementNodes<celltype>(ele, discretization, lm);
 
-  EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
+  EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(element_nodes, params);
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  ForEachGaussPoint<celltype>(element_nodes, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         const SpatialMaterialMapping<celltype> spatial_material_mapping =
             EvaluateMulfSpatialMaterialMapping(
-                jacobian_mapping, shape_functions, nodal_displacements, history_data_[gp]);
+                jacobian_mapping, shape_functions, element_nodes.displacements_, history_data_[gp]);
 
         const CORE::LINALG::Matrix<num_dim_, num_dim_> cauchygreen =
             EvaluateCauchyGreen<celltype>(spatial_material_mapping);
@@ -366,7 +353,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::CalculateStress(const DRT::Eleme
             EvaluateGreenLagrangeStrain(cauchygreen);
 
         EvaluateGPCoordinatesAndAddToParameterList<celltype>(
-            nodal_coordinates, shape_functions, params);
+            element_nodes, shape_functions, params);
 
         const Stress<celltype> stress = EvaluateMaterialStress<celltype>(solid_material,
             spatial_material_mapping.deformation_gradient_, gl_strain, params, gp, ele.Id());

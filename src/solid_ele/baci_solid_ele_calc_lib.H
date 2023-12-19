@@ -14,9 +14,11 @@
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_fiber_nodal_fiber_holder.H"
 #include "baci_fiber_utils.H"
+#include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_utils.H"
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_so3_material.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 
@@ -45,43 +47,6 @@ namespace DRT::ELEMENTS::DETAIL
   template <CORE::FE::CellType celltype>
   inline static constexpr int num_dof_per_ele = num_nodes<celltype>* num_dim<celltype>;
 }  // namespace DRT::ELEMENTS::DETAIL
-
-namespace DRT::ELEMENTS::DETAILS
-{
-  /*!
-   * @brief Get the nodal coordinates
-   *
-   * Extracts the displacement from the previous iteration from the discretization and computes the
-   * current and reference position of the nodal coordinates
-   *
-   * @tparam celltype : Cell type
-   * @param ele (in) : Reference to the element
-   * @param discretization (in) : Reference to the discretization
-   * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
-   * @return ElementNodes<celltype> : Nodal coordinates from previous iteration
-   */
-  template <CORE::FE::CellType celltype>
-  DRT::ELEMENTS::ElementNodes<celltype> GetNodalCoordinates(
-      const DRT::Element& ele, const Epetra_Vector& displacements, const std::vector<int>& lm)
-  {
-    std::vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
-
-    DRT::ELEMENTS::ElementNodes<celltype> coordinates;
-    for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
-    {
-      for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
-      {
-        coordinates.reference_coordinates_(i, d) = ele.Nodes()[i]->X()[d];
-        coordinates.current_coordinates_(i, d) =
-            coordinates.reference_coordinates_(i, d) + mydisp[i * DETAIL::num_dim<celltype> + d];
-      }
-    }
-
-    return coordinates;
-  }
-
-}  // namespace DRT::ELEMENTS::DETAILS
 
 namespace DRT::ELEMENTS
 {
@@ -124,10 +89,9 @@ namespace DRT::ELEMENTS
         reference_coordinates_;
 
     /*!
-     * @brief Position of nodes in the current configuration
+     * @brief Displacements of the element nodes
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
-        current_coordinates_;
+    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements_;
   };
 
   template <CORE::FE::CellType celltype>
@@ -140,10 +104,9 @@ namespace DRT::ELEMENTS
         reference_coordinates_;
 
     /*!
-     * @brief Position of nodes in the current configuration
+     * @brief Displacements of the element nodes
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
-        current_coordinates_;
+    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements_;
 
     /*!
      * @brief Knot span of a NURBS element
@@ -155,35 +118,6 @@ namespace DRT::ELEMENTS
      */
     CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1, double> weights_;
   };
-
-  /*!
-   * @brief Extracts the nodal displacements of the element from the discretization
-   *
-   * @tparam celltype
-   * @param discretization (in) : Discretization with displacement state
-   * @param lm (in) : Location vector of the element
-   * @return CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> : Nodal
-   * displacements of the element
-   */
-  template <CORE::FE::CellType celltype>
-  CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
-  GetNodalDisplacements(const DRT::Discretization& discretization, const std::vector<int>& lm)
-  {
-    const Epetra_Vector& displacements = *discretization.GetState("displacement");
-    std::vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
-
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
-        nodal_displacements;
-    for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
-    {
-      for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
-      {
-        nodal_displacements(i, d) = mydisp[i * DETAIL::num_dim<celltype> + d];
-      }
-    }
-    return nodal_displacements;
-  }
 
   /*!
    * @brief Evaluates the nodal coordinates from this iteration
@@ -198,18 +132,29 @@ namespace DRT::ELEMENTS
   {
     const Epetra_Vector& displacements = *discretization.GetState("displacement");
 
-    auto coordinates = DETAILS::GetNodalCoordinates<celltype>(ele, displacements, lm);
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
+
+    DRT::ELEMENTS::ElementNodes<celltype> element_nodes;
+    for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
+    {
+      for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
+      {
+        element_nodes.reference_coordinates_(i, d) = ele.Nodes()[i]->X()[d];
+        element_nodes.displacements_(i, d) = mydisp[i * DETAIL::num_dim<celltype> + d];
+      }
+    }
 
     if constexpr (CORE::FE::is_nurbs<celltype>)
     {
       // Obtain the information required for a NURBS element
       bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
-          discretization, &ele, coordinates.knots_, coordinates.weights_);
+          discretization, &ele, element_nodes.knots_, element_nodes.weights_);
       if (zero_size)
         dserror("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
     }
 
-    return coordinates;
+    return element_nodes;
   }
 
   /*!
@@ -535,18 +480,15 @@ namespace DRT::ELEMENTS
       const INPAR::STR::KinemType& kinematictype = INPAR::STR::kinem_nonlinearTotLag)
   {
     SpatialMaterialMapping<celltype> spatial_material_mapping;
-    spatial_material_mapping.deformation_gradient_.Clear();
+    spatial_material_mapping.deformation_gradient_ =
+        CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
 
-    if (kinematictype == INPAR::STR::kinem_linear)
-    {
-      for (int i = 0; i < DETAIL::num_dim<celltype>; i++)
-        spatial_material_mapping.deformation_gradient_(i, i) = 1.0;
-    }
-    else
+    if (kinematictype == INPAR::STR::kinem_nonlinearTotLag)
     {
       spatial_material_mapping.deformation_gradient_.MultiplyTT(
-          scale_defgrd, nodal_coordinates.current_coordinates_, jacobian_mapping.N_XYZ_);
+          scale_defgrd, nodal_coordinates.displacements_, jacobian_mapping.N_XYZ_, scale_defgrd);
     }
+
     spatial_material_mapping.inverse_deformation_gradient_.Invert(
         spatial_material_mapping.deformation_gradient_);
     spatial_material_mapping.determinant_deformation_gradient_ =
