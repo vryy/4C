@@ -168,7 +168,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::EvaluateNonlinearForceStiffnessM
             EvaluateCauchyGreen<celltype>(spatial_material_mapping);
 
         const CORE::LINALG::Matrix<num_str_, 1> gl_strain =
-            EvaluateGreenLagrangeStrain<celltype>(cauchygreen);
+            EvaluateGreenLagrangeStrain(cauchygreen);
 
         CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
@@ -318,7 +318,7 @@ double DRT::ELEMENTS::SolidEleCalcMulf<celltype>::CalculateInternalEnergy(const 
             EvaluateCauchyGreen<celltype>(spatial_material_mapping);
 
         const CORE::LINALG::Matrix<num_str_, 1> gl_strain =
-            EvaluateGreenLagrangeStrain<celltype>(cauchygreen);
+            EvaluateGreenLagrangeStrain(cauchygreen);
 
         double psi = 0.0;
         solid_material.StrainEnergy(gl_strain, psi, gp, ele.Id());
@@ -363,7 +363,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::CalculateStress(const DRT::Eleme
             EvaluateCauchyGreen<celltype>(spatial_material_mapping);
 
         const CORE::LINALG::Matrix<num_str_, 1> gl_strain =
-            EvaluateGreenLagrangeStrain<celltype>(cauchygreen);
+            EvaluateGreenLagrangeStrain(cauchygreen);
 
         EvaluateGPCoordinatesAndAddToParameterList<celltype>(
             nodal_coordinates, shape_functions, params);

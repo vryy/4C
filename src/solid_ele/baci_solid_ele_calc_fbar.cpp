@@ -155,7 +155,7 @@ namespace
     const CORE::LINALG::Matrix<num_dim<celltype>, num_dim<celltype>> cauchygreen_fbar_factor =
         EvaluateCauchyGreen(spatial_material_mapping_fbar_factor);
 
-    return DRT::ELEMENTS::EvaluateGreenLagrangeStrain<celltype>(cauchygreen_fbar_factor);
+    return DRT::ELEMENTS::EvaluateGreenLagrangeStrain(cauchygreen_fbar_factor);
   }
 }  // namespace
 
@@ -233,7 +233,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<celltype>::EvaluateNonlinearForceStiffnessM
             EvaluateCauchyGreen(spatial_material_mapping_bar);
 
         CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> gl_strain_bar =
-            EvaluateGreenLagrangeStrain<celltype>(cauchygreen_bar);
+            EvaluateGreenLagrangeStrain(cauchygreen_bar);
 
         EvaluateGPCoordinatesAndAddToParameterList<celltype>(
             nodal_coordinates, shape_functions, params);

@@ -582,16 +582,14 @@ namespace DRT::ELEMENTS
    *
    * GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
    *
-   * @tparam celltype : Cell type
    * @param cauchygreen (in) : Right Cauchy-Green deformation tensor
    * @return CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> : Green-Lagrange strain tensor in
    * strain-like Voigt notation
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> EvaluateGreenLagrangeStrain(
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>& cauchygreen)
+  inline CORE::LINALG::Matrix<6, 1> EvaluateGreenLagrangeStrain(
+      const CORE::LINALG::Matrix<3, 3>& cauchygreen)
   {
-    CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> gl_strain;
+    CORE::LINALG::Matrix<6, 1> gl_strain;
 
     gl_strain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     gl_strain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);

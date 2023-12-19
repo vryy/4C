@@ -109,7 +109,7 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
   {
     // no element technology
     case 0:
-      return DRT::ELEMENTS::SolidEleCalc<celltype>();
+      return DRT::ELEMENTS::DisplacementBasedSolidIntegrator<celltype>();
       break;
     // simple: just one element technology
     case 1:

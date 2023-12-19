@@ -457,7 +457,7 @@ namespace
             DRT::ELEMENTS::EvaluateCauchyGreen<celltype>(displacement_based_mapping);
 
     const CORE::LINALG::Matrix<num_str<celltype>, 1> gl_strain =
-        DRT::ELEMENTS::EvaluateGreenLagrangeStrain<celltype>(displacement_based_cauchygreen);
+        DRT::ELEMENTS::EvaluateGreenLagrangeStrain(displacement_based_cauchygreen);
 
     return EvaluateEnhancedAssumedGLStrains<celltype, eastype>(gl_strain, Mtilde, alpha);
   }
