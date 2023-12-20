@@ -1098,9 +1098,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
            INPAR::MORTAR::algorithm_gpts)
   {
-    DRT::Problem::Instance()
-        ->getNonconstParameterList()
-        ->sublist("CONTACT DYNAMIC")
+    const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->ContactDynamicParams())
         .set("SYSTEM", "none");
 
     if (contact.get<double>("PENALTYPARAM") <= 0.0)

@@ -47,6 +47,7 @@
 #include "baci_tsi_defines.H"
 #include "baci_tsi_utils.H"
 
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 BACI_NAMESPACE_OPEN
@@ -2845,10 +2846,8 @@ void TSI::Monolithic::FixTimeIntegrationParams()
           DRT::Problem::Instance()->ThermalDynamicParams(), "DYNAMICTYP") ==
       INPAR::THR::dyna_genalpha)
   {
-    Teuchos::ParameterList& ga = DRT::Problem::Instance()
-                                     ->getNonconstParameterList()
-                                     ->sublist("THERMAL DYNAMIC")
-                                     .sublist("GENALPHA");
+    Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
+        DRT::Problem::Instance()->ThermalDynamicParams().sublist("GENALPHA"));
     double rhoinf = ga.get<double>("RHO_INF");
 
     if (rhoinf != -1.)
@@ -2867,10 +2866,8 @@ void TSI::Monolithic::FixTimeIntegrationParams()
           DRT::Problem::Instance()->StructuralDynamicParams(), "DYNAMICTYP") ==
       INPAR::STR::dyna_genalpha)
   {
-    Teuchos::ParameterList& ga = DRT::Problem::Instance()
-                                     ->getNonconstParameterList()
-                                     ->sublist("STRUCTURAL DYNAMIC")
-                                     .sublist("GENALPHA");
+    Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
+        DRT::Problem::Instance()->StructuralDynamicParams().sublist("GENALPHA"));
     double rhoinf = ga.get<double>("RHO_INF");
 
     if (rhoinf != -1.)
