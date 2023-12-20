@@ -7,6 +7,7 @@
 
 #include "baci_solid_ele.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_io_linedefinition.H"
@@ -14,16 +15,12 @@
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_surface.H"
-#include "baci_solid_ele_calc_interface.H"
 #include "baci_solid_ele_factory.H"
 #include "baci_solid_ele_interface_serializable.H"
 #include "baci_solid_ele_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
-#include <memory>
-
 BACI_NAMESPACE_OPEN
-
 
 DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;
 
@@ -38,9 +35,8 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                             .AddIntVector("HEX8", 8)
                             .AddNamedInt("MAT")
                             .AddNamedString("KINEM")
-                            .AddOptionalNamedString("EAS")
-                            .AddOptionalTag("FBAR")
-                            .AddOptionalTag("MULF")
+                            .AddOptionalNamedString("TECH")
+                            .AddOptionalNamedString("PRESTRESS_TECH")
                             .AddOptionalNamedDoubleVector("RAD", 3)
                             .AddOptionalNamedDoubleVector("AXI", 3)
                             .AddOptionalNamedDoubleVector("CIR", 3)
@@ -53,7 +49,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddIntVector("HEX18", 18)
                              .AddNamedInt("MAT")
                              .AddNamedString("KINEM")
-                             .AddOptionalTag("MULF")
+                             .AddOptionalNamedString("PRESTRESS_TECH")
                              .AddOptionalNamedDoubleVector("RAD", 3)
                              .AddOptionalNamedDoubleVector("AXI", 3)
                              .AddOptionalNamedDoubleVector("CIR", 3)
@@ -66,7 +62,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddIntVector("HEX20", 20)
                              .AddNamedInt("MAT")
                              .AddNamedString("KINEM")
-                             .AddOptionalTag("MULF")
+                             .AddOptionalNamedString("PRESTRESS_TECH")
                              .AddOptionalNamedDoubleVector("RAD", 3)
                              .AddOptionalNamedDoubleVector("AXI", 3)
                              .AddOptionalNamedDoubleVector("CIR", 3)
@@ -79,7 +75,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddIntVector("HEX27", 27)
                              .AddNamedInt("MAT")
                              .AddNamedString("KINEM")
-                             .AddOptionalTag("MULF")
+                             .AddOptionalNamedString("PRESTRESS_TECH")
                              .AddOptionalNamedDoubleVector("RAD", 3)
                              .AddOptionalNamedDoubleVector("AXI", 3)
                              .AddOptionalNamedDoubleVector("CIR", 3)
@@ -98,7 +94,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                             .AddIntVector("TET4", 4)
                             .AddNamedInt("MAT")
                             .AddNamedString("KINEM")
-                            .AddOptionalTag("MULF")
+                            .AddOptionalNamedString("PRESTRESS_TECH")
                             .AddOptionalNamedDoubleVector("RAD", 3)
                             .AddOptionalNamedDoubleVector("AXI", 3)
                             .AddOptionalNamedDoubleVector("CIR", 3)
@@ -111,7 +107,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddIntVector("TET10", 10)
                              .AddNamedInt("MAT")
                              .AddNamedString("KINEM")
-                             .AddOptionalTag("MULF")
+                             .AddOptionalNamedString("PRESTRESS_TECH")
                              .AddOptionalNamedDoubleVector("RAD", 3)
                              .AddOptionalNamedDoubleVector("AXI", 3)
                              .AddOptionalNamedDoubleVector("CIR", 3)
@@ -124,7 +120,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                               .AddIntVector("WEDGE6", 6)
                               .AddNamedInt("MAT")
                               .AddNamedString("KINEM")
-                              .AddOptionalTag("MULF")
+                              .AddOptionalNamedString("PRESTRESS_TECH")
                               .AddOptionalNamedDoubleVector("RAD", 3)
                               .AddOptionalNamedDoubleVector("AXI", 3)
                               .AddOptionalNamedDoubleVector("CIR", 3)
@@ -137,8 +133,8 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                                 .AddIntVector("PYRAMID5", 5)
                                 .AddNamedInt("MAT")
                                 .AddNamedString("KINEM")
-                                .AddOptionalTag("FBAR")
-                                .AddOptionalTag("MULF")
+                                .AddOptionalNamedString("TECH")
+                                .AddOptionalNamedString("PRESTRESS_TECH")
                                 .AddOptionalNamedDoubleVector("RAD", 3)
                                 .AddOptionalNamedDoubleVector("AXI", 3)
                                 .AddOptionalNamedDoubleVector("CIR", 3)
@@ -229,11 +225,7 @@ void DRT::ELEMENTS::Solid::Pack(CORE::COMM::PackBuffer& data) const
 
   AddtoPack(data, (int)celltype_);
 
-  AddtoPack(data, (int)solid_ele_property_.kintype);
-
-  AddtoPack(data, solid_ele_property_.eletech);
-
-  AddtoPack(data, solid_ele_property_.eastype);
+  AddToPack(data, solid_ele_property_);
 
   data.AddtoPack(material_post_setup_);
 
@@ -253,11 +245,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 
   celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
-  solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
-
-  CORE::COMM::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
-
-  solid_ele_property_.eastype = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
+  ExtractFromPack(position, data, solid_ele_property_);
 
   if (Shape() == CORE::FE::CellType::nurbs27)
   {
@@ -267,8 +255,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid interface
-  solid_calc_variant_ =
-      CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
+  solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
 
   DRT::ELEMENTS::Unpack(solid_calc_variant_, position, data);
 
@@ -299,34 +286,28 @@ bool DRT::ELEMENTS::Solid::ReadElement(
   // kinematic type
   SetKinematicType(STR::UTILS::READELEMENT::ReadElementKinematicType(linedef));
 
-  if (linedef->HaveNamed("EAS"))
+  if (linedef->HaveNamed("TECH"))
   {
-    if (Shape() == CORE::FE::CellType::hex8)
-    {
-      STR::UTILS::READELEMENT::ReadAndSetEAS(
-          linedef, solid_ele_property_.eastype, solid_ele_property_.eletech);
-    }
-    else
-      dserror("no EAS allowed for this element shape");
+    solid_ele_property_.element_technology =
+        STR::UTILS::READELEMENT::ReadElementTechnology(linedef);
   }
 
-  if (linedef->HaveNamed("FBAR"))
+  if (linedef->HaveNamed("PRESTRESS_TECH"))
   {
-    solid_ele_property_.eletech.insert(INPAR::STR::EleTech::fbar);
+    solid_ele_property_.prestress_technology =
+        STR::UTILS::READELEMENT::ReadPrestressTechnology(linedef);
   }
 
-  if (linedef->HaveNamed("MULF"))
-  {
-    solid_ele_property_.eletech.insert(INPAR::STR::EleTech::ps_mulf);
-  }
+
+  // kinematic type
+  solid_ele_property_.kintype = STR::UTILS::READELEMENT::ReadElementKinematicType(linedef);
 
   if (Shape() == CORE::FE::CellType::nurbs27)
   {
     SetNurbsElement() = true;
   }
 
-  solid_calc_variant_ =
-      CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
+  solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
   std::visit(
       [&](auto& interface) { interface->Setup(*SolidMaterial(), linedef); }, solid_calc_variant_);
   return true;

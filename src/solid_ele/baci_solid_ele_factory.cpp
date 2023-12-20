@@ -7,147 +7,175 @@
 
 #include "baci_solid_ele_factory.H"
 
-#include "baci_lib_element.H"
-#include "baci_solid_ele_calc.H"
+#include "baci_discretization_fem_general_cell_type.H"
+#include "baci_discretization_fem_general_cell_type_traits.H"
+#include "baci_inpar_structure.H"
+#include "baci_solid_ele_calc_displacement_based.H"
 #include "baci_solid_ele_calc_eas.H"
 #include "baci_solid_ele_calc_fbar.H"
 #include "baci_solid_ele_calc_mulf.H"
+#include "baci_solid_ele_properties.H"
 #include "baci_utils_exceptions.H"
 
-#include <memory>
+#include <type_traits>
 
 BACI_NAMESPACE_OPEN
 
 namespace
 {
-  template <CORE::FE::CellType celltype>
-  DRT::ELEMENTS::SolidCalcVariant CreateFBarSolidCalculationInterface(
-      INPAR::STR::KinemType kinem_type)
+  template <typename Function>
+  auto KinemTypeSwitch(INPAR::STR::KinemType kinem_type, Function fct)
   {
-    if (kinem_type != INPAR::STR::KinemType::kinem_nonlinearTotLag)
+    switch (kinem_type)
     {
-      dserror("FBAR only usable for KINEM nonlinear (you are using %s).", kinem_type);
+      case INPAR::STR::KinemType::kinem_linear:
+        return fct(
+            std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::kinem_linear>{});
+      case INPAR::STR::KinemType::kinem_nonlinearTotLag:
+        return fct(std::integral_constant<INPAR::STR::KinemType,
+            INPAR::STR::KinemType::kinem_nonlinearTotLag>{});
+      case INPAR::STR::KinemType::kinem_vague:
+        return fct(
+            std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::kinem_vague>{});
     }
 
-    if constexpr (celltype == CORE::FE::CellType::hex8 || celltype == CORE::FE::CellType::pyramid5)
-    {
-      return DRT::ELEMENTS::SolidEleCalcFbar<celltype>();
-    }
-
-    dserror("FBAR is only implemented for hex8 and pyramid5 elements.");
-    return {};
+    dserror("Your kinematic type is unknown: %d", kinem_type);
   }
 
-  template <CORE::FE::CellType celltype>
-  DRT::ELEMENTS::SolidCalcVariant CreateMulfSolidCalculationInterface(
-      INPAR::STR::KinemType kinem_type)
+
+  /*!
+   * @brief A template class that is taking different element formulation switches as template
+   * parameter. If implemented, the struct defines the type of the solid evaluation.
+   *
+   * @tparam celltype
+   * @tparam kinem : Kinematic type (linear, nonliner)
+   * @tparam ele_tech : Element technology (none, FBar, EAS mild and full)
+   * @tparam prestress_technology : Prestress technology (none or mulf)
+   * @tparam Enable : A dummy parameter for enabling a subset of switches.
+   */
+  template <CORE::FE::CellType celltype, INPAR::STR::KinemType kinem,
+      DRT::ELEMENTS::ElementTechnology ele_tech,
+      DRT::ELEMENTS::PrestressTechnology prestress_technology, typename Enable = void>
+  struct SolidCalculationFormulation
   {
-    if (kinem_type != INPAR::STR::KinemType::kinem_nonlinearTotLag)
-    {
-      dserror("MULF only usable for KINEM nonlinear (you are using %s).", kinem_type);
-    }
-    return DRT::ELEMENTS::SolidEleCalcMulf<celltype>();
-  }
+  };
+
+  /*!
+   * @brief Standard nonlinear displacement based total lagrangian formulation valid for all
+   * celltypes
+   */
+  template <CORE::FE::CellType celltype>
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::kinem_nonlinearTotLag,
+      DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = DRT::ELEMENTS::DisplacementBasedSolidIntegrator<celltype>;
+  };
+
+  /*!
+   * @brief Nonlinear total lagrangian formulation with mild EAS for hex8
+   */
+  template <>
+  struct SolidCalculationFormulation<CORE::FE::CellType::hex8,
+      INPAR::STR::KinemType::kinem_nonlinearTotLag, DRT::ELEMENTS::ElementTechnology::eas_mild,
+      DRT::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
+        STR::ELEMENTS::EasType::eastype_h8_9>;
+  };
+
+  /*!
+   * @brief Nonlinear total lagrangian formulation with full EAS for hex8
+   */
+  template <>
+  struct SolidCalculationFormulation<CORE::FE::CellType::hex8,
+      INPAR::STR::KinemType::kinem_nonlinearTotLag, DRT::ELEMENTS::ElementTechnology::eas_full,
+      DRT::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
+        STR::ELEMENTS::EasType::eastype_h8_21>;
+  };
+
+  /*!
+   * @brief Nonlinear total lagrangian formulation with F-Bar for hex8 and pyramid 5
+   */
+  template <CORE::FE::CellType celltype>
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::kinem_nonlinearTotLag,
+      DRT::ELEMENTS::ElementTechnology::fbar, DRT::ELEMENTS::PrestressTechnology::none,
+      std::enable_if_t<celltype == CORE::FE::CellType::hex8 ||
+                       celltype == CORE::FE::CellType::pyramid5>>
+  {
+    using type = DRT::ELEMENTS::SolidEleCalcFbar<celltype>;
+  };
+
+  /*!
+   * @brief Nonlinear modified updated lagrangian prestressing for all celltypes
+   */
+  template <CORE::FE::CellType celltype>
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::kinem_nonlinearTotLag,
+      DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::mulf>
+  {
+    using type = DRT::ELEMENTS::SolidEleCalcMulf<celltype>;
+  };
+
+  /*!
+   * @brief A struct that determines whether we have implemented a solid calculation formulation
+   *
+   * The member variable value is true if the first template parameter is a valid type
+   *
+   * @tparam typename : Template parameter that may be a valid type or not
+   */
+  template <typename, typename = void>
+  struct have_formulation : std::false_type
+  {
+  };
+
+  template <typename T>
+  struct have_formulation<T, std::void_t<typename T::type>> : std::true_type
+  {
+  };
 }  // namespace
 
 DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
-    const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech,
-    INPAR::STR::KinemType kinem_type, STR::ELEMENTS::EasType eastype)
+    CORE::FE::CellType celltype, const DRT::ELEMENTS::SolidElementProperties& element_properties)
 {
-  switch (ele.Shape())
-  {
-    case CORE::FE::CellType::hex8:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::hex8>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    case CORE::FE::CellType::hex27:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::hex27>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    case CORE::FE::CellType::hex20:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::hex20>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    case CORE::FE::CellType::hex18:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::hex18>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    case CORE::FE::CellType::nurbs27:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::nurbs27>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    case CORE::FE::CellType::pyramid5:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::pyramid5>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    case CORE::FE::CellType::wedge6:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::wedge6>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    case CORE::FE::CellType::tet4:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::tet4>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    case CORE::FE::CellType::tet10:
-      return CreateSolidCalculationInterface<CORE::FE::CellType::tet10>(
-          ele, eletech, kinem_type, eastype);
-      break;
-    default:
-      dserror("unknown celltype provided");
-      break;
-  }
-  return {};
-}
-
-template <CORE::FE::CellType celltype>
-DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
-    const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech,
-    INPAR::STR::KinemType kinem_type, STR::ELEMENTS::EasType eastype)
-{
-  // here we go into the different cases for element technology
-  switch (eletech.size())
-  {
-    // no element technology
-    case 0:
-      return DRT::ELEMENTS::DisplacementBasedSolidIntegrator<celltype>();
-      break;
-    // simple: just one element technology
-    case 1:
-      switch (*eletech.begin())
+  // We have 4 different element properties and each combination results in a different element
+  // formulation.
+  return CORE::FE::CellTypeSwitch<DETAILS::ImplementedSolidCellTypes>(celltype,
+      [&](auto celltype_t)
       {
-        case INPAR::STR::EleTech::eas:
-          if constexpr (celltype != CORE::FE::CellType::hex8)
-          {
-            dserror("EAS is only implemented for hex8 elements.");
-          }
-          else
-          {
-            switch (eastype)
+        return KinemTypeSwitch(element_properties.kintype,
+            [&](auto kinemtype_t)
             {
-              case STR::ELEMENTS::EasType::eastype_h8_9:
-                return DRT::ELEMENTS::SolidEleCalcEas<celltype,
-                    STR::ELEMENTS::EasType::eastype_h8_9>();
-              case STR::ELEMENTS::EasType::eastype_h8_21:
-                return DRT::ELEMENTS::SolidEleCalcEas<celltype,
-                    STR::ELEMENTS::EasType::eastype_h8_21>();
-              default:
-                dserror("EAS type %d is not implemented %d.", (int)eastype);
-            }
-          }
-        case INPAR::STR::EleTech::fbar:
-          return CreateFBarSolidCalculationInterface<celltype>(kinem_type);
-        case INPAR::STR::EleTech::ps_mulf:
-          return CreateMulfSolidCalculationInterface<celltype>(kinem_type);
-        default:
-          dserror("unknown element technology");
-      }
-    // combination of element technologies
-    default:
-    {
-      dserror("unknown combination of element technologies.");
-    }
-  }
-  return {};
+              return ElementTechnologySwitch(element_properties.element_technology,
+                  [&](auto eletech_t)
+                  {
+                    return PrestressTechnologySwitch(element_properties.prestress_technology,
+                        [&](auto prestress_tech_t) -> SolidCalcVariant
+                        {
+                          constexpr CORE::FE::CellType celltype_c = celltype_t();
+                          constexpr INPAR::STR::KinemType kinemtype_c = kinemtype_t();
+                          constexpr ElementTechnology eletech_c = eletech_t();
+                          constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
+                          if constexpr (have_formulation<SolidCalculationFormulation<celltype_c,
+                                            kinemtype_c, eletech_c, prestress_tech_c>>::value)
+                          {
+                            return typename SolidCalculationFormulation<celltype_c, kinemtype_c,
+                                eletech_c, prestress_tech_c>::type();
+                          }
+
+                          dserror(
+                              "Your element formulation with cell type %s, kinematic type %s,"
+                              " elememt technology %s and prestress type %s oes not exist ",
+                              CORE::FE::celltype_string<celltype_t()>,
+                              INPAR::STR::KinemTypeString(element_properties.kintype).c_str(),
+                              ElementTechnologyString(element_properties.element_technology)
+                                  .c_str(),
+                              PrestressTechnologyString(element_properties.prestress_technology)
+                                  .c_str());
+                        });
+                  });
+            });
+      });
 }
 
 BACI_NAMESPACE_CLOSE

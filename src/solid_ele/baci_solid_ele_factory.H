@@ -11,16 +11,12 @@
 #include "baci_config.H"
 
 #include "baci_discretization_fem_general_cell_type_traits.H"
-#include "baci_inpar_structure.H"
-#include "baci_lib_element.H"
-#include "baci_solid_ele_calc.H"
 #include "baci_solid_ele_calc_displacement_based.H"
 #include "baci_solid_ele_calc_eas.H"
 #include "baci_solid_ele_calc_fbar.H"
 #include "baci_solid_ele_calc_mulf.H"
 #include "baci_solid_ele_factory_lib.H"
-
-#include <variant>
+#include "baci_solid_ele_properties.H"
 
 BACI_NAMESPACE_OPEN
 
@@ -30,21 +26,6 @@ namespace STR::ELEMENTS
 }
 namespace DRT::ELEMENTS
 {
-  /*!
-   *  @brief struct for managing solid element properties
-   */
-  struct SolidElementProperties
-  {
-    //! kinematic type
-    INPAR::STR::KinemType kintype{INPAR::STR::kinem_vague};
-
-    //! element technology
-    std::set<INPAR::STR::EleTech> eletech;
-
-    //! specify EAS type in case contains enhanced assumed strains
-    STR::ELEMENTS::EasType eastype{STR::ELEMENTS::EasType::eastype_undefined};
-  };
-
   namespace DETAILS
   {
     using ImplementedSolidCellTypes = CORE::FE::celltype_sequence<CORE::FE::CellType::hex8,
@@ -74,14 +55,8 @@ namespace DRT::ELEMENTS
   class SolidEleCalcInterface;
   class Solid;
 
-  SolidCalcVariant CreateSolidCalculationInterface(const DRT::Element& ele,
-      const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
-      STR::ELEMENTS::EasType eastype);
-
-  template <CORE::FE::CellType celltype>
-  SolidCalcVariant CreateSolidCalculationInterface(const DRT::Element& ele,
-      const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
-      STR::ELEMENTS::EasType eastype);
+  SolidCalcVariant CreateSolidCalculationInterface(
+      CORE::FE::CellType celltype, const DRT::ELEMENTS::SolidElementProperties& element_properties);
 
 }  // namespace DRT::ELEMENTS
 

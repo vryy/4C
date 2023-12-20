@@ -71,5 +71,5 @@ NODE 6 COORD 1.0 1.0 0.0
 NODE 7 COORD 1.0 0.0 1.0
 NODE 8 COORD 1.0 1.0 1.0
 ------------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLID HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear EAS mild FIBER1 0.7071067811865475 0.7071067811865475 0.0
+1 SOLID HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear TECH eas_mild FIBER1 0.7071067811865475 0.7071067811865475 0.0
 ---------------------------------------------------------------------------END

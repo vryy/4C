@@ -144,15 +144,10 @@ namespace DRT::ELEMENTS
 
     void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
-    void SetEASType(STR::ELEMENTS::EasType type) { solid_ele_property_.eastype = type; }
-
-    [[nodiscard]] STR::ELEMENTS::EasType GetEASType() const { return solid_ele_property_.eastype; }
-
-    [[nodiscard]] INPAR::STR::KinemType GetKinemType() const { return solid_ele_property_.kintype; }
-
-    [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const
+    [[nodiscard]] bool HaveEAS() const
     {
-      return solid_ele_property_.eletech;
+      return solid_ele_property_.element_technology == ElementTechnology::eas_full ||
+             solid_ele_property_.element_technology == ElementTechnology::eas_mild;
     }
 
     void VisNames(std::map<std::string, int>& names) override;

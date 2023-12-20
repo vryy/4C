@@ -198,18 +198,13 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
 
   // kinematic type
-  SetKinematicType(STR::UTILS::READELEMENT::ReadElementKinematicType(linedef));
+  solid_ele_property_.kintype = STR::UTILS::READELEMENT::ReadElementKinematicType(linedef);
 
 
-  if (linedef->HaveNamed("EAS"))
+  if (linedef->HaveNamed("TECH"))
   {
-    if (Shape() == CORE::FE::CellType::hex8)
-    {
-      STR::UTILS::READELEMENT::ReadAndSetEAS(
-          linedef, solid_ele_property_.eastype, solid_ele_property_.eletech);
-    }
-    else
-      dserror("no EAS allowed for this element shape");
+    solid_ele_property_.element_technology =
+        STR::UTILS::READELEMENT::ReadElementTechnology(linedef);
   }
 
   // read scalar transport implementation type
@@ -235,8 +230,7 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
   ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(linedef);
 
-  solid_calc_variant_ =
-      CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
+  solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
   solidporo_calc_variant_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 
   // setup solid material
@@ -289,11 +283,7 @@ void DRT::ELEMENTS::SolidPoro::Pack(CORE::COMM::PackBuffer& data) const
 
   AddtoPack(data, (int)celltype_);
 
-  AddtoPack(data, (int)solid_ele_property_.kintype);
-
-  AddtoPack(data, solid_ele_property_.eletech);
-
-  AddtoPack(data, solid_ele_property_.eastype);
+  AddToPack(data, solid_ele_property_);
 
   AddtoPack(data, poro_ele_property_.porotype);
 
@@ -329,11 +319,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 
   celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
-  solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
-
-  CORE::COMM::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
-
-  solid_ele_property_.eastype = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
+  ExtractFromPack(position, data, solid_ele_property_);
 
   poro_ele_property_.porotype = static_cast<INPAR::PORO::PoroType>(ExtractInt(position, data));
 
@@ -356,8 +342,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // reset solid and poro interfaces
-  solid_calc_variant_ =
-      CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
+  solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
   solidporo_calc_variant_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 
   DRT::ELEMENTS::Unpack(solid_calc_variant_, position, data);
