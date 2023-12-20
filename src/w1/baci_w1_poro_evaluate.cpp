@@ -458,6 +458,16 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID() == Owner())
       {
+        auto iocouplstress =
+            INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
+
+        // check for output of coupling stress
+        if (iocouplstress == INPAR::STR::stress_none)
+        {
+          // nothing to do here for calculation of effective stress
+          break;
+        }
+
         // get the location vector only for the structure field
         std::vector<int> lm = la[0].lm_;
 
@@ -470,9 +480,6 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
         if (couplstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
 
         CORE::LINALG::SerialDenseMatrix couplstress(numgpt_, Wall1::numstr_);
-
-        auto iocouplstress =
-            INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
 
         // need current fluid state,
         // call the fluid discretization: fluid equates 2nd dofset
