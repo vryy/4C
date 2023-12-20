@@ -712,13 +712,12 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
   return;
 }
 
-#ifdef BACI_WITH_TRILINOS_DEVELOP
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::MueLuBeamSolidBlockPreconditioner(
     Teuchos::ParameterList& muelulist)
-    : MueLuPreconditioner(outfile, muelulist)
+    : MueLuPreconditioner(muelulist)
 {
 }
 
@@ -854,8 +853,6 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
     dserror("Only works with .xml file");
   }
 }
-
-#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

@@ -25,10 +25,7 @@ baci_test(beam3eb_genalpha_lineload_dynamic 2 "")
 baci_test(beam3eb_static_beam_to_solid_volume_meshtying_hex27_cross_section_projection_penalty_bending 2 "")
 baci_test(beam3eb_static_beam_to_solid_volume_meshtying_hex27_cross_section_projection_penalty_patch 2 "")
 
-if(BACI_WITH_TRILINOS_DEVELOP)
-    baci_test(beam3eb_static_beam_to_solid_volume_meshtying_composite_muelu 3 "" muelu)
-endif(BACI_WITH_TRILINOS_DEVELOP)
-
+baci_test(beam3eb_static_beam_to_solid_volume_meshtying_composite_muelu 3 "" muelu)
 baci_test(beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact 2 3)
 
 if(BACI_WITH_ARBORX)
