@@ -70,7 +70,7 @@ Remarks:
 
 - The keyword ``Active`` declarates a surface pair to be in contact initially.
   it is only valid for slave surfaces 
-  (but ``Inactive``must be given for Master surfaces as well if further parameters are given). 
+  (but ``Inactive`` must be given for Master surfaces as well if further parameters are given).
   The default is ``Inactive`` anyway, and it is not necessary to denote surfaces as being active,
   since a contact search is conducted in any case.
 - While all further parameters are optional, one must not miss any parameter between others; 
