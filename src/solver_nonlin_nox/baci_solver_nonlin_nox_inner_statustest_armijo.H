@@ -11,19 +11,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_ARMIJO_H
 #define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_ARMIJO_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"  // base class
 
 #include <NOX_StatusTest_Generic.H>
 
 #include <deque>
-
-namespace NOX
-{
-  namespace Abstract
-  {
-    class Group;
-  }  // namespace Abstract
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -103,7 +96,6 @@ namespace NOX
     }    // namespace INNER
   }      // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

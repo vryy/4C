@@ -14,41 +14,15 @@
 #define BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_LinearSystem.H>
 #include <Teuchos_Time.hpp>
 
-// Forward declaration
-class Epetra_Vector;
-class Epetra_RowMatrix;
-class Epetra_LinearProblem;
-class Epetra_Map;
-
-namespace Teuchos
-{
-  class ParameterList;
-}
-
-namespace NOX
-{
-  namespace Abstract
-  {
-    class Group;
-  }  // namespace Abstract
-  namespace Epetra
-  {
-    class Scaling;
-    namespace Interface
-    {
-      class Jacobian;
-      class Preconditioner;
-    }  // namespace Interface
-  }    // namespace Epetra
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
+// Forward declaration
 namespace CORE::LINALG
 {
   class Solver;

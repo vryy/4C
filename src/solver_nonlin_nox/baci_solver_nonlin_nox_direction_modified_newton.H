@@ -15,12 +15,7 @@
 
 #include "baci_solver_nonlin_nox_direction_newton.H"
 #include "baci_solver_nonlin_nox_floating_point_exception.H"
-
-class Epetra_Vector;
-namespace NOX
-{
-  class Utils;
-}
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 BACI_NAMESPACE_OPEN
 
@@ -187,8 +182,6 @@ namespace NOX
     }  // namespace Direction
   }    // namespace NLN
 }  // namespace NOX
-
-
 
 BACI_NAMESPACE_CLOSE
 

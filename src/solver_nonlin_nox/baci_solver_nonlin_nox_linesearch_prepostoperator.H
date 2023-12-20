@@ -15,11 +15,6 @@
 
 #include <Teuchos_RCP.hpp>
 
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
-
 BACI_NAMESPACE_OPEN
 
 namespace NOX
@@ -32,7 +27,6 @@ namespace NOX
       {
         prepost_output_every_iter
       };
-
 
       class PrePostOperator
       {
@@ -87,7 +81,6 @@ namespace NOX
     }  // namespace LineSearch
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

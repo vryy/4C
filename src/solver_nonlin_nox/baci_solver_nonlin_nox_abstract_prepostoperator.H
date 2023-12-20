@@ -5,39 +5,24 @@
        operations into different NOX::NLN classes.
 
 \level 3
-
-
-
-
-
 */
 /*-----------------------------------------------------------*/
 
 #ifndef BACI_SOLVER_NONLIN_NOX_ABSTRACT_PREPOSTOPERATOR_H
 #define BACI_SOLVER_NONLIN_NOX_ABSTRACT_PREPOSTOPERATOR_H
 
-#include <NOX_Observer.hpp>  // base class
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
-// forward declaration
-class Epetra_Vector;
-namespace NOX
-{
-  namespace Abstract
-  {
-    class Vector;
-  }  // namespace Abstract
-  namespace LineSearch
-  {
-    class Generic;
-  }  // namespace LineSearch
-}  // namespace NOX
+#include <NOX_Observer.hpp>  // base class
 
 BACI_NAMESPACE_OPEN
 
+// forward declaration
 namespace CORE::LINALG
 {
   class SparseOperator;
 }  // namespace CORE::LINALG
+
 namespace NOX
 {
   namespace NLN
@@ -312,7 +297,6 @@ namespace NOX
     }     // namespace Abstract
   }       // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

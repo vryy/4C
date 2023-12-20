@@ -11,25 +11,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_NEWTON_H
 #define BACI_SOLVER_NONLIN_NOX_DIRECTION_NEWTON_H
 
-#include <NOX_Direction_Newton.H>  // base class
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
-namespace NOX
-{
-  class Utils;
-  namespace Abstract
-  {
-    class Vector;
-    class Group;
-  }  // namespace Abstract
-  namespace Solver
-  {
-    class Generic;
-  }  // namespace Solver
-}  // namespace NOX
+#include <NOX_Direction_Newton.H>  // base class
 
 BACI_NAMESPACE_OPEN
 
-// forward declarations...
 namespace NOX
 {
   namespace NLN
@@ -57,7 +44,6 @@ namespace NOX
     }  // namespace Direction
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

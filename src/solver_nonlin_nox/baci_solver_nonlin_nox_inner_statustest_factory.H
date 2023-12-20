@@ -13,17 +13,9 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FACTORY_H
 #define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FACTORY_H
 
-#include <Teuchos_RCP.hpp>
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
-// forward declaration
-namespace Teuchos
-{
-  class ParameterList;
-}
-namespace NOX
-{
-  class Utils;
-}
+#include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN
 
@@ -94,7 +86,6 @@ namespace NOX
     }    // namespace INNER
   }      // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

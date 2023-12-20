@@ -11,20 +11,13 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_INTERFACE_REQUIRED_H
 #define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_INTERFACE_REQUIRED_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
+
 #include <NOX_Abstract_Group.H>
 #include <NOX_StatusTest_Generic.H>
 
-namespace NOX
-{
-  namespace MeritFunction
-  {
-    class Generic;
-  }  // namespace MeritFunction
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
-// forward declaration
 namespace NOX
 {
   namespace NLN
@@ -61,7 +54,6 @@ namespace NOX
     }         // namespace INNER
   }           // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

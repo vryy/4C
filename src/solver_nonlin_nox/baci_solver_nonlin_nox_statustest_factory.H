@@ -13,24 +13,10 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_STATUSTEST_FACTORY_H
 #define BACI_SOLVER_NONLIN_NOX_STATUSTEST_FACTORY_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
-
-// forward declaration
-namespace Teuchos
-{
-  class ParameterList;
-}
-namespace NOX
-{
-  class Utils;
-  namespace StatusTest
-  {
-    class Generic;
-    class Factory;
-  }  // namespace StatusTest
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -133,7 +119,6 @@ namespace NOX
     }  // namespace StatusTest
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

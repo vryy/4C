@@ -14,27 +14,14 @@
 #define BACI_SOLVER_NONLIN_NOX_LINESEARCH_BACKTRACK_H
 
 #include "baci_solver_nonlin_nox_floating_point_exception.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"
 #include "baci_solver_nonlin_nox_linesearch_generic.H"  // base class
 
 #include <NOX_StatusTest_Generic.H>
 
-namespace NOX
-{
-  class Utils;
-  namespace MeritFunction
-  {
-    class Generic;
-  }
-  namespace StatusTest
-  {
-    class Generic;
-  }
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
-// forward declaration
 namespace NOX
 {
   namespace NLN
@@ -141,7 +128,6 @@ namespace NOX
     }  // namespace LineSearch
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

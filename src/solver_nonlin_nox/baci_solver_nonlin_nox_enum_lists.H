@@ -398,8 +398,6 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
-
-
 BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_ENUM_LISTS_H

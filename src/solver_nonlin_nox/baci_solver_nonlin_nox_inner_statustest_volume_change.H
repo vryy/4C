@@ -11,19 +11,10 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_VOLUME_CHANGE_H
 #define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_VOLUME_CHANGE_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"
 
 #include <NOX_Abstract_Group.H>
-
-class Epetra_Vector;
-namespace NOX
-{
-  class Utils;
-  namespace Solver
-  {
-    class Generic;
-  }
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -123,8 +114,6 @@ namespace NOX
     }    // namespace INNER
   }      // namespace NLN
 }  // namespace NOX
-
-
 
 BACI_NAMESPACE_CLOSE
 

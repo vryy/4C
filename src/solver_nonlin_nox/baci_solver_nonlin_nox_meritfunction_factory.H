@@ -17,20 +17,6 @@
 
 #include <Teuchos_RCP.hpp>
 
-// Forward declarations
-namespace Teuchos
-{
-  class ParameterList;
-}
-namespace NOX
-{
-  class Utils;
-  namespace MeritFunction
-  {
-    class Generic;
-  }  // namespace MeritFunction
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
 namespace NOX

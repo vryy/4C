@@ -16,42 +16,15 @@
 #define BACI_SOLVER_NONLIN_NOX_PROBLEM_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_utils_exceptions.H"
 
 #include <NOX_StatusTest_Generic.H>
 #include <Teuchos_RCP.hpp>
 
-// forward declaration
-namespace Teuchos
-{
-  class ParameterList;
-}
-namespace NOX
-{
-  class Utils;
-  namespace Abstract
-  {
-    class Group;
-  }  // namespace Abstract
-  namespace Epetra
-  {
-    class LinearSystem;
-    class Vector;
-    namespace Interface
-    {
-      class Required;
-      class Jacobian;
-      class Preconditioner;
-    }  // namespace Interface
-  }    // namespace Epetra
-  namespace StatusTest
-  {
-    class Generic;
-  }  // namespace  StatusTest
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
+// forward declaration
 namespace CORE::LINALG
 {
   class Solver;
@@ -140,7 +113,6 @@ namespace NOX
     };
   }  // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

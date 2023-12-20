@@ -11,20 +11,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_DEFAULTSTEPTEST_H
 #define BACI_SOLVER_NONLIN_NOX_DIRECTION_DEFAULTSTEPTEST_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
+
 #include <NOX_Abstract_Group.H>
 #include <Teuchos_RCP.hpp>
 
 #include <set>
-
-class Epetra_Vector;
-namespace NOX
-{
-  class Utils;
-  namespace Abstract
-  {
-    class Vector;
-  }
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -182,7 +174,6 @@ namespace NOX
     }    // namespace Direction
   }      // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

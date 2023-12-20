@@ -6,8 +6,6 @@
         and the evaluation of special constraint status
         tests)
 
-
-
 \level 3
 
 */
@@ -17,21 +15,11 @@
 #define BACI_SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_REQUIRED_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_utils_exceptions.H"
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_StatusTest_Generic.H>
-
-class Epetra_Operator;
-class Epetra_Vector;
-class Epetra_Map;
-namespace NOX
-{
-  namespace Epetra
-  {
-    class Vector;
-  }  // namespace Epetra
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -163,7 +151,6 @@ namespace NOX
     }  // namespace CONSTRAINT
   }    // end namespace NLN
 }  // end namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

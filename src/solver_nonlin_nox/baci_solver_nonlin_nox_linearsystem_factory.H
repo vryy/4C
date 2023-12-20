@@ -14,28 +14,9 @@
 #define BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_FACTORY_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <Teuchos_RCP.hpp>
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
-namespace NOX
-{
-  namespace Epetra
-  {
-    class Vector;
-    class Scaling;
-    class LinearSystem;
-    namespace Interface
-    {
-      class Required;
-      class Jacobian;
-      class Preconditioner;
-    }  // namespace Interface
-  }    // namespace Epetra
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -84,7 +65,6 @@ namespace NOX
     }  // namespace LinSystem
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

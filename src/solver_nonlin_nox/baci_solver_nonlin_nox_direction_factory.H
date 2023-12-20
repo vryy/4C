@@ -11,22 +11,10 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_FACTORY_H
 #define BACI_SOLVER_NONLIN_NOX_DIRECTION_FACTORY_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
+
 #include <NOX_Direction_UserDefinedFactory.H>
 #include <Teuchos_RCP.hpp>
-
-// forward declarations
-namespace Teuchos
-{
-  class ParameterList;
-}
-namespace NOX
-{
-  class GlobalData;
-  namespace Direction
-  {
-    class Generic;
-  }
-}  // namespace NOX
 
 BACI_NAMESPACE_OPEN
 
@@ -79,7 +67,6 @@ namespace NOX
     }  // namespace Direction
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 

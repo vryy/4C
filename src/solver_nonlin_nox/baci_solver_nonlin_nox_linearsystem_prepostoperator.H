@@ -15,27 +15,14 @@
 
 #include <Teuchos_RCP.hpp>
 
-// forward declarations
-class Epetra_LinearProblem;
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
-namespace NOX
-{
-  class Utils;
-  namespace Abstract
-  {
-    class Vector;
-  }  // namespace Abstract
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
+// forward declarations
 namespace CORE::LINALG
 {
   class SparseOperator;
 }  // namespace CORE::LINALG
+
 namespace NOX
 {
   namespace NLN

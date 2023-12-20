@@ -12,26 +12,9 @@ tests
 #ifndef BACI_SOLVER_NONLIN_NOX_SOLVER_SINGLESTEP_H
 #define BACI_SOLVER_NONLIN_NOX_SOLVER_SINGLESTEP_H
 
+#include "baci_solver_nonlin_nox_forward_decl.H"
+
 #include <NOX_Solver_SingleStep.H>  // base class
-
-// forward declaration
-namespace NOX
-{
-  namespace Abstract
-  {
-    class Group;
-  }  // namespace Abstract
-
-  namespace StatusTest
-  {
-    class Generic;
-  }  // namespace StatusTest
-}  // namespace NOX
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 BACI_NAMESPACE_OPEN
 

@@ -14,31 +14,21 @@
 #define BACI_SOLVER_NONLIN_NOX_AUX_H
 
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_statustest_factory.H"
 
 #include <NOX_Abstract_Vector.H>
 #include <Teuchos_RCP.hpp>
 
-// forward declaration
-class Epetra_Vector;
-class Epetra_Comm;
-namespace NOX
-{
-  class Observer;
-
-  namespace StatusTest
-  {
-    class Generic;
-  }  // namespace StatusTest
-}  // namespace NOX
-
 BACI_NAMESPACE_OPEN
 
+// forward declaration
 namespace CORE::LINALG
 {
   class Solver;
   class SparseOperator;
 }  // namespace CORE::LINALG
+
 namespace NOX
 {
   namespace NLN
@@ -156,7 +146,6 @@ namespace NOX
     }  // namespace AUX
   }    // namespace NLN
 }  // namespace NOX
-
 
 BACI_NAMESPACE_CLOSE
 
