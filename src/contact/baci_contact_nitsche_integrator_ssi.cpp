@@ -145,7 +145,8 @@ void CONTACT::CoIntegratorNitscheSsi::GPTSForces(MORTAR::MortarElement& slave_el
 
     // integrate the scatra-scatra interface condition
     IntegrateSSIInterfaceCondition<dim>(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd,
-        master_ele, master_shape, master_shape_deriv, d_master_xi_dd, jac, d_jac_dd, gp_wgt);
+        master_ele, master_shape, master_shape_deriv, d_master_xi_dd, cauchy_nn_average_pen_gap,
+        d_cauchy_nn_weighted_average_dd, d_cauchy_nn_weighted_average_ds, jac, d_jac_dd, gp_wgt);
   }
 }
 
@@ -345,7 +346,10 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateSSIInterfaceCondition(
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
     MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
     const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd, const double jac,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
+    const double cauchy_nn_average_pen_gap,
+    const CORE::GEN::pairedvector<int, double>& d_cauchy_nn_weighted_average_dd,
+    const CORE::GEN::pairedvector<int, double>& d_cauchy_nn_weighted_average_dc, const double jac,
     const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt)
 {
   // do only integrate if there is something to integrate!
@@ -365,6 +369,10 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateSSIInterfaceCondition(
   // get the scatra-scatra interface condition kinetic model
   const int kinetic_model = GetScaTraEleParameterBoundary()->KineticModel();
 
+  double flux;
+  CORE::GEN::pairedvector<int, double> dflux_dd;
+  CORE::GEN::pairedvector<int, double> dflux_dc;
+
   // perform integration according to kinetic model
   switch (kinetic_model)
   {
@@ -373,27 +381,51 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateSSIInterfaceCondition(
       const double permeability = (*GetScaTraEleParameterBoundary()->Permeabilities())[0];
 
       // calculate the interface flux
-      const double flux = permeability * (slave_conc - master_conc);
+      flux = permeability * (slave_conc - master_conc);
 
       // initialize derivatives of flux w.r.t. concentrations
-      CORE::GEN::pairedvector<int, double> dflux_dc(
-          d_slave_conc_dc.size() + d_master_conc_dc.size());
+      dflux_dc.resize(d_slave_conc_dc.size() + d_master_conc_dc.size());
       for (const auto& p : d_slave_conc_dc) dflux_dc[p.first] += permeability * p.second;
       for (const auto& p : d_master_conc_dc) dflux_dc[p.first] -= permeability * p.second;
 
       // initialize derivatives of flux w.r.t. displacements
-      CORE::GEN::pairedvector<int, double> dflux_dd(
-          d_slave_conc_dd.size() + d_master_conc_dd.size());
+      dflux_dd.resize(d_slave_conc_dd.size() + d_master_conc_dd.size());
       for (const auto& p : d_slave_conc_dd) dflux_dd[p.first] += permeability * p.second;
       for (const auto& p : d_master_conc_dd) dflux_dd[p.first] -= permeability * p.second;
 
-      IntegrateScaTraTest<dim>(-1.0, slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd, jac,
-          d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
-      if (!two_half_pass_)
-      {
-        IntegrateScaTraTest<dim>(1.0, master_ele, master_shape, master_shape_deriv, d_master_xi_dd,
-            jac, d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
-      }
+      break;
+    }
+    case INPAR::S2I::kinetics_linearperm:
+    {
+      const double permeability = (*GetScaTraEleParameterBoundary()->Permeabilities())[0];
+
+      // calculate the interface flux
+      // the minus sign is to obtain the absolute value of the contact forces
+      flux = -permeability * cauchy_nn_average_pen_gap * (slave_conc - master_conc);
+
+      // initialize derivatives of flux w.r.t. concentrations
+      dflux_dc.resize(d_slave_conc_dc.size() + d_master_conc_dc.size() +
+                      d_cauchy_nn_weighted_average_dc.size());
+
+      for (const auto& p : d_slave_conc_dc)
+        dflux_dc[p.first] -= permeability * cauchy_nn_average_pen_gap * p.second;
+      for (const auto& p : d_master_conc_dc)
+        dflux_dc[p.first] += permeability * cauchy_nn_average_pen_gap * p.second;
+
+      for (const auto& p : d_cauchy_nn_weighted_average_dc)
+        dflux_dc[p.first] -= permeability * (slave_conc - master_conc) * p.second;
+
+      // initialize derivatives of flux w.r.t. displacements
+      dflux_dd.resize(d_slave_conc_dd.size() + d_master_conc_dd.size() +
+                      d_cauchy_nn_weighted_average_dd.size());
+
+      for (const auto& p : d_slave_conc_dd)
+        dflux_dd[p.first] -= permeability * cauchy_nn_average_pen_gap * p.second;
+      for (const auto& p : d_master_conc_dd)
+        dflux_dd[p.first] += permeability * cauchy_nn_average_pen_gap * p.second;
+
+      for (const auto& p : d_cauchy_nn_weighted_average_dd)
+        dflux_dd[p.first] -= permeability * (slave_conc - master_conc) * p.second;
 
       break;
     }
@@ -406,6 +438,14 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateSSIInterfaceCondition(
 
       break;
     }
+  }
+
+  IntegrateScaTraTest<dim>(-1.0, slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd, jac,
+      d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
+  if (!two_half_pass_)
+  {
+    IntegrateScaTraTest<dim>(1.0, master_ele, master_shape, master_shape_deriv, d_master_xi_dd, jac,
+        d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
   }
 }
 

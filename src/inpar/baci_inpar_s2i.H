@@ -64,6 +64,7 @@ namespace INPAR::S2I
   enum KineticModels
   {
     kinetics_constperm,
+    kinetics_linearperm,
     kinetics_butlervolmer,
     kinetics_butlervolmerlinearized,
     kinetics_butlervolmerpeltier,

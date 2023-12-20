@@ -2959,6 +2959,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
       switch (kineticmodel)
       {
         case INPAR::S2I::kinetics_constperm:
+        case INPAR::S2I::kinetics_linearperm:
         {
           s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<double>*>(

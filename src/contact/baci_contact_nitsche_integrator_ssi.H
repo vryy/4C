@@ -258,6 +258,11 @@ namespace CONTACT
      * @param[in] master_shape        master-side shape function evaluated at current Gauss point
      * @param[in] master_shape_deriv  master-side shape function derivative at current Gauss point
      * @param[in] d_master_xi_dd      master-side directional derivative of Gauss point coordinates
+     * @param[in] cauchy_nn_average_pen_gap         normal contact stress
+     * @param[in] d_cauchy_nn_weighted_average_dd   directional derivatives of normal contact stress
+     * w.r.t displacement
+     * @param[in] d_cauchy_nn_weighted_average_dc   directional derivatives of normal contact stress
+     * w.r.t scalar/concentration
      * @param[in] jac                 Jacobian determinant of integration cell
      * @param[in] d_jac_dd            directional derivative of cell Jacobian
      * @param[in] wgt                 Gauss point weight
@@ -269,7 +274,10 @@ namespace CONTACT
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
         MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
         const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd, double jac,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
+        const double cauchy_nn_average_pen_gap,
+        const CORE::GEN::pairedvector<int, double>& d_cauchy_nn_weighted_average_dd,
+        const CORE::GEN::pairedvector<int, double>& d_cauchy_nn_weighted_average_dc, double jac,
         const CORE::GEN::pairedvector<int, double>& d_jac_dd, double wgt);
 
     /*!

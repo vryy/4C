@@ -74,6 +74,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
       switch (kineticmodel_)
       {
         case INPAR::S2I::kinetics_constperm:
+        case INPAR::S2I::kinetics_linearperm:
         {
           SetIsPseudoContact(parameters);
           SetNumScal(parameters);
