@@ -7,7 +7,6 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_config.H"
-#include "baci_config_mpi.H"
 
 #include "baci_cut_element.H"
 #include "baci_cut_mesh.H"

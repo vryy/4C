@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_UTILS_H
 #define BACI_CUT_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
@@ -20,12 +22,10 @@
 #include <iterator>
 #include <set>
 
-
 // #define CUT_DUMPCREATION    // dump object creation to generate test case
 #define CUT_USE_SORTED_VECTOR
 
 #ifdef CUT_USE_SORTED_VECTOR
-#include "baci_config.H"
 
 #include "baci_cut_sorted_vector.H"
 #else

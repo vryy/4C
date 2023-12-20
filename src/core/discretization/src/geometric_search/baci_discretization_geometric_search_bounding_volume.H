@@ -12,13 +12,11 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 #define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 
-#include "baci_config_mpi.H"
+#include "baci_config.H"
 
 #include "baci_linalg_fixedsizematrix.H"
 
 #ifdef BACI_WITH_ARBORX
-#include "baci_config.H"
-
 #include <ArborX.hpp>
 #include <ArborX_KDOP.hpp>
 #endif

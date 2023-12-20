@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_TOLERANCE_H
 #define BACI_CUT_TOLERANCE_H
 
+#include "baci_config.H"
+
 #define BASICTOL 1e-14  // basic tolerance for the cut, limited by double precicion!
 
 // derived tolerances

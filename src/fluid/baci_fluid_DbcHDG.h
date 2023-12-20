@@ -10,6 +10,8 @@
 #ifndef BACI_FLUID_DBCHDG_H
 #define BACI_FLUID_DBCHDG_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_utils_densematrix_communication.H"

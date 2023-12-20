@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_config_mpi.H"
+#include "baci_config.H"
 
 #include "baci_utils_exceptions.H"
 
