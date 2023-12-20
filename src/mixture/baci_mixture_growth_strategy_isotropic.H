@@ -8,6 +8,8 @@
 #ifndef BACI_MIXTURE_GROWTH_STRATEGY_ISOTROPIC_H
 #define BACI_MIXTURE_GROWTH_STRATEGY_ISOTROPIC_H
 
+#include "baci_config.H"
+
 #include "baci_mixture_growth_strategy.H"
 
 BACI_NAMESPACE_OPEN

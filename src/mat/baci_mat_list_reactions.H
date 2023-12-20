@@ -14,6 +14,8 @@ is just a "control instance".
 
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_list.H"
 #include "baci_mat_material.H"

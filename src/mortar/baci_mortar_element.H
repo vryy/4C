@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_ELEMENT_H
 #define BACI_MORTAR_ELEMENT_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_mortar.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"

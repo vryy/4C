@@ -9,6 +9,8 @@
 #ifndef BACI_MAT_STRUCTPORO_REACTION_ECM_H
 #define BACI_MAT_STRUCTPORO_REACTION_ECM_H
 
+#include "baci_config.H"
+
 #include "baci_mat_structporo_reaction.H"
 
 BACI_NAMESPACE_OPEN

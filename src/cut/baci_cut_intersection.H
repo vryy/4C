@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_INTERSECTION_H
 #define BACI_CUT_INTERSECTION_H
 
+#include "baci_config.H"
+
 #include "baci_cut_edge.H"
 #include "baci_cut_kernel.H"
 #include "baci_cut_mesh.H"

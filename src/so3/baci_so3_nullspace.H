@@ -6,6 +6,8 @@
 #ifndef BACI_SO3_NULLSPACE_H
 #define BACI_SO3_NULLSPACE_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensematrix.H"
 
 BACI_NAMESPACE_OPEN

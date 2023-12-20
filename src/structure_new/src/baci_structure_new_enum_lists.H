@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_ENUM_LISTS_H
 #define BACI_STRUCTURE_NEW_ENUM_LISTS_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <string>

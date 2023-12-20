@@ -20,6 +20,8 @@ of errors, turbulence statistics etc.).
 #ifndef BACI_FLUID_ELE_H
 #define BACI_FLUID_ELE_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_serialdensematrix.H"

@@ -9,6 +9,8 @@
 #ifndef BACI_SO3_PRESTRESS_H
 #define BACI_SO3_PRESTRESS_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobject.H"
 #include "baci_comm_parobjectfactory.H"
 

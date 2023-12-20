@@ -10,6 +10,8 @@
 #define BACI_POROMULTIPHASE_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_adapter_poromultiphase.H"
 #include "baci_utils_exceptions.H"

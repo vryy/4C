@@ -16,6 +16,8 @@
 /*----------------------------------------------------------------------*
  | header                                                   farah 09/13 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_contact_lagrange_strategy.H"
 
 #include <Epetra_FEVector.h>

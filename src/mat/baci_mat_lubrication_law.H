@@ -10,6 +10,8 @@
 #define BACI_MAT_LUBRICATION_LAW_H
 
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 
 BACI_NAMESPACE_OPEN

@@ -10,6 +10,8 @@
 #ifndef BACI_CUT_EDGE_H
 #define BACI_CUT_EDGE_H
 
+#include "baci_config.H"
+
 #include "baci_cut_node.H"
 #include "baci_cut_tolerance.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"

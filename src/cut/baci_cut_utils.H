@@ -25,6 +25,8 @@
 #define CUT_USE_SORTED_VECTOR
 
 #ifdef CUT_USE_SORTED_VECTOR
+#include "baci_config.H"
+
 #include "baci_cut_sorted_vector.H"
 #else
 #include <vector>

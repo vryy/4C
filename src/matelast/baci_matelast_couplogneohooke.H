@@ -10,6 +10,8 @@
 #ifndef BACI_MATELAST_COUPLOGNEOHOOKE_H
 #define BACI_MATELAST_COUPLOGNEOHOOKE_H
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 

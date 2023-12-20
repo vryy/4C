@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_MANAGER_H
 #define BACI_CONTACT_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_mortar_manager_base.H"
 
 BACI_NAMESPACE_OPEN

@@ -16,6 +16,8 @@ coupling matrices M and D first.
 #define BACI_BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_MANAGER_INDIRECT_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager.H"
 
 BACI_NAMESPACE_OPEN

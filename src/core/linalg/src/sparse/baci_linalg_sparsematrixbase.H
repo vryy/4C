@@ -8,6 +8,8 @@
 #ifndef BACI_LINALG_SPARSEMATRIXBASE_H
 #define BACI_LINALG_SPARSEMATRIXBASE_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_sparseoperator.H"
 
 #include <Epetra_Comm.h>

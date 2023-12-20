@@ -13,6 +13,8 @@
 #ifndef BACI_CUT_POINTGRAPH_SIMPLE_H
 #define BACI_CUT_POINTGRAPH_SIMPLE_H
 
+#include "baci_config.H"
+
 #include "baci_cut_pointgraph.H"
 
 BACI_NAMESPACE_OPEN

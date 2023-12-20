@@ -13,6 +13,8 @@
 #ifndef BACI_FSI_DIRICHLETNEUMANN_VEL_H
 #define BACI_FSI_DIRICHLETNEUMANN_VEL_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_dirichletneumann.H"
 
 BACI_NAMESPACE_OPEN

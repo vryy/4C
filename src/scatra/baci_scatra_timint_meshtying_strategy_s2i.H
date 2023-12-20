@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"

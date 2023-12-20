@@ -10,6 +10,8 @@
 #define BACI_POROELAST_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_adapter_field.H"
 #include "baci_coupling_adapter.H"

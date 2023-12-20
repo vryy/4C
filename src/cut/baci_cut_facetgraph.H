@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_FACETGRAPH_H
 #define BACI_CUT_FACETGRAPH_H
 
+#include "baci_config.H"
+
 #include "baci_cut_coloredgraph.H"
 
 BACI_NAMESPACE_OPEN

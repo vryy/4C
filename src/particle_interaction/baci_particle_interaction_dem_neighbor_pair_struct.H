@@ -11,6 +11,8 @@
 #ifndef BACI_PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
 #define BACI_PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
 
+#include "baci_config.H"
+
 #include "baci_particle_engine_typedefs.H"
 
 #include <set>

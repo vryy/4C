@@ -13,6 +13,8 @@
 #ifndef BACI_FLUID_ELE_FACTORY_H
 #define BACI_FLUID_ELE_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 
 BACI_NAMESPACE_OPEN

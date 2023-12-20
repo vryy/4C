@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_mat_particle_base.H"
 #include "baci_mat_particle_dem.H"

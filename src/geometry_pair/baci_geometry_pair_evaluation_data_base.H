@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_EVALUATION_DATA_BASE_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_ParameterList.hpp>
 
 BACI_NAMESPACE_OPEN

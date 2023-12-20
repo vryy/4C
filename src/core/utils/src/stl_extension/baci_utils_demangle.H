@@ -8,6 +8,8 @@
 #ifndef BACI_UTILS_DEMANGLE_H
 #define BACI_UTILS_DEMANGLE_H
 
+#include "baci_config.H"
+
 #include <cxxabi.h>
 
 #include <memory>

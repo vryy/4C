@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_POINT_H
 #define BACI_CUT_POINT_H
 
+#include "baci_config.H"
+
 #include "baci_cut_clnwrapper.H"
 #include "baci_cut_tolerance.H"
 #include "baci_cut_utils.H"

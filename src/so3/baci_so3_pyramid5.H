@@ -9,6 +9,8 @@
 #define BACI_SO3_PYRAMID5_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_serialdensematrix.H"

@@ -12,6 +12,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_structure_timint.H"
 

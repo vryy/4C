@@ -12,6 +12,8 @@
 #ifndef BACI_IO_LINEDEFINITION_H
 #define BACI_IO_LINEDEFINITION_H
 
+#include "baci_config.H"
+
 #include "baci_io_inputreader.H"
 
 #include <iostream>

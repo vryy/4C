@@ -13,6 +13,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/13 |
  *---------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_linalg_fixedsizematrix.H"
 

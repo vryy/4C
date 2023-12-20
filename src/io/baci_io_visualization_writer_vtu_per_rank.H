@@ -11,6 +11,8 @@
 #ifndef BACI_IO_VISUALIZATION_WRITER_VTU_PER_RANK_H
 #define BACI_IO_VISUALIZATION_WRITER_VTU_PER_RANK_H
 
+#include "baci_config.H"
+
 #include "baci_io_visualization_writer_base.H"
 #include "baci_io_vtu_writer.H"
 

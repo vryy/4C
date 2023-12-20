@@ -11,6 +11,8 @@
 #ifndef BACI_INPAR_REBALANCE_H
 #define BACI_INPAR_REBALANCE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_validparameters.H"
 
 BACI_NAMESPACE_OPEN

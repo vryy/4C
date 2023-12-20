@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_ELEMENT_H
 
 
+#include "baci_config.H"
+
 #include "baci_beam3_base.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"

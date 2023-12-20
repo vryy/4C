@@ -10,6 +10,8 @@
 #ifndef BACI_FSI_XFEM_XFSCOUPLING_MANAGER_H
 #define BACI_FSI_XFEM_XFSCOUPLING_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_xfem_coupling_comm_manager.H"
 #include "baci_fsi_xfem_coupling_manager.H"
 

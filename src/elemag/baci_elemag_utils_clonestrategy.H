@@ -14,6 +14,8 @@
 
 /*----------------------------------------------------------------------------*/
 /*header inclusions */
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_shape_function_type.H"
 
 #include <Teuchos_RCP.hpp>

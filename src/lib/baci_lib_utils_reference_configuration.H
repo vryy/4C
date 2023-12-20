@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_UTILS_REFERENCE_CONFIGURATION_H
 #define BACI_LIB_UTILS_REFERENCE_CONFIGURATION_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"

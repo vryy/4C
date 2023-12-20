@@ -11,6 +11,8 @@
 #ifndef BACI_NURBS_DISCRET_NURBS_UTILS_H
 #define BACI_NURBS_DISCRET_NURBS_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_nurbs_discret.H"
 
 BACI_NAMESPACE_OPEN

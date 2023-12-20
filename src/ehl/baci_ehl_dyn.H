@@ -12,6 +12,8 @@
 #ifndef BACI_EHL_DYN_H
 #define BACI_EHL_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 //! global control routine for elastohydrodynamic lubrication problem (lubrication structure

@@ -43,6 +43,8 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 
 
 // Todo @grill: get rid of header in header inclusions
+#include "baci_config.H"
+
 #include "baci_beam3_base.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_lib_elementtype.H"

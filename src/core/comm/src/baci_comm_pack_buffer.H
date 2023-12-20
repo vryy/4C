@@ -12,6 +12,8 @@
 #ifndef BACI_COMM_PACK_BUFFER_H
 #define BACI_COMM_PACK_BUFFER_H
 
+#include "baci_config.H"
+
 #include <cstring>
 #include <vector>
 

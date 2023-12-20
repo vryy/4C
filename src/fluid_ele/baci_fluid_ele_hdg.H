@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_HDG_H
 #define BACI_FLUID_ELE_HDG_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_polynomial.H"
 #include "baci_fluid_ele.H"
 

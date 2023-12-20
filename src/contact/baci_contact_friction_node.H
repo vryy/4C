@@ -7,6 +7,8 @@
 #ifndef BACI_CONTACT_FRICTION_NODE_H
 #define BACI_CONTACT_FRICTION_NODE_H
 
+#include "baci_config.H"
+
 #include "baci_contact_node.H"
 
 BACI_NAMESPACE_OPEN

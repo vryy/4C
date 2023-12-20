@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_UTILS_CLONESTRATEGY_H
 #define BACI_SCATRA_UTILS_CLONESTRATEGY_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <vector>

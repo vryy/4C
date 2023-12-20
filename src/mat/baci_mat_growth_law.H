@@ -15,6 +15,8 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #ifndef BACI_MAT_GROWTH_LAW_H
 #define BACI_MAT_GROWTH_LAW_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_material.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_material.H"

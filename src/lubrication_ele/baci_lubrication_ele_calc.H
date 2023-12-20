@@ -11,6 +11,8 @@
 #define BACI_LUBRICATION_ELE_CALC_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"

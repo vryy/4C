@@ -9,6 +9,10 @@
 #ifndef BACI_COUPLING_VOLMORTAR_DEFINES_H
 #define BACI_COUPLING_VOLMORTAR_DEFINES_H
 
+#include "baci_config.H"
+
+BACI_NAMESPACE_OPEN
+
 /************************************************************************/
 /* Mortar algorithm parameters                                          */
 /************************************************************************/
@@ -20,8 +24,6 @@
 #define VOLMORTARELETOL 1.0e-12
 #define VOLMORTARCUTTOL 1.0e-12
 #define VOLMORTARCUT2TOL -1.0e-12
-
-BACI_NAMESPACE_OPEN
 
 BACI_NAMESPACE_CLOSE
 

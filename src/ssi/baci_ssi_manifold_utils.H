@@ -11,6 +11,8 @@
 #ifndef BACI_SSI_MANIFOLD_UTILS_H
 #define BACI_SSI_MANIFOLD_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_io_runtime_csv_writer.H"
 #include "baci_ssi_utils.H"

@@ -13,6 +13,8 @@
 #ifndef BACI_LIB_ELEMENTS_PARAMSINTERFACE_H
 #define BACI_LIB_ELEMENTS_PARAMSINTERFACE_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN

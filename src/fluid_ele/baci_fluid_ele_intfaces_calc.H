@@ -13,6 +13,8 @@
 #define BACI_FLUID_ELE_INTFACES_CALC_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_xfem.H"
 #include "baci_mat_material.H"

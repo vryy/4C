@@ -10,6 +10,8 @@
 
 #ifndef BACI_SCATRA_ELE_UTILS_ELCH_SCL_H
 #define BACI_SCATRA_ELE_UTILS_ELCH_SCL_H
+#include "baci_config.H"
+
 #include "baci_inpar_elch.H"
 #include "baci_scatra_ele_parameter_elch.H"
 #include "baci_scatra_ele_utils_elch_diffcond.H"

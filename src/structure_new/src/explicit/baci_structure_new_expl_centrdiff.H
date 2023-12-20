@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_EXPL_CENTRDIFF_H
 #define BACI_STRUCTURE_NEW_EXPL_CENTRDIFF_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_expl_generic.H"
 
 BACI_NAMESPACE_OPEN

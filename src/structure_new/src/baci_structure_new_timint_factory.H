@@ -13,6 +13,8 @@
 #define BACI_STRUCTURE_NEW_TIMINT_FACTORY_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 // forward declaration

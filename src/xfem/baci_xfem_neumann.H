@@ -16,6 +16,8 @@
 #define BACI_XFEM_NEUMANN_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 class Epetra_Vector;

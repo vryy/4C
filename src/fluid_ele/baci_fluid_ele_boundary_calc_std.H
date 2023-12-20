@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_BOUNDARY_CALC_STD_H
 #define BACI_FLUID_ELE_BOUNDARY_CALC_STD_H
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele_boundary_calc.H"
 #include "baci_utils_singleton_owner.H"
 

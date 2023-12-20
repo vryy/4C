@@ -15,6 +15,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_adapter_str_timint_adaptive.H"
 

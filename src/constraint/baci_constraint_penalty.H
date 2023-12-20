@@ -11,6 +11,8 @@
 #ifndef BACI_CONSTRAINT_PENALTY_H
 #define BACI_CONSTRAINT_PENALTY_H
 
+#include "baci_config.H"
+
 #include "baci_constraint.H"
 
 #include <Epetra_Operator.h>

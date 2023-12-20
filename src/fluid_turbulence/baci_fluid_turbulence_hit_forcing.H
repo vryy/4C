@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_TURBULENCE_HIT_FORCING_H
 #define BACI_FLUID_TURBULENCE_HIT_FORCING_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_linalg_serialdensevector.H"
 

@@ -13,6 +13,8 @@
 #define BACI_LIB_RESULTTEST_H
 
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 

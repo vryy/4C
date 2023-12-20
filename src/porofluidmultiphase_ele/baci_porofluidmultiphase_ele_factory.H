@@ -11,6 +11,8 @@
 #define BACI_POROFLUIDMULTIPHASE_ELE_FACTORY_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 
 BACI_NAMESPACE_OPEN

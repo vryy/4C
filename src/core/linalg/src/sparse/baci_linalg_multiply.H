@@ -10,6 +10,8 @@
 #ifndef BACI_LINALG_MULTIPLY_H
 #define BACI_LINALG_MULTIPLY_H
 
+#include "baci_config.H"
+
 #include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCPDecl.hpp>
 

@@ -10,6 +10,8 @@
 #ifndef BACI_MAT_FLUIDPORO_SINGLEPHASELAW_H
 #define BACI_MAT_FLUIDPORO_SINGLEPHASELAW_H
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 
 BACI_NAMESPACE_OPEN

@@ -11,6 +11,8 @@ concentrations and with advanced reaction terms
 #ifndef BACI_SCATRA_ELE_CALC_REFCONC_REAC_H
 #define BACI_SCATRA_ELE_CALC_REFCONC_REAC_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_calc_advanced_reaction.H"
 
 BACI_NAMESPACE_OPEN

@@ -13,6 +13,8 @@
 #define BACI_GEOMETRY_PAIR_FACTORY_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN

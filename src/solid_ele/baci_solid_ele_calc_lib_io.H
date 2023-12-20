@@ -8,6 +8,8 @@
 #ifndef BACI_SOLID_ELE_CALC_LIB_IO_H
 #define BACI_SOLID_ELE_CALC_LIB_IO_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_cell_type.H"
 #include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"

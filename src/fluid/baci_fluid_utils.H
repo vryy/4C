@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_UTILS_H
 #define BACI_FLUID_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_blocksparsematrix.H"

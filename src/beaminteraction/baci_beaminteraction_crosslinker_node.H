@@ -14,6 +14,8 @@
 #ifndef BACI_BEAMINTERACTION_CROSSLINKER_NODE_H
 #define BACI_BEAMINTERACTION_CROSSLINKER_NODE_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
 

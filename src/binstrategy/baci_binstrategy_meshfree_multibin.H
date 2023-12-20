@@ -11,6 +11,8 @@
 #ifndef BACI_BINSTRATEGY_MESHFREE_MULTIBIN_H
 #define BACI_BINSTRATEGY_MESHFREE_MULTIBIN_H
 
+#include "baci_config.H"
+
 #include "baci_binstrategy_meshfree_bin.H"
 #include "baci_binstrategy_utils.H"
 #include "baci_lib_elementtype.H"

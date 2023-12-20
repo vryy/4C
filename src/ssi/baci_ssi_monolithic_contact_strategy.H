@@ -9,6 +9,8 @@
 #ifndef BACI_SSI_MONOLITHIC_CONTACT_STRATEGY_H
 #define BACI_SSI_MONOLITHIC_CONTACT_STRATEGY_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCPDecl.hpp>
 

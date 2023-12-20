@@ -12,6 +12,8 @@
 #ifndef BACI_RED_AIRWAYS_ELEMENTBASE_H
 #define BACI_RED_AIRWAYS_ELEMENTBASE_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"

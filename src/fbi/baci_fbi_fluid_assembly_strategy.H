@@ -13,6 +13,8 @@
 #ifndef BACI_FBI_FLUID_ASSEMBLY_STRATEGY_H
 #define BACI_FBI_FLUID_ASSEMBLY_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_FEVector.h>

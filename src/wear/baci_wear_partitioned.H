@@ -19,6 +19,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_coupling_adapter.H"
 #include "baci_wear_algorithm.H"

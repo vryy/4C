@@ -13,6 +13,8 @@
 #ifndef BACI_LIB_ELEMENTS_PARAMSMINIMAL_H
 #define BACI_LIB_ELEMENTS_PARAMSMINIMAL_H
 
+#include "baci_config.H"
+
 #include "baci_lib_elements_paramsinterface.H"
 
 BACI_NAMESPACE_OPEN

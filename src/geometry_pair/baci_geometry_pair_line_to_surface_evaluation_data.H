@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_EVALUATION_DATA_H
 
 
+#include "baci_config.H"
+
 #include "baci_geometry_pair_line_to_3D_evaluation_data.H"
 
 #include <Teuchos_RCP.hpp>

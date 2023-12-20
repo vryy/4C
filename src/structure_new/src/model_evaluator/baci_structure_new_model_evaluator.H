@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"  // necessary due to enums
 
 #include <Teuchos_RCP.hpp>

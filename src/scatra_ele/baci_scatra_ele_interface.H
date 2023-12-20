@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_ELE_INTERFACE_H
 #define BACI_SCATRA_ELE_INTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"

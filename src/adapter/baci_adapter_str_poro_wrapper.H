@@ -12,6 +12,8 @@
 #ifndef BACI_ADAPTER_STR_PORO_WRAPPER_H
 #define BACI_ADAPTER_STR_PORO_WRAPPER_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_field_wrapper.H"
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_structure_aux.H"

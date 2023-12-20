@@ -11,6 +11,8 @@ performed afterwards
 #ifndef BACI_FBI_IMMERSED_GEOMETRY_COUPLER_BINNING_H
 #define BACI_FBI_IMMERSED_GEOMETRY_COUPLER_BINNING_H
 
+#include "baci_config.H"
+
 #include "baci_binstrategy.H"
 #include "baci_fbi_immersed_geometry_coupler.H"
 #include "baci_linalg_fixedsizematrix.H"

@@ -18,6 +18,8 @@ derived from an abstract, purely virtual interface class.
 #ifndef BACI_SSI_MONOLITHIC_CONVCHECK_STRATEGIES_H
 #define BACI_SSI_MONOLITHIC_CONVCHECK_STRATEGIES_H
 
+#include "baci_config.H"
+
 #include "baci_ssi_monolithic.H"
 
 BACI_NAMESPACE_OPEN

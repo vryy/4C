@@ -13,6 +13,8 @@
 #ifndef BACI_LIB_DOFSET_GIDBASED_WRAPPER_H
 #define BACI_LIB_DOFSET_GIDBASED_WRAPPER_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_base.H"
 #include "baci_lib_element.H"

@@ -8,6 +8,8 @@
 #ifndef BACI_SHELL7P_ELE_CALC_EAS_UTILS_H
 #define BACI_SHELL7P_ELE_CALC_EAS_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"

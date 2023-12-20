@@ -12,6 +12,8 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_DISTRIBUTED_TREE_H
 #define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_DISTRIBUTED_TREE_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_io_pstream.H"
 

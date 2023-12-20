@@ -16,6 +16,8 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef BACI_ELEMAG_DIFF_ELE_H
 #define BACI_ELEMAG_DIFF_ELE_H
 
+#include "baci_config.H"
+
 #include "baci_elemag_ele.H"
 #include "baci_linalg_serialdensematrix.H"
 

@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H
 #define BACI_SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_calc_advanced_reaction.H"
 #include "baci_scatra_ele_calc_aniso.H"

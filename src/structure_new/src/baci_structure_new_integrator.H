@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_INTEGRATOR_H
 #define BACI_STRUCTURE_NEW_INTEGRATOR_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"               // enumerators
 #include "baci_solver_nonlin_nox_enum_lists.H"  // enumerators
 

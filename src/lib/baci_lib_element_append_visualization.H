@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_ELEMENT_APPEND_VISUALIZATION_H
 #define BACI_LIB_ELEMENT_APPEND_VISUALIZATION_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_lib_element_vtk_cell_type_register.H"
 #include "baci_lib_utils.H"

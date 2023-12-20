@@ -14,6 +14,8 @@
 /*----------------------------------------------------------------------*
  | headers                                             gravemeier 06/17 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_inpar_elemag.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"

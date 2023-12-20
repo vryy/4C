@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_NOX_LINEARSYSTEM_H
 #define BACI_FSI_NOX_LINEARSYSTEM_H
 
+#include "baci_config.H"
+
 #include <NOX.H>
 #include <NOX_Common.H>
 #include <NOX_Epetra_Group.H>

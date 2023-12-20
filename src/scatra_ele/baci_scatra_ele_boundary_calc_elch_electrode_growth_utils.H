@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_UTILS_H
 #define BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_lib_condition.H"
 #include "baci_scatra_ele_boundary_calc_elch_electrode_utils.H"
 

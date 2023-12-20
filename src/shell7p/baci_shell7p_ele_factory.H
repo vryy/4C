@@ -8,6 +8,8 @@
 #ifndef BACI_SHELL7P_ELE_FACTORY_H
 #define BACI_SHELL7P_ELE_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 

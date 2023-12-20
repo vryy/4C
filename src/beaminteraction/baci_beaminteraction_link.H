@@ -10,6 +10,8 @@
 #ifndef BACI_BEAMINTERACTION_LINK_H
 #define BACI_BEAMINTERACTION_LINK_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobject.H"
 #include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_beaminteraction.H"

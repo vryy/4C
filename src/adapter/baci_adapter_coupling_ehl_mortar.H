@@ -12,6 +12,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                             |
  *---------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_adapter_coupling_nonlin_mortar.H"
 #include "baci_utils_exceptions.H"
 

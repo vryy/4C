@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_IMPLICIT_H
 #define BACI_STRUCTURE_NEW_TIMINT_IMPLICIT_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_timint_implicitbase.H"  // base class
 
 BACI_NAMESPACE_OPEN

@@ -16,6 +16,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
+#include "baci_config.H"
+
 #include "baci_adapter_ale_fsi.H"
 #include "baci_ale_utils_mapextractor.H"
 

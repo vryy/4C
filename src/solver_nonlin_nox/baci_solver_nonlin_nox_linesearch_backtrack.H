@@ -13,6 +13,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_LINESEARCH_BACKTRACK_H
 #define BACI_SOLVER_NONLIN_NOX_LINESEARCH_BACKTRACK_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_floating_point_exception.H"
 #include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"

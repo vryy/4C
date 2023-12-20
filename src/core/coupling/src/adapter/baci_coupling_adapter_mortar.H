@@ -11,6 +11,8 @@
 #ifndef BACI_COUPLING_ADAPTER_MORTAR_H
 #define BACI_COUPLING_ADAPTER_MORTAR_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter_base.H"
 #include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_utils_exceptions.H"

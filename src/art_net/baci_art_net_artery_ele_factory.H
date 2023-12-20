@@ -12,6 +12,8 @@
 #ifndef BACI_ART_NET_ARTERY_ELE_FACTORY_H
 #define BACI_ART_NET_ARTERY_ELE_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_art_net_artery_ele_interface.H"
 #include "baci_inpar_bio.H"
 #include "baci_lib_element.H"

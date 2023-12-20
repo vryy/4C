@@ -10,6 +10,8 @@
 #ifndef BACI_IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_H
 #define BACI_IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_partitioned.H"
 
 BACI_NAMESPACE_OPEN

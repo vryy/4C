@@ -17,6 +17,8 @@ overhead as possible from the time integration method.
 #ifndef BACI_FLUID_TURBULENCE_STATISTIC_MANAGER_H
 #define BACI_FLUID_TURBULENCE_STATISTIC_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"
 

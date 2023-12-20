@@ -12,6 +12,8 @@ algorithms
 #define BACI_EHL_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_coupling_adapter.H"
 #include "baci_inpar_ehl.H"

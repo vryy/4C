@@ -15,6 +15,8 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef BACI_ELEMAG_ELE_H
 #define BACI_ELEMAG_ELE_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"

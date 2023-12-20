@@ -12,6 +12,8 @@ fluid meshes
 #ifndef BACI_FLUID_XFLUID_FLUID_STATE_H
 #define BACI_FLUID_XFLUID_FLUID_STATE_H
 
+#include "baci_config.H"
+
 #include "baci_fluid_xfluid_state.H"
 
 BACI_NAMESPACE_OPEN

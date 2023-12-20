@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_GAUSS_POINT_PROJECTION_H
 
 
+#include "baci_config.H"
+
 #include "baci_geometry_pair_line_to_surface.H"
 
 BACI_NAMESPACE_OPEN

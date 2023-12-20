@@ -9,6 +9,10 @@
 #ifndef BACI_MORTAR_DEFINES_H
 #define BACI_MORTAR_DEFINES_H
 
+#include "baci_config.H"
+
+BACI_NAMESPACE_OPEN
+
 /************************************************************************/
 /* Mortar algorithm parameters                                          */
 /************************************************************************/
@@ -27,8 +31,6 @@
 // MORTAR PROJECTION AND INTEGRATION (3D)
 #define MORTARCLIPTOL 1.0e-8 /* tolerance for polygon clipping */
 #define MORTARINTLIM 1.0e-12 /* min(area-%) cell/slave for integration */
-
-BACI_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Mortar debugging options                                             */

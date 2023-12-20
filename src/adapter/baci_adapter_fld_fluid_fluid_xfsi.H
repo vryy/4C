@@ -13,6 +13,8 @@ conjunction with XFluidFluid!
 #ifndef BACI_ADAPTER_FLD_FLUID_FLUID_XFSI_H
 #define BACI_ADAPTER_FLD_FLUID_FLUID_XFSI_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid_xfsi.H"
 
 BACI_NAMESPACE_OPEN

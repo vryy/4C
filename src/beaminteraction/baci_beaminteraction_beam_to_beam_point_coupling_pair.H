@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_POINT_COUPLING_PAIR_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_contact_pair.H"
 
 #include <Sacado.hpp>

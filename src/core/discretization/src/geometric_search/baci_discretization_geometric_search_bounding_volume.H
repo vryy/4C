@@ -17,6 +17,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 
 #ifdef BACI_WITH_ARBORX
+#include "baci_config.H"
+
 #include <ArborX.hpp>
 #include <ArborX_KDOP.hpp>
 #endif

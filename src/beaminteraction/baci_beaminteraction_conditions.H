@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_CONDITIONS_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_beaminteraction.H"
 #include "baci_utils_exceptions.H"
 

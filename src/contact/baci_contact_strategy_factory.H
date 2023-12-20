@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_STRATEGY_FACTORY_H
 #define BACI_CONTACT_STRATEGY_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_contact.H"
 #include "baci_mortar_element.H"
 #include "baci_mortar_strategy_factory.H"

@@ -16,6 +16,8 @@ global coupling matrices M and D first.
 #define BACI_FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_INDIRECT_H
 
 
+#include "baci_config.H"
+
 #include "baci_fbi_partitioned_penaltycoupling_assembly_manager.H"
 
 BACI_NAMESPACE_OPEN

@@ -10,6 +10,8 @@
 #ifndef BACI_LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_H
 #define BACI_LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_blocksparsematrix.H"
 
 #include <Epetra_CrsGraph.h>

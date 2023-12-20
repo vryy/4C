@@ -10,6 +10,8 @@
 #ifndef BACI_BEAMCONTACT_BEAM3CONTACTINTERFACE_H
 #define BACI_BEAMCONTACT_BEAM3CONTACTINTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_fixedsizematrix.H"

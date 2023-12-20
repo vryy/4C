@@ -40,6 +40,8 @@ table. This table can be queried for those values quite easily.
 #ifndef BACI_IO_LEGACY_TYPES_H
 #define BACI_IO_LEGACY_TYPES_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /*!

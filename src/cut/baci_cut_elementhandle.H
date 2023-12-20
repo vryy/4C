@@ -12,6 +12,8 @@
 #define BACI_CUT_ELEMENTHANDLE_H
 
 
+#include "baci_config.H"
+
 #include "baci_cut_element.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 

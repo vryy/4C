@@ -12,6 +12,8 @@ Here everything related with solid-shell body extrusion
 #ifndef BACI_PRE_EXODUS_SOSHEXTRUSION_H
 #define BACI_PRE_EXODUS_SOSHEXTRUSION_H
 
+#include "baci_config.H"
+
 #include "baci_pre_exodus_reader.H"
 #include "baci_utils_exceptions.H"
 

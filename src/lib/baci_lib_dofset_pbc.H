@@ -18,6 +18,8 @@
 #ifndef BACI_LIB_DOFSET_PBC_H
 #define BACI_LIB_DOFSET_PBC_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset.H"
 
 #include <Epetra_Comm.h>

@@ -11,6 +11,8 @@
 #ifndef BACI_POROELAST_SCATRA_UTILS_SETUP_H
 #define BACI_POROELAST_SCATRA_UTILS_SETUP_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset_gidbased_wrapper.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_globalproblem.H"

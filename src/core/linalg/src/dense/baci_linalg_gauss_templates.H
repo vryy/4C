@@ -8,6 +8,8 @@
 #ifndef BACI_LINALG_GAUSS_TEMPLATES_H
 #define BACI_LINALG_GAUSS_TEMPLATES_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_gauss.H"
 
 BACI_NAMESPACE_OPEN

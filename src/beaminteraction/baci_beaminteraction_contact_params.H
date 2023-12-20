@@ -13,6 +13,8 @@
 #ifndef BACI_BEAMINTERACTION_CONTACT_PARAMS_H
 #define BACI_BEAMINTERACTION_CONTACT_PARAMS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_beamcontact.H"
 
 BACI_NAMESPACE_OPEN

@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_DEFINES_H
 #define BACI_CONTACT_DEFINES_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /************************************************************************/

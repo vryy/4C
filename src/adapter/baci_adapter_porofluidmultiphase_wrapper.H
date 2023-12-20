@@ -9,6 +9,8 @@
 #ifndef BACI_ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_H
 #define BACI_ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_porofluidmultiphase.H"
 
 #include <Teuchos_RCP.hpp>

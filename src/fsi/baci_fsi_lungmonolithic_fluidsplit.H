@@ -12,6 +12,8 @@
 #ifndef BACI_FSI_LUNGMONOLITHIC_FLUIDSPLIT_H
 #define BACI_FSI_LUNGMONOLITHIC_FLUIDSPLIT_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_lungmonolithic.H"
 
 BACI_NAMESPACE_OPEN

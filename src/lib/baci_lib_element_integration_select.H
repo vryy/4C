@@ -13,6 +13,8 @@
 #define BACI_LIB_ELEMENT_INTEGRATION_SELECT_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 

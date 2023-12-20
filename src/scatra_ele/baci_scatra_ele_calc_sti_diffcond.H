@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_STI_DIFFCOND_H
 #define BACI_SCATRA_ELE_CALC_STI_DIFFCOND_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_sti_elch.H"
 

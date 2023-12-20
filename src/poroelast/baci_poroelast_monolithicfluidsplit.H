@@ -11,6 +11,8 @@
 #define BACI_POROELAST_MONOLITHICFLUIDSPLIT_H
 
 
+#include "baci_config.H"
+
 #include "baci_poroelast_monolithicsplit.H"
 
 BACI_NAMESPACE_OPEN

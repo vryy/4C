@@ -11,6 +11,8 @@
 #ifndef BACI_PARTICLE_ALGORITHM_SIM_H
 #define BACI_PARTICLE_ALGORITHM_SIM_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /*!

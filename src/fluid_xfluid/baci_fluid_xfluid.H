@@ -30,6 +30,8 @@ interface
 /*==========================================================================*/
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_implicit_integration.H"
 #include "baci_fluid_xfluid_state.H"
 #include "baci_inpar_cut.H"

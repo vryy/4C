@@ -10,6 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_KRYLOVPROJECTION_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_KRYLOVPROJECTION_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_krylov_projector.H"
 #include "baci_linalg_projected_operator.H"
 #include "baci_linear_solver_preconditioner_type.H"

@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
 #include "baci_particle_interaction_sph_neighbor_pair_struct.H"

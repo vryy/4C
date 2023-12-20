@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_ELEMENT_CLASSES_H
 
 
+#include "baci_config.H"
+
 #include "baci_geometry_pair_constants.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_densematrix_inverse.H"

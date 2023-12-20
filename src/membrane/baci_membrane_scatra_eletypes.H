@@ -10,6 +10,8 @@
 #ifndef BACI_MEMBRANE_SCATRA_ELETYPES_H
 #define BACI_MEMBRANE_SCATRA_ELETYPES_H
 
+#include "baci_config.H"
+
 #include "baci_membrane_eletypes.H"
 
 BACI_NAMESPACE_OPEN

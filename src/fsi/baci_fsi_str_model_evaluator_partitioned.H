@@ -13,6 +13,8 @@
 #ifndef BACI_FSI_STR_MODEL_EVALUATOR_PARTITIONED_H
 #define BACI_FSI_STR_MODEL_EVALUATOR_PARTITIONED_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_model_evaluator_generic.H"
 
 BACI_NAMESPACE_OPEN

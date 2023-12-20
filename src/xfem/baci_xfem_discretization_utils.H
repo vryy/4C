@@ -11,6 +11,8 @@
 #ifndef BACI_XFEM_DISCRETIZATION_UTILS_H
 #define BACI_XFEM_DISCRETIZATION_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Teuchos_ParameterList.hpp>

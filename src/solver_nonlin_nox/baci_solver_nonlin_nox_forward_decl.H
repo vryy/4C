@@ -11,6 +11,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_FORWARD_DECL_H
 #define BACI_SOLVER_NONLIN_NOX_FORWARD_DECL_H
 
+#include "baci_config.H"
+
 class Epetra_BlockMap;
 class Epetra_Map;
 class Epetra_Vector;

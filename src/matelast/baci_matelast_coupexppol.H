@@ -10,6 +10,8 @@ Weickenmeier_2014
 #ifndef BACI_MATELAST_COUPEXPPOL_H
 #define BACI_MATELAST_COUPEXPPOL_H
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 

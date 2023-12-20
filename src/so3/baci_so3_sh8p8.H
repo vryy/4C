@@ -10,6 +10,8 @@
 #define BACI_SO3_SH8P8_H
 
 /*----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_so3_sh8.H"
 
 BACI_NAMESPACE_OPEN

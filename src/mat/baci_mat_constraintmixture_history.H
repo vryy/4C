@@ -12,6 +12,8 @@
 #ifndef BACI_MAT_CONSTRAINTMIXTURE_HISTORY_H
 #define BACI_MAT_CONSTRAINTMIXTURE_HISTORY_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobject.H"
 #include "baci_comm_parobjectfactory.H"
 

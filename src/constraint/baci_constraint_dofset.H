@@ -8,6 +8,8 @@
 #ifndef BACI_CONSTRAINT_DOFSET_H
 #define BACI_CONSTRAINT_DOFSET_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
 

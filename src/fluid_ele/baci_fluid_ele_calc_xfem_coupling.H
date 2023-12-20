@@ -27,6 +27,8 @@
  * kruse, 08/14
  */
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizeblockmatrix.H"

@@ -10,6 +10,8 @@
 
 #ifndef BACI_CUT_CLNWRAPPER_H
 #define BACI_CUT_CLNWRAPPER_H
+#include "baci_config.H"
+
 #include "baci_cut_memory_manager.H"
 #include "baci_utils_exceptions.H"
 

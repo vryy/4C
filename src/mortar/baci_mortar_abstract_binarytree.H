@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_ABSTRACT_BINARYTREE_H
 #define BACI_MORTAR_ABSTRACT_BINARYTREE_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensematrix.H"
 
 BACI_NAMESPACE_OPEN

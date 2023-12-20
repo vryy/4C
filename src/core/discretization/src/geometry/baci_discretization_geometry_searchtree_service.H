@@ -10,6 +10,8 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRY_SEARCHTREE_SERVICE_H
 #define BACI_DISCRETIZATION_GEOMETRY_SEARCHTREE_SERVICE_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_geometry_geo_utils.H"
 #include "baci_discretization_geometry_searchtree_nearestobject.H"
 #include "baci_linalg_fixedsizematrix.H"

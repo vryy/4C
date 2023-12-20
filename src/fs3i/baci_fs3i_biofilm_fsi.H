@@ -17,6 +17,8 @@
 #define BACI_FS3I_BIOFILM_FSI_H
 
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_fs3i_partitioned_1wc.H"
 

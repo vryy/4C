@@ -55,6 +55,8 @@ output.
 #ifndef BACI_FLUID_TURBULENCE_STATISTICS_CHA_H
 #define BACI_FLUID_TURBULENCE_STATISTICS_CHA_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"

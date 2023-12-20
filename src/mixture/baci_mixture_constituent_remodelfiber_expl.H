@@ -8,6 +8,8 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
 #define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
 
+#include "baci_config.H"
+
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_par_material.H"
 #include "baci_mixture_constituent.H"

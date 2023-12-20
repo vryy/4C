@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_RESULTTEST_ELCH_H
 #define BACI_SCATRA_RESULTTEST_ELCH_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_resulttest.H"
 #include "baci_scatra_timint_elch.H"
 

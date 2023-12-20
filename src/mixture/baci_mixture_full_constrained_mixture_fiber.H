@@ -8,6 +8,8 @@
 #ifndef BACI_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_H
 #define BACI_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"

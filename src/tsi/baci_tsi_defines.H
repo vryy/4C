@@ -10,6 +10,8 @@
 #ifndef BACI_TSI_DEFINES_H
 #define BACI_TSI_DEFINES_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /************************************************************************/

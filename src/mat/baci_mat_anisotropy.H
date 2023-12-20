@@ -12,6 +12,8 @@
 #ifndef BACI_MAT_ANISOTROPY_H
 #define BACI_MAT_ANISOTROPY_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_anisotropy_cylinder_coordinate_system_manager.H"
 

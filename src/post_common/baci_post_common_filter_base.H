@@ -11,6 +11,8 @@
 #ifndef BACI_POST_COMMON_FILTER_BASE_H
 #define BACI_POST_COMMON_FILTER_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>

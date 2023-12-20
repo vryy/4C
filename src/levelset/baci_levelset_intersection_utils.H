@@ -17,6 +17,8 @@
 #ifndef BACI_LEVELSET_INTERSECTION_UTILS_H
 #define BACI_LEVELSET_INTERSECTION_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_cut_point.H"
 #include "baci_discretization_geometry_geo_utils.H"
 

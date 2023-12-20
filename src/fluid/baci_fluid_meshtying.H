@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_MESHTYING_H
 #define BACI_FLUID_MESHTYING_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_inpar_fluid.H"
 #include "baci_linalg_mapextractor.H"

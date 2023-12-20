@@ -11,6 +11,8 @@ using XFEM
 #ifndef BACI_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H
 #define BACI_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_monolithic_nonox.H"
 
 BACI_NAMESPACE_OPEN

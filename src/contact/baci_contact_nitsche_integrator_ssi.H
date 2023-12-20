@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_NITSCHE_INTEGRATOR_SSI_H
 #define BACI_CONTACT_NITSCHE_INTEGRATOR_SSI_H
 
+#include "baci_config.H"
+
 #include "baci_contact_nitsche_integrator.H"
 
 BACI_NAMESPACE_OPEN

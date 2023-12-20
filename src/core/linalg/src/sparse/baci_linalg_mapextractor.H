@@ -9,6 +9,8 @@
 #ifndef BACI_LINALG_MAPEXTRACTOR_H
 #define BACI_LINALG_MAPEXTRACTOR_H
 
+#include "baci_config.H"
+
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

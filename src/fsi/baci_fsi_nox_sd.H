@@ -12,6 +12,8 @@
 #ifndef BACI_FSI_NOX_SD_H
 #define BACI_FSI_NOX_SD_H
 
+#include "baci_config.H"
+
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_GlobalData.H>
 #include <NOX_LineSearch_Generic.H>

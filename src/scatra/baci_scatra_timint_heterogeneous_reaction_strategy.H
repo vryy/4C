@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_TIMINT_HETEROGENEOUS_REACTION_STRATEGY_H
 #define BACI_SCATRA_TIMINT_HETEROGENEOUS_REACTION_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_timint_meshtying_strategy_std.H"
 
 BACI_NAMESPACE_OPEN

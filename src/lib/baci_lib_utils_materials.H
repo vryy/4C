@@ -13,6 +13,8 @@
 #define BACI_LIB_UTILS_MATERIALS_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
 

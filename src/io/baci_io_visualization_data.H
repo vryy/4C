@@ -11,6 +11,8 @@
 #ifndef BACI_IO_VISUALIZATION_DATA_H
 #define BACI_IO_VISUALIZATION_DATA_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <map>

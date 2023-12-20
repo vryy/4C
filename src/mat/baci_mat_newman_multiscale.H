@@ -9,6 +9,8 @@
 #ifndef BACI_MAT_NEWMAN_MULTISCALE_H
 #define BACI_MAT_NEWMAN_MULTISCALE_H
 
+#include "baci_config.H"
+
 #include "baci_mat_newman.H"
 #include "baci_mat_scatra_multiscale.H"
 

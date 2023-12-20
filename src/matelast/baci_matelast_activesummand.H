@@ -8,6 +8,8 @@
 
 #ifndef BACI_MATELAST_ACTIVESUMMAND_H
 #define BACI_MATELAST_ACTIVESUMMAND_H
+#include "baci_config.H"
+
 #include "baci_matelast_summand.H"
 
 BACI_NAMESPACE_OPEN

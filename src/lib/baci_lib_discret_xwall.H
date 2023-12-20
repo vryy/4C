@@ -13,6 +13,8 @@ of dofs per node on a fluid discretization for xwall
 #ifndef BACI_LIB_DISCRET_XWALL_H
 #define BACI_LIB_DISCRET_XWALL_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret_faces.H"
 #include "baci_utils_exceptions.H"
 

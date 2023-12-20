@@ -13,6 +13,8 @@ generation
 #ifndef BACI_FLUID_DISCRET_EXTRACTOR_H
 #define BACI_FLUID_DISCRET_EXTRACTOR_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 
 BACI_NAMESPACE_OPEN

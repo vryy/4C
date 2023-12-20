@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_INTEGRATIONCELLCREATOR_H
 #define BACI_CUT_INTEGRATIONCELLCREATOR_H
 
+#include "baci_config.H"
+
 #include "baci_cut_volumecell.H"
 
 BACI_NAMESPACE_OPEN

@@ -11,6 +11,11 @@
 /*----------------------------------------------------------------------------*/
 #ifndef BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H
 #define BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H
+
+#include "baci_config.H"
+
+BACI_NAMESPACE_OPEN
+
 /************************************************************************/
 /* Projection                                                           */
 /************************************************************************/
@@ -36,8 +41,6 @@ default: 1.0e-9  --> segments (in parameter space) cannot be smaller than this *
                      */
 #define MESHMOVEMENTMAXITER 10 /* max number of steps for local Newton (mesh movement) */
 
-BACI_NAMESPACE_OPEN
-// default: 10
 BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H

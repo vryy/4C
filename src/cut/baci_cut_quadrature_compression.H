@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_QUADRATURE_COMPRESSION_H
 #define BACI_CUT_QUADRATURE_COMPRESSION_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 
 namespace Teuchos

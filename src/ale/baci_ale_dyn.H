@@ -12,6 +12,8 @@
 #ifndef BACI_ALE_DYN_H
 #define BACI_ALE_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 void dyn_ale_drt();

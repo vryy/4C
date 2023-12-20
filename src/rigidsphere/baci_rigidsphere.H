@@ -12,6 +12,8 @@
 #define BACI_RIGIDSPHERE_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"

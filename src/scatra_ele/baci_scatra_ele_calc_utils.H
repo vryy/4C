@@ -12,6 +12,8 @@
 #define BACI_SCATRA_ELE_CALC_UTILS_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_scatra.H"
 #include "baci_lib_element.H"

@@ -12,6 +12,8 @@ John Wiley & Sons, Ltd, 2008
 #ifndef BACI_MAT_PLASTICDRUCKERPRAGER_H
 #define BACI_MAT_PLASTICDRUCKERPRAGER_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
 #include "baci_inpar_structure.H"

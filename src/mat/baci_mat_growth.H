@@ -10,6 +10,8 @@ growth laws.
 #define BACI_MAT_GROWTH_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_container.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"

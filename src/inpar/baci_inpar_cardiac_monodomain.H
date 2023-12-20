@@ -10,6 +10,8 @@
 #define BACI_INPAR_CARDIAC_MONODOMAIN_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 
 BACI_NAMESPACE_OPEN

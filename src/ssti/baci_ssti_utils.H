@@ -10,6 +10,8 @@
 #ifndef BACI_SSTI_UTILS_H
 #define BACI_SSTI_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_ssi_clonestrategy.H"
 #include "baci_sti_clonestrategy.H"

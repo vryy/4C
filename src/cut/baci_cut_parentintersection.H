@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_PARENTINTERSECTION_H
 #define BACI_CUT_PARENTINTERSECTION_H
 
+#include "baci_config.H"
+
 #include "baci_cut_meshhandle.H"
 #include "baci_cut_options.H"
 #include "baci_cut_pointpool.H"

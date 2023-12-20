@@ -13,6 +13,8 @@
 #ifndef BACI_LIB_DISCRET_HDG_H
 #define BACI_LIB_DISCRET_HDG_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_utils_exceptions.H"

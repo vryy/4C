@@ -13,6 +13,8 @@
 #define BACI_STRUCTURE_NEW_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_IO_runtime_vtk_output_structure_beams.H"
 #include "baci_inpar_structure.H"
 

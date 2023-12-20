@@ -19,6 +19,8 @@ parameters or totally different strain energy function).
 
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_par_parameter.H"

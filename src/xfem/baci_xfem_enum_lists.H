@@ -14,6 +14,8 @@
 #ifndef BACI_XFEM_ENUM_LISTS_H
 #define BACI_XFEM_ENUM_LISTS_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <string>

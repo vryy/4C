@@ -14,6 +14,8 @@
 #ifndef BACI_RED_AIRWAYS_AIR_BLOOD_SCATRALINE3_IMPL_H
 #define BACI_RED_AIRWAYS_AIR_BLOOD_SCATRALINE3_IMPL_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_red_airways_elementbase.H"

@@ -15,6 +15,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_ENUM_LISTS_H
 #define BACI_SOLVER_NONLIN_NOX_ENUM_LISTS_H
 
+#include "baci_config.H"
+
 #include <NOX_StatusTest_Generic.H>
 
 #include <string>

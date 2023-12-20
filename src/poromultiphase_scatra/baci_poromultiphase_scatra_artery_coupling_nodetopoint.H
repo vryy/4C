@@ -12,6 +12,8 @@
 #define BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NODETOPOINT_H
 
 
+#include "baci_config.H"
+
 #include "baci_poromultiphase_scatra_artery_coupling_nonconforming.H"
 
 BACI_NAMESPACE_OPEN

@@ -10,6 +10,8 @@
 #ifndef BACI_FLUID_ELE_HDG_WEAK_COMP_H
 #define BACI_FLUID_ELE_HDG_WEAK_COMP_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_polynomial.H"
 #include "baci_fluid_ele.H"
 #include "baci_lib_dg_element.h"

@@ -10,6 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_BGS2X2_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_BGS2X2_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linear_solver_preconditioner_linalg.H"

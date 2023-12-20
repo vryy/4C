@@ -9,6 +9,8 @@
 #ifndef BACI_LINALG_FIXEDSIZEMATRIX_H
 #define BACI_LINALG_FIXEDSIZEMATRIX_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
 

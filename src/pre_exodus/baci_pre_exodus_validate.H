@@ -13,6 +13,8 @@ Validate a given BACI input file (after all preprocessing steps)
 #ifndef BACI_PRE_EXODUS_VALIDATE_H
 #define BACI_PRE_EXODUS_VALIDATE_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_linalg_serialdensematrix.H"
 

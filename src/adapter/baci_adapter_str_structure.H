@@ -13,6 +13,8 @@
 #define BACI_ADAPTER_STR_STRUCTURE_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_field.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_elements_paramsinterface.H"

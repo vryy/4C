@@ -11,6 +11,8 @@
 #define BACI_LINEAR_SOLVER_AMGNXN_OBJECTS_H
 
 // Trilinos includes
+#include "baci_config.H"
+
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 

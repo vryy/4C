@@ -11,6 +11,8 @@
 #define BACI_EHL_PARTITIONED_H
 
 
+#include "baci_config.H"
+
 #include "baci_ehl_base.H"
 
 BACI_NAMESPACE_OPEN

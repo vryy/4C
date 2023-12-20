@@ -12,6 +12,8 @@
 #ifndef BACI_MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H
 #define BACI_MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_mat_anisotropy_cylinder_coordinate_system_provider.H"
 
 BACI_NAMESPACE_OPEN

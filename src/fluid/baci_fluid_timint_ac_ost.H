@@ -14,6 +14,8 @@
 #define BACI_FLUID_TIMINT_AC_OST_H
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_timint_ac.H"
 #include "baci_fluid_timint_ost.H"
 

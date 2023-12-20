@@ -13,6 +13,8 @@
 
 
 /*! header inclusions */
+#include "baci_config.H"
+
 #include "baci_inpar_cut.H"
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizematrix.H"

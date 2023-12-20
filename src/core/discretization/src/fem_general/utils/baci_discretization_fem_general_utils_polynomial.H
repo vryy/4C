@@ -10,6 +10,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_POLYNOMIAL_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_POLYNOMIAL_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_serialdensevector.H"
 

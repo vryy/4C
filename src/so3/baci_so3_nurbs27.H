@@ -11,6 +11,8 @@
 #define BACI_SO3_NURBS27_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"

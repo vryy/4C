@@ -13,6 +13,8 @@
 #ifndef BACI_BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H
 #define BACI_BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_str_model_evaluator.H"
 #include "baci_inpar_beaminteraction.H"
 

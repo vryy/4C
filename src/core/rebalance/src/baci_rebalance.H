@@ -11,6 +11,8 @@
 #ifndef BACI_REBALANCE_H
 #define BACI_REBALANCE_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_geometric_search_params.H"
 
 #include <Epetra_CrsGraph.h>

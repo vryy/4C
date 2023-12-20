@@ -9,6 +9,8 @@
 #ifndef BACI_INPAR_PARAMETERLIST_UTILS_H
 #define BACI_INPAR_PARAMETERLIST_UTILS_H
 
+#include "baci_config.H"
+
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

@@ -8,6 +8,8 @@
 #ifndef BACI_SO3_PYRAMID5FBAR_H
 #define BACI_SO3_PYRAMID5FBAR_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_pyramid5.H"
 

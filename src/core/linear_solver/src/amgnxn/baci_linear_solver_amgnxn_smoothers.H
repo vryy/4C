@@ -10,6 +10,8 @@ Created on: Feb 27, 2014
 #define BACI_LINEAR_SOLVER_AMGNXN_SMOOTHERS_H
 
 // Trilinos includes
+#include "baci_config.H"
+
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linear_solver_amgnxn_objects.H"
 #include "baci_linear_solver_method_linalg.H"

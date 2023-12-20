@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_MESHTYING_CONTACT_BRIDGE_H
 #define BACI_CONTACT_MESHTYING_CONTACT_BRIDGE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_contact.H"
 #include "baci_utils_exceptions.H"
 

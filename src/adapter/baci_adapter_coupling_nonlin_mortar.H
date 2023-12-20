@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/14 |
  *---------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_utils_exceptions.H"
 

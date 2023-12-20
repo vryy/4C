@@ -10,6 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_H
 #define BACI_LINEAR_SOLVER_METHOD_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_krylov_projector.H"
 #include "baci_utils_exceptions.H"
 

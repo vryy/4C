@@ -9,6 +9,8 @@
 #ifndef BACI_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_ARTERY_H
 #define BACI_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_ARTERY_H
 
+#include "baci_config.H"
+
 #include "baci_porofluidmultiphase_meshtying_strategy_base.H"
 
 BACI_NAMESPACE_OPEN

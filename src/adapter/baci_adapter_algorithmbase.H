@@ -11,6 +11,8 @@
 #ifndef BACI_ADAPTER_ALGORITHMBASE_H
 #define BACI_ADAPTER_ALGORITHMBASE_H
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 

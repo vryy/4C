@@ -12,6 +12,8 @@
 #ifndef BACI_BEAMCONTACT_STR_MODEL_EVALUATOR_BEAMINTERACTION_OLD_H
 #define BACI_BEAMCONTACT_STR_MODEL_EVALUATOR_BEAMINTERACTION_OLD_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_model_evaluator_generic.H"
 
 #include <Teuchos_RCP.hpp>

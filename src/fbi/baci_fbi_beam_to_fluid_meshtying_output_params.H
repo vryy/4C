@@ -12,6 +12,8 @@
 #ifndef BACI_FBI_BEAM_TO_FLUID_MESHTYING_OUTPUT_PARAMS_H
 #define BACI_FBI_BEAM_TO_FLUID_MESHTYING_OUTPUT_PARAMS_H
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
 
 BACI_NAMESPACE_OPEN

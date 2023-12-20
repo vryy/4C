@@ -11,6 +11,8 @@
 #ifndef BACI_ELEMAG_RESULTTEST_H
 #define BACI_ELEMAG_RESULTTEST_H
 
+#include "baci_config.H"
+
 #include "baci_lib_resulttest.H"
 #include "baci_linalg_serialdensevector.H"
 

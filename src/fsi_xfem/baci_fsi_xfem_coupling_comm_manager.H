@@ -8,6 +8,8 @@ transform matrixes, vectors, ...
 
 *----------------------------------------------------------------------*/
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 
 #include <Epetra_Comm.h>

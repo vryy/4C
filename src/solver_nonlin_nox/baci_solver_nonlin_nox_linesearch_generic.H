@@ -13,6 +13,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_H
 #define BACI_SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_inner_statustest_interface_required.H"
 
 #include <NOX_LineSearch_Generic.H>

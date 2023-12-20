@@ -8,6 +8,8 @@
 #ifndef BACI_MAT_THERMO_H
 #define BACI_MAT_THERMO_H
 
+#include "baci_config.H"
+
 #include "baci_mat_material.H"
 #include "baci_mat_trait_thermo.H"
 

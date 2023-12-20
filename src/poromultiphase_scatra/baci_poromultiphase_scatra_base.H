@@ -9,6 +9,8 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_BASE_H
 #define BACI_POROMULTIPHASE_SCATRA_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_inpar_poromultiphase_scatra.H"
 #include "baci_porofluidmultiphase_utils.H"

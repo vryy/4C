@@ -11,6 +11,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_LARGEROTATIONS_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_LARGEROTATIONS_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_fad.H"
 

@@ -10,6 +10,8 @@
 #ifndef BACI_MAT_SO3_MATERIAL_H
 #define BACI_MAT_SO3_MATERIAL_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_io_linedefinition.H"
 #include "baci_mat_material.H"

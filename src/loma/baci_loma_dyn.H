@@ -12,6 +12,8 @@
 #ifndef BACI_LOMA_DYN_H
 #define BACI_LOMA_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /*! entry point for the solution of low-Mach-number flow problems */

@@ -10,6 +10,8 @@
 #ifndef BACI_BEAMINTERACTION_CALC_UTILS_H
 #define BACI_BEAMINTERACTION_CALC_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_beaminteraction.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_mapextractor.H"

@@ -10,6 +10,8 @@
 #ifndef BACI_LINALG_PROJECTED_OPERATOR_H
 #define BACI_LINALG_PROJECTED_OPERATOR_H
 
+#include "baci_config.H"
+
 #include <Epetra_Operator.h>
 #include <Teuchos_RCP.hpp>
 

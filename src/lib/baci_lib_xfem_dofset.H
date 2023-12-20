@@ -15,6 +15,8 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 #define BACI_LIB_XFEM_DOFSET_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_fixed_size.H"
 

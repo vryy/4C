@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_STATUSTEST_H
 #define BACI_FSI_STATUSTEST_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_linalg_mapextractor.H"
 

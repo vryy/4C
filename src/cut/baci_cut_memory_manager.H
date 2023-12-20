@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_MEMORY_MANAGER_H
 #define BACI_CUT_MEMORY_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_cut_tolerance.H"  // for info whether debug or not
 
 #include <cstddef>  // for size_T

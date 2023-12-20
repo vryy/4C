@@ -10,6 +10,8 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_H
 #define BACI_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_H
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_discretization_fem_general_utils_integration.H"

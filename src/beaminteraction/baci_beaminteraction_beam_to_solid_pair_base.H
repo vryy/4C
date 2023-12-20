@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_geometry_pair_utility_classes.H"
 

@@ -28,6 +28,8 @@
 #error Unsupported hdf5 version
 #endif
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>

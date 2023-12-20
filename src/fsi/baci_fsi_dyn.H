@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_DYN_H
 #define BACI_FSI_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 void fluid_ale_drt();

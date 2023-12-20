@@ -12,6 +12,8 @@
 #ifndef BACI_MAT_ANISOTROPY_FIBER_PROVIDER_H
 #define BACI_MAT_ANISOTROPY_FIBER_PROVIDER_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 BACI_NAMESPACE_OPEN

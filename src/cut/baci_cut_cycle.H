@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_CYCLE_H
 #define BACI_CUT_CYCLE_H
 
+#include "baci_config.H"
+
 #include "baci_cut_utils.H"
 
 // forward declaration for the operator

@@ -10,6 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_PARAMETERS_H
 #define BACI_LINEAR_SOLVER_METHOD_PARAMETERS_H
 
+#include "baci_config.H"
+
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterListAcceptor.hpp>
 

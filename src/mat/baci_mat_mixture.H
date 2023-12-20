@@ -11,6 +11,8 @@
 #define BACI_MAT_MIXTURE_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_par_parameter.H"

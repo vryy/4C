@@ -13,6 +13,8 @@
 
 
 
+#include "baci_config.H"
+
 #include <Teuchos_RCPDecl.hpp>
 
 BACI_NAMESPACE_OPEN

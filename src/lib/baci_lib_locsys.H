@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_LOCSYS_H
 #define BACI_LIB_LOCSYS_H
 
+#include "baci_config.H"
+
 #include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
 

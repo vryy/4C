@@ -11,6 +11,8 @@ projection.
 #define BACI_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_H
 
 
+#include "baci_config.H"
+
 #include "baci_fbi_beam_to_fluid_meshtying_pair_base.H"
 
 namespace

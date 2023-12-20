@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_H
 
 
+#include "baci_config.H"
+
 #include "baci_geometry_pair_line_to_volume.H"
 
 BACI_NAMESPACE_OPEN

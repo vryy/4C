@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_PREDICT_FACTORY_H
 #define BACI_STRUCTURE_NEW_PREDICT_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 
 BACI_NAMESPACE_OPEN

@@ -10,6 +10,8 @@
 #ifndef BACI_CUT_LEVELSETINTERSECTION_H
 #define BACI_CUT_LEVELSETINTERSECTION_H
 
+#include "baci_config.H"
+
 #include "baci_cut_parentintersection.H"
 
 BACI_NAMESPACE_OPEN

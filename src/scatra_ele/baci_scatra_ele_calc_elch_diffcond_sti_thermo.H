@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_H
 #define BACI_SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_H
 
+#include "baci_config.H"
+
 #include "baci_mat_material.H"
 #include "baci_scatra_ele_calc_elch_diffcond.H"
 #include "baci_scatra_ele_sti_thermo.H"

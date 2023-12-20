@@ -15,6 +15,8 @@ header file
 #define BACI_DISCRETIZATION_GEOMETRY_GEO_UTILS_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_geometry_integrationcell.H"
 
 #include <vector>

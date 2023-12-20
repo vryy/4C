@@ -14,6 +14,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
+#include "baci_config.H"
+
 #include "baci_adapter_ale.H"
 #include "baci_ale_meshtying.H"
 #include "baci_inpar_ale.H"

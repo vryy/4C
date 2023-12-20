@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_MORTAR_ROTATION_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_mortar.H"
 
 BACI_NAMESPACE_OPEN

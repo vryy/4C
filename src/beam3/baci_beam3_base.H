@@ -11,6 +11,8 @@
 #ifndef BACI_BEAM3_BASE_H
 #define BACI_BEAM3_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_beam3_spatial_discretization_utils.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"

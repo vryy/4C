@@ -13,6 +13,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include <map>
 
 class Epetra_Map;

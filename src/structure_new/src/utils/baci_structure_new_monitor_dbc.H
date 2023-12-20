@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_MONITOR_DBC_H
 #define BACI_STRUCTURE_NEW_MONITOR_DBC_H
 
+#include "baci_config.H"
+
 #include "baci_lib_condition.H"
 
 BACI_NAMESPACE_OPEN

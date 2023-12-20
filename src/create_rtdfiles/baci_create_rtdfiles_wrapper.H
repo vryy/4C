@@ -12,6 +12,8 @@
 
 #ifndef BACI_CREATE_RTDFILES_WRAPPER_H
 #define BACI_CREATE_RTDFILES_WRAPPER_H
+#include "baci_config.H"
+
 #include <string>
 
 BACI_NAMESPACE_OPEN

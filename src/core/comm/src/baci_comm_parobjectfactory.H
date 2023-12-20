@@ -11,6 +11,8 @@
 #ifndef BACI_COMM_PAROBJECTFACTORY_H
 #define BACI_COMM_PAROBJECTFACTORY_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

@@ -10,6 +10,8 @@
 #define BACI_INPAR_POROMULTIPHASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_utils_exceptions.H"
 

@@ -12,6 +12,8 @@
 #ifndef BACI_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_H
 #define BACI_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_timint_bdf2.H"
 #include "baci_scatra_timint_cardiac_monodomain.H"
 #include "baci_scatra_timint_genalpha.H"

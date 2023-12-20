@@ -12,6 +12,8 @@
 #ifndef BACI_ADAPTER_SCATRA_BASE_ALGORITHM_H
 #define BACI_ADAPTER_SCATRA_BASE_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 namespace Teuchos

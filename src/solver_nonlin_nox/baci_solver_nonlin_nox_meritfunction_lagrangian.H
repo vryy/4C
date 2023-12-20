@@ -14,6 +14,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_LAGRANGIAN_H
 #define BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_LAGRANGIAN_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_enum_lists.H"
 #include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_utils_exceptions.H"

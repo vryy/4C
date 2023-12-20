@@ -15,6 +15,8 @@ relate the contact gap to the contact pressure based on micro interactions
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_lib_container.H"
 
 #include <Epetra_Vector.h>

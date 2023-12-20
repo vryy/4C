@@ -9,6 +9,8 @@
 #ifndef BACI_FBI_IMMERSED_GEOMETRY_COUPLER_H
 #define BACI_FBI_IMMERSED_GEOMETRY_COUPLER_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Epetra_Map.h>

@@ -12,6 +12,8 @@
 #ifndef BACI_SCATRA_ELE_BOUNDARY_FACTORY_H
 #define BACI_SCATRA_ELE_BOUNDARY_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_scatra.H"
 #include "baci_lib_element.H"
 

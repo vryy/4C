@@ -10,6 +10,8 @@
 #ifndef BACI_POROELAST_PARTITIONED_H
 #define BACI_POROELAST_PARTITIONED_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_poroelast.H"
 #include "baci_inpar_structure.H"
 #include "baci_poroelast_base.H"

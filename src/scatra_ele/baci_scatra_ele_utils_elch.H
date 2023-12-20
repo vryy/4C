@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_ELE_UTILS_ELCH_H
 #define BACI_SCATRA_ELE_UTILS_ELCH_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_elch.H"
 #include "baci_lib_element.H"

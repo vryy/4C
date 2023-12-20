@@ -10,6 +10,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */
 
+#include "baci_config.H"
+
 #include <map>
 #include <memory>
 #include <string>

@@ -18,6 +18,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_adapter_str_wrapper.H"
 #include "baci_pasi_str_model_evaluator_partitioned.H"
 

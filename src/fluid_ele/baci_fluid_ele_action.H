@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_ACTION_H
 #define BACI_FLUID_ELE_ACTION_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace FLD

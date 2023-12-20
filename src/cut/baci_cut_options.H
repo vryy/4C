@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_OPTIONS_H
 #define BACI_CUT_OPTIONS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_cut.H"
 
 BACI_NAMESPACE_OPEN

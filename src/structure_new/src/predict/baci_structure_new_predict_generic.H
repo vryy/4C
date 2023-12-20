@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_PREDICT_GENERIC_H
 #define BACI_STRUCTURE_NEW_PREDICT_GENERIC_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 
 #include <Teuchos_RCP.hpp>

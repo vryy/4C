@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_UTILS_PARALLEL_H
 #define BACI_LIB_UTILS_PARALLEL_H
 
+#include "baci_config.H"
+
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

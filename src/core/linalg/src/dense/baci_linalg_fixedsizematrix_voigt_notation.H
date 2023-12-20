@@ -6,6 +6,8 @@
 #ifndef BACI_LINALG_FIXEDSIZEMATRIX_VOIGT_NOTATION_H
 #define BACI_LINALG_FIXEDSIZEMATRIX_VOIGT_NOTATION_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 BACI_NAMESPACE_OPEN

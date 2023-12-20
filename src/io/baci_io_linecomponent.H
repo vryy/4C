@@ -9,6 +9,8 @@
 #define BACI_IO_LINECOMPONENT_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_container.H"
 
 #include <Teuchos_RCP.hpp>

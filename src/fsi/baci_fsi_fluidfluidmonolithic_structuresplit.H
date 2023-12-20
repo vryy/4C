@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_FLUIDFLUIDMONOLITHIC_STRUCTURESPLIT_H
 #define BACI_FSI_FLUIDFLUIDMONOLITHIC_STRUCTURESPLIT_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_monolithicstructuresplit.H"
 #include "baci_inpar_xfem.H"
 

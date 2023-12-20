@@ -11,6 +11,8 @@
 #ifndef BACI_CONTACT_AUG_STRATEGY_H
 #define BACI_CONTACT_AUG_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_contact_aug_enum_lists.H"
 #include "baci_contact_aug_timemonitor.H"
 #include "baci_contact_aug_utils.H"

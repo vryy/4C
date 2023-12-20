@@ -12,6 +12,8 @@
 #ifndef BACI_FSI_CONSTRMONOLITHIC_FLUIDSPLIT_H
 #define BACI_FSI_CONSTRMONOLITHIC_FLUIDSPLIT_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_constrmonolithic.H"
 
 BACI_NAMESPACE_OPEN

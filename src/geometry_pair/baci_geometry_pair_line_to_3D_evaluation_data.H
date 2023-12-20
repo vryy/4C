@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_geometry_pair_evaluation_data_base.H"
 #include "baci_geometry_pair_utility_classes.H"

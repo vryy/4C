@@ -10,6 +10,8 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H
 
+#include "baci_config.H"
+
 #include "baci_comm_exporter.H"
 #include "baci_linalg_blocksparsematrix.H"
 

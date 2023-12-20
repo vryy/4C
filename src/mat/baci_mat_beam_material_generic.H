@@ -10,6 +10,8 @@
 #ifndef BACI_MAT_BEAM_MATERIAL_GENERIC_H
 #define BACI_MAT_BEAM_MATERIAL_GENERIC_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
 #include "baci_linalg_fixedsizematrix.H"

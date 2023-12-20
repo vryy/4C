@@ -11,6 +11,8 @@
 #ifndef BACI_CONTACT_AUG_STEEPEST_ASCENT_STRATEGY_H
 #define BACI_CONTACT_AUG_STEEPEST_ASCENT_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_contact_aug_steepest_ascent_sp_strategy.H"
 
 BACI_NAMESPACE_OPEN

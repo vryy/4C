@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_ELEMENT_H
 #define BACI_CUT_ELEMENT_H
 
+#include "baci_config.H"
+
 #include "baci_cut_integrationcell.H"
 #include "baci_cut_node.H"
 #include "baci_cut_utils.H"

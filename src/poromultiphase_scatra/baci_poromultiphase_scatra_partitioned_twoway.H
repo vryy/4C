@@ -10,6 +10,8 @@
 #define BACI_POROMULTIPHASE_SCATRA_PARTITIONED_TWOWAY_H
 
 
+#include "baci_config.H"
+
 #include "baci_poromultiphase_scatra_partitioned.H"
 
 BACI_NAMESPACE_OPEN

@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_DIFFCOND_H
 #define BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_DIFFCOND_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_boundary_calc_elch_electrode.H"
 
 BACI_NAMESPACE_OPEN

@@ -8,6 +8,8 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H
 #define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Sacado.hpp>

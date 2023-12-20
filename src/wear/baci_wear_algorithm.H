@@ -20,6 +20,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 
 #include <Epetra_Vector.h>

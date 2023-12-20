@@ -11,6 +11,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_structure_timint_impl.H"
 
 #include <NOX_Epetra_Group.H>

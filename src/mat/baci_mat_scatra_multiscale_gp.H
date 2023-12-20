@@ -10,6 +10,8 @@ transport problems
 #ifndef BACI_MAT_SCATRA_MULTISCALE_GP_H
 #define BACI_MAT_SCATRA_MULTISCALE_GP_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <vector>

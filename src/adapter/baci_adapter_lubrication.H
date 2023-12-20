@@ -10,6 +10,8 @@
 #ifndef BACI_ADAPTER_LUBRICATION_H
 #define BACI_ADAPTER_LUBRICATION_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 namespace Teuchos

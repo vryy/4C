@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_PERIODICBC_H
 #define BACI_LIB_PERIODICBC_H
 
+#include "baci_config.H"
+
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>

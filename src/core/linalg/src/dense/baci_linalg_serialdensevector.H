@@ -10,6 +10,8 @@
 #define BACI_LINALG_SERIALDENSEVECTOR_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_SerialDenseVector.hpp>
 
 BACI_NAMESPACE_OPEN

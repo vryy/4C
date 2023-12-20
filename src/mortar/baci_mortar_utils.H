@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_UTILS_H
 #define BACI_MORTAR_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_mortar_coupling3d_classes.H"
 
 #include <Epetra_CrsMatrix.h>

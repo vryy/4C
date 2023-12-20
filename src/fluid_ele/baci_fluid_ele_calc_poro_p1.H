@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_CALC_PORO_P1_H
 #define BACI_FLUID_ELE_CALC_PORO_P1_H
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele_calc_poro.H"
 
 BACI_NAMESPACE_OPEN

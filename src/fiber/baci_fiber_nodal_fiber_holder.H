@@ -12,6 +12,8 @@
 #ifndef BACI_FIBER_NODAL_FIBER_HOLDER_H
 #define BACI_FIBER_NODAL_FIBER_HOLDER_H
 
+#include "baci_config.H"
+
 #include "baci_fiber_node.H"
 #include "baci_linalg_fixedsizematrix.H"
 

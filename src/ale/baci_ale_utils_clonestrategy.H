@@ -14,6 +14,8 @@
 
 /*----------------------------------------------------------------------------*/
 /*header inclusions */
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <map>

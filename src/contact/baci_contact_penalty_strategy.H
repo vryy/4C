@@ -11,6 +11,8 @@
 #ifndef BACI_CONTACT_PENALTY_STRATEGY_H
 #define BACI_CONTACT_PENALTY_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_contact_abstract_strategy.H"
 
 BACI_NAMESPACE_OPEN

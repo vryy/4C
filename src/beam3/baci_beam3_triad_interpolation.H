@@ -11,6 +11,8 @@
 #ifndef BACI_BEAM3_TRIAD_INTERPOLATION_H
 #define BACI_BEAM3_TRIAD_INTERPOLATION_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>

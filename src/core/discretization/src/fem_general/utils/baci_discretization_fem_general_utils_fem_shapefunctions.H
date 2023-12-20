@@ -12,6 +12,8 @@ the Baci guide in the Convention chapter.
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include <cmath>

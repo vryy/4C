@@ -16,6 +16,8 @@
 #define BACI_ADAPTER_STR_REDAIRWAY_H
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_adapter_str_wrapper.H"
 
 #include <Epetra_Vector.h>

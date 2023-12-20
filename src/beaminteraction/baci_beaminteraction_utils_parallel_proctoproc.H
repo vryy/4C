@@ -13,6 +13,8 @@
 #define BACI_BEAMINTERACTION_UTILS_PARALLEL_PROCTOPROC_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <map>

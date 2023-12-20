@@ -10,6 +10,8 @@
 #ifndef BACI_STRUCTURE_RESULTTEST_H
 #define BACI_STRUCTURE_RESULTTEST_H
 
+#include "baci_config.H"
+
 #include "baci_lib_resulttest.H"
 
 class Epetra_Vector;

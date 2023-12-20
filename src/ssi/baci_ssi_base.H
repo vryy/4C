@@ -10,6 +10,8 @@
 #ifndef BACI_SSI_BASE_H
 #define BACI_SSI_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_lib_discret.H"
 #include "baci_ssi_str_model_evaluator_base.H"

@@ -10,6 +10,8 @@ FSLS-model
 #ifndef BACI_MATELAST_VISCO_FRACT_H
 #define BACI_MATELAST_VISCO_FRACT_H
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 

@@ -14,6 +14,8 @@ problem
 #define BACI_FLUID_COUPLING_RED_MODELS_H
 
 
+#include "baci_config.H"
+
 #include "baci_art_net_dyn_drt.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"

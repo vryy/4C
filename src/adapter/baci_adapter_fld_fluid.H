@@ -9,6 +9,8 @@
 #ifndef BACI_ADAPTER_FLD_FLUID_H
 #define BACI_ADAPTER_FLD_FLUID_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_poroelast.H"
 #include "baci_linalg_fixedsizematrix.H"

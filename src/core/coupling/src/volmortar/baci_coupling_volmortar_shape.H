@@ -17,6 +17,8 @@
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"

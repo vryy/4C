@@ -13,6 +13,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 

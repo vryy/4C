@@ -21,6 +21,8 @@
 #define BACI_BEAM3_REISSNER_H
 
 
+#include "baci_config.H"
+
 #include "baci_beam3_base.H"
 #include "baci_beam3_spatial_discretization_utils.H"
 #include "baci_discretization_fem_general_largerotations.H"

@@ -14,6 +14,8 @@
 #ifndef BACI_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_H
 #define BACI_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_browniandyn.H"             // enums
 #include "baci_inpar_structure.H"               // enums
 #include "baci_lib_elements_paramsinterface.H"  // base class

@@ -9,6 +9,8 @@
 #ifndef BACI_POROFLUIDMULTIPHASE_ELE_POROFLUID_PHASEMANAGER_H
 #define BACI_POROFLUIDMULTIPHASE_ELE_POROFLUID_PHASEMANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_material.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_scatra_mat_multiporo.H"

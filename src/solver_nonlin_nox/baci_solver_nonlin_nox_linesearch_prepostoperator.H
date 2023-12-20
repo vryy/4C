@@ -11,6 +11,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_LINESEARCH_PREPOSTOPERATOR_H
 #define BACI_SOLVER_NONLIN_NOX_LINESEARCH_PREPOSTOPERATOR_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
 
 #include <Teuchos_RCP.hpp>

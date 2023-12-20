@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_CONTACT_PARAMS_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_solid_params_base.H"
 
 BACI_NAMESPACE_OPEN

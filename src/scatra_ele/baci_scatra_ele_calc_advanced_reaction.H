@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_ADVANCED_REACTION_H
 #define BACI_SCATRA_ELE_CALC_ADVANCED_REACTION_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_calc.H"
 
 BACI_NAMESPACE_OPEN

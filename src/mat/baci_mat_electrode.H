@@ -9,6 +9,8 @@
 #ifndef BACI_MAT_ELECTRODE_H
 #define BACI_MAT_ELECTRODE_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_elchsinglemat.H"
 

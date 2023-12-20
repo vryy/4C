@@ -12,6 +12,8 @@
 #ifndef BACI_ADAPTER_FLD_FBI_MOVINGBOUNDARY_H
 #define BACI_ADAPTER_FLD_FBI_MOVINGBOUNDARY_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_moving_boundary.H"
 #include "baci_fluid_meshtying.H"
 

@@ -9,8 +9,9 @@
 #ifndef BACI_POROFLUIDMULTIPHASE_ELE_ACTION_H
 #define BACI_POROFLUIDMULTIPHASE_ELE_ACTION_H
 
-BACI_NAMESPACE_OPEN
+#include "baci_config.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace POROFLUIDMULTIPHASE
 {
@@ -49,8 +50,6 @@ namespace POROFLUIDMULTIPHASE
     bd_calc_Neumann,  // evaluate neumann loads
   };                  // enum POROFLUIDMULTIPHASE::BoundaryAction
 }  // namespace POROFLUIDMULTIPHASE
-
-
 
 BACI_NAMESPACE_CLOSE
 

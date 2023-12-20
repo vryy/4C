@@ -13,6 +13,8 @@
 #ifndef BACI_FSI_DIRICHLETNEUMANN_H
 #define BACI_FSI_DIRICHLETNEUMANN_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_partitioned.H"
 
 BACI_NAMESPACE_OPEN

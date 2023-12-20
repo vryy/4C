@@ -8,6 +8,8 @@
 #ifndef BACI_SHELL7P_ELE_SCATRA_PREEVALUATOR_H
 #define BACI_SHELL7P_ELE_SCATRA_PREEVALUATOR_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_scatra.H"
 #include "baci_lib_element.H"
 

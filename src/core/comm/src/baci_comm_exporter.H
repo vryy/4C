@@ -12,6 +12,8 @@
 #ifndef BACI_COMM_EXPORTER_H
 #define BACI_COMM_EXPORTER_H
 
+#include "baci_config.H"
+
 #include "baci_comm_utils_factory.H"
 
 #include <Epetra_Comm.h>

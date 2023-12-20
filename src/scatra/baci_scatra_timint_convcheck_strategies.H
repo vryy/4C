@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
 #define BACI_SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 // forward declaration

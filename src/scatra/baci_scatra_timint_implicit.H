@@ -24,6 +24,8 @@
 #ifndef BACI_SCATRA_TIMINT_IMPLICIT_H
 #define BACI_SCATRA_TIMINT_IMPLICIT_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_scatra_wrapper.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"

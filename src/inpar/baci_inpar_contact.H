@@ -11,6 +11,8 @@
 #ifndef BACI_INPAR_CONTACT_H
 #define BACI_INPAR_CONTACT_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 
 BACI_NAMESPACE_OPEN

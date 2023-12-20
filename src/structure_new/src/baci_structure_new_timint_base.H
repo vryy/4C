@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_BASE_H
 #define BACI_STRUCTURE_NEW_TIMINT_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_str_structure_new.H"
 #include "baci_io_every_iteration_writer.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"

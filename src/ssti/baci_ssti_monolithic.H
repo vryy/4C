@@ -9,6 +9,8 @@
 #ifndef BACI_SSTI_MONOLITHIC_H
 #define BACI_SSTI_MONOLITHIC_H
 
+#include "baci_config.H"
+
 #include "baci_ssti_algorithm.H"
 
 #include <Teuchos_Time.hpp>

@@ -11,6 +11,8 @@
 #ifndef BACI_BEAMINTERACTION_POTENTIAL_PARAMS_H
 #define BACI_BEAMINTERACTION_POTENTIAL_PARAMS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_beampotential.H"
 
 BACI_NAMESPACE_OPEN

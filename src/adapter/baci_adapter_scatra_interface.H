@@ -10,6 +10,8 @@
 #define BACI_ADAPTER_SCATRA_INTERFACE_H
 
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 

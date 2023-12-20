@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_DOFSET_H
 #define BACI_MORTAR_DOFSET_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset.H"
 
 BACI_NAMESPACE_OPEN

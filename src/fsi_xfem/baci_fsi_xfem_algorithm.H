@@ -13,6 +13,8 @@
 #define BACI_FSI_XFEM_ALGORITHM_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_adapter_field_wrapper.H"
 

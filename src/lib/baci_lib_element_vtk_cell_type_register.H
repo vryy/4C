@@ -13,6 +13,8 @@
 #define BACI_LIB_ELEMENT_VTK_CELL_TYPE_REGISTER_H
 
 /* headers */
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_utils_exceptions.H"
 

@@ -35,6 +35,8 @@
 #define BACI_BEAM3_EULER_BERNOULLI_H
 
 
+#include "baci_config.H"
+
 #include "baci_beam3_base.H"
 #include "baci_lib_node.H"
 

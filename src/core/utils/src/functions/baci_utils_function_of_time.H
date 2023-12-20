@@ -6,6 +6,8 @@
 #ifndef BACI_UTILS_FUNCTION_OF_TIME_H
 #define BACI_UTILS_FUNCTION_OF_TIME_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_polynomial.H"
 #include "baci_io_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"

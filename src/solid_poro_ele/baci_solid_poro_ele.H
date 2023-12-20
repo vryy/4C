@@ -11,6 +11,8 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef BACI_SOLID_PORO_ELE_H
 #define BACI_SOLID_PORO_ELE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_poro.H"
 #include "baci_inpar_scatra.H"
 #include "baci_inpar_structure.H"

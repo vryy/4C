@@ -10,6 +10,8 @@
 #ifndef BACI_UTILS_SINGLETON_OWNER_H
 #define BACI_UTILS_SINGLETON_OWNER_H
 
+#include "baci_config.H"
+
 #include <functional>
 #include <map>
 #include <memory>

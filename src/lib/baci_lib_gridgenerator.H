@@ -11,6 +11,8 @@
 #ifndef BACI_LIB_GRIDGENERATOR_H
 #define BACI_LIB_GRIDGENERATOR_H
 
+#include "baci_config.H"
+
 #include <array>
 #include <string>
 

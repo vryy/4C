@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_VOLUMECELL_H
 #define BACI_CUT_VOLUMECELL_H
 
+#include "baci_config.H"
+
 #include "baci_cut_facet.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_inpar_cut.H"

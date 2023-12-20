@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_SOLVER_FACTORY_H
 #define BACI_STRUCTURE_NEW_SOLVER_FACTORY_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <set>

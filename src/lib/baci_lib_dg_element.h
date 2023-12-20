@@ -9,6 +9,8 @@
 #ifndef BACI_LIB_DG_ELEMENT_H
 #define BACI_LIB_DG_ELEMENT_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace DRT

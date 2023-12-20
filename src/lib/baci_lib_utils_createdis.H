@@ -14,6 +14,8 @@
 #ifndef BACI_LIB_UTILS_CREATEDIS_H
 #define BACI_LIB_UTILS_CREATEDIS_H
 
+#include "baci_config.H"
+
 #include "baci_comm_utils_factory.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"

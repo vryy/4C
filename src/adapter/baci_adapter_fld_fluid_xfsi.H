@@ -11,6 +11,8 @@
 #ifndef BACI_ADAPTER_FLD_FLUID_XFSI_H
 #define BACI_ADAPTER_FLD_FLUID_XFSI_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_wrapper.H"
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_fluid_xfluid.H"

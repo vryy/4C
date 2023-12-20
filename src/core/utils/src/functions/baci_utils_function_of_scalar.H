@@ -6,6 +6,8 @@
 #ifndef BACI_UTILS_FUNCTION_OF_SCALAR_H
 #define BACI_UTILS_FUNCTION_OF_SCALAR_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace CORE::UTILS

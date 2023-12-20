@@ -13,6 +13,8 @@
 #define BACI_BEAMINTERACTION_SUBMODEL_EVALUATOR_POTENTIAL_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
 #include "baci_io_visualization_manager.H"

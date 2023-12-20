@@ -4,9 +4,10 @@
 \level 2
 ----------------------------------------------------------------------------------------*/
 
-
 #ifndef BACI_FPSI_DYN_H
 #define BACI_FPSI_DYN_H
+
+#include "baci_config.H"
 
 BACI_NAMESPACE_OPEN
 

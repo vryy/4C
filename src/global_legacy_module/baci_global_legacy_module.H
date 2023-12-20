@@ -9,6 +9,8 @@
 #ifndef BACI_GLOBAL_LEGACY_MODULE_H
 #define BACI_GLOBAL_LEGACY_MODULE_H
 
+#include "baci_config.H"
+
 #include "baci_module_registry_callbacks.H"
 
 BACI_NAMESPACE_OPEN

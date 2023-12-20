@@ -13,6 +13,8 @@
 #ifndef BACI_ADAPTER_STR_STRUCTURE_NEW_H
 #define BACI_ADAPTER_STR_STRUCTURE_NEW_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_str_structure.H"
 #include "baci_inpar_structure.H"
 

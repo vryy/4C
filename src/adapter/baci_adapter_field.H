@@ -23,6 +23,8 @@ functions there exist also for fields.
 #define BACI_ADAPTER_FIELD_H
 
 // includes
+#include "baci_config.H"
+
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

@@ -10,6 +10,8 @@
 #ifndef BACI_STRUCTURE_DYN_NLN_DRT_H
 #define BACI_STRUCTURE_DYN_NLN_DRT_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 

@@ -13,6 +13,8 @@
 #define BACI_FLUID_ELE_CALC_PORO_H
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele_calc.H"
 #include "baci_inpar_structure.H"
 #include "baci_utils_singleton_owner.H"

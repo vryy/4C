@@ -10,6 +10,8 @@
 #ifndef BACI_FSI_MONOLITHIC_NONOX_H
 #define BACI_FSI_MONOLITHIC_NONOX_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_xfem.H"

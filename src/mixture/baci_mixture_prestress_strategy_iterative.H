@@ -11,6 +11,8 @@
 #ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
 #define BACI_MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
 
+#include "baci_config.H"
+
 #include "baci_comm_pack_buffer.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_parameter.H"

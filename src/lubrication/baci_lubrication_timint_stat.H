@@ -13,6 +13,8 @@
 #define BACI_LUBRICATION_TIMINT_STAT_H
 
 
+#include "baci_config.H"
+
 #include "baci_lubrication_timint_implicit.H"
 
 BACI_NAMESPACE_OPEN

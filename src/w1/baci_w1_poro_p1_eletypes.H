@@ -11,6 +11,8 @@
 #ifndef BACI_W1_PORO_P1_ELETYPES_H
 #define BACI_W1_PORO_P1_ELETYPES_H
 
+#include "baci_config.H"
+
 #include "baci_w1_poro_eletypes.H"
 
 BACI_NAMESPACE_OPEN

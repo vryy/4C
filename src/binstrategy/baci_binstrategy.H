@@ -16,6 +16,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_binstrategy_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 

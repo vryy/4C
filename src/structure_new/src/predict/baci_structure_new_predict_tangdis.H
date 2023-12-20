@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_PREDICT_TANGDIS_H
 #define BACI_STRUCTURE_NEW_PREDICT_TANGDIS_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
 #include "baci_structure_new_predict_generic.H"
 

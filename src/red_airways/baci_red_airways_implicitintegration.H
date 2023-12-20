@@ -13,6 +13,8 @@
 #ifndef BACI_RED_AIRWAYS_IMPLICITINTEGRATION_H
 #define BACI_RED_AIRWAYS_IMPLICITINTEGRATION_H
 
+#include "baci_config.H"
+
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_sparsematrix.H"

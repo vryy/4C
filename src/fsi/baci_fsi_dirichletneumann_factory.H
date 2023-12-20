@@ -13,6 +13,8 @@
 #ifndef BACI_FSI_DIRICHLETNEUMANN_FACTORY_H
 #define BACI_FSI_DIRICHLETNEUMANN_FACTORY_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCPDecl.hpp>
 
 class Epetra_Comm;

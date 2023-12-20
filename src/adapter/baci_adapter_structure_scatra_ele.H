@@ -12,6 +12,8 @@
 #ifndef BACI_ADAPTER_STRUCTURE_SCATRA_ELE_H
 #define BACI_ADAPTER_STRUCTURE_SCATRA_ELE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_scatra.H"
 
 BACI_NAMESPACE_OPEN

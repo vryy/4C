@@ -10,6 +10,8 @@
 #define BACI_POROFLUIDMULTIPHASE_ELE_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_serialdensematrix.H"

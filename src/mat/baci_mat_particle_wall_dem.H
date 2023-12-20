@@ -17,6 +17,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"

@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_PARAMETER_XFEM_H
 #define BACI_FLUID_ELE_PARAMETER_XFEM_H
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele_parameter_std.H"
 #include "baci_inpar_cut.H"
 #include "baci_inpar_xfem.H"

@@ -8,6 +8,8 @@
 #ifndef BACI_IO_CONTROL_H
 #define BACI_IO_CONTROL_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_io_legacy_types.H"
 

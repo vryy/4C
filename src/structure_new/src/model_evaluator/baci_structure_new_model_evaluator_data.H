@@ -11,6 +11,8 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H
 
+#include "baci_config.H"
+
 #include "baci_contact_paramsinterface.H"  // base class of the ContactData class
 #include "baci_inpar_browniandyn.H"        // enums
 #include "baci_lib_discret.H"

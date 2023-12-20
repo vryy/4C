@@ -18,6 +18,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_io.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_resulttest.H"

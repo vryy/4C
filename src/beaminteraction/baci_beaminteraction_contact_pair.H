@@ -10,6 +10,8 @@
 #ifndef BACI_BEAMINTERACTION_CONTACT_PAIR_H
 #define BACI_BEAMINTERACTION_CONTACT_PAIR_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Teuchos_ParameterList.hpp>

@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_H
 #define BACI_STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_linearsystem.H"
 
 BACI_NAMESPACE_OPEN

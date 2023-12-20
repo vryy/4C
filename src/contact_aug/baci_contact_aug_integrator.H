@@ -12,6 +12,8 @@
 #ifndef BACI_CONTACT_AUG_INTEGRATOR_H
 #define BACI_CONTACT_AUG_INTEGRATOR_H
 
+#include "baci_config.H"
+
 #include "baci_contact_aug_integrator_policy.H"
 #include "baci_contact_integrator.H"
 #include "baci_discretization_fem_general_utils_integration.H"

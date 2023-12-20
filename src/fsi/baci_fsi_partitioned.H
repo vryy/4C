@@ -13,6 +13,8 @@
 #ifndef BACI_FSI_PARTITIONED_H
 #define BACI_FSI_PARTITIONED_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_fsi_algorithm.H"
 #include "baci_io.H"

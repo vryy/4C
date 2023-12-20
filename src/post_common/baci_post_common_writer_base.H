@@ -10,6 +10,8 @@
 #ifndef BACI_POST_COMMON_WRITER_BASE_H
 #define BACI_POST_COMMON_WRITER_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_post_common_filter_base.H"
 
 #include <fstream>

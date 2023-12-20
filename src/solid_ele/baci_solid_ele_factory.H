@@ -8,6 +8,8 @@
 #ifndef BACI_SOLID_ELE_FACTORY_H
 #define BACI_SOLID_ELE_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"

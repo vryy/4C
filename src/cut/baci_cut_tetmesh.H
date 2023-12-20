@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_TETMESH_H
 #define BACI_CUT_TETMESH_H
 
+#include "baci_config.H"
+
 #include "baci_cut_facet.H"
 #include "baci_cut_side.H"
 

@@ -12,6 +12,8 @@
 #ifndef BACI_XFEM_MESH_PROJECTOR_H
 #define BACI_XFEM_MESH_PROJECTOR_H
 
+#include "baci_config.H"
+
 #include "baci_comm_exporter.H"
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_fixedsizematrix.H"

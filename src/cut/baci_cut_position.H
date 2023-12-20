@@ -13,6 +13,8 @@
 #ifndef BACI_CUT_POSITION_H
 #define BACI_CUT_POSITION_H
 
+#include "baci_config.H"
+
 #include "baci_cut_element.H"
 #include "baci_cut_kernel.H"
 

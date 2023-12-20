@@ -12,6 +12,8 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BVH_H
 #define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BVH_H
 
+#include "baci_config.H"
+
 #include "baci_io_pstream.H"
 
 #include <vector>

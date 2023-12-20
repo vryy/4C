@@ -13,6 +13,8 @@
 #define BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_RUNTIME_VTP_OUTPUT_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_IO_runtime_vtp_output_structure.H"
 #include "baci_io_visualization_parameters.H"
 

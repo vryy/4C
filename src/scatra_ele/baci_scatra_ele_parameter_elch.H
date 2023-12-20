@@ -17,6 +17,8 @@ general static parameters required for scalar transport element evaluation.
 #ifndef BACI_SCATRA_ELE_PARAMETER_ELCH_H
 #define BACI_SCATRA_ELE_PARAMETER_ELCH_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_elch.H"
 #include "baci_scatra_ele_parameter_base.H"
 

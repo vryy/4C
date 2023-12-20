@@ -11,8 +11,9 @@
 #ifndef BACI_INPAR_CONSTRAINT_FRAMEWORK_H
 #define BACI_INPAR_CONSTRAINT_FRAMEWORK_H
 
-BACI_NAMESPACE_OPEN
+#include "baci_config.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace INPAR::CONSTRAINTS
 {
@@ -29,6 +30,7 @@ namespace INPAR::CONSTRAINTS
     penalty_regularization  ///< penalty method
   };
 }  // namespace INPAR::CONSTRAINTS
+
 BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_BACI_INPAR_CONSTRAINT_MODELS_H

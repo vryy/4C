@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_NITSCHE_INTEGRATOR_TSI_H
 #define BACI_CONTACT_NITSCHE_INTEGRATOR_TSI_H
 
+#include "baci_config.H"
+
 #include "baci_contact_nitsche_integrator.H"
 #include "baci_utils_pairedvector.H"
 

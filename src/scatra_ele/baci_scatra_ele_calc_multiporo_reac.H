@@ -11,6 +11,8 @@
 #define BACI_SCATRA_ELE_CALC_MULTIPORO_REAC_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_fluidporo_multiphase.H"

@@ -12,6 +12,8 @@
 #ifndef BACI_CUT_COMBINTERSECTION_H
 #define BACI_CUT_COMBINTERSECTION_H
 
+#include "baci_config.H"
+
 #include "baci_cut_levelsetintersection.H"
 #include "baci_cut_meshintersection.H"
 #include "baci_cut_parentintersection.H"

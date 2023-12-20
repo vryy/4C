@@ -33,6 +33,8 @@ Reference:
 #define BACI_FLUID_TURBULENCE_DYN_VREMAN_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"
 #include "baci_lib_discret.H"

@@ -15,6 +15,8 @@
 #define BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
 
 
+#include "baci_config.H"
+
 #include "baci_poromultiphase_scatra_function_parameters.H"
 #include "baci_utils_function.H"
 

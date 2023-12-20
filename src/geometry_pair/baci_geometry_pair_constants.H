@@ -11,6 +11,8 @@
 #ifndef BACI_GEOMETRY_PAIR_CONSTANTS_H
 #define BACI_GEOMETRY_PAIR_CONSTANTS_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
@@ -36,7 +38,6 @@ namespace GEOMETRYPAIR
     const double pos_tol = 1e-10;
   }  // namespace CONSTANTS
 }  // namespace GEOMETRYPAIR
-
 
 BACI_NAMESPACE_CLOSE
 

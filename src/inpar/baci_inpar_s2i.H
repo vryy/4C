@@ -10,6 +10,8 @@
 #ifndef BACI_INPAR_S2I_H
 #define BACI_INPAR_S2I_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 
 BACI_NAMESPACE_OPEN

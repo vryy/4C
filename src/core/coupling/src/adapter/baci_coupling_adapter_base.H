@@ -13,6 +13,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

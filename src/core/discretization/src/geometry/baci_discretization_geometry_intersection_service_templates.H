@@ -13,6 +13,8 @@
 #define BACI_DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_discretization_geometry_geo_utils.H"
 #include "baci_discretization_geometry_intersection_math.H"

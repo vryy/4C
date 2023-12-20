@@ -11,6 +11,8 @@ equations
 #ifndef BACI_CUT_FACET_INTEGRATION_H
 #define BACI_CUT_FACET_INTEGRATION_H
 
+#include "baci_config.H"
+
 #include "baci_cut_element.H"
 #include "baci_cut_enum.H"
 #include "baci_cut_mesh.H"

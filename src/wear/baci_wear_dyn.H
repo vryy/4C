@@ -11,6 +11,8 @@
 #ifndef BACI_WEAR_DYN_H
 #define BACI_WEAR_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /* entry point for the solution of structural ale wear problems */

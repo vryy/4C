@@ -11,6 +11,8 @@ In this file, the helper defining the mapping from celltype to their properties 
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DEF_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DEF_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_cell_type.H"
 
 #include <tuple>

@@ -14,6 +14,8 @@
 
 
 /*----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCPDecl.hpp>
 

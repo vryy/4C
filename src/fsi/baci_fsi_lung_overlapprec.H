@@ -10,6 +10,8 @@
 #ifndef BACI_FSI_LUNG_OVERLAPPREC_H
 #define BACI_FSI_LUNG_OVERLAPPREC_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_overlapprec.H"
 
 BACI_NAMESPACE_OPEN

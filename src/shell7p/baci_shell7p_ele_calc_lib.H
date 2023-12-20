@@ -8,6 +8,8 @@
 #ifndef BACI_SHELL7P_ELE_CALC_LIB_H
 #define BACI_SHELL7P_ELE_CALC_LIB_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_element_integration_select.H"
 #include "baci_linalg_fixedsizematrix_tensor_transformation.H"

@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_MONITOR_DBC_H
 #define BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_MONITOR_DBC_H
 
+#include "baci_config.H"
+
 #include <string>
 
 // forward declaration

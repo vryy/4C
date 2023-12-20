@@ -10,6 +10,8 @@
 #ifndef BACI_INPAR_BEAMCONTACT_H
 #define BACI_INPAR_BEAMCONTACT_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_lib_condition.H"
 

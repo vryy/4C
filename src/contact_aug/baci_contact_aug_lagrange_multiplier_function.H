@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H
 #define BACI_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H
 
+#include "baci_config.H"
+
 #include "baci_contact_aug_utils.H"
 #include "baci_inpar_solver.H"
 #include "baci_utils_exceptions.H"

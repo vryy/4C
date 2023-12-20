@@ -9,6 +9,8 @@
 #ifndef BACI_SCATRA_TIMINT_STAT_HDG_H
 #define BACI_SCATRA_TIMINT_STAT_HDG_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_scatra_timint_hdg.H"
 

@@ -12,6 +12,8 @@
 #ifndef BACI_CARDIOVASCULAR0D_STRUCTURE_NEW_MODEL_EVALUATOR_H
 #define BACI_CARDIOVASCULAR0D_STRUCTURE_NEW_MODEL_EVALUATOR_H
 
+#include "baci_config.H"
+
 #include "baci_cardiovascular0d_manager.H"
 #include "baci_structure_new_model_evaluator_generic.H"
 

@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_INTEGRATIONCELL_H
 #define BACI_CUT_INTEGRATIONCELL_H
 
+#include "baci_config.H"
+
 #include "baci_cut_point.H"  // necessary due to enumerator
 
 BACI_NAMESPACE_OPEN

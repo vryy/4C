@@ -72,6 +72,8 @@ for gas exchange in the human lungs", J Theor biol (2006)
 #ifndef BACI_CARDIOVASCULAR0D_RESPIRATORY_SYSPULPERIPHCIRCULATION_H
 #define BACI_CARDIOVASCULAR0D_RESPIRATORY_SYSPULPERIPHCIRCULATION_H
 
+#include "baci_config.H"
+
 #include "baci_cardiovascular0d.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_cardiovascular0d.H"

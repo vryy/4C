@@ -5,6 +5,8 @@
 
 */
 
+#include "baci_config.H"
+
 #include "baci_mat_trait_solid.H"
 #include "baci_mat_trait_thermo.H"
 

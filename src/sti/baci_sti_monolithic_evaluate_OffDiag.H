@@ -10,6 +10,8 @@
 #ifndef BACI_STI_MONOLITHIC_EVALUATE_OFFDIAG_H
 #define BACI_STI_MONOLITHIC_EVALUATE_OFFDIAG_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_scatra_base_algorithm.H"
 #include "baci_inpar_s2i.H"
 

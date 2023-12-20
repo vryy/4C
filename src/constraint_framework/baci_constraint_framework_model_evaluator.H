@@ -12,6 +12,8 @@
 #define BACI_CONSTRAINT_FRAMEWORK_MODEL_EVALUATOR_H
 
 
+#include "baci_config.H"
+
 #include "baci_constraint_framework_submodelevaluator_base.H"
 #include "baci_inpar_constraint_framework.H"
 #include "baci_structure_new_model_evaluator_generic.H"

@@ -14,6 +14,8 @@
 #ifndef BACI_FSI_DIRICHLETNEUMANN_VOLCOUPL_H
 #define BACI_FSI_DIRICHLETNEUMANN_VOLCOUPL_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_fsi_dirichletneumann_disp.H"

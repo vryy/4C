@@ -13,6 +13,8 @@ materials with @MAT::Anisotropy
 #ifndef BACI_MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H
 #define BACI_MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H
 
+#include "baci_config.H"
+
 #include "baci_mat_anisotropy_extension_base.H"
 
 #include <Teuchos_RCPDecl.hpp>

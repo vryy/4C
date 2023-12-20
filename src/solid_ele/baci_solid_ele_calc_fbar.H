@@ -8,6 +8,8 @@
 #ifndef BACI_SOLID_ELE_CALC_FBAR_H
 #define BACI_SOLID_ELE_CALC_FBAR_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"

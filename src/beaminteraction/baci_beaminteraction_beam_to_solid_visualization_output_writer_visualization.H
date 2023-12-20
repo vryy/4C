@@ -13,6 +13,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_VISUALIZATION_H
 
 
+#include "baci_config.H"
+
 #include "baci_io_visualization_manager.H"
 
 #include <Teuchos_RCP.hpp>

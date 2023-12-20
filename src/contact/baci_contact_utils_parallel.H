@@ -11,6 +11,8 @@
 #ifndef BACI_CONTACT_UTILS_PARALLEL_H
 #define BACI_CONTACT_UTILS_PARALLEL_H
 
+#include "baci_config.H"
+
 namespace Teuchos
 {
   class ParameterList;

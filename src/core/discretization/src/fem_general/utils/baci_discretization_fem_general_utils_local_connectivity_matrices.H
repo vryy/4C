@@ -17,6 +17,8 @@ mapping
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"

@@ -13,6 +13,8 @@ simplifies the triad construction and torsion free beam elements can be used.
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_PLANE_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_base.H"
 
 BACI_NAMESPACE_OPEN

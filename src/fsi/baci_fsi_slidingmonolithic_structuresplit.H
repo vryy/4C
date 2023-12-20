@@ -12,6 +12,8 @@ with condensed structure interface displacements
 #define BACI_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_ale_fsi_msht.H"
 #include "baci_adapter_fld_fluid_fsi_msht.H"
 #include "baci_coupling_adapter.H"

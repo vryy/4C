@@ -14,6 +14,8 @@
 #define BACI_FLUID_TIMINT_RED_OST_H
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_timint_ost.H"
 #include "baci_fluid_timint_red.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"

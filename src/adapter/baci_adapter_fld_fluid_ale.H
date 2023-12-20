@@ -13,6 +13,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_fld_moving_boundary.H"
 #include "baci_coupling_adapter.H"

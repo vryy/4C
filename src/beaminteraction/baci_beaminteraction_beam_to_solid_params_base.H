@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_PARAMS_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_beam_to_solid.H"
 #include "baci_utils_exceptions.H"

@@ -10,6 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_TYPE_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_TYPE_H
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>

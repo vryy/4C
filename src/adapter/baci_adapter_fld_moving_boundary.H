@@ -13,6 +13,8 @@
 #define BACI_ADAPTER_FLD_MOVING_BOUNDARY_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 
 BACI_NAMESPACE_OPEN

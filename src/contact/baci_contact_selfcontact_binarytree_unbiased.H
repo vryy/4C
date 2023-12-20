@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_SELFCONTACT_BINARYTREE_UNBIASED_H
 #define BACI_CONTACT_SELFCONTACT_BINARYTREE_UNBIASED_H
 
+#include "baci_config.H"
+
 #include "baci_contact_selfcontact_binarytree.H"
 
 BACI_NAMESPACE_OPEN

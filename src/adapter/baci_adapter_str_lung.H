@@ -17,6 +17,8 @@ attached parenchyma balloon
 #define BACI_ADAPTER_STR_LUNG_H
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_adapter_str_fsiwrapper.H"
 
 #include <Epetra_Vector.h>

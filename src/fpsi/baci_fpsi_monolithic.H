@@ -13,6 +13,8 @@
 #define BACI_FPSI_MONOLITHIC_H
 
 // FPSI includes
+#include "baci_config.H"
+
 #include "baci_adapter_ale_fpsi.H"
 #include "baci_adapter_fld_fluid_fpsi.H"
 #include "baci_ale.H"

@@ -17,6 +17,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_volmortar.H"

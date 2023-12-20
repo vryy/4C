@@ -13,6 +13,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_adapter_str_structure.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_elements_paramsinterface.H"

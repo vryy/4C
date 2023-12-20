@@ -12,6 +12,8 @@
 #define BACI_INPAR_GEOMETRY_PAIR_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 
 // Forward declaration.

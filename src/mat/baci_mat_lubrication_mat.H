@@ -10,6 +10,8 @@
 #define BACI_MAT_LUBRICATION_MAT_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"

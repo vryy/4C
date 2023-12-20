@@ -12,6 +12,8 @@
 #define BACI_FSI_MONOLITHIC_LINEARSYSTEM_H
 
 
+#include "baci_config.H"
+
 #include <AztecOO_StatusTestCombo.h>
 #include <AztecOO_StatusTestMaxIters.h>
 #include <AztecOO_StatusTestResNorm.h>

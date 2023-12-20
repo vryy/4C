@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_NITSCHE_STRATEGY_SSI_ELCH_H
 #define BACI_CONTACT_NITSCHE_STRATEGY_SSI_ELCH_H
 
+#include "baci_config.H"
+
 #include "baci_contact_nitsche_strategy_ssi.H"
 
 BACI_NAMESPACE_OPEN

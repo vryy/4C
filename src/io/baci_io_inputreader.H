@@ -13,6 +13,8 @@
 #ifndef BACI_IO_INPUTREADER_H
 #define BACI_IO_INPUTREADER_H
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

@@ -13,6 +13,8 @@
 #ifndef BACI_FPSI_MONOLITHIC_PLAIN_H
 #define BACI_FPSI_MONOLITHIC_PLAIN_H
 
+#include "baci_config.H"
+
 #include "baci_fpsi_monolithic.H"
 #include "baci_inpar_fpsi.H"
 

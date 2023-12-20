@@ -8,6 +8,8 @@ managers
 
 *----------------------------------------------------------------------*/
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 

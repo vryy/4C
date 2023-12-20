@@ -12,6 +12,8 @@
 #ifndef BACI_ADAPTER_STR_FPSIWRAPPER_H
 #define BACI_ADAPTER_STR_FPSIWRAPPER_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_str_fsiwrapper.H"
 
 BACI_NAMESPACE_OPEN

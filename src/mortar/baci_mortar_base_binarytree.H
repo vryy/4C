@@ -10,6 +10,8 @@
 #ifndef BACI_MORTAR_BASE_BINARYTREE_H
 #define BACI_MORTAR_BASE_BINARYTREE_H
 
+#include "baci_config.H"
+
 #include "baci_mortar_abstract_binarytree.H"
 
 #include <Teuchos_RCP.hpp>

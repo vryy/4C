@@ -10,6 +10,8 @@ law, modified from Pioletti, 1997
 #ifndef BACI_MATELAST_VISCO_ISORATEDEP_H
 #define BACI_MATELAST_VISCO_ISORATEDEP_H
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 

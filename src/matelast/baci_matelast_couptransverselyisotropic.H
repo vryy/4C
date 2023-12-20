@@ -10,6 +10,8 @@ strain computations
 #ifndef BACI_MATELAST_COUPTRANSVERSELYISOTROPIC_H
 #define BACI_MATELAST_COUPTRANSVERSELYISOTROPIC_H
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 

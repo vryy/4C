@@ -10,6 +10,8 @@
 #ifndef BACI_CARDIOVASCULAR0D_DOFSET_H
 #define BACI_CARDIOVASCULAR0D_DOFSET_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
 #include "baci_mor_pod.H"

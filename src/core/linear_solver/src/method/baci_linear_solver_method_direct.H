@@ -10,6 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_DIRECT_H
 #define BACI_LINEAR_SOLVER_METHOD_DIRECT_H
 
+#include "baci_config.H"
+
 #include "baci_linear_solver_method.H"
 
 #include <Amesos_BaseSolver.h>

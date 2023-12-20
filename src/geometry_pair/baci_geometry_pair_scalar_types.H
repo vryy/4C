@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_SCALAR_TYPES_H
 
 
+#include "baci_config.H"
+
 #include "baci_utils_fad.H"
 
 BACI_NAMESPACE_OPEN

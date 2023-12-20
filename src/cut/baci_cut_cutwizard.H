@@ -10,6 +10,8 @@ surface meshes
 #ifndef BACI_CUT_CUTWIZARD_H
 #define BACI_CUT_CUTWIZARD_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_cut.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"

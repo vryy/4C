@@ -13,6 +13,8 @@
 #define BACI_XFEM_XFIELD_STATE_UTILS_H
 
 
+#include "baci_config.H"
+
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_solver_nonlin_nox_aux.H"
 

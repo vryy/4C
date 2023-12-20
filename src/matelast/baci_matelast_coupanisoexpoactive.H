@@ -9,6 +9,8 @@
 #ifndef BACI_MATELAST_COUPANISOEXPOACTIVE_H
 #define BACI_MATELAST_COUPANISOEXPOACTIVE_H
 
+#include "baci_config.H"
+
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_anisotropy_extension_provider.H"
 #include "baci_mat_par_parameter.H"

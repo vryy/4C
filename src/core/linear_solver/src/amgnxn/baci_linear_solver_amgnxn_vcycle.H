@@ -11,6 +11,8 @@
 #define BACI_LINEAR_SOLVER_AMGNXN_VCYCLE_H
 
 // Trilinos includes
+#include "baci_config.H"
+
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linear_solver_amgnxn_smoothers.H"
 #include "baci_linear_solver_method_linalg.H"

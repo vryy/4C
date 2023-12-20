@@ -12,6 +12,8 @@ dimensional airway elements framework (transport in elements and between air and
 
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"

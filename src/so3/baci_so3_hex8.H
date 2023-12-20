@@ -11,6 +11,8 @@
 #ifndef BACI_SO3_HEX8_H
 #define BACI_SO3_HEX8_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"

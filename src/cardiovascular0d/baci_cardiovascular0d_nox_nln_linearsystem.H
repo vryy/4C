@@ -15,6 +15,8 @@
 #ifndef BACI_CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_H
 #define BACI_CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_linearsystem.H"
 
 BACI_NAMESPACE_OPEN

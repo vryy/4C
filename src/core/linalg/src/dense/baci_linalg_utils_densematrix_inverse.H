@@ -9,6 +9,8 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_INVERSE_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_INVERSE_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_utils_densematrix_determinant.H"
 

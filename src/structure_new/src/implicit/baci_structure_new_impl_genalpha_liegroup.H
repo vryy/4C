@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_IMPL_GENALPHA_LIEGROUP_H
 #define BACI_STRUCTURE_NEW_IMPL_GENALPHA_LIEGROUP_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_impl_genalpha.H"
 
 class Epetra_MultiVector;

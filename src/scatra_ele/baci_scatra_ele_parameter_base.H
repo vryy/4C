@@ -17,6 +17,8 @@ of the global time integrator, and then never touched again throughout the simul
 #define BACI_SCATRA_ELE_PARAMETER_BASE_H
 
 
+#include "baci_config.H"
+
 #include <memory>
 
 // forward declaration

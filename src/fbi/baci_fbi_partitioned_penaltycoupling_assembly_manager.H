@@ -13,6 +13,8 @@
 #ifndef BACI_FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_H
 #define BACI_FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>

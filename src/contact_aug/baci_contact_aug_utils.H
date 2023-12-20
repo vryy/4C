@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_AUG_UTILS_H
 #define BACI_CONTACT_AUG_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_contact.H"
 #include "baci_utils_pairedmatrix.H"
 

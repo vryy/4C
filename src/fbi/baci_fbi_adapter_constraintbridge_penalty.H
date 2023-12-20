@@ -11,6 +11,8 @@ approach for Fluid-beam interaction.
 #ifndef BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_H
 #define BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_H
 
+#include "baci_config.H"
+
 #include "baci_fbi_adapter_constraintbridge.H"
 
 #include <Epetra_FEVector.h>

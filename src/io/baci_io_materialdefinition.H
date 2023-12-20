@@ -14,6 +14,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_inpar_material.H"
 #include "baci_io_inputreader.H"
 #include "baci_io_linecomponent.H"

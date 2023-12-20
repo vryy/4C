@@ -10,6 +10,8 @@ determinant
 #ifndef BACI_MATELAST_COUP3POW_H
 #define BACI_MATELAST_COUP3POW_H
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 

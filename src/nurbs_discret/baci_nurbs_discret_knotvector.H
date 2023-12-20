@@ -10,6 +10,8 @@
 #ifndef BACI_NURBS_DISCRET_KNOTVECTOR_H
 #define BACI_NURBS_DISCRET_KNOTVECTOR_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobject.H"
 #include "baci_comm_parobjectfactory.H"
 

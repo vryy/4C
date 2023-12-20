@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_IMPL_GENERIC_H
 #define BACI_STRUCTURE_NEW_IMPL_GENERIC_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
 #include "baci_structure_new_integrator.H"
 // required because of used enums

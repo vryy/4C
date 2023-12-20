@@ -17,6 +17,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 09/09 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_thermo_ele_impl_utils.H"
 #include "baci_thermo_element.H"
 

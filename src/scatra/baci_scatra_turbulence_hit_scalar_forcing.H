@@ -14,6 +14,8 @@ passive-scalar transport
 #ifndef BACI_SCATRA_TURBULENCE_HIT_SCALAR_FORCING_H
 #define BACI_SCATRA_TURBULENCE_HIT_SCALAR_FORCING_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"
 #include "baci_linalg_serialdensevector.H"

@@ -16,6 +16,8 @@ of errors, turbulence statistics etc.)
 #ifndef BACI_FLUID_ELE_XWALL_H
 #define BACI_FLUID_ELE_XWALL_H
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele.H"
 
 #include <Teuchos_RCP.hpp>

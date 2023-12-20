@@ -11,6 +11,8 @@ interface
 #ifndef BACI_POROELAST_MONOLITHICSTRUCTURESPLIT_H
 #define BACI_POROELAST_MONOLITHICSTRUCTURESPLIT_H
 
+#include "baci_config.H"
+
 #include "baci_poroelast_monolithicsplit.H"
 
 BACI_NAMESPACE_OPEN

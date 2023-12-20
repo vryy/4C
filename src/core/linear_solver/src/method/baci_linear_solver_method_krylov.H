@@ -10,6 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_KRYLOV_H
 #define BACI_LINEAR_SOLVER_METHOD_KRYLOV_H
 
+#include "baci_config.H"
+
 #include "baci_linear_solver_method.H"
 #include "baci_linear_solver_preconditioner_type.H"
 #include "baci_utils_exceptions.H"

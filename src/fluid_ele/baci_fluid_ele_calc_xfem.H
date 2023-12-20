@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_CALC_XFEM_H
 #define BACI_FLUID_ELE_CALC_XFEM_H
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele_calc.H"
 #include "baci_fluid_ele_calc_xfem_coupling.H"
 #include "baci_lib_utils.H"

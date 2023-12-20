@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_POINT_IMPL_H
 #define BACI_CUT_POINT_IMPL_H
 
+#include "baci_config.H"
+
 #include "baci_cut_line.H"
 
 BACI_NAMESPACE_OPEN

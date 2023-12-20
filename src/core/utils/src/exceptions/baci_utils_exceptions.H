@@ -72,6 +72,8 @@ void run_time_error_latest(const std::string file, const std::string func, const
 
 #else
 
+#include "baci_config.H"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
