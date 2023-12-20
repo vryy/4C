@@ -13,6 +13,8 @@
 #ifndef BACI_XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_H
 #define BACI_XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_H
 
+#include "baci_config.H"
+
 #include "baci_xfem_xfluid_timeInt_base.H"
 
 BACI_NAMESPACE_OPEN

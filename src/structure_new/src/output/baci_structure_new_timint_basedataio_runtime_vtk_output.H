@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_RUNTIME_VTK_OUTPUT_H
 #define BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_RUNTIME_VTK_OUTPUT_H
 
+#include "baci_config.H"
+
 #include "baci_io_visualization_parameters.H"
 
 namespace Teuchos

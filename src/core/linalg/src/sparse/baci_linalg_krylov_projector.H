@@ -14,6 +14,8 @@
 #ifndef BACI_LINALG_KRYLOV_PROJECTOR_H
 #define BACI_LINALG_KRYLOV_PROJECTOR_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <vector>

@@ -13,6 +13,8 @@
 #ifndef BACI_UTILS_PAIREDVECTOR_H
 #define BACI_UTILS_PAIREDVECTOR_H
 
+#include "baci_config.H"
+
 #include "baci_utils_pairedobj_insert_policy.H"
 
 #include <algorithm>

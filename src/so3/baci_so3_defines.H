@@ -9,8 +9,9 @@
 #ifndef BACI_SO3_DEFINES_H
 #define BACI_SO3_DEFINES_H
 
-BACI_NAMESPACE_OPEN
+#include "baci_config.H"
 
+BACI_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Material debugging options                                           */

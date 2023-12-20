@@ -7,6 +7,8 @@
 #ifndef BACI_SO3_THERMO_ELETYPES_H
 #define BACI_SO3_THERMO_ELETYPES_H
 
+#include "baci_config.H"
+
 #include "baci_so3_hex20.H"
 #include "baci_so3_hex27.H"
 #include "baci_so3_hex8.H"

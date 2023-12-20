@@ -16,6 +16,8 @@
 #define BACI_XFEM_XFLUID_TIMEINT_H
 
 
+#include "baci_config.H"
+
 #include "baci_cut_node.H"
 #include "baci_cut_utils.H"
 #include "baci_inpar_xfem.H"

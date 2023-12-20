@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_FACET_H
 #define BACI_CUT_FACET_H
 
+#include "baci_config.H"
+
 #include "baci_cut_line.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_io_pstream.H"

@@ -12,6 +12,8 @@
 #ifndef BACI_CUT_PARALLEL_H
 #define BACI_CUT_PARALLEL_H
 
+#include "baci_config.H"
+
 #include "baci_cut_meshintersection.H"
 
 BACI_NAMESPACE_OPEN

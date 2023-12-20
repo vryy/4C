@@ -15,8 +15,9 @@ comparison instead of a cumbersome std::string compare.
 #ifndef BACI_LUBRICATION_ELE_ACTION_H
 #define BACI_LUBRICATION_ELE_ACTION_H
 
-BACI_NAMESPACE_OPEN
+#include "baci_config.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace LUBRICATION
 {
@@ -48,8 +49,6 @@ namespace LUBRICATION
     bd_calc_Neumann,         // n/a
   };                         // enum LUBRICATION::BoundaryAction
 }  // namespace LUBRICATION
-
-
 
 BACI_NAMESPACE_CLOSE
 

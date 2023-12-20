@@ -11,6 +11,8 @@
 #ifndef BACI_W1_PORO_H
 #define BACI_W1_PORO_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_inpar_structure.H"
 #include "baci_w1.H"

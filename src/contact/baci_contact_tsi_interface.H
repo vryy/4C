@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_TSI_INTERFACE_H
 #define BACI_CONTACT_TSI_INTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_contact_interface.H"
 #include "baci_inpar_contact.H"
 

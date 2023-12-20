@@ -6,6 +6,8 @@
 #ifndef BACI_SO3_PLAST_SSN_ELETYPES_H
 #define BACI_SO3_PLAST_SSN_ELETYPES_H
 
+#include "baci_config.H"
+
 #include "baci_so3_hex18.H"
 #include "baci_so3_hex27.H"
 #include "baci_so3_hex8.H"

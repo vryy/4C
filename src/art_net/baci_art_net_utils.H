@@ -10,6 +10,8 @@
 #ifndef BACI_ART_NET_UTILS_H
 #define BACI_ART_NET_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_bio.H"
 #include "baci_io.H"
 

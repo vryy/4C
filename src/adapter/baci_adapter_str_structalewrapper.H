@@ -14,6 +14,8 @@
 #define BACI_ADAPTER_STR_STRUCTALEWRAPPER_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_str_wrapper.H"
 #include "baci_struct_ale_str_model_evaluator.H"
 

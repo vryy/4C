@@ -12,6 +12,8 @@
 #ifndef BACI_BEAMINTERACTION_STR_MODEL_EVALUATOR_H
 #define BACI_BEAMINTERACTION_STR_MODEL_EVALUATOR_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_inpar_beaminteraction.H"
 #include "baci_linalg_mapextractor.H"

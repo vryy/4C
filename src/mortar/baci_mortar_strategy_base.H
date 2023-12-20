@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_STRATEGY_BASE_H
 #define BACI_MORTAR_STRATEGY_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_contact.H"     // for the INPAR::CONTACT enums
 #include "baci_mortar_interface.H"  // for the enum state type
 #include "baci_solver_nonlin_nox_constraint_interface_preconditioner.H"  // interface specifications

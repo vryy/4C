@@ -11,6 +11,8 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_UTILS_H
 #define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_geometric_search_bounding_volume.H"
 
 #include <Epetra_Comm.h>

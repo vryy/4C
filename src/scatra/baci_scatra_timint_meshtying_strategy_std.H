@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_H
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 
 BACI_NAMESPACE_OPEN

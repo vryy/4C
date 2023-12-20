@@ -15,6 +15,8 @@ builds the bridge between the xfluid class and the cut-library
 
 // Might want to forward declare the levelset and mesh coupling and put these functions into
 // the xfem_condition_manager.cpp file in a later stage
+#include "baci_config.H"
+
 #include "baci_xfem_coupling_fpi_mesh.H"
 #include "baci_xfem_coupling_levelset.H"
 #include "baci_xfem_coupling_mesh.H"

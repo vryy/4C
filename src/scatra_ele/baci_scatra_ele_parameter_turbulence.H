@@ -17,6 +17,8 @@ general static parameters required for scalar transport element evaluation.
 #ifndef BACI_SCATRA_ELE_PARAMETER_TURBULENCE_H
 #define BACI_SCATRA_ELE_PARAMETER_TURBULENCE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"
 #include "baci_inpar_turbulence.H"

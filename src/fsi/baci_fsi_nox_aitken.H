@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_NOX_AITKEN_H
 #define BACI_FSI_NOX_AITKEN_H
 
+#include "baci_config.H"
+
 #include <NOX_GlobalData.H>
 #include <NOX_LineSearch_Generic.H>  // base class
 #include <NOX_LineSearch_UserDefinedFactory.H>

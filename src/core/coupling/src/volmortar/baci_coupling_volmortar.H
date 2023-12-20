@@ -12,6 +12,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_cut_utils.H"
 #include "baci_inpar_volmortar.H"
 #include "baci_mortar_coupling3d_classes.H"

@@ -11,6 +11,8 @@
 #ifndef BACI_LIB_MESHREADER_H
 #define BACI_LIB_MESHREADER_H
 
+#include "baci_config.H"
+
 #include "baci_inpar.H"
 #include "baci_io_inputreader.H"
 #include "baci_lib_domainreader.H"

@@ -8,6 +8,8 @@
 #ifndef BACI_SO3_SHW6_H
 #define BACI_SO3_SHW6_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_weg6.H"
 

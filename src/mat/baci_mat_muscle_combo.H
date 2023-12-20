@@ -11,6 +11,8 @@ active strain approach) with variable time-dependent activation
 #ifndef BACI_MAT_MUSCLE_COMBO_H
 #define BACI_MAT_MUSCLE_COMBO_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"

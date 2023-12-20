@@ -12,6 +12,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_PORO_H
 #define BACI_SCATRA_ELE_CALC_PORO_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_calc.H"
 
 BACI_NAMESPACE_OPEN

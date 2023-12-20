@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
 #define BACI_STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparseoperator.H"

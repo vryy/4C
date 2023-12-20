@@ -11,6 +11,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_BSPLINE_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_BSPLINE_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensevector.H"
 
 #include <fstream>

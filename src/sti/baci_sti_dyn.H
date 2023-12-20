@@ -10,6 +10,8 @@
 #ifndef BACI_STI_DYN_H
 #define BACI_STI_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 //! entry point for simulations of scalar-thermo interaction problems

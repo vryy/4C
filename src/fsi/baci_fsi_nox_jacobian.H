@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_NOX_JACOBIAN_H
 #define BACI_FSI_NOX_JACOBIAN_H
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Import.h>
 #include <Epetra_Operator.h>

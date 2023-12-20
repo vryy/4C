@@ -7,6 +7,8 @@
 #ifndef BACI_SHELL7P_ELE_CALC_EAS_H
 #define BACI_SHELL7P_ELE_CALC_EAS_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_lib_element_integration_select.H"
 #include "baci_linalg_fixedsizematrix.H"

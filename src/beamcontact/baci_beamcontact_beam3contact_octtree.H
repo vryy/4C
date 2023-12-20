@@ -11,6 +11,8 @@
 #ifndef BACI_BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
 #define BACI_BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
 
+#include "baci_config.H"
+
 #include "baci_beamcontact_beam3contactnew.H"
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_linalg_serialdensematrix.H"

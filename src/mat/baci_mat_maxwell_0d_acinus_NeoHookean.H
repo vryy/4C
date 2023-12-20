@@ -12,6 +12,8 @@ linear spring (Stiffness1) only (Neo Hookean), inherits from Maxwell_0d_acinus
 #define BACI_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_H
 
 
+#include "baci_config.H"
+
 #include "baci_mat_maxwell_0d_acinus.H"
 #include "baci_red_airways_elem_params.h"
 #include "baci_red_airways_elementbase.H"

@@ -13,6 +13,8 @@ continuous interior penalty) scheme
 #define BACI_XFEM_EDGESTAB_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_xfem.H"
 
 #include <Epetra_Vector.h>

@@ -11,6 +11,8 @@
 #define BACI_CONTACT_CONSTITUTIVELAW_POWER_CONTACTCONSTITUTIVELAW_H
 
 
+#include "baci_config.H"
+
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 

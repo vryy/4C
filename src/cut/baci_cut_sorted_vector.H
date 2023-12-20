@@ -33,6 +33,8 @@
 #ifndef BACI_CUT_SORTED_VECTOR_H
 #define BACI_CUT_SORTED_VECTOR_H
 
+#include "baci_config.H"
+
 #include <boost/operators.hpp>
 
 #include <algorithm>

@@ -9,6 +9,8 @@
 #ifndef BACI_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H
 #define BACI_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 

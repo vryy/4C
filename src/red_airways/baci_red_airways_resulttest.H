@@ -12,6 +12,8 @@
 #ifndef BACI_RED_AIRWAYS_RESULTTEST_H
 #define BACI_RED_AIRWAYS_RESULTTEST_H
 
+#include "baci_config.H"
+
 #include "baci_lib_resulttest.H"
 #include "baci_red_airways_implicitintegration.H"
 

@@ -10,6 +10,8 @@
 #define BACI_TSI_UTILS_H
 
 
+#include "baci_config.H"
+
 #include "baci_coupling_volmortar_utils.H"
 
 #include <Epetra_Comm.h>

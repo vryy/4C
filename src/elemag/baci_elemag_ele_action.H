@@ -10,6 +10,8 @@
 #ifndef BACI_ELEMAG_ELE_ACTION_H
 #define BACI_ELEMAG_ELE_ACTION_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace ELEMAG

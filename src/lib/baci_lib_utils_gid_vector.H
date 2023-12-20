@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_UTILS_GID_VECTOR_H
 #define BACI_LIB_UTILS_GID_VECTOR_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Comm.h>

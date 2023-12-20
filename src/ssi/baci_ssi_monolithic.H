@@ -11,6 +11,8 @@
 #ifndef BACI_SSI_MONOLITHIC_H
 #define BACI_SSI_MONOLITHIC_H
 
+#include "baci_config.H"
+
 #include "baci_ssi_base.H"
 
 #include <Teuchos_Time.hpp>

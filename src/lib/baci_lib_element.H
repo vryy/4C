@@ -13,6 +13,8 @@
 #define BACI_LIB_ELEMENT_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobject.H"
 #include "baci_discretization_fem_general_cell_type.H"
 #include "baci_lib_condition.H"

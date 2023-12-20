@@ -12,6 +12,8 @@
 #ifndef BACI_CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_H
 #define BACI_CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_contact_meshtying_lagrange_strategy.H"
 #include "baci_utils_exceptions.H"
 

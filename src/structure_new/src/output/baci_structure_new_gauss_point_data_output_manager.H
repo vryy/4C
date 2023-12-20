@@ -8,6 +8,8 @@
 #ifndef BACI_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 #define BACI_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_comm_exporter.H"
 #include "baci_inpar_structure.H"
 

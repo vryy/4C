@@ -7,6 +7,8 @@
 #ifndef BACI_SHELL7P_ELE_INTERFACE_SERIALIZABLE_H
 #define BACI_SHELL7P_ELE_INTERFACE_SERIALIZABLE_H
 
+#include "baci_config.H"
+
 #include "baci_comm_pack_buffer.H"
 
 #include <vector>

@@ -11,6 +11,8 @@
 #define BACI_GLOBAL_FULL_INIT_CONTROL_H
 
 
+#include "baci_config.H"
+
 #include <string>
 
 //! general initialization and routine

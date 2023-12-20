@@ -10,6 +10,8 @@
 #ifndef BACI_LINALG_FOUR_TENSOR_H
 #define BACI_LINALG_FOUR_TENSOR_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <array>

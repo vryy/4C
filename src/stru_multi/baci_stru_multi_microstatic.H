@@ -14,6 +14,8 @@
 
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_linalg_fixedsizematrix.H"
 

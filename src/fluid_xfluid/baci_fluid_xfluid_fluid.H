@@ -12,6 +12,8 @@
 #define BACI_FLUID_XFLUID_FLUID_H
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_xfluid.H"
 #include "baci_fluid_xfluid_fluid_state.H"
 

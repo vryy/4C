@@ -9,6 +9,8 @@
 #define BACI_SOLID_PORO_ELE_CALC_LIB_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_lib_element_integration_select.H"
 #include "baci_lib_utils.H"

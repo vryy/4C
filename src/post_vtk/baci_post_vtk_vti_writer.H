@@ -11,6 +11,8 @@
 #define BACI_POST_VTK_VTI_WRITER_H
 
 
+#include "baci_config.H"
+
 #include "baci_post_vtk_writer.H"
 
 #include <Teuchos_RCP.hpp>

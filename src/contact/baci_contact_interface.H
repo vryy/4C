@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_INTERFACE_H
 #define BACI_CONTACT_INTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_inpar_contact.H"
 #include "baci_linalg_fixedsizematrix.H"

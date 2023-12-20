@@ -11,6 +11,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_DEFAULTSTEPTEST_H
 #define BACI_SOLVER_NONLIN_NOX_DIRECTION_DEFAULTSTEPTEST_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <NOX_Abstract_Group.H>

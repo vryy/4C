@@ -11,6 +11,8 @@
 #ifndef BACI_FBI_CALC_UTILS_H
 #define BACI_FBI_CALC_UTILS_H
 
+#include "baci_config.H"
+
 #include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
 

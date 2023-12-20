@@ -8,6 +8,8 @@
 #ifndef BACI_RED_AIRWAYS_ELEM_PARAMS_H
 #define BACI_RED_AIRWAYS_ELEM_PARAMS_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace DRT::REDAIRWAYS

@@ -10,6 +10,8 @@
 #ifndef BACI_MEMBRANE_SCATRA_H
 #define BACI_MEMBRANE_SCATRA_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_scatra.H"
 #include "baci_membrane.H"
 #include "baci_membrane_scatra_eletypes.H"

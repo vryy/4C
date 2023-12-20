@@ -10,6 +10,8 @@
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_LINALG_ANA_H
 
 // Trilinos includes
+#include "baci_config.H"
+
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linear_solver_method_linalg.H"

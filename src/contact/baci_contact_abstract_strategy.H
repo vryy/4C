@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_ABSTRACT_STRATEGY_H
 #define BACI_CONTACT_ABSTRACT_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_contact_utils.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"

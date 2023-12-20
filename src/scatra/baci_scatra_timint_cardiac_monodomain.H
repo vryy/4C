@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_TIMINT_CARDIAC_MONODOMAIN_H
 #define BACI_SCATRA_TIMINT_CARDIAC_MONODOMAIN_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_timint_implicit.H"
 
 BACI_NAMESPACE_OPEN

@@ -12,6 +12,8 @@
 #define BACI_FBI_BEAM_TO_FLUID_MESHTYING_OUTPUT_WRITER_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN

@@ -14,6 +14,8 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 #ifndef BACI_MEMBRANE_H
 #define BACI_MEMBRANE_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"

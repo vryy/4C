@@ -16,6 +16,8 @@
 #define BACI_FS3I_PARTITIONED_2WC_H
 
 
+#include "baci_config.H"
+
 #include "baci_fs3i_partitioned.H"
 
 BACI_NAMESPACE_OPEN

@@ -13,6 +13,8 @@
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_MULTIPHYSICS_H
 
 
+#include "baci_config.H"
+
 #include "baci_structure_new_model_evaluator_generic.H"
 
 // forward declaration

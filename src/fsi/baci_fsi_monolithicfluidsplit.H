@@ -13,6 +13,8 @@ with condensed fluid interface velocities
 #ifndef BACI_FSI_MONOLITHICFLUIDSPLIT_H
 #define BACI_FSI_MONOLITHICFLUIDSPLIT_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 

@@ -13,6 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_H
 #define BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
 

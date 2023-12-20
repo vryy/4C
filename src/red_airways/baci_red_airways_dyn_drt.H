@@ -14,6 +14,8 @@
 #ifndef BACI_RED_AIRWAYS_DYN_DRT_H
 #define BACI_RED_AIRWAYS_DYN_DRT_H
 
+#include "baci_config.H"
+
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"

@@ -13,6 +13,8 @@
 #define BACI_IO_UTILS_READER_H
 
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+#include "baci_config.H"
+
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>

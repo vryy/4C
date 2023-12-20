@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 09/14 |
  *---------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_wear.H"
 #include "baci_utils_pairedvector.H"

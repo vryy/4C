@@ -17,6 +17,8 @@ general static parameters required for scalar transport element evaluation.
 #ifndef BACI_SCATRA_ELE_PARAMETER_TIMINT_H
 #define BACI_SCATRA_ELE_PARAMETER_TIMINT_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_parameter_base.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

@@ -13,6 +13,8 @@
 #define BACI_MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_POISSON_TURNOVER_H
 
 
+#include "baci_config.H"
+
 #include <cmath>
 
 BACI_NAMESPACE_OPEN

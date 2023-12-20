@@ -12,6 +12,8 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #ifndef BACI_FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_H
 #define BACI_FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 

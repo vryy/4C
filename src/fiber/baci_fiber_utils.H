@@ -9,6 +9,8 @@
 #ifndef BACI_FIBER_UTILS_H
 #define BACI_FIBER_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_node.H"
 

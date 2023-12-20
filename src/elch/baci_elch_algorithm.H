@@ -12,6 +12,8 @@
 #ifndef BACI_ELCH_ALGORITHM_H
 #define BACI_ELCH_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_algorithm.H"
 
 BACI_NAMESPACE_OPEN

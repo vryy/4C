@@ -12,6 +12,8 @@
 #define BACI_IO_VISUALIZATION_WRITER_FACTORY_H
 
 
+#include "baci_config.H"
+
 #include "baci_io_visualization_parameters.H"
 #include "baci_io_visualization_writer_base.H"
 

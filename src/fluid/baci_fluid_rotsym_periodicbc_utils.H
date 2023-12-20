@@ -14,6 +14,8 @@
 #define BACI_FLUID_ROTSYM_PERIODICBC_UTILS_H
 
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 

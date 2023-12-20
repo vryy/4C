@@ -9,6 +9,8 @@
 #ifndef BACI_MAT_SCATRA_MAT_MULTISCALE_H
 #define BACI_MAT_SCATRA_MAT_MULTISCALE_H
 
+#include "baci_config.H"
+
 #include "baci_mat_scatra_mat.H"
 #include "baci_mat_scatra_multiscale.H"
 

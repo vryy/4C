@@ -14,6 +14,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
+#include "baci_config.H"
+
 #include "baci_ale_utils_mapextractor.H"
 #include "baci_inpar_ale.H"
 

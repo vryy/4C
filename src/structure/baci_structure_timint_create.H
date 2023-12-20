@@ -9,6 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

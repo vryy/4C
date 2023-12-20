@@ -12,6 +12,8 @@ interaction
 #ifndef BACI_FBI_CONSTRAINTENFORCER_FACTORY_H
 #define BACI_FBI_CONSTRAINTENFORCER_FACTORY_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 namespace Teuchos

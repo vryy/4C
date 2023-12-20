@@ -9,6 +9,8 @@
 #ifndef BACI_POROMULTIPHASE_MONOLITHIC_H
 #define BACI_POROMULTIPHASE_MONOLITHIC_H
 
+#include "baci_config.H"
+
 #include "baci_poromultiphase_base.H"
 
 BACI_NAMESPACE_OPEN

@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_AUG_TIMEMONITOR_H
 #define BACI_CONTACT_AUG_TIMEMONITOR_H
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 
 #include <memory>

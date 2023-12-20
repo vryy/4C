@@ -13,6 +13,8 @@
 #define BACI_FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_H
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_utils.H"
 #include "baci_fluid_utils_mapextractor.H"

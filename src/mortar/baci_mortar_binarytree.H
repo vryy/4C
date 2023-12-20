@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_BINARYTREE_H
 #define BACI_MORTAR_BINARYTREE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_mortar.H"
 #include "baci_mortar_base_binarytree.H"
 

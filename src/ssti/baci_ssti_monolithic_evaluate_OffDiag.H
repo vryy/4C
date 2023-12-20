@@ -9,6 +9,8 @@
 #ifndef BACI_SSTI_MONOLITHIC_EVALUATE_OFFDIAG_H
 #define BACI_SSTI_MONOLITHIC_EVALUATE_OFFDIAG_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 

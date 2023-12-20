@@ -13,6 +13,8 @@ is handed to a c++ object mesh.
 #ifndef BACI_PRE_EXODUS_READER_H
 #define BACI_PRE_EXODUS_READER_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_utils_exceptions.H"
 

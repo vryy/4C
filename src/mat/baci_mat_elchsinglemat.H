@@ -10,6 +10,8 @@ electric potential as degrees of freedom
 #ifndef BACI_MAT_ELCHSINGLEMAT_H
 #define BACI_MAT_ELCHSINGLEMAT_H
 
+#include "baci_config.H"
+
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 

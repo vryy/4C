@@ -10,6 +10,8 @@ electrochemistry
 #ifndef BACI_CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H
 #define BACI_CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H
 
+#include "baci_config.H"
+
 #include "baci_contact_nitsche_integrator_ssi.H"
 
 BACI_NAMESPACE_OPEN

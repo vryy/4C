@@ -11,6 +11,8 @@
 #ifndef BACI_POROELAST_SCATRA_UTILS_CLONESTRATEGY_H
 #define BACI_POROELAST_SCATRA_UTILS_CLONESTRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_scatra.H"
 #include "baci_poroelast_utils_clonestrategy.H"
 

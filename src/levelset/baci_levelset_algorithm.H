@@ -11,6 +11,8 @@
 #ifndef BACI_LEVELSET_ALGORITHM_H
 #define BACI_LEVELSET_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_geometry_geo_utils.H"
 #include "baci_inpar_levelset.H"
 #include "baci_lib_discret.H"

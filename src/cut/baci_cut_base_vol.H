@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_BASE_VOL_H
 #define BACI_CUT_BASE_VOL_H
 
+#include "baci_config.H"
+
 #include <vector>
 
 BACI_NAMESPACE_OPEN

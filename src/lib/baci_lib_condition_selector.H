@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_CONDITION_SELECTOR_H
 #define BACI_LIB_CONDITION_SELECTOR_H
 
+#include "baci_config.H"
+
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 

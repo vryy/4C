@@ -10,6 +10,8 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_UTILS_H
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_lib_discret.H"

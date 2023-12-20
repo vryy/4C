@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_IMPEDANCECONDITION_H
 #define BACI_FLUID_IMPEDANCECONDITION_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 

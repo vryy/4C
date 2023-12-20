@@ -8,6 +8,8 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_ENUMS_H
 #define BACI_LIB_GLOBALPROBLEM_ENUMS_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /**

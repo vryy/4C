@@ -9,6 +9,8 @@
 #ifndef BACI_CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_H
 #define BACI_CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_H
 
+#include "baci_config.H"
+
 #include "baci_constraint_multipointconstraint.H"
 
 BACI_NAMESPACE_OPEN

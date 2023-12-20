@@ -10,6 +10,8 @@ reactive scalars
 #ifndef BACI_SCATRA_ELE_CALC_CHEMO_REAC_H
 #define BACI_SCATRA_ELE_CALC_CHEMO_REAC_H
 
+#include "baci_config.H"
+
 #include "baci_mat_scatra_chemotaxis_mat.H"
 #include "baci_mat_scatra_reaction_mat.H"
 #include "baci_scatra_ele_calc.H"

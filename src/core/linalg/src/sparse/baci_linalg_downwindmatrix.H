@@ -10,6 +10,8 @@
 #define BACI_LINALG_DOWNWINDMATRIX_H
 
 // Trilinos includes
+#include "baci_config.H"
+
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_utils_exceptions.H"

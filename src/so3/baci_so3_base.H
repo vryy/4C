@@ -12,6 +12,8 @@
 #ifndef BACI_SO3_BASE_H
 #define BACI_SO3_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 

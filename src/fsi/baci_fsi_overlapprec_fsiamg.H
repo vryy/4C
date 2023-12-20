@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_OVERLAPPREC_FSIAMG_H
 #define BACI_FSI_OVERLAPPREC_FSIAMG_H
 
+#include "baci_config.H"
+
 #include "baci_fsi_overlapprec.H"
 
 #include <MLAPI_LoadBalanceInverseOperator.h>

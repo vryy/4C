@@ -11,6 +11,8 @@
 #ifndef BACI_FBI_BEAM_TO_FLUID_MESHTYING_PARAMS_H
 #define BACI_FBI_BEAM_TO_FLUID_MESHTYING_PARAMS_H
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 

@@ -14,6 +14,8 @@ parenchyma balloon
 #ifndef BACI_ADAPTER_FLD_LUNG_H
 #define BACI_ADAPTER_FLD_LUNG_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid_fsi.H"
 
 #include <Teuchos_ParameterList.hpp>

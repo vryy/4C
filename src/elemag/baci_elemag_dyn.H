@@ -11,6 +11,8 @@
 #ifndef BACI_ELEMAG_DYN_H
 #define BACI_ELEMAG_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 void electromagnetics_drt();

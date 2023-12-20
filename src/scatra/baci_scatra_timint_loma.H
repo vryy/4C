@@ -7,6 +7,8 @@
 #ifndef BACI_SCATRA_TIMINT_LOMA_H
 #define BACI_SCATRA_TIMINT_LOMA_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_timint_implicit.H"
 
 #include <Epetra_MpiComm.h>

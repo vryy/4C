@@ -10,6 +10,8 @@
 #ifndef BACI_MORTAR_PARAMSINTERFACE_H
 #define BACI_MORTAR_PARAMSINTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_utils_any_data_container.H"
 
 BACI_NAMESPACE_OPEN

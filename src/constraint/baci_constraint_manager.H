@@ -12,6 +12,8 @@ Kloeppel
 #ifndef BACI_CONSTRAINT_MANAGER_H
 #define BACI_CONSTRAINT_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Operator.h>

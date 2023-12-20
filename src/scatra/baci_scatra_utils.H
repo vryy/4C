@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_UTILS_H
 #define BACI_SCATRA_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 
 #include <Epetra_MultiVector.h>

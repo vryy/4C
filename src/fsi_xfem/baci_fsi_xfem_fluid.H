@@ -10,6 +10,8 @@
 #ifndef BACI_FSI_XFEM_FLUID_H
 #define BACI_FSI_XFEM_FLUID_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid_xfem.H"
 
 BACI_NAMESPACE_OPEN

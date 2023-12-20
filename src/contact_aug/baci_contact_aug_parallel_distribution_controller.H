@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_AUG_PARALLEL_DISTRIBUTION_CONTROLLER_H
 #define BACI_CONTACT_AUG_PARALLEL_DISTRIBUTION_CONTROLLER_H
 
+#include "baci_config.H"
+
 #include "baci_contact_aug_timemonitor.H"
 #include "baci_mortar_paramsinterface.H"
 

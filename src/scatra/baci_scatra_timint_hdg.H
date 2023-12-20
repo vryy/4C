@@ -9,6 +9,8 @@
 #ifndef BACI_SCATRA_TIMINT_HDG_H
 #define BACI_SCATRA_TIMINT_HDG_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret_hdg.H"
 #include "baci_scatra_timint_genalpha.H"
 

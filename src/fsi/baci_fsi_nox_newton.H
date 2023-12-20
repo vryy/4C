@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_NOX_NEWTON_H
 #define BACI_FSI_NOX_NEWTON_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fsi.H"
 
 #include <NOX_Direction_Newton.H>

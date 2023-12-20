@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_PARAMETER_PORO_H
 #define BACI_FLUID_ELE_PARAMETER_PORO_H
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele_parameter.H"
 #include "baci_inpar_poroelast.H"
 #include "baci_utils_singleton_owner.H"

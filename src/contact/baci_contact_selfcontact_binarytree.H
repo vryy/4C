@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_SELFCONTACT_BINARYTREE_H
 #define BACI_CONTACT_SELFCONTACT_BINARYTREE_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_mortar_base_binarytree.H"
 

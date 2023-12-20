@@ -11,6 +11,8 @@
 #define BACI_IO_VTU_WRITER_H
 
 
+#include "baci_config.H"
+
 #include "baci_io_vtk_writer_base.H"
 
 #include <map>

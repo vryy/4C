@@ -11,6 +11,8 @@
 #define BACI_POROMULTIPHASE_SCATRA_FUNCTION_PARAMETERS_H
 
 
+#include "baci_config.H"
+
 #include <array>
 #include <string>
 #include <vector>

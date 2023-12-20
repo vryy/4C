@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_solid_pair_base.H"
 #include "baci_geometry_pair_scalar_types.H"
 #include "baci_linalg_fixedsizematrix.H"

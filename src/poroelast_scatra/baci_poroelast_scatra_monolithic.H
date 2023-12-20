@@ -14,6 +14,8 @@
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_inpar_poroscatra.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_poroelast_scatra_base.H"

@@ -12,6 +12,8 @@
 #ifndef BACI_FSI_NOX_GROUP_H
 #define BACI_FSI_NOX_GROUP_H
 
+#include "baci_config.H"
+
 #include <NOX_Epetra_Group.H>
 
 BACI_NAMESPACE_OPEN

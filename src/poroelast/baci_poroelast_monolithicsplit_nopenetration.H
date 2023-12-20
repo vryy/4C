@@ -12,6 +12,8 @@
 #ifndef BACI_POROELAST_MONOLITHICSPLIT_NOPENETRATION_H
 #define BACI_POROELAST_MONOLITHICSPLIT_NOPENETRATION_H
 
+#include "baci_config.H"
+
 #include "baci_poroelast_monolithicsplit.H"
 
 BACI_NAMESPACE_OPEN

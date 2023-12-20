@@ -10,6 +10,8 @@
 #ifndef BACI_ADAPTER_STR_SSIWRAPPER_H
 #define BACI_ADAPTER_STR_SSIWRAPPER_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_str_wrapper.H"
 #include "baci_ssi_str_model_evaluator_partitioned.H"
 

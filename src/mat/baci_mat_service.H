@@ -11,6 +11,8 @@
 #define BACI_MAT_SERVICE_H
 
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>

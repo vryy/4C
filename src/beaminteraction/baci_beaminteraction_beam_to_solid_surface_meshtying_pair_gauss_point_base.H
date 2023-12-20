@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_GAUSS_POINT_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_base.H"
 
 BACI_NAMESPACE_OPEN

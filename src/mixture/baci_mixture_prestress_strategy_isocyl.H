@@ -12,6 +12,8 @@
 #ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H
 #define BACI_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
 #include "baci_mixture_prestress_strategy.H"

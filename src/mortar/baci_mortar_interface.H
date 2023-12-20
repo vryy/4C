@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_INTERFACE_H
 #define BACI_MORTAR_INTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_comm_exporter.H"
 #include "baci_inpar_mortar.H"
 #include "baci_mortar_paramsinterface.H"

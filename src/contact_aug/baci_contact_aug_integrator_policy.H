@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_AUG_INTEGRATOR_POLICY_H
 #define BACI_CONTACT_AUG_INTEGRATOR_POLICY_H
 
+#include "baci_config.H"
+
 #include "baci_contact_aug_contact_integrator_utils.H"
 #include "baci_contact_aug_timemonitor.H"
 #include "baci_lib_node.H"

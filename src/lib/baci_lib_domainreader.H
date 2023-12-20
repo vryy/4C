@@ -14,6 +14,8 @@
 #ifndef BACI_LIB_DOMAINREADER_H
 #define BACI_LIB_DOMAINREADER_H
 
+#include "baci_config.H"
+
 #include "baci_io_inputreader.H"
 
 #include <Epetra_Map.h>

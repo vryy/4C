@@ -12,6 +12,8 @@
 #define BACI_CUT_POINTGRAPH_H
 
 // necessary due to usage of graph_t, vertex_t etc.
+#include "baci_config.H"
+
 #include "baci_cut_find_cycles.H"
 
 BACI_NAMESPACE_OPEN

@@ -14,6 +14,8 @@
 #ifndef BACI_CUT_KERNEL_H
 #define BACI_CUT_KERNEL_H
 
+#include "baci_config.H"
+
 #include "baci_cut_clnwrapper.H"
 #include "baci_cut_enum.H"
 #include "baci_cut_memory_manager.H"

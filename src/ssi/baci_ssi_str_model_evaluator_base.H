@@ -9,6 +9,8 @@
 #ifndef BACI_SSI_STR_MODEL_EVALUATOR_BASE_H
 #define BACI_SSI_STR_MODEL_EVALUATOR_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_model_evaluator_generic.H"
 
 BACI_NAMESPACE_OPEN

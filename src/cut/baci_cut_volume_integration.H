@@ -13,6 +13,8 @@ equations
 #ifndef BACI_CUT_VOLUME_INTEGRATION_H
 #define BACI_CUT_VOLUME_INTEGRATION_H
 
+#include "baci_config.H"
+
 #include "baci_cut_enum.H"
 #include "baci_cut_facet_integration.H"
 #include "baci_cut_volumecell.H"

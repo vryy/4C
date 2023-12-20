@@ -9,6 +9,8 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_LINALG_H
 #define BACI_LINEAR_SOLVER_METHOD_LINALG_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_solver.H"
 #include "baci_utils_exceptions.H"
 

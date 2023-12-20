@@ -14,6 +14,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 

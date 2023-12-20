@@ -8,6 +8,8 @@
 #ifndef BACI_MAT_THERMOMECHANICAL_H
 #define BACI_MAT_THERMOMECHANICAL_H
 
+#include "baci_config.H"
+
 #include "baci_mat_so3_material.H"
 #include "baci_mat_trait_thermo_solid.H"
 

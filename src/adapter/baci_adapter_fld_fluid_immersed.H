@@ -12,6 +12,8 @@
 #ifndef BACI_ADAPTER_FLD_FLUID_IMMERSED_H
 #define BACI_ADAPTER_FLD_FLUID_IMMERSED_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_fld_moving_boundary.H"
 

@@ -13,6 +13,8 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_H
 #define BACI_LIB_GLOBALPROBLEM_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_resulttest.H"

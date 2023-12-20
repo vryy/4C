@@ -11,6 +11,8 @@
 #ifndef BACI_POST_COMMON_SINGLE_FIELD_WRITERS_H
 #define BACI_POST_COMMON_SINGLE_FIELD_WRITERS_H
 
+#include "baci_config.H"
+
 #include "baci_post_common_filter_base.H"
 #include "baci_post_common_writer_base.H"
 

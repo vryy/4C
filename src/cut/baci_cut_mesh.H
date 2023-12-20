@@ -20,6 +20,8 @@ mesh
 #include <list>
 
 #ifdef DEBUG
+#include "baci_config.H"
+
 #include "baci_cut_edge.H"
 #include "baci_cut_node.H"
 #endif

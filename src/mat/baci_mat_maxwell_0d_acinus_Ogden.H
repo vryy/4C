@@ -16,6 +16,8 @@ volumetric expansion (derivation: see Christian Roth's dissertation, Appendix B)
 #define BACI_MAT_MAXWELL_0D_ACINUS_OGDEN_H
 
 
+#include "baci_config.H"
+
 #include "baci_mat_maxwell_0d_acinus.H"
 #include "baci_red_airways_elem_params.h"
 #include "baci_red_airways_elementbase.H"

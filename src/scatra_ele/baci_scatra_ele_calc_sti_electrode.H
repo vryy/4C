@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_STI_ELECTRODE_H
 #define BACI_SCATRA_ELE_CALC_STI_ELECTRODE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_elch.H"
 #include "baci_mat_electrode.H"
 #include "baci_scatra_ele_calc.H"

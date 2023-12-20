@@ -12,6 +12,8 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PARAMS_H
 #define BACI_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PARAMS_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 BACI_NAMESPACE_OPEN

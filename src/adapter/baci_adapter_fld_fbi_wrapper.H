@@ -10,6 +10,8 @@
 #ifndef BACI_ADAPTER_FLD_FBI_WRAPPER_H
 #define BACI_ADAPTER_FLD_FBI_WRAPPER_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid_fsi.H"
 #include "baci_fluid_meshtying.H"
 

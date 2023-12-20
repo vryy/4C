@@ -19,6 +19,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/10 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_inpar_thermo.H"
 #include "baci_inpar_tsi.H"

@@ -14,6 +14,9 @@
 #ifndef BACI_WEAR_DEFINES_H
 #define BACI_WEAR_DEFINES_H
 
+#include "baci_config.H"
+
+BACI_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Wear tolerances                                                      */
@@ -27,8 +30,6 @@
 
 // convergence check
 #define WEARCONV 1.0e-12 /* tolerance for convergence check*/
-
-BACI_NAMESPACE_OPEN
 
 BACI_NAMESPACE_CLOSE
 

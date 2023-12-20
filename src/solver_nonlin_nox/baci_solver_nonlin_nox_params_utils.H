@@ -12,6 +12,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_PARAMS_UTILS_H
 #define BACI_SOLVER_NONLIN_NOX_PARAMS_UTILS_H
 
+#include "baci_config.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 BACI_NAMESPACE_OPEN

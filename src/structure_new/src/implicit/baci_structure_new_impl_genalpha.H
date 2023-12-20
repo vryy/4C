@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_IMPL_GENALPHA_H
 #define BACI_STRUCTURE_NEW_IMPL_GENALPHA_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_impl_generic.H"
 
 class Epetra_MultiVector;

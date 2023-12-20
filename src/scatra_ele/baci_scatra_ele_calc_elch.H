@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_ELCH_H
 #define BACI_SCATRA_ELE_CALC_ELCH_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_parameter_elch.H"
 

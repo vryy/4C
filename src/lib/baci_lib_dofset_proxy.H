@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_DOFSET_PROXY_H
 #define BACI_LIB_DOFSET_PROXY_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset_base.H"
 
 BACI_NAMESPACE_OPEN

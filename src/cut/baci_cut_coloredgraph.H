@@ -12,6 +12,8 @@
 #ifndef BACI_CUT_COLOREDGRAPH_H
 #define BACI_CUT_COLOREDGRAPH_H
 
+#include "baci_config.H"
+
 #include "baci_cut_utils.H"
 
 #include <list>

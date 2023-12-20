@@ -11,6 +11,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_NEWTON_H
 #define BACI_SOLVER_NONLIN_NOX_DIRECTION_NEWTON_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_forward_decl.H"
 
 #include <NOX_Direction_Newton.H>  // base class

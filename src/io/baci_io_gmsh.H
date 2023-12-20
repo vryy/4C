@@ -19,6 +19,8 @@ documentation.
 #ifndef BACI_IO_GMSH_H
 #define BACI_IO_GMSH_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_discret.H"
 

@@ -10,6 +10,8 @@
 #ifndef BACI_BINSTRATEGY_MESHFREE_BIN_H
 #define BACI_BINSTRATEGY_MESHFREE_BIN_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
 

@@ -11,6 +11,8 @@
 #ifndef BACI_THERMO_ELE_ACTION_H
 #define BACI_THERMO_ELE_ACTION_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <iostream>

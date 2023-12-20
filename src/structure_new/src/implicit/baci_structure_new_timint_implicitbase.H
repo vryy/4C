@@ -15,6 +15,8 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_IMPLICITBASE_H
 #define BACI_STRUCTURE_NEW_TIMINT_IMPLICITBASE_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_timint_base.H"
 
 namespace NOX

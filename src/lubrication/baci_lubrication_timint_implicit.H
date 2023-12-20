@@ -13,6 +13,8 @@
 #ifndef BACI_LUBRICATION_TIMINT_IMPLICIT_H
 #define BACI_LUBRICATION_TIMINT_IMPLICIT_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_lubrication.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_serialdensevector.H"

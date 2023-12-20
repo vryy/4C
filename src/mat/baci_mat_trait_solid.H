@@ -8,7 +8,10 @@
 #ifndef BACI_MAT_TRAIT_SOLID_H
 #define BACI_MAT_TRAIT_SOLID_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace TRAIT

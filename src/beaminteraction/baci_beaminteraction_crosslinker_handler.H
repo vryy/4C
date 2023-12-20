@@ -11,6 +11,8 @@
 #ifndef BACI_BEAMINTERACTION_CROSSLINKER_HANDLER_H
 #define BACI_BEAMINTERACTION_CROSSLINKER_HANDLER_H
 
+#include "baci_config.H"
+
 #include "baci_binstrategy.H"
 #include "baci_comm_exporter.H"
 

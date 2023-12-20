@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_MESHTYING_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_MESHTYING_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_model_evaluator_generic.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 

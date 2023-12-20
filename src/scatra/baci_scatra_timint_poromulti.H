@@ -9,6 +9,8 @@
 #ifndef BACI_SCATRA_TIMINT_POROMULTI_H
 #define BACI_SCATRA_TIMINT_POROMULTI_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_timint_bdf2.H"
 #include "baci_scatra_timint_genalpha.H"
 #include "baci_scatra_timint_implicit.H"

@@ -11,6 +11,8 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_PAIR_H
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_PAIR_H
 
+#include "baci_config.H"
+
 #include "baci_beam3_base.H"
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"

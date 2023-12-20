@@ -11,6 +11,8 @@
 #define BACI_ALE_MESHTYING_H
 
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_inpar_ale.H"
 #include "baci_linalg_mapextractor.H"

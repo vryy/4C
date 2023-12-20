@@ -13,6 +13,8 @@ between the xfluid class and the cut-library
 #ifndef BACI_XFEM_COUPLING_MESH_H
 #define BACI_XFEM_COUPLING_MESH_H
 
+#include "baci_config.H"
+
 #include "baci_xfem_coupling_base.H"
 
 BACI_NAMESPACE_OPEN

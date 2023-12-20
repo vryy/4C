@@ -13,6 +13,8 @@
 #ifndef BACI_MAT_ANISOTROPY_EXTENSION_BASE_H
 #define BACI_MAT_ANISOTROPY_EXTENSION_BASE_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCPDecl.hpp>
 
 BACI_NAMESPACE_OPEN

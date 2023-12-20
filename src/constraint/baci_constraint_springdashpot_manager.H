@@ -11,6 +11,8 @@
 #ifndef BACI_CONSTRAINT_SPRINGDASHPOT_MANAGER_H
 #define BACI_CONSTRAINT_SPRINGDASHPOT_MANAGER_H
 
+#include "baci_config.H"
+
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_Vector.h>

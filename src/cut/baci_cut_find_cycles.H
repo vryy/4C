@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_FIND_CYCLES_H
 #define BACI_CUT_FIND_CYCLES_H
 
+#include "baci_config.H"
+
 #include "baci_cut_cycle.H"
 
 #include <boost/graph/adjacency_list.hpp>

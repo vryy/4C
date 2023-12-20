@@ -13,6 +13,8 @@
 #ifndef BACI_XFEM_XFIELD_FIELD_COUPLING_DOFSET_H
 #define BACI_XFEM_XFIELD_FIELD_COUPLING_DOFSET_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset_fixed_size.H"
 
 BACI_NAMESPACE_OPEN

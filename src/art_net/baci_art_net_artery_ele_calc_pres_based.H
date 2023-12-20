@@ -11,6 +11,8 @@
 #ifndef BACI_ART_NET_ARTERY_ELE_CALC_PRES_BASED_H
 #define BACI_ART_NET_ARTERY_ELE_CALC_PRES_BASED_H
 
+#include "baci_config.H"
+
 #include "baci_art_net_artery.H"
 #include "baci_art_net_artery_ele_action.H"
 #include "baci_art_net_artery_ele_calc.H"

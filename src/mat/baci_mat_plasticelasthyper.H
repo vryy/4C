@@ -20,6 +20,8 @@ rY_13 0.7
 
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_tsi.H"
 #include "baci_mat_elasthyper.H"

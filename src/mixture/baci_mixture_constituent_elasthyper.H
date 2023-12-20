@@ -12,6 +12,8 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
 #define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
 
+#include "baci_config.H"
+
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mixture_constituent_elasthyperbase.H"

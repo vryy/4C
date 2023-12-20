@@ -15,6 +15,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include <Teuchos_ParameterList.hpp>
 
 BACI_NAMESPACE_OPEN

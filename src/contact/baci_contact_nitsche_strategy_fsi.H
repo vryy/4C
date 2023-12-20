@@ -11,6 +11,8 @@
 #ifndef BACI_CONTACT_NITSCHE_STRATEGY_FSI_H
 #define BACI_CONTACT_NITSCHE_STRATEGY_FSI_H
 
+#include "baci_config.H"
+
 #include "baci_contact_nitsche_strategy.H"
 #include "baci_linalg_fixedsizematrix.H"
 

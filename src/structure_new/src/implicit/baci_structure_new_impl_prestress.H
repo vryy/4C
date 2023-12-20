@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_IMPL_PRESTRESS_H
 #define BACI_STRUCTURE_NEW_IMPL_PRESTRESS_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_impl_statics.H"
 
 BACI_NAMESPACE_OPEN

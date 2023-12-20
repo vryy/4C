@@ -12,6 +12,8 @@
 #ifndef BACI_UTILS_EPETRA_EXCEPTIONS_H
 #define BACI_UTILS_EPETRA_EXCEPTIONS_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 /// set and restore the trace back mode during the macro execution

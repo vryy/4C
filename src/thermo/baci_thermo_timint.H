@@ -16,6 +16,8 @@
  | headers                                                  bborn 06/08 |
  *----------------------------------------------------------------------*/
 
+#include "baci_config.H"
+
 #include "baci_adapter_thermo.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_io.H"

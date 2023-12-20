@@ -15,6 +15,8 @@
 #define BACI_FS3I_H
 
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 
 #include <Epetra_Comm.h>

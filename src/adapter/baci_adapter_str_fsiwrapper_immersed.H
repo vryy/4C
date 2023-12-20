@@ -12,6 +12,8 @@
 #ifndef BACI_ADAPTER_STR_FSIWRAPPER_IMMERSED_H
 #define BACI_ADAPTER_STR_FSIWRAPPER_IMMERSED_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_structure_new_dbc.H"
 

@@ -9,6 +9,8 @@
 #ifndef BACI_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
 #define BACI_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset_interface.H"
 #include "baci_linalg_blocksparsematrix.H"
 

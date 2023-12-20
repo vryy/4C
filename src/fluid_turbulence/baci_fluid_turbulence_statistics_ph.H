@@ -35,6 +35,8 @@ given on input.
 #ifndef BACI_FLUID_TURBULENCE_STATISTICS_PH_H
 #define BACI_FLUID_TURBULENCE_STATISTICS_PH_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_serialdensematrix.H"

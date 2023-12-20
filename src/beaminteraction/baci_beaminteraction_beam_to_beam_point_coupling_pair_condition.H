@@ -12,6 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_POINT_COUPLING_PAIR_CONDITION_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_conditions.H"
 
 BACI_NAMESPACE_OPEN

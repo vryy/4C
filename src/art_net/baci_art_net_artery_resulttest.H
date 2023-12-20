@@ -11,6 +11,8 @@
 #ifndef BACI_ART_NET_ARTERY_RESULTTEST_H
 #define BACI_ART_NET_ARTERY_RESULTTEST_H
 
+#include "baci_config.H"
+
 #include "baci_lib_resulttest.H"
 
 #include <Epetra_MultiVector.h>

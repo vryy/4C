@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                              |
  *---------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_fluidporo_relpermeability_law.H"
 #include "baci_mat_fluidporo_viscosity_law.H"

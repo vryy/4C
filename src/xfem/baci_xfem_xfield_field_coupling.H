@@ -14,6 +14,8 @@
 #define BACI_XFEM_XFIELD_FIELD_COUPLING_H
 
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_utils_exceptions.H"
 // due to enum use ...

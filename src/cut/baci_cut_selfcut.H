@@ -10,6 +10,8 @@
 #ifndef BACI_CUT_SELFCUT_H
 #define BACI_CUT_SELFCUT_H
 
+#include "baci_config.H"
+
 #include "baci_cut_point.H"
 
 BACI_NAMESPACE_OPEN

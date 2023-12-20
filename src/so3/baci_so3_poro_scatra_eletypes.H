@@ -10,6 +10,8 @@
 #ifndef BACI_SO3_PORO_SCATRA_ELETYPES_H
 #define BACI_SO3_PORO_SCATRA_ELETYPES_H
 
+#include "baci_config.H"
+
 #include "baci_so3_poro_eletypes.H"
 
 BACI_NAMESPACE_OPEN

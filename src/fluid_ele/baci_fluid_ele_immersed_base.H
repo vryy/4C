@@ -9,6 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "baci_config.H"
+
 #include "baci_fluid_ele.H"
 
 #ifndef BACI_FLUID_ELE_IMMERSED_BASE_H

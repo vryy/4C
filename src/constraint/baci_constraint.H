@@ -12,6 +12,8 @@ Thomas Kloeppel
 #ifndef BACI_CONSTRAINT_H
 #define BACI_CONSTRAINT_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

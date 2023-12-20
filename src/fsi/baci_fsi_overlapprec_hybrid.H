@@ -14,6 +14,8 @@
 /*----------------------------------------------------------------------------*/
 /* headers */
 // Standard library
+#include "baci_config.H"
+
 #include "baci_fsi_overlapprec.H"
 
 #include <Ifpack.h>

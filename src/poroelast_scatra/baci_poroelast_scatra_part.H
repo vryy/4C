@@ -13,6 +13,8 @@
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_poroelast_scatra_base.H"
 
 #include <Epetra_Comm.h>

@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_NOX_EPSILON_H
 #define BACI_FSI_NOX_EPSILON_H
 
+#include "baci_config.H"
+
 #include <NOX_Direction_Generic.H>  // base class
 #include <NOX_Utils.H>
 #include <Teuchos_RCP.hpp>

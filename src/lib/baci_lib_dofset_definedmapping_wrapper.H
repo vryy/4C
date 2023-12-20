@@ -13,6 +13,8 @@
 #ifndef BACI_LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H
 #define BACI_LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset_base.H"
 #include "baci_lib_node.H"
 

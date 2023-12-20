@@ -8,6 +8,8 @@
 #ifndef BACI_SO3_ELEMENT_SERVICE_H
 #define BACI_SO3_ELEMENT_SERVICE_H
 
+#include "baci_config.H"
+
 #include "baci_so3_base.H"
 
 #include <Epetra_IntVector.h>

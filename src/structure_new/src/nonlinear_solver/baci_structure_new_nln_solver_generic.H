@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_NLN_SOLVER_GENERIC_H
 #define BACI_STRUCTURE_NEW_NLN_SOLVER_GENERIC_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_utils_exceptions.H"
 

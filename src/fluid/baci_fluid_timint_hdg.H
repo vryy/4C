@@ -14,6 +14,8 @@
 #define BACI_FLUID_TIMINT_HDG_H
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_timint_genalpha.H"
 
 BACI_NAMESPACE_OPEN

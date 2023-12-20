@@ -9,6 +9,8 @@
 #ifndef BACI_SO3_SH8_H
 #define BACI_SO3_SH8_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_hex8.H"
 

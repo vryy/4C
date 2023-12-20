@@ -13,6 +13,8 @@
 #ifndef BACI_INPAR_VALIDCONDITIONS_H
 #define BACI_INPAR_VALIDCONDITIONS_H
 
+#include "baci_config.H"
+
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
 

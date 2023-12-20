@@ -10,6 +10,8 @@
 #define BACI_POROFLUIDMULTIPHASE_ELE_PARAMETER_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <vector>

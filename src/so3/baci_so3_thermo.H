@@ -18,6 +18,8 @@
 
 // include thermal header because number of Gauss points are determined
 // dependent on distype
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_thermo_ele_impl_utils.H"
 

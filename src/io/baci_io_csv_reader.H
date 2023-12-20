@@ -8,6 +8,8 @@
 #define BACI_IO_CSV_READER_H
 
 /*-----------------------------------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include <sstream>
 #include <vector>
 

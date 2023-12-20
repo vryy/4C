@@ -11,6 +11,8 @@
 #ifndef BACI_FS3I_BIOFILM_FSI_UTILS_H
 #define BACI_FS3I_BIOFILM_FSI_UTILS_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 

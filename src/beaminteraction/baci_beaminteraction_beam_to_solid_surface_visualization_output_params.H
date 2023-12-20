@@ -13,6 +13,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VISUALIZATION_OUTPUT_PARAMS_H
 
 
+#include "baci_config.H"
+
 #include "baci_io_visualization_parameters.H"
 #include "baci_utils_exceptions.H"
 

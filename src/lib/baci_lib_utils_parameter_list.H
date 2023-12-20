@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_UTILS_PARAMETER_LIST_H
 #define BACI_LIB_UTILS_PARAMETER_LIST_H
 
+#include "baci_config.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 BACI_NAMESPACE_OPEN

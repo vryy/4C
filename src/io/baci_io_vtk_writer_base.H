@@ -11,6 +11,8 @@
 #define BACI_IO_VTK_WRITER_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_io_visualization_data.H"
 #include "baci_utils_exceptions.H"
 

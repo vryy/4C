@@ -11,6 +11,8 @@
 #ifndef BACI_SO3_PLAST_SSN_SOSH18_H
 #define BACI_SO3_PLAST_SSN_SOSH18_H
 
+#include "baci_config.H"
+
 #include "baci_so3_plast_ssn.H"
 #include "baci_so3_plast_ssn_eletypes.H"
 #include "baci_so3_sh18.H"

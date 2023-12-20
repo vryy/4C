@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_io_visualization_manager.H"
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_container_bundle.H"

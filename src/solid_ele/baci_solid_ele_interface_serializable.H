@@ -6,6 +6,8 @@
 \level 1
 */
 
+#include "baci_config.H"
+
 #include "baci_comm_pack_buffer.H"
 
 #include <variant>

@@ -11,6 +11,8 @@
 #ifndef BACI_PASI_DYN_H
 #define BACI_PASI_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /*!

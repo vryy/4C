@@ -10,6 +10,8 @@
 #ifndef BACI_SSI_PARTITIONED_1WC_H
 #define BACI_SSI_PARTITIONED_1WC_H
 
+#include "baci_config.H"
+
 #include "baci_ssi_partitioned.H"
 
 BACI_NAMESPACE_OPEN

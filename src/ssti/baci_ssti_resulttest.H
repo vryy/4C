@@ -10,6 +10,8 @@
 #ifndef BACI_SSTI_RESULTTEST_H
 #define BACI_SSTI_RESULTTEST_H
 
+#include "baci_config.H"
+
 #include "baci_lib_resulttest.H"
 
 BACI_NAMESPACE_OPEN

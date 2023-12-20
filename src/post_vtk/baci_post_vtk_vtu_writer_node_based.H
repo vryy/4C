@@ -11,6 +11,8 @@
 #define BACI_POST_VTK_VTU_WRITER_NODE_BASED_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_post_vtk_vtu_writer.H"
 

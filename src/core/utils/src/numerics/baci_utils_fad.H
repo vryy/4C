@@ -13,6 +13,8 @@
 #ifndef BACI_UTILS_FAD_H
 #define BACI_UTILS_FAD_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Sacado.hpp>

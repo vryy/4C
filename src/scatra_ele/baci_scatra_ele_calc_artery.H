@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_ARTERY_H
 #define BACI_SCATRA_ELE_CALC_ARTERY_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_cnst_1d_art.H"

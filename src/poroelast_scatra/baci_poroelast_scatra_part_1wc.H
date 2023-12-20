@@ -11,6 +11,8 @@
 #ifndef BACI_POROELAST_SCATRA_PART_1WC_H
 #define BACI_POROELAST_SCATRA_PART_1WC_H
 
+#include "baci_config.H"
+
 #include "baci_poroelast_scatra_part.H"
 
 BACI_NAMESPACE_OPEN

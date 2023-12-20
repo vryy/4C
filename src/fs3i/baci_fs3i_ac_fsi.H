@@ -15,6 +15,8 @@
 #ifndef BACI_FS3I_AC_FSI_H
 #define BACI_FS3I_AC_FSI_H
 
+#include "baci_config.H"
+
 #include "baci_fs3i_partitioned_1wc.H"
 #include "baci_utils_exceptions.H"
 

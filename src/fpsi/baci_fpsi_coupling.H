@@ -13,6 +13,8 @@ Fluid-Poro-Coupling Matrixes!
 #define BACI_FPSI_COUPLING_H
 
 // ALE includes
+#include "baci_config.H"
+
 #include "baci_ale_utils_mapextractor.H"
 #include "baci_coupling_adapter.H"
 #include "baci_fluid_utils_mapextractor.H"

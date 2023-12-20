@@ -32,6 +32,8 @@ References are
 #define BACI_FLUID_TURBULENCE_BOXFILTER_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"
 #include "baci_lib_discret.H"

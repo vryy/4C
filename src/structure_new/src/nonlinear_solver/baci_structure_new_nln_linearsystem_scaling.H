@@ -11,6 +11,8 @@
 #ifndef BACI_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_H
 #define BACI_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 
 #include <Epetra_Map.h>

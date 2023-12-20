@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_AUG_ACTIVE_SET_H
 #define BACI_CONTACT_AUG_ACTIVE_SET_H
 
+#include "baci_config.H"
+
 #include <string>
 #include <vector>
 

@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_MONOLITHICINTERFACE_H
 #define BACI_FSI_MONOLITHICINTERFACE_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 
 BACI_NAMESPACE_OPEN

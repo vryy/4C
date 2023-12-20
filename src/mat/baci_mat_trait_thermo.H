@@ -8,6 +8,8 @@
 #ifndef BACI_MAT_TRAIT_THERMO_H
 #define BACI_MAT_TRAIT_THERMO_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 BACI_NAMESPACE_OPEN

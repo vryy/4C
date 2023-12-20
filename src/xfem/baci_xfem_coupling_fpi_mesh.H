@@ -12,6 +12,8 @@ xfluid class and the cut-library
 #ifndef BACI_XFEM_COUPLING_FPI_MESH_H
 #define BACI_XFEM_COUPLING_FPI_MESH_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"

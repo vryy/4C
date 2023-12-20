@@ -10,6 +10,8 @@
 #ifndef BACI_POROMULTIPHASE_PARTITIONED_TWOWAY_H
 #define BACI_POROMULTIPHASE_PARTITIONED_TWOWAY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_poromultiphase.H"
 #include "baci_poromultiphase_partitioned.H"
 

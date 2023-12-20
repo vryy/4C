@@ -7,6 +7,8 @@
 
 #ifndef BACI_SOLID_ELE_NEUMANN_EVALUATOR_H
 #define BACI_SOLID_ELE_NEUMANN_EVALUATOR_H
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_linalg_serialdensevector.H"
 

@@ -9,6 +9,8 @@
 #define BACI_SO3_SH8P8_EAS_H
 
 /*----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_so3_sh8p8.H"
 

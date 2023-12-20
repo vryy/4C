@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_LINE_PROJECTION_H
 
 
+#include "baci_config.H"
+
 #include <set>
 #include <vector>
 

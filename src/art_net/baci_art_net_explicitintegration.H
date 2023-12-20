@@ -16,6 +16,8 @@
 #ifndef BACI_ART_NET_EXPLICITINTEGRATION_H
 #define BACI_ART_NET_EXPLICITINTEGRATION_H
 
+#include "baci_config.H"
+
 #include "baci_art_net_art_junction.H"
 #include "baci_art_net_art_write_gnuplot.H"
 #include "baci_art_net_timint.H"

@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_BOUNDINGBOX_H
 #define BACI_CUT_BOUNDINGBOX_H
 
+#include "baci_config.H"
+
 #include "baci_cut_tolerance.H"
 #include "baci_linalg_fixedsizematrix.H"
 

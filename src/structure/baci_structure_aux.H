@@ -11,6 +11,8 @@
 #ifndef BACI_STRUCTURE_AUX_H
 #define BACI_STRUCTURE_AUX_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_linalg_mapextractor.H"
 

@@ -8,6 +8,8 @@
 #ifndef BACI_SOLID_ELE_UTILS_H
 #define BACI_SOLID_ELE_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_solid_ele_calc_eas.H"

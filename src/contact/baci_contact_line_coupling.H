@@ -13,6 +13,8 @@
 #define BACI_CONTACT_LINE_COUPLING_H
 
 
+#include "baci_config.H"
+
 #include "baci_mortar_coupling3d_classes.H"
 
 BACI_NAMESPACE_OPEN

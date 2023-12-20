@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_XFLUID_LEVELSET_COUPLING_ALGORITHM_H
 #define BACI_FLUID_XFLUID_LEVELSET_COUPLING_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 #include "baci_linalg_mapextractor.H"
 

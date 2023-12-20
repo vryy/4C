@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_UTILITY_FUNCTIONS_H
 
 
+#include "baci_config.H"
+
 #include "baci_beam3_base.H"
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_linalg_fixedsizematrix.H"

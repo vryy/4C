@@ -13,6 +13,8 @@
 #ifndef BACI_XFEM_XFLUID_TIMEINT_BASE_H
 #define BACI_XFEM_XFLUID_TIMEINT_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_xfem.H"
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"

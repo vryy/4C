@@ -10,6 +10,8 @@
 #ifndef BACI_STI_ALGORITHM_H
 #define BACI_STI_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_adapter_scatra_base_algorithm.H"
 

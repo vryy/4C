@@ -24,6 +24,8 @@
 #define BACI_FLUID_IMPLICIT_INTEGRATION_H
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_timint.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_turbulence.H"

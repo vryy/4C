@@ -9,6 +9,8 @@
 #ifndef BACI_UTILS_LOCAL_NUMERIC_METHODS_H
 #define BACI_UTILS_LOCAL_NUMERIC_METHODS_H
 
+#include "baci_config.H"
+
 #include <functional>
 
 BACI_NAMESPACE_OPEN

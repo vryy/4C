@@ -10,6 +10,8 @@
 #ifndef BACI_MORTAR_MANAGER_BASE_H
 #define BACI_MORTAR_MANAGER_BASE_H
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

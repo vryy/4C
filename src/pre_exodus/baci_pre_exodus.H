@@ -17,6 +17,8 @@ or the well-known .dat file is created.
 #ifndef BACI_PRE_EXODUS_H
 #define BACI_PRE_EXODUS_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace EXODUS

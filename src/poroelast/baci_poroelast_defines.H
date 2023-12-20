@@ -9,6 +9,8 @@
 #ifndef BACI_POROELAST_DEFINES_H
 #define BACI_POROELAST_DEFINES_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /* ***********************************************************************/
@@ -23,7 +25,6 @@ BACI_NAMESPACE_OPEN
 // #define POROELASTPARALLEL      /* flag for detailed active set output */
 // #define THRASOUTPUT      /* flag for detailed active set output */
 // #define POROFDCHECK /* flag for finite differences check of tangent stiffness matrix */
-
 
 BACI_NAMESPACE_CLOSE
 

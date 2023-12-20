@@ -10,6 +10,8 @@
 #ifndef BACI_MATELAST_ISOMUSCLE_BLEMKER_H
 #define BACI_MATELAST_ISOMUSCLE_BLEMKER_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"

@@ -12,6 +12,8 @@
 #ifndef BACI_INPAR_TSI_H
 #define BACI_INPAR_TSI_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_utils_exceptions.H"
 

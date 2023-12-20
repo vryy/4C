@@ -10,6 +10,8 @@
 #ifndef BACI_MAT_SCATRA_MAT_PORO_ECM_H
 #define BACI_MAT_SCATRA_MAT_PORO_ECM_H
 
+#include "baci_config.H"
+
 #include "baci_mat_scatra_reaction_mat.H"
 
 BACI_NAMESPACE_OPEN

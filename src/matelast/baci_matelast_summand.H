@@ -9,6 +9,8 @@
 #ifndef BACI_MATELAST_SUMMAND_H
 #define BACI_MATELAST_SUMMAND_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobject.H"
 #include "baci_inpar_material.H"
 #include "baci_linalg_FADmatrix_utils.H"

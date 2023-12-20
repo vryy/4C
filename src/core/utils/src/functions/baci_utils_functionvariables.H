@@ -12,6 +12,8 @@
 #ifndef BACI_UTILS_FUNCTIONVARIABLES_H
 #define BACI_UTILS_FUNCTIONVARIABLES_H
 
+#include "baci_config.H"
+
 #include "baci_utils_symbolic_expression.H"
 
 #include <Sacado.hpp>

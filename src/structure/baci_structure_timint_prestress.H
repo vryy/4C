@@ -11,6 +11,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_structure_timint_statics.H"
 
 BACI_NAMESPACE_OPEN

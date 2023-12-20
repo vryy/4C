@@ -9,6 +9,8 @@ contribution
 #ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_EXPONENTIAL_ACTIVE_H
 #define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_EXPONENTIAL_ACTIVE_H
 
+#include "baci_config.H"
+
 #include "baci_mixture_constituent_remodelfiber_material_exponential.H"
 
 #include <Teuchos_RCPDecl.hpp>

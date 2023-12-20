@@ -16,6 +16,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensevector.H"
 #include "baci_solver_nonlin_nox_forward_decl.H"
 #include "baci_solver_nonlin_nox_statustest_normupdate.H"

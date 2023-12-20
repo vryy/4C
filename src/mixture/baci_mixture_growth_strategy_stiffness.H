@@ -8,6 +8,8 @@
 #ifndef BACI_MIXTURE_GROWTH_STRATEGY_STIFFNESS_H
 #define BACI_MIXTURE_GROWTH_STRATEGY_STIFFNESS_H
 
+#include "baci_config.H"
+
 #include "baci_mixture_growth_strategy.H"
 
 BACI_NAMESPACE_OPEN

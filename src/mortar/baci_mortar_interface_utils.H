@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_INTERFACE_UTILS_H
 #define BACI_MORTAR_INTERFACE_UTILS_H
 
+#include "baci_config.H"
+
 #include <string>
 #include <vector>
 

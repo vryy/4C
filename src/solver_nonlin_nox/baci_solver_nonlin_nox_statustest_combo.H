@@ -11,6 +11,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_STATUSTEST_COMBO_H
 #define BACI_SOLVER_NONLIN_NOX_STATUSTEST_COMBO_H
 
+#include "baci_config.H"
+
 #include <NOX_StatusTest_Combo.H>  // base class
 
 BACI_NAMESPACE_OPEN

@@ -7,6 +7,8 @@
 #define BACI_SO3_TET10_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_structure.H"

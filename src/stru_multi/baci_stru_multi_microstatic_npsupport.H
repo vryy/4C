@@ -12,6 +12,8 @@
 #ifndef BACI_STRU_MULTI_MICROSTATIC_NPSUPPORT_H
 #define BACI_STRU_MULTI_MICROSTATIC_NPSUPPORT_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace STRUMULTI
@@ -21,6 +23,7 @@ namespace STRUMULTI
 
 
 }  // namespace STRUMULTI
+
 BACI_NAMESPACE_CLOSE
 
 #endif

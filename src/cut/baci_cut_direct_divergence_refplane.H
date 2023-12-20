@@ -10,6 +10,8 @@ coordinate system
 #ifndef BACI_CUT_DIRECT_DIVERGENCE_REFPLANE_H
 #define BACI_CUT_DIRECT_DIVERGENCE_REFPLANE_H
 
+#include "baci_config.H"
+
 #include "baci_cut_element.H"
 
 #include <vector>

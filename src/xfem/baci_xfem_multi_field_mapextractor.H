@@ -14,6 +14,8 @@
 #ifndef BACI_XFEM_MULTI_FIELD_MAPEXTRACTOR_H
 #define BACI_XFEM_MULTI_FIELD_MAPEXTRACTOR_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 #include "baci_xfem_enum_lists.H"
 

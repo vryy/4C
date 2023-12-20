@@ -13,6 +13,8 @@ The functions in this file are not problem-specific and may be useful for a numb
 #ifndef BACI_UTILS_FUNCTION_LIBRARY_H
 #define BACI_UTILS_FUNCTION_LIBRARY_H
 
+#include "baci_config.H"
+
 #include "baci_utils_function.H"
 #include "baci_utils_function_of_scalar.H"
 

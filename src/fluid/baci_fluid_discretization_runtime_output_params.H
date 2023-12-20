@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_H
 #define BACI_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_H
 
+#include "baci_config.H"
+
 namespace Teuchos
 {
   class ParameterList;

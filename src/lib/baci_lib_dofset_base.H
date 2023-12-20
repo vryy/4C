@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_DOFSET_BASE_H
 #define BACI_LIB_DOFSET_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset_interface.H"
 
 #include <list>

@@ -17,6 +17,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_mat_particle_base.H"
 #include "baci_mat_particle_thermo.H"
 

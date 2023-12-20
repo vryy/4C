@@ -11,6 +11,8 @@ MATLAB, PGFPlot or other tools.
 #ifndef BACI_CONTACT_AUG_PLOT_H
 #define BACI_CONTACT_AUG_PLOT_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 

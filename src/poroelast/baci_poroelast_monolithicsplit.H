@@ -12,6 +12,8 @@
 #define BACI_POROELAST_MONOLITHICSPLIT_H
 
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_poroelast_monolithic.H"
 

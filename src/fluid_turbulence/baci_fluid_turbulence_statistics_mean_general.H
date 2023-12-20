@@ -13,6 +13,8 @@ means are computed as time averages
 #ifndef BACI_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_H
 #define BACI_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 

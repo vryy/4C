@@ -11,6 +11,8 @@
 #ifndef BACI_BINSTRATEGY_UTILS_H
 #define BACI_BINSTRATEGY_UTILS_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <set>

@@ -10,6 +10,8 @@
 #define BACI_MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_H
 
 
+#include "baci_config.H"
+
 #include "baci_mat_fluidporo_singlephase.H"
 
 BACI_NAMESPACE_OPEN

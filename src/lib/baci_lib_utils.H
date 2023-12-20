@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_UTILS_H
 #define BACI_LIB_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"

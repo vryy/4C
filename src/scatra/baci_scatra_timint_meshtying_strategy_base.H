@@ -12,6 +12,8 @@ strategy without meshtying)
 #ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_timint_convcheck_strategies.H"
 #include "baci_utils_exceptions.H"
 

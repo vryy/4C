@@ -14,6 +14,8 @@
 #ifndef BACI_LIB_DOFSET_FIXED_SIZE_H
 #define BACI_LIB_DOFSET_FIXED_SIZE_H
 
+#include "baci_config.H"
+
 #include "baci_lib_dofset.H"
 
 #include <Epetra_Comm.h>

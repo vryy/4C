@@ -11,6 +11,8 @@
 #ifndef BACI_ADAPTER_FLD_FLUID_FLUID_FSI_H
 #define BACI_ADAPTER_FLD_FLUID_FLUID_FSI_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid_fsi.H"
 #include "baci_inpar_xfem.H"
 

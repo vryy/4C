@@ -10,6 +10,8 @@
 #ifndef BACI_FSI_FREE_SURFACE_MONOLITHIC_H
 #define BACI_FSI_FREE_SURFACE_MONOLITHIC_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_ale.H"

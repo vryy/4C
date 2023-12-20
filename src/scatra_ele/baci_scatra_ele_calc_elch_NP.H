@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_ELCH_NP_H
 #define BACI_SCATRA_ELE_CALC_ELCH_NP_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_calc_elch.H"
 
 BACI_NAMESPACE_OPEN

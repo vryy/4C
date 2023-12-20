@@ -14,6 +14,8 @@
 #define BACI_FLUID_TIMINT_RED_H
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_implicit_integration.H"
 
 BACI_NAMESPACE_OPEN

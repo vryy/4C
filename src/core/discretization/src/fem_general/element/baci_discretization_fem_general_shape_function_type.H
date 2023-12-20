@@ -8,6 +8,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_SHAPE_FUNCTION_TYPE_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_SHAPE_FUNCTION_TYPE_H
 
+#include "baci_config.H"
+
 #include <map>
 #include <string>
 

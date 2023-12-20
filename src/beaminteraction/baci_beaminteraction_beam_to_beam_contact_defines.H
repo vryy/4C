@@ -10,7 +10,11 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_H
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_H
 
+#include "baci_config.H"
+
 #include <Sacado.hpp>
+
+BACI_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Beam contact algorithm options                                       */
@@ -266,7 +270,6 @@ typedef double TYPEBTS;
 //  forces at all contact interval borders and Gauss points
 #endif
 
-BACI_NAMESPACE_OPEN
 // -----------------------------------------------------------------
 
 BACI_NAMESPACE_CLOSE

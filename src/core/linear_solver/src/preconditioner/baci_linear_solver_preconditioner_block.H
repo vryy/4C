@@ -10,6 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_BLOCK_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_BLOCK_H
 
+#include "baci_config.H"
+
 #include "baci_linear_solver_preconditioner_type.H"
 
 BACI_NAMESPACE_OPEN

@@ -18,6 +18,8 @@ Pack, Unpack, NumDofPerNode etc.
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"

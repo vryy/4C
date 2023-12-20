@@ -10,6 +10,8 @@
 #ifndef BACI_INPAR_H
 #define BACI_INPAR_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

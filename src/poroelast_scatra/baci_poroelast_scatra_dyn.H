@@ -11,6 +11,8 @@
 #ifndef BACI_POROELAST_SCATRA_DYN_H
 #define BACI_POROELAST_SCATRA_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 //! global control routine for Poro + ScaTra problem.

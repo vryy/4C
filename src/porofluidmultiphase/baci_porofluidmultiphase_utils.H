@@ -9,6 +9,8 @@
 #ifndef BACI_POROFLUIDMULTIPHASE_UTILS_H
 #define BACI_POROFLUIDMULTIPHASE_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_bio.H"
 #include "baci_inpar_porofluidmultiphase.H"
 #include "baci_io.H"

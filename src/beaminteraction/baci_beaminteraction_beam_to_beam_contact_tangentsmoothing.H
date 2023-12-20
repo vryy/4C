@@ -11,6 +11,8 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_TANGENTSMOOTHING_H
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_TANGENTSMOOTHING_H
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"

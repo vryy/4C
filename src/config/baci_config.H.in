@@ -23,4 +23,7 @@
 #cmakedefine TRAP_FE
 #endif
 
+#define BACI_NAMESPACE_OPEN namespace BACI {
+#define BACI_NAMESPACE_CLOSE }
+
 #endif

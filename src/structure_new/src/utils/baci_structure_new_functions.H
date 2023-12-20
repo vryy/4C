@@ -9,6 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
+#include "baci_config.H"
+
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_utils_function.H"
 

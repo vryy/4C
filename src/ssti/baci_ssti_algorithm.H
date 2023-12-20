@@ -10,6 +10,8 @@
 #ifndef BACI_SSTI_ALGORITHM_H
 #define BACI_SSTI_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 
 #include <Epetra_Vector.h>

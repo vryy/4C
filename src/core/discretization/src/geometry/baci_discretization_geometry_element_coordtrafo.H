@@ -13,6 +13,8 @@
 #define BACI_DISCRETIZATION_GEOMETRY_ELEMENT_COORDTRAFO_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_geometry_intersection_math.H"
 #include "baci_linalg_gauss.H"

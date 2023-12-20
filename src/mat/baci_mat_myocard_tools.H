@@ -12,8 +12,9 @@
 #ifndef BACI_MAT_MYOCARD_TOOLS_H
 #define BACI_MAT_MYOCARD_TOOLS_H
 
-BACI_NAMESPACE_OPEN
+#include "baci_config.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /// Myocard math tools general to all materials

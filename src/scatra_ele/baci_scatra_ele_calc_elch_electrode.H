@@ -11,6 +11,8 @@ within isothermal electrodes
 #ifndef BACI_SCATRA_ELE_CALC_ELCH_ELECTRODE_H
 #define BACI_SCATRA_ELE_CALC_ELCH_ELECTRODE_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_calc_elch.H"
 #include "baci_scatra_ele_utils_elch_electrode.H"
 

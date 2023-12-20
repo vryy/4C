@@ -8,6 +8,8 @@
 #ifndef BACI_SOLID_ELE_CALC_LIB_INTEGRATION_H
 #define BACI_SOLID_ELE_CALC_LIB_INTEGRATION_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_cell_type.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_lib_element_integration_select.H"

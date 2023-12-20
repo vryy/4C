@@ -11,6 +11,8 @@
 #ifndef BACI_LINALG_MATRIXTRANSFORM_H
 #define BACI_LINALG_MATRIXTRANSFORM_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 
 #include <Epetra_CrsMatrix.h>

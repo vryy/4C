@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_TIMINT_ELCH_SCL_H
 #define BACI_SCATRA_TIMINT_ELCH_SCL_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_inpar_elch.H"
 #include "baci_io_runtime_csv_writer.H"

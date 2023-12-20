@@ -9,6 +9,8 @@
 #ifndef BACI_UTILS_LOCAL_INTEGRATION_H
 #define BACI_UTILS_LOCAL_INTEGRATION_H
 
+#include "baci_config.H"
+
 #include <functional>
 #include <iterator>
 #include <tuple>

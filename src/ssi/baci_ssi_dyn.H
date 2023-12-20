@@ -10,6 +10,8 @@
 #ifndef BACI_SSI_DYN_H
 #define BACI_SSI_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 //! global control routine for Structure - Scatra -Interaction problem.

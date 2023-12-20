@@ -16,6 +16,8 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 #define BACI_MAT_MAXWELL_0D_ACINUS_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"

@@ -11,6 +11,8 @@
 #ifndef BACI_CUT_SIDE_H
 #define BACI_CUT_SIDE_H
 
+#include "baci_config.H"
+
 #include "baci_cut_edge.H"
 #include "baci_cut_element.H"
 #include "baci_cut_tolerance.H"

@@ -15,6 +15,8 @@ be directly assembled into the global matrices.
 #define BACI_BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_MANAGER_DIRECT_H
 
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager.H"
 
 BACI_NAMESPACE_OPEN

@@ -10,6 +10,8 @@
 #define BACI_MAT_SCATRA_MAT_MULTIPORO_H
 
 
+#include "baci_config.H"
+
 #include "baci_mat_scatra_mat.H"
 
 BACI_NAMESPACE_OPEN

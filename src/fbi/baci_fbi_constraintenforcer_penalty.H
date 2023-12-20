@@ -10,6 +10,8 @@ fluid-beam interaction).
 #ifndef BACI_FBI_CONSTRAINTENFORCER_PENALTY_H
 #define BACI_FBI_CONSTRAINTENFORCER_PENALTY_H
 
+#include "baci_config.H"
+
 #include "baci_fbi_constraintenforcer.H"
 
 #include <Epetra_Vector.h>

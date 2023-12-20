@@ -13,6 +13,8 @@
 #define BACI_FLUID_RESULT_TEST_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_resulttest.H"
 
 #include <Epetra_Vector.h>

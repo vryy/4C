@@ -11,6 +11,8 @@
 #ifndef BACI_POROELAST_SCATRA_BASE_H
 #define BACI_POROELAST_SCATRA_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_poroelast_base.H"

@@ -10,6 +10,8 @@
 #ifndef BACI_LINALG_SPARSEMATRIX_H
 #define BACI_LINALG_SPARSEMATRIX_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparsematrixbase.H"
 #include "baci_utils_exceptions.H"

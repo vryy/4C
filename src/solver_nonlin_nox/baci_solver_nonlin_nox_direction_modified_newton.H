@@ -13,6 +13,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_MODIFIED_NEWTON_H
 #define BACI_SOLVER_NONLIN_NOX_DIRECTION_MODIFIED_NEWTON_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_direction_newton.H"
 #include "baci_solver_nonlin_nox_floating_point_exception.H"
 #include "baci_solver_nonlin_nox_forward_decl.H"

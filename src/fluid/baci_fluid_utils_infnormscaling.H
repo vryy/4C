@@ -13,6 +13,8 @@
 #define BACI_FLUID_UTILS_INFNORMSCALING_H
 
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 

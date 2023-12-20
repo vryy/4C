@@ -10,6 +10,8 @@
 #ifndef BACI_ALE_MESHSLIDING_H
 #define BACI_ALE_MESHSLIDING_H
 
+#include "baci_config.H"
+
 #include "baci_ale_meshtying.H"
 
 BACI_NAMESPACE_OPEN

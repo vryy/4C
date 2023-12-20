@@ -12,6 +12,8 @@
 #ifndef BACI_MAT_MUSCLE_UTILS_H
 #define BACI_MAT_MUSCLE_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_function.H"
 

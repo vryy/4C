@@ -9,6 +9,8 @@
 #ifndef BACI_MAT_MYOCARD_GENERAL_H
 #define BACI_MAT_MYOCARD_GENERAL_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <string>

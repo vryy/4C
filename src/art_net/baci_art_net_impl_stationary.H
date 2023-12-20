@@ -10,6 +10,8 @@
 #ifndef BACI_ART_NET_IMPL_STATIONARY_H
 #define BACI_ART_NET_IMPL_STATIONARY_H
 
+#include "baci_config.H"
+
 #include "baci_art_net_timint.H"
 
 BACI_NAMESPACE_OPEN

@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_DISCRET_FACES_H
 #define BACI_LIB_DISCRET_FACES_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_utils_exceptions.H"
 

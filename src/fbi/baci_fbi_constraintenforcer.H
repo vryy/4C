@@ -10,6 +10,8 @@ interaction.
 #ifndef BACI_FBI_CONSTRAINTENFORCER_H
 #define BACI_FBI_CONSTRAINTENFORCER_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>

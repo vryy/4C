@@ -12,6 +12,8 @@ created
 #ifndef BACI_CUT_POINTPOOL_H
 #define BACI_CUT_POINTPOOL_H
 
+#include "baci_config.H"
+
 #include "baci_cut_boundingbox.H"
 #include "baci_cut_point.H"
 

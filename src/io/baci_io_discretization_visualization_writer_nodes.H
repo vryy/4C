@@ -13,6 +13,8 @@
 #define BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

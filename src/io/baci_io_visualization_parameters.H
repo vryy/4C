@@ -12,6 +12,8 @@
 #define BACI_IO_VISUALIZATION_PARAMETERS_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_IO_runtime_vtk_output.H"
 #include "baci_utils_exceptions.H"
 

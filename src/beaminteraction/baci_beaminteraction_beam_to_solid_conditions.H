@@ -11,6 +11,8 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_CONDITIONS_H
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_CONDITIONS_H
 
+#include "baci_config.H"
+
 #include "baci_beaminteraction_conditions.H"
 #include "baci_lib_element.H"
 #include "baci_utils_exceptions.H"

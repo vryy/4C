@@ -9,6 +9,8 @@
 #ifndef BACI_CONSTRAINT_FRAMEWORK_SUBMODELEVALUATOR_BASE_H
 #define BACI_CONSTRAINT_FRAMEWORK_SUBMODELEVALUATOR_BASE_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_model_evaluator_generic.H"
 
 BACI_NAMESPACE_OPEN

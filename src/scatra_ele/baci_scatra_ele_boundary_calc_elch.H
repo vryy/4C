@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_H
 #define BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_H
 
+#include "baci_config.H"
+
 #include "baci_scatra_ele_boundary_calc.H"
 
 BACI_NAMESPACE_OPEN

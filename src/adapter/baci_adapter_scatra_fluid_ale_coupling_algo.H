@@ -13,6 +13,8 @@
 #ifndef BACI_ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 #define BACI_ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_ale_fluid.H"
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 #include "baci_coupling_adapter.H"

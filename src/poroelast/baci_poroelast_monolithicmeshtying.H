@@ -15,6 +15,8 @@
 #define BACI_POROELAST_MONOLITHICMESHTYING_H
 
 
+#include "baci_config.H"
+
 #include "baci_poroelast_monolithic.H"
 
 BACI_NAMESPACE_OPEN

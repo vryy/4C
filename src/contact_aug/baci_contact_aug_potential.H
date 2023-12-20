@@ -11,6 +11,8 @@
 #ifndef BACI_CONTACT_AUG_POTENTIAL_H
 #define BACI_CONTACT_AUG_POTENTIAL_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>

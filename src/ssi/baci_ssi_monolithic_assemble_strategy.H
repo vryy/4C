@@ -9,6 +9,8 @@
 #ifndef BACI_SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H
 #define BACI_SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_linalg_sparseoperator.H"
 #include "baci_ssi_utils.H"

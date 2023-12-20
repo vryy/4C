@@ -11,6 +11,8 @@
 #ifndef BACI_POST_ENSIGHT_WRITER_H
 #define BACI_POST_ENSIGHT_WRITER_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"              // due to DiscretizationType
 #include "baci_post_common_writer_base.H"  // base class PostWriterBase
 

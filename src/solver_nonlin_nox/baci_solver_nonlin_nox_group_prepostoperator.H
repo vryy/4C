@@ -13,6 +13,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_H
 #define BACI_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
 #include "baci_solver_nonlin_nox_forward_decl.H"
 

@@ -16,6 +16,8 @@
 #define BACI_INPAR_VALIDCONTACTCONSTITUTIVELAW_H
 
 /*----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <iostream>

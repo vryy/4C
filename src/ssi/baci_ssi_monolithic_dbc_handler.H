@@ -9,6 +9,8 @@
 #ifndef BACI_SSI_MONOLITHIC_DBC_HANDLER_H
 #define BACI_SSI_MONOLITHIC_DBC_HANDLER_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_sparseoperator.H"
 
 #include <Teuchos_RCPDecl.hpp>

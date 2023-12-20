@@ -11,6 +11,8 @@
 #ifndef BACI_ELCH_MOVING_BOUNDARY_ALGORITHM_H
 #define BACI_ELCH_MOVING_BOUNDARY_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_scatra_fluid_ale_coupling_algo.H"
 
 BACI_NAMESPACE_OPEN

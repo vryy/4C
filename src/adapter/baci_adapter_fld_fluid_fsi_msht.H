@@ -11,6 +11,8 @@
 #define BACI_ADAPTER_FLD_FLUID_FSI_MSHT_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid_fsi.H"
 
 BACI_NAMESPACE_OPEN

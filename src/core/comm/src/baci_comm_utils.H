@@ -10,6 +10,8 @@
 #define BACI_COMM_UTILS_H
 
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_MpiComm.h>

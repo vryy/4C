@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_COUPLING2D_H
 #define BACI_CONTACT_COUPLING2D_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_contact.H"
 #include "baci_inpar_wear.H"
 #include "baci_mortar_coupling2d.H"

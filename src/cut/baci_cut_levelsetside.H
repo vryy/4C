@@ -12,6 +12,8 @@ levelset
 #ifndef BACI_CUT_LEVELSETSIDE_H
 #define BACI_CUT_LEVELSETSIDE_H
 
+#include "baci_config.H"
+
 #include "baci_cut_side.H"
 
 // Use derivatives of LevelSet field to determine the Cut configuration

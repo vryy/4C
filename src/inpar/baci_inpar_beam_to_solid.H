@@ -13,6 +13,8 @@
 #define BACI_INPAR_BEAM_TO_SOLID_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_lib_condition.H"
 

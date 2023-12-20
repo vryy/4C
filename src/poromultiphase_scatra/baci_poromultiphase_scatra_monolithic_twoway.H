@@ -9,6 +9,8 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_MONOLITHIC_TWOWAY_H
 #define BACI_POROMULTIPHASE_SCATRA_MONOLITHIC_TWOWAY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_solver.H"
 #include "baci_poromultiphase_scatra_monolithic.H"
 #include "baci_poromultiphase_scatra_utils.H"

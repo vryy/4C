@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_ELEMENT_H
 #define BACI_CONTACT_ELEMENT_H
 
+#include "baci_config.H"
+
 #include "baci_mortar_element.H"
 
 BACI_NAMESPACE_OPEN

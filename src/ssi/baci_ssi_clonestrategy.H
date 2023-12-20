@@ -10,6 +10,8 @@
 #ifndef BACI_SSI_CLONESTRATEGY_H
 #define BACI_SSI_CLONESTRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_scatra.H"
 
 #include <Teuchos_RCP.hpp>

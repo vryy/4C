@@ -14,6 +14,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
+#include "baci_config.H"
+
 #include "baci_ale_ale3.H"
 
 BACI_NAMESPACE_OPEN

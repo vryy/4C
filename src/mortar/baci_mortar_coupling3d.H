@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_COUPLING3D_H
 #define BACI_MORTAR_COUPLING3D_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_mortar.H"
 #include "baci_mortar_coupling3d_classes.H"
 #include "baci_utils_pairedvector.H"

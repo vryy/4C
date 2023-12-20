@@ -13,6 +13,8 @@
 #ifndef BACI_CUT_FACETGRAPH_SIMPLE_H
 #define BACI_CUT_FACETGRAPH_SIMPLE_H
 
+#include "baci_config.H"
+
 #include "baci_cut_facetgraph.H"
 
 BACI_NAMESPACE_OPEN

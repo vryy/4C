@@ -13,6 +13,8 @@
 #define BACI_XFEM_XFLUID_CONTACT_COMMUNICATOR_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizematrix.H"
 

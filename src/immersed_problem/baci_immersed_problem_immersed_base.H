@@ -11,6 +11,8 @@
 #define BACI_IMMERSED_PROBLEM_IMMERSED_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_exporter.H"
 #include "baci_cut_boundingbox.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"

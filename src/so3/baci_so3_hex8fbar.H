@@ -10,6 +10,8 @@
 #ifndef BACI_SO3_HEX8FBAR_H
 #define BACI_SO3_HEX8FBAR_H
 
+#include "baci_config.H"
+
 #include "baci_so3_hex8.H"
 
 BACI_NAMESPACE_OPEN

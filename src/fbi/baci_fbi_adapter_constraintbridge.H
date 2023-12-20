@@ -11,6 +11,8 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 #ifndef BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_H
 #define BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Epetra_Map.h>

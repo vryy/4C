@@ -11,6 +11,8 @@
 #define BACI_SO3_PRESTRESS_SERVICE_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
 

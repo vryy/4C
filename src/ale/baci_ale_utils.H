@@ -11,6 +11,8 @@
 #define BACI_ALE_UTILS_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 

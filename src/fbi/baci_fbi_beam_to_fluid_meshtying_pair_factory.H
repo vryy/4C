@@ -12,6 +12,8 @@ approach
 #ifndef BACI_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_FACTORY_H
 #define BACI_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_FACTORY_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <vector>

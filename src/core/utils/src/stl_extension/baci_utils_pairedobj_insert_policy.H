@@ -16,6 +16,8 @@
 
 // #define DEBUG_INSERT_POLICY
 
+#include "baci_config.H"
+
 #include <algorithm>
 #include <cstddef>
 #include <iomanip>

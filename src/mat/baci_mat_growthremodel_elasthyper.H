@@ -10,6 +10,8 @@
 #define BACI_MAT_GROWTHREMODEL_ELASTHYPER_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_mat_anisotropy.H"

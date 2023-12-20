@@ -13,6 +13,8 @@
 #ifndef BACI_FBI_FLUIDBLOCKMATRIX_ASSEMBLY_STRATEGY_H
 #define BACI_FBI_FLUIDBLOCKMATRIX_ASSEMBLY_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_fbi_fluid_assembly_strategy.H"
 #include "baci_utils_exceptions.H"
 

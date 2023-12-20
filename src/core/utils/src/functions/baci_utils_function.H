@@ -12,6 +12,8 @@
 #define BACI_UTILS_FUNCTION_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_polynomial.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_exceptions.H"

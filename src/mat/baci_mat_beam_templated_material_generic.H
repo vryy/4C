@@ -8,6 +8,8 @@
 #ifndef BACI_MAT_BEAM_TEMPLATED_MATERIAL_GENERIC_H
 #define BACI_MAT_BEAM_TEMPLATED_MATERIAL_GENERIC_H
 
+#include "baci_config.H"
+
 #include "baci_mat_beam_material_generic.H"
 
 BACI_NAMESPACE_OPEN

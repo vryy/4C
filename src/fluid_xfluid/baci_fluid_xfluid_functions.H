@@ -8,6 +8,8 @@
  */
 /*----------------------------------------------------------------------*/
 
+#include "baci_config.H"
+
 #include "baci_utils_function.H"
 
 #ifndef BACI_FLUID_XFLUID_FUNCTIONS_H

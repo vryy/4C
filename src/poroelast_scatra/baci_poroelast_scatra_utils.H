@@ -10,6 +10,8 @@
 #ifndef BACI_POROELAST_SCATRA_UTILS_H
 #define BACI_POROELAST_SCATRA_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_volmortar_utils.H"
 #include "baci_inpar_poroelast.H"
 #include "baci_lib_element.H"

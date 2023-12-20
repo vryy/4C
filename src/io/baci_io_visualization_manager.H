@@ -11,6 +11,8 @@
 #ifndef BACI_IO_VISUALIZATION_MANAGER_H
 #define BACI_IO_VISUALIZATION_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_io_visualization_data.H"
 #include "baci_io_visualization_parameters.H"
 #include "baci_io_visualization_writer_base.H"

@@ -11,6 +11,8 @@
 #ifndef BACI_INPAR_SOLVER_NONLIN_H
 #define BACI_INPAR_SOLVER_NONLIN_H
 
+#include "baci_config.H"
+
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCPDecl.hpp>
 

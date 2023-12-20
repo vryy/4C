@@ -9,6 +9,8 @@
 #ifndef BACI_CONTACT_AUG_INTERFACE_H
 #define BACI_CONTACT_AUG_INTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_contact_aug_enum_lists.H"
 #include "baci_contact_aug_utils.H"
 #include "baci_contact_interface.H"

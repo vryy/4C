@@ -11,6 +11,8 @@
 #ifndef BACI_CONTACT_AUG_LAGRANGE_INTERFACE_H
 #define BACI_CONTACT_AUG_LAGRANGE_INTERFACE_H
 
+#include "baci_config.H"
+
 #include "baci_contact_aug_interface.H"
 
 BACI_NAMESPACE_OPEN

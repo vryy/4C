@@ -13,6 +13,8 @@
 #define BACI_FBI_BEAM_TO_FLUID_MORTAR_MANAGER_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_beaminteraction.H"
 
 #include <Teuchos_RCP.hpp>

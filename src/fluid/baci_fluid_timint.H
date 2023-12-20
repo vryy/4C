@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_TIMINT_H
 #define BACI_FLUID_TIMINT_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid.H"
 #include "baci_fluid_discretization_runtime_output_params.H"
 #include "baci_utils_exceptions.H"

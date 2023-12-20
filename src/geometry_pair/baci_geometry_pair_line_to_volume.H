@@ -11,6 +11,8 @@
 #ifndef BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_H
 #define BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_H
 
+#include "baci_config.H"
+
 #include "baci_geometry_pair.H"
 
 #include <Teuchos_RCP.hpp>

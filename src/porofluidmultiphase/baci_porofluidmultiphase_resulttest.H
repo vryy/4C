@@ -11,6 +11,8 @@
 
 
 
+#include "baci_config.H"
+
 #include "baci_lib_resulttest.H"
 
 #include <Epetra_MultiVector.h>

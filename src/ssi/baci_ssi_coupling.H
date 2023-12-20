@@ -10,6 +10,8 @@
 #ifndef BACI_SSI_COUPLING_H
 #define BACI_SSI_COUPLING_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_lib_discret.H"

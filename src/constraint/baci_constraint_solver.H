@@ -7,6 +7,8 @@
 #ifndef BACI_CONSTRAINT_SOLVER_H
 #define BACI_CONSTRAINT_SOLVER_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 
 #include <Epetra_Operator.h>

@@ -14,6 +14,8 @@
 #define BACI_DISCRETIZATION_GEOMETRY_INTEGRATIONCELL_COORDTRAFO_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_geometry_element_coordtrafo.H"
 #include "baci_discretization_geometry_integrationcell.H"
 

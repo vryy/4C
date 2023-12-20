@@ -11,6 +11,8 @@
 #ifndef BACI_BEAMCONTACT_BEAM3CONTACT_MANAGER_H
 #define BACI_BEAMCONTACT_BEAM3CONTACT_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_beamcontact_beam3contact.H"
 #include "baci_beamcontact_beam3contactnew.H"
 #include "baci_beamcontact_beam3tosolidcontact.H"

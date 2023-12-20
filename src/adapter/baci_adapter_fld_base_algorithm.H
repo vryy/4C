@@ -14,6 +14,8 @@
 #ifndef BACI_ADAPTER_FLD_BASE_ALGORITHM_H
 #define BACI_ADAPTER_FLD_BASE_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid.H"
 
 #include <Epetra_Map.h>

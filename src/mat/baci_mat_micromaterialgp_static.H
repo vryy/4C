@@ -12,6 +12,8 @@
 
 
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Epetra_Vector.h>

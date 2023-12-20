@@ -12,6 +12,8 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_structure_new_model_evaluator.H"  // typedef
 

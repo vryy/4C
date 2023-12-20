@@ -9,6 +9,8 @@
 #ifndef BACI_MIXTURE_GROWTH_STRATEGY_H
 #define BACI_MIXTURE_GROWTH_STRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mixture_rule.H"
 

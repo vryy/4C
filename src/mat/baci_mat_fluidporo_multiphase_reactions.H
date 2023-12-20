@@ -11,6 +11,8 @@
 
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_material.H"

@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_DISCRET_XFEM_H
 #define BACI_LIB_DISCRET_XFEM_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_dofset.H"
 #include "baci_lib_dofset_interface.H"

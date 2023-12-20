@@ -12,6 +12,8 @@
 #define BACI_EHL_UTILS_H
 
 
+#include "baci_config.H"
+
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 

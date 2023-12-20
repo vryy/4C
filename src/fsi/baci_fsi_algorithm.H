@@ -13,6 +13,8 @@
 #ifndef BACI_FSI_ALGORITHM_H
 #define BACI_FSI_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_algorithmbase.H"
 #include "baci_adapter_fld_fluid_ale.H"
 #include "baci_coupling_adapter.H"

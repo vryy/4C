@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_TIMINT_ELCH_SERVICE_H
 #define BACI_SCATRA_TIMINT_ELCH_SERVICE_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_elch.H"
 #include "baci_lib_condition.H"
 #include "baci_scatra_timint_implicit.H"

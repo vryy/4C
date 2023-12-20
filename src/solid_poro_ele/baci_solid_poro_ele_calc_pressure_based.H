@@ -10,6 +10,8 @@ implementation
 #define BACI_SOLID_PORO_ELE_CALC_PRESSURE_BASED_H
 
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"

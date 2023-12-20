@@ -11,6 +11,8 @@ function)
 #ifndef BACI_MAT_BEAM3R_PLASTICITY_H
 #define BACI_MAT_BEAM3R_PLASTICITY_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
 #include "baci_linalg_fixedsizematrix.H"

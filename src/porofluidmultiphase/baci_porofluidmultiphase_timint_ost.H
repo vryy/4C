@@ -9,6 +9,8 @@
 #ifndef BACI_POROFLUIDMULTIPHASE_TIMINT_OST_H
 #define BACI_POROFLUIDMULTIPHASE_TIMINT_OST_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_porofluidmultiphase_timint_implicit.H"
 

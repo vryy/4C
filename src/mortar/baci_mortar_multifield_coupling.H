@@ -12,6 +12,8 @@
 #ifndef BACI_MORTAR_MULTIFIELD_COUPLING_H
 #define BACI_MORTAR_MULTIFIELD_COUPLING_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 

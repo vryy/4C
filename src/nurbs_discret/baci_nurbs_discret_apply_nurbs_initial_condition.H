@@ -20,6 +20,8 @@ the function value as well)
 #ifndef BACI_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H
 #define BACI_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H
 
+#include "baci_config.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

@@ -10,6 +10,8 @@
 #ifndef BACI_IO_LEGACY_TABLE_ITER_H
 #define BACI_IO_LEGACY_TABLE_ITER_H
 
+#include "baci_config.H"
+
 #include "baci_io_legacy_table.H"
 
 BACI_NAMESPACE_OPEN

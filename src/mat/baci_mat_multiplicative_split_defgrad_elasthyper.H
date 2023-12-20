@@ -10,6 +10,8 @@ multiplicatively into elastic and inelastic parts
 #ifndef BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
 #define BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_par_parameter.H"

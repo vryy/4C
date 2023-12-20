@@ -16,6 +16,8 @@
 // because it is not working
 
 
+#include "baci_config.H"
+
 #include "baci_fluid_timint_stat.H"
 
 BACI_NAMESPACE_OPEN

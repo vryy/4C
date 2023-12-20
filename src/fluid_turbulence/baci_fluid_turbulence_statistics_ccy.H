@@ -33,6 +33,8 @@ output.
 #define BACI_FLUID_TURBULENCE_STATISTICS_CCY_H
 
 
+#include "baci_config.H"
+
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_MpiComm.h>

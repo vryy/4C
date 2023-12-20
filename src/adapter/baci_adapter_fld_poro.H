@@ -13,6 +13,8 @@
 #ifndef BACI_ADAPTER_FLD_PORO_H
 #define BACI_ADAPTER_FLD_PORO_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_fld_fluid_fpsi.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_poroelast_utils.H"

@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_UTILS_DISCRET_H
 #define BACI_LIB_UTILS_DISCRET_H
 
+#include "baci_config.H"
+
 #include <Epetra_IntVector.h>
 #include <Teuchos_RCP.hpp>
 // include due to enumerator...

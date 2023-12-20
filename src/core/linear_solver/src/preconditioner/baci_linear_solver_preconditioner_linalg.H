@@ -11,6 +11,8 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_LINALG_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_LINALG_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_sparsematrix.H"
 
 #include <stdio.h>

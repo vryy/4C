@@ -14,6 +14,8 @@
 #define BACI_STRUCTURE_NEW_TIMINT_EXPLICIT_H
 
 
+#include "baci_config.H"
+
 #include "baci_structure_new_expl_generic.H"
 #include "baci_structure_new_nln_solver_generic.H"
 #include "baci_structure_new_timint_base.H"

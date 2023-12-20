@@ -15,6 +15,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_GLOBALDATA_H
 #define BACI_SOLVER_NONLIN_NOX_GLOBALDATA_H
 
+#include "baci_config.H"
+
 #include "baci_solver_nonlin_nox_constraint_interface_preconditioner.H"
 #include "baci_solver_nonlin_nox_constraint_interface_required.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"

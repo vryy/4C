@@ -8,6 +8,8 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_EXPONENTIAL_H
 #define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_EXPONENTIAL_H
 
+#include "baci_config.H"
+
 #include "baci_mixture_constituent_remodelfiber_lib.H"
 #include "baci_mixture_constituent_remodelfiber_material.H"
 

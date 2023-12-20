@@ -9,6 +9,8 @@
 #ifndef BACI_MAT_SORET_H
 #define BACI_MAT_SORET_H
 
+#include "baci_config.H"
+
 #include "baci_mat_fourieriso.H"
 
 BACI_NAMESPACE_OPEN

@@ -19,6 +19,8 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 /*----------------------------------------------------------------------*
  | headers                                               sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_membrane_material_interfaces.H"
 

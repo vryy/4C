@@ -11,6 +11,8 @@
 #ifndef BACI_REBALANCE_UTILS_H
 #define BACI_REBALANCE_UTILS_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 namespace DRT

@@ -12,6 +12,8 @@ Here is everything related with writing a dat-file
 #ifndef BACI_PRE_EXODUS_WRITEDAT_H
 #define BACI_PRE_EXODUS_WRITEDAT_H
 
+#include "baci_config.H"
+
 #include "baci_pre_exodus_readbc.H"
 
 BACI_NAMESPACE_OPEN

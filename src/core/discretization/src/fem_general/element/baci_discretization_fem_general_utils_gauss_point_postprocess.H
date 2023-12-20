@@ -10,6 +10,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_GAUSS_POINT_POSTPROCESS_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_GAUSS_POINT_POSTPROCESS_H
 
+#include "baci_config.H"
+
 #include "baci_lib_element.H"
 #include "baci_linalg_serialdensematrix.H"
 

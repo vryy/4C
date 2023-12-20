@@ -9,6 +9,8 @@
 #ifndef BACI_MORTAR_STRATEGY_FACTORY_H
 #define BACI_MORTAR_STRATEGY_FACTORY_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_contact.H"
 
 #include <Teuchos_RCP.hpp>

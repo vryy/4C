@@ -11,6 +11,8 @@ to disk
 #ifndef BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_H
 #define BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

@@ -12,6 +12,8 @@
 #define numbgp 50
 #define twice 100
 
+#include "baci_config.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_parameter.H"
 

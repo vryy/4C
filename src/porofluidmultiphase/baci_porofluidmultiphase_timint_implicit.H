@@ -12,6 +12,8 @@
 
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_art_net.H"
 #include "baci_adapter_porofluidmultiphase.H"
 #include "baci_inpar_porofluidmultiphase.H"

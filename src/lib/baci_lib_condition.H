@@ -13,6 +13,8 @@
 #define BACI_LIB_CONDITION_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_container.H"
 #include "baci_utils_exceptions.H"

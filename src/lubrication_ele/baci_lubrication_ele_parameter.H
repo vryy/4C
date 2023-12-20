@@ -18,6 +18,8 @@ parameters required for Lubrication element evaluation.
 #ifndef BACI_LUBRICATION_ELE_PARAMETER_H
 #define BACI_LUBRICATION_ELE_PARAMETER_H
 
+#include "baci_config.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 BACI_NAMESPACE_OPEN

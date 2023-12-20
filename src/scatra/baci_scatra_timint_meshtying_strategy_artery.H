@@ -10,6 +10,8 @@
 #ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_print.H"

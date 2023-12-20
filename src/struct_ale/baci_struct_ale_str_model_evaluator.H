@@ -11,6 +11,8 @@
 #ifndef BACI_STRUCT_ALE_STR_MODEL_EVALUATOR_H
 #define BACI_STRUCT_ALE_STR_MODEL_EVALUATOR_H
 
+#include "baci_config.H"
+
 #include "baci_structure_new_model_evaluator_structure.H"
 
 BACI_NAMESPACE_OPEN

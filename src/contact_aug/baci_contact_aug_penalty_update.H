@@ -11,6 +11,8 @@ parameter cn
 #ifndef BACI_CONTACT_AUG_PENALTY_UPDATE_H
 #define BACI_CONTACT_AUG_PENALTY_UPDATE_H
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <vector>

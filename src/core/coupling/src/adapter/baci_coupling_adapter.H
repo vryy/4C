@@ -14,6 +14,8 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+#include "baci_config.H"
+
 #include "baci_coupling_adapter_base.H"
 
 #include <Epetra_CrsMatrix.h>

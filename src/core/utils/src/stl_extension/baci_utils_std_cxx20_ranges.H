@@ -11,6 +11,8 @@ c++20 ranges::views
 #ifndef BACI_UTILS_STD_CXX20_RANGES_H
 #define BACI_UTILS_STD_CXX20_RANGES_H
 
+#include "baci_config.H"
+
 #include <iterator>
 
 BACI_NAMESPACE_OPEN

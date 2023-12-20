@@ -10,6 +10,8 @@
 #define BACI_ADAPTER_SCATRA_WRAPPER_H
 
 
+#include "baci_config.H"
+
 #include "baci_adapter_scatra_interface.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 

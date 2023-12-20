@@ -12,6 +12,8 @@
 #define BACI_GEOMETRY_PAIR_ELEMENT_FACES_H
 
 
+#include "baci_config.H"
+
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_lib_element.H"
 

@@ -10,6 +10,8 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NONCONFORMING_H
 #define BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NONCONFORMING_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_bio.H"
 #include "baci_poromultiphase_scatra_artery_coupling_base.H"
 

@@ -13,6 +13,8 @@
 #ifndef BACI_UTILS_SYMBOLIC_EXPRESSION_H
 #define BACI_UTILS_SYMBOLIC_EXPRESSION_H
 
+#include "baci_config.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <Sacado.hpp>

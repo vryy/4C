@@ -8,6 +8,8 @@
 #ifndef BACI_MODULE_REGISTRY_CALLBACKS_H
 #define BACI_MODULE_REGISTRY_CALLBACKS_H
 
+#include "baci_config.H"
+
 #include "baci_utils_function_manager.H"
 
 #include <functional>

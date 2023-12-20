@@ -10,6 +10,8 @@
 #ifndef BACI_MORTAR_COUPLING3D_CLASSES_H
 #define BACI_MORTAR_COUPLING3D_CLASSES_H
 
+#include "baci_config.H"
+
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
 

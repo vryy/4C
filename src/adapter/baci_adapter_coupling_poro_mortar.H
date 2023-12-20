@@ -17,6 +17,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                  ager 10/15 |
  *---------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_adapter_coupling_nonlin_mortar.H"
 #include "baci_contact_poro_lagrange_strategy.H"
 #include "baci_coupling_adapter.H"

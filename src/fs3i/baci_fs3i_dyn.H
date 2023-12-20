@@ -12,10 +12,11 @@
 #ifndef BACI_FS3I_DYN_H
 #define BACI_FS3I_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 void fs3i_dyn();
-
 
 BACI_NAMESPACE_CLOSE
 

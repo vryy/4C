@@ -9,6 +9,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_cell_type.H"
 #include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_lib_element.H"

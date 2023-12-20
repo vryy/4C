@@ -14,6 +14,8 @@
 #ifndef BACI_FSI_STRUCTUREALE_H
 #define BACI_FSI_STRUCTUREALE_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_fsi_algorithm.H"
 

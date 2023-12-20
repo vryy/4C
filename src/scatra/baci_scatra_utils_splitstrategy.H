@@ -12,6 +12,8 @@
 #ifndef BACI_SCATRA_UTILS_SPLITSTRATEGY_H
 #define BACI_SCATRA_UTILS_SPLITSTRATEGY_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_blocksparsematrix.H"
 
 BACI_NAMESPACE_OPEN

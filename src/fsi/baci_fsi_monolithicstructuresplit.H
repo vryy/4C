@@ -12,6 +12,8 @@ with condensed structure interface displacements
 #ifndef BACI_FSI_MONOLITHICSTRUCTURESPLIT_H
 #define BACI_FSI_MONOLITHICSTRUCTURESPLIT_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"

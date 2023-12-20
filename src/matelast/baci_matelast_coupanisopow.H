@@ -8,6 +8,8 @@
 #ifndef BACI_MATELAST_COUPANISOPOW_H
 #define BACI_MATELAST_COUPANISOPOW_H
 
+#include "baci_config.H"
+
 #include "baci_mat_par_parameter.H"
 #include "baci_matelast_summand.H"
 

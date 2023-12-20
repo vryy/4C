@@ -11,6 +11,8 @@
 #ifndef BACI_CARDIOVASCULAR0D_MANAGER_H
 #define BACI_CARDIOVASCULAR0D_MANAGER_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_cardiovascular0d.H"
 #include "baci_inpar_structure.H"
 

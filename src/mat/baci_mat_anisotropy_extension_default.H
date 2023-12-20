@@ -12,6 +12,8 @@
 #ifndef BACI_MAT_ANISOTROPY_EXTENSION_DEFAULT_H
 #define BACI_MAT_ANISOTROPY_EXTENSION_DEFAULT_H
 
+#include "baci_config.H"
+
 #include "baci_mat_anisotropy_extension.H"
 
 BACI_NAMESPACE_OPEN

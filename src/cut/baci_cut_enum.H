@@ -12,6 +12,8 @@
 #ifndef BACI_CUT_ENUM_H
 #define BACI_CUT_ENUM_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

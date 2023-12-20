@@ -12,6 +12,8 @@
 #ifndef BACI_W1_PORO_P1_H
 #define BACI_W1_PORO_P1_H
 
+#include "baci_config.H"
+
 #include "baci_w1_poro.H"
 
 BACI_NAMESPACE_OPEN

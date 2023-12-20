@@ -8,6 +8,8 @@
 #ifndef BACI_LEVELSET_DYN_H
 #define BACI_LEVELSET_DYN_H
 
+#include "baci_config.H"
+
 BACI_NAMESPACE_OPEN
 
 /*! entry point for the solution of level-set problems */

@@ -12,6 +12,8 @@
 
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobject.H"
 #include "baci_inpar_material.H"
 

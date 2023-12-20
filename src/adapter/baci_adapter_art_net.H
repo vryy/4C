@@ -9,6 +9,8 @@
 #ifndef BACI_ADAPTER_ART_NET_H
 #define BACI_ADAPTER_ART_NET_H
 
+#include "baci_config.H"
+
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_Map.h>

@@ -16,6 +16,8 @@
 #ifndef BACI_POST_MONITOR_H
 #define BACI_POST_MONITOR_H
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_post_common.H"
 

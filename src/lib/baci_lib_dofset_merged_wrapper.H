@@ -14,6 +14,8 @@
 #define BACI_LIB_DOFSET_MERGED_WRAPPER_H
 
 
+#include "baci_config.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_proxy.H"
 

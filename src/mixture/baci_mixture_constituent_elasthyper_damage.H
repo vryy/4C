@@ -11,6 +11,8 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H
 #define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H
 
+#include "baci_config.H"
+
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mixture_constituent_elasthyperbase.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"

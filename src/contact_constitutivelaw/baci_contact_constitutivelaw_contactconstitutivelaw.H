@@ -14,6 +14,8 @@ contact pressure based on micro interactions
 
 
 
+#include "baci_config.H"
+
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 
 #include <Teuchos_RCP.hpp>

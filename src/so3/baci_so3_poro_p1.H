@@ -11,6 +11,8 @@
 #ifndef BACI_SO3_PORO_P1_H
 #define BACI_SO3_PORO_P1_H
 
+#include "baci_config.H"
+
 #include "baci_so3_poro.H"
 
 BACI_NAMESPACE_OPEN

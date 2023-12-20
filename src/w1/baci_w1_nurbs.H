@@ -11,6 +11,8 @@
 #ifndef BACI_W1_NURBS_H
 #define BACI_W1_NURBS_H
 
+#include "baci_config.H"
+
 #include "baci_w1.H"
 
 BACI_NAMESPACE_OPEN

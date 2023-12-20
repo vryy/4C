@@ -9,6 +9,8 @@
 #ifndef BACI_POROMULTIPHASE_UTILS_H
 #define BACI_POROMULTIPHASE_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_poromultiphase.H"
 
 #include <Epetra_Vector.h>

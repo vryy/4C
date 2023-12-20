@@ -11,6 +11,8 @@
 #ifndef BACI_MOR_POD_H
 #define BACI_MOR_POD_H
 
+#include "baci_config.H"
+
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_Vector.h>

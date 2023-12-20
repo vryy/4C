@@ -10,6 +10,8 @@
 #define BACI_LINALG_SERIALDENSEMATRIX_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_SerialDenseMatrix.hpp>
 
 BACI_NAMESPACE_OPEN

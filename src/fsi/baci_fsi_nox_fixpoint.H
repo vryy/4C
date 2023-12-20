@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_NOX_FIXPOINT_H
 #define BACI_FSI_NOX_FIXPOINT_H
 
+#include "baci_config.H"
+
 #include <NOX_Direction_Generic.H>  // base class
 #include <NOX_Direction_UserDefinedFactory.H>
 #include <NOX_GlobalData.H>

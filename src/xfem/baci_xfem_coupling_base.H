@@ -14,6 +14,8 @@ thereby builds the bridge between the xfluid class and the cut-library
 #define BACI_XFEM_COUPLING_BASE_H
 
 
+#include "baci_config.H"
+
 #include "baci_inpar_xfem.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"

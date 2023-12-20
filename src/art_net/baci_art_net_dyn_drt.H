@@ -11,6 +11,8 @@
 #define BACI_ART_NET_DYN_DRT_H
 
 
+#include "baci_config.H"
+
 #include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN

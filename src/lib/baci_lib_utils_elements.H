@@ -12,6 +12,8 @@
 #ifndef BACI_LIB_UTILS_ELEMENTS_H
 #define BACI_LIB_UTILS_ELEMENTS_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 
 BACI_NAMESPACE_OPEN

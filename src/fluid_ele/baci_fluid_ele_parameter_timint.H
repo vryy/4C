@@ -16,6 +16,8 @@ with different parameters in more than one fluid field is not yet supported.
 #ifndef BACI_FLUID_ELE_PARAMETER_TIMINT_H
 #define BACI_FLUID_ELE_PARAMETER_TIMINT_H
 
+#include "baci_config.H"
+
 #include "baci_inpar_fluid.H"
 #include "baci_utils_singleton_owner.H"
 

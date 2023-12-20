@@ -12,6 +12,8 @@
 #ifndef BACI_SCATRA_ALGORITHM_H
 #define BACI_SCATRA_ALGORITHM_H
 
+#include "baci_config.H"
+
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 
 BACI_NAMESPACE_OPEN

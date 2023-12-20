@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_EVALUATE_UTILS_H
 #define BACI_FLUID_ELE_EVALUATE_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_discretization_geometry_position_array.H"

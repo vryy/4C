@@ -15,6 +15,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                  wirtz 01/16 |
  *----------------------------------------------------------------------*/
+#include "baci_config.H"
+
 #include "baci_ehl_base.H"
 #include "baci_inpar_ehl.H"
 #include "baci_inpar_lubrication.H"

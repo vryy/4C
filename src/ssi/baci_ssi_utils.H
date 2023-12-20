@@ -10,6 +10,8 @@
 #ifndef BACI_SSI_UTILS_H
 #define BACI_SSI_UTILS_H
 
+#include "baci_config.H"
+
 #include "baci_coupling_adapter.H"
 
 #include <Epetra_Comm.h>

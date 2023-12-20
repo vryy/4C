@@ -10,6 +10,8 @@
 #define BACI_LIB_IMMERSED_NODE_H
 
 
+#include "baci_config.H"
+
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
 
