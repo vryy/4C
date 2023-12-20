@@ -72,6 +72,17 @@ namespace
   };
 
   /*!
+   * @brief Displacement based formulation valid for all celltypes with linear kinematics (i.e.
+   * small displacements)
+   */
+  template <CORE::FE::CellType celltype>
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::kinem_linear,
+      DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = DRT::ELEMENTS::DisplacementBasedLinearKinematicsSolidIntegrator<celltype>;
+  };
+
+  /*!
    * @brief Nonlinear total lagrangian formulation with mild EAS for hex8
    */
   template <>

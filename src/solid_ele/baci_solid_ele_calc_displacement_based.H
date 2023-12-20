@@ -19,12 +19,6 @@ BACI_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
-  namespace DETAILS
-  {
-    template <CORE::FE::CellType celltype>
-    static constexpr int num_dof_per_ele = CORE::FE::num_nodes<celltype>* CORE::FE::dim<celltype>;
-  }  // namespace DETAILS
-
   struct DisplacementBasedPreparationData
   {
     // no preparation data needed
@@ -38,7 +32,9 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType celltype>
   struct DisplacementBasedLinearizationContainer
   {
-    CORE::LINALG::Matrix<DETAILS::num_str<celltype>, DETAILS::num_dof_per_ele<celltype>> Bop_{};
+    CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+        Bop_{};
   };
 
   /*!
@@ -90,7 +86,8 @@ namespace DRT::ELEMENTS
         const Stress<celltype>& stress, const double integration_factor,
         const DisplacementBasedPreparationData& preparation_data,
         DisplacementBasedHistoryData& history_data,
-        CORE::LINALG::Matrix<DETAILS::num_dof_per_ele<celltype>, 1>& force_vector)
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
+            force_vector)
     {
       DRT::ELEMENTS::AddInternalForceVector(
           linearization.Bop_, stress, integration_factor, force_vector);
@@ -101,8 +98,8 @@ namespace DRT::ELEMENTS
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor, const DisplacementBasedPreparationData& preparation_data,
         DisplacementBasedHistoryData& history_data,
-        CORE::LINALG::Matrix<DETAILS::num_dof_per_ele<celltype>,
-            DETAILS::num_dof_per_ele<celltype>>& stiffness_matrix)
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>,
+            CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>& stiffness_matrix)
     {
       DRT::ELEMENTS::AddElasticStiffnessMatrix(
           linearization.Bop_, stress, integration_factor, stiffness_matrix);
