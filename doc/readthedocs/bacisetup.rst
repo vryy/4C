@@ -291,6 +291,50 @@ To add a SSH key to your GitLab account please follow the instructions below
 
     You should see a `Welcome to GitLab` message.
 
+Local adjustments
+~~~~~~~~~~~~~~~~~~~~
+
+Your Identity
+"""""""""""""
+
+The first thing you should do is to set your identity, i.e., your username and email address.
+Your identity is important because every Git commit you create uses this information.
+Please set your username to your full name, i.e., first name followed by last name,
+and your email address to your institute email address with the following commands::
+
+    git config --global user.name "Max Mustermann"
+    git config --global user.email mustermann@lnm.mw.tum.de
+
+.. Note::
+
+    You may want to use a different name or email address for other projects your are working on.
+    For that purpose, you can run the above commands without the ``--global`` option when you are in a project folder.
+
+Set `git-hooks` directory
+"""""""""""""""""""""""""
+
+A common set of `git-hooks` to be used by all Baci developers is checked in into the repository.
+
+To set the path to our common set of `git-hooks`, run
+
+::
+
+    cd <baciSrcDir>
+    git config core.hooksPath ./utilities/code_checks/
+
+.. Note::
+
+    It is important to execute this command *inside* the Baci source code folder,
+    i.e. inside the Baci Git repository. This command misses the `--global` option, so its scope is limited to the Baci repository.
+
+
+Check Settings
+""""""""""""""""
+
+To confirm the correct setup of Git, you may check your configuration settings with::
+
+    git config --list
+
 .. _baciinstallation:
 
 Download and install BACI
@@ -341,9 +385,16 @@ The command to run is
     cmake --preset=<name-of-preset> <sourceDir> | tee config$(date +%y%m%d%H%M%N).log
 
 Thus, a preset name needs to be passed to cmake via the command line argument ``--preset``.
-Use ``cmake <baci_home> --list-presets`` to get a list of all available presets.
+Use
+
+..
+
+    cmake <baci_home> --list-presets
+
+to get a list of all available presets.
 In general, it is highly recommended to create your own preset, which is stored in ``<baci_home>/CMakeUserPresets.txt``.
 In a preset within this file, you should also define the build directory.
+
 More information about the cmake presets can be found :ref:`here <cmakepresets>`.
 
 

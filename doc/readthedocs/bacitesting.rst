@@ -6,12 +6,71 @@ Testing
 Clean code goes hand in hand with code testing, that is why in Baci we set great value upon the latter.
 This page is concerned with everything related to testing in Baci.
 
-General guidelines
---------------------
+.. _firstprinciples:
 
-General guidelines or principles for writing clean tests can be found here:
+F.I.R.S.T. principles for writing clean tests
+---------------------------------------------
 
-    F.I.R.S.T. principles for writing clean tests
+The F.I.R.S.T. principles serve as a general guideline for writing framework tests or unit tests in Baci.
+Being an acronym F.I.R.S.T. stands for the following principles:
+
+Fast
+~~~~~
+
+Unit testing benefits from extremely fast testing times.
+Write meaningful framework tests while reducing the run time and number of processors of a single test
+to keep overall testing time and resources in a reasonable scale.
+
+- developers should run tests frequently
+- slow tests also slow down code development
+
+
+Independent/Isolated
+~~~~~~~~~~~~~~~~~~~~~~
+
+In Baci there are some framework tests concerning mesh generation, pre-processing, or post-processing that may depend on a specific order of execution,
+so whenever possible:
+
+- tests should not depend on each other
+- tests should pass independently of each other
+
+
+Repeatable
+~~~~~~~~~~~~
+
+- tests produce the same result each time
+- tests should be repeatable in any configuration/environment
+
+Baci is developed by contributors distributed among several institutes working on different configurations
+(including cluster configurations)
+
+Self-Validating
+~~~~~~~~~~~~~~~~
+
+Manually checking results is time consuming and prone to errors.
+Anyway, it is inevitable to have an automated test result comparison within the pipeline.
+
+- no manual interpretation of results
+- a test fails or passes
+
+
+
+Thorough
+~~~~~~~~~~~~
+
+- cover every use case scenario including corner/edge/boundary values
+- test for illegal arguments or bad inputs, exceptions and errors
+
+.. Note::
+
+    following test driven developement (TDD) (refer to Robert C. Martin [Martin08]_ ) this can also be interpreted as:
+
+    **Timely**
+
+        - following TDD write tests just before writing code that makes them pass
+        - helps designing code to be testable
+
+    However, test driven development is discussed controversial in the community!
 
 Overview on testing mechanisms
 ------------------------------
@@ -46,6 +105,30 @@ Pipelines
 Details on the pipeline configuration can be found in our
 `README on test configurations <https://gitlab.lrz.de/baci/baci/blob/master/tests/testconfig/README.md>`_.
 In GitLab CI Pipeline Settings you find information on how to start tailored pipelines.
+
+Guidelines for BACI input files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``*.dat``-file of a CI test (residing in ``<baci_home>/tests/input_files``) should include:
+
+- A short but informative summary of what is tested, maybe also which results are compared,
+  in the header
+- No unused sections
+- No unused parameters (as far as possible)
+- No alternative input parameters/values as comment
+- No empty lines
+
+In general a "clean" format of the file is demanded (alignment of parameters/values).
+
+The ``*.xml``-file needs to be formatted using the /utilities/bacixmlformat script.
+It calls the Open Source Python package xmlformatter 0.2.4 with the following specifications:
+
+- nested indentation with two whitespace indents for a child element
+- ``<element></element>`` is collapsed to ``<element/>``
+- formatting rules as described in the documentation of the xmlformatter here
+
+To format an ``*.xml``-file run ``./utilities/bacixmlformat <path/to/file>`` from BACI's top-level directory.
+
 
 How to deal with failing tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

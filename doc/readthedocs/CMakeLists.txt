@@ -33,6 +33,7 @@ if(BACI_BUILD_READTHEDOCS)
     readthedocs ALL
     COMMAND create_rtd
     COMMAND ${baciname} -h > baci-help.txt
+    COMMAND cmake ${PROJECT_SOURCE_DIR} --list-presets > baci-cmake-presets.txt
     COMMAND
       ${SPHINX_EXECUTABLE} -q -b html # -W turns warnings into errors!
       -i "${CMAKE_CURRENT_SOURCE_DIR}" -i "${READTHEDOCS_OUT_DIR}" -i

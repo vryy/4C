@@ -4,7 +4,7 @@ Teuchos Time Monitor
 --------------------------
 
 The ``TimeMonitor`` from ``Trilinos`` package ``Teuchos`` provides MPI collective timer statistics.
-Refer to ` ``Teuchos::TimeMonitor`` Class Reference <https://trilinos.org/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html`__ for a detailed documentation.
+Refer to the ``Teuchos::TimeMonitor`` Class Reference https://trilinos.org/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html for a detailed documentation.
 
 Add a timer for a method in BACI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -11,6 +11,10 @@ Avoid define flags as much as possible, because they complicate testing and, thu
 Avoid and actively resolve header-in-header inclusion to speed up compilation time. Use forward declarations instead.
 Do not use ``using ... / typedef`` statements at unscoped level.
 
+Really use the refactoring methods provided by your IDE to write clean code.
+For example: If renaming variables only takes seconds,
+you can use it as many times as needed until you find a name that makes your code easy to read and understand.
+
 For more general advice on C++ coding, see for example
 
 - this `C++ tutorial <http://www.cplusplus.com/doc/tutorial/>`_ for new developers
@@ -19,6 +23,18 @@ For more general advice on C++ coding, see for example
 - recommendations on `how to choose the right data structure that fits best to your algorithm <https://github.com/gibsjose/cpp-cheat-sheet/blob/master/Data%20Structures%20and%20Algorithms.md>`_.
 - Useful books might be [Will20]_, [Bancila20]_, [Swidzinski22]_
 
+There is a lecture series published on youtube by *Robert C. Martin*, the author of the book *Clean Code: A Handbook of Agile Software Craftsmanship*, on - you will probably anticipate - clean code.
+The lecture series consists of 6 lessons and is from my point of view both entertaining and informative.
+Below I'll add the links to the videos:
+
+#. `Clean Code: Lesson 1 <https://www.youtube.com/watch?v=7EmboKQH8lM>`_
+#. `Clean Code: Lesson 2 <https://www.youtube.com/watch?v=2a_ytyt9sf8>`_
+#. `Clean Code: Lesson 3 <https://www.youtube.com/watch?v=Qjywrq2gM8o>`_
+#. `Clean Code: Lesson 4 <https://www.youtube.com/watch?v=58jGpV2Cg50>`_
+#. `Clean Code: Lesson 5 <https://www.youtube.com/watch?v=sn0aFEMVTpA>`_
+#. `Clean Code: Lesson 6 <https://www.youtube.com/watch?v=l-gF0vDhJVI>`_
+
+**Note:** For more information on the individual videos please have a look at the video description.
 
 BACI-specific Design Guidelines
 ---------------------------------
@@ -30,38 +46,28 @@ Thus, it is recommended to critically examine the code and techniques while work
 
 The following guidelines are especially relevant for the current state of BACI:
 
-- If necessary, use smart pointers for their memory management capabilities, e.g., std::shared_ptr, std::unique_ptr
-
-    - more information on passing smart pointers
-    - by default, pass parameters by const reference and only expose smart pointers if memory management is necessary
-
-- Prefer parameter container classes over Teuchos::ParameterList for passing parameters among element routines
+- If necessary, use smart pointers for their memory management capabilities, e.g., ``std::shared_ptr``, ``std::unique_ptr``
+  (you may find more information on passing smart pointers `here <https://www.modernescpp.com/index.php/c-core-guidelines-passing-smart-pointer/>`_
+- by default, pass parameters by const reference and only expose smart pointers if memory management is necessary
+- Prefer parameter container classes over ``Teuchos::ParameterList`` for passing parameters among element routines
 - Make new code const-correct and fix old code in that regard when working on it.
 - Implement new features in the new structural time integration. Work towards migrating existing capabilities to the new structural time integration.
-- Test your code! Refer to our documentation about Testing.
+- Test your code! Refer to our documentation about :ref:`Testing<bacitesting>`.
 
 
 BACI-specific Naming Conventions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Namespaces are spelled in all caps: ``LINALG::``
+- **Namespaces** are spelled in all caps: ``LINALG::``
+- **Class names** / **function** names / **enum types** use camel case, starting with a capital letter:
+  ``ClassToDoSomething / FunctionToPerformAnOperation()``
+- **Variables** and **enum values** use
 
-Class names / function names / enum types use camel case, starting with a capital letter:
-``ClassToDoSomething / FunctionToPerformAnOperation()``
+    - snake_case, i.e. all small letters separated by underscores, e.g. ``variable_with_descriptive_name``
+    - camelCase staring with a small letter, e.g. ``variableWithDescriptiveName``
 
-Variables / enum values use
-
-
-snake_case, i.e. all small letters separated by underscores, e.g. ``variable_with_descriptive_name``
-
-
-camelCase staring with a small letter, e.g. ``variableWithDescriptiveName``
-
-
-
-Class members end with an underscore: ``variable_``
-
-Define flags are in all caps: ``DEBUG``
+- **Class members** end with an underscore: ``variable_``
+- **Define flags** are in all caps: ``DEBUG``
 
 Variable names must not be just a single letter, because they are impossible to find in a global search operation.
 (Exception: loop indices such as i, j, but remember that even loop indices could/should have descriptive names.)
@@ -77,94 +83,4 @@ Each file has a header flag \level. This flag should indicate how well tested an
 - Level 2: Well-tested application-specific code (e.g. ALE-FSI implementation); good for use by others
 - Level 3: Experimental code, may still contain bugs or missing features that will be fixed by later revisions
 
-
-Guidelines for BACI input files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The ``*.dat``-file should include:
-
-- A short summary of what is tested in header
-- No unused sections
-- No unused parameters (as far as possible)
-- No alternative input parameters/values as comment
-- No empty lines
-
-In general a "clean" format of the file is demanded (alignment of parameters/values).
-
-The ``*.xml``-file needs to be formatted using the /utilities/bacixmlformat script.
-It calls the Open Source Python package xmlformatter 0.2.4 with the following specifications:
-
-- nested indentation with two whitespace indents for a child element
-- ``<element></element>`` is collapsed to ``<element/>``
-- formatting rules as described in the documentation of the xmlformatter here
-
-
-To format an ``*.xml``-file run ``./utilities/bacixmlformat <path/to/file>`` from BACI's top-level directory.
-
-.. _firstprinciples:
-
-F.I.R.S.T. principles for writing clean tests
----------------------------------------------
-
-The F.I.R.S.T. principles serve as a general guideline for writing framework tests or unit tests in Baci.
-Being an acronym F.I.R.S.T. stands for the following principles:
-
-Fast
-~~~~~
-
-- developers should run tests frequently
-- slow tests also slow down code development
-
-.. Note::
-
-    unit testing benefits from extremely fast testing times
-    write meaningful framework tests while reducing the run time and number of processors of a single test to keep overall testing time and resources in a reasonable scale.
-
-Independent/Isolated
-~~~~~~~~~~~~~~~~~~~~~~
-
-- tests should not depend on each other
-- tests should pass independently of each other
-
-.. Note::
-
-    in Baci there are some framework tests concerning mesh generation, pre-processing, or post-processing that may depend on a specific order of execution
-
-Repeatable
-~~~~~~~~~~~~
-
-- tests produce the same result each time
-- tests should be repeatable in any configuration/environment
-
-.. Note::
-
-    Baci is developed by contributors distributed among several institutes working on different configurations
-    (including cluster configurations)
-
-Self-Validating
-~~~~~~~~~~~~~~~~
-
-- no manual interpretation of results
-- a test fails or passes
-
-.. Note::
-
-    manually checking results is time consuming and prone to errors
-
-Thorough
-~~~~~~~~~~~~
-
-    cover every use case scenario including corner/edge/boundary values
-    test for illegal arguments or bad inputs, exceptions and errors
-
-.. Note::
-
-    following test driven developement (TDD) (refer to Robert C. Martin [Martin08]_ ) this can also be interpreted as:
-
-    **Timely**
-
-        - following TDD write tests just before writing code that makes them pass
-        - helps designing code to be testable
-
-    However, TDD is discussed controversial in the community!
 

@@ -12,7 +12,7 @@ In the following various debugging and profiling tools are desribed that may be 
 
 - Get MPI collective timer statistics with a :ref:`time monitor <Teuchos-Time-Monitor>` from ``Trilinos`` package ``Teuchos``
 - Code profiling of Baci with :ref:`callgrind <profiling_callgrind>`
-- Debugging/MPI debugging with [VS Code](Visual-Studio-Code)
+- Debugging/MPI debugging with :ref:`VS Code <visualstudiocode>`
 
 
 Useful options for Debugging with gdb (or your ide)
