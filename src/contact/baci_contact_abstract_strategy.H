@@ -12,6 +12,7 @@
 
 #include "baci_config.H"
 
+#include "baci_contact_paramsinterface.H"
 #include "baci_contact_utils.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
@@ -23,13 +24,10 @@
 BACI_NAMESPACE_OPEN
 
 // forward declarations
-namespace NOX
+namespace NOX::NLN
 {
-  namespace NLN
-  {
-    class Group;
-  }  // namespace NLN
-}  // namespace NOX
+  class Group;
+}  // namespace NOX::NLN
 
 namespace DRT
 {
@@ -46,9 +44,7 @@ namespace CONTACT
 {
   // forward declarations
   class CoInterface;
-  class ParamsInterface;
   class NoxInterface;
-  // class WearInterface;
 
   /*! \brief Data container object for the abstract strategy
    *
