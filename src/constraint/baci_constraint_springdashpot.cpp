@@ -78,12 +78,12 @@ UTILS::SpringDashpot::SpringDashpot(
   }
 
   // ToDo: delete rest until return statement!
-  // get geometry
-  std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
 
   // get normal vectors if necessary
   if (springtype_ == cursurfnormal)
   {
+    // get geometry
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
     // calculate nodal area
     if (!actdisc_->Comm().MyPID()) IO::cout << "Computing area for spring dashpot condition...\n";
     GetArea(geom);
