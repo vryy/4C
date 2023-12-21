@@ -9,7 +9,6 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_config.H"
-#include "baci_config_mpi.H"
 #include "baci_config_revision.H"
 #include "baci_config_trilinos_version.H"
 

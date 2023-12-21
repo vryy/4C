@@ -10,6 +10,8 @@ mesh
 #ifndef BACI_CUT_MESH_H
 #define BACI_CUT_MESH_H
 
+#include "baci_config.H"
+
 #include "baci_cut_boundingbox.H"
 #include "baci_cut_facet.H"
 #include "baci_inpar_cut.H"
@@ -20,7 +22,6 @@ mesh
 #include <list>
 
 #ifdef DEBUG
-#include "baci_config.H"
 
 #include "baci_cut_edge.H"
 #include "baci_cut_node.H"
