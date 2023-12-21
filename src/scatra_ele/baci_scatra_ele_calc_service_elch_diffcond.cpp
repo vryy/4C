@@ -683,7 +683,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
     const DRT::Element* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& errors)
 {
-  switch (DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
+  switch (INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
   {
     case INPAR::SCATRA::calcerror_Kwok_Wu:
     {

@@ -55,15 +55,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const int 
 }
 
 void DRT::ELEMENTS::WallQuad4PoroP1Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wallporo;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wallporo;
   WallQuad4PoroType::SetupElementDefinition(definitions_wallporo);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wallporo =
-      definitions_wallporo["WALLQ4PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wallporo = definitions_wallporo["WALLQ4PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ4POROP1"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ4POROP1"];
 
   defs["QUAD4"] = defs_wallporo["QUAD4"];
 }
@@ -134,15 +133,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const int 
 }
 
 void DRT::ELEMENTS::WallQuad9PoroP1Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wallporo;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wallporo;
   WallQuad9PoroType::SetupElementDefinition(definitions_wallporo);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wallporo =
-      definitions_wallporo["WALLQ9PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wallporo = definitions_wallporo["WALLQ9PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ9POROP1"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ9POROP1"];
 
   defs["QUAD9"] = defs_wallporo["QUAD9"];
 }
@@ -214,15 +212,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(const int i
 }
 
 void DRT::ELEMENTS::WallTri3PoroP1Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wallporo;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wallporo;
   WallTri3PoroType::SetupElementDefinition(definitions_wallporo);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wallporo =
-      definitions_wallporo["WALLT3PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wallporo = definitions_wallporo["WALLT3PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLT3POROP1"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLT3POROP1"];
 
   defs["TRI3"] = defs_wallporo["TRI3"];
 }

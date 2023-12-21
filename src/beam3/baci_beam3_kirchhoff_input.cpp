@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam3k::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read number of material model and cross-sections specs
   int material = 0;

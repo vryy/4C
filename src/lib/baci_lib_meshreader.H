@@ -23,7 +23,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT::INPUT
+namespace INPUT
 {
   /*!
     \brief helper class to read a mesh
@@ -65,8 +65,8 @@ namespace DRT::INPUT
      * \param geometrysource [in] selects which reader will be created
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
-    void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
-        const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
+    void AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
+        const INPUT::DatFileReader& reader, const std::string& sectionname,
         const std::set<std::string>& elementtypes, const INPAR::GeometryType geometrysource,
         const std::string* geofilepath);
 
@@ -83,8 +83,8 @@ namespace DRT::INPUT
      * \param geometrysource [in] selects which reader will be created
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
-    void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
-        const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
+    void AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
+        const INPUT::DatFileReader& reader, const std::string& sectionname,
         const INPAR::GeometryType geometrysource, const std::string* geofilepath);
 
     /// do the actual reading
@@ -149,7 +149,7 @@ namespace DRT::INPUT
     /// my node reader
     Teuchos::RCP<NodeReader> node_reader_;
   };
-}  // namespace DRT::INPUT
+}  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE
 

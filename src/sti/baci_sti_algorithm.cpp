@@ -39,7 +39,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       timer_(Teuchos::rcp(new Teuchos::Time("STI::ALG", true)))
 {
   // check input parameters for scatra and thermo fields
-  if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*fieldparameters_, "VELOCITYFIELD") !=
+  if (INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*fieldparameters_, "VELOCITYFIELD") !=
       INPAR::SCATRA::velocity_zero)
     dserror("Scatra-thermo interaction with convection not yet implemented!");
 
@@ -272,7 +272,7 @@ void STI::Algorithm::TimeLoop()
     Comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if (DRT::INPUT::IntegralValue<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
+    if (INPUT::IntegralValue<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
       scatra_->ScaTraField()->OutputNonlinSolverStats(
           static_cast<int>(iter_), dtnonlinsolve, Step(), Comm());
 

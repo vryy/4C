@@ -41,13 +41,13 @@ BACI_NAMESPACE_OPEN
 SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       diff_time_step_size_(
-          static_cast<int>(DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
+          static_cast<int>(INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
       fieldcoupling_(Teuchos::getIntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
       is_scatra_manifold_(
-          DRT::INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
-      is_manifold_meshtying_(DRT::INPUT::IntegralValue<bool>(
-          globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
+          INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
+      is_manifold_meshtying_(
+          INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       is_s2i_kinetic_with_pseudo_contact_(CheckS2IKineticsConditionForPseudoContact("structure")),
       macro_scale_(DRT::Problem::Instance()->Materials()->FirstIdByType(
                        INPAR::MAT::m_scatra_multiscale) != -1 or
@@ -83,7 +83,7 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
   // do discretization specific setup (e.g. clone discr. scatra from structure)
   InitDiscretizations(comm, struct_disname, scatra_disname,
-      DRT::INPUT::IntegralValue<bool>(globaltimeparams, "REDISTRIBUTE_SOLID"));
+      INPUT::IntegralValue<bool>(globaltimeparams, "REDISTRIBUTE_SOLID"));
 
   InitTimeIntegrators(
       globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
@@ -267,7 +267,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
         conditions_to_copy.emplace_back(temp_map);
       }
 
-      const auto output_scalar_type = DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(
+      const auto output_scalar_type = INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(
           problem->ScalarTransportDynamicParams(), "OUTPUTSCALARS");
       if (output_scalar_type == INPAR::SCATRA::outputscalars_condition or
           output_scalar_type == INPAR::SCATRA::outputscalars_entiredomain_condition)
@@ -360,7 +360,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   }
   // read in the micro field, has to be done after cloning of the scatra discretization
   auto input_file_name = problem->OutputControlFile()->InputFileName();
-  DRT::INPUT::DatFileReader local_reader(input_file_name);
+  INPUT::DatFileReader local_reader(input_file_name);
   problem->ReadMicroFields(local_reader);
 }
 
@@ -392,8 +392,8 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
     if (fieldcoupling_ == INPAR::SSI::FieldCoupling::volume_nonmatch)
     {
       const Teuchos::ParameterList& volmortarparams = DRT::Problem::Instance()->VolmortarParams();
-      if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(
-              volmortarparams, "COUPLINGTYPE") != INPAR::VOLMORTAR::couplingtype_coninter)
+      if (INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(volmortarparams, "COUPLINGTYPE") !=
+          INPAR::VOLMORTAR::couplingtype_coninter)
       {
         dserror(
             "Volmortar coupling only tested for consistent interpolation, "
@@ -447,8 +447,7 @@ void SSI::SSIBase::ReadRestart(int restart)
     structure_->ReadRestart(restart);
 
     const Teuchos::ParameterList& ssidyn = DRT::Problem::Instance()->SSIControlParams();
-    const bool restartfromstructure =
-        DRT::INPUT::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
+    const bool restartfromstructure = INPUT::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
 
     if (not restartfromstructure)  // standard restart
     {
@@ -488,8 +487,7 @@ void SSI::SSIBase::ReadRestartfromTime(double restarttime)
     structure_->ReadRestart(restartstructure);
 
     const Teuchos::ParameterList& ssidyn = DRT::Problem::Instance()->SSIControlParams();
-    const bool restartfromstructure =
-        DRT::INPUT::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
+    const bool restartfromstructure = INPUT::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
 
     if (not restartfromstructure)  // standard restart
     {
@@ -637,7 +635,7 @@ void SSI::SSIBase::CheckSSIFlags() const
     }
   }
 
-  const bool is_nitsche_penalty_adaptive(DRT::INPUT::IntegralValue<int>(
+  const bool is_nitsche_penalty_adaptive(INPUT::IntegralValue<int>(
       DRT::Problem::Instance()->ContactDynamicParams(), "NITSCHE_PENALTY_ADAPTIVE"));
 
   if (SSIInterfaceContact() and is_nitsche_penalty_adaptive)
@@ -798,7 +796,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
   }
 
   // do checks if adaptive time stepping is activated
-  if (DRT::INPUT::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
+  if (INPUT::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
     CheckAdaptiveTimeStepping(scatraparams, structparams);
 }
 
@@ -807,8 +805,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
 bool SSI::SSIBase::DoCalculateInitialPotentialField() const
 {
   const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
-  const bool init_pot_calc =
-      DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
+  const bool init_pot_calc = INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
   return init_pot_calc and IsElchScaTraTimIntType();
 }
@@ -843,16 +840,16 @@ void SSI::SSIBase::CheckAdaptiveTimeStepping(
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams)
 {
   // safety check: adaptive time stepping in one of the sub problems
-  if (!DRT::INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+  if (!INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
   {
     dserror(
         "Must provide adaptive time stepping algorithm in one of the sub problems. (Currently "
         "just ScaTra)");
   }
-  if (DRT::INPUT::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
+  if (INPUT::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
       INPAR::STR::timada_kind_none)
     dserror("Adaptive time stepping in SSI currently just from ScaTra");
-  if (DRT::INPUT::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
+  if (INPUT::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
     dserror("Currently, only one step methods are allowed for adaptive time stepping");
 }
 
@@ -893,7 +890,7 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
   }
 
   const bool do_output_cauchy_stress =
-      DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
+      INPUT::IntegralValue<INPAR::STR::StressType>(
           DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") == INPAR::STR::stress_cauchy;
 
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)

@@ -22,7 +22,7 @@ namespace
   using namespace DRT::UTILS;
 
   Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateXfluidFunction(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+      const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -229,34 +229,34 @@ namespace
 
 void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep =
-      DRT::INPUT::LineDefinition::Builder().AddTag("FORWARDFACINGSTEP").Build();
+  INPUT::LineDefinition gerstenbergerforwardfacingstep =
+      INPUT::LineDefinition::Builder().AddTag("FORWARDFACINGSTEP").Build();
 
-  DRT::INPUT::LineDefinition movinglevelsetcylinder = DRT::INPUT::LineDefinition::Builder()
-                                                          .AddTag("MOVINGLEVELSETCYLINDER")
-                                                          .AddNamedDoubleVector("ORIGIN", 3)
-                                                          .AddNamedDouble("RADIUS")
-                                                          .AddNamedDoubleVector("DIRECTION", 3)
-                                                          .AddNamedDouble("DISTANCE")
-                                                          .AddNamedDouble("MAXSPEED")
-                                                          .Build();
+  INPUT::LineDefinition movinglevelsetcylinder = INPUT::LineDefinition::Builder()
+                                                     .AddTag("MOVINGLEVELSETCYLINDER")
+                                                     .AddNamedDoubleVector("ORIGIN", 3)
+                                                     .AddNamedDouble("RADIUS")
+                                                     .AddNamedDoubleVector("DIRECTION", 3)
+                                                     .AddNamedDouble("DISTANCE")
+                                                     .AddNamedDouble("MAXSPEED")
+                                                     .Build();
 
-  DRT::INPUT::LineDefinition movinglevelsettorus = DRT::INPUT::LineDefinition::Builder()
-                                                       .AddTag("MOVINGLEVELSETTORUS")
-                                                       .AddNamedDoubleVector("ORIGIN", 3)
-                                                       .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
-                                                       .AddNamedDouble("RADIUS")
-                                                       .AddNamedDouble("RADIUS_TUBE")
-                                                       .AddNamedDoubleVector("DIRECTION", 3)
-                                                       .AddNamedDouble("DISTANCE")
-                                                       .AddNamedDouble("MAXSPEED")
-                                                       .AddNamedDoubleVector("ROTATION_VEC", 3)
-                                                       .AddNamedDouble("ROTATION_SPEED")
-                                                       .AddNamedDouble("ROTATION_RAMPTIME")
-                                                       .Build();
+  INPUT::LineDefinition movinglevelsettorus = INPUT::LineDefinition::Builder()
+                                                  .AddTag("MOVINGLEVELSETTORUS")
+                                                  .AddNamedDoubleVector("ORIGIN", 3)
+                                                  .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
+                                                  .AddNamedDouble("RADIUS")
+                                                  .AddNamedDouble("RADIUS_TUBE")
+                                                  .AddNamedDoubleVector("DIRECTION", 3)
+                                                  .AddNamedDouble("DISTANCE")
+                                                  .AddNamedDouble("MAXSPEED")
+                                                  .AddNamedDoubleVector("ROTATION_VEC", 3)
+                                                  .AddNamedDouble("ROTATION_SPEED")
+                                                  .AddNamedDouble("ROTATION_RAMPTIME")
+                                                  .Build();
 
-  DRT::INPUT::LineDefinition movinglevelsettorusvelocity =
-      DRT::INPUT::LineDefinition::Builder()
+  INPUT::LineDefinition movinglevelsettorusvelocity =
+      INPUT::LineDefinition::Builder()
           .AddTag("MOVINGLEVELSETTORUSVELOCITY")
           .AddNamedDoubleVector("ORIGIN", 3)
           .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
@@ -270,8 +270,8 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
           .AddNamedDouble("ROTATION_RAMPTIME")
           .Build();
 
-  DRT::INPUT::LineDefinition movinglevelsettorussliplength =
-      DRT::INPUT::LineDefinition::Builder()
+  INPUT::LineDefinition movinglevelsettorussliplength =
+      INPUT::LineDefinition::Builder()
           .AddTag("MOVINGLEVELSETTORUSSLIPLENGTH")
           .AddNamedDoubleVector("ORIGIN", 3)
           .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
@@ -286,21 +286,43 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
           .AddNamedInt("SLIP_FUNCT")
           .Build();
 
-  DRT::INPUT::LineDefinition taylorcouetteflow = DRT::INPUT::LineDefinition::Builder()
-                                                     .AddTag("TAYLORCOUETTEFLOW")
-                                                     .AddNamedDouble("RADIUS_I")
-                                                     .AddNamedDouble("RADIUS_O")
-                                                     .AddNamedDouble("VEL_THETA_I")
-                                                     .AddNamedDouble("VEL_THETA_O")
-                                                     .AddNamedDouble("SLIPLENGTH_I")
-                                                     .AddNamedDouble("SLIPLENGTH_O")
-                                                     .AddNamedDouble("TRACTION_THETA_I")
-                                                     .AddNamedDouble("TRACTION_THETA_O")
+  INPUT::LineDefinition taylorcouetteflow = INPUT::LineDefinition::Builder()
+                                                .AddTag("TAYLORCOUETTEFLOW")
+                                                .AddNamedDouble("RADIUS_I")
+                                                .AddNamedDouble("RADIUS_O")
+                                                .AddNamedDouble("VEL_THETA_I")
+                                                .AddNamedDouble("VEL_THETA_O")
+                                                .AddNamedDouble("SLIPLENGTH_I")
+                                                .AddNamedDouble("SLIPLENGTH_O")
+                                                .AddNamedDouble("TRACTION_THETA_I")
+                                                .AddNamedDouble("TRACTION_THETA_O")
+                                                .AddNamedDouble("VISCOSITY")
+                                                .Build();
+
+  INPUT::LineDefinition urquizaboxflow = INPUT::LineDefinition::Builder()
+                                             .AddTag("URQUIZABOXFLOW")
+                                             .AddNamedDouble("LENGTHX")
+                                             .AddNamedDouble("LENGTHY")
+                                             .AddNamedDouble("ROTATION")
+                                             .AddNamedDouble("VISCOSITY")
+                                             .AddNamedDouble("DENSITY")
+                                             .AddNamedInt("CASE")
+                                             .AddOptionalNamedDoubleVector("COMBINATION", 2)
+                                             .Build();
+
+  INPUT::LineDefinition urquizaboxflowtraction = INPUT::LineDefinition::Builder()
+                                                     .AddTag("URQUIZABOXFLOW_TRACTION")
+                                                     .AddNamedDouble("LENGTHX")
+                                                     .AddNamedDouble("LENGTHY")
+                                                     .AddNamedDouble("ROTATION")
                                                      .AddNamedDouble("VISCOSITY")
+                                                     .AddNamedDouble("DENSITY")
+                                                     .AddNamedInt("CASE")
+                                                     .AddOptionalNamedDoubleVector("COMBINATION", 2)
                                                      .Build();
 
-  DRT::INPUT::LineDefinition urquizaboxflow = DRT::INPUT::LineDefinition::Builder()
-                                                  .AddTag("URQUIZABOXFLOW")
+  INPUT::LineDefinition urquizaboxflowforce = INPUT::LineDefinition::Builder()
+                                                  .AddTag("URQUIZABOXFLOW_FORCE")
                                                   .AddNamedDouble("LENGTHX")
                                                   .AddNamedDouble("LENGTHY")
                                                   .AddNamedDouble("ROTATION")
@@ -310,31 +332,7 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
                                                   .AddOptionalNamedDoubleVector("COMBINATION", 2)
                                                   .Build();
 
-  DRT::INPUT::LineDefinition urquizaboxflowtraction =
-      DRT::INPUT::LineDefinition::Builder()
-          .AddTag("URQUIZABOXFLOW_TRACTION")
-          .AddNamedDouble("LENGTHX")
-          .AddNamedDouble("LENGTHY")
-          .AddNamedDouble("ROTATION")
-          .AddNamedDouble("VISCOSITY")
-          .AddNamedDouble("DENSITY")
-          .AddNamedInt("CASE")
-          .AddOptionalNamedDoubleVector("COMBINATION", 2)
-          .Build();
-
-  DRT::INPUT::LineDefinition urquizaboxflowforce =
-      DRT::INPUT::LineDefinition::Builder()
-          .AddTag("URQUIZABOXFLOW_FORCE")
-          .AddNamedDouble("LENGTHX")
-          .AddNamedDouble("LENGTHY")
-          .AddNamedDouble("ROTATION")
-          .AddNamedDouble("VISCOSITY")
-          .AddNamedDouble("DENSITY")
-          .AddNamedInt("CASE")
-          .AddOptionalNamedDoubleVector("COMBINATION", 2)
-          .Build();
-
-  std::vector<DRT::INPUT::LineDefinition> lines;
+  std::vector<INPUT::LineDefinition> lines;
 
   lines.emplace_back(std::move(gerstenbergerforwardfacingstep));
   lines.emplace_back(std::move(movinglevelsetcylinder));

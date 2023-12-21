@@ -102,7 +102,7 @@ void WEAR::Algorithm::CheckInput()
   //  Teuchos::ParameterList apara = DRT::Problem::Instance()->AleDynamicParams();
   //
   //  INPAR::ALE::AleDynamic aletype =
-  //      DRT::INPUT::IntegralValue<INPAR::ALE::AleDynamic>(apara, "ALE_TYPE");
+  //      INPUT::IntegralValue<INPAR::ALE::AleDynamic>(apara, "ALE_TYPE");
 
   return;
 }
@@ -157,11 +157,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
   // get input par.
   INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
+      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
+  INPAR::WEAR::WearLaw wlaw = INPUT::IntegralValue<INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
   INPAR::CONTACT::ConstraintDirection constr_direction =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
-          cparams, "CONSTRAINT_DIRECTIONS");
+      INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(cparams, "CONSTRAINT_DIRECTIONS");
 
   bool friplus = false;
   if ((wlaw != INPAR::WEAR::wear_none) || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
@@ -242,7 +241,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
     // find out if interface-specific coefficients of friction are given
     INPAR::CONTACT::FrictionType fric =
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
+        INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
     if (fric == INPAR::CONTACT::friction_tresca || fric == INPAR::CONTACT::friction_coulomb)
     {
       // read interface COFs
@@ -273,7 +272,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
     // find out if interface-specific coefficients of friction are given
     INPAR::CONTACT::AdhesionType ad =
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
+        INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
     if (ad == INPAR::CONTACT::adhesion_bound)
     {
       // read interface COFs
@@ -355,7 +354,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
         // create CoNode object or FriNode object in the frictional case
         INPAR::CONTACT::FrictionType ftype =
-            DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
+            INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
 
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time

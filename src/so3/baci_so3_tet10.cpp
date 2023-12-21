@@ -79,9 +79,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_tet10Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("TET10", 10)

@@ -31,7 +31,7 @@ namespace
 {
 
   Teuchos::RCP<CORE::UTILS::FunctionOfScalar> CreateLibraryFunctionScalar(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+      const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -70,7 +70,7 @@ namespace
 /*----------------------------------------------------------------------*/
 void CORE::UTILS::AddValidLibraryFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   LineDefinition fastpolynomial_funct =
       LineDefinition::Builder()

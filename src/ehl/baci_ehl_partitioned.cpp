@@ -38,7 +38,7 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
   const Teuchos::ParameterList& ehlparamspart =
       DRT::Problem::Instance()->ElastoHydroDynamicParams().sublist("PARTITIONED");
 
-  if (DRT::INPUT::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE"))
+  if (INPUT::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE"))
   {
     dserror("Different time stepping for two way coupling not implemented yet.");
   }

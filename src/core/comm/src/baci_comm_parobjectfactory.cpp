@@ -273,7 +273,7 @@ void CORE::COMM::ParObjectFactory::PreEvaluate(DRT::Discretization& dis, Teuchos
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COMM::ParObjectFactory::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   FinalizeRegistration();
 

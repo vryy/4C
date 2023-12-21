@@ -179,7 +179,7 @@ void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup: Initialize/allocate internal g variables (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::AAAraghavanvorp_damage::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   double strength = 0.0;  // section for extracting the element strength
   linedef->ExtractDouble("STRENGTH", strength);

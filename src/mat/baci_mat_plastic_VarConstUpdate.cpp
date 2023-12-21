@@ -184,7 +184,7 @@ void MAT::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyperVCU::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::PlasticElastHyperVCU::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // setup the plasticelasthyper data
   PlasticElastHyper::Setup(numgp, linedef);

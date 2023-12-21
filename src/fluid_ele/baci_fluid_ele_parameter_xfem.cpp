@@ -163,9 +163,9 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   Teuchos::ParameterList& params_xfem = params.sublist("XFEM");
 
   vcellgausspts_ =
-      DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
+      INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
   bcellgausspts_ =
-      DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
+      INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
 
   //----------------------------------------------------------------
   Teuchos::ParameterList& params_xf_gen = params.sublist("XFLUID DYNAMIC/GENERAL");
@@ -177,29 +177,28 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   // parameters describing the coupling approach
   //---------------------------------------------
   coupling_method_ =
-      DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
+      INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
 
-  hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(
-      params_xf_stab, "HYBRID_LM_L2_PROJ");
+  hybrid_lm_l2_proj_ =
+      INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
 
   //--------------------------------------------
   // parameters for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
   //---------------------------------------------
 
-  visc_stab_trace_estimate_ = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_TraceEstimate>(
+  visc_stab_trace_estimate_ = INPUT::IntegralValue<INPAR::XFEM::ViscStab_TraceEstimate>(
       params_xf_stab, "VISC_STAB_TRACE_ESTIMATE");
 
-  visc_stab_hk_ =
-      DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab, "VISC_STAB_HK");
+  visc_stab_hk_ = INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab, "VISC_STAB_HK");
 
   nit_stab_gamma_ = params_xf_stab.get<double>("NIT_STAB_FAC");
 
   nit_stab_gamma_tang_ = params_xf_stab.get<double>("NIT_STAB_FAC_TANG");
 
-  visc_adjoint_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::AdjointScaling>(
-      params_xf_stab, "VISC_ADJOINT_SYMMETRY");
+  visc_adjoint_scaling_ =
+      INPUT::IntegralValue<INPAR::XFEM::AdjointScaling>(params_xf_stab, "VISC_ADJOINT_SYMMETRY");
 
-  is_pseudo_2D_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
+  is_pseudo_2D_ = (bool)INPUT::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
 
 
   // TODO: add a comment how to define the visc-stab-fac for eigenvalue problem
@@ -211,21 +210,21 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   // parameters for the convective interface stabilizations
   //---------------------------------------------
 
-  xff_conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(
+  xff_conv_stab_scaling_ = INPUT::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(
       params_xf_stab, "XFF_CONV_STAB_SCALING");
   conv_stab_scaling_ =
-      DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab, "CONV_STAB_SCALING");
+      INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab, "CONV_STAB_SCALING");
 
   //--------------------------------------------
   // settings for computation of Nitsche's penalty parameter
   //---------------------------------------------
 
-  mass_conservation_combo_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MassConservationCombination>(
+  mass_conservation_combo_ = INPUT::IntegralValue<INPAR::XFEM::MassConservationCombination>(
       params_xf_stab, "MASS_CONSERVATION_COMBO");
-  mass_conservation_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MassConservationScaling>(
+  mass_conservation_scaling_ = INPUT::IntegralValue<INPAR::XFEM::MassConservationScaling>(
       params_xf_stab, "MASS_CONSERVATION_SCALING");
 
-  intterms_prev_state_ = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceTermsPreviousState>(
+  intterms_prev_state_ = INPUT::IntegralValue<INPAR::XFEM::InterfaceTermsPreviousState>(
       params_xf_gen, "INTERFACE_TERMS_PREVIOUS_STATE");
 
   //--------------------------------------------

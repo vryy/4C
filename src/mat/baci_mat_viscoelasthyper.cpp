@@ -326,7 +326,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ViscoElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);

@@ -82,14 +82,14 @@ void DRT::ELEMENTS::FluidHDGWeakCompType::ComputeNullSpace(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidHDGWeakCompType ::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_fluid;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
   FluidType::SetupElementDefinition(definitions_fluid);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
+  std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hdg = definitions["FLUIDHDGWEAKCOMP"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hdg = definitions["FLUIDHDGWEAKCOMP"];
 
   for (const auto& [key, fluid_line_def] : defs_fluid)
   {
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::FluidHDGWeakComp::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   bool success = Fluid::ReadElement(eletype, distype, linedef);
   int degree;
@@ -208,7 +208,7 @@ int DRT::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<MAT::Material> mat = Material();

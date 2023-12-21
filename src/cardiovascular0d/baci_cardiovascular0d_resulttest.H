@@ -44,7 +44,7 @@ class Cardiovascular0DResultTest : public DRT::ResultTest
   Cardiovascular0DResultTest(
       UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<DRT::Discretization> discr);
 
-  void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+  void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
 
 

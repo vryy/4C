@@ -15,7 +15,7 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -34,8 +34,7 @@ void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 }
 
 
-void INPAR::EP::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+void INPAR::EP::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
 }
 

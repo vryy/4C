@@ -147,7 +147,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
   Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
   // Now, check for the action parameter
-  const THR::BoundaryAction action = DRT::INPUT::get<THR::BoundaryAction>(params, "action");
+  const THR::BoundaryAction action = INPUT::get<THR::BoundaryAction>(params, "action");
   if (action == THR::calc_normal_vectors)
   {
     // access the global vector
@@ -345,8 +345,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
-    const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
-        params, "time integrator", INPAR::THR::dyna_undefined);
+    const INPAR::THR::DynamicType timint =
+        INPUT::get<INPAR::THR::DynamicType>(params, "time integrator", INPAR::THR::dyna_undefined);
     switch (timint)
     {
       case INPAR::THR::dyna_statics:
@@ -525,7 +525,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
         // check the time integrator
-        const INPAR::THR::DynamicType timint = DRT::INPUT::get<INPAR::THR::DynamicType>(
+        const INPAR::THR::DynamicType timint = INPUT::get<INPAR::THR::DynamicType>(
             params, "time integrator", INPAR::THR::dyna_undefined);
         switch (timint)
         {

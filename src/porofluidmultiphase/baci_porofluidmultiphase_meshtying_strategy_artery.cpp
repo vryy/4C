@@ -41,7 +41,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   if (!arterydis_->Filled()) arterydis_->FillComplete();
 
   INPAR::ARTDYN::TimeIntegrationScheme timintscheme =
-      DRT::INPUT::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+      INPUT::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   Teuchos::RCP<IO::DiscretizationWriter> artery_output = arterydis_->Writer();
   artery_output->WriteMesh(0, 0.0);
@@ -65,13 +65,13 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     std::cout << "<    Coupling with 1D Artery Network activated     >" << std::endl;
   }
 
-  const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
-      poroparams.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
+  const bool evaluate_on_lateral_surface =
+      INPUT::IntegralValue<int>(poroparams.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
 
   const std::string couplingcondname = std::invoke(
       [&]()
       {
-        if (DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+        if (INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
                 DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
                     "ARTERY COUPLING"),
                 "ARTERY_COUPLING_METHOD") ==

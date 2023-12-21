@@ -82,7 +82,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
 
   // get friction type
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
 
   // change master-side proc ownership
   // some local variables

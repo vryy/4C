@@ -199,7 +199,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::RegisterAnisotropyEx
 
 // Reads the element from the input file
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::ReadElement(
-    int numgp, DRT::INPUT::LineDefinition* linedef)
+    int numgp, INPUT::LineDefinition* linedef)
 {
   MixtureConstituent_ElastHyperBase::ReadElement(numgp, linedef);
 

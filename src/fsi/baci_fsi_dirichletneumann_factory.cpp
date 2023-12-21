@@ -29,7 +29,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
 {
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   INPAR::FSI::PartitionedCouplingMethod method =
-      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsipart, "PARTITIONED");
+      INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsipart, "PARTITIONED");
   switch (method)
   {
     case INPAR::FSI::DirichletNeumannSlideale:
@@ -38,8 +38,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
         case (ProblemType::fsi):
         case (ProblemType::fsi_redmodels):
         case (ProblemType::fsi_lung):
-          if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
-              INPAR::FSI::CoupVarPart::vel)
+          if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel)
           {
             dserror(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -59,8 +58,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
         case (ProblemType::fsi):
         case (ProblemType::fsi_redmodels):
         case (ProblemType::fsi_lung):
-          if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
-              INPAR::FSI::CoupVarPart::vel)
+          if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel)
           {
             dserror(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -81,8 +79,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
         case (ProblemType::fsi_redmodels):
         case (ProblemType::fsi_lung):
         case (ProblemType::fsi_xfem):
-          if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
-              INPAR::FSI::CoupVarPart::vel)
+          if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel)
           {
             dserror(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -92,8 +89,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
             return Teuchos::rcp(new FSI::DirichletNeumannDisp(comm));
           break;
         case (ProblemType::fbi):
-          if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
-              INPAR::FSI::CoupVarPart::disp)
+          if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp)
           {
             dserror(
                 "Displacement coupling is not possible in this case! You are not handling any "

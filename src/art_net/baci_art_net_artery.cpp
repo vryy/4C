@@ -50,9 +50,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create(const int id, const
 
 
 void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["ART"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["ART"];
 
   defs["LINE2"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)

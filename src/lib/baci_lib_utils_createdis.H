@@ -29,13 +29,13 @@
 
 BACI_NAMESPACE_OPEN
 
+namespace INPUT
+{
+  class LineDefinition;
+}
+
 namespace DRT
 {
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-
 
   namespace UTILS
   {
@@ -925,7 +925,7 @@ namespace DRT
     };  // CloneDiscretizationFromCondition
 
     //! construct and return cloning material map input lines
-    DRT::INPUT::Lines ValidCloningMaterialMapLines();
+    INPUT::Lines ValidCloningMaterialMapLines();
 
     //! helper method for printout
     void PrintCloningMaterialMapDatHeader();

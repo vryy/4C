@@ -49,13 +49,13 @@ namespace CONTACT
         : CoIntegrator(params, eletype, comm),
           theta_(params.get<double>("NITSCHE_THETA")),
           theta_2_(params.get<double>("NITSCHE_THETA_2")),
-          nit_wgt_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
-              params, "NITSCHE_WEIGHTING")),
+          nit_wgt_(
+              INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params, "NITSCHE_WEIGHTING")),
           ppn_(imortar_.get<double>("PENALTYPARAM")),
           ppt_(imortar_.get<double>("PENALTYPARAMTAN")),
           frcoeff_(imortar_.get<double>("FRCOEFF", -1.)),
           frbound_(imortar_.get<double>("FRBOUND", -1.)),
-          frtype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(imortar_, "FRICTION")),
+          frtype_(INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(imortar_, "FRICTION")),
           dt_(imortar_.get<double>("TIMESTEP")),
           two_half_pass_(imortar_.get<bool>("Two_half_pass"))
     {

@@ -74,7 +74,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::Pa
   }
 
   // set flag, time integration scheme
-  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
+  timealgo_ = INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
 
   // set time integration scheme-specific element parameters
   if (timealgo_ == INPAR::FLUID::timeint_stationary)
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::Pa
       timefacrhs_ = gamma_ * alphaF_ / alphaM_ * dt_;
 
       // set flag, time integration scheme
-      ostalgo_ = DRT::INPUT::get<INPAR::FLUID::OST_Cont_and_Press>(params, "ost cont and press");
+      ostalgo_ = INPUT::get<INPAR::FLUID::OST_Cont_and_Press>(params, "ost cont and press");
       ostnew_ = params.get<bool>("ost new", false);
 
       if (ostnew_)

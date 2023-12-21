@@ -18,7 +18,7 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -114,9 +114,9 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
 /// set specific electromagnetic conditions
 void INPAR::ELEMAG::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> abcbundcomponents;
 

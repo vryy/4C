@@ -153,7 +153,7 @@ void MAT::Maxwell_0d_acinus_DoubleExponential::Unpack(const std::vector<char>& d
  | E1_01, E1_LIN1, E1_EXP1, TAU1 and                                    |
  | E1_02, E1_LIN2, E1_EXP2, TAU2 to material                roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_DoubleExponential::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::Maxwell_0d_acinus_DoubleExponential::Setup(INPUT::LineDefinition* linedef)
 {
   linedef->ExtractDouble("E1_01", e1_01_);
   linedef->ExtractDouble("E1_LIN1", e1_lin1_);

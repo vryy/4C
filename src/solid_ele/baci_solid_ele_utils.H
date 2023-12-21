@@ -28,13 +28,13 @@ namespace STR::UTILS
 
   namespace READELEMENT
   {
-    int ReadElementMaterial(DRT::INPUT::LineDefinition* linedef);
+    int ReadElementMaterial(INPUT::LineDefinition* linedef);
 
-    INPAR::STR::KinemType ReadElementKinematicType(DRT::INPUT::LineDefinition* linedef);
+    INPAR::STR::KinemType ReadElementKinematicType(INPUT::LineDefinition* linedef);
 
-    DRT::ELEMENTS::ElementTechnology ReadElementTechnology(DRT::INPUT::LineDefinition* linedef);
+    DRT::ELEMENTS::ElementTechnology ReadElementTechnology(INPUT::LineDefinition* linedef);
 
-    DRT::ELEMENTS::PrestressTechnology ReadPrestressTechnology(DRT::INPUT::LineDefinition* linedef);
+    DRT::ELEMENTS::PrestressTechnology ReadPrestressTechnology(INPUT::LineDefinition* linedef);
   }  // namespace READELEMENT
 
 }  // namespace STR::UTILS

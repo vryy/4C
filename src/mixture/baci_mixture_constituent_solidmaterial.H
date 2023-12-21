@@ -62,7 +62,7 @@ namespace MIXTURE
 
     INPAR::MAT::MaterialType MaterialType() const override;
 
-    void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
 
     void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
         const int gp, const int eleGID) override;

@@ -125,8 +125,7 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
-  SetInitialField(
-      DRT::INPUT::IntegralValue<INPAR::ARTDYN::InitialField>(arteryparams, "INITIALFIELD"),
+  SetInitialField(INPUT::IntegralValue<INPAR::ARTDYN::InitialField>(arteryparams, "INITIALFIELD"),
       arteryparams.get<int>("INITFUNCNO"));
 
 
@@ -134,7 +133,7 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   {
     const Teuchos::ParameterList& myscatraparams =
         DRT::Problem::Instance()->ScalarTransportDynamicParams();
-    if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
+    if (INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
         INPAR::SCATRA::velocity_zero)
       dserror("set your velocity field to zero!");
     // construct the scatra problem

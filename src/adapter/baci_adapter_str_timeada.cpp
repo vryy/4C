@@ -43,7 +43,7 @@ Teuchos::RCP<ADAPTER::Structure> ADAPTER::StructureTimeAda::Create(
     const Teuchos::ParameterList& taflags,  //!< adaptive input flags
     Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
-  auto kind = DRT::INPUT::IntegralValue<INPAR::STR::TimAdaKind>(taflags, "KIND");
+  auto kind = INPUT::IntegralValue<INPAR::STR::TimAdaKind>(taflags, "KIND");
   switch (kind)
   {
     case INPAR::STR::timada_kind_zienxie:
@@ -96,7 +96,7 @@ void ADAPTER::StructureTimeAda::SetupTimeAda()
   sizeratiomin_ = tap.get<double>("SIZERATIOMIN");
   sizeratioscale_ = tap.get<double>("SIZERATIOSCALE");
   errctrl_ = ctrl_dis;  // PROVIDE INPUT PARAMETER
-  errnorm_ = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(tap, "LOCERRNORM");
+  errnorm_ = INPUT::IntegralValue<INPAR::STR::VectorNorm>(tap, "LOCERRNORM");
   errtol_ = tap.get<double>("LOCERRTOL");
   errorder_ = 1;  // CHANGE THIS CONSTANT
   adaptstepmax_ = tap.get<int>("ADAPTSTEPMAX");

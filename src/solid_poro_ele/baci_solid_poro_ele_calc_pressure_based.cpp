@@ -27,7 +27,7 @@ DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::SolidPoroPressureBasedEl
 
 template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::PoroSetup(
-    MAT::StructPoro& porostructmat, DRT::INPUT::LineDefinition* linedef)
+    MAT::StructPoro& porostructmat, INPUT::LineDefinition* linedef)
 {
   porostructmat.PoroSetup(gauss_integration_.NumPoints(), linedef);
 }

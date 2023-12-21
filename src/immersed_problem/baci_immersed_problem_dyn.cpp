@@ -42,8 +42,8 @@ void immersed_problem_drt()
   // get parameterlist for immersed method
   const Teuchos::ParameterList& immersedmethodparams = problem->ImmersedMethodParams();
   // choose algorithm
-  int coupling = DRT::INPUT::IntegralValue<int>(immersedmethodparams, "COUPALGO");
-  int scheme = DRT::INPUT::IntegralValue<int>(immersedmethodparams, "SCHEME");
+  int coupling = INPUT::IntegralValue<int>(immersedmethodparams, "COUPALGO");
+  int scheme = INPUT::IntegralValue<int>(immersedmethodparams, "SCHEME");
 
 
   ///////////////////////////////////////////////////////////////////////

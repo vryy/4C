@@ -439,8 +439,8 @@ void MAT::ELASTIC::Summand::Unpack(const std::vector<char>& data) { return; };
 
 
 // Function which reads in the given fiber value due to the FIBER1 nomenclature
-void MAT::ELASTIC::Summand::ReadFiber(DRT::INPUT::LineDefinition* linedef,
-    const std::string& specifier, CORE::LINALG::Matrix<3, 1>& fiber_vector)
+void MAT::ELASTIC::Summand::ReadFiber(INPUT::LineDefinition* linedef, const std::string& specifier,
+    CORE::LINALG::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber1;
   linedef->ExtractDoubleVector(specifier, fiber1);
@@ -458,7 +458,7 @@ void MAT::ELASTIC::Summand::ReadFiber(DRT::INPUT::LineDefinition* linedef,
 
 // Function which reads in the given fiber value due to the CIR-AXI-RAD nomenclature
 void MAT::ELASTIC::Summand::ReadRadAxiCir(
-    DRT::INPUT::LineDefinition* linedef, CORE::LINALG::Matrix<3, 3>& locsys)
+    INPUT::LineDefinition* linedef, CORE::LINALG::Matrix<3, 3>& locsys)
 {
   // read local (cylindrical) cosy-directions at current element
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir

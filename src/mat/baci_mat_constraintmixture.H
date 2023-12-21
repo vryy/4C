@@ -221,8 +221,8 @@ namespace MAT
     }
 
     /// Setup
-    void Setup(int numgp,                    ///< number of Gauss points
-        DRT::INPUT::LineDefinition* linedef  ///< definition of element line
+    void Setup(int numgp,               ///< number of Gauss points
+        INPUT::LineDefinition* linedef  ///< definition of element line
         ) override;
 
     /// SetupHistory

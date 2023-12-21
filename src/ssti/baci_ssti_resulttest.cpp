@@ -24,7 +24,7 @@ SSTI::SSTIResultTest::SSTIResultTest(const SSTI::SSTIAlgorithm& ssti_algorithm)
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-void SSTI::SSTIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void SSTI::SSTIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
   if (ssti_algorithm_.Comm().MyPID() == 0)

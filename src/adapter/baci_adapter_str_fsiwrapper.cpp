@@ -46,7 +46,7 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  predictor_ = DRT::INPUT::IntegralValue<int>(fsipart, "PREDICTOR");
+  predictor_ = INPUT::IntegralValue<int>(fsipart, "PREDICTOR");
 }
 
 /*------------------------------------------------------------------------------------*

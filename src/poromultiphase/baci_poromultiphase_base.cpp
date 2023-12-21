@@ -31,7 +31,7 @@ POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
       fluid_(Teuchos::null),
       struct_zeros_(Teuchos::null),
       solve_structure_(true),
-      artery_coupl_(DRT::INPUT::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
+      artery_coupl_(INPUT::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
 {
 }
 
@@ -62,7 +62,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   struct_zeros_ = CORE::LINALG::CreateVector(*structure_->DofRowMap(), true);
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
   // deformation
-  solve_structure_ = DRT::INPUT::IntegralValue<int>(algoparams, "SOLVE_STRUCTURE");
+  solve_structure_ = INPUT::IntegralValue<int>(algoparams, "SOLVE_STRUCTURE");
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = fluidparams.get<int>("LINEAR_SOLVER");
@@ -89,7 +89,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
-      DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
+      INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
           fluidparams, "TIMEINTEGR");
 
   // build poro fluid time integrator

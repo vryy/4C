@@ -60,7 +60,7 @@ ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolve
   maxtime_ = dtp_ * double(stepmax_);
 
   // solve scatra flag
-  solvescatra_ = DRT::INPUT::IntegralValue<int>(artparams, "SOLVESCATRA");
+  solvescatra_ = INPUT::IntegralValue<int>(artparams, "SOLVESCATRA");
 
   if (linsolvernumber_ == -1) dserror("Set a valid linear solver for arterial network");
 }

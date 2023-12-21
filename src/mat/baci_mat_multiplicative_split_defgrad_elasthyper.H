@@ -199,7 +199,7 @@ namespace MAT
     void EvaluateLinearizationOD(const CORE::LINALG::Matrix<3, 3>& defgrd, double concentration,
         CORE::LINALG::Matrix<9, 1>* d_F_dx) override;
 
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     void Update() override;
 

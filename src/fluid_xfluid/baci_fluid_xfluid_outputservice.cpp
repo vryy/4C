@@ -251,19 +251,18 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
     const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner)
     : XFluidOutputService(discret, cond_manager),
-      gmsh_sol_out_((bool)DRT::INPUT::IntegralValue<int>(params_xfem, "GMSH_SOL_OUT")),
-      gmsh_ref_sol_out_((bool)DRT::INPUT::IntegralValue<int>(params_xfem, "GMSH_TIMINT_OUT")),
-      gmsh_debug_out_((bool)DRT::INPUT::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT")),
-      gmsh_debug_out_screen_(
-          (bool)DRT::INPUT::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
-      gmsh_EOS_out_((bool)DRT::INPUT::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
-      gmsh_discret_out_((bool)DRT::INPUT::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
+      gmsh_sol_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_SOL_OUT")),
+      gmsh_ref_sol_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_TIMINT_OUT")),
+      gmsh_debug_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT")),
+      gmsh_debug_out_screen_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
+      gmsh_EOS_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
+      gmsh_discret_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
       gmsh_step_diff_(500),
-      VolumeCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(
-          params_xfem, "VOLUME_GAUSS_POINTS_BY")),
+      VolumeCellGaussPointBy_(
+          INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
-  if (!(bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
+  if (!(bool)INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
     dserror(
         "If GMSH output is globally deactivated, don't create an instance of "
         "XFluidOutputServiceGmsh!");

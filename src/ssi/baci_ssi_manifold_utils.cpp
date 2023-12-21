@@ -94,7 +94,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     : block_map_scatra_(ssi_mono.BlockMapScaTra()),
       block_map_scatra_manifold_(ssi_mono.BlockMapScaTraManifold()),
       block_map_structure_(ssi_mono.BlockMapStructure()),
-      do_output_(DRT::INPUT::IntegralValue<bool>(
+      do_output_(INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->SSIControlParams().sublist("MANIFOLD"), "OUTPUT_INFLOW")),
       full_map_manifold_(ssi_mono.MapsSubProblems()->Map(
           UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold))),

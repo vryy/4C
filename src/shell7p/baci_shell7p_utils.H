@@ -153,10 +153,10 @@ namespace STR::UTILS::SHELL
 
   namespace READELEMENT
   {
-    int ReadAndSetElementMaterial(DRT::INPUT::LineDefinition* linedef);
+    int ReadAndSetElementMaterial(INPUT::LineDefinition* linedef);
 
-    void ReadAndSetLockingTypes(const CORE::FE::CellType& distype,
-        DRT::INPUT::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types);
+    void ReadAndSetLockingTypes(const CORE::FE::CellType& distype, INPUT::LineDefinition* linedef,
+        STR::ELEMENTS::ShellLockingTypes& locking_types);
 
     int ReadAndSetNumANS(const CORE::FE::CellType& distype);
 

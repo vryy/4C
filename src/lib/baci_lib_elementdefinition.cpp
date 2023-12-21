@@ -23,13 +23,13 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void PrintElementDatHeader()
 {
-  DRT::INPUT::ElementDefinition ed;
+  INPUT::ElementDefinition ed;
   ed.PrintElementDatHeaderToStream(std::cout);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& stream)
+void INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& stream)
 {
   SetupValidElementLines();
 
@@ -144,7 +144,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementDefinition::PrintSectionHeader(std::ostream& stream, std::string name)
+void INPUT::ElementDefinition::PrintSectionHeader(std::ostream& stream, std::string name)
 {
   unsigned l = name.length();
   stream << "--";
@@ -155,7 +155,7 @@ void DRT::INPUT::ElementDefinition::PrintSectionHeader(std::ostream& stream, std
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std::string name)
+void INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std::string name)
 {
   if (definitions_.find(name) != definitions_.end())
   {
@@ -174,7 +174,7 @@ void DRT::INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementDefinition::SetupValidElementLines()
+void INPUT::ElementDefinition::SetupValidElementLines()
 {
   CORE::COMM::ParObjectFactory::Instance().SetupElementDefinition(definitions_);
 }
@@ -182,8 +182,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::LineDefinition* DRT::INPUT::ElementDefinition::ElementLines(
-    std::string name, std::string distype)
+INPUT::LineDefinition* INPUT::ElementDefinition::ElementLines(std::string name, std::string distype)
 {
   // This is ugly. But we want to access both maps just once.
   std::map<std::string, std::map<std::string, LineDefinition>>::iterator j =

@@ -83,7 +83,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
-  if (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn_micro, "NLNSOL") ==
+  if (INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn_micro, "NLNSOL") ==
       INPAR::STR::soltech_newtonmod)
     mod_newton_ = true;
   else
@@ -181,7 +181,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
         Teuchos::rcp(new IO::OutputControl(microdis->Comm(), "Structure",
             microproblem->SpatialApproximationType(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->FileSteps(),
-            DRT::INPUT::IntegralValue<int>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
+            INPUT::IntegralValue<int>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis));
     micro_output_->SetOutput(microcontrol);

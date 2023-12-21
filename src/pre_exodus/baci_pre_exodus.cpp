@@ -140,13 +140,13 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 
   // print validconditions as proposal
   defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
-  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> condlist =
-      DRT::INPUT::ValidConditions();
-  DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist);
+  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> condlist =
+      INPUT::ValidConditions();
+  INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist);
 
   // print valid element lines as proposal (parobjects have to be registered for doing this!)
   defaultbc << std::endl << std::endl;
-  DRT::INPUT::ElementDefinition ed;
+  INPUT::ElementDefinition ed;
   ed.PrintElementDatHeaderToStream(defaultbc);
 
   // close default bc specification file
@@ -367,11 +367,11 @@ int main(int argc, char** argv)
       if (!defaulthead) dserror("failed to open file: %s", defaultheadfilename.c_str());
 
       // get valid input parameters
-      Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
+      Teuchos::RCP<const Teuchos::ParameterList> list = INPUT::ValidParameters();
 
       // write default .dat header into file
       std::stringstream prelimhead;
-      DRT::INPUT::PrintDatHeader(prelimhead, *list);
+      INPUT::PrintDatHeader(prelimhead, *list);
       std::string headstring = prelimhead.str();
       size_t size_section =
           headstring.find("-------------------------------------------------------PROBLEM SIZE");
@@ -385,13 +385,13 @@ int main(int argc, char** argv)
 
       // get valid input materials
       {
-        Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> mlist =
-            DRT::INPUT::ValidMaterials();
-        DRT::INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
+        Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> mlist =
+            INPUT::ValidMaterials();
+        INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
       }
 
       // print cloning material map default lines (right after the materials)
-      DRT::INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
+      INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
       lines.Print(defaulthead);
 
       // print spatial functions
@@ -406,7 +406,7 @@ int main(int argc, char** argv)
       {
         std::stringstream tmp;
         CORE::UTILS::FunctionManager functionmanager;
-        DRT::INPUT::Lines flines = functionmanager.ValidFunctionLines();
+        INPUT::Lines flines = functionmanager.ValidFunctionLines();
         flines.Print(tmp);
         std::string tmpstring = tmp.str();
         std::string removeit =
@@ -422,7 +422,7 @@ int main(int argc, char** argv)
       // default result-test lines
       {
         DRT::ResultTestManager resulttestmanager;
-        DRT::INPUT::Lines lines = resulttestmanager.ValidResultLines();
+        INPUT::Lines lines = resulttestmanager.ValidResultLines();
         lines.Print(defaulthead);
       }
 

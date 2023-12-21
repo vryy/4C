@@ -160,7 +160,7 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
+  if (INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
       INPAR::MORTAR::relocation_initial)
   {
     // Warning:
@@ -815,7 +815,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     // const_cast to force modifed X() into pnode
     // const_cast to force modifed X() into alenode if fluid=slave
     // (remark: this is REALLY BAD coding)
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+    if (INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
             mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_initial)
     {
       for (int k = 0; k < dim; ++k)
@@ -835,7 +835,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
           const_cast<double&>(alenode->X()[k]) = Xnewglobal[k];
       }
     }
-    else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+    else if (INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
                  mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_timestep)
     {
       // modification of ALE displacements
@@ -997,7 +997,7 @@ void CORE::ADAPTER::CouplingMortar::CreateP()
   CheckSetup();
 
   // check
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(
+  if (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(
           Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Creation of P operator only for dual shape functions!");
 
@@ -1241,7 +1241,7 @@ void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+  if (INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
           mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_timestep)
     MeshRelocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
 

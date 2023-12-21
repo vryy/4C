@@ -34,7 +34,7 @@ XFEM::XFSCoupling_Manager::XFSCoupling_Manager(Teuchos::RCP<ConditionManager> co
   if (idx_.size() != 2) dserror("XFSCoupling_Manager required two block ( 2 != %d)", idx_.size());
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  interface_second_order_ = DRT::INPUT::IntegralValue<int>(fsidyn, "SECONDORDER");
+  interface_second_order_ = INPUT::IntegralValue<int>(fsidyn, "SECONDORDER");
 
   // Coupling_Comm_Manager create all Coupling Objects now with Structure has idx = 0, Fluid has idx
   // = 1!

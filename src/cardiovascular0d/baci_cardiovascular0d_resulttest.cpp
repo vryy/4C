@@ -42,8 +42,7 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Cardiovascular0DResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Cardiovascular0DResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   std::string quantity;
   res.ExtractString("QUANTITY", quantity);

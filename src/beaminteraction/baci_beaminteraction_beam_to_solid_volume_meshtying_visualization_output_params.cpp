@@ -66,34 +66,34 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::Setup
 
   // Get global parameters.
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
-  output_every_iteration_ = (bool)DRT::INPUT::IntegralValue<int>(
-      global_visualization_output_paramslist, "EVERY_ITERATION");
+  output_every_iteration_ =
+      (bool)INPUT::IntegralValue<int>(global_visualization_output_paramslist, "EVERY_ITERATION");
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   // Get beam to solid volume mesh tying specific parameters.
-  output_flag_ = (bool)DRT::INPUT::IntegralValue<int>(
+  output_flag_ = (bool)INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "WRITE_OUTPUT");
 
-  nodal_forces_ = (bool)DRT::INPUT::IntegralValue<int>(
+  nodal_forces_ = (bool)INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "NODAL_FORCES");
 
-  mortar_lambda_discret_ = (bool)DRT::INPUT::IntegralValue<int>(
+  mortar_lambda_discret_ = (bool)INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "MORTAR_LAMBDA_DISCRET");
 
-  mortar_lambda_continuous_ = (bool)DRT::INPUT::IntegralValue<int>(
+  mortar_lambda_continuous_ = (bool)INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "MORTAR_LAMBDA_CONTINUOUS");
 
   mortar_lambda_continuous_segments_ =
       beam_to_solid_volume_meshtying_visualization_output_paramslist.get<int>(
           "MORTAR_LAMBDA_CONTINUOUS_SEGMENTS");
 
-  segmentation_ = (bool)DRT::INPUT::IntegralValue<int>(
+  segmentation_ = (bool)INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "SEGMENTATION");
 
-  integration_points_ = (bool)DRT::INPUT::IntegralValue<int>(
+  integration_points_ = (bool)INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "INTEGRATION_POINTS");
 
-  write_unique_ids_ = (bool)DRT::INPUT::IntegralValue<int>(
+  write_unique_ids_ = (bool)INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "UNIQUE_IDS");
 
   // Set the setup flag.

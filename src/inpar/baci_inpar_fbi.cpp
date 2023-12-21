@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -120,14 +120,13 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
       &beam_to_fluid_meshtying_vtk);
 
-  DRT::INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+  INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
       "Number of segments for continuous mortar output", &beam_to_fluid_meshtying_vtk);
 }
 
-void INPAR::FBI::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+void INPAR::FBI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   /*-------------------------------------------------------------------*/
 }

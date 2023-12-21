@@ -27,16 +27,15 @@ namespace STR::MODELEVALUATOR
   class GaussPointDataOutputManager;
 }
 
+namespace INPUT
+{
+  class LineDefinition;
+}
 namespace DRT
 {
   // forward declaration
   class Discretization;
   class Condition;
-
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
 
   namespace ELEMENTS
   {
@@ -69,8 +68,7 @@ namespace DRT
        * @param linedef (in) : Input line of the corresponding element
        */
       virtual void Setup(DRT::Element& ele, MAT::So3Material& solid_material,
-          DRT::INPUT::LineDefinition* linedef,
-          const STR::ELEMENTS::ShellLockingTypes& locking_types,
+          INPUT::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) = 0;
 
       /*!

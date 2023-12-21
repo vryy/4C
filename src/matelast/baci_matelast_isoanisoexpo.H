@@ -112,7 +112,7 @@ namespace MAT
       //@}
 
       /// Setup of summand
-      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
       /// Add anisotropic modified stresses
       void AddStressAnisoModified(

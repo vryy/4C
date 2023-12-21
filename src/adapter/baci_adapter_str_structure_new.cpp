@@ -101,7 +101,7 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
   if (not IsInit()) dserror("You have to call Init() first!");
 
   // major switch to different time integrators
-  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP"))
+  switch (INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP"))
   {
     case INPAR::STR::dyna_statics:
     case INPAR::STR::dyna_genalpha:
@@ -223,10 +223,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
       Teuchos::RCP<MAT::PAR::Material> mat = i->second;
       if (mat->Type() == INPAR::MAT::m_struct_multiscale)
       {
-        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP") !=
+        if (INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP") !=
             INPAR::STR::dyna_genalpha)
           dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-        else if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(
+        else if (INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(
                      sdyn_->sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_trlike)
           dserror(
               "In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
@@ -239,7 +239,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // Create context for output and restart
   // ---------------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis_->Writer();
-  if (DRT::INPUT::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
+  if (INPUT::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
   }
@@ -321,7 +321,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     if (probtype == ProblemType::tsi)
     {
       const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
-      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+      if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_nitsche)
         modeltypes.insert(INPAR::STR::model_contact);
     }
@@ -474,10 +474,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // get beam contact strategy
   const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
   INPAR::BEAMCONTACT::Strategy strategy =
-      DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
+      INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
   INPAR::BEAMCONTACT::Modelevaluator modelevaluator =
-      DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Modelevaluator>(beamcontact, "MODELEVALUATOR");
+      INPUT::IntegralValue<INPAR::BEAMCONTACT::Modelevaluator>(beamcontact, "MODELEVALUATOR");
 
   // conditions for potential-based beam interaction
   std::vector<DRT::Condition*> beampotconditions(0);
@@ -494,23 +494,22 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ---------------------------------------------------------------------------
   // check for brownian dynamics
   // ---------------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB"))
+  if (INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB"))
     modeltypes.insert(INPAR::STR::model_browniandyn);
 
   // ---------------------------------------------------------------------------
   // check for beam interaction
   // ---------------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(
+  if (INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING"),
           "CROSSLINKER") or
-      DRT::INPUT::IntegralValue<int>(
+      INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING") or
-      DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+      INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+      INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
@@ -636,7 +635,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
   // ---------------------------------------------------------------------------
   // show default parameters
   // ---------------------------------------------------------------------------
-  if ((actdis_->Comm()).MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, *sdyn_);
+  if ((actdis_->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, *sdyn_);
 
   // ---------------------------------------------------------------------------
   // get input parameter lists and copy them,
@@ -664,8 +663,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(*sdyn_, "DAMPING") ==
-      INPAR::STR::damp_rayleigh)
+  if (INPUT::IntegralValue<INPAR::STR::DampKind>(*sdyn_, "DAMPING") == INPAR::STR::damp_rayleigh)
   {
     if (sdyn_->get<double>("K_DAMP") < 0.0)
     {
@@ -713,7 +711,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
-      if (DRT::INPUT::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
+      if (INPUT::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
       {
         // overrule time step size adaptivity control parameters
         if (time_adaptivity_params.get<std::string>("KIND") != "NONE")
@@ -816,7 +814,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
     case ProblemType::fsi_xfem:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-      const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+      const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
 
       // Are there any constraint conditions active?
       const std::set<INPAR::STR::ModelType>& modeltypes =
@@ -855,7 +853,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
     case ProblemType::fbi:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-      if (DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+      if (INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") == INPAR::FSI::DirichletNeumann)
         str_wrapper_ = Teuchos::rcp(new FBIStructureWrapper(ti_strategy));
       else
@@ -889,8 +887,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
-          DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
-              porodyn, "COUPALGO");
+          INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(porodyn, "COUPALGO");
       // Are there any constraint conditions active?
       const std::set<INPAR::STR::ModelType>& modeltypes =
           ti_strategy->GetDataSDyn().GetModelTypes();

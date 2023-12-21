@@ -34,7 +34,7 @@ PARTICLEINTERACTION::ParticleInteractionDEM::ParticleInteractionDEM(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::ParticleInteractionBase(comm, params),
       params_dem_(params.sublist("DEM")),
-      writeparticleenergy_(DRT::INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_ENERGY"))
+      writeparticleenergy_(INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_ENERGY"))
 {
   // empty constructor
 }
@@ -241,7 +241,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitAdhesionHandler()
 {
   // get type of adhesion law
   INPAR::PARTICLE::AdhesionLaw adhesionlaw =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
+      INPUT::IntegralValue<INPAR::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
 
   // create adhesion handler
   if (adhesionlaw != INPAR::PARTICLE::NoAdhesion)
@@ -284,8 +284,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
 
   // get type of initial particle radius assignment
   INPAR::PARTICLE::InitialRadiusAssignment radiusdistributiontype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::InitialRadiusAssignment>(
-          params_dem_, "INITIAL_RADIUS");
+      INPUT::IntegralValue<INPAR::PARTICLE::InitialRadiusAssignment>(params_dem_, "INITIAL_RADIUS");
 
   switch (radiusdistributiontype)
   {

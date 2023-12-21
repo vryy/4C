@@ -68,12 +68,12 @@ void scatra_dyn(int restart)
   scatradis->FillComplete(true, true, true);
 
   // determine coupling type
-  const auto fieldcoupling = DRT::INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(
+  const auto fieldcoupling = INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(
       DRT::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING");
 
   // determine velocity type
   const auto veltype =
-      DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
+      INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
 
   if (scatradis->NumGlobalNodes() == 0)
   {
@@ -293,13 +293,13 @@ void scatra_dyn(int restart)
       // scatra results available and the initial field is used
       if (restart)
       {
-        if (DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") and
+        if (INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") and
             restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP"))
           algo->ReadInflowRestart(restart);
         else
           algo->ReadRestart(restart);
       }
-      else if (DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW"))
+      else if (INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW"))
       {
         dserror(
             "Turbulent inflow generation for passive scalar transport should be performed as fluid "

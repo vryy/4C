@@ -24,7 +24,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT::INPUT
+namespace INPUT
 {
   namespace INTERNAL
   {
@@ -300,7 +300,7 @@ namespace DRT::INPUT
     void Print(std::ostream& stream) const;
 
     /// Read section and return one LineDefinition per line read
-    std::vector<DRT::INPUT::LineDefinition> Read(DatFileReader& reader, int suffix = -1);
+    std::vector<LineDefinition> Read(DatFileReader& reader, int suffix = -1);
 
    private:
     /// Name of the section we read
@@ -343,7 +343,7 @@ namespace DRT::INPUT
     std::string definition_name_;
   };
 
-}  // namespace DRT::INPUT
+}  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE
 

@@ -108,7 +108,7 @@ void MAT::Membrane_ElastHyper::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Membrane_ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // call setup of base class
   MAT::ElastHyper::Setup(numgp, linedef);

@@ -246,7 +246,7 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);

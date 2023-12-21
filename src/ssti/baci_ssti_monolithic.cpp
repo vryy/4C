@@ -195,7 +195,7 @@ void SSTI::SSTIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList&
     const Teuchos::ParameterList& structparams)
 {
   // check input parameters for scalar transport field
-  if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
+  if (INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
       INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Invalid type of velocity field for scalar-structure interaction!");
 
@@ -286,11 +286,11 @@ void SSTI::SSTIMono::Setup()
           equilibration_method_.thermo != CORE::LINALG::EquilibrationMethod::none))
     dserror("Block based equilibration only for block matrices");
 
-  const bool equilibration_scatra_initial = DRT::INPUT::IntegralValue<bool>(
+  const bool equilibration_scatra_initial = INPUT::IntegralValue<bool>(
       DRT::Problem::Instance()->SSTIControlParams().sublist("MONOLITHIC"),
       "EQUILIBRATION_INIT_SCATRA");
   const bool calc_initial_pot =
-      DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+      INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
 
   if (!equilibration_scatra_initial and
       ScaTraField()->EquilibrationMethod() != CORE::LINALG::EquilibrationMethod::none)

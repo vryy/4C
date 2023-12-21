@@ -64,9 +64,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Truss3Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::Truss3Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["TRUSS3"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRUSS3"];
 
   defs["LINE2"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)

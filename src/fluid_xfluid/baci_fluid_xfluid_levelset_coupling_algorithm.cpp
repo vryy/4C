@@ -69,7 +69,7 @@ void XFLUIDLEVELSET::Algorithm::Init()
   stepmax_ = prbdyn_.get<int>("NUMSTEP");
 
   // Output specific criterions
-  write_center_of_mass_ = DRT::INPUT::IntegralValue<bool>(prbdyn_, "WRITE_CENTER_OF_MASS");
+  write_center_of_mass_ = INPUT::IntegralValue<bool>(prbdyn_, "WRITE_CENTER_OF_MASS");
 
   // (preliminary) maximum number of iterations and tolerance for outer iteration
   ittol_ = prbdyn_.get<double>("CONVTOL");

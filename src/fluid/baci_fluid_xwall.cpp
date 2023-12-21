@@ -54,9 +54,9 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
 
   // some exclusions and safety checks:
   if (nsd != 3) dserror("Only 3D problems considered in xwall modelling!");
-  if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+  if (INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
           INPAR::FLUID::timeint_afgenalpha &&
-      DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+      INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
           INPAR::FLUID::timeint_npgenalpha)
     dserror(
         "Use Af-Genalpha for time integration in combination with xwall wall modeling. There would "
@@ -141,8 +141,8 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
   if (smooth_res_aggregation_ && tauwcalctype_ == INPAR::FLUID::gradient)
     dserror("smoothing of tauw works only for residual-based tauw, as the residual is smoothed");
 
-  fix_residual_on_inflow_ = DRT::INPUT::IntegralValue<int>(
-      params_->sublist("WALL MODEL"), "Treat_Tauw_on_Dirichlet_Inflow");
+  fix_residual_on_inflow_ =
+      INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"), "Treat_Tauw_on_Dirichlet_Inflow");
 
   // output:
   if (myrank_ == 0)

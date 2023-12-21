@@ -56,10 +56,10 @@ namespace ART
     /*!
       Possible position flags is only "phi"
      */
-    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /// our version of element value tests
-    void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to scalar transport discretization

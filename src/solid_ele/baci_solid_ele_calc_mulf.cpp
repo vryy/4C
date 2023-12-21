@@ -370,7 +370,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::CalculateStress(const DRT::Eleme
 
 template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::Setup(
-    MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
+    MAT::So3Material& solid_material, INPUT::LineDefinition* linedef)
 {
   history_data_.resize(stiffness_matrix_integration_.NumPoints(), {});
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);

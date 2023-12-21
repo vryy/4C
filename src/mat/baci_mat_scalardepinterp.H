@@ -198,7 +198,7 @@ namespace MAT
         ) override;
 
     /// setup
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
     MAT::PAR::Parameter* Parameter() const override { return params_; }
@@ -210,7 +210,7 @@ namespace MAT
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Reading material weights (lambda) from input file
-    void ReadLambda(DRT::INPUT::LineDefinition* linedef, std::string specifier, double& lambda);
+    void ReadLambda(INPUT::LineDefinition* linedef, std::string specifier, double& lambda);
 
     /// evaluate strain energy function
     void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp,

@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 
 namespace
 {
-  using LineDefinitionVector = std::vector<DRT::INPUT::LineDefinition>;
+  using LineDefinitionVector = std::vector<INPUT::LineDefinition>;
 
   using TypeErasedFunctionCreator = std::function<std::any(const LineDefinitionVector&)>;
 
@@ -47,7 +47,7 @@ namespace
 
 
   template <int dim>
-  std::any CreateBuiltinFunction(const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+  std::any CreateBuiltinFunction(const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     // List all known TryCreate functions in a vector, so they can be called with a unified
     // syntax below. Also, erase their exact return type, since we can only store std::any.
@@ -67,8 +67,7 @@ namespace
 
   // add one level of indirection to dispatch on the dimension later when the global problem is
   // available.
-  auto CreateBuiltinFunctionDispatch(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+  auto CreateBuiltinFunctionDispatch(const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     switch (DRT::Problem::Instance()->NDim())
     {
@@ -88,7 +87,7 @@ namespace
 void PrintFunctionDatHeader()
 {
   CORE::UTILS::FunctionManager functionmanager;
-  DRT::INPUT::Lines lines = functionmanager.ValidFunctionLines();
+  INPUT::Lines lines = functionmanager.ValidFunctionLines();
 
   lines.Print(std::cout);
 }
@@ -97,7 +96,7 @@ void PrintFunctionDatHeader()
 
 void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   std::vector<LineDefinition> possible_lines = {
       LineDefinition::Builder().AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME").Build(),
@@ -150,9 +149,9 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
 }
 
 
-DRT::INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
+INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
 {
-  DRT::INPUT::Lines lines(
+  INPUT::Lines lines(
       "FUNCT", "Definition of functions for various cases, mainly boundary conditions");
 
   for (const auto& [possible_lines, _] : attached_function_data_)
@@ -168,13 +167,13 @@ DRT::INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
 
 
 void CORE::UTILS::FunctionManager::AddFunctionDefinition(
-    std::vector<DRT::INPUT::LineDefinition> possible_lines, FunctionFactory function_factory)
+    std::vector<INPUT::LineDefinition> possible_lines, FunctionFactory function_factory)
 {
   attached_function_data_.emplace_back(std::move(possible_lines), std::move(function_factory));
 }
 
 
-void CORE::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+void CORE::UTILS::FunctionManager::ReadInput(INPUT::DatFileReader& reader)
 {
   functions_.clear();
 
@@ -188,7 +187,7 @@ void CORE::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         {
           for (auto& [possible_lines, function_factory] : attached_function_data_)
           {
-            auto [parsed_lines, unparsed_lines] = DRT::INPUT::ReadMatchingLines(
+            auto [parsed_lines, unparsed_lines] = INPUT::ReadMatchingLines(
                 reader, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop

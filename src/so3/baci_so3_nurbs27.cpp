@@ -72,9 +72,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::So_nurbs27Type::ComputeNul
 }
 
 void DRT::ELEMENTS::NURBS::So_nurbs27Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["NURBS27"] = INPUT::LineDefinition::Builder()
                         .AddIntVector("NURBS27", 27)

@@ -445,7 +445,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitKernelHandler()
 {
   // get type of smoothed particle hydrodynamics kernel
   INPAR::PARTICLE::KernelType kerneltype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::KernelType>(params_sph_, "KERNEL");
+      INPUT::IntegralValue<INPAR::PARTICLE::KernelType>(params_sph_, "KERNEL");
 
   // create kernel handler
   switch (kerneltype)
@@ -494,7 +494,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitDensityHandler()
 {
   // get type of smoothed particle hydrodynamics density evaluation scheme
   INPAR::PARTICLE::DensityEvaluationScheme densityevaluationscheme =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::DensityEvaluationScheme>(
+      INPUT::IntegralValue<INPAR::PARTICLE::DensityEvaluationScheme>(
           params_sph_, "DENSITYEVALUATION");
 
   // create density handler
@@ -530,7 +530,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitDensityHandler()
 
   // safety check
   if (densityevaluationscheme != INPAR::PARTICLE::DensityPredictCorrect and
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::DensityCorrectionScheme>(
+      INPUT::IntegralValue<INPAR::PARTICLE::DensityCorrectionScheme>(
           params_sph_, "DENSITYCORRECTION") != INPAR::PARTICLE::NoCorrection)
     dserror(
         "the density correction scheme set is not valid with the current density evaluation "
@@ -551,7 +551,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitTemperatureHandler()
 {
   // get type of smoothed particle hydrodynamics temperature evaluation scheme
   INPAR::PARTICLE::TemperatureEvaluationScheme temperatureevaluationscheme =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
+      INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
           params_sph_, "TEMPERATUREEVALUATION");
 
   // create temperature handler
@@ -593,7 +593,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitSurfaceTensionHandler()
 {
   // get type of smoothed particle hydrodynamics surface tension formulation
   INPAR::PARTICLE::SurfaceTensionFormulation surfacetensionformulation =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionFormulation>(
+      INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionFormulation>(
           params_sph_, "SURFACETENSIONFORMULATION");
 
   // create surface tension handler
@@ -625,7 +625,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitBoundaryParticleHandler()
 {
   // get type of boundary particle formulation
   INPAR::PARTICLE::BoundaryParticleFormulationType boundaryparticleformulation =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::BoundaryParticleFormulationType>(
+      INPUT::IntegralValue<INPAR::PARTICLE::BoundaryParticleFormulationType>(
           params_sph_, "BOUNDARYPARTICLEFORMULATION");
 
   // create boundary particle handler
@@ -657,7 +657,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitDirichletOpenBoundaryHandl
 {
   // get type of dirichlet open boundary
   INPAR::PARTICLE::DirichletOpenBoundaryType dirichletopenboundarytype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::DirichletOpenBoundaryType>(
+      INPUT::IntegralValue<INPAR::PARTICLE::DirichletOpenBoundaryType>(
           params_sph_, "DIRICHLETBOUNDARYTYPE");
 
   // create open boundary handler
@@ -689,7 +689,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitNeumannOpenBoundaryHandler
 {
   // get type of neumann open boundary
   INPAR::PARTICLE::NeumannOpenBoundaryType neumannopenboundarytype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::NeumannOpenBoundaryType>(
+      INPUT::IntegralValue<INPAR::PARTICLE::NeumannOpenBoundaryType>(
           params_sph_, "NEUMANNBOUNDARYTYPE");
 
   // create open boundary handler
@@ -721,8 +721,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitVirtualWallParticleHandler
 {
   // get type of wall formulation
   INPAR::PARTICLE::WallFormulationType wallformulation =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallFormulationType>(
-          params_sph_, "WALLFORMULATION");
+      INPUT::IntegralValue<INPAR::PARTICLE::WallFormulationType>(params_sph_, "WALLFORMULATION");
 
   // create virtual wall particle handler
   switch (wallformulation)
@@ -753,7 +752,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
 {
   // get type of phase change
   INPAR::PARTICLE::PhaseChangeType phasechangetype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
+      INPUT::IntegralValue<INPAR::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
 
   // create phase change handler
   switch (phasechangetype)
@@ -796,7 +795,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitRigidParticleContactHandle
 {
   // get type of rigid particle contact
   INPAR::PARTICLE::RigidParticleContactType rigidparticlecontacttype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RigidParticleContactType>(
+      INPUT::IntegralValue<INPAR::PARTICLE::RigidParticleContactType>(
           params_sph_, "RIGIDPARTICLECONTACTTYPE");
 
   // create rigid particle contact handler

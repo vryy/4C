@@ -204,13 +204,13 @@ namespace MAT
      * @param[in] numgp   Current Gauss point
      * @param[in] linedef Linedefinition
      */
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) {}
+    virtual void Setup(int numgp, INPUT::LineDefinition* linedef) {}
 
     /*!
      * @brief Post setup routine which will be called after all elements were read and set up
      *
      * This method will be called after the input phase to setup the material with
-     * input data that has not yet been read during the Setup(int,DRT::INPUT::LineDefinition*) call.
+     * input data that has not yet been read during the Setup(int,INPUT::LineDefinition*) call.
      *
      * @param[in] params Container for additional information passed from the element
      * @param[in] eleGID Global element ID

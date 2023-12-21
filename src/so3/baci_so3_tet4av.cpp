@@ -76,9 +76,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_tet4avType::ComputeNullSpace(
 
 //------------------------------------------------------------------------
 void DRT::ELEMENTS::So_tet4avType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("TET4", 4)

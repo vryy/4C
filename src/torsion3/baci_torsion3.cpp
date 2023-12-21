@@ -62,9 +62,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Torsion3Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::Torsion3Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["TORSION3"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["TORSION3"];
 
   defs["LINE3"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("LINE3", 3)

@@ -142,7 +142,7 @@ namespace MAT
 
     void Unpack(const std::vector<char>& data) override;
 
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     bool UsesExtendedUpdate() override { return true; };
 

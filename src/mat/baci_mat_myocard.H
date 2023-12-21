@@ -150,7 +150,7 @@ namespace MAT
     /// to setup conductivity tensor for each element
     void Setup(const CORE::LINALG::Matrix<3, 1>& fiber1);
     void Setup(const CORE::LINALG::Matrix<2, 1>& fiber1);
-    void Setup(DRT::INPUT::LineDefinition* linedef);
+    void Setup(INPUT::LineDefinition* linedef);
 
     void SetupDiffusionTensor(const std::vector<double>& fiber1);
     void SetupDiffusionTensor(const CORE::LINALG::Matrix<3, 1>& fiber1);

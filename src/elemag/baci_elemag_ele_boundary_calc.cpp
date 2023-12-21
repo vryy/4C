@@ -136,7 +136,7 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
    * unknowns we build K with G as summand. Hence, we can just add the terms
    * resulting from this boundary condition to K (and hence G)
    */
-  const ELEMAG::Action action = DRT::INPUT::get<ELEMAG::Action>(params, "action");
+  const ELEMAG::Action action = INPUT::get<ELEMAG::Action>(params, "action");
   switch (action)
   {
     case ELEMAG::calc_abc:

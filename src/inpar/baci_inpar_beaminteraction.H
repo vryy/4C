@@ -20,13 +20,10 @@
 BACI_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
-  {
-    class ConditionDefinition;
-  }
-}  // namespace DRT
+  class ConditionDefinition;
+}
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -191,7 +188,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set beam interaction specific conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace BEAMINTERACTION
 

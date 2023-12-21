@@ -181,10 +181,8 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
     }
     else if (action == "calc_struct_stress")
     {
-      auto iostress =
-          DRT::INPUT::get<INPAR::STR::StressType>(p, "iostress", INPAR::STR::stress_none);
-      auto iostrain =
-          DRT::INPUT::get<INPAR::STR::StrainType>(p, "iostrain", INPAR::STR::strain_none);
+      auto iostress = INPUT::get<INPAR::STR::StressType>(p, "iostress", INPAR::STR::stress_none);
+      auto iostrain = INPUT::get<INPAR::STR::StrainType>(p, "iostrain", INPAR::STR::strain_none);
       std::vector<double> nodalstress(6);
       std::vector<double> nodalstrain(6);
       NodalIntegration(nullptr, nullptr, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis,

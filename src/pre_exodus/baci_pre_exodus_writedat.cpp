@@ -142,8 +142,8 @@ void EXODUS::WriteDatConditions(
 {
   using namespace BACI;
 
-  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> condlist =
-      DRT::INPUT::ValidConditions();
+  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> condlist =
+      INPUT::ValidConditions();
 
   // count how often we have one specific condition
   std::map<std::string, std::vector<int>> count_cond;

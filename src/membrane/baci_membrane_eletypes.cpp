@@ -65,11 +65,11 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpa
 }
 
 void DRT::ELEMENTS::Membrane_tri3Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE3"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE3"];
 
-  defs["TRI3"] = DRT::INPUT::LineDefinition::Builder()
+  defs["TRI3"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("TRI3", 3)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
@@ -133,11 +133,11 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpa
 }
 
 void DRT::ELEMENTS::Membrane_tri6Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE6"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE6"];
 
-  defs["TRI6"] = DRT::INPUT::LineDefinition::Builder()
+  defs["TRI6"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("TRI6", 6)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
@@ -204,11 +204,11 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSp
 }
 
 void DRT::ELEMENTS::Membrane_quad4Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE4"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE4"];
 
-  defs["QUAD4"] = DRT::INPUT::LineDefinition::Builder()
+  defs["QUAD4"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("QUAD4", 4)
                       .AddNamedInt("MAT")
                       .AddNamedString("KINEM")
@@ -275,11 +275,11 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSp
 }
 
 void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE9"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE9"];
 
-  defs["QUAD9"] = DRT::INPUT::LineDefinition::Builder()
+  defs["QUAD9"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("QUAD9", 9)
                       .AddNamedInt("MAT")
                       .AddNamedString("KINEM")

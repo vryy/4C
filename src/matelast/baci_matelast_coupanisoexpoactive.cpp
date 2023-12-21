@@ -65,7 +65,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::UnpackSummand(
   dPIact_ = EvaluatedPsiActive();
 }
 
-void MAT::ELASTIC::CoupAnisoExpoActive::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::CoupAnisoExpoActive::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // setup first derivative of active fiber potential w.r.t. active fiber stretch (const during the
   // whole simulation)

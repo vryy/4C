@@ -21,8 +21,8 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
-    const DRT::INPUT::DatFileReader& reader, std::string sectionname)
+INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+    const INPUT::DatFileReader& reader, std::string sectionname)
     : name_(dis->Name()),
       reader_(reader),
       comm_(reader.Comm()),
@@ -34,8 +34,8 @@ DRT::INPUT::ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
-    const DRT::INPUT::DatFileReader& reader, std::string sectionname, std::string elementtype)
+INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+    const INPUT::DatFileReader& reader, std::string sectionname, std::string elementtype)
     : name_(dis->Name()),
       reader_(reader),
       comm_(reader.Comm()),
@@ -48,8 +48,8 @@ DRT::INPUT::ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
-    const DRT::INPUT::DatFileReader& reader, std::string sectionname,
+INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+    const INPUT::DatFileReader& reader, std::string sectionname,
     const std::set<std::string>& elementtypes)
     : name_(dis->Name()),
       reader_(reader),
@@ -64,7 +64,7 @@ DRT::INPUT::ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementReader::ReadAndDistribute()
+void INPUT::ElementReader::ReadAndDistribute()
 {
   const int myrank = comm_->MyPID();
   const int numproc = comm_->NumProc();
@@ -120,7 +120,7 @@ void DRT::INPUT::ElementReader::ReadAndDistribute()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<int, std::vector<int>> DRT::INPUT::ElementReader::GetElementSizeAndIDs() const
+std::pair<int, std::vector<int>> INPUT::ElementReader::GetElementSizeAndIDs() const
 {
   // vector of all global element ids
   std::vector<int> eids;
@@ -173,7 +173,7 @@ std::pair<int, std::vector<int>> DRT::INPUT::ElementReader::GetElementSizeAndIDs
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementReader::GetAndDistributeElements(const int nblock, const int bsize)
+void INPUT::ElementReader::GetAndDistributeElements(const int nblock, const int bsize)
 {
   std::ifstream file;
   std::string inputfile_name = reader_.MyInputfileName();
@@ -187,7 +187,7 @@ void DRT::INPUT::ElementReader::GetAndDistributeElements(const int nblock, const
   int filecount = 0;
   bool endofsection = false;
 
-  DRT::INPUT::ElementDefinition ed;
+  INPUT::ElementDefinition ed;
   ed.SetupValidElementLines();
 
   for (int block = 0; block < nblock; ++block)
@@ -231,7 +231,7 @@ void DRT::INPUT::ElementReader::GetAndDistributeElements(const int nblock, const
             // For the time being we support old and new input facilities. To
             // smooth transition.
 
-            DRT::INPUT::LineDefinition* linedef = ed.ElementLines(eletype, distype);
+            INPUT::LineDefinition* linedef = ed.ElementLines(eletype, distype);
             if (linedef != nullptr)
             {
               if (not linedef->Read(t))

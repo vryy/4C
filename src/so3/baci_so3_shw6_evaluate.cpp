@@ -181,9 +181,9 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> stress;
         CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> strain;
         auto iostress =
-            DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+            INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         auto iostrain =
-            DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+            INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         soshw6_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
             params, iostress, iostrain);
         {

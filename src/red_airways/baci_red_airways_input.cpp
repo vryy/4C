@@ -24,7 +24,7 @@ using namespace DRT::UTILS;
 | Read in the RED_AIRWAY elements                                       |
 *-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAirway::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if (ndim != 3)
@@ -108,7 +108,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(
 | Read in the RED_ACINUS elements                                       |
 *-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAcinus::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if (ndim != 3)
@@ -158,7 +158,7 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(
 | Read in the RED_ACINAR_INTER_DEP elements                             |
 *-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if (ndim != 3)
@@ -184,7 +184,7 @@ bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(
 | Read in the Scatra elements                                           |
 *-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAirBloodScatra::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if (ndim != 3)
@@ -214,7 +214,7 @@ bool DRT::ELEMENTS::RedAirBloodScatra::ReadElement(
 | Read in the Scatra elements                                           |
 *-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAirBloodScatraLine3::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if (ndim != 3)

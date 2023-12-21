@@ -44,7 +44,7 @@ namespace LINALG
 {
   class SerialDenseMatrix;
 }
-namespace DRT::INPUT
+namespace INPUT
 {
   class LineDefinition;
 }
@@ -161,7 +161,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) : Parameter list for exchange of parameters
      */
-    virtual void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef);
+    virtual void ReadElement(int numgp, INPUT::LineDefinition* linedef);
 
     /*!
      * Returns whether the constituent is already set up

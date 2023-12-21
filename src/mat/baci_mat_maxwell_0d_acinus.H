@@ -125,7 +125,7 @@ namespace MAT
     /*!
       \brief
     */
-    virtual void Setup(DRT::INPUT::LineDefinition* linedef)
+    virtual void Setup(INPUT::LineDefinition* linedef)
     {
       dserror(
           "Setup not implemented yet! Check your material type, "

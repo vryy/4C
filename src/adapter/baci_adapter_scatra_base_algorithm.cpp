@@ -120,8 +120,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
           "CONVFORM", prbdyn.get<std::string>("STRUCTSCAL_CONVFORM"));
 
       // scatra2 get's in initial functions from FS3I DYNAMICS
-      switch (
-          DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(prbdyn, "STRUCTSCAL_INITIALFIELD"))
+      switch (INPUT::IntegralValue<INPAR::SCATRA::InitialField>(prbdyn, "STRUCTSCAL_INITIALFIELD"))
       {
         case INPAR::SCATRA::initfield_zero_field:
           scatratimeparams->set<std::string>("INITIALFIELD",
@@ -166,8 +165,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   extraparams->sublist("TURBULENT INFLOW") = fdyn.sublist("TURBULENT INFLOW");
 
   // ------------------------------------get electromagnetic parameters
-  extraparams->set<bool>("ELECTROMAGNETICDIFFUSION",
-      DRT::INPUT::IntegralValue<int>(scatradyn, "ELECTROMAGNETICDIFFUSION"));
+  extraparams->set<bool>(
+      "ELECTROMAGNETICDIFFUSION", INPUT::IntegralValue<int>(scatradyn, "ELECTROMAGNETICDIFFUSION"));
   extraparams->set<int>("EMDSOURCE", scatradyn.get<int>("EMDSOURCE"));
 
   // -------------------------------------------------------------------
@@ -175,7 +174,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   auto timintscheme =
-      DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+      INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
 
   // low Mach number flow
   if (probtype == ProblemType::loma or probtype == ProblemType::thermo_fsi)
@@ -220,7 +219,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     {
       case INPAR::SCATRA::timeint_one_step_theta:
       {
-        if (DRT::INPUT::IntegralValue<bool>(elchparams->sublist("SCL"), "ADD_MICRO_MACRO_COUPLING"))
+        if (INPUT::IntegralValue<bool>(elchparams->sublist("SCL"), "ADD_MICRO_MACRO_COUPLING"))
         {
           if (disname == "scatra")
           {
@@ -542,7 +541,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 
     // create a 2nd solver for block-preconditioning if chosen from input
-    if (DRT::INPUT::IntegralValue<int>(*elchparams, "BLOCKPRECOND"))
+    if (INPUT::IntegralValue<int>(*elchparams, "BLOCKPRECOND"))
     {
       const auto& solver = scatra_->Solver();
 

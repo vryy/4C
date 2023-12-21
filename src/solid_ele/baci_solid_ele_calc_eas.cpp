@@ -894,7 +894,7 @@ double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateInternalEnerg
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Setup(
-    MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
+    MAT::So3Material& solid_material, INPUT::LineDefinition* linedef)
 {
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }

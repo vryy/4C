@@ -75,7 +75,7 @@ const SSI::SSIMono& SSI::SSIResultTest::SSIMono() const
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-void SSI::SSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void SSI::SSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
   if (ssi_base_->Comm().MyPID() == 0)

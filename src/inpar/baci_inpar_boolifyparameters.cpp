@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 // Auxiliar routine to boolify integral Yes/No data
-void DRT::INPUT::BoolifyValidInputParameters(
+void INPUT::BoolifyValidInputParameters(
     Teuchos::ParameterList& list  ///< the valid input parameter list
 )
 {

@@ -60,7 +60,7 @@ MAT::StructPoroReaction::StructPoroReaction(MAT::PAR::StructPoroReaction* params
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::StructPoroReaction::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   StructPoro::Setup(numgp, linedef);
   refporosity_ = params_->init_porosity_;

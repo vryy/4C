@@ -187,7 +187,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
 
 template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
   Wall1::ReadElement(eletype, eledistype, linedef);
@@ -206,8 +206,7 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::
-    ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
-        DRT::INPUT::LineDefinition* linedef)
+    ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 2; ++dim)
   {
@@ -219,8 +218,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::
-    ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
-        DRT::INPUT::LineDefinition* linedef)
+    ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 2; ++dim)
   {

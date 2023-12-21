@@ -103,9 +103,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoBoundaryType::Create(const int i
  | setup element                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["THERMO"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["THERMO"];
 
   defs["HEX8"] =
       INPUT::LineDefinition::Builder().AddIntVector("HEX8", 8).AddNamedInt("MAT").Build();

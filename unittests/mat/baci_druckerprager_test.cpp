@@ -61,7 +61,7 @@ namespace
   //! test member function Pack and unpack
   TEST_F(DruckerPragerTest, TestPackUnpack)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = .1;
@@ -90,7 +90,7 @@ namespace
   //! test member function Evaluate
   TEST_F(DruckerPragerTest, TestEvaluate)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = .1;
@@ -112,7 +112,7 @@ namespace
   //! test member function Evaluate for Return to Cone
   TEST_F(DruckerPragerTest, TestEvaluateReturnToCone)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = 0.0;
@@ -134,7 +134,7 @@ namespace
   //! test member function Evaluate for Return to Apex
   TEST_F(DruckerPragerTest, TestEvaluateReturnToApex)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = 1.0;
@@ -152,7 +152,7 @@ namespace
   //! test member function Evaluate for History and elastic unloading
   TEST_F(DruckerPragerTest, TestEvaluateHistory)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.1);
@@ -202,7 +202,7 @@ namespace
   //! test member function Evaluate for arbitrary values
   TEST_F(DruckerPragerTest, TestEvaluateRandomStrain)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1> input_strain;
     input_strain(0) = 1.1;
@@ -229,7 +229,7 @@ namespace
   //! test member function Evaluate
   TEST_F(DruckerPragerTest, TestEvaluateCmat)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 6; ++i) input_strain(i) = FAD(6, i, .1 * i);
@@ -259,7 +259,7 @@ namespace
   //! test CMAT matrix for Return to Cone
   TEST_F(DruckerPragerTest, TestEvaluateReturnToConeCmat)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.1 * i);
@@ -281,7 +281,7 @@ namespace
   };
   TEST_F(DruckerPragerTest, TestEvaluateReturnToApexCmat)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1, FAD> input_strain;
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 1.0);
@@ -305,7 +305,7 @@ namespace
   //! test CMAT matrix for Return to Apex
   TEST_F(DruckerPragerTest, TestEvaluateRandomStrainCmat)
   {
-    DRT::INPUT::LineDefinition linedef;
+    INPUT::LineDefinition linedef;
     druckprag_->Setup(1, &linedef);
     CORE::LINALG::Matrix<6, 1, FAD> input_strain;
     input_strain(0) = FAD(6, 0, 1.1);

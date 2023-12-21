@@ -58,7 +58,7 @@ namespace
     }
     else
     {
-      return DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress");
+      return INPUT::get<INPAR::STR::StressType>(params, "iostress");
     }
   }
 
@@ -71,7 +71,7 @@ namespace
     }
     else
     {
-      return DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
+      return INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
     }
   }
 }  // namespace

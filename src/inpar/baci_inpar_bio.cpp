@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::ARTDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
   Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC", false, "");
@@ -56,7 +56,7 @@ void INPAR::ARTDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
 void INPAR::ARTNET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -79,9 +79,9 @@ void INPAR::ARTNET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
 
 void INPAR::ARTNET::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // 1D-Artery connector condition
@@ -282,34 +282,33 @@ void INPAR::BIOFILM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   Teuchos::ParameterList& biofilmcontrol =
       list->sublist("BIOFILM CONTROL", false, "control parameters for biofilm problems\n");
 
-  DRT::INPUT::BoolParameter(
+  INPUT::BoolParameter(
       "BIOFILMGROWTH", "No", "Scatra algorithm for biofilm growth", &biofilmcontrol);
-  DRT::INPUT::BoolParameter("AVGROWTH", "No",
+  INPUT::BoolParameter("AVGROWTH", "No",
       "The calculation of growth parameters is based on averaged values", &biofilmcontrol);
-  DRT::INPUT::DoubleParameter(
+  INPUT::DoubleParameter(
       "FLUXCOEF", 0.0, "Coefficient for growth due to scalar flux", &biofilmcontrol);
-  DRT::INPUT::DoubleParameter("NORMFORCEPOSCOEF", 0.0,
+  INPUT::DoubleParameter("NORMFORCEPOSCOEF", 0.0,
       "Coefficient for erosion due to traction normal surface forces", &biofilmcontrol);
-  DRT::INPUT::DoubleParameter("NORMFORCENEGCOEF", 0.0,
+  INPUT::DoubleParameter("NORMFORCENEGCOEF", 0.0,
       "Coefficient for erosion due to compression normal surface forces", &biofilmcontrol);
-  DRT::INPUT::DoubleParameter("TANGONEFORCECOEF", 0.0,
+  INPUT::DoubleParameter("TANGONEFORCECOEF", 0.0,
       "Coefficient for erosion due to the first tangential surface force", &biofilmcontrol);
-  DRT::INPUT::DoubleParameter("TANGTWOFORCECOEF", 0.0,
+  INPUT::DoubleParameter("TANGTWOFORCECOEF", 0.0,
       "Coefficient for erosion due to the second tangential surface force", &biofilmcontrol);
-  DRT::INPUT::DoubleParameter(
-      "BIOTIMESTEP", 0.05, "Time step size for biofilm growth", &biofilmcontrol);
-  DRT::INPUT::IntParameter(
+  INPUT::DoubleParameter("BIOTIMESTEP", 0.05, "Time step size for biofilm growth", &biofilmcontrol);
+  INPUT::IntParameter(
       "BIONUMSTEP", 0, "Maximum number of steps for biofilm growth", &biofilmcontrol);
-  DRT::INPUT::BoolParameter(
+  INPUT::BoolParameter(
       "OUTPUT_GMSH", "No", "Do you want to write Gmsh postprocessing files?", &biofilmcontrol);
 }
 
 
 
 void INPAR::BIOFILM::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // Additional coupling for biofilm growth
@@ -338,7 +337,7 @@ void INPAR::BIOFILM::SetValidConditions(
 
 void INPAR::REDAIRWAYS::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -386,9 +385,9 @@ void INPAR::REDAIRWAYS::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
 
 
 void INPAR::REDAIRWAYS::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // 3-D/reduced-D coupling boundary condition

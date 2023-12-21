@@ -144,7 +144,7 @@ namespace MAT
         int eleGID) override;                ///< Element GID
 
     /// setup material data
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /// update sumands
     void Update() override;

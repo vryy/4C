@@ -18,13 +18,10 @@
 BACI_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
-  {
-    class ConditionDefinition;
-  }
-}  // namespace DRT
+  class ConditionDefinition;
+}
 
 /*----------------------------------------------------------------------*
  |                                                                      |

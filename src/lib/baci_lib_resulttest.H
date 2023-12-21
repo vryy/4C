@@ -22,16 +22,15 @@
 
 BACI_NAMESPACE_OPEN
 
+namespace INPUT
+{
+  class DatFileReader;
+  class LineDefinition;
+  class Lines;
+}  // namespace INPUT
 
 namespace DRT
 {
-  namespace INPUT
-  {
-    class DatFileReader;
-    class LineDefinition;
-    class Lines;
-  }  // namespace INPUT
-
   /*!
     \brief Base class of all field test classes
 
@@ -57,7 +56,7 @@ namespace DRT
     virtual ~ResultTest() = default;
 
     /// perform element value test
-    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /*!
      * @brief  perform nodal value test
@@ -66,11 +65,11 @@ namespace DRT
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// perform special case test
     virtual void TestSpecial(
-        DRT::INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
+        INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
 
     /*!
      * @brief  perform special case test
@@ -79,10 +78,10 @@ namespace DRT
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// tell whether this field test matches to a given line
-    virtual bool Match(DRT::INPUT::LineDefinition& res);
+    virtual bool Match(INPUT::LineDefinition& res);
 
    protected:
     //! compare a calculated value with the expected one
@@ -91,7 +90,7 @@ namespace DRT
     //! Node/element based results have to be compared at a specific node/element.
     //! Special results are not attached to a specific node/element, but to the
     //! overall algorithm.
-    virtual int CompareValues(double actresult, std::string type, DRT::INPUT::LineDefinition& res);
+    virtual int CompareValues(double actresult, std::string type, INPUT::LineDefinition& res);
 
    private:
     /// specific name of a field test
@@ -118,17 +117,17 @@ namespace DRT
     void TestAll(const Epetra_Comm& comm);
 
     /// Definition of valid input section
-    DRT::INPUT::Lines ValidResultLines();
+    INPUT::Lines ValidResultLines();
 
     /// read the baci input file and set up all curves
-    void ReadInput(DRT::INPUT::DatFileReader& reader);
+    void ReadInput(INPUT::DatFileReader& reader);
 
    private:
     /// set of field specific result test objects
     std::vector<Teuchos::RCP<ResultTest>> fieldtest_;
 
     /// expected results
-    std::vector<DRT::INPUT::LineDefinition> results_;
+    std::vector<INPUT::LineDefinition> results_;
   };
 
 }  // namespace DRT

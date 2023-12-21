@@ -50,10 +50,10 @@ void FSI::DirichletNeumannVel::Setup()
   FSI::DirichletNeumann::Setup();
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp)
+  if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp)
     dserror("Please set the fsi coupling variable to Velocity or Force!\n");
   SetKinematicCoupling(
-      DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel);
+      INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel);
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true) ==
       Teuchos::null)
   {
@@ -150,7 +150,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::InitialGuess()
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-    if (DRT::INPUT::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
+    if (INPUT::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {
       dserror(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());

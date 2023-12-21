@@ -215,9 +215,9 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
   INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
   if (shapefcn == INPAR::MORTAR::shape_dual &&
       (Dim() == 3 || (Dim() == 2 && lagmultquad == INPAR::MORTAR::lagmult_lin)))
     for (int i = 0; i < (int)interface_.size(); ++i)
@@ -395,10 +395,10 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   if (quadratic) dserror("RestrictMeshtyingZone only implemented for first-order elements");
 
   INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   if ((shapefcn == INPAR::MORTAR::shape_dual || shapefcn == INPAR::MORTAR::shape_petrovgalerkin) &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(
-          Params(), "LM_DUAL_CONSISTENT") == INPAR::MORTAR::consistent_none)
+      INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(Params(), "LM_DUAL_CONSISTENT") ==
+          INPAR::MORTAR::consistent_none)
     dserror(
         "ERROR: RestrictMeshtyingZone for dual shape functions "
         "only implemented in combination with consistent boundary modification");
@@ -778,7 +778,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
 {
   // check whether this is a restart with meshtying of a previously
   // non-meshtying simulation run
-  bool restartwithmeshtying = DRT::INPUT::IntegralValue<int>(Params(), "RESTART_WITH_MESHTYING");
+  bool restartwithmeshtying = INPUT::IntegralValue<int>(Params(), "RESTART_WITH_MESHTYING");
 
   // set displacement state
   SetState(MORTAR::state_new_displacement, *dis);
@@ -794,7 +794,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
 
   // only for Uzawa strategy
   INPAR::CONTACT::SolvingStrategy st =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
   if (st == INPAR::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -812,7 +812,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
 {
   // check chosen output option
   INPAR::CONTACT::EmOutputType emtype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(Params(), "EMOUTPUT");
+      INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(Params(), "EMOUTPUT");
 
   // get out of here if no output wanted
   if (emtype == INPAR::CONTACT::output_none) return;

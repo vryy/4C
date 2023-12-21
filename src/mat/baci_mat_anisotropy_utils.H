@@ -28,7 +28,7 @@ namespace CORE::COMM
 {
   class PackBuffer;
 }
-namespace DRT::INPUT
+namespace INPUT
 {
   class LineDefinition;
 }
@@ -47,7 +47,7 @@ namespace MAT
    * @param specifier (in) : Identifier of the fiber
    * @param fiber_vector (out) : Fiber vector
    */
-  void ReadAnisotropyFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
+  void ReadAnisotropyFiber(INPUT::LineDefinition* linedef, std::string specifier,
       CORE::LINALG::Matrix<3, 1>& fiber_vector);
 
   /*!

@@ -258,16 +258,16 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::Lines DRT::UTILS::ValidCloningMaterialMapLines()
+INPUT::Lines DRT::UTILS::ValidCloningMaterialMapLines()
 {
   // this defines the valid input line
-  DRT::INPUT::LineDefinition structure = DRT::INPUT::LineDefinition::Builder()
-                                             .AddNamedString("SRC_FIELD")
-                                             .AddNamedInt("SRC_MAT")
-                                             .AddNamedString("TAR_FIELD")
-                                             .AddNamedInt("TAR_MAT")
-                                             .Build();
-  DRT::INPUT::Lines lines = DRT::INPUT::Lines("CLONING MATERIAL MAP",
+  INPUT::LineDefinition structure = INPUT::LineDefinition::Builder()
+                                        .AddNamedString("SRC_FIELD")
+                                        .AddNamedInt("SRC_MAT")
+                                        .AddNamedString("TAR_FIELD")
+                                        .AddNamedInt("TAR_MAT")
+                                        .Build();
+  INPUT::Lines lines = INPUT::Lines("CLONING MATERIAL MAP",
       "This section is used for multi physics simulations, "
       "in which a discretization is used for more than one physics. "
       "The material model given for the defined element (SRC_MAT) is coupled to the material model "
@@ -282,7 +282,7 @@ DRT::INPUT::Lines DRT::UTILS::ValidCloningMaterialMapLines()
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PrintCloningMaterialMapDatHeader()
 {
-  DRT::INPUT::Lines lines = ValidCloningMaterialMapLines();
+  INPUT::Lines lines = ValidCloningMaterialMapLines();
   lines.Print(std::cout);
 }  // DRT::UTILS::PrintCloningMaterialMapDatHeader
 

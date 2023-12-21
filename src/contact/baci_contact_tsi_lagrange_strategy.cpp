@@ -126,7 +126,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   SetState(MORTAR::state_temperature, *temp2);
 
   // error checks
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM") !=
+  if (INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM") !=
       INPAR::CONTACT::system_condensed)
     dserror("only condensed system implemented");
 
@@ -985,7 +985,7 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> di
 void CONTACT::CoTSILagrangeStrategy::SetAlphafThermo(const Teuchos::ParameterList& tdyn)
 {
   INPAR::THR::DynamicType dyn_type =
-      DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
+      INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
   switch (dyn_type)
   {
     case INPAR::THR::dyna_genalpha:
@@ -1031,7 +1031,7 @@ void CONTACT::CoTSILagrangeStrategy::DoWriteRestart(
 void CONTACT::CoTSILagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
-  bool restartwithcontact = DRT::INPUT::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = INPUT::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
 
   CONTACT::CoAbstractStrategy::DoReadRestart(reader, dis);
   fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));

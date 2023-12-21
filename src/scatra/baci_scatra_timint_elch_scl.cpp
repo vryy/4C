@@ -46,13 +46,13 @@ SCATRA::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretizatio
       matrixtype_elch_scl_ != CORE::LINALG::MatrixType::block_field)
     dserror("Only sparse and block field matrices supported in SCL computations");
 
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "INITPOTCALC"))
+  if (INPUT::IntegralValue<int>(*elchparams_, "INITPOTCALC"))
   {
     dserror(
         "Must disable INITPOTCALC for a coupled SCL problem. Use INITPOTCALC in the SCL section "
         "instead.");
   }
-  if (!DRT::INPUT::IntegralValue<bool>(*params_, "SKIPINITDER"))
+  if (!INPUT::IntegralValue<bool>(*params_, "SKIPINITDER"))
   {
     dserror(
         "Must enable SKIPINITDER. Currently, Neumann BCs are not supported in the SCL formulation "
@@ -74,7 +74,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
       Teuchos::rcp(new Teuchos::ParameterList(problem->ScalarTransportDynamicParams()));
 
   std::string initial_field_type;
-  switch (DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(
+  switch (INPUT::IntegralValue<INPAR::SCATRA::InitialField>(
       elchparams_->sublist("SCL"), "INITIALFIELD"))
   {
     case INPAR::SCATRA::initfield_zero_field:
@@ -740,7 +740,7 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
     my_micro_permuted_node_gids.emplace_back(mirco_node_gid);
   }
 
-  if (DRT::INPUT::IntegralValue<bool>(elchparams_->sublist("SCL"), "COUPLING_OUTPUT"))
+  if (INPUT::IntegralValue<bool>(elchparams_->sublist("SCL"), "COUPLING_OUTPUT"))
     WriteCouplingToCSV(glob_macro_micro_coupled_node_gids, glob_macro_slave_node_master_node_gids);
 
   // setup Epetra maps for coupled nodes
@@ -1080,7 +1080,7 @@ void SCATRA::ScaTraTimIntElchSCL::PrepareTimeLoop()
   // call base class routine
   ScaTraTimIntElch::PrepareTimeLoop();
 
-  if (DRT::INPUT::IntegralValue<int>(elchparams_->sublist("SCL"), "INITPOTCALC"))
+  if (INPUT::IntegralValue<int>(elchparams_->sublist("SCL"), "INITPOTCALC"))
     CalcInitialPotentialField();
 }
 

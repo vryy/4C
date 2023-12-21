@@ -31,7 +31,7 @@ POROFLUIDMULTIPHASE::ResultTest::ResultTest(TimIntImpl& porotimint)
  | test node                                                vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::TestNode(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -79,7 +79,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestNode(
  | test element                                        kremheller 10/19 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::TestElement(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -233,7 +233,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultElement(
  | test special quantity not associated with a particular element or node  vuong 08/16 |
  *-------------------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
   if (porotimint_.Discretization()->Comm().MyPID() == 0)

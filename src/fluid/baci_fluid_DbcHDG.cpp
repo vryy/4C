@@ -248,7 +248,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
 
           // check whether the imposition of the average pressure is requested
           const int dopressavgbc =
-              DRT::INPUT::IntegralValue<INPAR::FLUID::PressAvgBc>(params, "PRESSAVGBC");
+              INPUT::IntegralValue<INPAR::FLUID::PressAvgBc>(params, "PRESSAVGBC");
 
           if (dopressavgbc == INPAR::FLUID::yes_pressure_average_bc)
           {

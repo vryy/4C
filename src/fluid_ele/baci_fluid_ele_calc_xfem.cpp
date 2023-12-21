@@ -166,8 +166,8 @@ namespace DRT
       CORE::LINALG::Matrix<nsd_, nsd_> grad_u_err(true);
       double p_err = 0.0;
 
-      const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
-      const int calcerrfunctno = DRT::INPUT::get<int>(params, "error function number");
+      const int calcerr = INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
+      const int calcerrfunctno = INPUT::get<int>(params, "error function number");
 
       const double t = my::fldparatimint_->Time();
 
@@ -800,8 +800,8 @@ namespace DRT
       if (cond_manager == Teuchos::null) dserror("set the condition manager!");
 #endif
 
-      const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
-      const int calcerrfunctno = DRT::INPUT::get<int>(params, "error function number");
+      const int calcerr = INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
+      const int calcerrfunctno = INPUT::get<int>(params, "error function number");
 
       const double t = my::fldparatimint_->Time();
 

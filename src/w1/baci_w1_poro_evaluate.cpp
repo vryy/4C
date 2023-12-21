@@ -471,8 +471,8 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
 
         CORE::LINALG::SerialDenseMatrix couplstress(numgpt_, Wall1::numstr_);
 
-        auto iocouplstress = DRT::INPUT::get<INPAR::STR::StressType>(
-            params, "iocouplstress", INPAR::STR::stress_none);
+        auto iocouplstress =
+            INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
 
         // need current fluid state,
         // call the fluid discretization: fluid equates 2nd dofset

@@ -17,7 +17,7 @@ BACI_NAMESPACE_OPEN
 namespace
 {
   Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateCombustFunction(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+      const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -38,11 +38,11 @@ namespace
 
 void DRT::UTILS::AddValidCombustFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  DRT::INPUT::LineDefinition zalesaksdisk =
-      DRT::INPUT::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();
+  INPUT::LineDefinition zalesaksdisk =
+      INPUT::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();
 
-  DRT::INPUT::LineDefinition collapsingwatercolumn =
-      DRT::INPUT::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
+  INPUT::LineDefinition collapsingwatercolumn =
+      INPUT::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
 
   function_manager.AddFunctionDefinition(
       {std::move(zalesaksdisk), std::move(collapsingwatercolumn)}, CreateCombustFunction);

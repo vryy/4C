@@ -44,7 +44,7 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
 
   // This value can be overwritten from the physical field
   parameters.every_iteration_ =
-      DRT::INPUT::IntegralValue<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
+      INPUT::IntegralValue<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
 
   // Type of output writer
   const auto output_writer = Teuchos::getIntegralValue<INPAR::IO_RUNTIME_VTK::OutputWriter>(

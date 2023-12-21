@@ -29,8 +29,7 @@ BACI_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-DRT::INPUT::ParticleReader::ParticleReader(
-    const DRT::INPUT::DatFileReader& reader, std::string sectionname)
+INPUT::ParticleReader::ParticleReader(const INPUT::DatFileReader& reader, std::string sectionname)
     : reader_(reader), comm_(reader.Comm()), sectionname_(std::move(sectionname))
 {
   // empty constructor
@@ -39,7 +38,7 @@ DRT::INPUT::ParticleReader::ParticleReader(
 /*---------------------------------------------------------------------------*
  | do the actual reading of particles                         sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
+void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
 {
   const int myrank = comm_->MyPID();
   const int numproc = comm_->NumProc();

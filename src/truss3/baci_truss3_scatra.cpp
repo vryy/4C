@@ -59,18 +59,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3ScatraType::Create(const int id,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3ScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["TRUSS3SCATRA"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRUSS3SCATRA"];
 
   // get definitions from standard truss element
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_truss;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_truss;
   Truss3Type::SetupElementDefinition(definitions_truss);
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_truss = definitions_truss["TRUSS3"];
+  std::map<std::string, INPUT::LineDefinition>& defs_truss = definitions_truss["TRUSS3"];
 
   // copy definitions of standard truss element to truss element for scalar transport coupling
   defs["LINE2"] =
-      DRT::INPUT::LineDefinition::Builder(defs_truss["LINE2"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_truss["LINE2"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::Truss3Scatra::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Truss3Scatra::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read base element
   Truss3::ReadElement(eletype, distype, linedef);
@@ -260,8 +260,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
       else
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        iostress =
-            DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        iostress = INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
       }
 
       const CORE::FE::IntegrationPoints1D intpoints(gaussrule_);

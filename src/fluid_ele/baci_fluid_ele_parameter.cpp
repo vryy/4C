@@ -131,7 +131,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
   }
 
   // set flag for physical type of fluid flow
-  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
+  physicaltype_ = INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
   if (((physicaltype_ == INPAR::FLUID::loma) or
           (physicaltype_ == INPAR::FLUID::varying_density)) and
       (fldparatimint_->IsStationary() == true))
@@ -139,7 +139,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
 
   // set flag for type of linearization (fixed-point-like or Newton)
   //  fix-point like for Oseen or Stokes problems
-  if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation") ==
+  if (INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation") ==
       INPAR::FLUID::Newton)
   {
     if ((physicaltype_ == INPAR::FLUID::oseen) or (physicaltype_ == INPAR::FLUID::stokes))
@@ -170,28 +170,27 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
 
   // get function number of given Oseen advective field if necessary
   if (physicaltype_ == INPAR::FLUID::oseen)
-    oseenfieldfuncno_ = DRT::INPUT::get<int>(params, "OSEENFIELDFUNCNO");
+    oseenfieldfuncno_ = INPUT::get<int>(params, "OSEENFIELDFUNCNO");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
   Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
 
-  stabtype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(stablist, "STABTYPE");
+  stabtype_ = INPUT::IntegralValue<INPAR::FLUID::StabType>(stablist, "STABTYPE");
 
   if (stabtype_ == INPAR::FLUID::stabtype_residualbased)
   {
     // no safety check necessary since all options are used
-    tds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist, "TDS");
-    transient_ = DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist, "TRANSIENT");
-    pspg_ = DRT::INPUT::IntegralValue<int>(stablist, "PSPG");
-    supg_ = DRT::INPUT::IntegralValue<int>(stablist, "SUPG");
-    vstab_ = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist, "VSTAB");
-    rstab_ = DRT::INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist, "RSTAB");
-    graddiv_ = DRT::INPUT::IntegralValue<int>(stablist, "GRAD_DIV");
-    cross_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist, "CROSS-STRESS");
-    reynolds_ =
-        DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist, "REYNOLDS-STRESS");
+    tds_ = INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist, "TDS");
+    transient_ = INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist, "TRANSIENT");
+    pspg_ = INPUT::IntegralValue<int>(stablist, "PSPG");
+    supg_ = INPUT::IntegralValue<int>(stablist, "SUPG");
+    vstab_ = INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist, "VSTAB");
+    rstab_ = INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist, "RSTAB");
+    graddiv_ = INPUT::IntegralValue<int>(stablist, "GRAD_DIV");
+    cross_ = INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist, "CROSS-STRESS");
+    reynolds_ = INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist, "REYNOLDS-STRESS");
 
     if (supg_ and (physicaltype_ == INPAR::FLUID::stokes))
       dserror(
@@ -201,14 +200,14 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     // overrule higher_order_ele if input-parameter is set
     // this might be interesting for fast (but slightly
     // less accurate) computations
-    is_inconsistent_ = DRT::INPUT::IntegralValue<int>(stablist, "INCONSISTENT");
+    is_inconsistent_ = INPUT::IntegralValue<int>(stablist, "INCONSISTENT");
 
-    is_reconstructder_ = DRT::INPUT::IntegralValue<int>(stablist, "Reconstruct_Sec_Der");
+    is_reconstructder_ = INPUT::IntegralValue<int>(stablist, "Reconstruct_Sec_Der");
     //-------------------------------
     // get tau definition
     //-------------------------------
 
-    whichtau_ = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(stablist, "DEFINITION_TAU");
+    whichtau_ = INPUT::IntegralValue<INPAR::FLUID::TauType>(stablist, "DEFINITION_TAU");
     // check if tau can be handled
     if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
             whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
@@ -258,7 +257,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
 
     // get and check characteristic element length for stabilization parameter tau_Mu
     charelelengthu_ =
-        DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthU>(stablist, "CHARELELENGTH_U");
+        INPUT::IntegralValue<INPAR::FLUID::CharEleLengthU>(stablist, "CHARELELENGTH_U");
     if (not(charelelengthu_ == INPAR::FLUID::streamlength_u or
             charelelengthu_ == INPAR::FLUID::volume_equivalent_diameter_u or
             charelelengthu_ == INPAR::FLUID::root_of_volume_u))
@@ -267,7 +266,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     // get and check characteristic element length for stabilization parameter
     // tau_Mp and tau_C
     charelelengthpc_ =
-        DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthPC>(stablist, "CHARELELENGTH_PC");
+        INPUT::IntegralValue<INPAR::FLUID::CharEleLengthPC>(stablist, "CHARELELENGTH_PC");
     if (not(charelelengthpc_ == INPAR::FLUID::streamlength_pc or
             charelelengthpc_ == INPAR::FLUID::volume_equivalent_diameter_pc or
             charelelengthpc_ == INPAR::FLUID::root_of_volume_pc))
@@ -445,18 +444,18 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter(Teuchos::Paramete
   // parameter for additional rbvmm terms in continuity equation
   //---------------------------------------------------------------------------------
 
-  conti_supg_ = DRT::INPUT::IntegralValue<int>(stabparams, "LOMA_CONTI_SUPG");
+  conti_supg_ = INPUT::IntegralValue<int>(stabparams, "LOMA_CONTI_SUPG");
   conti_cross_ =
-      DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stabparams, "LOMA_CONTI_CROSS_STRESS");
-  conti_reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(
-      stabparams, "LOMA_CONTI_REYNOLDS_STRESS");
+      INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stabparams, "LOMA_CONTI_CROSS_STRESS");
+  conti_reynolds_ =
+      INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stabparams, "LOMA_CONTI_REYNOLDS_STRESS");
 
   //---------------------------------------------------------------------------------
   // parameter for additional multifractal subgrid-scale terms
   //---------------------------------------------------------------------------------
 
   if (turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
-    multifrac_loma_conti_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs, "LOMA_CONTI");
+    multifrac_loma_conti_ = INPUT::IntegralValue<int>(turbmodelparamsmfs, "LOMA_CONTI");
 
   return;
 }
@@ -470,7 +469,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTwoPhaseParameter(Teuchos::Para
   // Smeared specific parameters
   Teuchos::ParameterList& smearedlist = params.sublist("SMEARED");
   interface_thickness_ = smearedlist.get<double>("INTERFACE_THICKNESS");
-  enhanced_gaussrule_ = DRT::INPUT::IntegralValue<int>(smearedlist, "ENHANCED_GAUSSRULE");
+  enhanced_gaussrule_ = INPUT::IntegralValue<int>(smearedlist, "ENHANCED_GAUSSRULE");
 
   return;
 }
@@ -530,7 +529,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       // the classic Smagorinsky model only requires one constant parameter
       turb_mod_action_ = INPAR::FLUID::smagorinsky;
       Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
-      include_Ci_ = DRT::INPUT::IntegralValue<int>(turbmodelparamssgvisc, "C_INCLUDE_CI");
+      include_Ci_ = INPUT::IntegralValue<int>(turbmodelparamssgvisc, "C_INCLUDE_CI");
       Ci_ = turbmodelparamssgvisc.get<double>("C_YOSHIZAWA");
     }
     // --------------------------------------------------
@@ -562,10 +561,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       // Cs_ is calculated from Cs_sqrt_delta to compare it with the standard
       // it is stored in Cs_ after its calculation in CalcSubgrVisc
       Cs_ = 0.0;
-      Cs_averaged_ =
-          DRT::INPUT::IntegralValue<int>(turbmodelparamssgvisc, "C_SMAGORINSKY_AVERAGED");
+      Cs_averaged_ = INPUT::IntegralValue<int>(turbmodelparamssgvisc, "C_SMAGORINSKY_AVERAGED");
       Ci_ = turbmodelparamssgvisc.get<double>("C_YOSHIZAWA");
-      include_Ci_ = DRT::INPUT::IntegralValue<int>(turbmodelparamssgvisc, "C_INCLUDE_CI");
+      include_Ci_ = INPUT::IntegralValue<int>(turbmodelparamssgvisc, "C_INCLUDE_CI");
     }
     else if (physical_turbulence_model == "Multifractal_Subgrid_Scales")
     {
@@ -574,7 +572,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       // get parameters of model
       Csgs_ = turbmodelparamsmfs.get<double>("CSGS");
       Csgs_phi_ = turbmodelparamsmfs.get<double>("CSGS_PHI");
-      adapt_Csgs_phi_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs, "ADAPT_CSGS_PHI");
+      adapt_Csgs_phi_ = INPUT::IntegralValue<int>(turbmodelparamsmfs, "ADAPT_CSGS_PHI");
 
       if (turbmodelparamsmfs.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
         alpha_ = 3.0;
@@ -583,7 +581,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       else
         dserror("Unknown filter type!");
 
-      CalcN_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs, "CALC_N");
+      CalcN_ = INPUT::IntegralValue<int>(turbmodelparamsmfs, "CALC_N");
 
       N_ = turbmodelparamsmfs.get<double>("N");
 
@@ -612,9 +610,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       c_nu_ = turbmodelparamsmfs.get<double>("C_NU");
       c_diff_ = turbmodelparamsmfs.get<double>("C_DIFF");  // loma only
 
-      near_wall_limit_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs, "NEAR_WALL_LIMIT");
+      near_wall_limit_ = INPUT::IntegralValue<int>(turbmodelparamsmfs, "NEAR_WALL_LIMIT");
       near_wall_limit_scatra_ =
-          DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI");
+          INPUT::IntegralValue<int>(turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI");
 
       if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "element_center")
         B_gp_ = false;
@@ -631,7 +629,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
         mfs_is_conservative_ = false;
 
       consistent_mfs_residual_ =
-          DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs, "CONSISTENT_FLUID_RESIDUAL");
+          INPUT::IntegralValue<int>(turbmodelparamsmfs, "CONSISTENT_FLUID_RESIDUAL");
     }
     else if (physical_turbulence_model == "Vreman")
     {

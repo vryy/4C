@@ -90,9 +90,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagDiffType::ComputeNullSpace(
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ElemagDiffType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["ELECTROMAGNETICDIFF"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["ELECTROMAGNETICDIFF"];
 
   // 3D elements
   defs["HEX8"] = INPUT::LineDefinition::Builder()

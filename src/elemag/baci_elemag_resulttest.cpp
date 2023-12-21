@@ -33,7 +33,7 @@ ELEMAG::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ELEMAG::ElemagResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;

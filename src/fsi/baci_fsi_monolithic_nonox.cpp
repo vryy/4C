@@ -45,7 +45,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicBase::AleField());
 
   // enable debugging
-  if (DRT::INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
+  if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField()->Discretization()));
@@ -55,9 +55,9 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
   itermax_ = fsimono.get<int>("ITEMAX");
-  normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono, "NORM_INC");
-  normtypefres_ = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono, "NORM_RESF");
-  combincfres_ = DRT::INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsimono, "NORMCOMBI_RESFINC");
+  normtypeinc_ = INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono, "NORM_INC");
+  normtypefres_ = INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono, "NORM_RESF");
+  combincfres_ = INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsimono, "NORMCOMBI_RESFINC");
   tolinc_ = fsimono.get<double>("CONVTOL");
   tolfres_ = fsimono.get<double>("CONVTOL");
 

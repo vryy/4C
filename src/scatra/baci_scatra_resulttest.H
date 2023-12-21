@@ -51,10 +51,10 @@ namespace SCATRA
     /*!
       Possible position flags is only "phi"
      */
-    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! test special quantity not associated with a particular element or node
-    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    protected:
     //! get nodal result to be tested

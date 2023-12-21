@@ -196,7 +196,7 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   invplrcglast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
   invplrcgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);

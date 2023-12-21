@@ -38,8 +38,7 @@ namespace DRT::ELEMENTS
   {
    public:
     void SetupElementDefinition(
-        std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
-        override;
+        std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
 
     Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string elecelltype,
         const int id, const int owner) override;
@@ -114,7 +113,7 @@ namespace DRT::ELEMENTS
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
     bool ReadElement(const std::string& eletype, const std::string& celltype,
-        DRT::INPUT::LineDefinition* linedef) override;
+        INPUT::LineDefinition* linedef) override;
 
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,

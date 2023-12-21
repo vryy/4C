@@ -45,7 +45,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
       issetup_(false),
       porofluidprob_(false),
       has_varying_diam_(false),
-      delete_free_hanging_eles_(DRT::INPUT::IntegralValue<int>(
+      delete_free_hanging_eles_(INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
           "DELETE_FREE_HANGING_ELES")),
       delete_free_hanging_eles_threshold_(DRT::Problem::Instance()
@@ -53,7 +53,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
                                               .sublist("ARTERY COUPLING")
                                               .get<double>("DELETE_SMALL_FREE_HANGING_COMPS")),
       coupling_method_(
-          DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+          INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
               couplingparams, "ARTERY_COUPLING_METHOD")),
       timefacrhs_art_(0.0),
       timefacrhs_cont_(0.0),
@@ -120,10 +120,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 {
   // get the coupling method
-  auto arterycoupl =
-      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-          DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
-          "ARTERY_COUPLING_METHOD");
+  auto arterycoupl = INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+      "ARTERY_COUPLING_METHOD");
 
   // create the pairs
   if (arterycoupl == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)

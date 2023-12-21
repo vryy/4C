@@ -83,7 +83,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
   }
   else
   {
-    action = DRT::INPUT::get<ELEMAG::Action>(params, "action");
+    action = INPUT::get<ELEMAG::Action>(params, "action");
   }
 
   InitializeShapes(hdgele);

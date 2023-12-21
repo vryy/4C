@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 

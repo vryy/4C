@@ -28,7 +28,7 @@ STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      modexpleuler_(DRT::INPUT::IntegralValue<int>(sdynparams, "MODIFIEDEXPLEULER") == 1),
+      modexpleuler_(INPUT::IntegralValue<int>(sdynparams, "MODIFIEDEXPLEULER") == 1),
       fextn_(Teuchos::null),
       fintn_(Teuchos::null),
       fviscn_(Teuchos::null),

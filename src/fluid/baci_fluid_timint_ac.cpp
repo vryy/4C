@@ -35,7 +35,7 @@ FLD::TimIntAC::TimIntAC(const Teuchos::RCP<DRT::Discretization>& actdis,
 void FLD::TimIntAC::ReadRestart(int step)
 {
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
-  const bool restartfrompartfsi = DRT::INPUT::IntegralValue<int>(fs3idyn, "RESTART_FROM_PART_FSI");
+  const bool restartfrompartfsi = INPUT::IntegralValue<int>(fs3idyn, "RESTART_FROM_PART_FSI");
 
   if (not restartfrompartfsi)  // standard restart
   {

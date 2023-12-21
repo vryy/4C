@@ -83,7 +83,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   calcoldandnewpsi_ = false;
-  const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
   if (act == FLD::xwall_l2_projection) calcoldandnewpsi_ = true;
   GetEleProperties(ele, discretization, lm, params, mat);
 
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateServiceXWall(
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
 
   switch (act)
   {

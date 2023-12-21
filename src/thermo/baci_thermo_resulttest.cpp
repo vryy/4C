@@ -35,7 +35,7 @@ THR::ResultTest::ResultTest(TimInt& tintegrator) : DRT::ResultTest("THERMAL")
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void THR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;

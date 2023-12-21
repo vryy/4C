@@ -34,8 +34,7 @@ namespace DRT::ELEMENTS
   {
    public:
     void SetupElementDefinition(
-        std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
-        override;
+        std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -123,7 +122,7 @@ namespace DRT::ELEMENTS
     [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
     bool ReadElement(const std::string& eletype, const std::string& distype,
-        DRT::INPUT::LineDefinition* linedef) override;
+        INPUT::LineDefinition* linedef) override;
 
     //! @name Evaluation
     //! @{

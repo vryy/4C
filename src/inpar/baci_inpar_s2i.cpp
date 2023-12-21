@@ -19,7 +19,7 @@ BACI_NAMESPACE_OPEN
  *------------------------------------------------------------------------*/
 void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -95,10 +95,9 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 /*------------------------------------------------------------------------*
  | set valid conditions for scatra-scatra interface coupling   fang 01/16 |
  *------------------------------------------------------------------------*/
-void INPAR::S2I::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // scatra-scatra interface mesh tying condition

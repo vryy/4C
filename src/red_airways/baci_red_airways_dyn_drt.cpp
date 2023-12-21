@@ -73,7 +73,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // Print default parameters
   if (actdis->Comm().MyPID() == 0)
   {
-    DRT::INPUT::PrintDefaultParameters(IO::cout, rawdyn);
+    INPUT::PrintDefaultParameters(IO::cout, rawdyn);
   }
 
   // 4. Create a linear solver

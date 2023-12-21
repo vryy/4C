@@ -717,7 +717,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::Setup(
-    const int numgp, DRT::INPUT::LineDefinition* linedef)
+    const int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_->SetNumberOfGaussPoints(numgp);

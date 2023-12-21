@@ -81,7 +81,7 @@ namespace STR
     //!                             "stress_yz"
     //!
     //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
-    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*! \brief test special quantity not associated with a particular element or node
      *
@@ -91,8 +91,8 @@ namespace STR
      *  \param[out] uneval_test_count  updated number of unevaluated tests
      *
      *  \author hiermeier \date 11/17 */
-    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count,
-        int& uneval_test_count) override;
+    void TestSpecial(
+        INPUT::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count) override;
 
    protected:
     /// get the indicator state

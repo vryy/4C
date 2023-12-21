@@ -16,8 +16,8 @@
 
 BACI_NAMESPACE_OPEN
 
-void MAT::ReadAnisotropyFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
-    CORE::LINALG::Matrix<3, 1>& fiber_vector)
+void MAT::ReadAnisotropyFiber(
+    INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber;
   linedef->ExtractDoubleVector(std::move(specifier), fiber);

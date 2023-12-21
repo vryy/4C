@@ -98,7 +98,7 @@ void DRT::ELEMENTS::Wall1_PoroP1Scatra<distype>::Unpack(const std::vector<char>&
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Wall1_PoroP1Scatra<distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
   my::ReadElement(eletype, eledistype, linedef);

@@ -56,7 +56,7 @@ namespace DRT
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
@@ -180,7 +180,7 @@ namespace DRT
       Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
 
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef) override;
+          INPUT::LineDefinition* linedef) override;
 
       //! scale truss reference length
       void ScaleReferenceLength(double scalefac);

@@ -228,13 +228,13 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
           stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
           straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
           iostress =
-              DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+              INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
           iostrain =
-              DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+              INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
           // in case of small strain materials calculate plastic strains for post processing
           plstraindata = params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-          ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(
-              params, "ioplstrain", INPAR::STR::strain_none);
+          ioplstrain =
+              INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
         }
         if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");

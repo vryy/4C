@@ -78,7 +78,7 @@ MAT::ScalarDepInterp::ScalarDepInterp(MAT::PAR::ScalarDepInterp* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ScalarDepInterp::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   if (isinit_)
     dserror("This function should just be called, if the material is jet not initialized.");
@@ -352,7 +352,7 @@ bool MAT::ScalarDepInterp::VisData(
 }
 
 void MAT::ScalarDepInterp::ReadLambda(
-    DRT::INPUT::LineDefinition* linedef, std::string specifier, double& lambda)
+    INPUT::LineDefinition* linedef, std::string specifier, double& lambda)
 {
   linedef->ExtractDouble(specifier, lambda);
 }

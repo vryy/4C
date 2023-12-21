@@ -36,7 +36,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   HomIsoTurbForcing::HomIsoTurbForcing(FluidImplicitTimeInt& timeint)
       : ForcingInterface(),
-        forcing_type_(DRT::INPUT::IntegralValue<INPAR::FLUID::ForcingType>(
+        forcing_type_(INPUT::IntegralValue<INPAR::FLUID::ForcingType>(
             timeint.params_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
         discret_(timeint.discret_),
         forcing_(timeint.forcing_),

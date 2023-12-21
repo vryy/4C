@@ -64,9 +64,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::LubricationType::ComputeNullSpace
 }
 
 void DRT::ELEMENTS::LubricationType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["LUBRICATION"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["LUBRICATION"];
 
   defs["QUAD4"] =
       INPUT::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();
@@ -253,7 +253,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Surfaces()
  | read element input                                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Lubrication::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;

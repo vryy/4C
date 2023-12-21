@@ -19,8 +19,8 @@ BACI_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHKernelBase::SPHKernelBase(const Teuchos::ParameterList& params)
-    : kernelspacedim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::KernelSpaceDimension>(
-          params, "KERNEL_SPACE_DIM"))
+    : kernelspacedim_(
+          INPUT::IntegralValue<INPAR::PARTICLE::KernelSpaceDimension>(params, "KERNEL_SPACE_DIM"))
 {
   // empty constructor
 }

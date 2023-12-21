@@ -35,9 +35,9 @@ STI::STIResultTest::STIResultTest(const Teuchos::RCP<STI::Algorithm>&
  | test special quantity not associated with a particular element or node   fang 01/17 |
  *-------------------------------------------------------------------------------------*/
 void STI::STIResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
-    int& nerr,                        //!< number of failed result tests
-    int& test_count                   ///< number of result tests
+    INPUT::LineDefinition& res,  //!< input file line containing result test specification
+    int& nerr,                   //!< number of failed result tests
+    int& test_count              ///< number of result tests
 )
 {
   // make sure that quantity is tested only by one processor

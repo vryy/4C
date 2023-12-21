@@ -154,7 +154,7 @@ namespace MAT
 
     /// Initialize internal variables
     void Setup(int numgp,  ///< number of Gauss points
-        DRT::INPUT::LineDefinition* linedef) override;
+        INPUT::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
     MAT::PAR::Parameter* Parameter() const override { return params_; }

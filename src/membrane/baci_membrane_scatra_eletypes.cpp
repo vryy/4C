@@ -54,18 +54,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri3Type::Create(
 }
 
 void DRT::ELEMENTS::MembraneScatra_tri3Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_membrane;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
   Membrane_tri3Type::SetupElementDefinition(definitions_membrane);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_membrane =
-      definitions_membrane["MEMBRANE3"];
+  std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE3"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA3"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA3"];
 
   defs["TRI3"] =
-      DRT::INPUT::LineDefinition::Builder(defs_membrane["TRI3"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_membrane["TRI3"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -107,18 +106,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri6Type::Create(
 }
 
 void DRT::ELEMENTS::MembraneScatra_tri6Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_membrane;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
   Membrane_tri6Type::SetupElementDefinition(definitions_membrane);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_membrane =
-      definitions_membrane["MEMBRANE6"];
+  std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE6"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA6"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA6"];
 
   defs["TRI6"] =
-      DRT::INPUT::LineDefinition::Builder(defs_membrane["TRI6"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_membrane["TRI6"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -161,18 +159,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
 }
 
 void DRT::ELEMENTS::MembraneScatra_quad4Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_membrane;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
   Membrane_quad4Type::SetupElementDefinition(definitions_membrane);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_membrane =
-      definitions_membrane["MEMBRANE4"];
+  std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE4"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA4"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA4"];
 
   defs["QUAD4"] =
-      DRT::INPUT::LineDefinition::Builder(defs_membrane["QUAD4"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_membrane["QUAD4"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -215,18 +212,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
 }
 
 void DRT::ELEMENTS::MembraneScatra_quad9Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_membrane;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
   Membrane_quad9Type::SetupElementDefinition(definitions_membrane);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_membrane =
-      definitions_membrane["MEMBRANE9"];
+  std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE9"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA9"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA9"];
 
   defs["QUAD9"] =
-      DRT::INPUT::LineDefinition::Builder(defs_membrane["QUAD9"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_membrane["QUAD9"]).AddNamedString("TYPE").Build();
 }
 
 BACI_NAMESPACE_CLOSE

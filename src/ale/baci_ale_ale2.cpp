@@ -79,9 +79,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Ale2Type::ComputeNullSpace(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["ALE2"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["ALE2"];
 
   defs["QUAD4"] =
       INPUT::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();

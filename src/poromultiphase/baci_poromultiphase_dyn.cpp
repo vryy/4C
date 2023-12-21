@@ -65,8 +65,7 @@ void poromultiphase_dyn(int restart)
   // coupling scheme
   // -------------------------------------------------------------------
   INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme =
-      DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(
-          poroparams, "COUPALGO");
+      INPUT::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(poroparams, "COUPALGO");
 
   Teuchos::RCP<ADAPTER::PoroMultiPhase> algo =
       POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solscheme, poroparams, comm);

@@ -160,7 +160,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   so3_ele::ReadElement(eletype, eledistype, linedef);
 

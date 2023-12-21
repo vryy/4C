@@ -105,7 +105,7 @@ namespace DRT
      public:
       SolidEleCalcEas();
 
-      void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef);
+      void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
 
       void Pack(CORE::COMM::PackBuffer& data) const;
 

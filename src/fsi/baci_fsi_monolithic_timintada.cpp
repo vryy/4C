@@ -116,16 +116,15 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   // check on which fields time adaptivity should be based on
   //----------------------------------------------------------------------------
-  if (not(DRT::INPUT::IntegralValue<INPAR::STR::TimAdaKind>(sada, "KIND") ==
+  if (not(INPUT::IntegralValue<INPAR::STR::TimAdaKind>(sada, "KIND") ==
           INPAR::STR::timada_kind_none))
     isadastructure_ = true;
 
-  if (not(DRT::INPUT::IntegralValue<int>(fsiada, "AUXINTEGRATORFLUID") ==
-          INPAR::FSI::timada_fld_none))
+  if (not(INPUT::IntegralValue<int>(fsiada, "AUXINTEGRATORFLUID") == INPAR::FSI::timada_fld_none))
     isadafluid_ = true;
 
   // get error action strategy from input file
-  const int erroractionstrategy = DRT::INPUT::IntegralValue<int>(fsiada, "DIVERCONT");
+  const int erroractionstrategy = INPUT::IntegralValue<int>(fsiada, "DIVERCONT");
   if (erroractionstrategy != INPAR::FSI::divcont_stop and
       erroractionstrategy != INPAR::FSI::divcont_continue)
     isadasolver_ = true;

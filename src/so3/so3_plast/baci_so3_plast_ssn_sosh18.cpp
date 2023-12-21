@@ -77,14 +77,14 @@ int DRT::ELEMENTS::So_sh18PlastType::Initialize(DRT::Discretization& dis)
  | setup the element definition (public)                    seitz 11/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh18PlastType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_sh18;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_sh18;
   So_sh18Type::SetupElementDefinition(definitions_sh18);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_sh18 = definitions_sh18["SOLIDSH18"];
+  std::map<std::string, INPUT::LineDefinition>& defs_sh18 = definitions_sh18["SOLIDSH18"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"] = defs_sh18["HEX18"];
 }
@@ -186,7 +186,7 @@ void DRT::ELEMENTS::So_sh18Plast::Print(std::ostream& os) const
  | read this element, get the material (public)             seitz 11/14 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::So_sh18Plast::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   bool read = (DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::ReadElement(
                    eletype, distype, linedef) &&

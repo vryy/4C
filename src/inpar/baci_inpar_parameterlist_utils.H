@@ -16,33 +16,31 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT
+
+namespace INPUT
 {
-  namespace INPUT
+  /// cast internal integer to enum type
+  template <class T>
+  T IntegralValue(const Teuchos::ParameterList& params, const std::string& name)
   {
-    /// cast internal integer to enum type
-    template <class T>
-    T IntegralValue(const Teuchos::ParameterList& params, const std::string& name)
-    {
-      int value = Teuchos::getIntegralValue<int>(params, name);
-      return static_cast<T>(value);
-    }
+    int value = Teuchos::getIntegralValue<int>(params, name);
+    return static_cast<T>(value);
+  }
 
-    template <class T>
-    T get(const Teuchos::ParameterList& params, const std::string& name)
-    {
-      int value = params.get<int>(name);
-      return static_cast<T>(value);
-    }
+  template <class T>
+  T get(const Teuchos::ParameterList& params, const std::string& name)
+  {
+    int value = params.get<int>(name);
+    return static_cast<T>(value);
+  }
 
-    template <class T>
-    T get(Teuchos::ParameterList& params, const std::string& name, T default_value)
-    {
-      int value = params.get<int>(name, default_value);
-      return static_cast<T>(value);
-    }
-  }  // namespace INPUT
-}  // namespace DRT
+  template <class T>
+  T get(Teuchos::ParameterList& params, const std::string& name, T default_value)
+  {
+    int value = params.get<int>(name, default_value);
+    return static_cast<T>(value);
+  }
+}  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE
 

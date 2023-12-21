@@ -62,9 +62,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Vele3Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::Vele3Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["VELE3"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["VELE3"];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder().AddIntVector("HEX8", 8).Build();
 }
@@ -225,7 +225,7 @@ CORE::FE::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Vele3::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   return true;
 }

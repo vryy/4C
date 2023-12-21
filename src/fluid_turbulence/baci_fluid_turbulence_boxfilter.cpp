@@ -28,7 +28,7 @@ FLD::Boxfilter::Boxfilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Par
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type")),
+      physicaltype_(INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type")),
       //  available control settings
       apply_dynamic_smagorinsky_(false),
       vreman_dynamic_(false),

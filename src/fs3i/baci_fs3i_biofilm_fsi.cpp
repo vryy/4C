@@ -112,7 +112,7 @@ void FS3I::BiofilmFSI::Init()
   // automatically (i.e. field-wise)
   const Teuchos::ParameterList& scatradyn =
       DRT::Problem::Instance()->ScalarTransportDynamicParams();
-  if (DRT::INPUT::IntegralValue<int>(scatradyn, "SKIPINITDER") == false)
+  if (INPUT::IntegralValue<int>(scatradyn, "SKIPINITDER") == false)
     dserror(
         "Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to "
         "false");
@@ -258,8 +258,8 @@ void FS3I::BiofilmFSI::Timeloop()
 
 
   const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
-  const int biofilmgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol, "BIOFILMGROWTH");
-  const int outputgmsh_ = DRT::INPUT::IntegralValue<int>(biofilmcontrol, "OUTPUT_GMSH");
+  const int biofilmgrowth = INPUT::IntegralValue<int>(biofilmcontrol, "BIOFILMGROWTH");
+  const int outputgmsh_ = INPUT::IntegralValue<int>(biofilmcontrol, "OUTPUT_GMSH");
 
   std::cout << std::endl << "--------------SIMULATION PARAMETERS-----------------" << std::endl;
   std::cout << "FSI TIMESTEP = " << dt_fsi << "; FSI NUMSTEP = " << nstep_fsi << std::endl;
@@ -362,7 +362,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   // (in this case for the time being it takes in account also the initial transient state!),
   // or only on the last values coming from the fsi-scatra simulation
   const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
-  const int avgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol, "AVGROWTH");
+  const int avgrowth = INPUT::IntegralValue<int>(biofilmcontrol, "AVGROWTH");
   // in case of averaged values we need temporary variables
   Teuchos::RCP<Epetra_Vector> normtempinflux_ =
       Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));

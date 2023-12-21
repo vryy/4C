@@ -40,7 +40,7 @@ void FSI::PartitionedImmersed::SetupCoupling(
   matchingnodes_ = false;
 
   // enable debugging
-  if (DRT::INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT"))
+  if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT"))
     debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
 }
 

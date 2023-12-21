@@ -50,7 +50,7 @@ namespace DRT
 
       /// setup the dat file input line definitions for this type of element
       void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
       /// initialize element
@@ -235,7 +235,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef) override;
+          INPUT::LineDefinition* linedef) override;
 
       //@}
 

@@ -25,7 +25,7 @@ namespace INPAR
     /*----------------------------------------------------------------------*/
     void SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
     {
-      using namespace DRT::INPUT;
+      using namespace INPUT;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
@@ -106,7 +106,7 @@ namespace INPAR
 
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     {
-      using namespace DRT::INPUT;
+      using namespace INPUT;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
@@ -382,9 +382,9 @@ namespace INPAR
 
 
 
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
     {
-      using namespace DRT::INPUT;
+      using namespace INPUT;
 
       /*--------------------------------------------------------------------*/
 

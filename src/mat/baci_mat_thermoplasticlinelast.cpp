@@ -253,7 +253,7 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public) dano 08/11 |
  *---------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ThermoPlasticLinElast::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // initialise history variables
   strainpllast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);

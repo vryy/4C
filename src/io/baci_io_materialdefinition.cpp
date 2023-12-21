@@ -29,7 +29,7 @@ BACI_NAMESPACE_OPEN
 
 /*======================================================================*/
 /*======================================================================*/
-DRT::INPUT::MaterialDefinition::MaterialDefinition(
+INPUT::MaterialDefinition::MaterialDefinition(
     std::string materialname, std::string description, INPAR::MAT::MaterialType mattype)
     : materialname_(std::move(materialname)),
       description_(std::move(description)),
@@ -39,7 +39,7 @@ DRT::INPUT::MaterialDefinition::MaterialDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<BACI::INPUT::LineComponent>& c)
+void INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -47,8 +47,8 @@ void DRT::INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<BACI::INPUT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::MaterialDefinition::Read(
-    const Problem& problem, DatFileReader& reader, const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
+void INPUT::MaterialDefinition::Read(
+    const DRT::Problem& problem, DatFileReader& reader, const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);
@@ -122,7 +122,7 @@ void DRT::INPUT::MaterialDefinition::Read(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& DRT::INPUT::MaterialDefinition::Print(std::ostream& stream, const Discretization* dis)
+std::ostream& INPUT::MaterialDefinition::Print(std::ostream& stream, const DRT::Discretization* dis)
 {
   // a string holding the comment indicating symbols for DAT input file
   const std::string comment = "//";
@@ -153,15 +153,14 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(std::ostream& stream, const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::AppendMaterialDefinition(
-    std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist,
-    const Teuchos::RCP<DRT::INPUT::MaterialDefinition>& mat)
+void INPUT::AppendMaterialDefinition(std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist,
+    const Teuchos::RCP<INPUT::MaterialDefinition>& mat)
 {
   // test if material was defined with same name or type
-  std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>::const_iterator m;
+  std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>::const_iterator m;
   for (m = matlist.begin(); m != matlist.end(); ++m)
   {
-    Teuchos::RCP<DRT::INPUT::MaterialDefinition> mmd = *m;
+    Teuchos::RCP<INPUT::MaterialDefinition> mmd = *m;
 
     if (mmd->Type() == mat->Type())
       dserror(

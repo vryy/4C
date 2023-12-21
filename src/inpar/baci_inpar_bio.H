@@ -17,13 +17,10 @@
 BACI_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
-  {
-    class ConditionDefinition;
-  }
-}  // namespace DRT
+  class ConditionDefinition;
+}
 
 /*----------------------------------------------------------------------*/
 
@@ -116,7 +113,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific artnet conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace ARTNET
 
@@ -126,7 +123,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific biofilm conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
   }  // namespace BIOFILM
 
   namespace REDAIRWAYS
@@ -135,7 +132,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific reduced airways conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
   }  // namespace REDAIRWAYS
 }  // namespace INPAR
 

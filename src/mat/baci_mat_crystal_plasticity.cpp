@@ -301,7 +301,7 @@ void MAT::CrystalPlasticity::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::CrystalPlasticity::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // import material / model parameters and calculate derived values
 
@@ -1106,7 +1106,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
  | Read Lattice orientation matrix from .dat file                                    |
  *---------------------------------------------------------------------------------*/
 
-void MAT::CrystalPlasticity::SetupLatticeOrientation(DRT::INPUT::LineDefinition* linedef)
+void MAT::CrystalPlasticity::SetupLatticeOrientation(INPUT::LineDefinition* linedef)
 {
   std::vector<double> fiber1;
   std::vector<double> fiber2;

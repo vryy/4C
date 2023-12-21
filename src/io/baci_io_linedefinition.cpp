@@ -25,7 +25,7 @@ BACI_NAMESPACE_OPEN
 
 namespace
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   template <class T>
   std::string StringFromDataType()
@@ -410,7 +410,7 @@ namespace
 }  // namespace
 
 
-namespace DRT::INPUT
+namespace INPUT
 {
   namespace INTERNAL
   {
@@ -978,6 +978,6 @@ namespace DRT::INPUT
     already_read_line.ExtractInt(definition_name_, length);
     return length;
   }
-}  // namespace DRT::INPUT
+}  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE

@@ -63,15 +63,13 @@ namespace CONTACT
   }
 }  // namespace CONTACT
 
+namespace INPUT
+{
+  class DatFileReader;
+}
 namespace DRT
 {
   class Discretization;
-
-  namespace INPUT
-  {
-    class DatFileReader;
-  }
-
 
   /// Global problem instance that keeps the discretizations
   /*!
@@ -177,37 +175,37 @@ namespace DRT
     /// @name Input
 
     /// read global parameters
-    void ReadParameter(DRT::INPUT::DatFileReader& reader);
+    void ReadParameter(INPUT::DatFileReader& reader);
 
     /// setup the discretizations
-    void ReadFields(DRT::INPUT::DatFileReader& reader, const bool readmesh = true);
+    void ReadFields(INPUT::DatFileReader& reader, const bool readmesh = true);
 
     /// set up micro-scale discretizations in case of structure multi-scale simulations
-    void ReadMicroFields(DRT::INPUT::DatFileReader& reader);
+    void ReadMicroFields(INPUT::DatFileReader& reader);
 
     /// set up supporting processors for micro-scale discretizations
     void ReadMicrofieldsNPsupport();
 
     /// input of contact constitutive laws
-    void ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader);
+    void ReadContactConstitutiveLaws(INPUT::DatFileReader& reader);
 
     /// input of materials
-    void ReadMaterials(DRT::INPUT::DatFileReader& reader);
+    void ReadMaterials(INPUT::DatFileReader& reader);
 
     /// setup map between materials of original and cloned elements
-    void ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader);
+    void ReadCloningMaterialMap(INPUT::DatFileReader& reader);
 
     /// input of conditions
-    void ReadConditions(DRT::INPUT::DatFileReader& reader);
+    void ReadConditions(INPUT::DatFileReader& reader);
 
     /// input of result tests
-    void ReadResult(DRT::INPUT::DatFileReader& reader);
+    void ReadResult(INPUT::DatFileReader& reader);
 
     /// input of knots for isogeometric analysis
-    void ReadKnots(DRT::INPUT::DatFileReader& reader);
+    void ReadKnots(INPUT::DatFileReader& reader);
 
     /// input of particles
-    void ReadParticles(DRT::INPUT::DatFileReader& reader);
+    void ReadParticles(INPUT::DatFileReader& reader);
 
     /// set restart step which was read from the command line
     void SetRestartStep(int r);

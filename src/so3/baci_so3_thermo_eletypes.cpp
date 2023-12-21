@@ -75,14 +75,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ThermoType::Create(const int id
  | setup the element definition (public)                     dano 08/12 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8ThermoType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex8;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8;
   So_hex8Type::SetupElementDefinition(definitions_hex8);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
 
@@ -178,19 +178,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarThermoType::Create(
  | setup the element definition (public)                     dano 05/13 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8fbarThermoType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   // original definition
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex8fbar;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8fbar;
 
   // call setup of so3_ele
   So_hex8fbarType::SetupElementDefinition(definitions_hex8fbar);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8fbar =
-      definitions_hex8fbar["SOLIDH8FBAR"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex8fbar = definitions_hex8fbar["SOLIDH8FBAR"];
 
   // templated definition
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8fbar["HEX8"];
 
@@ -283,14 +282,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ThermoType::Create(const int id
  | build an instance of thermo type                          dano 08/12 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4ThermoType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_tet4;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
   So_tet4Type::SetupElementDefinition(definitions_tet4);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
+  std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
 
@@ -383,14 +382,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ThermoType::Create(const int i
  | build an instance of thermo type                         farah 05/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10ThermoType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_tet10;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet10;
   So_tet10Type::SetupElementDefinition(definitions_tet10);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
+  std::map<std::string, INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"] = defs_tet10["TET10"];
 
@@ -485,14 +484,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ThermoType::Create(const int i
  | setup the element definition (public)                     dano 10/13 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27ThermoType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex27;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex27;
   So_hex27Type::SetupElementDefinition(definitions_hex27);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"] = defs_hex27["HEX27"];
 
@@ -587,14 +586,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex20ThermoType::Create(const int i
  | setup the element definition (public)                    farah 05/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex20ThermoType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex20;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex20;
   So_hex20Type::SetupElementDefinition(definitions_hex20);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex20 = definitions_hex20["SOLIDH20"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex20 = definitions_hex20["SOLIDH20"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX20"] = defs_hex20["HEX20"];
 
@@ -693,15 +692,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27ThermoType::Create(
  | setup the element definition (public)                    seitz 12/15 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_nurbs27ThermoType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_nurbs27;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_nurbs27;
   NURBS::So_nurbs27Type::SetupElementDefinition(definitions_nurbs27);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_nurbs27 =
-      definitions_nurbs27["SONURBS27"];
+  std::map<std::string, INPUT::LineDefinition>& defs_nurbs27 = definitions_nurbs27["SONURBS27"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["NURBS27"] = defs_nurbs27["NURBS27"];
 

@@ -86,9 +86,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::RigidsphereType::ComputeNullSpace
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RigidsphereType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["RIGIDSPHERE"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["RIGIDSPHERE"];
 
   defs["POINT1"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("POINT1", 1)

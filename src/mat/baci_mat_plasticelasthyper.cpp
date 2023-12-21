@@ -335,7 +335,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::PlasticElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
@@ -428,7 +428,7 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef)
+void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
 {
   // check if parameters are valid
   if (MatParams()->rY_11_ != 0. || MatParams()->rY_22_ != 0. || MatParams()->rY_33_ != 0. ||

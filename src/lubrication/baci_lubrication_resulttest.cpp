@@ -34,7 +34,7 @@ LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
 /*----------------------------------------------------------------------*
  | test node                                                wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void LUBRICATION::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -106,8 +106,7 @@ double LUBRICATION::ResultTest::ResultNode(
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node  wirtz 11/15 |
  *-------------------------------------------------------------------------------------*/
-void LUBRICATION::ResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void LUBRICATION::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
   if (dis_->Comm().MyPID() == 0)

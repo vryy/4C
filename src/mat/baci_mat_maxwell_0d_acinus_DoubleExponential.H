@@ -127,7 +127,7 @@ namespace MAT
     /*!
       \brief
     */
-    void Setup(DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(INPUT::LineDefinition* linedef) override;
 
     /*!
        \brief

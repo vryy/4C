@@ -18,7 +18,7 @@ BACI_NAMESPACE_OPEN
  | read element and set required information                  gjb 01/08 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Thermo::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;

@@ -82,7 +82,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void PrintValidParameters()
 {
-  Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
+  Teuchos::RCP<const Teuchos::ParameterList> list = INPUT::ValidParameters();
   list->print(std::cout,
       Teuchos::ParameterList::PrintOptions().showDoc(true).showFlags(false).indent(4).showTypes(
           false));
@@ -177,7 +177,7 @@ void PrintHelpMessage()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintDatHeader(
+void INPUT::PrintDatHeader(
     std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname, bool comment)
 {
   // prevent invalid ordering of parameters caused by alphabetical output:
@@ -261,14 +261,14 @@ void DRT::INPUT::PrintDatHeader(
 /*----------------------------------------------------------------------*/
 void PrintDefaultDatHeader()
 {
-  Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
-  DRT::INPUT::PrintDatHeader(std::cout, *list);
+  Teuchos::RCP<const Teuchos::ParameterList> list = INPUT::ValidParameters();
+  INPUT::PrintDatHeader(std::cout, *list);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintDefaultParameters(IO::Pstream& stream, const Teuchos::ParameterList& list)
+void INPUT::PrintDefaultParameters(IO::Pstream& stream, const Teuchos::ParameterList& list)
 {
   bool hasDefault = false;
   for (Teuchos::ParameterList::ConstIterator i = list.begin(); i != list.end(); ++i)
@@ -294,7 +294,7 @@ void DRT::INPUT::PrintDefaultParameters(IO::Pstream& stream, const Teuchos::Para
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::BoolParameter(std::string const& paramName, std::string const& value,
+void INPUT::BoolParameter(std::string const& paramName, std::string const& value,
     std::string const& docString, Teuchos::ParameterList* paramList)
 {
   Teuchos::Array<std::string> yesnotuple =
@@ -307,7 +307,7 @@ void DRT::INPUT::BoolParameter(std::string const& paramName, std::string const& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::IntParameter(std::string const& paramName, int const value,
+void INPUT::IntParameter(std::string const& paramName, int const value,
     std::string const& docString, Teuchos::ParameterList* paramList)
 {
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
@@ -318,7 +318,7 @@ void DRT::INPUT::IntParameter(std::string const& paramName, int const value,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::DoubleParameter(std::string const& paramName, double const& value,
+void INPUT::DoubleParameter(std::string const& paramName, double const& value,
     std::string const& docString, Teuchos::ParameterList* paramList)
 {
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
@@ -330,7 +330,7 @@ void DRT::INPUT::DoubleParameter(std::string const& paramName, double const& val
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::StringParameter(std::string const& paramName, std::string const& value,
+void INPUT::StringParameter(std::string const& paramName, std::string const& value,
     std::string const& docString, Teuchos::ParameterList* paramList)
 {
   Teuchos::RCP<Teuchos::StringValidator> validator = Teuchos::rcp(new Teuchos::StringValidator());
@@ -339,7 +339,7 @@ void DRT::INPUT::StringParameter(std::string const& paramName, std::string const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
+Teuchos::RCP<const Teuchos::ParameterList> INPUT::ValidParameters()
 {
   Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList);
 
@@ -451,7 +451,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
+bool INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
 {
   // Helper function to check if string contains a space.
   const auto string_has_space = [](const std::string& s)

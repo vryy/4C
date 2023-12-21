@@ -317,7 +317,7 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
   }
 
   // make all Yes/No integral values to Boolean
-  DRT::INPUT::BoolifyValidInputParameters(statusTestParams);
+  INPUT::BoolifyValidInputParameters(statusTestParams);
 
   return;
 }

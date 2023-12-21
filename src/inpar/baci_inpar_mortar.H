@@ -18,13 +18,10 @@
 BACI_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
-  {
-    class ConditionDefinition;
-  }  // namespace INPUT
-}  // namespace DRT
+  class ConditionDefinition;
+}  // namespace INPUT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -154,7 +151,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific mortar conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace MORTAR
 

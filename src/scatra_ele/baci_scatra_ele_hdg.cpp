@@ -118,18 +118,18 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraHDGType ::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_scatra;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_scatra;
   TransportType::SetupElementDefinition(definitions_scatra);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_scatra = definitions_scatra["TRANSP"];
+  std::map<std::string, INPUT::LineDefinition>& defs_scatra = definitions_scatra["TRANSP"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["TRANSPHDG"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRANSPHDG"];
 
   for (const auto& [key, scatra_line_def] : defs_scatra)
   {
-    defs[key] = DRT::INPUT::LineDefinition::Builder(scatra_line_def)
+    defs[key] = INPUT::LineDefinition::Builder(scatra_line_def)
                     .AddNamedInt("DEG")
                     .AddOptionalNamedInt("SPC")
                     .Build();
@@ -345,7 +345,7 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
  |  Read element from input (public)                     hoermann 09/15 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::ScaTraHDG::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   bool success = Transport::ReadElement(eletype, distype, linedef);
   int degree;

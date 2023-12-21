@@ -39,25 +39,25 @@ CONTACT::CoIntegrator::CoIntegrator(
     : imortar_(params),
       Comm_(comm),
       dim_(imortar_.get<int>("DIMENSION")),
-      shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN")),
-      lagmultquad_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD")),
-      gpslip_(DRT::INPUT::IntegralValue<int>(imortar_, "GP_SLIP_INCR")),
-      algo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM")),
-      stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(imortar_, "STRATEGY")),
-      cppnormal_(DRT::INPUT::IntegralValue<int>(imortar_, "CPP_NORMALS")),
-      wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(imortar_, "WEARLAW")),
+      shapefcn_(INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN")),
+      lagmultquad_(INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD")),
+      gpslip_(INPUT::IntegralValue<int>(imortar_, "GP_SLIP_INCR")),
+      algo_(INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM")),
+      stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(imortar_, "STRATEGY")),
+      cppnormal_(INPUT::IntegralValue<int>(imortar_, "CPP_NORMALS")),
+      wearlaw_(INPUT::IntegralValue<INPAR::WEAR::WearLaw>(imortar_, "WEARLAW")),
       wearimpl_(false),
       wearside_(INPAR::WEAR::wear_slave),
       weartype_(INPAR::WEAR::wear_intstate),
       wearshapefcn_(INPAR::WEAR::wear_shape_standard),
-      sswear_(DRT::INPUT::IntegralValue<int>(imortar_, "SSWEAR")),
+      sswear_(INPUT::IntegralValue<int>(imortar_, "SSWEAR")),
       wearcoeff_(-1.0),
       wearcoeffm_(-1.0),
       ssslip_(imortar_.get<double>("SSSLIP")),
       nonsmooth_(false),
       nonsmoothselfcontactsurface_(
-          DRT::INPUT::IntegralValue<int>(imortar_, "NONSMOOTH_CONTACT_SURFACE")),
-      integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE"))
+          INPUT::IntegralValue<int>(imortar_, "NONSMOOTH_CONTACT_SURFACE")),
+      integrationtype_(INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE"))
 {
   // init gp
   InitializeGP(eletype);
@@ -67,17 +67,17 @@ CONTACT::CoIntegrator::CoIntegrator(
   {
     // set wear contact status
     INPAR::WEAR::WearTimInt wtimint =
-        DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(params, "WEARTIMINT");
+        INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(params, "WEARTIMINT");
     if (wtimint == INPAR::WEAR::wear_impl) wearimpl_ = true;
 
     // wear surface
-    wearside_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_, "WEAR_SIDE");
+    wearside_ = INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_, "WEAR_SIDE");
 
     // wear algorithm
-    weartype_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_, "WEARTYPE");
+    weartype_ = INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_, "WEARTYPE");
 
     // wear shape function
-    wearshapefcn_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(imortar_, "WEAR_SHAPEFCN");
+    wearshapefcn_ = INPUT::IntegralValue<INPAR::WEAR::WearShape>(imortar_, "WEAR_SHAPEFCN");
 
     // wear coefficient
     wearcoeff_ = imortar_.get<double>("WEARCOEFF");
@@ -86,7 +86,7 @@ CONTACT::CoIntegrator::CoIntegrator(
     wearcoeffm_ = imortar_.get<double>("WEARCOEFF_MASTER");
   }
 
-  nonsmooth_ = DRT::INPUT::IntegralValue<int>(imortar_, "NONSMOOTH_GEOMETRIES");
+  nonsmooth_ = INPUT::IntegralValue<int>(imortar_, "NONSMOOTH_GEOMETRIES");
 
   return;
 }
@@ -237,7 +237,7 @@ void CONTACT::CoIntegrator::InitializeGP(CORE::FE::CellType eletype)
 
   // get integration type
   INPAR::MORTAR::IntType integrationtype =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
+      INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
 
   //**********************************************************************
   // choose Gauss rule according to (a) element type (b) input parameter
@@ -1515,7 +1515,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
   //  --> Boundary_ele==true
   //********************************************************************
   INPAR::MORTAR::IntType integrationtype =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
+      INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
 
   //************************************************************************
   // Boundary Segmentation check -- HasProj()-check
@@ -3794,7 +3794,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
   Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult;
 
   // get them in the case of wear
-  if (wear or DRT::INPUT::IntegralValue<int>(imortar_, "GP_SLIP_INCR") == true)
+  if (wear or INPUT::IntegralValue<int>(imortar_, "GP_SLIP_INCR") == true)
   {
     scoordold = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele.NumNode()));
     mcoordold = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, mele.NumNode()));
@@ -4306,7 +4306,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
 
   // get numerical integration type
   INPAR::MORTAR::IntType inttype =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
+      INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
 
   //************************************************************************
   // Boundary Segmentation check -- HasProj()-check
@@ -5988,7 +5988,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
       }
 
       // Creating the tangential relative slip increment (non-objective)
-      if (DRT::INPUT::IntegralValue<int>(imortar_, "GP_SLIP_INCR") == true)
+      if (INPUT::IntegralValue<int>(imortar_, "GP_SLIP_INCR") == true)
       {
         int linsize = 0;
         for (int i = 0; i < sele.NumNode(); ++i)

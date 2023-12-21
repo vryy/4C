@@ -144,7 +144,7 @@ namespace MAT
       }
 
       /// Setup of summand
-      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
       /*!
        * \brief add strain energy [derived]

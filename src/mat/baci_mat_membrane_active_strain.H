@@ -170,7 +170,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// setup
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /// Standard SO3 evaluate (not meant to be used)
     void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
@@ -227,11 +227,11 @@ namespace MAT
     bool isinit_;
 
     // setup fiber vectors
-    void SetupFiberVectors(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void SetupFiberVectors(int numgp, INPUT::LineDefinition* linedef);
 
     // read RAD-AXI-CIR
-    void ReadDir(DRT::INPUT::LineDefinition* linedef, std::string specifier,
-        CORE::LINALG::Matrix<3, 1>& dir);
+    void ReadDir(
+        INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir);
 
     // calculate normal direction from FIBER1 and FIBER2
     void SetupNormalDirection();

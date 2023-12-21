@@ -333,7 +333,7 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup                                         (public)         12/10|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ConstraintMixture::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   if (*params_->integration_ != "Implicit" && *params_->integration_ != "Explicit")
     dserror("unknown option for integration");

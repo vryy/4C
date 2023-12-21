@@ -102,7 +102,7 @@ void ADAPTER::FluidAleXFEM::NonlinearSolve(
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   // no computation of fluid velocities in case only structure and ALE are to compute
-  if (DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
+  if (INPUT::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
   {
     FluidField()->Solve();
   }

@@ -130,7 +130,7 @@ void MIXTURE::MixtureConstituent_SolidMaterial::UnpackConstituent(
 INPAR::MAT::MaterialType MaterialType() { return INPAR::MAT::mix_solid_material; }
 
 void MIXTURE::MixtureConstituent_SolidMaterial::ReadElement(
-    int numgp, DRT::INPUT::LineDefinition* linedef)
+    int numgp, INPUT::LineDefinition* linedef)
 {
   MixtureConstituent::ReadElement(numgp, linedef);
   material_->Setup(numgp, linedef);

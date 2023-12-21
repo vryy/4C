@@ -34,7 +34,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   output_step_offset_ = IO_vtp_structure_paramslist.get<int>("STEP_OFFSET");
 
   output_every_iteration_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
+      (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
   // Overwrite non default values in the visualization parameters
   visualization_parameters_.every_iteration_ = output_every_iteration_;
@@ -43,18 +43,18 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
     dserror("Every iteration output not implemented for structure vtp output!");
 
   /*  output_displacement_state_ =
-        (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "DISPLACEMENT");*/
+        (bool) INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "DISPLACEMENT");*/
 
-  output_owner_ = (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
+  output_owner_ = (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
 
   output_orientationandlength_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
+      (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
 
   output_numberofbonds_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
+      (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
 
   output_linkingforce_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
+      (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
 
 
   isinit_ = true;

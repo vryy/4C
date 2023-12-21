@@ -73,12 +73,12 @@ void porofluidmultiphase_dyn(int restart)
     arterydis = DRT::Problem::Instance()->GetDis(artery_disname);
     // get the coupling method
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
-        DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+        INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
             porodyn.sublist("ARTERY COUPLING"), "ARTERY_COUPLING_METHOD");
 
     // lateral surface coupling active?
-    const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
-        porodyn.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
+    const bool evaluate_on_lateral_surface =
+        INPUT::IntegralValue<int>(porodyn.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
 
     switch (arterycoupl)
     {
@@ -121,7 +121,7 @@ void porofluidmultiphase_dyn(int restart)
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
-      DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
+      INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
           porodyn, "TIMEINTEGR");
 
   // build poro fluid time integrator

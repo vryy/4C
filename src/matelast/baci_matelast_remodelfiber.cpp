@@ -142,8 +142,7 @@ void MAT::ELASTIC::RemodelFiber::RegisterAnisotropyExtensions(Anisotropy& anisot
   }
 }
 
-void MAT::ELASTIC::RemodelFiber::Setup(
-    int numgp, double rho_tot, DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::RemodelFiber::Setup(int numgp, double rho_tot, INPUT::LineDefinition* linedef)
 {
   // setup fiber and inelastic history variable
   cauchystress_.resize(potsumfiber_.size());

@@ -494,7 +494,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   std::string buffer;
   linedef->ExtractString("KINEM", buffer);
@@ -786,8 +786,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
       dserror("so3_ssn_plast elements only with PlasticElastHyper material");
 
     // get dissipation mode
-    auto mode =
-        DRT::INPUT::IntegralValue<INPAR::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
+    auto mode = INPUT::IntegralValue<INPAR::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
 
     // prepare material for tsi
     plmat->SetupTSI(numgpt_, numdofperelement_, (eastype_ != soh8p_easnone), mode);

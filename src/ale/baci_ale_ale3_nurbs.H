@@ -47,7 +47,7 @@ namespace DRT
             DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
         void SetupElementDefinition(
-            std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+            std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
             override
         {
           // do nothing. Definition inserted by normal wall element.

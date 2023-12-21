@@ -64,17 +64,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroScatraType::Create(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad4PoroScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   WallQuad4PoroType::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALLQ4PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLQ4PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ4POROSCATRA"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ4POROSCATRA"];
 
-  defs["QUAD4"] =
-      DRT::INPUT::LineDefinition::Builder(defs_wall["QUAD4"]).AddNamedString("TYPE").Build();
+  defs["QUAD4"] = INPUT::LineDefinition::Builder(defs_wall["QUAD4"]).AddNamedString("TYPE").Build();
 }
 
 
@@ -126,17 +125,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroScatraType::Create(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad9PoroScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   WallQuad9PoroType::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALLQ9PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLQ9PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ9POROSCATRA"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ9POROSCATRA"];
 
-  defs["QUAD9"] =
-      DRT::INPUT::LineDefinition::Builder(defs_wall["QUAD9"]).AddNamedString("TYPE").Build();
+  defs["QUAD9"] = INPUT::LineDefinition::Builder(defs_wall["QUAD9"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -189,17 +187,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroScatraType::Create(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallNurbs4PoroScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   WallNurbs4PoroType::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALLN4PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLN4PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLN4POROSCATRA"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLN4POROSCATRA"];
 
   defs["NURBS4"] =
-      DRT::INPUT::LineDefinition::Builder(defs_wall["NURBS4"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_wall["NURBS4"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -252,17 +250,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroScatraType::Create(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallNurbs9PoroScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   WallNurbs9PoroType::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALLN9PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLN9PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLN9POROSCATRA"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLN9POROSCATRA"];
 
   defs["NURBS9"] =
-      DRT::INPUT::LineDefinition::Builder(defs_wall["NURBS9"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_wall["NURBS9"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -314,17 +312,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroScatraType::Create(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallTri3PoroScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   WallTri3PoroType::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALLT3PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLT3PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLT3POROSCATRA"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLT3POROSCATRA"];
 
-  defs["TRI3"] =
-      DRT::INPUT::LineDefinition::Builder(defs_wall["TRI3"]).AddNamedString("TYPE").Build();
+  defs["TRI3"] = INPUT::LineDefinition::Builder(defs_wall["TRI3"]).AddNamedString("TYPE").Build();
 }
 
 BACI_NAMESPACE_CLOSE

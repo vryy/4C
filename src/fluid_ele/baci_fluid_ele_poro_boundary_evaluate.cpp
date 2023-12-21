@@ -24,7 +24,7 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
+  const auto act = INPUT::get<FLD::BoundaryAction>(params, "action");
 
   // switch between different physical types as used below
   std::string impltype = "poro";
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(const Discretization& dis,
     bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   // get the action required
-  const auto act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
+  const auto act = INPUT::get<FLD::BoundaryAction>(params, "action");
   switch (act)
   {
     case FLD::poro_boundary:

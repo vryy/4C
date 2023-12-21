@@ -260,7 +260,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation, PreparationData,
 template <CORE::FE::CellType celltype, typename ElementFormulation, typename PreparationData,
     typename HistoryData>
 void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation, PreparationData, HistoryData>::Setup(
-    MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
+    MAT::So3Material& solid_material, INPUT::LineDefinition* linedef)
 {
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }

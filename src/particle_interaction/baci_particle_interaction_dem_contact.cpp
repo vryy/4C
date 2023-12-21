@@ -40,9 +40,9 @@ BACI_NAMESPACE_OPEN
 PARTICLEINTERACTION::DEMContact::DEMContact(const Teuchos::ParameterList& params)
     : params_dem_(params),
       dt_(0.0),
-      tension_cutoff_(DRT::INPUT::IntegralValue<int>(params_dem_, "TENSION_CUTOFF")),
+      tension_cutoff_(INPUT::IntegralValue<int>(params_dem_, "TENSION_CUTOFF")),
       writeparticlewallinteraction_(
-          DRT::INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
+          INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -110,7 +110,7 @@ void PARTICLEINTERACTION::DEMContact::Setup(
   {
     // get type of normal contact law
     INPAR::PARTICLE::NormalContact normalcontacttype =
-        DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
+        INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
 
     if (normalcontacttype != INPAR::PARTICLE::NormalLinSpring and
         normalcontacttype != INPAR::PARTICLE::NormalLinSpringDamp)
@@ -214,7 +214,7 @@ void PARTICLEINTERACTION::DEMContact::InitNormalContactHandler()
 {
   // get type of normal contact law
   INPAR::PARTICLE::NormalContact normalcontacttype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
+      INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
 
   // create normal contact handler
   switch (normalcontacttype)
@@ -270,8 +270,7 @@ void PARTICLEINTERACTION::DEMContact::InitTangentialContactHandler()
 {
   // get type of tangential contact law
   INPAR::PARTICLE::TangentialContact tangentialcontacttype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::TangentialContact>(
-          params_dem_, "TANGENTIALCONTACTLAW");
+      INPUT::IntegralValue<INPAR::PARTICLE::TangentialContact>(params_dem_, "TANGENTIALCONTACTLAW");
 
   // create tangential contact handler
   switch (tangentialcontacttype)
@@ -303,7 +302,7 @@ void PARTICLEINTERACTION::DEMContact::InitRollingContactHandler()
 {
   // get type of rolling contact law
   INPAR::PARTICLE::RollingContact rollingcontacttype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RollingContact>(params_dem_, "ROLLINGCONTACTLAW");
+      INPUT::IntegralValue<INPAR::PARTICLE::RollingContact>(params_dem_, "ROLLINGCONTACTLAW");
 
   // create rolling contact handler
   switch (rollingcontacttype)

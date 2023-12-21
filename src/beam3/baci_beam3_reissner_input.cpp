@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam3r::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   /* the triad field is discretized with Lagrange polynomials of order NumNode()-1;
    * the centerline is either discretized in the same way or with 3rd order Hermite polynomials;

@@ -230,7 +230,7 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(
+  if (INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING"))
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_spherebeamlink);
@@ -238,7 +238,7 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(
+  if (INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING"), "CROSSLINKER"))
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_crosslinking);
 
@@ -255,10 +255,10 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   // ---------------------------------------------------------------------------
   // check for beam contact
   // ---------------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+  if (INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+      INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
@@ -284,7 +284,7 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_potential);
 
   // Check if all all combinations of submodel evaluators work
-  if (DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+  if (INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none and
       beampenaltycouplingconditions.size() > 0)
@@ -747,7 +747,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
   const Teuchos::ParameterList& beam_interaction_params =
       DRT::Problem::Instance()->BeamInteractionParams();
   if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_beamcontact) &&
-      (bool)DRT::INPUT::IntegralValue<int>(
+      (bool)INPUT::IntegralValue<int>(
           beam_interaction_params.sublist("BEAM TO SOLID VOLUME MESHTYING"),
           "COUPLE_RESTART_STATE"))
   {

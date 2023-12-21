@@ -30,13 +30,10 @@ namespace CORE::COMM
   class PackBuffer;
 }
 
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
+  class LineDefinition;
+}
 
 namespace MAT
 {
@@ -163,7 +160,7 @@ namespace MAT
      *
      * @param linedef (in) : Input line of the corresponding element
      */
-    void ReadAnisotropyFromElement(DRT::INPUT::LineDefinition* linedef);
+    void ReadAnisotropyFromElement(INPUT::LineDefinition* linedef);
 
     /*!
      * This method extracts the Gauss-point fibers written by the elements into the ParameterList

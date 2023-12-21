@@ -252,7 +252,7 @@ void MAT::Damage::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public)      04/11 |
  *---------------------------------------------------------------------*/
-void MAT::Damage::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Damage::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // initialise history variables
   strainpllast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);

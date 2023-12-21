@@ -96,7 +96,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::El
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::BoundaryAction action =
-      DRT::INPUT::get<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
+      INPUT::get<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat, elevec);
 

@@ -61,7 +61,7 @@ void LOMA::Algorithm::Init()
   ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
 
   // flag for monolithic solver
-  monolithic_ = (DRT::INPUT::IntegralValue<int>(probdyn_, "MONOLITHIC"));
+  monolithic_ = (INPUT::IntegralValue<int>(probdyn_, "MONOLITHIC"));
 
   // time-step length, maximum time and maximum number of steps
   dt_ = probdyn_.get<double>("TIMESTEP");
@@ -87,8 +87,7 @@ void LOMA::Algorithm::Init()
     dserror("Incremental ScaTra formulation required for low-Mach-number flow");
 
   // flag for turbulent inflow
-  turbinflow_ =
-      DRT::INPUT::IntegralValue<int>(fluiddyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW");
+  turbinflow_ = INPUT::IntegralValue<int>(fluiddyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW");
   // number of inflow steps
   numinflowsteps_ = fluiddyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
   if (turbinflow_)
@@ -133,7 +132,7 @@ void LOMA::Algorithm::Setup()
     // check whether (fluid) linearization scheme is a fixed-point-like scheme,
     // which is the only one enabled for monolithic solver, for the time being
     INPAR::FLUID::LinearisationAction linearization =
-        DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fluiddyn, "NONLINITER");
+        INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fluiddyn, "NONLINITER");
     if (linearization != INPAR::FLUID::fixed_point_like)
       dserror(
           "Only a fixed-point-like iteration scheme is enabled for monolithic low-Mach-number "

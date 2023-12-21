@@ -129,7 +129,7 @@ void MAT::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
       dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 }
-void MAT::PlasticDruckerPrager::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::PlasticDruckerPrager::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   strainpllast_.resize(numgp);
   strainplcurr_.resize(numgp);

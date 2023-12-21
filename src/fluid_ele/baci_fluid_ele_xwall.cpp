@@ -68,9 +68,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::FluidXWallType::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::FluidXWallType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defsxwall = definitions["FLUIDXW"];
+  std::map<std::string, INPUT::LineDefinition>& defsxwall = definitions["FLUIDXW"];
 
   defsxwall["HEX8"] = INPUT::LineDefinition::Builder()
                           .AddIntVector("HEX8", 8)

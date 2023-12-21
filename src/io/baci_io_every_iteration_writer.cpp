@@ -56,7 +56,7 @@ void IO::EveryIterationWriter::Init(const IO::DiscretizationWriter* parent_write
   run_number_ = params.get<int>("RUN_NUMBER");
   write_only_this_step_ = params.get<int>("STEP_NP_NUMBER");
   write_owner_each_newton_iteration_ =
-      DRT::INPUT::IntegralValue<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
+      INPUT::IntegralValue<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
 
   isinit_ = true;
 }

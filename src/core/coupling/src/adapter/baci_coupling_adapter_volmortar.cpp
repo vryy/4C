@@ -108,12 +108,12 @@ void CORE::ADAPTER::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
 
   //-----------------------
   // Evaluate volmortar coupling:
-  if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params, "COUPLINGTYPE") ==
+  if (INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params, "COUPLINGTYPE") ==
       INPAR::VOLMORTAR::couplingtype_volmortar)
     coupdis->EvaluateVolmortar();
   //-----------------------
   // consistent interpolation (NO CORE::VOLMORTAR)
-  else if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params, "COUPLINGTYPE") ==
+  else if (INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params, "COUPLINGTYPE") ==
            INPAR::VOLMORTAR::couplingtype_coninter)
     coupdis->EvaluateConsistentInterpolation();
   //-----------------------

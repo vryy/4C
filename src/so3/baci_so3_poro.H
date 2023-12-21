@@ -249,7 +249,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          DRT::INPUT::LineDefinition* linedef) override;
+          INPUT::LineDefinition* linedef) override;
 
       //!@}
 
@@ -643,11 +643,11 @@ namespace DRT
 
       //! read anisotropic permeability directions in the element definition
       void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
-          DRT::INPUT::LineDefinition* linedef);
+          INPUT::LineDefinition* linedef);
 
       //! read nodal anisotropic permeability scaling coefficients in the element definition
       void ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
-          DRT::INPUT::LineDefinition* linedef);
+          INPUT::LineDefinition* linedef);
 
       //! interpolate the anisotropic permeability coefficients at GP from nodal values
       std::vector<double> ComputeAnisotropicPermeabilityCoeffsAtGP(

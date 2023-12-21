@@ -29,11 +29,11 @@ namespace DRT
   {
     // forward declarations
     Teuchos::RCP<DRT::Element> CreateHexElement(int eleid, int nodeoffset, int myrank,
-        DRT::INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
+        INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
         std::string distype);
 
     Teuchos::RCP<DRT::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
-        DRT::INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
+        INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
         std::string distype);
 
     /*----------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ namespace DRT
       const int myrank = comm.MyPID();
       const int numproc = comm.NumProc();
 
-      DRT::INPUT::ElementDefinition ed;
+      INPUT::ElementDefinition ed;
       ed.SetupValidElementLines();
 
       // safety checks
@@ -165,7 +165,7 @@ namespace DRT
 
         // For the time being we support old and new input facilities. To
         // smooth transition.
-        DRT::INPUT::LineDefinition* linedef =
+        INPUT::LineDefinition* linedef =
             ed.ElementLines(inputData.elementtype_, inputData.distype_);
         if (linedef == nullptr)
           dserror("a matching line definition is needed for %s %s", inputData.elementtype_.c_str(),
@@ -325,7 +325,7 @@ namespace DRT
      | create HEX type elements for the partition                           |
      *----------------------------------------------------------------------*/
     Teuchos::RCP<DRT::Element> CreateHexElement(int eleid, int nodeOffset, int myrank,
-        DRT::INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
+        INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
         std::string distype)
     {
       // Reserve nodeids for this element type
@@ -395,7 +395,7 @@ namespace DRT
      | Wedges aligned in z-direction.                                       |
      *----------------------------------------------------------------------*/
     Teuchos::RCP<DRT::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
-        DRT::INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
+        INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
         std::string distype)
     {
       // Reserve nodeids for this element type

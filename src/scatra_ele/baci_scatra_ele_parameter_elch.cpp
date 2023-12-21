@@ -64,7 +64,7 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(Teuchos::ParameterList
   boundaryfluxcoupling_ = parameters.get<bool>("boundaryfluxcoupling");
 
   // type of closing equation for electric potential
-  equpot_ = DRT::INPUT::get<INPAR::ELCH::EquPot>(parameters, "equpot");
+  equpot_ = INPUT::get<INPAR::ELCH::EquPot>(parameters, "equpot");
   if (equpot_ == INPAR::ELCH::equpot_undefined)
     dserror("Invalid type of closing equation for electric potential!");
 

@@ -69,7 +69,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::UnpackConstituent(
 
 // Reads the element from the input file
 void MIXTURE::MixtureConstituent_ElastHyperDamage::ReadElement(
-    int numgp, DRT::INPUT::LineDefinition* linedef)
+    int numgp, INPUT::LineDefinition* linedef)
 {
   MixtureConstituent_ElastHyperBase::ReadElement(numgp, linedef);
 

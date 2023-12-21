@@ -29,7 +29,7 @@ FLD::DynSmagFilter::DynSmagFilter(
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
 {
   // the default is do nothing
   apply_dynamic_smagorinsky_ = false;
@@ -49,7 +49,7 @@ FLD::DynSmagFilter::DynSmagFilter(
       apply_dynamic_smagorinsky_ = true;
 
       // check, if averaging is desired
-      if (DRT::INPUT::IntegralValue<int>(
+      if (INPUT::IntegralValue<int>(
               params_.sublist("SUBGRID VISCOSITY"), "C_SMAGORINSKY_AVERAGED") == true)
       {
         if (discret_->Comm().MyPID() == 0)
@@ -82,8 +82,7 @@ FLD::DynSmagFilter::DynSmagFilter(
       // check whether we would like to include a model for the isotropic part
       if (physicaltype_ == INPAR::FLUID::loma)
       {
-        if (DRT::INPUT::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI") ==
-            true)
+        if (INPUT::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI") == true)
         {
           if (discret_->Comm().MyPID() == 0)
             std::cout << "------->  Ci is included for loma problem" << std::endl;

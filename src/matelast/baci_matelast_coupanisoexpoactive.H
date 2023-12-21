@@ -122,7 +122,7 @@ namespace MAT
       //@}
 
       /// Setup of active summand
-      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
       void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 

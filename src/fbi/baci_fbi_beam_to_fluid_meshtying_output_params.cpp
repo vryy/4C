@@ -38,23 +38,23 @@ void FBI::BeamToFluidMeshtyingVtkOutputParams::Setup()
 
   // Get global parameters.
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
-  output_every_iteration_ = (bool)DRT::INPUT::IntegralValue<int>(
-      global_visualization_output_paramslist, "EVERY_ITERATION");
+  output_every_iteration_ =
+      (bool)INPUT::IntegralValue<int>(global_visualization_output_paramslist, "EVERY_ITERATION");
 
   // Get beam to fluid mesh tying specific parameters.
-  output_flag_ = (bool)DRT::INPUT::IntegralValue<int>(
+  output_flag_ = (bool)INPUT::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "WRITE_OUTPUT");
 
-  nodal_forces_ = (bool)DRT::INPUT::IntegralValue<int>(
+  nodal_forces_ = (bool)INPUT::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "NODAL_FORCES");
 
-  segmentation_ = (bool)DRT::INPUT::IntegralValue<int>(
+  segmentation_ = (bool)INPUT::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "SEGMENTATION");
 
-  integration_points_ = (bool)DRT::INPUT::IntegralValue<int>(
+  integration_points_ = (bool)INPUT::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "INTEGRATION_POINTS");
 
-  constraint_violation_ = (bool)DRT::INPUT::IntegralValue<int>(
+  constraint_violation_ = (bool)INPUT::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "CONSTRAINT_VIOLATION");
 
   // Set the setup flag.

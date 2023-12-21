@@ -65,7 +65,7 @@ namespace
 
   template <int dim>
   Teuchos::RCP<CORE::UTILS::FunctionOfAnything> TryCreatePoroFunction(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+      const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -88,8 +88,7 @@ namespace
     }
   }
 
-  auto TryCreatePoroFunctionDispatch(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+  auto TryCreatePoroFunctionDispatch(const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     switch (DRT::Problem::Instance()->NDim())
     {
@@ -118,11 +117,11 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction<dim>::PoroMultiPhaseScaTraFun
 void POROMULTIPHASESCATRA::AddValidPoroFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
   function_manager.AddFunctionDefinition(
-      {DRT::INPUT::LineDefinition::Builder()
+      {INPUT::LineDefinition::Builder()
               .AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
               .AddOptionalNamedInt("NUMPARAMS")
               .AddOptionalNamedPairOfStringAndDoubleVector(
-                  "PARAMS", DRT::INPUT::LengthFromIntNamed("NUMPARAMS"))
+                  "PARAMS", INPUT::LengthFromIntNamed("NUMPARAMS"))
               .Build()},
       TryCreatePoroFunctionDispatch);
 }

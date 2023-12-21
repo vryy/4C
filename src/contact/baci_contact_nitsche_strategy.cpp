@@ -78,7 +78,7 @@ void CONTACT::CoNitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   // to try to read certain, in this case non-existing, vectors
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
-  bool restartwithcontact = DRT::INPUT::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = INPUT::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
   if (restartwithcontact) dserror("not supported for nitsche contact");
 
   // set restart displacement state
@@ -98,8 +98,7 @@ void CONTACT::CoNitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
     StoreToOld(MORTAR::StrategyBase::n_old);
   }
 
-  if (DRT::INPUT::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE"))
-    UpdateTraceIneqEtimates();
+  if (INPUT::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE")) UpdateTraceIneqEtimates();
 }
 
 void CONTACT::CoNitscheStrategy::SetState(
@@ -384,7 +383,7 @@ void CONTACT::CoNitscheStrategy::Setup(bool redistributed, bool init)
 void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
 {
   auto NitWgt =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
+      INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
   for (const auto& interface : interface_)
   {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
@@ -400,8 +399,7 @@ void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
 
 void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
-  if (DRT::INPUT::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE"))
-    UpdateTraceIneqEtimates();
+  if (INPUT::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE")) UpdateTraceIneqEtimates();
   if (friction_)
   {
     StoreToOld(MORTAR::StrategyBase::n_old);
