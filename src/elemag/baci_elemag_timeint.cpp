@@ -789,7 +789,9 @@ void ELEMAG::ElemagTimeInt::Solve()
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(), true);
   // solve for trace
-  solver_->Solve(sysmat_->EpetraOperator(), trace_, residual_, true, false, Teuchos::null);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_->Solve(sysmat_->EpetraOperator(), trace_, residual_, solver_params);
 
 
   // Unequilibrate solution vector

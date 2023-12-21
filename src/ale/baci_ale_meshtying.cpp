@@ -715,7 +715,9 @@ int ALE::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
   {
     TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
 
-    errorcode = solver_.Solve(mergedmatrix->EpetraOperator(), dis, res, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    errorcode = solver_.Solve(mergedmatrix->EpetraOperator(), dis, res, solver_params);
 
     CORE::LINALG::Export(*dis, *disi);
     CORE::LINALG::Export(*res, *residual);

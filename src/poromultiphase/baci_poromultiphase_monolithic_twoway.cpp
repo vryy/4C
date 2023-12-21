@@ -902,11 +902,12 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
   double dtcpu = timernewton_.wallTime();
   // *********** time measurement ***********
 
+  CORE::LINALG::SolverParams solver_params;
   if (solveradapttol_ and (itnum_ > 1))
   {
-    double worst = std::max(maxres_, maxinc_);
-    double wanted = tolfres_;
-    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+    solver_params.nonlin_tolerance = tolfres_;
+    solver_params.nonlin_residual = std::max(maxres_, maxinc_);
+    solver_params.lin_tol_better = solveradaptolbetter_;
   }
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
@@ -916,7 +917,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
   // standard solver call
   // system is ready to solve since Dirichlet Boundary conditions have been applied in
   // SetupSystemMatrix or Evaluate
-  solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, itnum_ == 1);
+
+  solver_params.refactor = true;
+  solver_params.reset = itnum_ == 1;
+  solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
 
   equilibration_->UnequilibrateIncrement(iterinc_);
 

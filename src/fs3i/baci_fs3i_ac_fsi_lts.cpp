@@ -368,7 +368,12 @@ void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
   //----------------------------------------------------------------------
   const Teuchos::RCP<Epetra_Vector> structurescatraincrement =
       CORE::LINALG::CreateVector(*scatra->DofRowMap(), true);
-  scatra->Solver()->Solve(sysmat->EpetraOperator(), structurescatraincrement, residual, true, true);
+
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  scatra->Solver()->Solve(
+      sysmat->EpetraOperator(), structurescatraincrement, residual, solver_params);
 
   //----------------------------------------------------------------------
   // update the strucutre scatra increment

@@ -207,7 +207,10 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
-    solver_->Solve(tang_->EpetraMatrix(), (*rate_)(0), rhs, true, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = true;
+    solver_->Solve(tang_->EpetraMatrix(), (*rate_)(0), rhs, solver_params);
   }
 
   // We need to reset the tangent matrix because its graph (topology)

@@ -47,6 +47,7 @@ namespace ADAPTER
 namespace CORE::LINALG
 {
   class Solver;
+  struct SolverParams;
   class SparseMatrix;
   class MultiMapExtractor;
   class MapExtractor;
@@ -134,8 +135,8 @@ namespace FLD
     void SolveMeshtying(CORE::LINALG::Solver& solver,
         const Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
         const Teuchos::RCP<Epetra_Vector>& incvel, const Teuchos::RCP<Epetra_Vector>& residual,
-        const Teuchos::RCP<Epetra_Vector>& velnp, const int& itnum,
-        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector);
+        const Teuchos::RCP<Epetra_Vector>& velnp, const int itnum,
+        CORE::LINALG::SolverParams& solver_params);
 
     //! Adjust null-space for Krylov projector (slave node are in-active)
     Teuchos::RCP<Epetra_Vector> AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec);

@@ -1148,7 +1148,10 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     // for the accelerations at non-Dirichlet DoFs while the resulting accelerations at the
     // Dirichlet-DoFs will be zero. Therefore, the accelerations at DoFs with inhomogeneous
     // Dirichlet conditions will be added below at *).
-    solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, true, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = true;
+    solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, solver_params);
 
     //*) Add contributions of inhomogeneous DBCs
     (*acc_)(0)->Update(1.0, *acc_aux, 1.0);
@@ -1593,7 +1596,9 @@ void STR::TimInt::UpdateStepContactVUM()
       {
         // solver for linear equations DF * dp = -f
         mf->Update(-1.0, *f, 0.0);
-        solver_->Solve(DF->EpetraOperator(), dp, mf, true);
+        CORE::LINALG::SolverParams solver_params;
+        solver_params.refactor = true;
+        solver_->Solve(DF->EpetraOperator(), dp, mf, solver_params);
 
         // Update solution p_n = p_n-1 + dp
         p->Update(1.0, *dp, 1.0);

@@ -726,13 +726,18 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + call linear solver");
 
       // do adaptive linear solver tolerance (not in first solve)
+      CORE::LINALG::SolverParams solver_params;
       if (isadapttol && iternum_ > 1)
       {
-        solver_->AdaptTolerance(ittol, actresidual, adaptolbetter);
+        solver_params.nonlin_tolerance = ittol;
+        solver_params.nonlin_residual = actresidual;
+        solver_params.lin_tol_better = adaptolbetter;
       }
 
       // strategy_->Solve(solver_,sysmat_,increment_,residual_,prenp_,iternum_,projector_);
-      solver_->Solve(sysmat_->EpetraOperator(), increment_, residual_, true, 1, Teuchos::null);
+      solver_params.refactor = true;
+      solver_params.reset = true;
+      solver_->Solve(sysmat_->EpetraOperator(), increment_, residual_, solver_params);
 
       solver_->ResetTolerance();
 

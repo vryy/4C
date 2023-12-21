@@ -2501,12 +2501,16 @@ void FLD::XFluid::Solve()
       const double tcpusolve = Teuchos::Time::wallTime();
 
       // do adaptive linear solver tolerance (not in first solve)
+      CORE::LINALG::SolverParams solver_params;
       if (isadapttol && itnum > 1)
       {
         double currresidual = std::max(vresnorm_, presnorm_);
         currresidual = std::max(currresidual, incvelnorm_L2_ / velnorm_L2_);
         currresidual = std::max(currresidual, incprenorm_L2_ / prenorm_L2_);
-        solver_->AdaptTolerance(ittol, currresidual, adaptolbetter);
+
+        solver_params.nonlin_tolerance = ittol;
+        solver_params.nonlin_residual = currresidual;
+        solver_params.lin_tol_better = adaptolbetter;
       }
 
       // scale system prior to solver call
@@ -2517,8 +2521,12 @@ void FLD::XFluid::Solve()
       // is in nullspace of sysmat_
       CheckMatrixNullspace();
 
+
+      solver_params.refactor = true;
+      solver_params.reset = itnum == 1;
+      solver_params.projector = projector_;
       solver_->Solve(state_->SystemMatrix()->EpetraOperator(), state_->IncVel(), state_->Residual(),
-          true, itnum == 1, projector_);
+          solver_params);
 
       // TODO: here needed because of apply Dirichlet with explicit Dirichlet flag!? CHECK THIS
       solver_->Reset();
@@ -4215,7 +4223,10 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
     // get cpu time
     const double tcpusolve = Teuchos::Time::wallTime();
 
-    solver_gp->Solve(sysmat_gp->EpetraOperator(), incvel_gp, residual_gp, true, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = true;
+    solver_gp->Solve(sysmat_gp->EpetraOperator(), incvel_gp, residual_gp, solver_params);
 
     // end time measurement for solver
     dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
@@ -5001,7 +5012,11 @@ void FLD::XFluid::PredictTangVelConsistAcc()
       *state_->zeros_, *(state_->dbcmaps_->CondMap()));
 
   // solve for incvel_
-  solver_->Solve(state_->sysmat_->EpetraOperator(), state_->incvel_, state_->residual_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(
+      state_->sysmat_->EpetraOperator(), state_->incvel_, state_->residual_, solver_params);
 
   // set Dirichlet increments in solution increments
   state_->incvel_->Update(1.0, *dbcinc, 1.0);

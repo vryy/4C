@@ -106,7 +106,9 @@ void THR::TimIntExplEuler::IntegrateStep()
     // refactor==false: This is not necessary, because we always
     // use the same constant capacity matrix, which was firstly factorised
     // in TimInt::DetermineCapaConsistTempRate
-    solver_->Solve(tang_->EpetraOperator(), raten_, frimpn, false, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.reset = true;
+    solver_->Solve(tang_->EpetraOperator(), raten_, frimpn, solver_params);
   }
   // direct inversion based on lumped capacity matrix
   else

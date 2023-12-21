@@ -140,7 +140,10 @@ void CORE::LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
       x_->Update(1.0, *x, 0.0);
     }
     // direct solves are done by the solver itself.
-    solver_->Solve(matrix, x_, b_, refactor, reset);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = refactor;
+    solver_params.reset = reset;
+    solver_->Solve(matrix, x_, b_, solver_params);
     x->Update(1.0, *x_, 0.0);
   }
 

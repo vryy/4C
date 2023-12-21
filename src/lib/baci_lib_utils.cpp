@@ -467,7 +467,10 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
     case INPAR::SOLVER::SolverType::belos:
     {
       // solve for numvec rhs at the same time using Belos solver
-      solver->Solve(massmatrix.EpetraOperator(), nodevec, Teuchos::rcpFromRef(rhs), true, true);
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver_params.reset = true;
+      solver->Solve(massmatrix.EpetraOperator(), nodevec, Teuchos::rcpFromRef(rhs), solver_params);
       break;
     }
     default:
@@ -480,8 +483,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
       // solve for numvec rhs iteratively
       for (int i = 0; i < numvec; i++)
       {
+        CORE::LINALG::SolverParams solver_params;
+        solver_params.refactor = true;
+        solver_params.reset = true;
         solver->Solve(massmatrix.EpetraOperator(), Teuchos::rcp(((*nodevec)(i)), false),
-            Teuchos::rcp((rhs(i)), false), true, true);
+            Teuchos::rcp((rhs(i)), false), solver_params);
       }
       break;
     }

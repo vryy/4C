@@ -17,6 +17,11 @@
 
 BACI_NAMESPACE_OPEN
 
+namespace CORE::LINALG
+{
+  struct SolverParams;
+}
+
 namespace SCATRA
 {
   /*!
@@ -94,9 +99,8 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
         const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
         const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
-        const int& iteration,                      //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
-    ) const override;
+        const int iteration,                       //!< number of current Newton-Raphson iteration
+        CORE::LINALG::SolverParams& solver_params) const override;
 
     //! return linear solver for global system of linear equations
     const CORE::LINALG::Solver& Solver() const override;

@@ -1128,17 +1128,20 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
 
   // solve for disi
   // Solve K . IncD = -R  ===>  IncD_{n+1}
+  CORE::LINALG::SolverParams solver_params;
   if (isadapttol_ && counter_)
   {
-    double worst = norm_res_full;
-    double wanted = tolres_struct_;
-    solver_->AdaptTolerance(wanted, worst, adaptolbetter_);
+    solver_params.nonlin_tolerance = tolres_struct_;
+    solver_params.nonlin_residual = norm_res_full;
+    solver_params.lin_tol_better = adaptolbetter_;
   }
 
   // solve with merged matrix
   // solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
   // solve with BlockMatrix
-  linsolveerror_ = solver_->Solve(blockmat, mergedsol, mergedrhs, true, counter_ == 0);
+  solver_params.refactor = true;
+  solver_params.reset = counter_ == 0;
+  linsolveerror_ = solver_->Solve(blockmat, mergedsol, mergedrhs, solver_params);
   solver_->ResetTolerance();
 
   // initialize mergedsol_full to keep it in scope after the following if-condition

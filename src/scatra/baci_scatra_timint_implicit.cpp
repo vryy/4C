@@ -2612,7 +2612,9 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     // get cpu time
     const double tcpusolve = Teuchos::Time::wallTime();
 
-    strategy_->Solve(solver_, sysmat_, increment_, residual_, phinp_, 1, Teuchos::null);
+    CORE::LINALG::SolverParams solver_params;
+
+    strategy_->Solve(solver_, sysmat_, increment_, residual_, phinp_, 1, solver_params);
 
     // end time measurement for solver
     dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
@@ -2646,7 +2648,9 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     // get cpu time
     const double tcpusolve = Teuchos::Time::wallTime();
 
-    strategy_->Solve(solver_, sysmat_, phinp_, residual_, phinp_, 1, Teuchos::null);
+    CORE::LINALG::SolverParams solver_params;
+
+    strategy_->Solve(solver_, sysmat_, phinp_, residual_, phinp_, 1, solver_params);
 
     // end time measurement for solver
     dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
@@ -2733,15 +2737,20 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + call linear solver");
 
       // do adaptive linear solver tolerance (not in first solve)
+      CORE::LINALG::SolverParams solver_params;
       if (isadapttol && iternum_ > 1)
       {
-        solver_->AdaptTolerance(ittol, actresidual, adaptolbetter);
+        solver_params.nonlin_tolerance = ittol;
+        solver_params.nonlin_residual = actresidual;
+        solver_params.lin_tol_better = adaptolbetter;
       }
 
       // reprepare Krylov projection only if ale and projection required
       if (updateprojection_) UpdateKrylovSpaceProjection();
 
-      strategy_->Solve(solver_, sysmat_, increment_, residual_, phinp_, iternum_, projector_);
+      solver_params.projector = projector_;
+
+      strategy_->Solve(solver_, sysmat_, increment_, residual_, phinp_, iternum_, solver_params);
 
       solver_->ResetTolerance();
 

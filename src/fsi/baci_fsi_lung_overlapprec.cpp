@@ -350,7 +350,10 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector& X, Epetra_Mu
 
     Teuchos::RCP<Epetra_Vector> interconsol =
         Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));
-    constraintsolver_->Solve(interconA_->EpetraOperator(), interconsol, cx, true, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = true;
+    constraintsolver_->Solve(interconA_->EpetraOperator(), interconsol, cx, solver_params);
 
     // -------------------------------------------------------------------
     // update of all dofs

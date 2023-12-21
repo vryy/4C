@@ -1239,11 +1239,12 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
 void SCATRA::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
-    const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
-    const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const
+    const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
+    CORE::LINALG::SolverParams& solver_params) const
 {
-  solver->Solve(
-      systemmatrix->EpetraOperator(), increment, residual, true, iteration == 1, projector);
+  solver_params.refactor = true;
+  solver_params.reset = iteration == 1;
+  solver->Solve(systemmatrix->EpetraOperator(), increment, residual, solver_params);
 }
 
 

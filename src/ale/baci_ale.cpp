@@ -291,7 +291,11 @@ int ALE::Ale::Solve()
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
   int errorcode = 0;
   if (msht_ == INPAR::ALE::no_meshtying)
-    errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
+  {
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, solver_params);
+  }
   else
     errorcode = meshtying_->SolveMeshtying(*solver_, sysmat_, disi_, rhs, dispnp_);
   // calc norm

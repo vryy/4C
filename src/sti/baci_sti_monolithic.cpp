@@ -1525,7 +1525,10 @@ void STI::Monolithic::Solve()
 
     // solve global system of equations
     // Dirichlet boundary conditions have already been applied to global system of equations
-    solver_->Solve(systemmatrix_->EpetraOperator(), increment_, residual_, true, iter_ == 1);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(systemmatrix_->EpetraOperator(), increment_, residual_, solver_params);
 
     equilibration_->UnequilibrateIncrement(increment_);
 

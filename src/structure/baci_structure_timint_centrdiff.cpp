@@ -211,7 +211,9 @@ int STR::TimIntCentrDiff::IntegrateStep()
       // refactor==false: This is not necessary, because we always
       // use the same constant mass matrix, which was firstly factorised
       // in TimInt::DetermineMassDampConsistAccel
-      solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, false, true);
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.reset = true;
+      solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, solver_params);
     }
 
     // direct inversion based on lumped mass matrix

@@ -566,9 +566,12 @@ Teuchos::RCP<Epetra_Vector> FLD::Meshtying::AdaptKrylovProjector(Teuchos::RCP<Ep
 void FLD::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
     const Teuchos::RCP<Epetra_Vector>& incvel, const Teuchos::RCP<Epetra_Vector>& residual,
-    const Teuchos::RCP<Epetra_Vector>& velnp, const int& itnum,
-    const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector)
+    const Teuchos::RCP<Epetra_Vector>& velnp, const int itnum,
+    CORE::LINALG::SolverParams& solver_params)
 {
+  solver_params.refactor = true;
+  solver_params.reset = itnum == 1;
+
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3)   Solve meshtying system");
 
@@ -598,7 +601,7 @@ void FLD::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
-        solver_.Solve(sysmatsolve->EpetraOperator(), inc, res, true, itnum == 1, projector);
+        solver_.Solve(sysmatsolve->EpetraOperator(), inc, res, solver_params);
       }
 
       {
@@ -648,8 +651,7 @@ void FLD::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
 
-
-        solver_.Solve(mergedmatrix->EpetraOperator(), inc, res, true, itnum == 1, projector);
+        solver_.Solve(mergedmatrix->EpetraOperator(), inc, res, solver_params);
 
         CORE::LINALG::Export(*inc, *incvel);
         CORE::LINALG::Export(*res, *residual);
@@ -662,7 +664,7 @@ void FLD::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
     {
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Solve");
-        solver_.Solve(sysmat->EpetraOperator(), incvel, residual, true, itnum == 1, projector);
+        solver_.Solve(sysmat->EpetraOperator(), incvel, residual, solver_params);
       }
 
       {

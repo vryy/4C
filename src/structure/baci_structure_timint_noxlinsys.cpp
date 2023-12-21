@@ -146,7 +146,10 @@ bool NOX::STR::LinearSystem::applyJacobianInverse(
     Teuchos::RCP<Epetra_Vector> fres = Teuchos::rcp(new Epetra_Vector(input.getEpetraVector()));
     Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(&(result.getEpetraVector()), false);
     CORE::LINALG::SparseMatrix* J = dynamic_cast<CORE::LINALG::SparseMatrix*>(jacPtr_.get());
-    structureSolver_->Solve(J->EpetraMatrix(), disi, fres, true, callcount_ == 0);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = callcount_ == 0;
+    structureSolver_->Solve(J->EpetraMatrix(), disi, fres, solver_params);
     callcount_ += 1;
   }
   else

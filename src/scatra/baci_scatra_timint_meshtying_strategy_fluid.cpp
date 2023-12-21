@@ -124,12 +124,11 @@ void SCATRA::MeshtyingStrategyFluid::Solve(
     const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
     const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
     const Teuchos::RCP<Epetra_Vector>& phinp,                        //!< state vector at time n+1
-    const int& iteration,  //!< number of current Newton-Raphson iteration
-    const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
-) const
+    const int iteration,  //!< number of current Newton-Raphson iteration
+    CORE::LINALG::SolverParams& solver_params) const
 {
   meshtying_->SolveMeshtying(
-      *solver, systemmatrix, increment, residual, phinp, iteration, projector);
+      *solver, systemmatrix, increment, residual, phinp, iteration, solver_params);
 
   return;
 }  // SCATRA::MeshtyingStrategyFluid::Solve

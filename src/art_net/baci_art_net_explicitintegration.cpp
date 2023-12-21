@@ -403,7 +403,10 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     }
 
     // call solver
-    solver_->Solve(sysmat_->EpetraOperator(), qanp_, rhs_, true, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = true;
+    solver_->Solve(sysmat_->EpetraOperator(), qanp_, rhs_, solver_params);
   }
   // end time measurement for solver
   dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;

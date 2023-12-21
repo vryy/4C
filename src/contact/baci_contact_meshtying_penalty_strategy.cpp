@@ -169,7 +169,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
   CORE::LINALG::Solver solver(solvparams, Comm());
-  solver.Solve(dmatrix_->EpetraOperator(), Xslavemod, rhs, true);
+
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver.Solve(dmatrix_->EpetraOperator(), Xslavemod, rhs, solver_params);
 
   //**********************************************************************
   // (3) perform mesh initialization node by node

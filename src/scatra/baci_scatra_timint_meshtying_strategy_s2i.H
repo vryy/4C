@@ -271,8 +271,8 @@ namespace SCATRA
     void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
-        const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
-        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const override;
+        const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
+        CORE::LINALG::SolverParams& solver_params) const override;
 
     //! return linear solver for global system of linear equations
     const CORE::LINALG::Solver& Solver() const override;

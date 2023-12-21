@@ -773,7 +773,10 @@ void LOMA::Algorithm::MonoLomaSystemSolve()
       *lomasystemmatrix_, *lomaincrement_, *lomarhs_, *zeros_, *lomadbcmap_);
 
   // solve monolithic low-Mach-number system
-  lomasolver_->Solve(lomasystemmatrix_->EpetraOperator(), lomaincrement_, lomarhs_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  lomasolver_->Solve(lomasystemmatrix_->EpetraOperator(), lomaincrement_, lomarhs_, solver_params);
 }
 
 

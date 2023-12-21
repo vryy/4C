@@ -32,6 +32,7 @@ namespace CORE::LINALG
 {
   class KrylovProjector;
   class Solver;
+  struct SolverParams;
   class SparseOperator;
   class MultiMapExtractor;
 }  // namespace CORE::LINALG
@@ -253,8 +254,8 @@ namespace SCATRA
     virtual void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
-        const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
-        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const = 0;
+        const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
+        CORE::LINALG::SolverParams& solver_params) const = 0;
 
     //! return linear solver for global system of linear equations
     virtual const CORE::LINALG::Solver& Solver() const = 0;

@@ -113,8 +113,11 @@ void CONTACT::AUG::LagrangeMultiplierFunction::LinSolve(
   if (rhs.NumVectors() > 1 or sol.NumVectors() > 1)
     dserror("MultiVector support is not yet implemented!");
 
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
   int err = lin_solver_->Solve(
-      mat.EpetraOperator(), Teuchos::rcpFromRef(sol), Teuchos::rcpFromRef(rhs), true, true);
+      mat.EpetraOperator(), Teuchos::rcpFromRef(sol), Teuchos::rcpFromRef(rhs), solver_params);
 
   if (err) dserror("LinSolve failed with err = %d", err);
 }

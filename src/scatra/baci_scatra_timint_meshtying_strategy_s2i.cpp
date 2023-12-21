@@ -3522,8 +3522,8 @@ void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
 void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
-    const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
-    const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const
+    const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
+    CORE::LINALG::SolverParams& solver_params) const
 {
   switch (intlayergrowth_evaluation_)
   {
@@ -3543,8 +3543,9 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
           equilibration_->EquilibrateSystem(systemmatrix, residual, scatratimint_->BlockMaps());
 
           // solve global system of equations
-          solver->Solve(
-              systemmatrix->EpetraOperator(), increment, residual, true, iteration == 1, projector);
+          solver_params.refactor = true;
+          solver_params.reset = iteration == 1;
+          solver->Solve(systemmatrix->EpetraOperator(), increment, residual, solver_params);
 
           // unequilibrate global increment vector if necessary
           equilibration_->UnequilibrateIncrement(increment);
@@ -3597,8 +3598,10 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
           extendedmaps_->InsertVector(lmincrement_, 1, extendedincrement);
 
           // solve extended system of equations
+          solver_params.refactor = true;
+          solver_params.reset = iteration == 1;
           solver->Solve(extendedsystemmatrix.EpetraOperator(), extendedincrement, extendedresidual,
-              true, iteration == 1, projector);
+              solver_params);
 
           // store solution
           extendedmaps_->ExtractVector(extendedincrement, 0, increment);
@@ -3715,8 +3718,10 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
               extendedsystemmatrix_, extendedresidual, extendedblockmaps_);
 
           // solve extended system of equations
+          solver_params.refactor = true;
+          solver_params.reset = iteration == 1;
           extendedsolver_->Solve(extendedsystemmatrix_->EpetraOperator(), extendedincrement,
-              extendedresidual, true, iteration == 1, projector);
+              extendedresidual, solver_params);
 
           // unequilibrate global increment vector if necessary
           equilibration_->UnequilibrateIncrement(extendedincrement);

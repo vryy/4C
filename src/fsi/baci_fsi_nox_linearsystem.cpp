@@ -134,7 +134,11 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   solver_->Params()
       .sublist("Belos Parameters")
       .set("Convergence Tolerance", p.get("Tolerance", 1.0e-10));
-  solver_->Solve(jacPtr_, disi, fres, true, callcount_ == 0);
+
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = callcount_ == 0;
+  solver_->Solve(jacPtr_, disi, fres, solver_params);
 
   callcount_ += 1;
 

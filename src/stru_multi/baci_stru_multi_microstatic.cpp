@@ -433,7 +433,10 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
   solver_->Reset();
-  solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, solver_params);
   solver_->Reset();
 
   // store norm of displacement increments
@@ -534,13 +537,16 @@ void STRUMULTI::MicroStatic::FullNewton()
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+    CORE::LINALG::SolverParams solver_params;
     if (isadapttol_ && numiter_)
     {
-      double worst = normfres_;
-      double wanted = tolfres_;
-      solver_->AdaptTolerance(wanted, worst, adaptolbetter_);
+      solver_params.nonlin_tolerance = tolfres_;
+      solver_params.nonlin_residual = normfres_;
+      solver_params.lin_tol_better = adaptolbetter_;
     }
-    solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, true, numiter_ == 0);
+    solver_params.refactor = true;
+    solver_params.reset = numiter_ == 0;
+    solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, solver_params);
     solver_->ResetTolerance();
 
     //---------------------------------- update mid configuration values
@@ -1035,7 +1041,10 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
       case INPAR::SOLVER::SolverType::belos:
       {
         // solve for 9 rhs at the same time --> thanks to Belos
-        solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, true, true);
+        CORE::LINALG::SolverParams solver_params;
+        solver_params.refactor = true;
+        solver_params.reset = true;
+        solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, solver_params);
         break;
       }
       case INPAR::SOLVER::SolverType::superlu:
@@ -1043,8 +1052,11 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
         // solve for 9 rhs iteratively
         for (int i = 0; i < rhs_->NumVectors(); i++)
         {
+          CORE::LINALG::SolverParams solver_params;
+          solver_params.refactor = true;
+          solver_params.reset = true;
           solver->Solve(stiff_->EpetraOperator(), Teuchos::rcp(((*iterinc)(i)), false),
-              Teuchos::rcp(((*rhs_)(i)), false), true, true);
+              Teuchos::rcp(((*rhs_)(i)), false), solver_params);
         }
         break;
       }

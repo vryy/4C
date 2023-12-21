@@ -246,11 +246,15 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
       mmatrix_->Multiply(false, *xm, *rhs);
 
       // solve with default solver
+
       Teuchos::ParameterList solvparams;
       DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
-      solver.Solve(lhs->EpetraOperator(), Xslavemod, rhs, true);
+
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver.Solve(lhs->EpetraOperator(), Xslavemod, rhs, solver_params);
     }
     else
     {
@@ -277,11 +281,15 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
       mmatrix_->Multiply(false, *Xmaster, *rhs);
 
       // solve with default solver
+
       Teuchos::ParameterList solvparams;
       DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
-      solver.Solve(dmatrix_->EpetraOperator(), Xslavemod, rhs, true);
+
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver.Solve(dmatrix_->EpetraOperator(), Xslavemod, rhs, solver_params);
     }
   }
 
