@@ -40,6 +40,18 @@ function(baci_add_library _target)
     add_library(${_target} ${_parsed_SOURCES})
   endif()
 
+  # Check that every header includes baci_config.H
+  foreach(_header ${_parsed_HEADERS})
+    file(READ ${_header} _header_content)
+    string(FIND "${_header_content}" "#include \"baci_config.H\"" _index)
+    if(_index EQUAL -1)
+      message(
+        FATAL_ERROR
+          "The file \"${_header}\" does not include \"baci_config.H\". Please include the file and rerun CMake."
+        )
+    endif()
+  endforeach()
+
   # Add the headers as a file set, which will automatically add the current directory as a search directory
   target_sources(
     ${_target}
@@ -47,7 +59,7 @@ function(baci_add_library _target)
     FILE_SET
     HEADERS
     FILES
-    ${_headers}
+    ${_parsed_HEADERS}
     )
 
   # Add all global compile definitions
