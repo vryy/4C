@@ -225,10 +225,13 @@ NOX::NLN::INNER::StatusTest::Filter::Point::makeFilterPoint(const Point& p, cons
 void NOX::NLN::INNER::StatusTest::Filter::Point::addFilterPointToRegister(
     const Teuchos::RCP<Point>& fp_ptr)
 {
-  for (const Teuchos::RCP<Point>& reg_fp_ptr : filter_point_register_)
+  for (auto it = filter_point_register_.begin(); it != filter_point_register_.end();)
   {
     // erase all old filter points which are no longer in use
-    if (reg_fp_ptr.strong_count() == 1) filter_point_register_.erase(reg_fp_ptr);
+    if (it->strong_count() == 1)
+      it = filter_point_register_.erase(it);
+    else
+      ++it;
   }
 
   filter_point_register_.insert(fp_ptr);
