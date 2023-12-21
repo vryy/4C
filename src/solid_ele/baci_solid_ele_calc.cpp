@@ -11,6 +11,7 @@ formulation
 #include "baci_discretization_fem_general_cell_type.H"
 #include "baci_mat_so3_material.H"
 #include "baci_solid_ele_calc_displacement_based.H"
+#include "baci_solid_ele_calc_displacement_based_linear_kinematics.H"
 #include "baci_solid_ele_calc_lib.H"
 #include "baci_solid_ele_calc_lib_integration.H"
 #include "baci_solid_ele_calc_lib_io.H"
@@ -375,5 +376,43 @@ template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::wedge6,
     DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::wedge6>,
     DRT::ELEMENTS::DisplacementBasedPreparationData, DRT::ELEMENTS::DisplacementBasedHistoryData>;
+
+// for displacement based formulation with linear kinematics
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::hex8>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex18,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::hex18>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex20,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::hex20>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex27,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::hex27>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::nurbs27,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::nurbs27>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet4,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::tet4>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet10,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::tet10>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::pyramid5>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::wedge6,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::wedge6>,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
+    DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
 
 BACI_NAMESPACE_CLOSE

@@ -12,6 +12,7 @@
 
 #include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_solid_ele_calc_displacement_based.H"
+#include "baci_solid_ele_calc_displacement_based_linear_kinematics.H"
 #include "baci_solid_ele_calc_eas.H"
 #include "baci_solid_ele_calc_fbar.H"
 #include "baci_solid_ele_calc_mulf.H"
@@ -37,6 +38,10 @@ namespace DRT::ELEMENTS
         CORE::FE::apply_celltype_sequence<DisplacementBasedSolidIntegrator,
             ImplementedSolidCellTypes>;
 
+    using DisplacementBasedLinearKinematicsEvaluators =
+        CORE::FE::apply_celltype_sequence<DisplacementBasedLinearKinematicsSolidIntegrator,
+            ImplementedSolidCellTypes>;
+
     using FbarEvaluators = CORE::FE::apply_celltype_sequence<SolidEleCalcFbar,
         CORE::FE::celltype_sequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
     using EASEvaluators = CORE::FE::BaseTypeList<
@@ -45,8 +50,8 @@ namespace DRT::ELEMENTS
     using MulfEvaluators =
         CORE::FE::apply_celltype_sequence<SolidEleCalcMulf, ImplementedSolidCellTypes>;
 
-    using SolidEvaluators =
-        CORE::FE::Join<DisplacementBasedEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
+    using SolidEvaluators = CORE::FE::Join<DisplacementBasedEvaluators,
+        DisplacementBasedLinearKinematicsEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
   }  // namespace DETAILS
 
   using SolidCalcVariant = CreateVariantType<DETAILS::SolidEvaluators>;
