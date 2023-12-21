@@ -42,9 +42,9 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     : AlgorithmBase(comm, timeparams),
       is_part_of_multifield_problem_(false),
       porosity_splitter_(porosity_splitter),
-      matchinggrid_(DRT::INPUT::IntegralValue<bool>(
+      matchinggrid_(INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->PoroelastDynamicParams(), "MATCHINGGRID")),
-      oldstructimint_(DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+      oldstructimint_(INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
                           DRT::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
                       INPAR::STR::int_old)
 {
@@ -140,9 +140,9 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
       dserror("no Poro Coupling Condition defined for porous media problem. Fix your input file!");
 
     // check time integration algo -> currently only one-step-theta scheme supported
-    auto structtimealgo = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+    auto structtimealgo = INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
     auto fluidtimealgo =
-        DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
+        INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
     if (not((structtimealgo == INPAR::STR::dyna_onesteptheta and
                 fluidtimealgo == INPAR::FLUID::timeint_one_step_theta) or
@@ -188,8 +188,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
 
     // access the problem-specific parameter lists
     const Teuchos::ParameterList& pedyn = DRT::Problem::Instance()->PoroelastDynamicParams();
-    auto physicaltype =
-        DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
+    auto physicaltype = INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
     if (porosity_dof_ and physicaltype != INPAR::FLUID::poro_p1)
     {
       dserror(
@@ -197,9 +196,8 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
           "DYNAMIC section!");
     }
 
-    auto transientfluid =
-        DRT::INPUT::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(
-            pedyn, "TRANSIENT_TERMS");
+    auto transientfluid = INPUT::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(
+        pedyn, "TRANSIENT_TERMS");
 
     if (fluidtimealgo == INPAR::FLUID::timeint_stationary)
     {

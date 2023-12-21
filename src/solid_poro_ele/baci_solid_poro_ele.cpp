@@ -30,9 +30,9 @@ DRT::ELEMENTS::SolidPoroType DRT::ELEMENTS::SolidPoroType::instance_;
 DRT::ELEMENTS::SolidPoroType& DRT::ELEMENTS::SolidPoroType::Instance() { return instance_; }
 
 void DRT::ELEMENTS::SolidPoroType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defsgeneral = definitions["SOLIDPORO"];
+  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLIDPORO"];
 
   defsgeneral["HEX8"] = INPUT::LineDefinition::Builder()
                             .AddIntVector("HEX8", 8)
@@ -186,7 +186,7 @@ void DRT::ELEMENTS::SolidPoro::SetParamsInterfacePtr(const Teuchos::ParameterLis
 }
 
 bool DRT::ELEMENTS::SolidPoro::ReadElement(
-    const std::string& eletype, const std::string& elecelltype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& elecelltype, INPUT::LineDefinition* linedef)
 {
   // read base element
   // set cell type
@@ -245,7 +245,7 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
 }
 
 void DRT::ELEMENTS::SolidPoro::ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
-    DRT::INPUT::LineDefinition* linedef)
+    INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::SolidPoro::ReadAnisotropicPermeabilityDirectionsFromElementL
 }
 
 void DRT::ELEMENTS::SolidPoro::ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
-    DRT::INPUT::LineDefinition* linedef)
+    INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 3; ++dim)
   {

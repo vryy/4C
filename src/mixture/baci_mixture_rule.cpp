@@ -34,7 +34,7 @@ namespace CORE::COMM
 {
   class PackBuffer;
 }
-namespace DRT::INPUT
+namespace INPUT
 {
   class LineDefinition;
 }
@@ -116,7 +116,7 @@ void MIXTURE::MixtureRule::UnpackMixtureRule(
 }
 
 // reads the element definition and set up all quantities
-void MIXTURE::MixtureRule::ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MIXTURE::MixtureRule::ReadElement(int numgp, INPUT::LineDefinition* linedef)
 {
   // Init must only be called once
   if (has_read_element_) dserror("ReadElement() is called multiple times. Just once allowed.");

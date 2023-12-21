@@ -191,7 +191,7 @@ namespace MAT
         const int eleGID) override;  ///< Constitutive matrix
 
     /// setup material description
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /// update history variables
     void Update() override;

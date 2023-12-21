@@ -47,7 +47,7 @@ namespace DRT
       headerdocumentationfile << ".. _headerparameters:\n\n";
       headerdocumentationfile << "Header parameters\n";
       headerdocumentationfile << "=================\n\n";
-      WriteHeaderReference(headerdocumentationfile, *DRT::INPUT::ValidParameters(), "");
+      WriteHeaderReference(headerdocumentationfile, *INPUT::ValidParameters(), "");
     }
 
     /*----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ namespace DRT
         dserror("failed to open file: %s", materialdocumentationfilename.c_str());
       materialdocumentationfile << "..\n   Created using baci version (git SHA1):\n";
       materialdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
-      WriteMaterialReference(materialdocumentationfile, *DRT::INPUT::ValidMaterials());
+      WriteMaterialReference(materialdocumentationfile, *INPUT::ValidMaterials());
     }
 
     /*----------------------------------------------------------------------*/
@@ -89,10 +89,9 @@ namespace DRT
         dserror("failed to open file: %s", conditiondocumentationfilename.c_str());
       conditiondocumentationfile << "..\n   Created using baci version (git SHA1):\n";
       conditiondocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
-      WriteConditionsReference(conditiondocumentationfile, *DRT::INPUT::ValidConditions());
+      WriteConditionsReference(conditiondocumentationfile, *INPUT::ValidConditions());
 
-      WriteContactLawReference(
-          conditiondocumentationfile, *DRT::INPUT::ValidContactConstitutiveLaws());
+      WriteContactLawReference(conditiondocumentationfile, *INPUT::ValidContactConstitutiveLaws());
     }
 
     /*----------------------------------------------------------------------*/

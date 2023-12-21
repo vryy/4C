@@ -41,7 +41,7 @@ FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluidFluid& xfluid)
   // adapt the test cases!
 }
 
-void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FLD::XFluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -65,7 +65,7 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
     return;
 }
 
-void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count,
+void FLD::XFluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count,
     int node, const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<const Epetra_Vector>& velnp)
 {

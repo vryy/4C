@@ -32,7 +32,7 @@ BACI_NAMESPACE_OPEN
 void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm)
 {
   // make all Yes/No integral values to Boolean
-  DRT::INPUT::BoolifyValidInputParameters(p_nox);
+  INPUT::BoolifyValidInputParameters(p_nox);
 
   // adjust printing parameter list
   Teuchos::ParameterList& printParams = p_nox.sublist("Printing");

@@ -66,9 +66,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_hex18Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("HEX18", 18)
@@ -235,7 +235,7 @@ bool DRT::ELEMENTS::So_hex18::VisData(const std::string& name, std::vector<doubl
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::So_hex18::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
@@ -442,9 +442,9 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D> stress;
         CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D> strain;
         auto iostress =
-            DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+            INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         auto iostrain =
-            DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+            INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain, params,
             iostress, iostrain);

@@ -64,7 +64,7 @@ namespace CONTACT
     */
     bool ActiveSetSemiSmoothConverged() const override
     {
-      bool semismooth = DRT::INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
+      bool semismooth = INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
       if (semismooth)
         return activesetssconv_;
       else
@@ -83,7 +83,7 @@ namespace CONTACT
     */
     bool ActiveSetConverged() override
     {
-      bool semismooth = DRT::INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
+      bool semismooth = INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
       if (!semismooth)
         return activesetconv_;
       else

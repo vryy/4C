@@ -70,16 +70,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(const int id,
  | setup the element definition (public)                    seitz 07/13 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8PlastType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex8;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8;
   So_hex8Type::SetupElementDefinition(definitions_hex8);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"] = DRT::INPUT::LineDefinition::Builder(defs_hex8["HEX8"])
+  defs["HEX8"] = INPUT::LineDefinition::Builder(defs_hex8["HEX8"])
                      .AddNamedString("FBAR")
                      .AddOptionalNamedInt("NUMGP")
                      .Build();
@@ -167,9 +167,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(const int id
 |                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex18PlastType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("HEX18", 18)
@@ -265,14 +265,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(const int id
 |                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27PlastType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex27;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex27;
   So_hex27Type::SetupElementDefinition(definitions_hex27);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"] = defs_hex27["HEX27"];
 
@@ -358,14 +358,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(const int id,
 |                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4PlastType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_tet4;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
   So_tet4Type::SetupElementDefinition(definitions_tet4);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
+  std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
 
@@ -453,9 +453,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(const int 
 |                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_nurbs27PlastType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["NURBS27"] = INPUT::LineDefinition::Builder()
                         .AddIntVector("NURBS27", 27)

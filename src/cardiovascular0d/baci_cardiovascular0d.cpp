@@ -36,19 +36,18 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       cardiovascular0dcond_(0),
       cardiovascular0dstructcoupcond_(0),
       cardiovascular0dtype_(none),
-      atrium_model_(DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel>(
+      atrium_model_(INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel>(
           DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
               "SYS-PUL CIRCULATION PARAMETERS"),
           "ATRIUM_MODEL")),
-      ventricle_model_(DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(
+      ventricle_model_(INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(
           DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
               "SYS-PUL CIRCULATION PARAMETERS"),
           "VENTRICLE_MODEL")),
-      respiratory_model_(
-          DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel>(
-              DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
-                  "RESPIRATORY PARAMETERS"),
-              "RESPIRATORY_MODEL")),
+      respiratory_model_(INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel>(
+          DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+              "RESPIRATORY PARAMETERS"),
+          "RESPIRATORY_MODEL")),
       gaussrule_(CORE::FE::GaussRule2D::undefined)
 {
   actdisc_->GetCondition(conditionname, cardiovascular0dcond_);

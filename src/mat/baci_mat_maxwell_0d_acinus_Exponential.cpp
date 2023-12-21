@@ -136,7 +136,7 @@ void MAT::Maxwell_0d_acinus_Exponential::Unpack(const std::vector<char>& data)
  | Setup routine to add Exponential material specific parameters E1_0   |
  | E1_LIN, E1_EXP, TAU to material                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Exponential::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::Maxwell_0d_acinus_Exponential::Setup(INPUT::LineDefinition* linedef)
 {
   linedef->ExtractDouble("E1_0", e1_0_);
   linedef->ExtractDouble("E1_LIN", e1_lin_);

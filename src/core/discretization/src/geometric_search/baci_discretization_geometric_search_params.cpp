@@ -33,9 +33,9 @@ CORE::GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams(
   dsassert(!std::signbit(sphere_radius_extension_factor_),
       "Sphere radius extension factor needs to be positive!");
 
-  verbosity_ = DRT::INPUT::IntegralValue<IO::verbositylevel>(io_params, "VERBOSITY");
+  verbosity_ = INPUT::IntegralValue<IO::verbositylevel>(io_params, "VERBOSITY");
 
-  write_visualization_ = DRT::INPUT::IntegralValue<int>(
-      geometric_search_params, "WRITE_GEOMETRIC_SEARCH_VISUALIZATION");
+  write_visualization_ =
+      INPUT::IntegralValue<int>(geometric_search_params, "WRITE_GEOMETRIC_SEARCH_VISUALIZATION");
 }
 BACI_NAMESPACE_CLOSE

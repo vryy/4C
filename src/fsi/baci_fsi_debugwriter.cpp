@@ -57,7 +57,7 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
       DRT::Problem::Instance()->NDim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
+      INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
 
   writer_ = dis_->Writer();
   writer_->SetOutput(control_);
@@ -109,7 +109,7 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
       DRT::Problem::Instance()->NDim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
+      INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
 
   writer_ = dis_->Writer();
   writer_->SetOutput(control_);

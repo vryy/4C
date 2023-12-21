@@ -55,7 +55,7 @@ void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetString(
  */
 void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -162,7 +162,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
         &beam_to_solid_volume_mestying_vtk);
 
-    DRT::INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+    INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_volume_mestying_vtk);
 
     BoolParameter("SEGMENTATION", "No", "Enable / disable output of segmentation points.",
@@ -320,7 +320,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
         &beam_to_solid_surface_vtk);
 
-    DRT::INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+    INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_surface_vtk);
 
     BoolParameter("SEGMENTATION", "No", "Enable / disable output of segmentation points.",
@@ -341,9 +341,9 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
  *
  */
 void INPAR::BEAMTOSOLID::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   // Beam-to-volume mesh tying conditions.
   {

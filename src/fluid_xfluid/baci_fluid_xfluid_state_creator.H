@@ -77,13 +77,13 @@ namespace FLD
         Teuchos::ParameterList& params_xfem, int maxnumdofsets, int minnumdofsets,
         bool include_inner)
         : condition_manager_(condition_manager),
-          nodal_dofset_strategy_(DRT::INPUT::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(
+          nodal_dofset_strategy_(INPUT::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(
               params_xfem, "NODAL_DOFSET_STRATEGY")),
-          VolumeCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(
+          VolumeCellGaussPointBy_(INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(
               params_xfem, "VOLUME_GAUSS_POINTS_BY")),
-          BoundCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(
+          BoundCellGaussPointBy_(INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(
               params_xfem, "BOUNDARY_GAUSS_POINTS_BY")),
-          gmsh_cut_out_(DRT::INPUT::IntegralValue<int>(params_xfem, "GMSH_CUT_OUT")),
+          gmsh_cut_out_(INPUT::IntegralValue<int>(params_xfem, "GMSH_CUT_OUT")),
           maxnumdofsets_(maxnumdofsets),
           minnumdofsets_(minnumdofsets),
           include_inner_(include_inner)

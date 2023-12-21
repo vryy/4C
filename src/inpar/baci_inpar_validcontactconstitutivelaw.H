@@ -33,24 +33,21 @@ namespace CONTACT
   }
 }  // namespace CONTACT
 
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
-  {
-    /// construct list with all contact constitutive laws and documentation
-    Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
-    ValidContactConstitutiveLaws();
+  /// construct list with all contact constitutive laws and documentation
+  Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
+  ValidContactConstitutiveLaws();
 
-    /** \brief print all known contact constitutive law sections without contents
-     *
-     * \param[in] contactconstitutivlawlist list of contact constitutive law definitions
-     */
-    void PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
-        std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>&
-            contactconstitutivlawlist);
+  /** \brief print all known contact constitutive law sections without contents
+   *
+   * \param[in] contactconstitutivlawlist list of contact constitutive law definitions
+   */
+  void PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
+      std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>&
+          contactconstitutivlawlist);
 
-  }  // namespace INPUT
-}  // namespace DRT
+}  // namespace INPUT
 
 /// print empty contact constitutivelaw sections
 void PrintContactConstitutiveLawDatHeader();

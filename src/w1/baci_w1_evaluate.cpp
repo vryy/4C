@@ -369,9 +369,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
           straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
           iostress =
-              DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+              INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
           iostrain =
-              DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+              INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         }
         if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
@@ -565,7 +565,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           // check if we evaluate the error through the contact facilities
           const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
           INPAR::CONTACT::ErrorNorms entype =
-              DRT::INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
+              INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
 
           if (entype !=
               INPAR::CONTACT::errornorms_none)  // evaluate error through the contact facilities

@@ -216,7 +216,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(DRT::ELEMEN
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -354,8 +354,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
   CORE::LINALG::Matrix<nsd_, 1> xyz(true);
 
   // get function number
-  const int calcerrfunctno =
-      DRT::INPUT::get<INPAR::FLUID::CalcError>(params, "error function number");
+  const int calcerrfunctno = INPUT::get<INPAR::FLUID::CalcError>(params, "error function number");
 
   // initialize errors
   double err_L = 0.0;

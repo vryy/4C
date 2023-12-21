@@ -18,7 +18,7 @@ BACI_NAMESPACE_OPEN
 
 // forward declaration
 
-namespace DRT::INPUT
+namespace INPUT
 {
   class ConditionDefinition;
 }
@@ -101,7 +101,7 @@ namespace INPAR::S2I
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   //! set valid conditions for scatra-scatra interface coupling
-  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+  void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
 }  // namespace INPAR::S2I
 
 BACI_NAMESPACE_CLOSE

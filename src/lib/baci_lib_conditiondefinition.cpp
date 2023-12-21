@@ -28,9 +28,9 @@ BACI_NAMESPACE_OPEN
  | Class ConditionDefinition                                                                      |
  * -----------------------------------------------------------------------------------------------*/
 
-DRT::INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname,
-    std::string conditionname, std::string description, DRT::Condition::ConditionType condtype,
-    bool buildgeometry, DRT::Condition::GeometryType gtype)
+INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname, std::string conditionname,
+    std::string description, DRT::Condition::ConditionType condtype, bool buildgeometry,
+    DRT::Condition::GeometryType gtype)
     : sectionname_(std::move(sectionname)),
       conditionname_(std::move(conditionname)),
       description_(std::move(description)),
@@ -43,8 +43,7 @@ DRT::INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::ConditionDefinition::AddComponent(
-    const Teuchos::RCP<BACI::INPUT::LineComponent>& c)
+void INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -52,7 +51,7 @@ void DRT::INPUT::ConditionDefinition::AddComponent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader& reader,
+void INPUT::ConditionDefinition::Read(const DRT::Problem& problem, DatFileReader& reader,
     std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap)
 {
   std::string name = "--";
@@ -159,8 +158,8 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& DRT::INPUT::ConditionDefinition::Print(
-    std::ostream& stream, const Discretization* dis)
+std::ostream& INPUT::ConditionDefinition::Print(
+    std::ostream& stream, const DRT::Discretization* dis)
 {
   unsigned l = sectionname_.length();
   stream << "--";
@@ -190,7 +189,7 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
   int count = 0;
   if (dis != nullptr)
   {
-    std::vector<Condition*> conds;
+    std::vector<DRT::Condition*> conds;
     dis->GetCondition(conditionname_, conds);
     for (auto& cond : conds)
     {
@@ -218,7 +217,7 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
 
   if (dis != nullptr)
   {
-    std::vector<Condition*> conds;
+    std::vector<DRT::Condition*> conds;
     dis->GetCondition(conditionname_, conds);
 
     for (auto& cond : conds)

@@ -38,7 +38,7 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void StruResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // this implementation does not allow testing of stresses !
 
@@ -180,7 +180,7 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void StruResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract name of quantity to be tested
   std::string quantity;

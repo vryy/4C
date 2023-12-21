@@ -48,17 +48,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create(const int id
 }
 
 void DRT::ELEMENTS::So_hex8ScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex8;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8;
   So_hex8Type::SetupElementDefinition(definitions_hex8);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"] =
-      DRT::INPUT::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
+  defs["HEX8"] = INPUT::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -123,17 +122,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarScatraType::Create(
 }
 
 void DRT::ELEMENTS::So_hex8fbarScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex8;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8;
   So_hex8fbarType::SetupElementDefinition(definitions_hex8);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8FBAR"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8FBAR"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"] =
-      DRT::INPUT::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
+  defs["HEX8"] = INPUT::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -195,17 +193,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ScatraType::Create(const int i
 }
 
 void DRT::ELEMENTS::So_hex27ScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex27;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex27;
   So_hex27Type::SetupElementDefinition(definitions_hex27);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"] =
-      DRT::INPUT::LineDefinition::Builder(defs_hex27["HEX27"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_hex27["HEX27"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -265,17 +263,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create(const int id
 }
 
 void DRT::ELEMENTS::So_tet4ScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_tet4;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
   So_tet4Type::SetupElementDefinition(definitions_tet4);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
+  std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET4"] =
-      DRT::INPUT::LineDefinition::Builder(defs_tet4["TET4"]).AddNamedString("TYPE").Build();
+  defs["TET4"] = INPUT::LineDefinition::Builder(defs_tet4["TET4"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -339,17 +336,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create(const int i
 }
 
 void DRT::ELEMENTS::So_tet10ScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_tet10;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet10;
   So_tet10Type::SetupElementDefinition(definitions_tet10);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
+  std::map<std::string, INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"] =
-      DRT::INPUT::LineDefinition::Builder(defs_tet10["TET10"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_tet10["TET10"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -410,17 +407,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create(const int id
 }
 
 void DRT::ELEMENTS::So_weg6ScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_weg6;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_weg6;
   So_weg6Type::SetupElementDefinition(definitions_weg6);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_weg6 = definitions_weg6["SOLIDW6"];
+  std::map<std::string, INPUT::LineDefinition>& defs_weg6 = definitions_weg6["SOLIDW6"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["WEDGE6"] =
-      DRT::INPUT::LineDefinition::Builder(defs_weg6["WEDGE6"]).AddNamedString("TYPE").Build();
+      INPUT::LineDefinition::Builder(defs_weg6["WEDGE6"]).AddNamedString("TYPE").Build();
 }
 
 

@@ -112,8 +112,7 @@ void UTILS::SpringDashpotManager::Output(Teuchos::RCP<IO::DiscretizationWriter> 
   }
 
   // write spring stress if defined in io-flag
-  if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_SPRING") ==
-      true)
+  if (INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_SPRING") == true)
     output->WriteVector("springstress", springstress);
 
   return;

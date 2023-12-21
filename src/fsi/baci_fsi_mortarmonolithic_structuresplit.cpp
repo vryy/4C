@@ -230,9 +230,9 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     SetDefaultParameters(fsidyn, NOXParameterList());
 
@@ -299,7 +299,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     // -------------------------------------------------------------------------
 
     // enable debugging
-    if (DRT::INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -330,7 +330,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
   if (restart)
   {
     const bool restartfrompartfsi =
-        DRT::INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+        INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       if (comm_.MyPID() == 0)
@@ -950,7 +950,7 @@ void FSI::MortarMonolithicStructureSplit::ScaleSystem(
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1002,7 +1002,7 @@ void FSI::MortarMonolithicStructureSplit::UnscaleSolution(
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1414,8 +1414,7 @@ void FSI::MortarMonolithicStructureSplit::OutputLambda()
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicStructureSplit::ReadRestart(int step)
 {
-  const bool restartfrompartfsi =
-      DRT::INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+  const bool restartfrompartfsi = INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
 
   // read Lagrange multiplier
   if (not restartfrompartfsi)  // standard restart

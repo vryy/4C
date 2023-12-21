@@ -193,7 +193,7 @@ void DRT::Element::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::Element::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   dserror("subclass implementations missing");
   return false;
@@ -214,7 +214,7 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Element::SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+void DRT::Element::SetNodeIds(const std::string& distype, INPUT::LineDefinition* linedef)
 {
   linedef->ExtractIntVector(distype, nodeid_);
   for (int& i : nodeid_) i -= 1;

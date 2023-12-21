@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -385,9 +385,9 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 void INPAR::XFEM::SetValidConditions(
     const std::vector<Teuchos::RCP<INPUT::LineComponent>>& dirichletbundcomponents,
     const std::vector<Teuchos::RCP<INPUT::LineComponent>>& neumanncomponents,
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> xfemcomponents;
 

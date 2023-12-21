@@ -151,7 +151,7 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(const Epetra_Com
 
   // 4.- get coupling algorithm
   Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
-  int coupling = DRT::INPUT::IntegralValue<int>(fpsidynparams, "COUPALGO");
+  int coupling = INPUT::IntegralValue<int>(fpsidynparams, "COUPALGO");
   switch (coupling)
   {
     case fpsi_monolithic_plain:
@@ -166,7 +166,7 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(const Epetra_Com
           "Make sure that the parameter COUPALGO is set to 'fpsi_monolithic_plain', "
           "and the parameter PARITIONED is set to 'monolithic'. ");
       INPAR::FPSI::PartitionedCouplingMethod method;
-      method = DRT::INPUT::IntegralValue<INPAR::FPSI::PartitionedCouplingMethod>(
+      method = INPUT::IntegralValue<INPAR::FPSI::PartitionedCouplingMethod>(
           fpsidynparams, "PARTITIONED");
       if (method == INPAR::FPSI::RobinNeumann)
       {

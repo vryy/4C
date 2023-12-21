@@ -38,7 +38,7 @@ void PARTICLERIGIDBODY::RigidBodyResultTest::Setup(
 }
 
 void PARTICLERIGIDBODY::RigidBodyResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // get owned rigid bodies by this processor
   const std::vector<int>& ownedrigidbodies = particlerigidbodyinterface_->GetOwnedRigidBodies();

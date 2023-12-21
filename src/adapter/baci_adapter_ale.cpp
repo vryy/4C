@@ -112,7 +112,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   {
     // FPSI input parameters
     const Teuchos::ParameterList& fpsidyn = DRT::Problem::Instance()->FPSIDynamicParams();
-    int coupling = DRT::INPUT::IntegralValue<int>(fpsidyn, "COUPALGO");
+    int coupling = INPUT::IntegralValue<int>(fpsidyn, "COUPALGO");
     if (coupling == partitioned)
     {
       dserror("partitioned fpsi solution scheme has not been implemented yet.");
@@ -121,8 +121,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
 
 
   // create the ALE time integrator
-  INPAR::ALE::AleDynamic aletype =
-      DRT::INPUT::IntegralValue<INPAR::ALE::AleDynamic>(*adyn, "ALE_TYPE");
+  INPAR::ALE::AleDynamic aletype = INPUT::IntegralValue<INPAR::ALE::AleDynamic>(*adyn, "ALE_TYPE");
   Teuchos::RCP<ALE::Ale> ale = Teuchos::null;
   switch (aletype)
   {
@@ -168,7 +167,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
     case ProblemType::biofilm_fsi:
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-      int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+      int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_constr_monolithicfluidsplit or
@@ -215,7 +214,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
     case ProblemType::fsi_lung:
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-      int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+      int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_lung_monolithicfluidsplit or
           coupling == fsi_iter_lung_monolithicstructuresplit)
       {
@@ -232,7 +231,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
     case ProblemType::fsi_redmodels:
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-      int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+      int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_constr_monolithicfluidsplit or

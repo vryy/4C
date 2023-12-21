@@ -60,11 +60,10 @@ Beam3ContactOctTree::Beam3ContactOctTree(
   if (params.name() == "DAT FILE->BEAM CONTACT")
   {
     // octree specs
-    bboxtype_input =
-        DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE");
+    bboxtype_input = INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE");
 
     // additive or multiplicative extrusion of bounding boxes
-    if (DRT::INPUT::IntegralValue<int>(params, "BEAMS_ADDITEXT"))
+    if (INPUT::IntegralValue<int>(params, "BEAMS_ADDITEXT"))
       additiveextrusion_ = true;
     else
       additiveextrusion_ = false;
@@ -85,12 +84,11 @@ Beam3ContactOctTree::Beam3ContactOctTree(
     // max number of bounding boxes per leaf octant
     minbboxesinoctant_ = params.get<int>("BEAMS_BOXESINOCT", 8);
 
-    btsol_ = DRT::INPUT::IntegralValue<int>(params, "BEAMS_BTSOL");
+    btsol_ = INPUT::IntegralValue<int>(params, "BEAMS_BTSOL");
   }
   else if (params.name() == "DAT FILE->BEAM POTENTIAL")
   {
-    bboxtype_input =
-        DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(params, "BEAMPOT_OCTREE");
+    bboxtype_input = INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(params, "BEAMPOT_OCTREE");
 
     additiveextrusion_ = true;
     extrusionvalue_->push_back(Teuchos::getDoubleParameter(params, "CUTOFFRADIUS"));
@@ -98,7 +96,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(
     // max number of bounding boxes per leaf octant
     minbboxesinoctant_ = params.get<int>("BEAMPOT_BOXESINOCT", 8);
 
-    btsol_ = DRT::INPUT::IntegralValue<int>(params, "BEAMPOT_BTSOL");
+    btsol_ = INPUT::IntegralValue<int>(params, "BEAMPOT_BTSOL");
   }
   else
   {

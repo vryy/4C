@@ -145,7 +145,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   tolq_ = rawtisdyn.get<double>("CONVTOL_Q");
 
   // Dynamic relaxation type
-  relaxtype_ = DRT::INPUT::IntegralValue<INPAR::ARTNET::RELAXTYPE_3D_0D>(rawtisdyn, "RELAXTYPE");
+  relaxtype_ = INPUT::IntegralValue<INPAR::ARTNET::RELAXTYPE_3D_0D>(rawtisdyn, "RELAXTYPE");
 
   // Get normal direction
   // -> if normal == 1.0 : the pressure will be implemented from inside the element to the outside

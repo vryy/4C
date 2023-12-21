@@ -15,7 +15,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
+void INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
     std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& contactconstitutivlawlist)
 {
   const std::string sectionname = "Contact Constitutive Law";
@@ -36,15 +36,15 @@ void DRT::INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& strea
 void PrintContactConstitutiveLawDatHeader()
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> coconstlawlist =
-      DRT::INPUT::ValidContactConstitutiveLaws();
-  DRT::INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::cout, *coconstlawlist);
+      INPUT::ValidContactConstitutiveLaws();
+  INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::cout, *coconstlawlist);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
-DRT::INPUT::ValidContactConstitutiveLaws()
+INPUT::ValidContactConstitutiveLaws()
 {
   // a list containing all valid contact constitutivelaw definitions
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
@@ -52,8 +52,6 @@ DRT::INPUT::ValidContactConstitutiveLaws()
 
   // convenience
   std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
-
-  using namespace BACI::INPUT;
 
   /*----------------------------------------------------------------------*/
   // broken rational function

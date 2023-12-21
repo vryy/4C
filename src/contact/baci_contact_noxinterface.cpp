@@ -279,7 +279,7 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Ve
 enum ::NOX::StatusTest::StatusType CONTACT::NoxInterface::GetActiveSetInfo(
     NOX::NLN::StatusTest::QuantityType checkQuantity, int& activesetsize) const
 {
-  bool semismooth = DRT::INPUT::IntegralValue<int>(Strategy().Params(), "SEMI_SMOOTH_NEWTON");
+  bool semismooth = INPUT::IntegralValue<int>(Strategy().Params(), "SEMI_SMOOTH_NEWTON");
   if (not semismooth) dserror("Currently we support only the semi-smooth Newton case!");
   // ---------------------------------------------------------------------------
   // get the number of active nodes for the given active set type

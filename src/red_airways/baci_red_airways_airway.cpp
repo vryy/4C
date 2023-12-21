@@ -58,11 +58,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create(const int id, co
  |                                                           roth 10/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["RED_AIRWAY"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["RED_AIRWAY"];
 
-  defs["LINE2"] = DRT::INPUT::LineDefinition::Builder()
+  defs["LINE2"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)
                       .AddNamedInt("MAT")
                       .AddNamedString("ElemSolvingType")

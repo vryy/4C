@@ -43,7 +43,7 @@ namespace DRT
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
       void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
@@ -68,7 +68,7 @@ namespace DRT
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
       void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
@@ -93,7 +93,7 @@ namespace DRT
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
       void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:

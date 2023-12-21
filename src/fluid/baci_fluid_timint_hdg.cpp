@@ -414,7 +414,7 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::EvaluateErrorComparedToAnalyti
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
   INPAR::FLUID::CalcError calcerr =
-      DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_, "calculate error");
+      INPUT::get<INPAR::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
@@ -565,7 +565,7 @@ void FLD::TimIntHDG::CalcIntermediateSolution()
   if ((special_flow_ == "forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "decaying_homogeneous_isotropic_turbulence") and
-      DRT::INPUT::IntegralValue<INPAR::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
+      INPUT::IntegralValue<INPAR::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
   {
     Teuchos::RCP<Epetra_Vector> inttmp = CORE::LINALG::CreateVector(*discret_->DofRowMap(1), true);

@@ -25,7 +25,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
 {
   // Decide, if beam contact with subsegment creation (beam3contact) or pure element based beam
   // contact (beam3contactnew) should be applied
-  bool beamssegcon = DRT::INPUT::IntegralValue<int>(beamcontactparams, "BEAMS_SEGCON");
+  bool beamssegcon = INPUT::IntegralValue<int>(beamcontactparams, "BEAMS_SEGCON");
 
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
 

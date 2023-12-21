@@ -26,7 +26,7 @@ namespace CORE::COMM
   class PackBuffer;
 }
 
-namespace DRT::INPUT
+namespace INPUT
 {
   class LineDefinition;
 }
@@ -118,7 +118,7 @@ namespace MAT
        * @param numgp Number of Gauss points
        * @param linedef Input line of the element
        */
-      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef){};
+      virtual void Setup(int numgp, INPUT::LineDefinition* linedef){};
 
       //! Dummy routine for setup of patient-specific materials
       virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID){};
@@ -722,11 +722,11 @@ namespace MAT
       };
 
       //! Read FIBERn
-      void ReadFiber(DRT::INPUT::LineDefinition* linedef, const std::string& specifier,
+      void ReadFiber(INPUT::LineDefinition* linedef, const std::string& specifier,
           CORE::LINALG::Matrix<3, 1>& fiber_vector);
 
       //! Read RAD-AXI-CIR
-      void ReadRadAxiCir(DRT::INPUT::LineDefinition* linedef, CORE::LINALG::Matrix<3, 3>& locsys);
+      void ReadRadAxiCir(INPUT::LineDefinition* linedef, CORE::LINALG::Matrix<3, 3>& locsys);
 
       //! Indicator for the chosen formulations
       virtual void SpecifyFormulation(

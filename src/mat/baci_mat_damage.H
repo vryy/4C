@@ -176,7 +176,7 @@ namespace MAT
     }
 
     //! initialise internal stress variables
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     //! update internal stress variables
     void Update() override;

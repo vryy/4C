@@ -73,7 +73,7 @@ namespace MIXTURE
 
     void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
-    void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
 
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 

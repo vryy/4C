@@ -26,7 +26,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::NodeReader::NodeReader(const DRT::INPUT::DatFileReader& reader, std::string sectionname)
+INPUT::NodeReader::NodeReader(const INPUT::DatFileReader& reader, std::string sectionname)
     : reader_(reader), comm_(reader.Comm()), sectionname_(sectionname)
 {
 }
@@ -34,8 +34,7 @@ DRT::INPUT::NodeReader::NodeReader(const DRT::INPUT::DatFileReader& reader, std:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::NodeReader::Read(
-    const std::vector<ElementReader>& element_readers, int& max_node_id)
+void INPUT::NodeReader::Read(const std::vector<ElementReader>& element_readers, int& max_node_id)
 {
   // Check if there are any nodes to be read. If not, leave right away.
   const int numnodes = reader_.ExcludedSectionLength(sectionname_);
@@ -213,9 +212,9 @@ void DRT::INPUT::NodeReader::Read(
 
           // read fiber node
           std::vector<double> coords(3, 0.0);
-          std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> cosyDirections;
+          std::map<DRT::FIBER::CoordinateSystemDirection, std::array<double, 3>> cosyDirections;
           std::vector<std::array<double, 3>> fibers;
-          std::map<FIBER::AngleType, double> angles;
+          std::map<DRT::FIBER::AngleType, double> angles;
 
           int nodeid;
           // read in the node coordinates and fiber direction
@@ -334,7 +333,7 @@ void DRT::INPUT::NodeReader::Read(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::NodeReader::ThrowIfNotEnoughNodes(int max_node_id) const
+void INPUT::NodeReader::ThrowIfNotEnoughNodes(int max_node_id) const
 {
   int local_max_node_id = max_node_id;
   comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
@@ -346,7 +345,7 @@ void DRT::INPUT::NodeReader::ThrowIfNotEnoughNodes(int max_node_id) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Discretization>> DRT::INPUT::NodeReader::FindDisNode(
+std::vector<Teuchos::RCP<DRT::Discretization>> INPUT::NodeReader::FindDisNode(
     const std::vector<ElementReader>& element_readers, int global_node_id)
 {
   std::vector<Teuchos::RCP<DRT::Discretization>> list_of_discretizations;

@@ -56,9 +56,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18Type::Create(const int id, cons
 }
 
 void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("HEX18", 18)

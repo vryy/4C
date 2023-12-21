@@ -219,7 +219,7 @@ namespace MAT
 
 
     /// setup
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine called before the first Evaluate call
@@ -268,7 +268,7 @@ namespace MAT
 
    private:
     /// Setup circumferential, radial and axial structural tensor
-    void SetupAxiCirRadStructuralTensor(DRT::INPUT::LineDefinition* linedef);
+    void SetupAxiCirRadStructuralTensor(INPUT::LineDefinition* linedef);
 
     /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 3D elements
     void SetupGR3D(CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
@@ -292,7 +292,7 @@ namespace MAT
     void SetupAnisoGrowthTensors();
 
     /// Read AXI CIR RAD direction
-    void ReadDir(DRT::INPUT::LineDefinition* linedef, const std::string& specifier,
+    void ReadDir(INPUT::LineDefinition* linedef, const std::string& specifier,
         CORE::LINALG::Matrix<3, 1>& dir);
 
     /// Evaluate Prestretches

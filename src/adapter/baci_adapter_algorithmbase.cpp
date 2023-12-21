@@ -25,7 +25,7 @@ ADAPTER::AlgorithmBase::AlgorithmBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : comm_(comm), printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
 {
-  if (comm_.MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, timeparams);
+  if (comm_.MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, timeparams);
 
   step_ = 0;
   time_ = 0.;

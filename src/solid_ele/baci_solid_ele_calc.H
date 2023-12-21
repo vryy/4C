@@ -71,7 +71,7 @@ namespace DRT::ELEMENTS
 
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
-    void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef);
+    void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
 
     void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
 

@@ -249,7 +249,7 @@ namespace DRT
       // adding the section for the CLONING MATERIAL MAP
       WriteLinktarget(stream, "cloningmaterialsreference");
       WriteHeader(stream, 0, "Cloning material reference");
-      const DRT::INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
+      const INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
       std::stringstream cloningMatStream;
       lines.Print(cloningMatStream);
       const std::vector<std::string> cloningMatList =
@@ -667,7 +667,7 @@ namespace DRT
         WriteLinktarget(stream, "restultdescriptionreference");
         WriteHeader(stream, 0, "Result description reference");
         DRT::ResultTestManager resulttestmanager;
-        const DRT::INPUT::Lines lines = resulttestmanager.ValidResultLines();
+        const INPUT::Lines lines = resulttestmanager.ValidResultLines();
         std::string sectionDescription = lines.Description();
         WriteParagraph(stream, sectionDescription);
         std::stringstream resultDescriptionStream;

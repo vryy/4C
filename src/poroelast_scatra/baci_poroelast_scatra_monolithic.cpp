@@ -51,7 +51,7 @@ POROELASTSCATRA::PoroScatraMono::PoroScatraMono(
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
-  solveradapttol_ = (DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
@@ -583,15 +583,15 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
   // Get the parameters for the Newton iteration
   itermax_ = poroscatradyn.get<int>("ITEMAX");
   itermin_ = poroscatradyn.get<int>("ITEMIN");
-  normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypefres_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_RESF");
+  normtypeinc_ = INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypeinc_ = INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypefres_ = INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_RESF");
   combincfres_ =
-      DRT::INPUT::IntegralValue<INPAR::POROELAST::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
+      INPUT::IntegralValue<INPAR::POROELAST::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      DRT::INPUT::IntegralValue<INPAR::POROELAST::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
+      INPUT::IntegralValue<INPAR::POROELAST::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
   vectornorminc_ =
-      DRT::INPUT::IntegralValue<INPAR::POROELAST::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
+      INPUT::IntegralValue<INPAR::POROELAST::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
 
   tolinc_ = poroscatradyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroscatradyn.get<double>("TOLRES_GLOBAL");

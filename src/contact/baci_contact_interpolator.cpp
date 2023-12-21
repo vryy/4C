@@ -31,15 +31,15 @@ BACI_NAMESPACE_OPEN
 NTS::CoInterpolator::CoInterpolator(Teuchos::ParameterList& params, const int& dim)
     : iparams_(params),
       dim_(dim),
-      pwslip_(DRT::INPUT::IntegralValue<int>(iparams_, "GP_SLIP_INCR")),
-      wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(iparams_, "WEARLAW")),
+      pwslip_(INPUT::IntegralValue<int>(iparams_, "GP_SLIP_INCR")),
+      wearlaw_(INPUT::IntegralValue<INPAR::WEAR::WearLaw>(iparams_, "WEARLAW")),
       wearimpl_(false),
       wearside_(INPAR::WEAR::wear_slave),
       weartype_(INPAR::WEAR::wear_intstate),
       wearshapefcn_(INPAR::WEAR::wear_shape_standard),
       wearcoeff_(-1.0),
       wearcoeffm_(-1.0),
-      sswear_(DRT::INPUT::IntegralValue<int>(iparams_, "SSWEAR")),
+      sswear_(INPUT::IntegralValue<int>(iparams_, "SSWEAR")),
       ssslip_(iparams_.get<double>("SSSLIP"))
 {
   // wear specific
@@ -47,17 +47,17 @@ NTS::CoInterpolator::CoInterpolator(Teuchos::ParameterList& params, const int& d
   {
     // wear time integration
     INPAR::WEAR::WearTimInt wtimint =
-        DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(params, "WEARTIMINT");
+        INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(params, "WEARTIMINT");
     if (wtimint == INPAR::WEAR::wear_impl) wearimpl_ = true;
 
     // wear surface
-    wearside_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(iparams_, "BOTH_SIDED_WEAR");
+    wearside_ = INPUT::IntegralValue<INPAR::WEAR::WearSide>(iparams_, "BOTH_SIDED_WEAR");
 
     // wear algorithm
-    weartype_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(iparams_, "WEARTYPE");
+    weartype_ = INPUT::IntegralValue<INPAR::WEAR::WearType>(iparams_, "WEARTYPE");
 
     // wear shape function
-    wearshapefcn_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(iparams_, "WEAR_SHAPEFCN");
+    wearshapefcn_ = INPUT::IntegralValue<INPAR::WEAR::WearShape>(iparams_, "WEAR_SHAPEFCN");
 
     // wear coefficient
     wearcoeff_ = iparams_.get<double>("WEARCOEFF");

@@ -49,7 +49,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(
 
   // major switch to different time integrators
   INPAR::THR::DynamicType timinttype =
-      DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
+      INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
   switch (timinttype)
   {
     case INPAR::THR::dyna_statics:
@@ -95,7 +95,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
   //  //  = DRT::Problem::Instance()->ProblemSizeParams();
 
   // show default parameters of thermo parameter list
-  if ((actdis->Comm()).MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, *tdyn);
+  if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, *tdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());

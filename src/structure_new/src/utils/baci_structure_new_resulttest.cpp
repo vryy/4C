@@ -129,7 +129,7 @@ void STR::ResultTest::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   CheckInitSetup();
 
@@ -316,7 +316,7 @@ void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
 {
   CheckInitSetup();
 

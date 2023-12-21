@@ -55,10 +55,10 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // get the parameters for the ConvergenceCheck
   itmax_ = tsidyn.get<int>("ITEMAX");          // default: =1
   ittol_ = tsidynpart.get<double>("CONVTOL");  // default: =1e-6
-  normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn, "NORM_INC");
+  normtypeinc_ = INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn, "NORM_INC");
 
   // decide which coupling scheme is applied (e.g. one-way or full coupling)
-  coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+  coupling_ = INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // coupling variable
   displacementcoupling_ = tsidynpart.get<std::string>("COUPVARIABLE") == "Displacement";
@@ -70,7 +70,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // if structure field is quasi-static --> CalcVelocity
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // major switch to different time integrators
-  quasistatic_ = (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") ==
+  quasistatic_ = (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") ==
                   INPAR::STR::dyna_statics);
 
   // initialise internal variables with values
@@ -433,7 +433,7 @@ void TSI::Partitioned::OuterIterationLoop()
 
   // decide if one-way coupling or full coupling
   INPAR::TSI::SolutionSchemeOverFields coupling =
-      DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+      INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // Pure iterative staggered algorithms
   // iterative staggered TSI withOUT Aitken relaxation

@@ -81,10 +81,10 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       myrank_(actdis->Comm().MyPID()),
       solver_(solver),
       contactsolver_(contactsolver),
-      solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1),
+      solveradapttol_(INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1),
       solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
       dbcmaps_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),
-      divcontype_(DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams, "DIVERCONT")),
+      divcontype_(INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams, "DIVERCONT")),
       divconrefinementlevel_(0),
       divconnumfinestep_(0),
       sdynparams_(sdynparams),
@@ -92,26 +92,26 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
       printlogo_(bool(printscreen_)),  // no std out no logo
       printiter_(true),                // ADD INPUT PARAMETER
-      outputeveryiter_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_EVERY_ITER")),
+      outputeveryiter_((bool)INPUT::IntegralValue<int>(ioparams, "OUTPUT_EVERY_ITER")),
       oei_filecounter_(ioparams.get<int>("OEI_FILE_COUNTER")),
       writerestartevery_(timeparams.get<int>("RESTARTEVRY")),
-      writeele_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_ELE")),
-      writestate_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP")),
-      writevelacc_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC")),
+      writeele_((bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_ELE")),
+      writestate_((bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP")),
+      writevelacc_((bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC")),
       writeresultsevery_(timeparams.get<int>("RESULTSEVRY")),
-      writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS")),
+      writestress_(INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS")),
       writecouplstress_(
-          DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS")),
-      writestrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_STRAIN")),
+          INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS")),
+      writestrain_(INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_STRAIN")),
       writeplstrain_(
-          DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN")),
-      writeoptquantity_(DRT::INPUT::IntegralValue<INPAR::STR::OptQuantityType>(
-          ioparams, "STRUCT_OPTIONAL_QUANTITY")),
+          INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN")),
+      writeoptquantity_(
+          INPUT::IntegralValue<INPAR::STR::OptQuantityType>(ioparams, "STRUCT_OPTIONAL_QUANTITY")),
       writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
-      writesurfactant_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT")),
-      writerotation_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_ROT")),
+      writesurfactant_((bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT")),
+      writerotation_((bool)INPUT::IntegralValue<int>(ioparams, "OUTPUT_ROT")),
       energyfile_(Teuchos::null),
-      damping_(DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sdynparams, "DAMPING")),
+      damping_(INPUT::IntegralValue<INPAR::STR::DampKind>(sdynparams, "DAMPING")),
       dampk_(sdynparams.get<double>("K_DAMP")),
       dampm_(sdynparams.get<double>("M_DAMP")),
       conman_(Teuchos::null),
@@ -132,7 +132,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       stepn_(0),
       rand_tsfac_(1.0),
       firstoutputofrun_(true),
-      lumpmass_(DRT::INPUT::IntegralValue<int>(sdynparams, "LUMPMASS") == 1),
+      lumpmass_(INPUT::IntegralValue<int>(sdynparams, "LUMPMASS") == 1),
       zeros_(Teuchos::null),
       dis_(Teuchos::null),
       dismat_(Teuchos::null),
@@ -428,7 +428,7 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
   // some parameters
   const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
   INPAR::BEAMCONTACT::Strategy strategy =
-      DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
+      INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
   // conditions for potential-based beam interaction
   std::vector<DRT::Condition*> beampotconditions(0);
@@ -465,13 +465,13 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   const Teuchos::ParameterList& smortar = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
   INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
+      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
   INPAR::CONTACT::SolvingStrategy soltype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact, "STRATEGY");
+      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact, "STRATEGY");
   INPAR::CONTACT::SystemType systype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact, "SYSTEM");
+      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact, "SYSTEM");
   INPAR::MORTAR::AlgorithmType algorithm =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar, "ALGORITHM");
+      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar, "ALGORITHM");
 
   // check mortar contact or meshtying conditions
   std::vector<DRT::Condition*> mortarconditions(0);
@@ -499,7 +499,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   // is defined just the other way round as alphaf in GenAlpha schemes.
   // Thus, we have to hand in 1-theta for OST!!!)
   double time_integration_factor = 0.0;
-  const bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
+  const bool do_endtime = INPUT::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
   if (!do_endtime) time_integration_factor = TimIntParam();
 
   // create instance for meshtying contact bridge
@@ -536,7 +536,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
 
     // perform mesh initialization if required by input parameter MESH_RELOCATION
-    auto mesh_relocation_parameter = DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+    auto mesh_relocation_parameter = INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
         DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
@@ -571,7 +571,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
   // visualization of initial configuration
 #ifdef MORTARGMSH3
-  bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+  bool gmsh = INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
   if (gmsh) cmtbridge_->VisualizeGmsh(0);
 #endif  // #ifdef MORTARGMSH3
 
@@ -643,7 +643,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
                       << std::endl;
           }
           else if (soltype == INPAR::CONTACT::solution_lagmult &&
-                   DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
+                   INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
                        INPAR::MORTAR::lagmult_const)
           {
             std::cout << "================================================================"
@@ -759,7 +759,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
                       << std::endl;
           }
           else if (soltype == INPAR::CONTACT::solution_lagmult &&
-                   DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
+                   INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
                        INPAR::MORTAR::lagmult_const)
           {
             std::cout << "================================================================"
@@ -1236,7 +1236,7 @@ void STR::TimInt::UpdateStepContactMeshtying()
   {
     cmtbridge_->Update(disn_);
 #ifdef MORTARGMSH1
-    bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+    bool gmsh = INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_);
 #endif  // #ifdef MORTARGMSH1
   }
@@ -1255,8 +1255,7 @@ void STR::TimInt::UpdateStepContactVUM()
 {
   if (HaveContactMeshtying())
   {
-    bool do_vum =
-        DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "VELOCITY_UPDATE");
+    bool do_vum = INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "VELOCITY_UPDATE");
 
     //********************************************************************
     // VELOCITY UPDATE METHOD
@@ -1268,8 +1267,8 @@ void STR::TimInt::UpdateStepContactVUM()
       if (!isincontact) return;
 
       // check for contact force evaluation
-      bool do_end = DRT::INPUT::IntegralValue<int>(
-          cmtbridge_->GetStrategy().Params(), "CONTACTFORCE_ENDTIME");
+      bool do_end =
+          INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "CONTACTFORCE_ENDTIME");
       if (do_end == false)
       {
         dserror(
@@ -1286,7 +1285,7 @@ void STR::TimInt::UpdateStepContactVUM()
       double alpham = 0.0;
       double beta = 0.0;
       double gamma = 0.0;
-      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
+      if (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_genalpha)
       {
         auto genAlpha = dynamic_cast<STR::TimIntGenAlpha*>(this);
@@ -1294,7 +1293,7 @@ void STR::TimInt::UpdateStepContactVUM()
         beta = genAlpha->TimIntParamBeta();
         gamma = genAlpha->TimIntParamGamma();
       }
-      else if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
+      else if (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
                INPAR::STR::dyna_gemm)
       {
         alpham = sdynparams.sublist("GEMM").get<double>("ALPHA_M");
@@ -2579,7 +2578,7 @@ void STR::TimInt::OutputContact()
     cmtbridge_->GetStrategy().PrintActiveSet();
 
     // check chosen output option
-    INPAR::CONTACT::EmOutputType emtype = DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(
+    INPAR::CONTACT::EmOutputType emtype = INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(
         cmtbridge_->GetStrategy().Params(), "EMOUTPUT");
 
     // get out of here if no energy/momentum output wanted
@@ -2749,7 +2748,7 @@ void STR::TimInt::OutputErrorNorms()
   // get out of here if no output wanted
   const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
   INPAR::CONTACT::ErrorNorms entype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
+      INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
   if (entype == INPAR::CONTACT::errornorms_none) return;
 
   // initialize variables
@@ -2811,7 +2810,7 @@ void STR::TimInt::OutputErrorNorms()
 void STR::TimInt::OutputVolumeMass()
 {
   const Teuchos::ParameterList& listwear = DRT::Problem::Instance()->WearParams();
-  bool massvol = DRT::INPUT::IntegralValue<int>(listwear, "VOLMASS_OUTPUT");
+  bool massvol = INPUT::IntegralValue<int>(listwear, "VOLMASS_OUTPUT");
   if (!massvol) return;
 
   // initialize variables
@@ -2977,7 +2976,7 @@ void STR::TimInt::ApplyForceExternal(const double time, const Teuchos::RCP<Epetr
 int STR::TimInt::HaveNonlinearMass() const
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  int masslin = DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN");
+  int masslin = INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN");
 
   return masslin;
 }
@@ -3020,7 +3019,7 @@ void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fex
   }
 
   if (HaveNonlinearMass() == INPAR::STR::ml_rotations and
-      DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdynparams, "PREDICT") !=
+      INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdynparams, "PREDICT") !=
           INPAR::STR::pred_constdis)
   {
     dserror(
@@ -3031,7 +3030,7 @@ void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fex
   if (sdynparams != nullptr)
   {
     if (HaveNonlinearMass() == INPAR::STR::ml_rotations and
-        DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdynparams, "DYNAMICTYP") !=
+        INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdynparams, "DYNAMICTYP") !=
             INPAR::STR::dyna_genalpha)
       dserror(
           "Nonlinear inertia forces for rotational DoFs only implemented "

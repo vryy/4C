@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
  *------------------------------------------------------------------------*/
 void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -106,10 +106,9 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 /*------------------------------------------------------------------------*
  | set valid conditions for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
-void INPAR::STI::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+void INPAR::STI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   return;
 }

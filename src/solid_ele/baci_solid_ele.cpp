@@ -27,9 +27,9 @@ DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;
 DRT::ELEMENTS::SolidType& DRT::ELEMENTS::SolidType::Instance() { return instance_; }
 
 void DRT::ELEMENTS::SolidType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defsgeneral = definitions["SOLID"];
+  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLID"];
 
   defsgeneral["HEX8"] = INPUT::LineDefinition::Builder()
                             .AddIntVector("HEX8", 8)
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::Solid::SetParamsInterfacePtr(const Teuchos::ParameterList& p
 }
 
 bool DRT::ELEMENTS::Solid::ReadElement(
-    const std::string& eletype, const std::string& celltype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& celltype, INPUT::LineDefinition* linedef)
 {
   // set cell type
   celltype_ = CORE::FE::StringToCellType(celltype);

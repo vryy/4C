@@ -106,19 +106,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Init(
 
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
-  fdcheck_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::FDCheck>(
+  fdcheck_ = INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::FDCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
   equilibration_method_ = Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
       algoparams.sublist("MONOLITHIC"), "EQUILIBRATION");
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
-  solveradapttol_ =
-      (DRT::INPUT::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
+  solveradapttol_ = (INPUT::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
 
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
   // deformation
-  solve_structure_ = DRT::INPUT::IntegralValue<int>(poroparams, "SOLVE_STRUCTURE");
+  solve_structure_ = INPUT::IntegralValue<int>(poroparams, "SOLVE_STRUCTURE");
   if (!solve_structure_) struct_offset_ = 0;
 }
 
@@ -271,9 +270,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
 
   CreateLinearSolver(solverparams, solvertype);
 
-  vectornormfres_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
+  vectornormfres_ = INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
-  vectornorminc_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
+  vectornorminc_ = INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_INC");
 }
 

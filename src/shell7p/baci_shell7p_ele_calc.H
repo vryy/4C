@@ -42,8 +42,7 @@ namespace DRT
       Shell7pEleCalc();
 
       void Setup(DRT::Element& ele, MAT::So3Material& solid_material,
-          DRT::INPUT::LineDefinition* linedef,
-          const STR::ELEMENTS::ShellLockingTypes& locking_types,
+          INPUT::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) override;
 
       void Pack(CORE::COMM::PackBuffer& data) const override;

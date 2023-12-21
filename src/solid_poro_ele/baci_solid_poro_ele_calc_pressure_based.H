@@ -53,7 +53,7 @@ namespace DRT
       void CouplingStress(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 
-      void PoroSetup(MAT::StructPoro& porostructmat, DRT::INPUT::LineDefinition* linedef);
+      void PoroSetup(MAT::StructPoro& porostructmat, INPUT::LineDefinition* linedef);
 
      private:
       /// static values for matrix sizes

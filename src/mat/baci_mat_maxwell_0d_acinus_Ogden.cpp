@@ -133,7 +133,7 @@ void MAT::Maxwell_0d_acinus_Ogden::Unpack(const std::vector<char>& data)
  | Setup routine to add Ogden material specific parameters kappa and    |
  | beta to material                                         roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Ogden::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::Maxwell_0d_acinus_Ogden::Setup(INPUT::LineDefinition* linedef)
 {
   linedef->ExtractDouble("KAPPA", kappa_);
   linedef->ExtractDouble("BETA", beta_);

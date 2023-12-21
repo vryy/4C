@@ -53,12 +53,12 @@ void elch_dyn(int restart)
   const auto& elchcontrol = problem->ELCHControlParams();
 
   // print default parameters to screen
-  if (comm.MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, elchcontrol);
+  if (comm.MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, elchcontrol);
 
   // access the scalar transport parameter list
   const auto& scatradyn = problem->ScalarTransportDynamicParams();
   const auto veltype =
-      DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
+      INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
 
   // choose algorithm depending on velocity field type
   switch (veltype)
@@ -138,7 +138,7 @@ void elch_dyn(int restart)
         scatradis->FillComplete();
         // determine implementation type of cloned scatra elements
         INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
-        if (DRT::INPUT::IntegralValue<int>(elchcontrol, "DIFFCOND_FORMULATION"))
+        if (INPUT::IntegralValue<int>(elchcontrol, "DIFFCOND_FORMULATION"))
           impltype = INPAR::SCATRA::impltype_elch_diffcond;
         else
           impltype = INPAR::SCATRA::impltype_elch_NP;
@@ -164,7 +164,7 @@ void elch_dyn(int restart)
       if (!aledis->Filled()) aledis->FillComplete(false, false, false);
       // is ALE needed or not?
       const auto withale =
-          DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol, "MOVINGBOUNDARY");
+          INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol, "MOVINGBOUNDARY");
 
       if (withale != INPAR::ELCH::elch_mov_bndry_no)
       {

@@ -51,15 +51,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroP1Type::Create(const int id
 }
 
 void DRT::ELEMENTS::So_hex8PoroP1Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_hex8poro;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8poro;
   So_hex8PoroType::SetupElementDefinition(definitions_hex8poro);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 =
-      definitions_hex8poro["SOLIDH8PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8poro["SOLIDH8PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
 }
@@ -130,14 +129,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroP1Type::Create(const int id
 }
 
 void DRT::ELEMENTS::So_tet4PoroP1Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_tet4;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
   So_tet4PoroType::SetupElementDefinition(definitions_tet4);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
 }

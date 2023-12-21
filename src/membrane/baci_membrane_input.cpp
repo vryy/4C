@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;

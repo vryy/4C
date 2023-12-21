@@ -45,11 +45,11 @@ void UTILS::ConstraintSolver::Setup(Teuchos::RCP<DRT::Discretization> discr,
 {
   solver_ = Teuchos::rcp(&solver, false);
 
-  algochoice_ = DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(params, "UZAWAALGO");
+  algochoice_ = INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(params, "UZAWAALGO");
 
   // different setup for #adapttol_
   isadapttol_ = true;
-  isadapttol_ = (DRT::INPUT::IntegralValue<int>(params, "ADAPTCONV") == 1);
+  isadapttol_ = (INPUT::IntegralValue<int>(params, "ADAPTCONV") == 1);
 
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);

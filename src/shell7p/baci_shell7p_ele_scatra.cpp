@@ -64,9 +64,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell7pScatraType::Create(const int id
 }
 
 void DRT::ELEMENTS::Shell7pScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defsgeneral = definitions["SHELL7PSCATRA"];
+  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SHELL7PSCATRA"];
 
   defsgeneral["QUAD4"] = INPUT::LineDefinition::Builder()
                              .AddIntVector("QUAD4", 4)
@@ -356,7 +356,7 @@ int DRT::ELEMENTS::Shell7pScatra::NumSurface() const { return 1; }
 
 
 bool DRT::ELEMENTS::Shell7pScatra::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   STR::ELEMENTS::ShellData shell_data = {};
 

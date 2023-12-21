@@ -45,14 +45,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(const int id,
 }
 
 void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_fluid;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
   FluidType::SetupElementDefinition(definitions_fluid);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
+  std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["FLUIDPORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["FLUIDPORO"];
 
   // 3D
   defs["HEX8"] = defs_fluid["HEX8"];

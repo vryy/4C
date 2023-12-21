@@ -119,15 +119,15 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidHDGType ::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   // Get the the fluid line definitions and amend them with data for HDG elements
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_fluid;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
   FluidType::SetupElementDefinition(definitions_fluid);
 
-  const std::map<std::string, DRT::INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
+  const std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hdg = definitions["FLUIDHDG"];
+  std::map<std::string, INPUT::LineDefinition>& defs_hdg = definitions["FLUIDHDG"];
 
   for (const auto& [key, fluid_line_def] : defs_fluid)
   {
@@ -226,7 +226,7 @@ void DRT::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
  |  Read element from input (public)                  kronbichler 06/14 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::FluidHDG::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   bool success = Fluid::ReadElement(eletype, distype, linedef);
   int degree;
@@ -256,7 +256,7 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<MAT::Material> mat = Material();

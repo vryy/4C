@@ -322,7 +322,7 @@ namespace MAT
     }
 
     /// setup
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /*!
      * Post setup routine that is executed after the input. This class will forward the call to all

@@ -45,7 +45,7 @@ SCATRA::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization> &actdis,
       startalgo_(true),
       theta_(-1),
       hdgdis_(nullptr),
-      padaptivity_(DRT::INPUT::IntegralValue<bool>(*params, "PADAPTIVITY")),
+      padaptivity_(INPUT::IntegralValue<bool>(*params, "PADAPTIVITY")),
       padapterrortol_(params->get<double>("PADAPTERRORTOL")),
       padapterrorbase_(params->get<double>("PADAPTERRORBASE")),
       padaptdegreemax_(params->get<int>("PADAPTDEGREEMAX")),
@@ -1356,7 +1356,7 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntHDG::AssembleMatAndRHS()
 {
-  if (!DRT::INPUT::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
+  if (!INPUT::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
     SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS();
   else  // in semi-implicit evaluation matrix does not change, thus only rhs is assembled in every
         // step

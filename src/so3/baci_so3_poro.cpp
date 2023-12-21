@@ -201,7 +201,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Print(std::ostream& os) const
 
 template <class so3_ele, CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
   so3_ele::ReadElement(eletype, eledistype, linedef);
@@ -219,8 +219,7 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ReadElement(
 
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
-    ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
-        DRT::INPUT::LineDefinition* linedef)
+    ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -232,8 +231,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
 
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
-    ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
-        DRT::INPUT::LineDefinition* linedef)
+    ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 3; ++dim)
   {

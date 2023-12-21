@@ -665,7 +665,7 @@ void STR::UTILS::SHELL::LumpMassMatrix(CORE::LINALG::SerialDenseMatrix& mass_mat
 
 
 void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(const CORE::FE::CellType& distype,
-    DRT::INPUT::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types)
+    INPUT::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types)
 {
   std::string type;
   switch (distype)
@@ -706,7 +706,7 @@ void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(const CORE::FE::Cell
                         locking_types.transverse_shear_strain_lin;
 }
 
-int STR::UTILS::SHELL::READELEMENT::ReadAndSetElementMaterial(DRT::INPUT::LineDefinition* linedef)
+int STR::UTILS::SHELL::READELEMENT::ReadAndSetElementMaterial(INPUT::LineDefinition* linedef)
 {
   int material = 0;
   linedef->ExtractInt("MAT", material);

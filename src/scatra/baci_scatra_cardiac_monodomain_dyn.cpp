@@ -76,7 +76,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
   // set velocity field
   const INPAR::SCATRA::VelocityField veltype =
-      DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
+      INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
   switch (veltype)
   {
     case INPAR::SCATRA::velocity_zero:      // zero  (see case 1)
@@ -129,7 +129,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // one face is shared with the neighboring element (which is owned by an other processor =
       // ghosted element) which again is sharing other faces with elements on other processors
       // (extended ghosted element)
-      if (DRT::INPUT::IntegralValue<bool>(scatradyn, "PADAPTIVITY"))
+      if (INPUT::IntegralValue<bool>(scatradyn, "PADAPTIVITY"))
       {
         // redistribute discr. with help of binning strategy
         if (scatradis->Comm().NumProc() > 1)
@@ -188,7 +188,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       if (fluiddis->NumGlobalNodes() == 0) dserror("Fluid discretization is empty!");
 
       const INPAR::SCATRA::FieldCoupling fieldcoupling =
-          DRT::INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(
+          INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(
               DRT::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING");
 
       // create scatra elements if the scatra discretization is empty
@@ -315,15 +315,15 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // scatra results available and the initial field is used
       if (restart)
       {
-        if ((DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
+        if ((INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
                 true) and
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
           algo->ReadInflowRestart(restart);
         else
           algo->ReadRestart(restart);
       }
-      else if (DRT::INPUT::IntegralValue<int>(
-                   fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true)
+      else if (INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
+               true)
         dserror(
             "Turbulent inflow generation for passive scalar transport should be performed as fluid "
             "problem!");

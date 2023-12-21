@@ -41,9 +41,9 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
     : AlgorithmBase(comm, globaltimeparams),
       structure_(Teuchos::null),
       lubrication_(Teuchos::null),
-      fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::EHL::FieldCoupling>(
+      fieldcoupling_(INPUT::IntegralValue<INPAR::EHL::FieldCoupling>(
           DRT::Problem::Instance()->ElastoHydroDynamicParams(), "FIELDCOUPLING")),
-      dry_contact_(DRT::INPUT::IntegralValue<bool>(
+      dry_contact_(INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL"))
 {
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -69,7 +69,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   // by the problem section (e.g. ehl or cell dynamic)
   const Teuchos::ParameterList* structtimeparams = &globaltimeparams;
   const Teuchos::ParameterList* lubricationtimeparams = &globaltimeparams;
-  if (DRT::INPUT::IntegralValue<int>(
+  if (INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->ElastoHydroDynamicParams(), "DIFFTIMESTEPSIZE"))
   {
     structtimeparams = &structparams;
@@ -532,7 +532,7 @@ void EHL::Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
  *----------------------------------------------------------------------*/
 void EHL::Base::SetupUnprojectableDBC()
 {
-  if (not DRT::INPUT::IntegralValue<int>(
+  if (not INPUT::IntegralValue<int>(
           ((DRT::Problem::Instance()->ElastoHydroDynamicParams())), "UNPROJ_ZERO_DBC"))
     return;
 
@@ -631,7 +631,7 @@ void EHL::Base::SetupFieldCoupling(
       DRT::Problem::Instance()->SpatialApproximationType()));
   mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
           mortaradapter_->Interface()->InterfaceParams(), "STRATEGY") !=
       INPAR::CONTACT::solution_ehl)
     dserror("you need to set ---CONTACT DYNAMIC: STRATEGY   Ehl");

@@ -18,7 +18,7 @@ BACI_NAMESPACE_OPEN
  | read element input                                        fang 02/15 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Transport::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read implementation type
   std::string impltype;

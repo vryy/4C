@@ -390,7 +390,7 @@ namespace MAT
         const int eleGID, const double temp);
 
     /// setup material data
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine, will be called after the complete inout is already befire the
@@ -406,7 +406,7 @@ namespace MAT
         const INPAR::TSI::DissipationMode mode);
 
     /// setup plastic orthotropy tensor H
-    virtual void SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef);
+    virtual void SetupHillPlasticity(INPUT::LineDefinition* linedef);
 
     /// update sumands
     void Update() override

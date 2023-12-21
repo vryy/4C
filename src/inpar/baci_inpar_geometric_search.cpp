@@ -16,7 +16,7 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::GEOMETRICSEARCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   Teuchos::ParameterList& boundingvolumestrategy =
       list->sublist("BOUNDINGVOLUME STRATEGY", false, "");

@@ -45,19 +45,18 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
 
   // initialize the parameter values
   output_displacement_state_ =
-      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
+      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
   output_velocity_state_ =
-      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "VELOCITY");
+      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "VELOCITY");
   output_element_owner_ =
-      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
+      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
   output_element_gid_ =
-      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
+      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
   output_element_ghosting_ =
-      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GHOSTING");
-  output_node_gid_ =
-      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "NODE_GID");
+      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GHOSTING");
+  output_node_gid_ = INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "NODE_GID");
   output_stress_strain_ =
-      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
+      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
   gauss_point_data_output_type_ = Teuchos::getIntegralValue<INPAR::STR::GaussPointDataOutputType>(
       IO_vtk_structure_structure_paramslist, "GAUSS_POINT_DATA_OUTPUT_TYPE");
 
@@ -67,9 +66,9 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
     // section are set.
     const Teuchos::ParameterList& io_parameter_list = DRT::Problem::Instance()->IOParams();
     INPAR::STR::StressType io_stress =
-        DRT::INPUT::IntegralValue<INPAR::STR::StressType>(io_parameter_list, "STRUCT_STRESS");
+        INPUT::IntegralValue<INPAR::STR::StressType>(io_parameter_list, "STRUCT_STRESS");
     INPAR::STR::StrainType io_strain =
-        DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(io_parameter_list, "STRUCT_STRAIN");
+        INPUT::IntegralValue<INPAR::STR::StrainType>(io_parameter_list, "STRUCT_STRAIN");
     if (io_stress == INPAR::STR::stress_none and io_strain == INPAR::STR::strain_none)
       dserror(
           "If stress / strain runtime output is required, one or two of the flags STRUCT_STRAIN / "

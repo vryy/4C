@@ -66,9 +66,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::Wall1Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALL"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALL"];
 
   defs["QUAD4"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("QUAD4", 4)

@@ -35,7 +35,7 @@ namespace DRT
       std::string Name() const override { return "Truss3ScatraType"; }
 
       void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
@@ -67,7 +67,7 @@ namespace DRT
       const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
 
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef) override;
+          INPUT::LineDefinition* linedef) override;
 
       int UniqueParObjectId() const override
       {

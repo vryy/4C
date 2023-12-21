@@ -23,176 +23,176 @@ BACI_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}
 
-  namespace INPUT
+namespace INPUT
+{
+  class DatFileReader;
+
+  /*----------------------------------------------------------------------*/
+  /*!
+    \brief helper class to read the elements of a discretization
+
+    Together with MeshReader this class constitutes a (almost) parallel
+    and efficient reading mechanism for discretizations from dat files.
+
+    We face the following problem:
+
+    - There are elements and nodes. One set of elements per
+      discretization. One set of nodes with the nodes from all
+      discretizations.
+
+    - Elements and nodes have ids. These are unique but otherwise
+      arbitrary.
+
+    - We cannot afford to read all elements or all nodes on one
+      processor.
+
+    - Only processor 0 can actually read the (ascii) input file
+
+    - We do not want to setup (that is read) elements more than once.
+
+    The idea is to read blocks of elements and nodes and distribute them
+    to different processors at first. Afterwards a reasonable
+    distribution can be calculated and the discretizations can be
+    redistributed. How this work is done is a mere
+    technicality. However, we need to be able to use the discretization
+    in a partially constructed state. In particular we need to read, add
+    and distribute elements even if nodes not yet are available.
+   */
+  /*----------------------------------------------------------------------*/
+  class ElementReader
   {
-    class DatFileReader;
-
-    /*----------------------------------------------------------------------*/
+   public:
     /*!
-      \brief helper class to read the elements of a discretization
+    \brief Construct element reader for a given field that reads a given section
 
-      Together with MeshReader this class constitutes a (almost) parallel
-      and efficient reading mechanism for discretizations from dat files.
+    Create empty discretization and append it to given field.
 
-      We face the following problem:
+    \param dis (i) the new discretization
+    \param comm (i) our communicator
+    \param sectionname (i) the section that contains the element lines
+    */
+    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const DatFileReader& reader,
+        std::string sectionname);
 
-      - There are elements and nodes. One set of elements per
-        discretization. One set of nodes with the nodes from all
-        discretizations.
+    /*!
+    \brief Construct element reader for a given field that reads a given section
 
-      - Elements and nodes have ids. These are unique but otherwise
-        arbitrary.
+    Create empty discretization and append it to given field.
 
-      - We cannot afford to read all elements or all nodes on one
-        processor.
+    \param dis (i) the new discretization
+    \param comm (i) our communicator
+    \param sectionname (i) the section that contains the element lines
+    \param elementtype (i) element type name to read in this discretization
+    */
+    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const DatFileReader& reader,
+        std::string sectionname, std::string elementtype);
 
-      - Only processor 0 can actually read the (ascii) input file
+    /*!
+    \brief Construct element reader for a given field that reads a given section
 
-      - We do not want to setup (that is read) elements more than once.
+    Create empty discretization and append it to given field.
 
-      The idea is to read blocks of elements and nodes and distribute them
-      to different processors at first. Afterwards a reasonable
-      distribution can be calculated and the discretizations can be
-      redistributed. How this work is done is a mere
-      technicality. However, we need to be able to use the discretization
-      in a partially constructed state. In particular we need to read, add
-      and distribute elements even if nodes not yet are available.
-     */
-    /*----------------------------------------------------------------------*/
-    class ElementReader
-    {
-     public:
-      /*!
-      \brief Construct element reader for a given field that reads a given section
+    \param dis (i) the new discretization
+    \param comm (i) our communicator
+    \param sectionname (i) the section that contains the element lines
+    \param elementtypes (i) element type names to read in this discretization
+    */
+    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const DatFileReader& reader,
+        std::string sectionname, const std::set<std::string>& elementtypes);
 
-      Create empty discretization and append it to given field.
+    //! Destructor
+    virtual ~ElementReader() = default;
+    // Return list of unique nodes
+    std::set<int> GetUniqueNodes() const { return nodes_; }
 
-      \param dis (i) the new discretization
-      \param comm (i) our communicator
-      \param sectionname (i) the section that contains the element lines
-      */
-      ElementReader(
-          Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname);
+    /// give the discretization this reader fills
+    Teuchos::RCP<DRT::Discretization> GetDis() const { return dis_; }
 
-      /*!
-      \brief Construct element reader for a given field that reads a given section
+    /// Return the list of row elements
+    Teuchos::RCP<Epetra_Map> GetRowElements() const { return roweles_; }
 
-      Create empty discretization and append it to given field.
+    /*! Read elements and partition the node graph
 
-      \param dis (i) the new discretization
-      \param comm (i) our communicator
-      \param sectionname (i) the section that contains the element lines
-      \param elementtype (i) element type name to read in this discretization
-      */
-      ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader,
-          std::string sectionname, std::string elementtype);
+    - read global ids of elements of this discretization
+      (this is one fully redundant vector for elements)
+    - determine a preliminary element distribution. The fully redundant
+      vector is trashed after the construction.
+    - define blocksizes for blocks of elements we read (not necessarily
+      the same as it was used to construct the map --- we may have a
+      smaller blocksize here).
+    - read elements of this discretization and distribute according
+      to a linear map. While reading, remember node gids and assemble
+      them into a second fully redundant vector (mapping node id->gid).
+      In addition, we keep them in a fully redundant set (required by
+      node reader). Construct reverse lookup from gids to node ids.
+      Again, this is a global, fully redundant map!
+    - define preliminary linear distributed nodal row map
+    - determine adjacency array (i.e. the infos for the node graph)
+      using the nodal row distribution and a round robin communication
+      of element connectivity information.
+      Use adjacency array to build an initial Crsgraph on the linear map.
+    - do partitioning using parmetis
+      Results are distributed to other procs using two global vectors!
+    - build final nodal row map, export graph to the new map
+    */
+    virtual void ReadAndDistribute();
 
-      /*!
-      \brief Construct element reader for a given field that reads a given section
+    /*!
+    \brief Tell whether the given node belongs to us
 
-      Create empty discretization and append it to given field.
+    \note This is based on the redundant nodes_ set and only available on processor 0.
+    */
+    bool HasNode(const int nodeid) const { return nodes_.find(nodeid) != nodes_.end(); }
 
-      \param dis (i) the new discretization
-      \param comm (i) our communicator
-      \param sectionname (i) the section that contains the element lines
-      \param elementtypes (i) element type names to read in this discretization
-      */
-      ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader,
-          std::string sectionname, const std::set<std::string>& elementtypes);
+   private:
+    /// Get the overall number of elements and their corresponding global IDs
+    std::pair<int, std::vector<int>> GetElementSizeAndIDs() const;
 
-      //! Destructor
-      virtual ~ElementReader() = default;
-      // Return list of unique nodes
-      std::set<int> GetUniqueNodes() const { return nodes_; }
+    /// Read the file and get element information, distribute them to each processor
+    void GetAndDistributeElements(const int nblock, const int bsize);
 
-      /// give the discretization this reader fills
-      Teuchos::RCP<Discretization> GetDis() const { return dis_; }
+    /// discretization name
+    std::string name_;
 
-      /// Return the list of row elements
-      Teuchos::RCP<Epetra_Map> GetRowElements() const { return roweles_; }
+    /// the main dat file reader
+    const DatFileReader& reader_;
 
-      /*! Read elements and partition the node graph
+    /// my comm
+    Teuchos::RCP<Epetra_Comm> comm_;
 
-      - read global ids of elements of this discretization
-        (this is one fully redundant vector for elements)
-      - determine a preliminary element distribution. The fully redundant
-        vector is trashed after the construction.
-      - define blocksizes for blocks of elements we read (not necessarily
-        the same as it was used to construct the map --- we may have a
-        smaller blocksize here).
-      - read elements of this discretization and distribute according
-        to a linear map. While reading, remember node gids and assemble
-        them into a second fully redundant vector (mapping node id->gid).
-        In addition, we keep them in a fully redundant set (required by
-        node reader). Construct reverse lookup from gids to node ids.
-        Again, this is a global, fully redundant map!
-      - define preliminary linear distributed nodal row map
-      - determine adjacency array (i.e. the infos for the node graph)
-        using the nodal row distribution and a round robin communication
-        of element connectivity information.
-        Use adjacency array to build an initial Crsgraph on the linear map.
-      - do partitioning using parmetis
-        Results are distributed to other procs using two global vectors!
-      - build final nodal row map, export graph to the new map
-      */
-      virtual void ReadAndDistribute();
+    /// my section to read
+    std::string sectionname_;
 
-      /*!
-      \brief Tell whether the given node belongs to us
+    /*!
+    \brief All global node ids of a discretization on processor 0
 
-      \note This is based on the redundant nodes_ set and only available on processor 0.
-      */
-      bool HasNode(const int nodeid) const { return nodes_.find(nodeid) != nodes_.end(); }
+    This is a redundant set of all node numbers. But it is only valid
+    on processor 0. We need it to easily figure out to which
+    discretization a node belongs.
+    */
+    std::set<int> nodes_;
 
-     private:
-      /// Get the overall number of elements and their corresponding global IDs
-      std::pair<int, std::vector<int>> GetElementSizeAndIDs() const;
+    /// my discretization
+    Teuchos::RCP<DRT::Discretization> dis_;
 
-      /// Read the file and get element information, distribute them to each processor
-      void GetAndDistributeElements(const int nblock, const int bsize);
+    /// node row map
+    Teuchos::RCP<Epetra_Map> rownodes_;
 
-      /// discretization name
-      std::string name_;
+    /// node col map
+    Teuchos::RCP<Epetra_Map> colnodes_;
 
-      /// the main dat file reader
-      const DatFileReader& reader_;
+    /// element row map
+    Teuchos::RCP<Epetra_Map> roweles_;
 
-      /// my comm
-      Teuchos::RCP<Epetra_Comm> comm_;
+    /// element col map
+    Teuchos::RCP<Epetra_Map> coleles_;
 
-      /// my section to read
-      std::string sectionname_;
-
-      /*!
-      \brief All global node ids of a discretization on processor 0
-
-      This is a redundant set of all node numbers. But it is only valid
-      on processor 0. We need it to easily figure out to which
-      discretization a node belongs.
-      */
-      std::set<int> nodes_;
-
-      /// my discretization
-      Teuchos::RCP<DRT::Discretization> dis_;
-
-      /// node row map
-      Teuchos::RCP<Epetra_Map> rownodes_;
-
-      /// node col map
-      Teuchos::RCP<Epetra_Map> colnodes_;
-
-      /// element row map
-      Teuchos::RCP<Epetra_Map> roweles_;
-
-      /// element col map
-      Teuchos::RCP<Epetra_Map> coleles_;
-
-      /// element type names to read
-      std::set<std::string> elementtypes_;
-    };
-  }  // namespace INPUT
-}  // namespace DRT
+    /// element type names to read
+    std::set<std::string> elementtypes_;
+  };
+}  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE
 

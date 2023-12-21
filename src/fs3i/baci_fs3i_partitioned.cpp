@@ -63,9 +63,9 @@ void FS3I::PartFS3I::Init()
   // call setup in base class
   FS3I::FS3I_Base::Init();
 
-  volume_fieldcouplings_.push_back(DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(
+  volume_fieldcouplings_.push_back(INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(
       DRT::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_FIELDCOUPLING"));
-  volume_fieldcouplings_.push_back(DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(
+  volume_fieldcouplings_.push_back(INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(
       DRT::Problem::Instance()->FS3IDynamicParams(), "STRUCTSCAL_FIELDCOUPLING"));
 
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -113,7 +113,7 @@ void FS3I::PartFS3I::Init()
   //  dserror("At least two material lists required for partitioned FS3I!");
 
   // determine type of scalar transport
-  const INPAR::SCATRA::ImplType impltype_fluid = DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(
+  const INPAR::SCATRA::ImplType impltype_fluid = INPUT::IntegralValue<INPAR::SCATRA::ImplType>(
       DRT::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
@@ -412,8 +412,7 @@ void FS3I::PartFS3I::ReadRestart()
   if (restart)
   {
     const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams();
-    const bool restartfrompartfsi =
-        DRT::INPUT::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
+    const bool restartfrompartfsi = INPUT::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
 
     if (not restartfrompartfsi)  // standard restart
     {
@@ -748,7 +747,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 
   Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->CalculateWallShearStresses();
 
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(
+  if (INPUT::IntegralValue<INPAR::FLUID::WSSType>(
           DRT::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE") != INPAR::FLUID::wss_standard)
     dserror("WSS_TYPE not supported for FS3I!");
 

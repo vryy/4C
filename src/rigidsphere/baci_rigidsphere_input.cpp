@@ -17,7 +17,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Rigidsphere::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // currently only rotationally symmetric profiles for beam --> Iyy = Izz
   linedef->ExtractDouble("RADIUS", radius_);

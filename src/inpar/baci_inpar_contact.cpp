@@ -19,7 +19,7 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -356,7 +356,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           PlotDirection::read_from_file, PlotDirection::zero),
       &plot_contact);
 
-  DRT::INPUT::StringParameter("DIRECTION_FILE", "none",
+  INPUT::StringParameter("DIRECTION_FILE", "none",
       "Filename of the "
       "text file containing the plot direction.",
       &plot_contact);

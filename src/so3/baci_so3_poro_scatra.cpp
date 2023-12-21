@@ -108,7 +108,7 @@ void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Print(std::ostream& os) c
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
   my::ReadElement(eletype, eledistype, linedef);

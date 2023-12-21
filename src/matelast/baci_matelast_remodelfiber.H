@@ -401,7 +401,7 @@ namespace MAT
       void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;
 
       /// Setup of summand
-      virtual void Setup(int numgp, double rho_tot, DRT::INPUT::LineDefinition* linedef);
+      virtual void Setup(int numgp, double rho_tot, INPUT::LineDefinition* linedef);
 
       /// Update fiber directions with new local coordinate system (radaxicirc_)
       void UpdateFiberDirs(CORE::LINALG::Matrix<3, 3> const& locsys,  ///< local coordinate system

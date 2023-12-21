@@ -284,9 +284,9 @@ int DRT::ELEMENTS::So_sh8PlastType::Initialize(DRT::Discretization& dis)
 |                                                          seitz 05/14 |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8PlastType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
@@ -399,7 +399,7 @@ void DRT::ELEMENTS::So_sh8Plast::Print(std::ostream& os) const
  | read this element, get the material (public)             seitz 05/14 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::So_sh8Plast::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   std::string buffer;
   linedef->ExtractString("KINEM", buffer);

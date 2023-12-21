@@ -257,7 +257,7 @@ void MAT::Myocard::Setup(const CORE::LINALG::Matrix<3, 1>& fiber1) { SetupDiffus
 
 void MAT::Myocard::Setup(const CORE::LINALG::Matrix<2, 1>& fiber1) { SetupDiffusionTensor(fiber1); }
 
-void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::Myocard::Setup(INPUT::LineDefinition* linedef)
 {
   std::vector<double> fiber1(3);
   if (linedef->HaveNamed("FIBER1"))

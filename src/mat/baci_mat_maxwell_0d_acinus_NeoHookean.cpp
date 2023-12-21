@@ -121,7 +121,7 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Unpack(const std::vector<char>& data)
  | Setup routine for NeoHookean material                                |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_NeoHookean::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::Maxwell_0d_acinus_NeoHookean::Setup(INPUT::LineDefinition* linedef)
 {
   // do nothing, all parameters are read by base class already
 }

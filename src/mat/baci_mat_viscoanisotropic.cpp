@@ -207,7 +207,7 @@ void MAT::ViscoAnisotropic::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoAnisotropic::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ViscoAnisotropic::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   /*fiber directions can be defined in the element line
     or by element thickness direction.

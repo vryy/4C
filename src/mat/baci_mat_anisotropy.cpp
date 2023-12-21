@@ -81,7 +81,7 @@ void MAT::Anisotropy::UnpackAnisotropy(
 
 void MAT::Anisotropy::SetNumberOfGaussPoints(int numgp) { numgp_ = numgp; }
 
-void MAT::Anisotropy::ReadAnisotropyFromElement(DRT::INPUT::LineDefinition* lineDefinition)
+void MAT::Anisotropy::ReadAnisotropyFromElement(INPUT::LineDefinition* lineDefinition)
 {
   if (lineDefinition == nullptr)
   {

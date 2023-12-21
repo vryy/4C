@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -508,9 +508,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
  | set the particle conditions                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
 void INPAR::PARTICLE::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   /*-------------------------------------------------------------------------*
    | particle wall condition                                                 |

@@ -46,18 +46,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1ScatraType::Create(const int id, 
 }
 
 void DRT::ELEMENTS::Wall1ScatraType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   Wall1Type::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLSCATRA"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLSCATRA"];
 
   for (const auto& [key, wall_line_def] : defs_wall)
   {
-    defs[key] = DRT::INPUT::LineDefinition::Builder(wall_line_def).AddNamedString("TYPE").Build();
+    defs[key] = INPUT::LineDefinition::Builder(wall_line_def).AddNamedString("TYPE").Build();
   }
 }
 
@@ -144,7 +144,7 @@ void DRT::ELEMENTS::Wall1_Scatra::Print(std::ostream& os) const
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Wall1_Scatra::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
   Wall1::ReadElement(eletype, eledistype, linedef);

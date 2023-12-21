@@ -35,7 +35,7 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
   // type of error norm
-  errnorm_ = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sada, "LOCERRNORM");
+  errnorm_ = INPUT::IntegralValue<INPAR::STR::VectorNorm>(sada, "LOCERRNORM");
 
   //----------------------------------------------------------------------------
   // Handling of Dirichlet BCs in error estimation

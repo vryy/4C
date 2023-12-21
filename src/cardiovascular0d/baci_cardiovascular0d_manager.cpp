@@ -96,20 +96,19 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
       adaptolbetter_(0.01),
       tolres_struct_(strparams.get("TOLRES", 1.0e-8)),
       tolres_cardvasc0d_(cv0dparams.get("TOL_CARDVASC0D_RES", 1.0e-8)),
-      algochoice_(DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
+      algochoice_(INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
           cv0dparams, "SOLALGORITHM")),
       dirichtoggle_(Teuchos::null),
       zeros_(CORE::LINALG::CreateVector(*(actdisc_->DofRowMap()), true)),
       theta_(cv0dparams.get("TIMINT_THETA", 0.5)),
-      enhanced_output_(DRT::INPUT::IntegralValue<int>(cv0dparams, "ENHANCED_OUTPUT")),
-      ptc_3d0d_(DRT::INPUT::IntegralValue<int>(cv0dparams, "PTC_3D0D")),
+      enhanced_output_(INPUT::IntegralValue<int>(cv0dparams, "ENHANCED_OUTPUT")),
+      ptc_3d0d_(INPUT::IntegralValue<int>(cv0dparams, "PTC_3D0D")),
       k_ptc_(cv0dparams.get("K_PTC", 0.0)),
       totaltime_(0.0),
       linsolveerror_(0),
       strparams_(strparams),
       cv0dparams_(cv0dparams),
-      intstrat_(
-          DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams, "INT_STRATEGY")),
+      intstrat_(INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams, "INT_STRATEGY")),
       mor_(mor),
       have_mor_(false)
 {
@@ -533,7 +532,7 @@ void UTILS::Cardiovascular0DManager::ReadRestart(
 {
   // check if restart from non-Cardiovascular0D simulation is desired
   const bool restartwithcardiovascular0d =
-      DRT::INPUT::IntegralValue<int>(Cardvasc0DParams(), "RESTART_WITH_CARDVASC0D");
+      INPUT::IntegralValue<int>(Cardvasc0DParams(), "RESTART_WITH_CARDVASC0D");
 
   if (!restartwithcardiovascular0d)
   {
@@ -893,7 +892,7 @@ void UTILS::Cardiovascular0DManager::SolverSetup(
 
   // different setup for #adapttol_
   isadapttol_ = true;
-  isadapttol_ = (DRT::INPUT::IntegralValue<int>(params, "ADAPTCONV") == 1);
+  isadapttol_ = (INPUT::IntegralValue<int>(params, "ADAPTCONV") == 1);
 
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);

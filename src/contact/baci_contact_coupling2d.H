@@ -64,7 +64,7 @@ namespace CONTACT
     */
     INPAR::WEAR::WearSide WearSide()
     {
-      return DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_, "BOTH_SIDED_WEAR");
+      return INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_, "BOTH_SIDED_WEAR");
     }
 
     /*!
@@ -73,7 +73,7 @@ namespace CONTACT
     */
     INPAR::WEAR::WearType WearType()
     {
-      return DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_, "WEARTYPE");
+      return INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_, "WEARTYPE");
     }
 
     //@}
@@ -130,7 +130,7 @@ namespace CONTACT
     */
     INPAR::MORTAR::ShapeFcn ShapeFcn()
     {
-      return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     /*!

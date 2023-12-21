@@ -1061,7 +1061,7 @@ void PARTICLEENGINE::ParticleEngine::InitParticleVtpWriter()
 void PARTICLEENGINE::ParticleEngine::SetupParticleVtpWriter() const
 {
   // get flag to determine output of ghosted particles (debug feature)
-  bool write_ghosted_particles = DRT::INPUT::IntegralValue<int>(params_, "WRITE_GHOSTED_PARTICLES");
+  bool write_ghosted_particles = INPUT::IntegralValue<int>(params_, "WRITE_GHOSTED_PARTICLES");
 
   // setup particle runtime vtp writer
   particlevtpwriter_->Setup(write_ghosted_particles);

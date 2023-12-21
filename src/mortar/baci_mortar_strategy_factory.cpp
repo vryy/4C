@@ -229,12 +229,12 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
   const Teuchos::ParameterList& smortar = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
   INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
+      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
   INPAR::CONTACT::SystemType systype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact, "SYSTEM");
+      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact, "SYSTEM");
   INPAR::MORTAR::AlgorithmType algorithm =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar, "ALGORITHM");
-  bool nonSmoothGeometries = DRT::INPUT::IntegralValue<int>(scontact, "NONSMOOTH_GEOMETRIES");
+      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar, "ALGORITHM");
+  bool nonSmoothGeometries = INPUT::IntegralValue<int>(scontact, "NONSMOOTH_GEOMETRIES");
 
   if (nonSmoothGeometries)
   {
@@ -355,7 +355,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
         }
         else if (soltype == INPAR::CONTACT::solution_lagmult &&
                  shapefcn == INPAR::MORTAR::shape_standard &&
-                 DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
+                 INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
                      INPAR::MORTAR::lagmult_const)
         {
           IO::cout << "================================================================\n";

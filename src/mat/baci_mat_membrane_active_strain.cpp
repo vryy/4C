@@ -210,7 +210,7 @@ void MAT::Membrane_ActiveStrain::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Membrane_ActiveStrain::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // setup fibervectors
   SetupFiberVectors(numgp, linedef);
@@ -414,7 +414,7 @@ bool MAT::Membrane_ActiveStrain::VisData(
 /*----------------------------------------------------------------------*
  | setup fiber vectors                                                  |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::SetupFiberVectors(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Membrane_ActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefinition* linedef)
 {
   CORE::LINALG::Matrix<3, 1> dir;
 
@@ -478,7 +478,7 @@ void MAT::Membrane_ActiveStrain::SetupFiberVectors(int numgp, DRT::INPUT::LineDe
  * Function which reads in the fiber direction
  *----------------------------------------------------------------------*/
 void MAT::Membrane_ActiveStrain::ReadDir(
-    DRT::INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir)
+    INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir)
 {
   std::vector<double> fiber;
   linedef->ExtractDoubleVector(specifier, fiber);

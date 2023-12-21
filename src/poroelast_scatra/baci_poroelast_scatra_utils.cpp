@@ -72,7 +72,7 @@ Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> POROELASTSCATRA::UTILS::CreatePoro
   // Parameter reading
   const Teuchos::ParameterList& params = problem->PoroScatraControlParams();
   const auto coupling =
-      DRT::INPUT::IntegralValue<INPAR::PORO_SCATRA::SolutionSchemeOverFields>(params, "COUPALGO");
+      INPUT::IntegralValue<INPAR::PORO_SCATRA::SolutionSchemeOverFields>(params, "COUPALGO");
 
   switch (coupling)
   {

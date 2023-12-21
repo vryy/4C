@@ -41,7 +41,7 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
       edgebased_fluidstabilization_(false)
 {
   edgebased_fluidstabilization_ =
-      (DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(
+      (INPUT::IntegralValue<INPAR::FLUID::StabType>(
            DRT::Problem::Instance()->FluidDynamicParams().sublist("RESIDUAL-BASED STABILIZATION"),
            "STABTYPE") == INPAR::FLUID::stabtype_edgebased);
 }

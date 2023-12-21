@@ -69,9 +69,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pType::ComputeNullSpace(
 
 
 void DRT::ELEMENTS::Shell7pType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defsgeneral = definitions["SHELL7P"];
+  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SHELL7P"];
 
   defsgeneral["QUAD4"] = INPUT::LineDefinition::Builder()
                              .AddIntVector("QUAD4", 4)
@@ -322,7 +322,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7p::Surfaces()
 }
 
 bool DRT::ELEMENTS::Shell7p::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   STR::ELEMENTS::ShellData shell_data = {};
 

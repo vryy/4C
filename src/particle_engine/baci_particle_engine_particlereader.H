@@ -19,7 +19,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT::INPUT
+namespace INPUT
 {
   class ParticleReader
   {
@@ -41,7 +41,7 @@ namespace DRT::INPUT
     std::string sectionname_;
   };
 
-}  // namespace DRT::INPUT
+}  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE
 

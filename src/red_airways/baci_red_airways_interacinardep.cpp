@@ -66,9 +66,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create(
  |  SetupElementDefinition                                              |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedInterAcinarDepType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["RED_ACINAR_INTER_DEP"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["RED_ACINAR_INTER_DEP"];
 
   defs["LINE2"] =
       INPUT::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();

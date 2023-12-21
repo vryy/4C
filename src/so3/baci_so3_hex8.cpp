@@ -86,9 +86,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_hex8Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
@@ -136,7 +136,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
 
     pstype_ = BACI::UTILS::PRESTRESS::GetType();
     pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
-    if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
+    if (INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
   }
   if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));

@@ -2153,7 +2153,7 @@ namespace FLD
     strainnorm = (sqrt(strainnorm / 4.0));
 
     // do we have a fixed parameter N
-    if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs, "CALC_N")) == false)
+    if ((INPUT::IntegralValue<int>(*turbmodelparamsmfs, "CALC_N")) == false)
     {
       for (int rr = 1; rr < 3; rr++) Nvel[rr] = turbmodelparamsmfs->get<double>("N");
     }
@@ -2465,7 +2465,7 @@ namespace FLD
 
     // calculate near-wall correction
     double Cai_phi = 0.0;
-    if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true)
+    if ((INPUT::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true)
     {
       // get Re from strain rate
       double Re_ele_str = strainnorm * hk * hk * dens / dynvisc;
@@ -2505,7 +2505,7 @@ namespace FLD
       // ratio of dissipation scale to element length
       double scale_ratio_phi = 0.0;
 
-      if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs, "CALC_N")) == true)
+      if ((INPUT::IntegralValue<int>(*turbmodelparamsmfs, "CALC_N")) == true)
       {
         //
         //   Delta
@@ -2593,9 +2593,8 @@ namespace FLD
       }
 
       // apply near-wall limit if required
-      if (((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI")) ==
-              true) and
-          ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true))
+      if (((INPUT::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI")) == true) and
+          ((INPUT::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true))
       {
         D *= Cai_phi;
         Csgs_phi *= Cai_phi;

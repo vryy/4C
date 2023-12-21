@@ -174,8 +174,8 @@ namespace DRT
      *  \param[in] stream: stream for the restructuredText file
      *  \param[in] matlist: vector containing all material definitions
      */
-    void WriteMaterialReference(std::ostream& stream,
-        const std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist);
+    void WriteMaterialReference(
+        std::ostream& stream, const std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist);
 
     /*!
      *  \brief write the information of a single material to readthedocs
@@ -204,7 +204,7 @@ namespace DRT
      *  @param[in] condlist List of prescribed conditions to be written to that file
      */
     void WriteConditionsReference(std::ostream& stream,
-        const std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+        const std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
 
     /*!
      *  write a single condition including explanations (if available) to a .rst file for

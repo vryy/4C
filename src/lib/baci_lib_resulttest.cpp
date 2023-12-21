@@ -25,23 +25,23 @@ BACI_NAMESPACE_OPEN
 
 DRT::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
-void DRT::ResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void DRT::ResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   dserror("no element test available");
 }
 
-void DRT::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void DRT::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   dserror("no node test available");
 }
 
-void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void DRT::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   dserror("no special case test available");
 }
 
 void DRT::ResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count)
 {
   TestSpecial(res, nerr, test_count);
 }
@@ -62,8 +62,7 @@ void DRT::ResultTest::TestSpecial(
  \date 06/04
  */
 /*----------------------------------------------------------------------*/
-int DRT::ResultTest::CompareValues(
-    double actresult, std::string type, DRT::INPUT::LineDefinition& res)
+int DRT::ResultTest::CompareValues(double actresult, std::string type, INPUT::LineDefinition& res)
 {
   int gid;
 
@@ -133,7 +132,7 @@ int DRT::ResultTest::CompareValues(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ResultTest::Match(DRT::INPUT::LineDefinition& res) { return res.HaveNamed(myname_); }
+bool DRT::ResultTest::Match(INPUT::LineDefinition& res) { return res.HaveNamed(myname_); }
 
 
 /*----------------------------------------------------------------------*/
@@ -210,39 +209,183 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::Lines DRT::ResultTestManager::ValidResultLines()
+INPUT::Lines DRT::ResultTestManager::ValidResultLines()
 {
-  DRT::INPUT::LineDefinition structure = DRT::INPUT::LineDefinition::Builder()
-                                             .AddTag("STRUCTURE")
+  INPUT::LineDefinition structure = INPUT::LineDefinition::Builder()
+                                        .AddTag("STRUCTURE")
+                                        .AddNamedString("DIS")
+                                        .AddNamedInt("NODE")
+                                        .AddNamedString("QUANTITY")
+                                        .AddNamedDouble("VALUE")
+                                        .AddNamedDouble("TOLERANCE")
+                                        .AddOptionalNamedString("NAME")
+                                        .Build();
+
+  INPUT::LineDefinition structure_special = INPUT::LineDefinition::Builder()
+                                                .AddTag("STRUCTURE")
+                                                .AddTag("SPECIAL")
+                                                .AddNamedString("QUANTITY")
+                                                .AddNamedDouble("VALUE")
+                                                .AddNamedDouble("TOLERANCE")
+                                                .AddOptionalNamedString("NAME")
+                                                .Build();
+
+  INPUT::LineDefinition fluid_node = INPUT::LineDefinition::Builder()
+                                         .AddTag("FLUID")
+                                         .AddNamedString("DIS")
+                                         .AddNamedInt("NODE")
+                                         .AddNamedString("QUANTITY")
+                                         .AddNamedDouble("VALUE")
+                                         .AddNamedDouble("TOLERANCE")
+                                         .AddOptionalNamedString("NAME")
+                                         .Build();
+
+  INPUT::LineDefinition fluid_ele = INPUT::LineDefinition::Builder()
+                                        .AddTag("FLUID")
+                                        .AddNamedString("DIS")
+                                        .AddNamedInt("ELEMENT")
+                                        .AddNamedString("QUANTITY")
+                                        .AddNamedDouble("VALUE")
+                                        .AddNamedDouble("TOLERANCE")
+                                        .AddOptionalNamedString("NAME")
+                                        .Build();
+
+  INPUT::LineDefinition xfluid_node = INPUT::LineDefinition::Builder()
+                                          .AddTag("XFLUID")
+                                          .AddNamedString("DIS")
+                                          .AddNamedInt("NODE")
+                                          .AddNamedString("QUANTITY")
+                                          .AddNamedDouble("VALUE")
+                                          .AddNamedDouble("TOLERANCE")
+                                          .AddOptionalNamedString("NAME")
+                                          .Build();
+
+  INPUT::LineDefinition ale = INPUT::LineDefinition::Builder()
+                                  .AddTag("ALE")
+                                  .AddNamedString("DIS")
+                                  .AddNamedInt("NODE")
+                                  .AddNamedString("QUANTITY")
+                                  .AddNamedDouble("VALUE")
+                                  .AddNamedDouble("TOLERANCE")
+                                  .AddOptionalNamedString("NAME")
+                                  .Build();
+
+  INPUT::LineDefinition thermal = INPUT::LineDefinition::Builder()
+                                      .AddTag("THERMAL")
+                                      .AddNamedString("DIS")
+                                      .AddNamedInt("NODE")
+                                      .AddNamedString("QUANTITY")
+                                      .AddNamedDouble("VALUE")
+                                      .AddNamedDouble("TOLERANCE")
+                                      .AddOptionalNamedString("NAME")
+                                      .Build();
+
+  INPUT::LineDefinition lubrication = INPUT::LineDefinition::Builder()
+                                          .AddTag("LUBRICATION")
+                                          .AddNamedString("DIS")
+                                          .AddNamedInt("NODE")
+                                          .AddNamedString("QUANTITY")
+                                          .AddNamedDouble("VALUE")
+                                          .AddNamedDouble("TOLERANCE")
+                                          .AddOptionalNamedString("NAME")
+                                          .Build();
+
+  INPUT::LineDefinition porofluidmultiphase_node = INPUT::LineDefinition::Builder()
+                                                       .AddTag("POROFLUIDMULTIPHASE")
+                                                       .AddNamedString("DIS")
+                                                       .AddNamedInt("NODE")
+                                                       .AddNamedString("QUANTITY")
+                                                       .AddNamedDouble("VALUE")
+                                                       .AddNamedDouble("TOLERANCE")
+                                                       .AddOptionalNamedString("NAME")
+                                                       .Build();
+
+  INPUT::LineDefinition porofluidmultiphase_ele = INPUT::LineDefinition::Builder()
+                                                      .AddTag("POROFLUIDMULTIPHASE")
+                                                      .AddNamedString("DIS")
+                                                      .AddNamedInt("ELEMENT")
+                                                      .AddNamedString("QUANTITY")
+                                                      .AddNamedDouble("VALUE")
+                                                      .AddNamedDouble("TOLERANCE")
+                                                      .AddOptionalNamedString("NAME")
+                                                      .Build();
+
+  INPUT::LineDefinition porofluidmultiphase_special = INPUT::LineDefinition::Builder()
+                                                          .AddTag("POROFLUIDMULTIPHASE")
+                                                          .AddNamedString("DIS")
+                                                          .AddTag("SPECIAL")
+                                                          .AddNamedString("QUANTITY")
+                                                          .AddNamedDouble("VALUE")
+                                                          .AddNamedDouble("TOLERANCE")
+                                                          .AddOptionalNamedString("NAME")
+                                                          .Build();
+
+  INPUT::LineDefinition scatra = INPUT::LineDefinition::Builder()
+                                     .AddTag("SCATRA")
+                                     .AddNamedString("DIS")
+                                     .AddNamedInt("NODE")
+                                     .AddNamedString("QUANTITY")
+                                     .AddNamedDouble("VALUE")
+                                     .AddNamedDouble("TOLERANCE")
+                                     .AddOptionalNamedString("NAME")
+                                     .Build();
+
+  INPUT::LineDefinition scatra_special = INPUT::LineDefinition::Builder()
+                                             .AddTag("SCATRA")
                                              .AddNamedString("DIS")
-                                             .AddNamedInt("NODE")
+                                             .AddTag("SPECIAL")
                                              .AddNamedString("QUANTITY")
                                              .AddNamedDouble("VALUE")
                                              .AddNamedDouble("TOLERANCE")
                                              .AddOptionalNamedString("NAME")
                                              .Build();
 
-  DRT::INPUT::LineDefinition structure_special = DRT::INPUT::LineDefinition::Builder()
-                                                     .AddTag("STRUCTURE")
-                                                     .AddTag("SPECIAL")
-                                                     .AddNamedString("QUANTITY")
-                                                     .AddNamedDouble("VALUE")
-                                                     .AddNamedDouble("TOLERANCE")
-                                                     .AddOptionalNamedString("NAME")
-                                                     .Build();
+  INPUT::LineDefinition ssi = INPUT::LineDefinition::Builder()
+                                  .AddTag("SSI")
+                                  .AddNamedString("DIS")
+                                  .AddNamedInt("NODE")
+                                  .AddNamedString("QUANTITY")
+                                  .AddNamedDouble("VALUE")
+                                  .AddNamedDouble("TOLERANCE")
+                                  .AddOptionalNamedString("NAME")
+                                  .Build();
 
-  DRT::INPUT::LineDefinition fluid_node = DRT::INPUT::LineDefinition::Builder()
-                                              .AddTag("FLUID")
-                                              .AddNamedString("DIS")
-                                              .AddNamedInt("NODE")
-                                              .AddNamedString("QUANTITY")
-                                              .AddNamedDouble("VALUE")
-                                              .AddNamedDouble("TOLERANCE")
-                                              .AddOptionalNamedString("NAME")
-                                              .Build();
+  INPUT::LineDefinition ssi_special = INPUT::LineDefinition::Builder()
+                                          .AddTag("SSI")
+                                          .AddTag("SPECIAL")
+                                          .AddNamedString("QUANTITY")
+                                          .AddNamedDouble("VALUE")
+                                          .AddNamedDouble("TOLERANCE")
+                                          .Build();
 
-  DRT::INPUT::LineDefinition fluid_ele = DRT::INPUT::LineDefinition::Builder()
-                                             .AddTag("FLUID")
+  INPUT::LineDefinition ssti_special = INPUT::LineDefinition::Builder()
+                                           .AddTag("SSTI")
+                                           .AddTag("SPECIAL")
+                                           .AddNamedString("QUANTITY")
+                                           .AddNamedDouble("VALUE")
+                                           .AddNamedDouble("TOLERANCE")
+                                           .Build();
+
+  INPUT::LineDefinition sti_special = INPUT::LineDefinition::Builder()
+                                          .AddTag("STI")
+                                          .AddTag("SPECIAL")
+                                          .AddNamedString("QUANTITY")
+                                          .AddNamedDouble("VALUE")
+                                          .AddNamedDouble("TOLERANCE")
+                                          .Build();
+
+  INPUT::LineDefinition red_airway = INPUT::LineDefinition::Builder()
+                                         .AddTag("RED_AIRWAY")
+                                         .AddNamedString("DIS")
+                                         .AddNamedInt("NODE")
+                                         .AddNamedString("QUANTITY")
+                                         .AddNamedDouble("VALUE")
+                                         .AddNamedDouble("TOLERANCE")
+                                         .AddOptionalNamedString("NAME")
+                                         .Build();
+
+  INPUT::LineDefinition red_airway_ele = INPUT::LineDefinition::Builder()
+                                             .AddTag("RED_AIRWAY")
                                              .AddNamedString("DIS")
                                              .AddNamedInt("ELEMENT")
                                              .AddNamedString("QUANTITY")
@@ -251,28 +394,8 @@ DRT::INPUT::Lines DRT::ResultTestManager::ValidResultLines()
                                              .AddOptionalNamedString("NAME")
                                              .Build();
 
-  DRT::INPUT::LineDefinition xfluid_node = DRT::INPUT::LineDefinition::Builder()
-                                               .AddTag("XFLUID")
-                                               .AddNamedString("DIS")
-                                               .AddNamedInt("NODE")
-                                               .AddNamedString("QUANTITY")
-                                               .AddNamedDouble("VALUE")
-                                               .AddNamedDouble("TOLERANCE")
-                                               .AddOptionalNamedString("NAME")
-                                               .Build();
-
-  DRT::INPUT::LineDefinition ale = DRT::INPUT::LineDefinition::Builder()
-                                       .AddTag("ALE")
-                                       .AddNamedString("DIS")
-                                       .AddNamedInt("NODE")
-                                       .AddNamedString("QUANTITY")
-                                       .AddNamedDouble("VALUE")
-                                       .AddNamedDouble("TOLERANCE")
-                                       .AddOptionalNamedString("NAME")
-                                       .Build();
-
-  DRT::INPUT::LineDefinition thermal = DRT::INPUT::LineDefinition::Builder()
-                                           .AddTag("THERMAL")
+  INPUT::LineDefinition art_net_node = INPUT::LineDefinition::Builder()
+                                           .AddTag("ARTNET")
                                            .AddNamedString("DIS")
                                            .AddNamedInt("NODE")
                                            .AddNamedString("QUANTITY")
@@ -281,69 +404,48 @@ DRT::INPUT::Lines DRT::ResultTestManager::ValidResultLines()
                                            .AddOptionalNamedString("NAME")
                                            .Build();
 
-  DRT::INPUT::LineDefinition lubrication = DRT::INPUT::LineDefinition::Builder()
-                                               .AddTag("LUBRICATION")
-                                               .AddNamedString("DIS")
-                                               .AddNamedInt("NODE")
-                                               .AddNamedString("QUANTITY")
-                                               .AddNamedDouble("VALUE")
-                                               .AddNamedDouble("TOLERANCE")
-                                               .AddOptionalNamedString("NAME")
-                                               .Build();
-
-  DRT::INPUT::LineDefinition porofluidmultiphase_node = DRT::INPUT::LineDefinition::Builder()
-                                                            .AddTag("POROFLUIDMULTIPHASE")
-                                                            .AddNamedString("DIS")
-                                                            .AddNamedInt("NODE")
-                                                            .AddNamedString("QUANTITY")
-                                                            .AddNamedDouble("VALUE")
-                                                            .AddNamedDouble("TOLERANCE")
-                                                            .AddOptionalNamedString("NAME")
-                                                            .Build();
-
-  DRT::INPUT::LineDefinition porofluidmultiphase_ele = DRT::INPUT::LineDefinition::Builder()
-                                                           .AddTag("POROFLUIDMULTIPHASE")
-                                                           .AddNamedString("DIS")
-                                                           .AddNamedInt("ELEMENT")
-                                                           .AddNamedString("QUANTITY")
-                                                           .AddNamedDouble("VALUE")
-                                                           .AddNamedDouble("TOLERANCE")
-                                                           .AddOptionalNamedString("NAME")
-                                                           .Build();
-
-  DRT::INPUT::LineDefinition porofluidmultiphase_special = DRT::INPUT::LineDefinition::Builder()
-                                                               .AddTag("POROFLUIDMULTIPHASE")
-                                                               .AddNamedString("DIS")
-                                                               .AddTag("SPECIAL")
-                                                               .AddNamedString("QUANTITY")
-                                                               .AddNamedDouble("VALUE")
-                                                               .AddNamedDouble("TOLERANCE")
-                                                               .AddOptionalNamedString("NAME")
-                                                               .Build();
-
-  DRT::INPUT::LineDefinition scatra = DRT::INPUT::LineDefinition::Builder()
-                                          .AddTag("SCATRA")
+  INPUT::LineDefinition art_net_ele = INPUT::LineDefinition::Builder()
+                                          .AddTag("ARTNET")
                                           .AddNamedString("DIS")
-                                          .AddNamedInt("NODE")
+                                          .AddNamedInt("ELEMENT")
                                           .AddNamedString("QUANTITY")
                                           .AddNamedDouble("VALUE")
                                           .AddNamedDouble("TOLERANCE")
                                           .AddOptionalNamedString("NAME")
                                           .Build();
 
-  DRT::INPUT::LineDefinition scatra_special = DRT::INPUT::LineDefinition::Builder()
-                                                  .AddTag("SCATRA")
-                                                  .AddNamedString("DIS")
-                                                  .AddTag("SPECIAL")
-                                                  .AddNamedString("QUANTITY")
-                                                  .AddNamedDouble("VALUE")
-                                                  .AddNamedDouble("TOLERANCE")
-                                                  .AddOptionalNamedString("NAME")
-                                                  .Build();
+  INPUT::LineDefinition fld_adj = INPUT::LineDefinition::Builder()
+                                      .AddTag("ADJOINT")
+                                      .AddNamedString("DIS")
+                                      .AddNamedInt("NODE")
+                                      .AddNamedString("QUANTITY")
+                                      .AddNamedDouble("VALUE")
+                                      .AddNamedDouble("TOLERANCE")
+                                      .AddOptionalNamedString("NAME")
+                                      .Build();
 
-  DRT::INPUT::LineDefinition ssi = DRT::INPUT::LineDefinition::Builder()
-                                       .AddTag("SSI")
+  INPUT::LineDefinition opti_node = INPUT::LineDefinition::Builder()
+                                        .AddTag("OPTI")
+                                        .AddNamedString("DIS")
+                                        .AddNamedInt("NODE")
+                                        .AddNamedString("QUANTITY")
+                                        .AddNamedDouble("VALUE")
+                                        .AddNamedDouble("TOLERANCE")
+                                        .AddOptionalNamedString("NAME")
+                                        .Build();
+
+  INPUT::LineDefinition opti_ele = INPUT::LineDefinition::Builder()
+                                       .AddTag("OPTI")
                                        .AddNamedString("DIS")
+                                       .AddNamedInt("ELEMENT")
+                                       .AddNamedString("QUANTITY")
+                                       .AddNamedDouble("VALUE")
+                                       .AddNamedDouble("TOLERANCE")
+                                       .AddOptionalNamedString("NAME")
+                                       .Build();
+
+  INPUT::LineDefinition fsi_node = INPUT::LineDefinition::Builder()
+                                       .AddTag("FSI")
                                        .AddNamedInt("NODE")
                                        .AddNamedString("QUANTITY")
                                        .AddNamedDouble("VALUE")
@@ -351,111 +453,62 @@ DRT::INPUT::Lines DRT::ResultTestManager::ValidResultLines()
                                        .AddOptionalNamedString("NAME")
                                        .Build();
 
-  DRT::INPUT::LineDefinition ssi_special = DRT::INPUT::LineDefinition::Builder()
-                                               .AddTag("SSI")
-                                               .AddTag("SPECIAL")
-                                               .AddNamedString("QUANTITY")
-                                               .AddNamedDouble("VALUE")
-                                               .AddNamedDouble("TOLERANCE")
-                                               .Build();
+  INPUT::LineDefinition fsi_special = INPUT::LineDefinition::Builder()
+                                          .AddTag("FSI")
+                                          .AddTag("SPECIAL")
+                                          .AddNamedString("QUANTITY")
+                                          .AddNamedDouble("VALUE")
+                                          .AddNamedDouble("TOLERANCE")
+                                          .AddOptionalNamedString("NAME")
+                                          .Build();
 
-  DRT::INPUT::LineDefinition ssti_special = DRT::INPUT::LineDefinition::Builder()
-                                                .AddTag("SSTI")
-                                                .AddTag("SPECIAL")
-                                                .AddNamedString("QUANTITY")
-                                                .AddNamedDouble("VALUE")
-                                                .AddNamedDouble("TOLERANCE")
-                                                .Build();
+  INPUT::LineDefinition particle = INPUT::LineDefinition::Builder()
+                                       .AddTag("PARTICLE")
+                                       .AddNamedInt("ID")
+                                       .AddNamedString("QUANTITY")
+                                       .AddNamedDouble("VALUE")
+                                       .AddNamedDouble("TOLERANCE")
+                                       .Build();
 
-  DRT::INPUT::LineDefinition sti_special = DRT::INPUT::LineDefinition::Builder()
-                                               .AddTag("STI")
-                                               .AddTag("SPECIAL")
-                                               .AddNamedString("QUANTITY")
-                                               .AddNamedDouble("VALUE")
-                                               .AddNamedDouble("TOLERANCE")
-                                               .Build();
-
-  DRT::INPUT::LineDefinition red_airway = DRT::INPUT::LineDefinition::Builder()
-                                              .AddTag("RED_AIRWAY")
-                                              .AddNamedString("DIS")
-                                              .AddNamedInt("NODE")
-                                              .AddNamedString("QUANTITY")
-                                              .AddNamedDouble("VALUE")
-                                              .AddNamedDouble("TOLERANCE")
-                                              .AddOptionalNamedString("NAME")
-                                              .Build();
-
-  DRT::INPUT::LineDefinition red_airway_ele = DRT::INPUT::LineDefinition::Builder()
-                                                  .AddTag("RED_AIRWAY")
-                                                  .AddNamedString("DIS")
-                                                  .AddNamedInt("ELEMENT")
-                                                  .AddNamedString("QUANTITY")
-                                                  .AddNamedDouble("VALUE")
-                                                  .AddNamedDouble("TOLERANCE")
-                                                  .AddOptionalNamedString("NAME")
-                                                  .Build();
-
-  DRT::INPUT::LineDefinition art_net_node = DRT::INPUT::LineDefinition::Builder()
-                                                .AddTag("ARTNET")
+  INPUT::LineDefinition particlewall_node = INPUT::LineDefinition::Builder()
+                                                .AddTag("PARTICLEWALL")
                                                 .AddNamedString("DIS")
                                                 .AddNamedInt("NODE")
                                                 .AddNamedString("QUANTITY")
                                                 .AddNamedDouble("VALUE")
                                                 .AddNamedDouble("TOLERANCE")
-                                                .AddOptionalNamedString("NAME")
                                                 .Build();
 
-  DRT::INPUT::LineDefinition art_net_ele = DRT::INPUT::LineDefinition::Builder()
-                                               .AddTag("ARTNET")
+  INPUT::LineDefinition particlewall_special = INPUT::LineDefinition::Builder()
+                                                   .AddTag("PARTICLEWALL")
+                                                   .AddNamedString("DIS")
+                                                   .AddTag("SPECIAL")
+                                                   .AddNamedString("QUANTITY")
+                                                   .AddNamedDouble("VALUE")
+                                                   .AddNamedDouble("TOLERANCE")
+                                                   .Build();
+
+  INPUT::LineDefinition rigidbody = INPUT::LineDefinition::Builder()
+                                        .AddTag("RIGIDBODY")
+                                        .AddNamedInt("ID")
+                                        .AddNamedString("QUANTITY")
+                                        .AddNamedDouble("VALUE")
+                                        .AddNamedDouble("TOLERANCE")
+                                        .Build();
+
+  INPUT::LineDefinition elemag = INPUT::LineDefinition::Builder()
+                                     .AddTag("ELECTROMAGNETIC")
+                                     .AddNamedString("DIS")
+                                     .AddNamedInt("NODE")
+                                     .AddNamedString("QUANTITY")
+                                     .AddNamedDouble("VALUE")
+                                     .AddNamedDouble("TOLERANCE")
+                                     .AddOptionalNamedString("NAME")
+                                     .Build();
+
+  INPUT::LineDefinition cardiovascular0d = INPUT::LineDefinition::Builder()
+                                               .AddTag("CARDIOVASCULAR0D")
                                                .AddNamedString("DIS")
-                                               .AddNamedInt("ELEMENT")
-                                               .AddNamedString("QUANTITY")
-                                               .AddNamedDouble("VALUE")
-                                               .AddNamedDouble("TOLERANCE")
-                                               .AddOptionalNamedString("NAME")
-                                               .Build();
-
-  DRT::INPUT::LineDefinition fld_adj = DRT::INPUT::LineDefinition::Builder()
-                                           .AddTag("ADJOINT")
-                                           .AddNamedString("DIS")
-                                           .AddNamedInt("NODE")
-                                           .AddNamedString("QUANTITY")
-                                           .AddNamedDouble("VALUE")
-                                           .AddNamedDouble("TOLERANCE")
-                                           .AddOptionalNamedString("NAME")
-                                           .Build();
-
-  DRT::INPUT::LineDefinition opti_node = DRT::INPUT::LineDefinition::Builder()
-                                             .AddTag("OPTI")
-                                             .AddNamedString("DIS")
-                                             .AddNamedInt("NODE")
-                                             .AddNamedString("QUANTITY")
-                                             .AddNamedDouble("VALUE")
-                                             .AddNamedDouble("TOLERANCE")
-                                             .AddOptionalNamedString("NAME")
-                                             .Build();
-
-  DRT::INPUT::LineDefinition opti_ele = DRT::INPUT::LineDefinition::Builder()
-                                            .AddTag("OPTI")
-                                            .AddNamedString("DIS")
-                                            .AddNamedInt("ELEMENT")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .AddOptionalNamedString("NAME")
-                                            .Build();
-
-  DRT::INPUT::LineDefinition fsi_node = DRT::INPUT::LineDefinition::Builder()
-                                            .AddTag("FSI")
-                                            .AddNamedInt("NODE")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .AddOptionalNamedString("NAME")
-                                            .Build();
-
-  DRT::INPUT::LineDefinition fsi_special = DRT::INPUT::LineDefinition::Builder()
-                                               .AddTag("FSI")
                                                .AddTag("SPECIAL")
                                                .AddNamedString("QUANTITY")
                                                .AddNamedDouble("VALUE")
@@ -463,61 +516,7 @@ DRT::INPUT::Lines DRT::ResultTestManager::ValidResultLines()
                                                .AddOptionalNamedString("NAME")
                                                .Build();
 
-  DRT::INPUT::LineDefinition particle = DRT::INPUT::LineDefinition::Builder()
-                                            .AddTag("PARTICLE")
-                                            .AddNamedInt("ID")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .Build();
-
-  DRT::INPUT::LineDefinition particlewall_node = DRT::INPUT::LineDefinition::Builder()
-                                                     .AddTag("PARTICLEWALL")
-                                                     .AddNamedString("DIS")
-                                                     .AddNamedInt("NODE")
-                                                     .AddNamedString("QUANTITY")
-                                                     .AddNamedDouble("VALUE")
-                                                     .AddNamedDouble("TOLERANCE")
-                                                     .Build();
-
-  DRT::INPUT::LineDefinition particlewall_special = DRT::INPUT::LineDefinition::Builder()
-                                                        .AddTag("PARTICLEWALL")
-                                                        .AddNamedString("DIS")
-                                                        .AddTag("SPECIAL")
-                                                        .AddNamedString("QUANTITY")
-                                                        .AddNamedDouble("VALUE")
-                                                        .AddNamedDouble("TOLERANCE")
-                                                        .Build();
-
-  DRT::INPUT::LineDefinition rigidbody = DRT::INPUT::LineDefinition::Builder()
-                                             .AddTag("RIGIDBODY")
-                                             .AddNamedInt("ID")
-                                             .AddNamedString("QUANTITY")
-                                             .AddNamedDouble("VALUE")
-                                             .AddNamedDouble("TOLERANCE")
-                                             .Build();
-
-  DRT::INPUT::LineDefinition elemag = DRT::INPUT::LineDefinition::Builder()
-                                          .AddTag("ELECTROMAGNETIC")
-                                          .AddNamedString("DIS")
-                                          .AddNamedInt("NODE")
-                                          .AddNamedString("QUANTITY")
-                                          .AddNamedDouble("VALUE")
-                                          .AddNamedDouble("TOLERANCE")
-                                          .AddOptionalNamedString("NAME")
-                                          .Build();
-
-  DRT::INPUT::LineDefinition cardiovascular0d = DRT::INPUT::LineDefinition::Builder()
-                                                    .AddTag("CARDIOVASCULAR0D")
-                                                    .AddNamedString("DIS")
-                                                    .AddTag("SPECIAL")
-                                                    .AddNamedString("QUANTITY")
-                                                    .AddNamedDouble("VALUE")
-                                                    .AddNamedDouble("TOLERANCE")
-                                                    .AddOptionalNamedString("NAME")
-                                                    .Build();
-
-  DRT::INPUT::Lines lines("RESULT DESCRIPTION",
+  INPUT::Lines lines("RESULT DESCRIPTION",
       "The result of the simulation with respect to specific quantities at concrete points "
       "can be tested against particular values with a given tolerance.");
   lines.Add(structure);
@@ -559,9 +558,9 @@ DRT::INPUT::Lines DRT::ResultTestManager::ValidResultLines()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ResultTestManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+void DRT::ResultTestManager::ReadInput(INPUT::DatFileReader& reader)
 {
-  DRT::INPUT::Lines lines = ValidResultLines();
+  INPUT::Lines lines = ValidResultLines();
   results_ = lines.Read(reader);
 }
 
@@ -571,7 +570,7 @@ void DRT::ResultTestManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 void PrintResultDescrDatHeader()
 {
   DRT::ResultTestManager resulttestmanager;
-  DRT::INPUT::Lines lines = resulttestmanager.ValidResultLines();
+  INPUT::Lines lines = resulttestmanager.ValidResultLines();
 
   lines.Print(std::cout);
 }

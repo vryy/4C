@@ -31,7 +31,7 @@ void SCATRA::MeshtyingStrategyFluidElch::InitMeshtying()
 {
   // Important: Meshtying for electrochemistry problems is not well tested!
   // safety check
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),
+  if (INPUT::IntegralValue<INPAR::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),
           "MESHTYING") == INPAR::FLUID::condensed_bmat_merged and
       ElchTimInt()->EquPot() == INPAR::ELCH::equpot_enc)
     dserror(
@@ -55,7 +55,7 @@ void SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying()
   // special case: only potential is coupled
   // =>   coupleddof = [0, 0, ..., 0, 1]
   std::vector<int> coupleddof(scatratimint_->NumScal() + 1, 1);
-  if (DRT::INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "ONLYPOTENTIAL"))
+  if (INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "ONLYPOTENTIAL"))
     for (int i = 0; i < scatratimint_->NumScal(); ++i) coupleddof[i] = 0;
 
   meshtying_->SetupMeshtying(coupleddof);

@@ -104,7 +104,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
 
     /*!
      * \brief Updates the material and all its summands

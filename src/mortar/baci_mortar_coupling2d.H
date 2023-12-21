@@ -97,7 +97,7 @@ namespace MORTAR
      */
     INPAR::MORTAR::LagMultQuad LagMultQuad()
     {
-      return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
+      return INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!
@@ -106,7 +106,7 @@ namespace MORTAR
      */
     INPAR::MORTAR::ShapeFcn ShapeFcn()
     {
-      return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     /*!
@@ -266,7 +266,7 @@ namespace MORTAR
      */
     virtual INPAR::MORTAR::LagMultQuad LagMultQuad()
     {
-      return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
+      return INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!
@@ -275,7 +275,7 @@ namespace MORTAR
      */
     virtual INPAR::MORTAR::IntType IntType()
     {
-      return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
+      return INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
     }
 
     /*!
@@ -296,7 +296,7 @@ namespace MORTAR
      */
     INPAR::MORTAR::ShapeFcn ShapeFcn()
     {
-      return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     //@}

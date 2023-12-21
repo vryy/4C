@@ -106,13 +106,13 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
 
   // set flag for conservative form
   const INPAR::SCATRA::ConvForm convform =
-      DRT::INPUT::get<INPAR::SCATRA::ConvForm>(parameters, "convform");
+      INPUT::get<INPAR::SCATRA::ConvForm>(parameters, "convform");
 
   is_conservative_ = false;
   if (convform == INPAR::SCATRA::convform_conservative) is_conservative_ = true;
 
   // flag for writing the flux vector fields
-  calcflux_domain_ = DRT::INPUT::get<INPAR::SCATRA::FluxType>(parameters, "calcflux_domain");
+  calcflux_domain_ = INPUT::get<INPAR::SCATRA::FluxType>(parameters, "calcflux_domain");
 
   //! vector containing ids of scalars for which flux vectors are calculated
   if (calcflux_domain_ != INPAR::SCATRA::flux_none)
@@ -122,7 +122,7 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
   Teuchos::ParameterList& stablist = parameters.sublist("stabilization");
 
   // get definition for stabilization parameter tau
-  whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist, "DEFINITION_TAU");
+  whichtau_ = INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist, "DEFINITION_TAU");
 
   // set correct stationary definition for stabilization parameter automatically
   // and ensure that exact stabilization parameter is only used in stationary case
@@ -149,13 +149,12 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
     tau_value_ = parameters.sublist("stabilization").get<double>("TAU_VALUE");
 
   // get characteristic element length for stabilization parameter definition
-  charelelength_ =
-      DRT::INPUT::IntegralValue<INPAR::SCATRA::CharEleLength>(stablist, "CHARELELENGTH");
+  charelelength_ = INPUT::IntegralValue<INPAR::SCATRA::CharEleLength>(stablist, "CHARELELENGTH");
 
   // set (sign) factor for diffusive and reactive stabilization terms
   // (factor is zero for SUPG) and overwrite tau definition when there
   // is no stabilization
-  stabtype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::StabType>(stablist, "STABTYPE");
+  stabtype_ = INPUT::IntegralValue<INPAR::SCATRA::StabType>(stablist, "STABTYPE");
   switch (stabtype_)
   {
     case INPAR::SCATRA::stabtype_no_stabilization:
@@ -183,19 +182,19 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
 
   // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
   // (default: "false" for both flags)
-  sgvel_ = DRT::INPUT::IntegralValue<int>(stablist, "SUGRVEL");
-  assgd_ = DRT::INPUT::IntegralValue<int>(stablist, "ASSUGRDIFF");
+  sgvel_ = INPUT::IntegralValue<int>(stablist, "SUGRVEL");
+  assgd_ = INPUT::IntegralValue<int>(stablist, "ASSUGRDIFF");
 
   // select type of all-scale subgrid diffusivity if included
-  whichassgd_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::AssgdType>(stablist, "DEFINITION_ASSGD");
+  whichassgd_ = INPUT::IntegralValue<INPAR::SCATRA::AssgdType>(stablist, "DEFINITION_ASSGD");
 
   // set flags for potential evaluation of tau and material law at int. point
   const INPAR::SCATRA::EvalTau tauloc =
-      DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist, "EVALUATION_TAU");
+      INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist, "EVALUATION_TAU");
   tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point);  // set true/false
 
   const INPAR::SCATRA::EvalMat matloc =
-      DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist, "EVALUATION_MAT");
+      INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist, "EVALUATION_MAT");
   mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point);  // set true/false
 
   // check for illegal combinations
@@ -209,7 +208,7 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
   }
 
   // get quantities for finite difference check
-  fdcheck_ = DRT::INPUT::get<INPAR::SCATRA::FDCheck>(parameters, "fdcheck");
+  fdcheck_ = INPUT::get<INPAR::SCATRA::FDCheck>(parameters, "fdcheck");
   fdcheckeps_ = parameters.get<double>("fdcheckeps");
   fdchecktol_ = parameters.get<double>("fdchecktol");
 

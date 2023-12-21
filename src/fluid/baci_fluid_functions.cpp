@@ -62,7 +62,7 @@ namespace
 
 
   Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateFluidFunction(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+      const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -375,18 +375,15 @@ namespace
 
 void FLD::AddValidFluidFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  auto beltrami =
-      DRT::INPUT::LineDefinition::Builder().AddTag("BELTRAMI").AddNamedDouble("c1").Build();
+  auto beltrami = INPUT::LineDefinition::Builder().AddTag("BELTRAMI").AddNamedDouble("c1").Build();
 
   auto channelweaklycompressible =
-      DRT::INPUT::LineDefinition::Builder().AddTag("CHANNELWEAKLYCOMPRESSIBLE").Build();
+      INPUT::LineDefinition::Builder().AddTag("CHANNELWEAKLYCOMPRESSIBLE").Build();
 
   auto correctiontermchannelweaklycompressible =
-      DRT::INPUT::LineDefinition::Builder()
-          .AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE")
-          .Build();
+      INPUT::LineDefinition::Builder().AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE").Build();
 
-  auto weaklycompressiblepoiseuille = DRT::INPUT::LineDefinition::Builder()
+  auto weaklycompressiblepoiseuille = INPUT::LineDefinition::Builder()
                                           .AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE")
                                           .AddNamedInt("MAT")
                                           .AddNamedDouble("L")
@@ -394,7 +391,7 @@ void FLD::AddValidFluidFunctions(CORE::UTILS::FunctionManager& function_manager)
                                           .AddNamedDouble("U")
                                           .Build();
 
-  auto weaklycompressiblepoiseuilleforce = DRT::INPUT::LineDefinition::Builder()
+  auto weaklycompressiblepoiseuilleforce = INPUT::LineDefinition::Builder()
                                                .AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
                                                .AddNamedInt("MAT")
                                                .AddNamedDouble("L")
@@ -402,99 +399,99 @@ void FLD::AddValidFluidFunctions(CORE::UTILS::FunctionManager& function_manager)
                                                .AddNamedDouble("U")
                                                .Build();
 
-  auto weaklycompressiblemanufacturedflow = DRT::INPUT::LineDefinition::Builder()
+  auto weaklycompressiblemanufacturedflow = INPUT::LineDefinition::Builder()
                                                 .AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
                                                 .AddNamedInt("MAT")
                                                 .Build();
 
   auto weaklycompressiblemanufacturedflowforce =
-      DRT::INPUT::LineDefinition::Builder()
+      INPUT::LineDefinition::Builder()
           .AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
           .AddNamedInt("MAT")
           .Build();
 
-  auto weaklycompressibleetiennecfd = DRT::INPUT::LineDefinition::Builder()
+  auto weaklycompressibleetiennecfd = INPUT::LineDefinition::Builder()
                                           .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD")
                                           .AddNamedInt("MAT")
                                           .Build();
 
-  auto weaklycompressibleetiennecfdforce = DRT::INPUT::LineDefinition::Builder()
+  auto weaklycompressibleetiennecfdforce = INPUT::LineDefinition::Builder()
                                                .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
                                                .AddNamedInt("MAT")
                                                .Build();
 
   auto weaklycompressibleetiennecfdviscosity =
-      DRT::INPUT::LineDefinition::Builder()
+      INPUT::LineDefinition::Builder()
           .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
           .AddNamedInt("MAT")
           .Build();
 
-  auto weaklycompressibleetiennefsifluid = DRT::INPUT::LineDefinition::Builder()
+  auto weaklycompressibleetiennefsifluid = INPUT::LineDefinition::Builder()
                                                .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
                                                .AddNamedInt("MAT_FLUID")
                                                .AddNamedInt("MAT_STRUC")
                                                .Build();
 
   auto weaklycompressibleetiennefsifluidforce =
-      DRT::INPUT::LineDefinition::Builder()
+      INPUT::LineDefinition::Builder()
           .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
           .AddNamedInt("MAT_FLUID")
           .AddNamedInt("MAT_STRUC")
           .Build();
 
   auto weaklycompressibleetiennefsifluidviscosity =
-      DRT::INPUT::LineDefinition::Builder()
+      INPUT::LineDefinition::Builder()
           .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
           .AddNamedInt("MAT_FLUID")
           .AddNamedInt("MAT_STRUC")
           .Build();
 
-  auto beltramiup = DRT::INPUT::LineDefinition::Builder()
+  auto beltramiup = INPUT::LineDefinition::Builder()
                         .AddTag("BELTRAMI-UP")
                         .AddNamedInt("MAT")
                         .AddNamedInt("ISSTAT")
                         .Build();
 
-  auto beltramigradu = DRT::INPUT::LineDefinition::Builder()
+  auto beltramigradu = INPUT::LineDefinition::Builder()
                            .AddTag("BELTRAMI-GRADU")
                            .AddNamedInt("MAT")
                            .AddNamedInt("ISSTAT")
                            .Build();
 
-  auto beltramirhs = DRT::INPUT::LineDefinition::Builder()
+  auto beltramirhs = INPUT::LineDefinition::Builder()
                          .AddTag("BELTRAMI-RHS")
                          .AddNamedInt("MAT")
                          .AddNamedInt("ISSTAT")
                          .AddNamedInt("ISSTOKES")
                          .Build();
 
-  auto kimmoinup = DRT::INPUT::LineDefinition::Builder()
+  auto kimmoinup = INPUT::LineDefinition::Builder()
                        .AddTag("KIMMOIN-UP")
                        .AddNamedInt("MAT")
                        .AddNamedInt("ISSTAT")
                        .Build();
 
-  auto kimmoingradu = DRT::INPUT::LineDefinition::Builder()
+  auto kimmoingradu = INPUT::LineDefinition::Builder()
                           .AddTag("KIMMOIN-GRADU")
                           .AddNamedInt("MAT")
                           .AddNamedInt("ISSTAT")
                           .Build();
 
-  auto kimmoinrhs = DRT::INPUT::LineDefinition::Builder()
+  auto kimmoinrhs = INPUT::LineDefinition::Builder()
                         .AddTag("KIMMOIN-RHS")
                         .AddNamedInt("MAT")
                         .AddNamedInt("ISSTAT")
                         .AddNamedInt("ISSTOKES")
                         .Build();
 
-  auto kimmoinstress = DRT::INPUT::LineDefinition::Builder()
+  auto kimmoinstress = INPUT::LineDefinition::Builder()
                            .AddTag("KIMMOIN-STRESS")
                            .AddNamedInt("MAT")
                            .AddNamedInt("ISSTAT")
                            .AddNamedDouble("AMPLITUDE")
                            .Build();
 
-  std::vector<DRT::INPUT::LineDefinition> lines;
+  std::vector<INPUT::LineDefinition> lines;
   lines.emplace_back(std::move(beltrami));
   lines.emplace_back(std::move(channelweaklycompressible));
   lines.emplace_back(std::move(correctiontermchannelweaklycompressible));

@@ -287,7 +287,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Growth::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   if (isinit_)
     dserror("This function should just be called if the material is not yet initialized.");
@@ -979,7 +979,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   tr_mandel_e_ = Teuchos::rcp(new std::vector<double>(numgp));
   lambda_fib_e_ = Teuchos::rcp(new std::vector<double>(numgp));
@@ -1110,8 +1110,8 @@ void MAT::GrowthVolumetric::Update()
 /*----------------------------------------------------------------------*
  | Function which reads in the given fiber value             Thon 01/15 |
  *----------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::ReadFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
-    CORE::LINALG::Matrix<3, 1>& fiber_vector)
+void MAT::GrowthVolumetric::ReadFiber(
+    INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber1;
   linedef->ExtractDoubleVector(std::move(specifier), fiber1);

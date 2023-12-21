@@ -32,7 +32,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::Action action =
-      DRT::INPUT::get<POROFLUIDMULTIPHASE::Action>(params, "action");
+      INPUT::get<POROFLUIDMULTIPHASE::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
@@ -101,8 +101,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::PreEvaluate(DRT::Discretization& di
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const POROFLUIDMULTIPHASE::Action action =
-      DRT::INPUT::get<POROFLUIDMULTIPHASE::Action>(p, "action");
+  const POROFLUIDMULTIPHASE::Action action = INPUT::get<POROFLUIDMULTIPHASE::Action>(p, "action");
 
   switch (action)
   {

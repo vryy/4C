@@ -66,9 +66,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNul
 }
 
 void DRT::ELEMENTS::NURBS::Wall1NurbsType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLNURBS"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLNURBS"];
 
   defs["NURBS4"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("NURBS4", 4)

@@ -34,7 +34,7 @@ PARTICLEINTERACTION::SPHRigidParticleContactBase::SPHRigidParticleContactBase(
     const Teuchos::ParameterList& params)
     : params_sph_(params),
       writeparticlewallinteraction_(
-          DRT::INPUT::IntegralValue<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
+          INPUT::IntegralValue<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }

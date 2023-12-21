@@ -37,8 +37,7 @@ AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airwa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayResultTest::TestNode(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void AIRWAY::RedAirwayResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -104,7 +103,7 @@ void AIRWAY::RedAirwayResultTest::TestNode(
  *                                                         roth 11/2014 *
  *----------------------------------------------------------------------*/
 void AIRWAY::RedAirwayResultTest::TestElement(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;

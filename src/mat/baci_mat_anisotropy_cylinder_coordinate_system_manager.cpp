@@ -39,7 +39,7 @@ void MAT::CylinderCoordinateSystemManager::Unpack(
 }
 
 void MAT::CylinderCoordinateSystemManager::ReadFromElementLineDefinition(
-    DRT::INPUT::LineDefinition* linedef)
+    INPUT::LineDefinition* linedef)
 {
   if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
   {

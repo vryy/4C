@@ -224,7 +224,7 @@ namespace MAT
 
     //! Initialize internal variables
     virtual void PoroSetup(int numgp,  //!< number of Gauss points
-        DRT::INPUT::LineDefinition* linedef);
+        INPUT::LineDefinition* linedef);
 
     /*!
      * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
@@ -327,7 +327,7 @@ namespace MAT
     //! @name Handling of Gauss point data. Here, the poro material just calls the underlying
     //! material
 
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override
     {
       // setup the underlying material
       // Note: poro material itself is setup when calling PoroSetup()

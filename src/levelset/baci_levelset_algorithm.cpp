@@ -103,7 +103,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
   //         initialize reinitialization
   // -------------------------------------------------------------------
   // get reinitialization strategy
-  reinitaction_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialAction>(
+  reinitaction_ = INPUT::IntegralValue<INPAR::SCATRA::ReInitialAction>(
       levelsetparams_->sublist("REINITIALIZATION"), "REINITIALIZATION");
 
   if (reinitaction_ != INPAR::SCATRA::reinitaction_none)
@@ -119,8 +119,8 @@ void SCATRA::LevelSetAlgorithm::Setup()
     if (reinitaction_ == INPAR::SCATRA::reinitaction_signeddistancefunction)
     {
       // reinitialization within band around interface only
-      reinitband_ = DRT::INPUT::IntegralValue<int>(
-          levelsetparams_->sublist("REINITIALIZATION"), "REINITBAND");
+      reinitband_ =
+          INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"), "REINITBAND");
     }
 
     // set parameters for reinitialization equation
@@ -142,11 +142,11 @@ void SCATRA::LevelSetAlgorithm::Setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // flag to activate corrector step
-      reinitcorrector_ = DRT::INPUT::IntegralValue<int>(
-          levelsetparams_->sublist("REINITIALIZATION"), "CORRECTOR_STEP");
+      reinitcorrector_ =
+          INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"), "CORRECTOR_STEP");
 
       // flag to activate calculation of node-based velocity
-      useprojectedreinitvel_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelReinit>(
+      useprojectedreinitvel_ = INPUT::IntegralValue<INPAR::SCATRA::VelReinit>(
           levelsetparams_->sublist("REINITIALIZATION"), "VELREINIT");
 
       if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
@@ -159,7 +159,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
       }
 
       // get dimension
-      lsdim_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LSDim>(
+      lsdim_ = INPUT::IntegralValue<INPAR::SCATRA::LSDim>(
           levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
     }
 
@@ -172,12 +172,12 @@ void SCATRA::LevelSetAlgorithm::Setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // get dimension
-      lsdim_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LSDim>(
+      lsdim_ = INPUT::IntegralValue<INPAR::SCATRA::LSDim>(
           levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
 
       // use L2-projection of grad phi and related quantities
-      projection_ = DRT::INPUT::IntegralValue<int>(
-          levelsetparams_->sublist("REINITIALIZATION"), "PROJECTION");
+      projection_ =
+          INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"), "PROJECTION");
       if (projection_ == true)
       {
         // vector for nodal level-set gradient for reinitialization
@@ -189,12 +189,11 @@ void SCATRA::LevelSetAlgorithm::Setup()
     }
 
     // flag to correct volume after reinitialization
-    reinitvolcorrection_ = DRT::INPUT::IntegralValue<int>(
+    reinitvolcorrection_ = INPUT::IntegralValue<int>(
         levelsetparams_->sublist("REINITIALIZATION"), "REINITVOLCORRECTION");
 
     // initialize level-set to signed distance function if required
-    if (DRT::INPUT::IntegralValue<int>(
-            levelsetparams_->sublist("REINITIALIZATION"), "REINIT_INITIAL"))
+    if (INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"), "REINIT_INITIAL"))
     {
       Reinitialization();
 
@@ -212,8 +211,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
   //       initialize treatment of velocity from Navier-Stokes
   // -------------------------------------------------------------------
   // set potential extraction of interface velocity
-  extract_interface_vel_ =
-      DRT::INPUT::IntegralValue<int>(*levelsetparams_, "EXTRACT_INTERFACE_VEL");
+  extract_interface_vel_ = INPUT::IntegralValue<int>(*levelsetparams_, "EXTRACT_INTERFACE_VEL");
   if (extract_interface_vel_)
   {
     // set number of element layers around interface where velocity field form Navier-Stokes is kept

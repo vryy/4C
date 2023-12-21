@@ -84,7 +84,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& artdyn = problem->ArterialDynamicParams();
 
-  if (actdis->Comm().MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, artdyn);
+  if (actdis->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, artdyn);
 
   // -------------------------------------------------------------------
   // create a solver
@@ -133,17 +133,17 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
 
   // flag for writing the hemodynamic physiological results
   // arterytimeparams.set ("write stresses"
-  // ,DRT::INPUT::IntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
+  // ,INPUT::IntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
   //---------------------- A method to initialize the flow inside the
   //                       arteries.
-  //  int init = DRT::INPUT::IntegralValue<int> (artdyn,"INITIALFIELD");
+  //  int init = INPUT::IntegralValue<int> (artdyn,"INITIALFIELD");
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   INPAR::ARTDYN::TimeIntegrationScheme timintscheme =
-      DRT::INPUT::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+      INPUT::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   // build art net time integrator
   Teuchos::RCP<ADAPTER::ArtNet> artnettimint =

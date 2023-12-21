@@ -248,7 +248,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
     // -------------------------------------------------------------------------#
 
     // enable debugging
-    if (DRT::INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -262,7 +262,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
   if (restart)
   {
     const bool restartfrompartfsi =
-        DRT::INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+        INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       if (comm_.MyPID() == 0)

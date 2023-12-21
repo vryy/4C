@@ -64,7 +64,7 @@ int ADAPTER::StructureTimeLoop::Integrate()
       PrintStep();
     }
     // todo: remove this as soon as old structure time integration is gone
-    else if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+    else if (INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
                  DRT::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
              INPAR::STR::int_old)
     {

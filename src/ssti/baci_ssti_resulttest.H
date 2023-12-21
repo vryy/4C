@@ -35,7 +35,7 @@ namespace SSTI
     //! constructor
     explicit SSTIResultTest(const SSTI::SSTIAlgorithm& ssti_algorithm);
 
-    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /*!

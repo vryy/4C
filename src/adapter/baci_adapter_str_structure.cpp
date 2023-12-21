@@ -61,7 +61,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateStructure(const Teuchos::ParameterLi
     const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
   // major switch to different time integrators
-  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     case INPAR::STR::dyna_statics:
     case INPAR::STR::dyna_genalpha:
@@ -126,7 +126,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
 
   // show default parameters
-  if ((actdis->Comm()).MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, sdyn);
+  if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, sdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -135,7 +135,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sdyn, "DAMPING") == INPAR::STR::damp_rayleigh)
+  if (INPUT::IntegralValue<INPAR::STR::DampKind>(sdyn, "DAMPING") == INPAR::STR::damp_rayleigh)
   {
     if (sdyn.get<double>("K_DAMP") < 0.0)
     {
@@ -158,8 +158,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
   if (solver != Teuchos::null && (solver->Params().isSublist("Belos Parameters")) &&
       solver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
-      &&
-      DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING") != INPAR::STR::stc_none)
+      && INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING") != INPAR::STR::stc_none)
   {
     Teuchos::ParameterList& mllist = solver->Params().sublist("ML Parameters");
     Teuchos::RCP<std::vector<double>> ns =
@@ -195,8 +194,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
     // action for elements
     const std::string action = "calc_stc_matrix_inverse";
     p.set("action", action);
-    p.set<int>(
-        "stc_scaling", DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING"));
+    p.set<int>("stc_scaling", INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING"));
     p.set("stc_layer", 1);
 
     actdis->Evaluate(p, stcinv, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -247,10 +245,10 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       Teuchos::RCP<MAT::PAR::Material> mat = i->second;
       if (mat->Type() == INPAR::MAT::m_struct_multiscale)
       {
-        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
+        if (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
             INPAR::STR::dyna_genalpha)
           dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-        else if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(
+        else if (INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(
                      sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_trlike)
           dserror(
               "In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
@@ -261,7 +259,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-  if (DRT::INPUT::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
+  if (INPUT::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
   }
@@ -305,7 +303,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   {
     const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
     const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
-    if (DRT::INPUT::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
+    if (INPUT::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
     {
       // overrule time step size adaptivity control parameters
       if (tap->get<std::string>("KIND") != "NONE")
@@ -380,7 +378,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       case ProblemType::thermo_fsi:
       {
         const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-        const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+        const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
 
         if ((actdis->Comm()).MyPID() == 0)
           IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
@@ -432,8 +430,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       {
         const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
         const INPAR::POROELAST::SolutionSchemeOverFields coupling =
-            DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
-                porodyn, "COUPALGO");
+            INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(porodyn, "COUPALGO");
         if (tmpstr->HaveConstraint())
         {
           if (coupling == INPAR::POROELAST::Monolithic_structuresplit or
@@ -525,7 +522,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
         "CONTACT DYNAMIC to a valid number!");
 
   // Distinguish the system type, i.e. condensed vs. saddle-point
-  switch (DRT::INPUT::IntegralValue<int>(mcparams, "SYSTEM"))
+  switch (INPUT::IntegralValue<int>(mcparams, "SYSTEM"))
   {
     case INPAR::CONTACT::system_saddlepoint:
     {
@@ -568,7 +565,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
             "saddle-point formulation.");
 
       INPAR::CONTACT::SolvingStrategy soltype =
-          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams, "STRATEGY");
+          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams, "STRATEGY");
       if (soltype == INPAR::CONTACT::solution_lagmult)
       {
         // get the solver number used for structural problems

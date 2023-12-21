@@ -35,7 +35,7 @@ FSI::FSIResultTest::FSIResultTest(
     Teuchos::RCP<FSI::Monolithic>& fsi, const Teuchos::ParameterList& fsidyn)
     : DRT::ResultTest("FSI"), fsi_(fsi)
 {
-  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_monolithicfluidsplit:
@@ -154,7 +154,7 @@ FSI::FSIResultTest::FSIResultTest(
     Teuchos::RCP<FSI::MonolithicNoNOX> fsi, const Teuchos::ParameterList& fsidyn)
     : DRT::ResultTest("FSI")
 {
-  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:
@@ -200,7 +200,7 @@ FSI::FSIResultTest::FSIResultTest(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   int node;
   res.ExtractInt("NODE", node);
@@ -266,7 +266,7 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   dserror("FSI ELEMENT test not implemented, yet.");
 
@@ -275,7 +275,7 @@ void FSI::FSIResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   std::string quantity;
   res.ExtractString("QUANTITY", quantity);

@@ -40,8 +40,7 @@ void PARTICLEWALL::WallResultTest::Setup(
   walldiscretization_ = particlewallinterface_->GetWallDiscretization();
 }
 
-void PARTICLEWALL::WallResultTest::TestNode(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void PARTICLEWALL::WallResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract and check discretization name
   std::string dis;
@@ -147,7 +146,7 @@ void PARTICLEWALL::WallResultTest::TestNode(
 }
 
 void PARTICLEWALL::WallResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // check results only for processor 0
   if (walldiscretization_->Comm().MyPID() != 0) return;

@@ -89,7 +89,7 @@ namespace CORE::UTILS
 
   //! create a vector function of time from multiple expressions
   Teuchos::RCP<FunctionOfTime> TryCreateFunctionOfTime(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+      const std::vector<INPUT::LineDefinition>& function_line_defs);
 
 }  // namespace CORE::UTILS
 

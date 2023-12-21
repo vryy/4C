@@ -219,7 +219,7 @@ namespace DRT
       //! read input for this element
       bool ReadElement(const std::string& eletype,  //!< so3plast(fbar)
           const std::string& eledistype,            //!< hex8,tet4,...
-          DRT::INPUT::LineDefinition* linedef       //!< what parameters have to be read
+          INPUT::LineDefinition* linedef            //!< what parameters have to be read
           ) override;
 
       //@}

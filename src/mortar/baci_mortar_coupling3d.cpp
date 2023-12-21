@@ -30,9 +30,9 @@ MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad
     Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
     : idiscret_(idiscret),
       dim_(dim),
-      shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
+      shapefcn_(INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
       quad_(quad),
-      lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params, "LM_QUAD")),
+      lmquadtype_(INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params, "LM_QUAD")),
       sele_(sele),
       mele_(mele),
       imortar_(params),
@@ -2703,7 +2703,7 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
 
   // get integration type
   INPAR::MORTAR::Triangulation tri_type =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::Triangulation>(imortar_, "TRIANGULATION");
+      INPUT::IntegralValue<INPAR::MORTAR::Triangulation>(imortar_, "TRIANGULATION");
 
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates (only for contact)
@@ -3904,10 +3904,10 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int 
     std::vector<MORTAR::MortarElement*> mele)
     : idiscret_(idiscret),
       dim_(dim),
-      integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")),
-      shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
-      lmdualconsistent_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(
-          params, "LM_DUAL_CONSISTENT")),
+      integrationtype_(INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")),
+      shapefcn_(INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
+      lmdualconsistent_(
+          INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(params, "LM_DUAL_CONSISTENT")),
       quad_(quad),
       imortar_(params),
       sele_(sele),
@@ -3939,7 +3939,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling(Teuchos::RCP<MORTAR::ParamsInte
 
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact

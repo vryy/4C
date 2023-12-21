@@ -39,7 +39,7 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
       alefluid_(alefluid),
       numdim_(numdim),
       SepEnr_(Teuchos::null),
-      WssType_(DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(
+      WssType_(INPUT::IntegralValue<INPAR::FLUID::WSSType>(
           DRT::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")),
       SumStresses_(Teuchos::null),
       SumWss_(Teuchos::null),
@@ -1077,7 +1077,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 {
   // reconstruction of second derivatives for fluid residual
   INPAR::FLUID::GradientReconstructionMethod recomethod =
-      DRT::INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(
+      INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(
           DRT::Problem::Instance()->FluidDynamicParams(), "VELGRAD_PROJ_METHOD");
 
   const int dim = DRT::Problem::Instance()->NDim();

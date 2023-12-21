@@ -34,13 +34,13 @@ void STR::TIMINT::ParamsRuntimeOutput::Init(
   output_interval_steps_ = IO_vtk_structure_paramslist.get<int>("INTERVAL_STEPS");
   output_step_offset_ = IO_vtk_structure_paramslist.get<int>("STEP_OFFSET");
   output_every_iteration_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
 
   // Overwrite non default values in the visualization parameters
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   // check for output of structure discretization which is to be handled by an own writer object
-  output_structure_ = (bool)DRT::INPUT::IntegralValue<int>(
+  output_structure_ = (bool)INPUT::IntegralValue<int>(
       IO_vtk_structure_paramslist.sublist("STRUCTURE"), "OUTPUT_STRUCTURE");
 
   // create and initialize parameter container object for structure specific runtime vtk output
@@ -55,8 +55,8 @@ void STR::TIMINT::ParamsRuntimeOutput::Init(
 
 
   // check for special beam output which is to be handled by an own writer object
-  output_beams_ = (bool)DRT::INPUT::IntegralValue<int>(
-      IO_vtk_structure_paramslist.sublist("BEAMS"), "OUTPUT_BEAMS");
+  output_beams_ =
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_paramslist.sublist("BEAMS"), "OUTPUT_BEAMS");
 
   // create and initialize parameter container object for beam specific runtime vtk output
   if (output_beams_)

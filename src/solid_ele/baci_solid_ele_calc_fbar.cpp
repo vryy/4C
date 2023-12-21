@@ -418,7 +418,7 @@ double DRT::ELEMENTS::SolidEleCalcFbar<celltype>::CalculateInternalEnergy(const 
 
 template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::SolidEleCalcFbar<celltype>::Setup(
-    MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
+    MAT::So3Material& solid_material, INPUT::LineDefinition* linedef)
 {
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }

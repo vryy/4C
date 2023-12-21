@@ -26,13 +26,10 @@ BACI_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
-  {
-    class ConditionDefinition;
-  }
-}  // namespace DRT
+  class ConditionDefinition;
+}
 
 /*---------------------------------------------------------------------------*
  | input parameters for particle problems                     sfuchs 03/2018 |
@@ -265,7 +262,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     //! set the particle conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace PARTICLE
 

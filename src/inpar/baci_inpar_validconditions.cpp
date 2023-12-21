@@ -41,8 +41,8 @@
 BACI_NAMESPACE_OPEN
 
 
-void DRT::INPUT::PrintEmptyConditionDefinitions(
-    std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+void INPUT::PrintEmptyConditionDefinitions(
+    std::ostream& stream, std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
 {
   for (unsigned i = 0; i < condlist.size(); ++i)
   {
@@ -55,56 +55,48 @@ void DRT::INPUT::PrintEmptyConditionDefinitions(
 /*----------------------------------------------------------------------*/
 void PrintConditionDatHeader()
 {
-  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> condlist =
-      DRT::INPUT::ValidConditions();
-  DRT::INPUT::PrintEmptyConditionDefinitions(std::cout, *condlist);
+  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> condlist =
+      INPUT::ValidConditions();
+  INPUT::PrintEmptyConditionDefinitions(std::cout, *condlist);
 }
 
 
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
+  // collect some problem-specific conditions that do not fit in the generic sections
+  void SetMiscellaneousConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
   {
-    // collect some problem-specific conditions that do not fit in the generic sections
-    void SetMiscellaneousConditions(
-        std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
-    {
-      using namespace BACI::INPUT;
-      /*--------------------------------------------------------------------*/
-      // microscale boundary
+    /*--------------------------------------------------------------------*/
+    // microscale boundary
 
-      Teuchos::RCP<ConditionDefinition> microscale =
-          Teuchos::rcp(new ConditionDefinition("MICROSCALE CONDITIONS", "MicroBoundary",
-              "Microscale Boundary", DRT::Condition::MicroBoundary, true, DRT::Condition::Surface));
+    Teuchos::RCP<ConditionDefinition> microscale =
+        Teuchos::rcp(new ConditionDefinition("MICROSCALE CONDITIONS", "MicroBoundary",
+            "Microscale Boundary", DRT::Condition::MicroBoundary, true, DRT::Condition::Surface));
 
-      condlist.push_back(microscale);
+    condlist.push_back(microscale);
 
-      /*--------------------------------------------------------------------*/
-      // stc layer condition
+    /*--------------------------------------------------------------------*/
+    // stc layer condition
 
-      Teuchos::RCP<ConditionDefinition> stclayer = Teuchos::rcp(
-          new ConditionDefinition("DESIGN VOL STC LAYER", "STC Layer", "Layer for Multilayered STC",
-              DRT::Condition::VolSTCLayer, true, DRT::Condition::Volume));
+    Teuchos::RCP<ConditionDefinition> stclayer = Teuchos::rcp(
+        new ConditionDefinition("DESIGN VOL STC LAYER", "STC Layer", "Layer for Multilayered STC",
+            DRT::Condition::VolSTCLayer, true, DRT::Condition::Volume));
 
-      stclayer->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
+    stclayer->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
 
-      condlist.push_back(stclayer);
-    }
-  }  // namespace INPUT
-}  // namespace DRT
+    condlist.push_back(stclayer);
+  }
+}  // namespace INPUT
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>>
-DRT::INPUT::ValidConditions()
+Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> INPUT::ValidConditions()
 {
-  using namespace BACI::INPUT;
+  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> vc =
+      Teuchos::rcp(new std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>());
 
-  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> vc =
-      Teuchos::rcp(new std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>());
-
-  std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist = *vc;
+  std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist = *vc;
 
   /*--------------------------------------------------------------------*/
   // Neumann

@@ -54,7 +54,7 @@ namespace DRT
     {
      public:
       void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
@@ -210,7 +210,7 @@ namespace DRT
       //! @}
 
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          DRT::INPUT::LineDefinition* linedef) override;
+          INPUT::LineDefinition* linedef) override;
 
       [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const { return eletech_; }
 

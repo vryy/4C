@@ -18,7 +18,7 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
-  using namespace DRT::INPUT;
+  using namespace INPUT;
 
   Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");
 

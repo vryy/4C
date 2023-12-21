@@ -370,14 +370,14 @@ namespace MAT
     //-----------------------------------------------------------------------------
 
     //! setup and initialize internal and variables
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     //! set up the slip/twinning directions and slip/twinning plane normals for the given lattice
     //! type
     void SetupLatticeVectors();
 
     //! read lattice orientation matrix from .dat file
-    void SetupLatticeOrientation(DRT::INPUT::LineDefinition* linedef);
+    void SetupLatticeOrientation(INPUT::LineDefinition* linedef);
 
     //! update internal variables
     void Update() override;

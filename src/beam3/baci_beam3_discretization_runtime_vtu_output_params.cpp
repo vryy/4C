@@ -52,49 +52,49 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
   // initialize the parameter values
 
   output_displacement_state_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "DISPLACEMENT");
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "DISPLACEMENT");
 
-  use_absolute_positions_visualizationpoint_coordinates_ = (bool)DRT::INPUT::IntegralValue<int>(
-      IO_vtk_structure_beams_paramslist, "USE_ABSOLUTE_POSITIONS");
+  use_absolute_positions_visualizationpoint_coordinates_ =
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "USE_ABSOLUTE_POSITIONS");
 
-  write_internal_energy_element_ = (bool)DRT::INPUT::IntegralValue<int>(
-      IO_vtk_structure_beams_paramslist, "INTERNAL_ENERGY_ELEMENT");
+  write_internal_energy_element_ =
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "INTERNAL_ENERGY_ELEMENT");
 
-  write_kinetic_energy_element_ = (bool)DRT::INPUT::IntegralValue<int>(
-      IO_vtk_structure_beams_paramslist, "KINETIC_ENERGY_ELEMENT");
+  write_kinetic_energy_element_ =
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "KINETIC_ENERGY_ELEMENT");
 
-  write_triads_visualizationpoints_ = (bool)DRT::INPUT::IntegralValue<int>(
+  write_triads_visualizationpoints_ = (bool)INPUT::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "TRIAD_VISUALIZATIONPOINT");
 
   write_material_crosssection_strains_gausspoints_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_GAUSSPOINT");
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_GAUSSPOINT");
 
   write_material_crosssection_strains_continuous_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_CONTINUOUS");
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_CONTINUOUS");
 
-  write_material_crosssection_stresses_gausspoints_ = (bool)DRT::INPUT::IntegralValue<int>(
+  write_material_crosssection_stresses_gausspoints_ = (bool)INPUT::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "MATERIAL_FORCES_GAUSSPOINT");
 
-  write_material_crosssection_strains_continuous_ = (bool)DRT::INPUT::IntegralValue<int>(
+  write_material_crosssection_strains_continuous_ = (bool)INPUT::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "MATERIAL_FORCES_CONTINUOUS");
 
-  write_spatial_crosssection_stresses_gausspoints_ = (bool)DRT::INPUT::IntegralValue<int>(
+  write_spatial_crosssection_stresses_gausspoints_ = (bool)INPUT::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "SPATIAL_FORCES_GAUSSPOINT");
 
-  write_orientation_parameter_ = (bool)DRT::INPUT::IntegralValue<int>(
-      IO_vtk_structure_beams_paramslist, "ORIENTATION_PARAMETER");
+  write_orientation_parameter_ =
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ORIENTATION_PARAMETER");
 
-  write_rve_crosssection_forces_ = (bool)DRT::INPUT::IntegralValue<int>(
-      IO_vtk_structure_beams_paramslist, "RVE_CROSSSECTION_FORCES");
+  write_rve_crosssection_forces_ =
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "RVE_CROSSSECTION_FORCES");
 
   write_ref_length_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "REF_LENGTH");
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "REF_LENGTH");
 
   write_element_gid_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GID");
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GID");
 
   write_element_ghosting_ =
-      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GHOSTING");
+      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GHOSTING");
 
   n_subsegments_ = IO_vtk_structure_beams_paramslist.get<int>("NUMBER_SUBSEGMENTS");
   if (n_subsegments_ < 1)

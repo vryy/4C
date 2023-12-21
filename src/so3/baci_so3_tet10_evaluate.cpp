@@ -225,9 +225,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> stress;
         CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> strain;
         auto iostress =
-            DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+            INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         auto iostrain =
-            DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+            INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -249,8 +249,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         }
 
         // output of rotation matrix R with F = U*R
-        if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_ROT") ==
-            true)
+        if (INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_ROT") == true)
         {
           CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> R;
           DRT::ELEMENTS::UTILS::CalcR<CORE::FE::CellType::tet10>(this, mydisp, R);
@@ -675,9 +674,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> stress;
         CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> strain;
         auto iostress =
-            DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+            INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         auto iostrain =
-            DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+            INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 

@@ -98,11 +98,11 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
 
   // system type
   INPAR::CONTACT::SystemType systype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
 
   // shape function
   INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -333,9 +333,9 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
 
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   INPAR::CONTACT::SystemType systype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
 
   //**********************************************************************
   //**********************************************************************

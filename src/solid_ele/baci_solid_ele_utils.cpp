@@ -50,7 +50,7 @@ CORE::LINALG::Matrix<6, 1> STR::UTILS::GreenLagrangeToEulerAlmansi(
   return ea;
 }
 
-int STR::UTILS::READELEMENT::ReadElementMaterial(DRT::INPUT::LineDefinition* linedef)
+int STR::UTILS::READELEMENT::ReadElementMaterial(INPUT::LineDefinition* linedef)
 {
   int material = 0;
   linedef->ExtractInt("MAT", material);
@@ -58,7 +58,7 @@ int STR::UTILS::READELEMENT::ReadElementMaterial(DRT::INPUT::LineDefinition* lin
 }
 
 INPAR::STR::KinemType STR::UTILS::READELEMENT::ReadElementKinematicType(
-    DRT::INPUT::LineDefinition* linedef)
+    INPUT::LineDefinition* linedef)
 {
   std::string kinem;
   linedef->ExtractString("KINEM", kinem);
@@ -74,7 +74,7 @@ INPAR::STR::KinemType STR::UTILS::READELEMENT::ReadElementKinematicType(
 }
 
 DRT::ELEMENTS::ElementTechnology STR::UTILS::READELEMENT::ReadElementTechnology(
-    DRT::INPUT::LineDefinition* linedef)
+    INPUT::LineDefinition* linedef)
 {
   std::string type;
   linedef->ExtractString("TECH", type);
@@ -99,7 +99,7 @@ DRT::ELEMENTS::ElementTechnology STR::UTILS::READELEMENT::ReadElementTechnology(
 }
 
 DRT::ELEMENTS::PrestressTechnology STR::UTILS::READELEMENT::ReadPrestressTechnology(
-    DRT::INPUT::LineDefinition* linedef)
+    INPUT::LineDefinition* linedef)
 {
   std::string type;
   linedef->ExtractString("PRESTRESS_TECH", type);

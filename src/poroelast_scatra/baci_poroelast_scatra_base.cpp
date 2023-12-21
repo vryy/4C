@@ -33,7 +33,7 @@ BACI_NAMESPACE_OPEN
 POROELASTSCATRA::PoroScatraBase::PoroScatraBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : AlgorithmBase(comm, timeparams),
-      matchinggrid_(DRT::INPUT::IntegralValue<bool>(
+      matchinggrid_(INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->PoroScatraControlParams(), "MATCHINGGRID")),
       volcoupl_structurescatra_(Teuchos::null),
       volcoupl_fluidscatra_(Teuchos::null)
@@ -44,7 +44,7 @@ POROELASTSCATRA::PoroScatraBase::PoroScatraBase(
   // do some checks
   {
     INPAR::SCATRA::TimeIntegrationScheme timealgo =
-        DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+        INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
     if (timealgo != INPAR::SCATRA::timeint_one_step_theta and
         timealgo != INPAR::SCATRA::timeint_stationary)
       dserror(
@@ -52,21 +52,21 @@ POROELASTSCATRA::PoroScatraBase::PoroScatraBase(
           "scheme or stationary case possible)");
 
     //    INPAR::SCATRA::ConvForm convform
-    //    = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradyn,"CONVFORM");
+    //    = INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradyn,"CONVFORM");
     //    if ( convform != INPAR::SCATRA::convform_convective )
     //      dserror("The balance of mass is included in the formulation for scalar transport in
     //      porous media. "
     //          "Set 'CONVFORM' to 'convective' in the SCALAR TRANSPORT DYNAMIC section! ");
 
     INPAR::SCATRA::VelocityField velfield =
-        DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
+        INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
     if (velfield != INPAR::SCATRA::velocity_Navier_Stokes)
       dserror(
           "scalar transport is coupled with the porous medium. Set 'VELOCITYFIELD' to "
           "'Navier_Stokes' in the SCALAR TRANSPORT DYNAMIC section! ");
 
     //    bool skipinitder
-    //    = DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER");
+    //    = INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER");
     //    if ( not skipinitder )
     //      dserror("Calculation of initial time derivative not yet supported for scalar transport
     //      in porous media. Set 'SKIPINITDER' to 'yes' in the SCALAR TRANSPORT DYNAMIC section! ");

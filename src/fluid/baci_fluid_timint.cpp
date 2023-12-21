@@ -43,8 +43,8 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
       itemax_(params_->get<int>("max nonlin iter steps")),
       uprestart_(params_->get("write restart every", -1)),
       upres_(params_->get("write solution every", -1)),
-      timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
-      physicaltype_(DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type")),
+      timealgo_(INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
+      physicaltype_(INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type")),
       myrank_(discret_->Comm().MyPID()),
       updateprojection_(false),
       projector_(Teuchos::null),
@@ -55,8 +55,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
       Teuchos::rcp(new Teuchos::ParameterList(
           DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
 
-  bool output_fluid =
-      (bool)DRT::INPUT::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
+  bool output_fluid = (bool)INPUT::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
 
   // create and initialize parameter container object for fluid specific runtime output
   if (output_fluid)

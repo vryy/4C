@@ -249,7 +249,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
 
   // set repartitioning parameters
   // En-/Disable ML repartitioning. Note: ML requires parameter to be set as integer.
-  bool doRepart = DRT::INPUT::IntegralValue<bool>(inparams, "ML_REBALANCE");
+  bool doRepart = INPUT::IntegralValue<bool>(inparams, "ML_REBALANCE");
   if (doRepart)
   {
     mllist.set("repartition: enable", 1);
@@ -282,7 +282,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
   mllist.set("smoother: sweeps", 1);
   // save memory if this is an issue, make ML use single precision
   // mllist.set("low memory usage",true);
-  switch (DRT::INPUT::IntegralValue<int>(inparams, "ML_COARSEN"))
+  switch (INPUT::IntegralValue<int>(inparams, "ML_COARSEN"))
   {
     case 0:
       mllist.set("aggregation: type", "Uncoupled");
@@ -326,12 +326,12 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
     double damp = 0.0;
     if (i == 0)
     {
-      type = DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERFINE");
+      type = INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERFINE");
       damp = inparams.get<double>("ML_DAMPFINE");
     }
     else if (i < mlmaxlevel - 1)
     {
-      type = DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERMED");
+      type = INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERMED");
       damp = inparams.get<double>("ML_DAMPMED");
     }
 
@@ -440,7 +440,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
 
   // set coarse grid solver
   const int coarse = mlmaxlevel - 1;
-  switch (DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE"))
+  switch (INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE"))
   {
     case 0:
       mllist.set("coarse: type", "symmetric Gauss-Seidel");
@@ -497,7 +497,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
     case 11:  // SIMPLE smoother  (only for MueLu with BlockedOperators)
     case 12:  // SIMPLEC smoother (only for MueLu with BlockedOperators)
     {
-      int type = DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE");
+      int type = INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE");
       if (type == 11)
         mllist.set("coarse: type", "SIMPLE");
       else if (type == 12)
@@ -563,7 +563,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToMuelu(
   if (xmlfile != "none") muelulist.set("MUELU_XML_FILE", xmlfile);
 
   muelulist.set<bool>(
-      "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
+      "MUELU_XML_ENFORCE", INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
   muelulist.set<bool>("CORE::LINALG::MueLu_Preconditioner", true);
 
   return muelulist;
@@ -579,8 +579,8 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
   Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
   // set verbosity
-  auto verbosityLevel = DRT::INPUT::IntegralValue<IO::verbositylevel>(
-      DRT::Problem::Instance()->IOParams(), "VERBOSITY");
+  auto verbosityLevel =
+      INPUT::IntegralValue<IO::verbositylevel>(DRT::Problem::Instance()->IOParams(), "VERBOSITY");
 
   switch (verbosityLevel)
   {

@@ -135,7 +135,7 @@ MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent
 }
 
 //! Init is called once at the beginning to setup the number of GPs and the Parameter List
-void MIXTURE::MixtureConstituent::ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MIXTURE::MixtureConstituent::ReadElement(int numgp, INPUT::LineDefinition* linedef)
 {
   // Init must only be called once
   if (has_read_element_) dserror("ReadElement() is called multiple times. Just once allowed.");

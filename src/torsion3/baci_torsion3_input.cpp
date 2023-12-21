@@ -17,7 +17,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Torsion3::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read type of material model
   int material = 0;

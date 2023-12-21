@@ -82,9 +82,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagType::ComputeNullSpace(
 
 
 void DRT::ELEMENTS::ElemagType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["ELECTROMAGNETIC"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["ELECTROMAGNETIC"];
 
   // 3D elements
   defs["HEX8"] = INPUT::LineDefinition::Builder()
@@ -228,7 +228,7 @@ void DRT::ELEMENTS::Elemag::Print(std::ostream& os) const
 
 
 bool DRT::ELEMENTS::Elemag::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;

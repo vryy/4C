@@ -35,7 +35,7 @@ namespace
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateStructureFunction(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+      const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -88,12 +88,12 @@ namespace
 /*----------------------------------------------------------------------*/
 void STR::AddValidStructureFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  std::vector<DRT::INPUT::LineDefinition> lines;
-  lines.emplace_back(DRT::INPUT::LineDefinition::Builder()
+  std::vector<INPUT::LineDefinition> lines;
+  lines.emplace_back(INPUT::LineDefinition::Builder()
                          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
                          .AddNamedInt("MAT_STRUC")
                          .Build());
-  lines.emplace_back(DRT::INPUT::LineDefinition::Builder()
+  lines.emplace_back(INPUT::LineDefinition::Builder()
                          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
                          .AddNamedInt("MAT_STRUC")
                          .Build());

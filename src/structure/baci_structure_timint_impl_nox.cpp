@@ -51,7 +51,7 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
   // copy the input list
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(noxparams));
   // make all Yes/No integral values to Boolean
-  DRT::INPUT::BoolifyValidInputParameters(*noxparams_);
+  INPUT::BoolifyValidInputParameters(*noxparams_);
 
   // Remove legacy parameters
   {

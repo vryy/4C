@@ -167,7 +167,7 @@ namespace MAT
     bool Initialized() const { return (isinit_ and (histdefgrdcurr_ != Teuchos::null)); }
 
     /// Setup
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /// Update
     void Update() override;

@@ -24,43 +24,43 @@ BACI_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}
 
-  namespace INPUT
+namespace INPUT
+{
+  class DatFileReader;
+
+  class NodeReader
   {
-    class DatFileReader;
+   public:
+    /*!
+    \brief Construct node reader for a given field that reads a given section
 
-    class NodeReader
-    {
-     public:
-      /*!
-      \brief Construct node reader for a given field that reads a given section
+    Create empty discretization and append it to given field.
 
-      Create empty discretization and append it to given field.
+    \param comm (i) our communicator
+    \param sectionname (i) the section that contains the node lines
+    */
+    NodeReader(const DatFileReader& reader, std::string sectionname);
 
-      \param comm (i) our communicator
-      \param sectionname (i) the section that contains the node lines
-      */
-      NodeReader(const DatFileReader& reader, std::string sectionname);
+    void Read(const std::vector<ElementReader>& element_readers, int& max_node_id);
 
-      void Read(const std::vector<ElementReader>& element_readers, int& max_node_id);
+    void ThrowIfNotEnoughNodes(int max_node_id) const;
 
-      void ThrowIfNotEnoughNodes(int max_node_id) const;
+    std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(
+        const std::vector<ElementReader>& element_readers, int global_node_id);
 
-      std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(
-          const std::vector<ElementReader>& element_readers, int global_node_id);
+   private:
+    /// the main dat file reader
+    const DatFileReader& reader_;
 
-     private:
-      /// the main dat file reader
-      const DatFileReader& reader_;
+    /// my comm
+    Teuchos::RCP<Epetra_Comm> comm_;
 
-      /// my comm
-      Teuchos::RCP<Epetra_Comm> comm_;
-
-      /// my section to read
-      std::string sectionname_;
-    };
-  }  // namespace INPUT
-}  // namespace DRT
+    /// my section to read
+    std::string sectionname_;
+  };
+}  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE
 

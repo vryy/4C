@@ -99,9 +99,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3rType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BEAM3R"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["BEAM3R"];
 
   // note: LINE2 refers to linear Lagrange interpolation of centerline AND triad field
   defs["LINE2"] = INPUT::LineDefinition::Builder()

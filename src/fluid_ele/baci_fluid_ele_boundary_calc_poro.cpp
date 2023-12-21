@@ -58,7 +58,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
+  const auto act = INPUT::get<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {

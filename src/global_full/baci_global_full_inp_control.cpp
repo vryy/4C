@@ -37,7 +37,7 @@ void ntainp_ccadiscret(
 
 
   // and now the actual reading
-  DRT::INPUT::DatFileReader reader(inputfile_name, lcomm);
+  INPUT::DatFileReader reader(inputfile_name, lcomm);
 
   problem->ReadParameter(reader);
 
@@ -133,11 +133,11 @@ void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Com
 
   // configure the parallel output environment
   const Teuchos::ParameterList& io = DRT::Problem::Instance()->IOParams();
-  bool screen = DRT::INPUT::IntegralValue<int>(io, "WRITE_TO_SCREEN");
-  bool file = DRT::INPUT::IntegralValue<int>(io, "WRITE_TO_FILE");
-  bool preGrpID = DRT::INPUT::IntegralValue<int>(io, "PREFIX_GROUP_ID");
+  bool screen = INPUT::IntegralValue<int>(io, "WRITE_TO_SCREEN");
+  bool file = INPUT::IntegralValue<int>(io, "WRITE_TO_FILE");
+  bool preGrpID = INPUT::IntegralValue<int>(io, "PREFIX_GROUP_ID");
   int oproc = io.get<int>("LIMIT_OUTP_TO_PROC");
-  auto level = DRT::INPUT::IntegralValue<IO::verbositylevel>(io, "VERBOSITY");
+  auto level = INPUT::IntegralValue<IO::verbositylevel>(io, "VERBOSITY");
 
   IO::cout.setup(screen, file, preGrpID, level, std::move(lcomm), oproc, group, outputfile_kenner);
 }

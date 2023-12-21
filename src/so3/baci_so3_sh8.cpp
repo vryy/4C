@@ -67,9 +67,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_sh8Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)

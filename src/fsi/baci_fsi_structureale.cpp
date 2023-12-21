@@ -39,7 +39,7 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm) : Algorithm(comm)
       DRT::Problem::Instance()->ContactDynamicParams(),
       DRT::Problem::Instance()->SpatialApproximationType()));
 
-  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD"))
+  if (INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD"))
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();

@@ -90,9 +90,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3kType::ComputeNullSpace(
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3kType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BEAM3K"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["BEAM3K"];
 
   defs["LINE2"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)

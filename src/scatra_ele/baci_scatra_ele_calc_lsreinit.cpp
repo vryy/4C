@@ -182,7 +182,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       }
 
       // get action
-      const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+      const SCATRA::Action action = INPUT::get<SCATRA::Action>(params, "action");
       // ----------------------------------------------------------------------
       // calculate element coefficient matrix and/or rhs
       // ----------------------------------------------------------------------

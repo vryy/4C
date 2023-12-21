@@ -59,7 +59,7 @@ MAT::PAR::ActiveFiber::ActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata)
       epsilonnull_(matdata->GetDouble("EPSNULL"))
 {
   analyticalmaterialtangent_ =
-      DRT::INPUT::IntegralValue<int>(
+      INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->StructuralDynamicParams(), "MATERIALTANGENT") == 0;
 }
 
@@ -293,7 +293,7 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | initialize / allocate internal variables (public)        rauch  07/14|
  *----------------------------------------------------------------------*/
-void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ActiveFiber::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // initialize history variables
   histdefgrdlast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);

@@ -19,13 +19,10 @@
 BACI_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace INPUT
 {
-  namespace INPUT
-  {
-    class ConditionDefinition;
-  }  // namespace INPUT
-}  // namespace DRT
+  class ConditionDefinition;
+}  // namespace INPUT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -326,7 +323,7 @@ namespace INPAR
     void SetValidConditions(
         const std::vector<Teuchos::RCP<INPUT::LineComponent>> &dirichletbundcomponents,
         const std::vector<Teuchos::RCP<INPUT::LineComponent>> &neumanncomponents,
-        std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>> &condlist);
+        std::vector<Teuchos::RCP<INPUT::ConditionDefinition>> &condlist);
 
   }  // namespace XFEM
 

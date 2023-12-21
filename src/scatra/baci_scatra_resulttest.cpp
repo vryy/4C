@@ -29,7 +29,7 @@ SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void SCATRA::ScaTraResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -226,8 +226,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node   fang 03/15 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void SCATRA::ScaTraResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only on specified discretization
   std::string disname;

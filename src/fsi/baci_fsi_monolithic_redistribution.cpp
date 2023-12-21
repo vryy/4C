@@ -492,7 +492,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   }
 
   //  // add missing sections "fluid" and "ale" in control file
-  //  if (DRT::INPUT::IntegralValue<int>(*ioflags,"OUTPUT_BIN")){
+  //  if (INPUT::IntegralValue<int>(*ioflags,"OUTPUT_BIN")){
   //    if (domain == INPAR::FSI::Redistribute_structure){
   //      fluidoutput->WriteMesh(0, 0.0);
   //      aleoutput->WriteMesh(0, 0.0);

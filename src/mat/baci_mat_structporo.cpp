@@ -121,7 +121,7 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params)
     dserror("MAT::StructPoro: underlying material should be of type MAT::So3Material");
 }
 
-void MAT::StructPoro::PoroSetup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::StructPoro::PoroSetup(int numgp, INPUT::LineDefinition* linedef)
 {
   porosity_ = Teuchos::rcp(new std::vector<double>(numgp, params_->init_porosity_));
   surf_porosity_ = Teuchos::rcp(new std::map<int, std::vector<double>>);

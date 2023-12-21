@@ -27,7 +27,7 @@ int DRT::ELEMENTS::Lubrication::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // check for the action parameter
-  const LUBRICATION::Action action = DRT::INPUT::get<LUBRICATION::Action>(params, "action");
+  const LUBRICATION::Action action = INPUT::get<LUBRICATION::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
@@ -90,7 +90,7 @@ void DRT::ELEMENTS::LubricationType::PreEvaluate(DRT::Discretization& dis,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const LUBRICATION::Action action = DRT::INPUT::get<LUBRICATION::Action>(p, "action");
+  const LUBRICATION::Action action = INPUT::get<LUBRICATION::Action>(p, "action");
 
   switch (action)
   {

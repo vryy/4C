@@ -47,7 +47,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
       myrank_(comm.MyPID()),
       params_(params),
       numparticlesafterlastloadbalance_(0),
-      transferevery_(DRT::INPUT::IntegralValue<int>(params_, "TRANSFER_EVERY")),
+      transferevery_(INPUT::IntegralValue<int>(params_, "TRANSFER_EVERY")),
       writeresultsevery_(params.get<int>("RESULTSEVRY")),
       writerestartevery_(params.get<int>("RESTARTEVRY")),
       writeresultsthisstep_(true),
@@ -386,8 +386,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
 {
   // get type of particle wall source
   INPAR::PARTICLE::ParticleWallSource particlewallsource =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(
-          params_, "PARTICLE_WALL_SOURCE");
+      INPUT::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(params_, "PARTICLE_WALL_SOURCE");
 
   // create particle wall handler
   switch (particlewallsource)
@@ -421,7 +420,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleRigidBody()
 {
   // create rigid body handler
-  if (DRT::INPUT::IntegralValue<int>(params_, "RIGID_BODY_MOTION"))
+  if (INPUT::IntegralValue<int>(params_, "RIGID_BODY_MOTION"))
     particlerigidbody_ = std::make_shared<PARTICLERIGIDBODY::RigidBodyHandler>(Comm(), params_);
 
   // init rigid body handler
@@ -432,7 +431,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()
 {
   // get particle time integration scheme
   INPAR::PARTICLE::DynamicType timinttype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
+      INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
 
   // create particle time integration
   switch (timinttype)
@@ -464,7 +463,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleInteraction()
 {
   // get particle interaction type
   INPAR::PARTICLE::InteractionType interactiontype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::InteractionType>(params_, "INTERACTION");
+      INPUT::IntegralValue<INPAR::PARTICLE::InteractionType>(params_, "INTERACTION");
 
   // create particle interaction handler
   switch (interactiontype)

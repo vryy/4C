@@ -39,7 +39,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     : Algorithm(comm, stidyn, scatradyn, solverparams_scatra, solverparams_thermo),
       restol_(fieldparameters_->sublist("NONLINEAR").get<double>("ABSTOLRES")),
       maps_(Teuchos::null),
-      condensationthermo_(DRT::INPUT::IntegralValue<bool>(stidyn, "THERMO_CONDENSATION")),
+      condensationthermo_(INPUT::IntegralValue<bool>(stidyn, "THERMO_CONDENSATION")),
       systemmatrix_(Teuchos::null),
       matrixtype_(Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(
           stidyn.sublist("MONOLITHIC"), "MATRIXTYPE")),
@@ -1538,7 +1538,7 @@ void STI::Monolithic::Solve()
     Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
     // output performance statistics associated with linear solver into text file if applicable
-    if (DRT::INPUT::IntegralValue<int>(*fieldparameters_, "OUTPUTLINSOLVERSTATS"))
+    if (INPUT::IntegralValue<int>(*fieldparameters_, "OUTPUTLINSOLVERSTATS"))
       ScaTraField()->OutputLinSolverStats(*solver_, dtsolve_, Step(), static_cast<int>(iter_),
           residual_->Map().NumGlobalElements());
 

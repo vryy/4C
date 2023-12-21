@@ -118,7 +118,7 @@ void FS3I::PartFPS3I::Init()
   fpsi_algo = FPSI_UTILS->SetupDiscretizations(comm_, fpsidynparams, poroelastdynparams);
 
   // only monolithic coupling of fpsi problem is supported!
-  int coupling = DRT::INPUT::IntegralValue<int>(fpsidynparams, "COUPALGO");
+  int coupling = INPUT::IntegralValue<int>(fpsidynparams, "COUPALGO");
   if (coupling == fpsi_monolithic_plain)
   {
     // Cast needed because functions such as PoroField() and FluidField() are just a
@@ -148,7 +148,7 @@ void FS3I::PartFPS3I::Init()
   Teuchos::RCP<DRT::Discretization> structscatradis = problem->GetDis("scatra2");
 
   // determine type of scalar transport
-  const INPAR::SCATRA::ImplType impltype_fluid = DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(
+  const INPAR::SCATRA::ImplType impltype_fluid = INPUT::IntegralValue<INPAR::SCATRA::ImplType>(
       DRT::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
@@ -261,12 +261,12 @@ void FS3I::PartFPS3I::Init()
   // and rule out unsupported versions of generalized-alpha time-integration
   // scheme (as well as other inappropriate schemes) for fluid subproblem
   INPAR::SCATRA::TimeIntegrationScheme scatratimealgo =
-      DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+      INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
   INPAR::FLUID::TimeIntegrationScheme fluidtimealgo =
-      DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
+      INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
 
   INPAR::STR::DynamicType structtimealgo =
-      DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdyn, "DYNAMICTYP");
+      INPUT::IntegralValue<INPAR::STR::DynamicType>(structdyn, "DYNAMICTYP");
 
   if (fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
   {
@@ -641,7 +641,7 @@ void FS3I::PartFPS3I::SetVelocityFields()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
-  int cdvel = DRT::INPUT::IntegralValue<int>(scatradyn, "VELOCITYFIELD");
+  int cdvel = INPUT::IntegralValue<int>(scatradyn, "VELOCITYFIELD");
   switch (cdvel)
   {
     case INPAR::SCATRA::velocity_zero:

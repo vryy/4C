@@ -72,7 +72,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
+  const FLD::BoundaryAction act = INPUT::get<FLD::BoundaryAction>(params, "action");
 
   // get status of Ale
   const bool isale = ele1->ParentElement()->IsAle();
@@ -1564,7 +1564,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
 
   // order of accuracy of grid velocity determination
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  const int gridvel = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fdyn, "GRIDVEL");
+  const int gridvel = INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fdyn, "GRIDVEL");
 
   // normal vector
   CORE::LINALG::Matrix<nsd_, 1> normal(true);

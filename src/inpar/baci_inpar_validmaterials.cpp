@@ -16,8 +16,8 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintEmptyMaterialDefinitions(
-    std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist)
+void INPUT::PrintEmptyMaterialDefinitions(
+    std::ostream& stream, std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist)
 {
   const std::string sectionname = "MATERIALS";
   const unsigned l = sectionname.length();
@@ -34,25 +34,24 @@ void DRT::INPUT::PrintEmptyMaterialDefinitions(
 /*----------------------------------------------------------------------*/
 void PrintMaterialDatHeader()
 {
-  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> matlist =
-      DRT::INPUT::ValidMaterials();
-  DRT::INPUT::PrintEmptyMaterialDefinitions(std::cout, *matlist);
+  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> matlist =
+      INPUT::ValidMaterials();
+  INPUT::PrintEmptyMaterialDefinitions(std::cout, *matlist);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INPUT::ValidMaterials()
+Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidMaterials()
 {
   using Teuchos::tuple;
-  using namespace BACI::INPUT;
 
   // a list containing all valid materials
-  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> vm =
-      Teuchos::rcp(new std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>());
+  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> vm =
+      Teuchos::rcp(new std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>());
 
   // convenience
-  std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist = *vm;
+  std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist = *vm;
 
 
   /*----------------------------------------------------------------------*/

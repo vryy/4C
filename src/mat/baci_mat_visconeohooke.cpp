@@ -165,7 +165,7 @@ void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Initialise/allocate internal stress variables (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ViscoNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
   artstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);

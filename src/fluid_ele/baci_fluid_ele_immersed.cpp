@@ -33,9 +33,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersed::Create(const int id
 }
 
 void DRT::ELEMENTS::FluidTypeImmersed::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];
+  std::map<std::string, INPUT::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];
 
   defsimmersed["HEX8"] = INPUT::LineDefinition::Builder()
                              .AddIntVector("HEX8", 8)

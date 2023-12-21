@@ -26,7 +26,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT::INPUT
+namespace INPUT
 {
   class LineDefinition;
 }
@@ -263,12 +263,12 @@ namespace CORE::UTILS
   /// try to create SymbolicFunctionOfAnything from a given line definition
   template <int dim>
   Teuchos::RCP<FunctionOfAnything> TryCreateSymbolicFunctionOfAnything(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+      const std::vector<INPUT::LineDefinition>& function_line_defs);
 
   /// create a vector function from multiple expressions
   template <int dim>
   Teuchos::RCP<FunctionOfSpaceTime> TryCreateSymbolicFunctionOfSpaceTime(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+      const std::vector<INPUT::LineDefinition>& function_line_defs);
 }  // namespace CORE::UTILS
 
 

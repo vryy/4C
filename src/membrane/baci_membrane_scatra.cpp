@@ -113,7 +113,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::MembraneScatra<distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
   Membrane<distype>::ReadElement(eletype, eledistype, linedef);

@@ -164,7 +164,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterAnisotropyExtensions(
 
 // Reads the element from the input file
 void MIXTURE::MixtureConstituent_ElastHyperBase::ReadElement(
-    int numgp, DRT::INPUT::LineDefinition* linedef)
+    int numgp, INPUT::LineDefinition* linedef)
 {
   MixtureConstituent::ReadElement(numgp, linedef);
 

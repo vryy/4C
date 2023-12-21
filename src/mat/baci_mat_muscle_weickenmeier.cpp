@@ -196,7 +196,7 @@ void MAT::Muscle_Weickenmeier::Unpack(const std::vector<char>& data)
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void MAT::Muscle_Weickenmeier::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Muscle_Weickenmeier::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);

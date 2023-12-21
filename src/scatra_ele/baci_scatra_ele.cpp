@@ -85,9 +85,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::TransportType::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::TransportType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["TRANSP"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRANSP"];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)

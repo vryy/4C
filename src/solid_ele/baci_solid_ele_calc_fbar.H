@@ -39,7 +39,7 @@ namespace DRT
      public:
       SolidEleCalcFbar();
 
-      void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef);
+      void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
 
       void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
 

@@ -61,7 +61,7 @@ int DRT::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  const Ale3::ActionType act = DRT::INPUT::get<Ale3::ActionType>(params, "action");
+  const Ale3::ActionType act = INPUT::get<Ale3::ActionType>(params, "action");
 
   switch (act)
   {

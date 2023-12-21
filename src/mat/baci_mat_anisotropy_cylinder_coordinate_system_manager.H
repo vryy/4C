@@ -23,7 +23,7 @@ namespace CORE::COMM
 {
   class PackBuffer;
 }
-namespace DRT::INPUT
+namespace INPUT
 {
   class LineDefinition;
 }
@@ -67,7 +67,7 @@ namespace MAT
      *
      * @param linedef (in) : Input line of the corresponding element
      */
-    void ReadFromElementLineDefinition(DRT::INPUT::LineDefinition* linedef);
+    void ReadFromElementLineDefinition(INPUT::LineDefinition* linedef);
 
     /*!
      * \brief Flag

@@ -50,12 +50,12 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
 
     // get coupling method
     auto arterycoupl =
-        DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+        INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
             problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
             "ARTERY_COUPLING_METHOD");
 
     // lateral surface coupling active?
-    const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
+    const bool evaluate_on_lateral_surface = INPUT::IntegralValue<int>(
         problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
         "LATERAL_SURFACE_COUPLING");
 
@@ -167,7 +167,7 @@ Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhas
     }
     case INPAR::POROMULTIPHASE::solscheme_twoway_monolithic:
     {
-      const bool artery_coupl = DRT::INPUT::IntegralValue<int>(timeparams, "ARTERY_COUPLING");
+      const bool artery_coupl = INPUT::IntegralValue<int>(timeparams, "ARTERY_COUPLING");
       if (!artery_coupl)
       {
         // call constructor

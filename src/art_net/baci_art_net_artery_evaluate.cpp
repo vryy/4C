@@ -31,7 +31,7 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // check for the action parameter
-  const ARTERY::Action action = DRT::INPUT::get<ARTERY::Action>(params, "action");
+  const ARTERY::Action action = INPUT::get<ARTERY::Action>(params, "action");
   /*
   Here must add the steps for evaluating an element
   */

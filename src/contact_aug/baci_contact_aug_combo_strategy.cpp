@@ -46,7 +46,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
   while (p_combo.isParameter(strat_count.str()))
   {
     const enum INPAR::CONTACT::SolvingStrategy strat_type =
-        DRT::INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, strat_count.str());
+        INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, strat_count.str());
 
     CreateStrategyInterfaces(strat_type, ref_interfaces, strat_interfaces);
 
@@ -156,7 +156,7 @@ CONTACT::AUG::ComboStrategy::ComboStrategy(
 
   /// extract parameters from the parameter list
   const Teuchos::ParameterList& p_combo = params.sublist("AUGMENTED").sublist("COMBO");
-  output_.initScreenOutput(DRT::INPUT::IntegralValue<bool>(p_combo, "PRINT2SCREEN"));
+  output_.initScreenOutput(INPUT::IntegralValue<bool>(p_combo, "PRINT2SCREEN"));
 }
 
 /*----------------------------------------------------------------------------*

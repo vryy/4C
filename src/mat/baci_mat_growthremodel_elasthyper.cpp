@@ -404,7 +404,7 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodel_ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::GrowthRemodel_ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
@@ -461,8 +461,7 @@ void MAT::GrowthRemodel_ElastHyper::PostSetup(Teuchos::ParameterList& params, co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadStructuralTensor(
-    DRT::INPUT::LineDefinition* linedef)
+void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadStructuralTensor(INPUT::LineDefinition* linedef)
 {
   // CIR-AXI-RAD nomenclature
   if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
@@ -524,8 +523,8 @@ void MAT::GrowthRemodel_ElastHyper::SetupAnisoGrowthTensors()
 /*----------------------------------------------------------------------*
  * Function which reads in the AXI CIR RAD directions
  *----------------------------------------------------------------------*/
-void MAT::GrowthRemodel_ElastHyper::ReadDir(DRT::INPUT::LineDefinition* linedef,
-    const std::string& specifier, CORE::LINALG::Matrix<3, 1>& dir)
+void MAT::GrowthRemodel_ElastHyper::ReadDir(
+    INPUT::LineDefinition* linedef, const std::string& specifier, CORE::LINALG::Matrix<3, 1>& dir)
 {
   std::vector<double> fiber;
   linedef->ExtractDoubleVector(specifier, fiber);

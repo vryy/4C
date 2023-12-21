@@ -17,7 +17,7 @@ namespace
 {
   using namespace BACI;
 
-  class DatFileReaderStub : public DRT::INPUT::DatFileReader
+  class DatFileReaderStub : public INPUT::DatFileReader
   {
    public:
     DatFileReaderStub() = default;
@@ -39,7 +39,7 @@ namespace
 
   TEST_F(DomainReaderTest, TestMyDis0)
   {
-    DRT::INPUT::DomainReader dr(testdis_, testreader_, "unittestsection");
+    INPUT::DomainReader dr(testdis_, testreader_, "unittestsection");
     EXPECT_EQ(testdis_, dr.MyDis());
   }
 

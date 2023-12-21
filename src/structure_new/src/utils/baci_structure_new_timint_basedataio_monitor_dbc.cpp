@@ -51,8 +51,7 @@ void STR::TIMINT::ParamsMonitorDBC::Init(
   file_type_ = IO_monitor_dbc_structure_paramslist.get<std::string>("FILE_TYPE");
 
   // write header in csv file
-  write_header_ =
-      DRT::INPUT::IntegralValue<int>(IO_monitor_dbc_structure_paramslist, "WRITE_HEADER");
+  write_header_ = INPUT::IntegralValue<int>(IO_monitor_dbc_structure_paramslist, "WRITE_HEADER");
 
   isinit_ = true;
 }

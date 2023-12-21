@@ -51,16 +51,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(const int id
 }
 
 void DRT::ELEMENTS::WallQuad4PoroType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   Wall1Type::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ4PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ4PORO"];
 
-  defs["QUAD4"] = DRT::INPUT::LineDefinition::Builder(defs_wall["QUAD4"])
+  defs["QUAD4"] = INPUT::LineDefinition::Builder(defs_wall["QUAD4"])
                       .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
                       .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
                       .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 4)
@@ -116,16 +116,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(const int id
 }
 
 void DRT::ELEMENTS::WallQuad9PoroType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   Wall1Type::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ9PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ9PORO"];
 
-  defs["QUAD9"] = DRT::INPUT::LineDefinition::Builder(defs_wall["QUAD9"])
+  defs["QUAD9"] = INPUT::LineDefinition::Builder(defs_wall["QUAD9"])
                       .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
                       .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
                       .Build();
@@ -183,16 +183,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(const int i
 }
 
 void DRT::ELEMENTS::WallNurbs4PoroType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   Wall1Type::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLN4PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLN4PORO"];
 
-  defs["NURBS4"] = DRT::INPUT::LineDefinition::Builder(defs_wall["NURBS4"])
+  defs["NURBS4"] = INPUT::LineDefinition::Builder(defs_wall["NURBS4"])
                        .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
                        .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
                        .Build();
@@ -250,16 +250,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(const int i
 }
 
 void DRT::ELEMENTS::WallNurbs9PoroType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   Wall1Type::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLN9PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLN9PORO"];
 
-  defs["NURBS9"] = DRT::INPUT::LineDefinition::Builder(defs_wall["NURBS9"])
+  defs["NURBS9"] = INPUT::LineDefinition::Builder(defs_wall["NURBS9"])
                        .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
                        .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
                        .Build();
@@ -314,16 +314,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(const int id,
 }
 
 void DRT::ELEMENTS::WallTri3PoroType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
   Wall1Type::SetupElementDefinition(definitions_wall);
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
+  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLT3PORO"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLT3PORO"];
 
-  defs["TRI3"] = DRT::INPUT::LineDefinition::Builder(defs_wall["TRI3"])
+  defs["TRI3"] = INPUT::LineDefinition::Builder(defs_wall["TRI3"])
                      .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
                      .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
                      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 3)

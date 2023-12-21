@@ -47,7 +47,7 @@ class StruResultTest : public DRT::ResultTest
   - velocitites "velx", "vely", "velz",
   - accelerations "accx", "accy", "accz"
   */
-  void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) final;
+  void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) final;
 
   /*!
   \brief Test special quantities of structure discretization / time integration
@@ -55,7 +55,7 @@ class StruResultTest : public DRT::ResultTest
   See GetSpecialResultForTesting() for a list and extraction mechanisms of special results to be
   tested.
   */
-  void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) final;
+  void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) final;
 
  private:
   //! Extract specified quantity from the structure field

@@ -303,10 +303,10 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
     if ((problemtype != ProblemType::structure) and (problemtype != ProblemType::fsi_xfem) and
         (problemtype != ProblemType::fpsi_xfem) and (problemtype != ProblemType::ssi))
       dserror("two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+    if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
         INPAR::CONTACT::solution_nitsche)
       dserror("two half pass algorithm only with nitsche contact formulation");
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(contact, "NITSCHE_WEIGHTING") !=
+    if (INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(contact, "NITSCHE_WEIGHTING") !=
         INPAR::CONTACT::NitWgt_harmonic)
       dserror("two half pass algorithm only with harmonic weighting");
   }
@@ -322,8 +322,8 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
         "approach so far!");
   }
 
-  if (Two_half_pass && (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
-                            mortar, "ALGORITHM") != INPAR::MORTAR::algorithm_gpts))
+  if (Two_half_pass && (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") !=
+                           INPAR::MORTAR::algorithm_gpts))
   {
     dserror(
         "ERROR: You activated the two half pass 'TwoHalfPass' approach, but the 'MORTAR COUPLING' "
@@ -332,7 +332,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
 
   if (Check_nonsmooth_selfcontactsurface &&
-      (!DRT::INPUT::IntegralValue<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
+      (!INPUT::IntegralValue<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
   {
     dserror(
         "ERROR: You activated the self contact condition reference configuration check for "

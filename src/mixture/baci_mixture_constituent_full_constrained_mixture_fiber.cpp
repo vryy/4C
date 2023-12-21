@@ -178,7 +178,7 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Initialize()
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::ReadElement(
-    int numgp, DRT::INPUT::LineDefinition* linedef)
+    int numgp, INPUT::LineDefinition* linedef)
 {
   MIXTURE::MixtureConstituent::ReadElement(numgp, linedef);
   Initialize();

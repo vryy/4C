@@ -29,20 +29,18 @@
 BACI_NAMESPACE_OPEN
 
 
-namespace DRT
+
+namespace INPUT
 {
-  namespace INPUT
-  {
-    class MaterialDefinition;
+  class MaterialDefinition;
 
-    /// construct list with all materials and documentation
-    Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> ValidMaterials();
+  /// construct list with all materials and documentation
+  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> ValidMaterials();
 
-    /// print all known material sections without contents
-    void PrintEmptyMaterialDefinitions(
-        std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist);
-  }  // namespace INPUT
-}  // namespace DRT
+  /// print all known material sections without contents
+  void PrintEmptyMaterialDefinitions(
+      std::ostream& stream, std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist);
+}  // namespace INPUT
 
 /// print empty material sections
 void PrintMaterialDatHeader();

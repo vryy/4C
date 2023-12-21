@@ -149,7 +149,7 @@ namespace MAT
       void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
       /// Setup of summand
-      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
       /*!
        * \brief PostSetup routine of the element

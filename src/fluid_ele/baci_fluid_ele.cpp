@@ -70,9 +70,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::FluidType::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::FluidType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defsgeneral = definitions["FLUID"];
+  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["FLUID"];
 
   defsgeneral["HEX8"] = INPUT::LineDefinition::Builder()
                             .AddIntVector("HEX8", 8)

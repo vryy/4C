@@ -426,7 +426,7 @@ namespace WEAR
     */
     INPAR::WEAR::WearShape WearShapeFcn()
     {
-      return DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(imortar_, "WEAR_SHAPEFCN");
+      return INPUT::IntegralValue<INPAR::WEAR::WearShape>(imortar_, "WEAR_SHAPEFCN");
     }
 
    private:

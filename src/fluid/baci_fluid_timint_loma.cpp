@@ -222,7 +222,7 @@ void FLD::TimIntLoma::PrintTurbulenceModel()
 
   if (physicaltype_ == INPAR::FLUID::loma and turbmodel_ == INPAR::FLUID::smagorinsky)
   {
-    if (DRT::INPUT::IntegralValue<int>(params_->sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI"))
+    if (INPUT::IntegralValue<int>(params_->sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI"))
     {
       if (params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") > 0.0)
       {

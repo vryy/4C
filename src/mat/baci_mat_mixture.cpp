@@ -220,7 +220,7 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
 }
 
 // Read element and create arrays for the quantities at the Gauss points
-void MAT::Mixture::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Mixture::Setup(const int numgp, INPUT::LineDefinition* linedef)
 {
   So3Material::Setup(numgp, linedef);
 

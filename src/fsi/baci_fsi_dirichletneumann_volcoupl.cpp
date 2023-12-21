@@ -53,7 +53,7 @@ void FSI::DirichletNeumannVolCoupl::Setup()
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   SetKinematicCoupling(
-      DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
+      INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
 
   if (!GetKinematicCoupling()) dserror("Currently only displacement coupling is supported!");
 

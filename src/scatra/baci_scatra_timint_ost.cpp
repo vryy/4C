@@ -87,7 +87,7 @@ void SCATRA::TimIntOneStepTheta::Setup()
       homisoturb_forcing_ = Teuchos::rcp(new SCATRA::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
       homisoturb_forcing_->SetInitialSpectrum(
-          DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_, "INITIALFIELD"));
+          INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_, "INITIALFIELD"));
     }
   }
 

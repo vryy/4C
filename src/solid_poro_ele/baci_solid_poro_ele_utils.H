@@ -19,7 +19,7 @@ BACI_NAMESPACE_OPEN
 
 namespace STR::UTILS::READELEMENT
 {
-  INPAR::SCATRA::ImplType ReadType(DRT::INPUT::LineDefinition* linedef)
+  INPAR::SCATRA::ImplType ReadType(INPUT::LineDefinition* linedef)
   {
     std::string impltype;
     linedef->ExtractString("TYPE", impltype);
@@ -55,7 +55,7 @@ namespace STR::UTILS::READELEMENT
     }
   }
 
-  INPAR::PORO::PoroType ReadPoroType(DRT::INPUT::LineDefinition* linedef)
+  INPAR::PORO::PoroType ReadPoroType(INPUT::LineDefinition* linedef)
   {
     std::string impltype;
     linedef->ExtractString("POROTYPE", impltype);

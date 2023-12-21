@@ -297,7 +297,7 @@ namespace MAT
 
     //! @}
 
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /*!
      * @brief computes isotropic elasticity tensor in matrix notion for 3d

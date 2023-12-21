@@ -229,7 +229,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double&
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
+  if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
           INPAR::MORTAR::algorithm_gpts ||
       Strategy().IsPenalty() || Strategy().IsCondensedSystem())
   {
@@ -269,7 +269,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
   // ---------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
+  if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
           INPAR::MORTAR::algorithm_gpts ||
       Strategy().IsPenalty())
   {
@@ -771,8 +771,8 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::GetBlockDofRowMapPt
     return GState().DofRowMap();
   else
   {
-    enum INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
-        problem->ContactDynamicParams(), "SYSTEM");
+    enum INPAR::CONTACT::SystemType systype =
+        INPUT::IntegralValue<INPAR::CONTACT::SystemType>(problem->ContactDynamicParams(), "SYSTEM");
 
     if (systype == INPAR::CONTACT::system_saddlepoint)
       return Strategy().LinSystemLMDoFRowMapPtr();
@@ -787,8 +787,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::GetCurrentSoluti
 {
   // TODO: this should be removed!
   DRT::Problem* problem = DRT::Problem::Instance();
-  enum INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
-      problem->ContactDynamicParams(), "SYSTEM");
+  enum INPAR::CONTACT::SystemType systype =
+      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(problem->ContactDynamicParams(), "SYSTEM");
   if (systype == INPAR::CONTACT::system_condensed) return Teuchos::null;
 
   if (Strategy().GetLagrMultNp(false) != Teuchos::null)
@@ -810,8 +810,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::GetCurrentSoluti
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::GetLastTimeStepSolutionPtr() const
 {
   DRT::Problem* problem = DRT::Problem::Instance();
-  enum INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
-      problem->ContactDynamicParams(), "SYSTEM");
+  enum INPAR::CONTACT::SystemType systype =
+      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(problem->ContactDynamicParams(), "SYSTEM");
   if (systype == INPAR::CONTACT::system_condensed) return Teuchos::null;
 
   if (Strategy().GetLagrMultN(false).is_null()) return Teuchos::null;

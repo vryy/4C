@@ -49,8 +49,7 @@ namespace DRT::ELEMENTS
   {
    public:
     void SetupElementDefinition(
-        std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
-        override;
+        std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
 
     Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string elecelltype,
         const int id, const int owner) override;
@@ -125,7 +124,7 @@ namespace DRT::ELEMENTS
     }
 
     bool ReadElement(const std::string& eletype, const std::string& celltype,
-        DRT::INPUT::LineDefinition* linedef) override;
+        INPUT::LineDefinition* linedef) override;
 
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
@@ -138,10 +137,10 @@ namespace DRT::ELEMENTS
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
     void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
-        DRT::INPUT::LineDefinition* linedef);
+        INPUT::LineDefinition* linedef);
 
     void ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
-        DRT::INPUT::LineDefinition* linedef);
+        INPUT::LineDefinition* linedef);
 
     [[nodiscard]] const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections()
         const

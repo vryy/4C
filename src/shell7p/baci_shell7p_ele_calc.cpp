@@ -36,7 +36,7 @@ DRT::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalc<distype>::Setup(DRT::Element& ele,
-    MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef,
+    MAT::So3Material& solid_material, INPUT::LineDefinition* linedef,
     const STR::ELEMENTS::ShellLockingTypes& locking_types,
     const STR::ELEMENTS::ShellData& shell_data)
 {

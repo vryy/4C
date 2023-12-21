@@ -60,7 +60,7 @@ FSI::MonolithicBase::MonolithicBase(
       isadastructure_(false),
       isadafluid_(false),
       isadasolver_(false),
-      verbosity_(DRT::INPUT::IntegralValue<INPAR::FSI::Verbosity>(
+      verbosity_(INPUT::IntegralValue<INPAR::FSI::Verbosity>(
           DRT::Problem::Instance()->FSIDynamicParams(), "VERBOSITY"))
 {
   // access the discretizations
@@ -325,7 +325,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   // enable debugging
-  if (DRT::INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
+  if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField()->Discretization()));
@@ -337,7 +337,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // write energy-file
-  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
+  if (INPUT::IntegralValue<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
     std::string fileiter2 = DRT::Problem::Instance()->OutputControlFile()->FileName();
     fileiter2.append(".fsienergy");
@@ -351,7 +351,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // time step size adaptivity
   //-------------------------------------------------------------------------
   const bool timeadapton =
-      DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (timeadapton)
   {
@@ -418,7 +418,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const bool timeadapton =
-      DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   // Run time loop with constant or adaptive time step size (depending on the user's will)
   if (not timeadapton)
@@ -683,8 +683,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
 void FSI::Monolithic::Update()
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  bool timeadapton =
-      DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+  bool timeadapton = INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (not timeadapton)
     StructureField()->Update();  // constant dt
@@ -721,8 +720,8 @@ void FSI::Monolithic::NonLinErrorCheck()
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   // get the user's will
-  const INPAR::FSI::DivContAct divcontype = DRT::INPUT::IntegralValue<INPAR::FSI::DivContAct>(
-      fsidyn.sublist("TIMEADAPTIVITY"), ("DIVERCONT"));
+  const INPAR::FSI::DivContAct divcontype =
+      INPUT::IntegralValue<INPAR::FSI::DivContAct>(fsidyn.sublist("TIMEADAPTIVITY"), ("DIVERCONT"));
 
   if (NoxStatus() != ::NOX::StatusTest::Converged)
   {
@@ -757,7 +756,7 @@ void FSI::Monolithic::NonLinErrorCheck()
         erroraction_ = erroraction_halve_step;
 
         const bool timeadapton =
-            DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+            INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
         if (not timeadapton)
         {
           dserror(
@@ -780,7 +779,7 @@ void FSI::Monolithic::NonLinErrorCheck()
         erroraction_ = erroraction_revert_dt;
 
         const bool timeadapton =
-            DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+            INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
         if (not timeadapton)
         {
           dserror(
@@ -1133,7 +1132,7 @@ void FSI::BlockMonolithic::PrepareTimeStepPreconditioner()
   const Teuchos::ParameterList& fsimono =
       DRT::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
 
-  if (DRT::INPUT::IntegralValue<int>(fsimono, "REBUILDPRECEVERYSTEP")) precondreusecount_ = 0;
+  if (INPUT::IntegralValue<int>(fsimono, "REBUILDPRECEVERYSTEP")) precondreusecount_ = 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1196,7 +1195,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
   }
 
   INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-      DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   // create block system matrix
   switch (linearsolverstrategy)
@@ -1205,20 +1204,19 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(Extractor(), *StructureField(),
           *FluidField(), *AleField(), structuresplit,
-          DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
+          INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
-          DRT::INPUT::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
-          verbosity_));
+          INPUT::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy, verbosity_));
       break;
     }
     case INPAR::FSI::HybridSchwarz:
     {
-      mat = Teuchos::rcp(new OverlappingBlockMatrixHybridSchwarz(Extractor(), *StructureField(),
-          *FluidField(), *AleField(), structuresplit,
-          DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
-          pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
-          DRT::INPUT::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
-          interfaceprocs_, verbosity_));
+      mat = Teuchos::rcp(
+          new OverlappingBlockMatrixHybridSchwarz(Extractor(), *StructureField(), *FluidField(),
+              *AleField(), structuresplit, INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"),
+              blocksmoother, schuromega, pcomega, pciter, spcomega, spciter, fpcomega, fpciter,
+              apcomega, apciter, INPUT::IntegralValue<int>(fsimono, "FSIAMGANALYZE"),
+              linearsolverstrategy, interfaceprocs_, verbosity_));
       break;
     }
     case INPAR::FSI::LinalgSolver:
@@ -1257,7 +1255,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSyst
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-      DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   switch (linearsolverstrategy)
   {

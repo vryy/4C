@@ -40,13 +40,13 @@ namespace CORE::GEOMETRICSEARCH
   class GeometricSearchParams;
 }  // namespace CORE::GEOMETRICSEARCH
 
+namespace INPUT
+{
+  class LineDefinition;
+}
+
 namespace DRT
 {
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-
   namespace MESHFREE
   {
     template <typename>
@@ -695,8 +695,8 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Read input for this element
     */
-    virtual bool ReadElement(const std::string& eletype, const std::string& distype,
-        DRT::INPUT::LineDefinition* linedef);
+    virtual bool ReadElement(
+        const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef);
 
     /*!
       \brief Set processor local col id
@@ -739,7 +739,7 @@ might become invalid after a redistribution of the discretization.
 
     Here the node ids are directly taken from an input line.
     */
-    void SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef);
+    void SetNodeIds(const std::string& distype, INPUT::LineDefinition* linedef);
 
     /*!
     \brief Set a the face with index faceindex this element is connected to

@@ -117,7 +117,7 @@ void MIXTURE::MixtureConstituent_RemodelFiberImpl::Initialize()
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiberImpl::ReadElement(
-    int numgp, DRT::INPUT::LineDefinition* linedef)
+    int numgp, INPUT::LineDefinition* linedef)
 {
   MIXTURE::MixtureConstituent::ReadElement(numgp, linedef);
   Initialize();

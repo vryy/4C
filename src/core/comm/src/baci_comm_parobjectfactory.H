@@ -29,13 +29,13 @@ namespace CORE::LINALG
   class SparseOperator;
 }
 
+namespace INPUT
+{
+  class LineDefinition;
+}
+
 namespace DRT
 {
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-
   class Element;
   class ElementType;
   class Discretization;
@@ -123,7 +123,7 @@ namespace CORE::COMM
 
     /// setup definition of element input file lines
     void SetupElementDefinition(
-        std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+        std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions);
 
    private:
     void Register(ParObjectType* object_type);

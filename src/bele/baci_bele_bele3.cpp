@@ -86,9 +86,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Bele3Type::ComputeNullSpace(
 }
 
 void DRT::ELEMENTS::Bele3Type::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs3 = definitions["BELE3_3"];
+  std::map<std::string, INPUT::LineDefinition>& defs3 = definitions["BELE3_3"];
 
   defs3["TRI3"] =
       INPUT::LineDefinition::Builder().AddIntVector("TRI3", 3).AddOptionalNamedInt("MAT").Build();
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::Bele3Type::SetupElementDefinition(
   defs3["QUAD9"] =
       INPUT::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddOptionalNamedInt("MAT").Build();
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs4 = definitions["BELE3_4"];
+  std::map<std::string, INPUT::LineDefinition>& defs4 = definitions["BELE3_4"];
 
   defs4["TRI3"] =
       INPUT::LineDefinition::Builder().AddIntVector("TRI3", 3).AddOptionalNamedInt("MAT").Build();
@@ -270,7 +270,7 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Bele3::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // check if material is defined
   if (linedef->HaveNamed("MAT"))

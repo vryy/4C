@@ -38,7 +38,7 @@ void PARTICLEALGORITHM::ParticleResultTest::Setup(
 }
 
 void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+    INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract global particle id
   int globalid;

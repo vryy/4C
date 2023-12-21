@@ -95,9 +95,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::PoroFluidMultiPhaseType::ComputeN
  |                                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::PoroFluidMultiPhaseType::SetupElementDefinition(
-    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["POROFLUIDMULTIPHASE"];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions["POROFLUIDMULTIPHASE"];
 
   defs["QUAD4"] =
       INPUT::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();
@@ -353,7 +353,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Surf
  | read element input                                       vuong 08/16 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::PoroFluidMultiPhase::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
