@@ -315,7 +315,10 @@ void FSI::MonolithicNoNOX::LinearSolve()
 
 
   // standard solver call
-  solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = iter_ == 1;
+  solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
 }
 
 /*----------------------------------------------------------------------*/

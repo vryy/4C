@@ -299,7 +299,10 @@ void ART::ArtNetImplStationary::LinearSolve()
   const double tcpusolve = Teuchos::Time::wallTime();
 
   // linear solve
-  solver_->Solve(sysmat_->EpetraOperator(), pressureincnp_, rhs_, true, 1, Teuchos::null);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(sysmat_->EpetraOperator(), pressureincnp_, rhs_, solver_params);
   // note: incremental form since rhs-coupling with poromultielastscatra-framework might be
   //       nonlinear
   pressurenp_->Update(1.0, *pressureincnp_, 1.0);

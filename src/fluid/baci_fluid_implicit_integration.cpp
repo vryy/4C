@@ -872,13 +872,15 @@ void FLD::FluidImplicitTimeInt::Solve()
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
       const double tcpusolve = Teuchos::Time::wallTime();
-
+      CORE::LINALG::SolverParams solver_params;
       if (isadapttol and itnum > 1)
       {
         double currresidual = std::max(vresnorm_, presnorm_);
         currresidual = std::max(currresidual, incvelnorm_L2_ / velnorm_L2_);
         currresidual = std::max(currresidual, incprenorm_L2_ / prenorm_L2_);
-        solver_->AdaptTolerance(ittol, currresidual, adaptolbetter);
+        solver_params.nonlin_tolerance = ittol;
+        solver_params.nonlin_residual = currresidual;
+        solver_params.lin_tol_better = adaptolbetter;
       }
 
       if (updateprojection_)
@@ -904,7 +906,10 @@ void FLD::FluidImplicitTimeInt::Solve()
           fluid_infnormscaling_->ScaleSystem(sysmat_, *residual_);
 
         // solve the system
-        solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, true, itnum == 1, projector_);
+        solver_params.refactor = true;
+        solver_params.reset = itnum == 1;
+        solver_params.projector = projector_;
+        solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, solver_params);
 
         // unscale solution
         if (fluid_infnormscaling_ != Teuchos::null)
@@ -912,7 +917,7 @@ void FLD::FluidImplicitTimeInt::Solve()
       }
       else
         meshtying_->SolveMeshtying(
-            *solver_, sysmat_, incvel_, residual_, velnp_, itnum, projector_);
+            *solver_, sysmat_, incvel_, residual_, velnp_, itnum, solver_params);
 
       solver_->ResetTolerance();
 
@@ -5434,8 +5439,10 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
 
   CustomSolve(relax);
   //-------solve for residual displacements to correct incremental displacements
-  solver_->Solve(
-      sysmat_->EpetraOperator(), incvel_, residual_, not inrelaxation_, not inrelaxation_);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = !inrelaxation_;
+  solver_params.reset = !inrelaxation_;
+  solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, solver_params);
 
   // and now we need the reaction forces
 
@@ -6377,7 +6384,10 @@ void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
       *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for incvel_
-  solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, solver_params);
 
   // set Dirichlet increments in solution increments
   incvel_->Update(1.0, *dbcinc, 1.0);

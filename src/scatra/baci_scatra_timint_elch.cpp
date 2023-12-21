@@ -2039,8 +2039,11 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     // reprepare Krylov projection if required
     if (updateprojection_) UpdateKrylovSpaceProjection();
 
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.projector = projector_;
+
     // solve final system of equations incrementally
-    strategy_->Solve(solver_, sysmat_, increment_, residual_, phinp_, 1, projector_);
+    strategy_->Solve(solver_, sysmat_, increment_, residual_, phinp_, 1, solver_params);
 
     // determine time needed for solving global system of equations
     dtsolve_ = Teuchos::Time::wallTime() - time;

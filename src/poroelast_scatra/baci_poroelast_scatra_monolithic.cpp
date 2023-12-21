@@ -512,11 +512,12 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
   // Solve for inc_ = [disi_,tempi_]
   // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,T]
   // \f$x_{i+1} = x_i + \Delta x_i\f$
+  CORE::LINALG::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
-    double worst = normrhs_;
-    double wanted = tolfres_;
-    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+    solver_params.nonlin_tolerance = tolfres_;
+    solver_params.nonlin_residual = normrhs_;
+    solver_params.lin_tol_better = solveradaptolbetter_;
   }
   // apply Dirichlet BCs to system of equations
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -530,7 +531,9 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
     //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << endl; }
 
     // standard solver call
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
     //  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
   }
   else
@@ -539,8 +542,9 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
     // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
     CORE::LINALG::ApplyDirichletToSystem(
         *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
-
-    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
   }
 }
 

@@ -28,6 +28,7 @@ BACI_NAMESPACE_OPEN
 namespace CORE::LINALG
 {
   class Solver;
+  struct SolverParams;
   class SparseOperator;
   class SparseMatrix;
   class SerialDenseMatrix;
@@ -259,7 +260,7 @@ namespace NOX
       //! problem specific subclasses.
 
       //! sets the options of the underlying solver
-      virtual void SetSolverOptions(Teuchos::ParameterList& p,
+      virtual CORE::LINALG::SolverParams SetSolverOptions(Teuchos::ParameterList& p,
           Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
           const NOX::NLN::SolutionType& solverType) = 0;
 

@@ -533,12 +533,12 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
   // -------------------------------------------------------------------
 
   // always refactor and reset the matrix before a single new solver call
-  bool refactor = true;
-  bool reset = true;
 
   initialvals->PutScalar(0.0);
-
-  solver.Solve(massmatrix->EpetraOperator(), initialvals, rhs, refactor, reset);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver.Solve(massmatrix->EpetraOperator(), initialvals, rhs, solver_params);
 
   // perform resets for solver and matrix
   solver.Reset();

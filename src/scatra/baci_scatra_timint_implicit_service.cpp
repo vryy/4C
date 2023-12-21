@@ -169,7 +169,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
     massmatrix->Complete();
 
     // compute flux vector field
-    solver_->Solve(massmatrix->EpetraOperator(), flux_projected, flux, true, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = true;
+    solver_->Solve(massmatrix->EpetraOperator(), flux_projected, flux, solver_params);
 
     // reset solver
     solver_->Reset();
@@ -391,8 +394,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       massmatrix_boundary->Complete();
 
       // compute normal boundary fluxes
-      solver_->Solve(
-          massmatrix_boundary->EpetraOperator(), normalfluxes, trueresidual_boundary, true, true);
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver_params.reset = true;
+      solver_->Solve(massmatrix_boundary->EpetraOperator(), normalfluxes, trueresidual_boundary,
+          solver_params);
 
       // reset solver
       solver_->Reset();
@@ -630,7 +636,10 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
         *sysmat_, *phidtnp_, *residual_, *zeros_, *(splitter_->CondMap()));
 
   // solve global system of equations for initial time derivative of state variables
-  solver_->Solve(sysmat_->EpetraOperator(), phidtnp_, residual_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(sysmat_->EpetraOperator(), phidtnp_, residual_, solver_params);
 
   // ToDo: Impose initial time derivatives resulting from Dirichlet boundary conditions.
   // At the moment, the initial time derivatives do not take account of time-dependent

@@ -1266,11 +1266,12 @@ void TSI::Monolithic::LinearSolve()
   // Solve for inc_ = [disi_,tempi_]
   // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,T]
   // \f$x_{i+1} = x_i + \Delta x_i\f$
+  CORE::LINALG::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
-    double worst = normrhs_;
-    double wanted = tolrhs_;
-    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+    solver_params.nonlin_tolerance = tolrhs_;
+    solver_params.nonlin_residual = normrhs_;
+    solver_params.lin_tol_better = solveradaptolbetter_;
   }
 
   // Dirichlet boundary conditions are already applied to TSI system, i.e. TSI
@@ -1296,7 +1297,9 @@ void TSI::Monolithic::LinearSolve()
     ScaleSystem(*systemmatrix_, *rhs_);
 
     // solve the problem, work is done here!
-    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
 
     // Infnormscaling: unscale system after solving
     UnscaleSolution(*systemmatrix_, *iterinc_, *rhs_);
@@ -1309,7 +1312,10 @@ void TSI::Monolithic::LinearSolve()
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
     // standard solver call
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
   }  // MergeBlockMatrix
 
 #ifdef TSI_DEBUG

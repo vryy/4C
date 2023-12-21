@@ -318,14 +318,16 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
   NOX::NLN::SolutionType solType = GetActiveLinSolver(solvers_, currSolver);
 
   // set solver options if necessary
-  SetSolverOptions(linearSolverParams, currSolver, solType);
+  auto solver_params = SetSolverOptions(linearSolverParams, currSolver, solType);
 
   // solve
   int iter = linearSolverParams.get<int>("Number of Nonlinear Iterations", -10);
   if (iter == -10)
     throwError("applyJacobianInverse", "\"Number of Nonlinear Iterations\" was not specified");
 
-  const int linsol_status = currSolver->NoxSolve(linProblem, true, iter == 0);
+  solver_params.refactor = true;
+  solver_params.reset = iter == 0;
+  const int linsol_status = currSolver->NoxSolve(linProblem, solver_params);
   if (linsol_status)
   {
     if (utils_.isPrintType(::NOX::Utils::Warning))

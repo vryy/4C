@@ -522,7 +522,10 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
         .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", pressure_nullspace);
   }
 
-  solver->Solve(BTB->EpetraOperator(), x, BTvR, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver->Solve(BTB->EpetraOperator(), x, BTvR, solver_params);
 
   Teuchos::RCP<Epetra_Vector> vmod = Teuchos::rcp(new Epetra_Vector(Velnp()->Map(), true));
   B->Apply(*x, *vmod);

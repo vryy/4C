@@ -309,8 +309,11 @@ void SCATRA::ScaTraTimIntElchSCL::NonlinearSolve()
 
       equilibration->EquilibrateSystem(
           system_matrix_elch_scl_, residual_elch_scl_, full_block_map_elch_scl_);
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver_params.reset = iternum_ == 1;
       solver_elch_scl_->Solve(system_matrix_elch_scl_->EpetraOperator(), increment_elch_scl_,
-          residual_elch_scl_, true, iternum_ == 1);
+          residual_elch_scl_, solver_params);
       equilibration->UnequilibrateIncrement(increment_elch_scl_);
     }
 
@@ -1231,8 +1234,11 @@ void SCATRA::ScaTraTimIntElchSCL::CalcInitialPotentialField()
     // zero out increment vector
     increment_elch_scl_->PutScalar(0.0);
 
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = iternum_ == 1;
     solver_elch_scl_->Solve(system_matrix_elch_scl_->EpetraOperator(), increment_elch_scl_,
-        residual_elch_scl_, true, iternum_ == 1);
+        residual_elch_scl_, solver_params);
 
     UpdateIterMicroMacro();
 

@@ -194,7 +194,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat,
-    Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual)
+    Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual,
+    CORE::LINALG::SolverParams& solver_params)
 {
   comb_systemmatrix_->Complete();
 
@@ -203,7 +204,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(
   // standard solver call
   // system is ready to solve since Dirichlet Boundary conditions have been applied in
   // SetupSystemMatrix or Evaluate
-  solver->Solve(comb_systemmatrix_->EpetraOperator(), comb_increment_, rhs_, true, false);
+  solver_params.refactor = true;
+  solver->Solve(comb_systemmatrix_->EpetraOperator(), comb_increment_, rhs_, solver_params);
 
   return;
 }

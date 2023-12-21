@@ -717,7 +717,11 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
     CORE::LINALG::Solver solver(solvparams, Comm());
-    solver.Solve(dmat->EpetraMatrix(), disinterface_m, wear_master, true);
+
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver.Solve(dmat->EpetraMatrix(), disinterface_m, wear_master, solver_params);
+
     disinterface_m->Scale(-fac);
   }
 
@@ -893,7 +897,14 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
-      if (activedofs->NumMyElements()) solver.Solve(daa->EpetraMatrix(), zref, wear_vectora, true);
+
+      if (activedofs->NumMyElements())
+      {
+        CORE::LINALG::SolverParams solver_params;
+        solver_params.refactor = true;
+
+        solver.Solve(daa->EpetraMatrix(), zref, wear_vectora, solver_params);
+      }
 
       // different wear coefficients on both sides...
       double wearcoeff_s = interfaces_[0]->InterfaceParams().get<double>("WEARCOEFF", 0.0);
@@ -1108,7 +1119,11 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
-      solver.Solve(dmat->EpetraOperator(), zref, forcecurr, true);
+
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver.Solve(dmat->EpetraOperator(), zref, forcecurr, solver_params);
+
 
       // store reference LM into global vector and nodes
       disinterface_s = zref;
@@ -1122,7 +1137,11 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
-      solver.Solve(dmat->EpetraOperator(), zref, disinterface_s, true);
+
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver.Solve(dmat->EpetraOperator(), zref, disinterface_s, solver_params);
+
 
       // store reference LM into global vector and nodes
       disinterface_s = zref;
@@ -1345,7 +1364,11 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
-      solver.Solve(dmat->EpetraOperator(), zref, forcecurr, true);
+
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver.Solve(dmat->EpetraOperator(), zref, forcecurr, solver_params);
+
 
       // store reference LM into global vector and nodes
       disinterface_m = zref;
@@ -1360,7 +1383,10 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
-      solver.Solve(dmat->EpetraOperator(), zref, disinterface_m, true);
+
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver.Solve(dmat->EpetraOperator(), zref, disinterface_m, solver_params);
 
       // store reference LM into global vector and nodes
       disinterface_m = zref;

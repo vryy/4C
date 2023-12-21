@@ -574,8 +574,12 @@ void SSTI::SSTIMono::LinearSolve()
   strategy_equilibration_->EquilibrateSystem(
       ssti_matrices_->SystemMatrix(), residual_, AllMaps()->BlockMapSystemMatrix());
 
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = Iter() == 1;
+
   solver_->Solve(
-      ssti_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true, Iter() == 1);
+      ssti_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, solver_params);
 
   strategy_equilibration_->UnequilibrateIncrement(increment_);
 

@@ -409,7 +409,9 @@ int ALE::Meshsliding::SolveMeshtying(CORE::LINALG::Solver& solver,
   {
     TEUCHOS_FUNC_TIME_MONITOR("Meshsliding:  3.2)   - Solve");
 
-    errorcode = solver_.Solve(mergedmatrix->EpetraOperator(), disi, residual, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    errorcode = solver_.Solve(mergedmatrix->EpetraOperator(), disi, residual, solver_params);
 
     Recover(disi);
   }

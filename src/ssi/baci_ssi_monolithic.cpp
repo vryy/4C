@@ -854,8 +854,11 @@ void SSI::SSIMono::SolveLinearSystem()
 
   // solve global system of equations
   // Dirichlet boundary conditions have already been applied to global system of equations
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = IterationCount() == 1;
   solver_->Solve(ssi_matrices_->SystemMatrix()->EpetraOperator(), ssi_vectors_->Increment(),
-      ssi_vectors_->Residual(), true, IterationCount() == 1);
+      ssi_vectors_->Residual(), solver_params);
 
   strategy_equilibration_->UnequilibrateIncrement(ssi_vectors_->Increment());
 }
@@ -1554,7 +1557,10 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
       *massmatrix_system, *phidtnp_system, *rhs_system, *dbc_zeros, *(pseudo_dbc_map));
 
   // solve global system of equations for initial time derivative of state variables
-  solver_->Solve(massmatrix_system->EpetraOperator(), phidtnp_system, rhs_system, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(massmatrix_system->EpetraOperator(), phidtnp_system, rhs_system, solver_params);
 
   // copy solution to sub problmes
   auto phidtnp_scatra = MapsSubProblems()->ExtractVector(

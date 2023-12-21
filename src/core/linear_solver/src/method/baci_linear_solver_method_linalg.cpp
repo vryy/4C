@@ -132,13 +132,19 @@ void CORE::LINALG::Solver::ResetTolerance()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
-    bool reset, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
+    const SolverParams& params)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1)   Setup");
 
+  if (params.lin_tol_better > 0.0)
+  {
+    AdaptTolerance(params.nonlin_tolerance, params.nonlin_residual, params.lin_tol_better);
+  }
+
   // reset data flags on demand
-  if (reset)
+  bool refactor = params.refactor;
+  if (params.reset)
   {
     Reset();
     refactor = true;
@@ -164,7 +170,7 @@ void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
       dserror("Unknown type of solver");
   }
 
-  solver_->Setup(matrix, x, b, refactor, reset, projector);
+  solver_->Setup(matrix, x, b, refactor, params.reset, params.projector);
 }
 
 /*----------------------------------------------------------------------*
@@ -178,23 +184,22 @@ int CORE::LINALG::Solver::Solve()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int CORE::LINALG::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
-    bool reset, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
+    const SolverParams& params)
 {
-  Setup(matrix, x, b, refactor, reset, projector);
+  Setup(matrix, x, b, params);
   return Solve();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, bool refactor, bool reset,
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
+int CORE::LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, const SolverParams& params)
 {
   Teuchos::RCP<Epetra_Operator> matrix = Teuchos::rcp(linProblem.GetOperator(), false);
   Teuchos::RCP<Epetra_MultiVector> x = Teuchos::rcp(linProblem.GetLHS(), false);
   Teuchos::RCP<Epetra_MultiVector> b = Teuchos::rcp(linProblem.GetRHS(), false);
 
-  return this->Solve(matrix, x, b, refactor, reset, projector);
+  return Solve(matrix, x, b, params);
 }
 
 

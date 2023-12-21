@@ -65,9 +65,12 @@ NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p,
-    Teuchos::RCP<CORE::LINALG::Solver>& solverPtr, const NOX::NLN::SolutionType& solverType)
+CORE::LINALG::SolverParams NOX::NLN::LAGPENCONSTRAINT::LinearSystem::SetSolverOptions(
+    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
+    const NOX::NLN::SolutionType& solverType)
 {
+  CORE::LINALG::SolverParams solver_params;
+
   bool isAdaptiveControl = p.get<bool>("Adaptive Control");
   double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
 
@@ -82,14 +85,11 @@ void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::SetSolverOptions(Teuchos::Paramet
     // This value has to be specified in the PrePostOperator object of
     // the non-linear solver (i.e. runPreSolve())
     double wanted = p.get<double>("Wanted Tolerance");
-    solverPtr->AdaptTolerance(wanted, worst, adaptiveControlObjective);
+    solver_params.nonlin_tolerance = wanted;
+    solver_params.nonlin_residual = worst;
+    solver_params.lin_tol_better = adaptiveControlObjective;
   }
-
-  // nothing more to do for a pure structural solver
-  if (solverType == NOX::NLN::sol_structure) return;
-
-
-  return;
+  return solver_params;
 }
 
 /*----------------------------------------------------------------------*

@@ -204,7 +204,10 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solvparams, A_->Comm()));
 
   // Set up solver
-  solver_->Setup(A_, x_, b_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Setup(A_, x_, b_, solver_params);
 
   isSetUp_ = true;
 }
@@ -230,7 +233,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Solve(
   for (int i = 0; i < X.GetNumBlocks(); i++) range_ex.InsertVector(*(X.GetVector(i)), i, Xmv);
 
   b_->Update(1., Xmv, 0.);
-  solver_->Solve(A_, x_, b_, false, false);
+  CORE::LINALG::SolverParams solver_params;
+  solver_->Solve(A_, x_, b_, solver_params);
   Ymv.Update(1., *x_, 0.);
 
   for (int i = 0; i < X.GetNumBlocks(); i++) domain_ex.ExtractVector(Ymv, i, *(Y.GetVector(i)));
@@ -788,7 +792,10 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*params, A_->Comm()));
 
   // Set up solver
-  solver_->Setup(A_, x_, b_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Setup(A_, x_, b_, solver_params);
 
   isSetUp_ = true;
 }
@@ -802,7 +809,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Apply(
   if (not(isSetUp_)) dserror("The DirectSolverWrapper class should be set up before calling Apply");
 
   b_->Update(1., X, 0.);
-  solver_->Solve(A_, x_, b_, false, false);
+  CORE::LINALG::SolverParams solver_params;
+  solver_->Solve(A_, x_, b_, solver_params);
   Y.Update(1., *x_, 0.);
 }
 

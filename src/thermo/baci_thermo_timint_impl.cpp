@@ -319,7 +319,10 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   // solve for tempi_
   // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
   solver_->Reset();
-  solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, solver_params);
   solver_->Reset();
 
   // build residual temperature norm
@@ -499,13 +502,16 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 
     // Solve for tempi_
     // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
+    CORE::LINALG::SolverParams solver_params;
     if (solveradapttol_ and (iter_ > 1))
     {
-      double worst = normfres_;
-      double wanted = tolfres_;
-      solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+      solver_params.nonlin_tolerance = tolfres_;
+      solver_params.nonlin_residual = normfres_;
+      solver_params.lin_tol_better = solveradaptolbetter_;
     }
-    solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, true, iter_ == 1);
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, solver_params);
     solver_->ResetTolerance();
 
     // recover condensed variables

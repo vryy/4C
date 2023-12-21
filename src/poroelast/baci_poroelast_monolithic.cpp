@@ -567,11 +567,12 @@ void POROELAST::Monolithic::PrepareTimeStep() { PoroBase::PrepareTimeStep(); }
 
 void POROELAST::Monolithic::LinearSolve()
 {
+  CORE::LINALG::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
-    double worst = normrhs_;
-    double wanted = tolfres_;
-    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+    solver_params.nonlin_tolerance = tolfres_;
+    solver_params.nonlin_residual = normrhs_;
+    solver_params.lin_tol_better = solveradaptolbetter_;
   }
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
@@ -587,7 +588,10 @@ void POROELAST::Monolithic::LinearSolve()
     CORE::LINALG::ApplyDirichletToSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // standard solver call
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
   }
   else  // use bgs2x2_operator
   {
@@ -596,7 +600,9 @@ void POROELAST::Monolithic::LinearSolve()
         *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // standard solver call
-    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
   }
 
   equilibration_->UnequilibrateIncrement(iterinc_);

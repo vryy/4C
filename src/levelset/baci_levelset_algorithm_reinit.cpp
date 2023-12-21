@@ -436,7 +436,10 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
       sysmat_->Complete();
 
       // solve for velocity component
-      solver_->Solve(sysmat_->EpetraOperator(), velcomp, residual_, true, true);
+      CORE::LINALG::SolverParams solver_params;
+      solver_params.refactor = true;
+      solver_params.reset = true;
+      solver_->Solve(sysmat_->EpetraOperator(), velcomp, residual_, solver_params);
 
       SystemMatrix()->Reset();
       // reset the solver as well
@@ -515,7 +518,10 @@ void SCATRA::LevelSetAlgorithm::CorrectionReinit()
   sysmat_->Complete();
 
   // solve for corrected phinp
-  solver_->Solve(sysmat_->EpetraOperator(), phinp_, residual_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(sysmat_->EpetraOperator(), phinp_, residual_, solver_params);
 
   // phinp_->Print(std::cout);
 

@@ -1380,11 +1380,15 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     k->Complete();
 
     // solve with default solver
+
     Teuchos::ParameterList solvparams;
     DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
     CORE::LINALG::Solver solver(solvparams, *comm_);
-    solver.Solve(k->EpetraOperator(), mergedsol, mergedX, true);
+
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver.Solve(k->EpetraOperator(), mergedsol, mergedX, solver_params);
 
     Teuchos::RCP<Epetra_Vector> sola = CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
     Teuchos::RCP<Epetra_Vector> solb = CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));

@@ -40,6 +40,29 @@ namespace CORE::LINEAR_SOLVER
 
 namespace CORE::LINALG
 {
+  //! parameters to pass to the Solve() call
+  struct SolverParams
+  {
+    //! system should be refactorized
+    bool refactor = false;
+
+    //! data from previous solves should be recalculated including preconditioners
+    bool reset = false;
+
+    //! Krylov space projector
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null;
+
+    //! for adaptivity of the tolerance: tolerance of the nonlinear solver
+    double nonlin_tolerance = {};
+
+    //! for adaptivity of the tolerance: current residual of the nonlinear solver
+    double nonlin_residual = {};
+
+    //! for adaptivity of the tolerance: factor by which the tolerance of the linear solver should
+    //! be stricter than the current residual of the nonlinear solver
+    double lin_tol_better = -1.0;
+  };
+
   /*!
   \brief A general solver interface to Trilinos solvers and spooles
 
@@ -90,15 +113,10 @@ namespace CORE::LINALG
     \param b         (in/out): right hand side vector
                                if project!=false it might be modified if not orthognal
                                to matrix kernel.
-    \param refactor  (in)    : flag indicating whether system should be refactorized
-    \param reset     (in)    : flag indicating whether all data from previous solves
-                               should be recalculated including preconditioners
-    \param projector (in)    : Krylov space projector - Teuchos::null is no
-                               projection desired
+    \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
     void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-        Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset = false,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
+        Teuchos::RCP<Epetra_MultiVector> b, const SolverParams& params);
 
     /// solve linear system after setup has been done
     int Solve();
@@ -114,15 +132,10 @@ namespace CORE::LINALG
     \param b         (in/out): right hand side vector
                                if project!=false it might be modified if not orthognal
                                to matrix kernel.
-    \param refactor  (in)    : flag indicating whether system should be refactorized
-    \param reset     (in)    : flag indicating whether all data from previous solves
-                               should be recalculated including preconditioners
-    \param projector (in)    : Krylov space projector - Teuchos::null is no
-                               projection desired
+    \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
     int Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-        Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset = false,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
+        Teuchos::RCP<Epetra_MultiVector> b, const SolverParams& params);
 
     /*!
     \brief Solve system of equations in one go (NOX)
@@ -136,14 +149,9 @@ namespace CORE::LINALG
                                 --> right hand side vector
                                 if project!=false it might be modified if not orthognal
                                 to matrix kernel.
-    \param refactor   (in)    : flag indicating whether system should be refactorized
-    \param reset      (in)    : flag indicating whether all data from previous solves
-                                should be recalculated including preconditioners
-    \param projector  (in)    : Krylov space projector - Teuchos::null is no
-                                projection desired
+    \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
-    int NoxSolve(Epetra_LinearProblem& linProblem, bool refactor, bool reset = false,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
+    int NoxSolve(Epetra_LinearProblem& linProblem, const SolverParams& params);
 
     /*!
     \brief Reset the solver and clear data
@@ -151,39 +159,6 @@ namespace CORE::LINALG
     All data is destroyed except the parameter list
     */
     void Reset();
-
-    /*!
-    \brief Adapt tolerance of iterative solver
-
-    This method allows to adapt the tolerance of the underlying iterative solver,
-    if an iterative solver is used. It is meant to be used together with
-    a relative convergence criteria AZ_r0 (decided from input file)
-    and allows to adapt this relative convergence criteria depending on
-    the current residual of the outer nonlinear solver
-
-    It computes a new relative tolerance to be<br>
-    <br>
-    \code
-    if (currentnlnres*tol < desirednlnres)
-      tol = desirednlnres * better / currentnlnres
-    \endcode
-
-    \note This is a rule of thumb method - not a true adaptivity in the
-          field of inexact Newton methods.
-
-    \note This method works with iterative solvers only - it does nothing for all other
-          solvers configured.
-
-    \sa ResetTolerance
-
-    \param desirednlnres (in): Desired residual in outer nonlinear solve
-    \param currentnlnres (in): Current residual in outer nonlinear solve
-    \param better        (in): The amount the linear solver shall be better than
-                               currentnlnres
-
-    */
-    void AdaptTolerance(
-        const double desirednlnres, const double currentnlnres, const double better);
 
     /*!
     \brief Adapt tolerance of iterative solver
@@ -274,6 +249,39 @@ namespace CORE::LINALG
     int getNumIters() const;
 
    private:
+    /*!
+   \brief Adapt tolerance of iterative solver
+
+    This method allows to adapt the tolerance of the underlying iterative solver,
+    if an iterative solver is used. It is meant to be used together with
+    a relative convergence criteria AZ_r0 (decided from input file)
+    and allows to adapt this relative convergence criteria depending on
+    the current residual of the outer nonlinear solver
+
+    It computes a new relative tolerance to be<br>
+    <br>
+    \code
+    if (currentnlnres*tol < desirednlnres)
+      tol = desirednlnres * better / currentnlnres
+    \endcode
+
+    \note This is a rule of thumb method - not a true adaptivity in the
+          field of inexact Newton methods.
+
+    \note This method works with iterative solvers only - it does nothing for all other
+          solvers configured.
+
+    \sa ResetTolerance
+
+    \param desirednlnres (in): Desired residual in outer nonlinear solve
+    \param currentnlnres (in): Current residual in outer nonlinear solve
+    \param better        (in): The amount the linear solver shall be better than
+                               currentnlnres
+
+    */
+    void AdaptTolerance(
+        const double desirednlnres, const double currentnlnres, const double better);
+
     //! a communicator
     const Epetra_Comm& comm_;
     //! (internal) parameter list

@@ -21,6 +21,12 @@ namespace ADAPTER
 {
   class ArtNet;
 }
+
+namespace CORE::LINALG
+{
+  struct SolverParams;
+}
+
 namespace POROFLUIDMULTIPHASE
 {
   class MeshtyingStrategyBase
@@ -61,7 +67,7 @@ namespace POROFLUIDMULTIPHASE
     //! solve linear system of equations
     virtual void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
         Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
-        Teuchos::RCP<Epetra_Vector> residual) = 0;
+        Teuchos::RCP<Epetra_Vector> residual, CORE::LINALG::SolverParams& solver_params) = 0;
 
     //! calculate norms for convergence checks
     virtual void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,

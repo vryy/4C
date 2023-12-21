@@ -453,10 +453,6 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   // -------------------------------------------------------------------
   // solve system
   // -------------------------------------------------------------------
-  // always refactor and reset the matrix before a single new solver call
-  bool refactor = true;
-  bool reset = true;
-
   // Owing to experience a very accurate solution has to be enforced here!
   // Thus, we allocate an own solver with VERY strict tolerance!
   // One could think of verifiying an extra solver in the input file...
@@ -475,14 +471,17 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   const_cast<DRT::Discretization&>(discret).ComputeNullSpaceIfNecessary(solver->Params());
 
   // solve for control point values
-  solver->Solve(massmatrix->EpetraOperator(), dbcvector, rhs, refactor, reset);
+  // always refactor and reset the matrix before a single new solver call
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver->Solve(massmatrix->EpetraOperator(), dbcvector, rhs, solver_params);
 
   // solve for first derivatives in time
-  if (assemblevecd) solver->Solve(massmatrix->EpetraOperator(), dbcvectord, rhsd, refactor, reset);
+  if (assemblevecd) solver->Solve(massmatrix->EpetraOperator(), dbcvectord, rhsd, solver_params);
 
   // solve for second derivatives in time
-  if (assemblevecdd)
-    solver->Solve(massmatrix->EpetraOperator(), dbcvectordd, rhsdd, refactor, reset);
+  if (assemblevecdd) solver->Solve(massmatrix->EpetraOperator(), dbcvectordd, rhsdd, solver_params);
 
   // perform resets for solver and matrix
   solver->Reset();

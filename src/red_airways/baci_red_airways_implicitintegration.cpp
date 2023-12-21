@@ -1095,7 +1095,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
     }
     // Call solver
-    solver_->Solve(sysmat_->EpetraOperator(), pnp_, rhs_, true, true);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = true;
+    solver_->Solve(sysmat_->EpetraOperator(), pnp_, rhs_, solver_params);
   }
 
   // end time measurement for solver

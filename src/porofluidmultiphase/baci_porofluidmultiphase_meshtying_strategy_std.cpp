@@ -56,9 +56,12 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::InitializeLinearSolver(
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::LinearSolve(
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat,
-    Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual)
+    Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual,
+    CORE::LINALG::SolverParams& solver_params)
 {
-  solver->Solve(sysmat->EpetraOperator(), increment, residual, true, 1, Teuchos::null);
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver->Solve(sysmat->EpetraOperator(), increment, residual, solver_params);
 
   return;
 }

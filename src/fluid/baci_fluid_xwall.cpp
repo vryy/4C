@@ -1235,7 +1235,10 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
       Teuchos::rcp(new Epetra_MultiVector(*enrdofrowmap_, numberofrhs));
 
   // solve for 1, 2 or 3 right hand sides at the same time --> thanks to Belos
-  solver_->Solve(massmatrix_->EpetraOperator(), resultvec, rhsassemble, true, true, Teuchos::null);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(massmatrix_->EpetraOperator(), resultvec, rhsassemble, solver_params);
 
   // now copy result in original vector: the result is an increment of the velocity/ acceleration
   CORE::LINALG::Export(*((*resultvec)(0)), *incveln_);

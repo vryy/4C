@@ -753,8 +753,11 @@ void FS3I::FS3I_Base::LinearSolveScatra()
 
   scatrasolver_->Solve(sparse->EpetraMatrix(), scatraincrement_, scatrarhs_, true);
 #else
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
   scatrasolver_->Solve(
-      scatrasystemmatrix_->EpetraOperator(), scatraincrement_, scatrarhs_, true, true);
+      scatrasystemmatrix_->EpetraOperator(), scatraincrement_, scatrarhs_, solver_params);
 #endif
 }
 

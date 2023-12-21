@@ -152,14 +152,17 @@ void UTILS::ConstraintSolver::SolveUzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix
   {
     // solve for disi
     // Solve K . IncD = -R  ===>  IncD_{n+1}
+    CORE::LINALG::SolverParams solver_params;
     if (isadapttol_ && counter_ && numiter_uzawa)
     {
-      double worst = norm_uzawa;
-      double wanted = tolres_ / 10.0;
-      solver_->AdaptTolerance(wanted, worst, adaptolbetter_);
+      solver_params.nonlin_tolerance = tolres_ / 10.0;
+      solver_params.nonlin_residual = norm_uzawa;
+      solver_params.lin_tol_better = adaptolbetter_;
     }
-    solver_->Solve(
-        stiff->EpetraMatrix(), dispinc, fresmcopy, true, numiter_uzawa == 0 && counter_ == 0);
+
+    solver_params.refactor = true;
+    solver_params.reset = numiter_uzawa == 0 && counter_ == 0;
+    solver_->Solve(stiff->EpetraMatrix(), dispinc, fresmcopy, solver_params);
     solver_->ResetTolerance();
 
     // compute Lagrange multiplier increment
@@ -277,7 +280,10 @@ void UTILS::ConstraintSolver::SolveDirect(Teuchos::RCP<CORE::LINALG::SparseMatri
   CORE::LINALG::Export(*rhsstand, *mergedrhs);
 
   // solve
-  solver_->Solve(mergedmatrix->EpetraMatrix(), mergedsol, mergedrhs, true, counter_ == 0);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = counter_ == 0;
+  solver_->Solve(mergedmatrix->EpetraMatrix(), mergedsol, mergedrhs, solver_params);
   solver_->ResetTolerance();
   // store results in smaller vectors
   mapext.ExtractCondVector(mergedsol, dispinc);
@@ -380,7 +386,10 @@ void UTILS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::SparseMatri
   Teuchos::RCP<Epetra_Vector> mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedrowmap));
 
   // solve
-  solver_->Solve(mat->EpetraOperator(), mergedsol, mergedrhs, true, counter_ == 0);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = counter_ == 0;
+  solver_->Solve(mat->EpetraOperator(), mergedsol, mergedrhs, solver_params);
   solver_->ResetTolerance();
   solver_->Params() = sfparams;  // store back original parameter list
 

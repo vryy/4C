@@ -1078,12 +1078,15 @@ void POROFLUIDMULTIPHASE::TimIntImpl::LinearSolve(
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + call linear solver");
 
   // do adaptive linear solver tolerance (not in first solve)
+  CORE::LINALG::SolverParams solver_params;
   if (isadapttol && iternum_ > 1)
   {
-    solver_->AdaptTolerance(ittolres_, actresidual, adaptolbetter);
+    solver_params.nonlin_tolerance = ittolres_;
+    solver_params.nonlin_residual = actresidual;
+    solver_params.lin_tol_better = adaptolbetter;
   }
 
-  strategy_->LinearSolve(solver_, sysmat_, increment_, residual_);
+  strategy_->LinearSolve(solver_, sysmat_, increment_, residual_, solver_params);
   // solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,1,Teuchos::null);
 
   solver_->ResetTolerance();
@@ -2033,7 +2036,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::CalcInitialTimeDerivative()
   sysmat_->Complete();
 
   // solve global system of equations for initial time derivative of state variables
-  solver_->Solve(sysmat_->EpetraOperator(), phidtnp_, residual_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(sysmat_->EpetraOperator(), phidtnp_, residual_, solver_params);
 
   // copy solution
   phidtn_->Update(1.0, *phidtnp_, 0.0);

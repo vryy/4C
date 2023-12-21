@@ -719,11 +719,12 @@ void FPSI::Monolithic::CreateLinearSolver()
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic::LinearSolve()
 {
+  CORE::LINALG::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
-    double worst = normofrhs_;
-    double wanted = toleranceresidualforces_;
-    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+    solver_params.nonlin_tolerance = normofrhs_;
+    solver_params.nonlin_residual = toleranceresidualforces_;
+    solver_params.lin_tol_better = solveradaptolbetter_;
   }
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
@@ -754,7 +755,9 @@ void FPSI::Monolithic::LinearSolve()
     else
     {
       // standard solver call
-      solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+      solver_params.refactor = true;
+      solver_params.reset = iter_ == 1;
+      solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
     }
   }
   else
@@ -770,7 +773,10 @@ void FPSI::Monolithic::LinearSolve()
         *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // standard solver call
-    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
   }
 }
 
@@ -866,7 +872,10 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
   // standard solver call
   if (islinesearch_ == false)
   {
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
   }
 
   if (islinesearch_ == false)

@@ -119,7 +119,10 @@ int CORE::LINALG::ANA::OperatorInverse::Apply(
   Teuchos::RCP<Epetra_Operator> rcpop = Teuchos::rcp(const_cast<Epetra_Operator*>(&op_), false);
 
   out->PutScalar(0.0);
-  solver_.Solve(rcpop, out, in, true, reset_);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = reset_;
+  solver_.Solve(rcpop, out, in, solver_params);
 
   return 0;
 }

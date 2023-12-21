@@ -668,7 +668,12 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   if (HaveContactMeshtying())
     CmtLinearSolve();  // use contact/meshtying solver
   else
-    solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
+  {
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = true;
+    solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
+  }
 
   // recover contact / meshtying Lagrange multipliers
   if (HaveContactMeshtying()) cmtbridge_->Recover(disi_);
@@ -1510,11 +1515,12 @@ int STR::TimIntImpl::NewtonFull()
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+    CORE::LINALG::SolverParams solver_params;
     if (solveradapttol_ and (iter_ > 1))
     {
-      double worst = normfres_;
-      double wanted = tolfres_;
-      solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+      solver_params.nonlin_tolerance = tolfres_;
+      solver_params.nonlin_residual = normfres_;
+      solver_params.lin_tol_better = solveradaptolbetter_;
     }
 
     // linear solver call (contact / meshtying case or default)
@@ -1522,8 +1528,10 @@ int STR::TimIntImpl::NewtonFull()
       CmtLinearSolve();
     else
     {
-      linsolve_error =
-          solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_ == 1, projector_);
+      solver_params.refactor = true;
+      solver_params.reset = iter_ == 1;
+      solver_params.projector = projector_;
+      linsolve_error = solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
       // check for problems in linear solver
       // however we only care about this if we have a fancy divcont action (meaning function will
       // return 0 )
@@ -2095,15 +2103,19 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+  CORE::LINALG::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
-    double worst = normfres_;
-    double wanted = tolfres_;
-    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+    solver_params.nonlin_tolerance = tolfres_;
+    solver_params.nonlin_residual = normfres_;
+    solver_params.lin_tol_better = solveradaptolbetter_;
   }
 
-  linsolve_error =
-      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_ == 1, projector_);
+
+  solver_params.refactor = iter_ == 1;
+  solver_params.reset = true;
+  solver_params.projector = projector_;
+  linsolve_error = solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
   // check for problems in linear solver
   // however we only care about this if we have a fancy divcont action (meaning function will return
   // 0 )
@@ -3086,11 +3098,12 @@ void STR::TimIntImpl::CmtLinearSolve()
 {
   // adapt tolerance for contact solver
   // note: tolerance for fallback solver already adapted in NewtonFull
+  CORE::LINALG::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
-    double worst = normfres_;
-    double wanted = tolfres_;
-    contactsolver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+    solver_params.nonlin_tolerance = tolfres_;
+    solver_params.nonlin_residual = normfres_;
+    solver_params.lin_tol_better = solveradaptolbetter_;
   }
 
   INPAR::CONTACT::SolvingStrategy soltype =
@@ -3155,6 +3168,8 @@ void STR::TimIntImpl::CmtLinearSolve()
   // (1) Standard / Dual Lagrange multipliers -> SaddlePoint
   // (2) Direct Augmented Lagrange strategy
   //**********************************************************************
+  solver_params.refactor = true;
+  solver_params.reset = iter_ == 1;
   if ((soltype == INPAR::CONTACT::solution_lagmult ||
           soltype == INPAR::CONTACT::solution_augmented) &&
       (systype != INPAR::CONTACT::system_condensed &&
@@ -3165,7 +3180,7 @@ void STR::TimIntImpl::CmtLinearSolve()
     if (!cmtbridge_->GetStrategy().IsInContact() && !cmtbridge_->GetStrategy().WasInContact() &&
         !cmtbridge_->GetStrategy().WasInContactLastTimeStep())
     {
-      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_ == 1);
+      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
     }
     else
     {
@@ -3180,7 +3195,7 @@ void STR::TimIntImpl::CmtLinearSolve()
           stiff_, fres_, disi_, dbcmaps_, blockMat, blocksol, blockrhs);
 
       // solve the linear system
-      contactsolver_->Solve(blockMat, blocksol, blockrhs, true, iter_ == 1);
+      contactsolver_->Solve(blockMat, blocksol, blockrhs, solver_params);
 
       // split vector and update internal displacement and Lagrange multipliers
       cmtbridge_->GetStrategy().UpdateDisplacementsAndLMincrements(disi_, blocksol);
@@ -3197,7 +3212,7 @@ void STR::TimIntImpl::CmtLinearSolve()
     if (cmtbridge_->HaveMeshtying())
     {
       // solve with contact solver
-      contactsolver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_ == 1);
+      contactsolver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
     }
     else if (cmtbridge_->HaveContact())
     {
@@ -3207,12 +3222,12 @@ void STR::TimIntImpl::CmtLinearSolve()
           !cmtbridge_->GetStrategy().WasInContactLastTimeStep())
       {
         // standard solver call (fallback solver for pure structure problem)
-        solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_ == 1);
+        solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
         return;
       }
 
       // solve with contact solver
-      contactsolver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_ == 1);
+      contactsolver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
     }
   }
 
@@ -3354,18 +3369,21 @@ int STR::TimIntImpl::PTC()
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+    CORE::LINALG::SolverParams solver_params;
     if (solveradapttol_ and (iter_ > 1))
     {
-      double worst = normfres_;
-      double wanted = tolfres_;
-      solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+      solver_params.nonlin_tolerance = tolfres_;
+      solver_params.nonlin_residual = normfres_;
+      solver_params.lin_tol_better = solveradaptolbetter_;
     }
     // linear solver call (contact / meshtying case or default)
     if (HaveContactMeshtying())
       CmtLinearSolve();
     else
     {
-      linsolve_error = solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_ == 1);
+      solver_params.refactor = true;
+      solver_params.reset = iter_ == 1;
+      linsolve_error = solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
       // check for problems in linear solver
       // however we only care about this if we have a fancy divcont action  (meaning function will
       // return 0 )
@@ -4106,7 +4124,10 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
   CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for #disi_
-  solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
+  CORE::LINALG::SolverParams solver_params;
+  solver_params.refactor = true;
+  solver_params.reset = true;
+  solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
 
   // go back
   return disi_;

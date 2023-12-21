@@ -59,7 +59,7 @@ namespace NOX
             const ::NOX::Epetra::Vector& cloneVector);
 
         //! Sets the options of the underlying solver
-        void SetSolverOptions(Teuchos::ParameterList& p,
+        CORE::LINALG::SolverParams SetSolverOptions(Teuchos::ParameterList& p,
             Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
             const NOX::NLN::SolutionType& solverType) override;
 

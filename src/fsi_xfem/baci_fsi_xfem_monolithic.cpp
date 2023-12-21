@@ -2227,11 +2227,12 @@ void FSI::MonolithicXFEM::LinearSolve()
   if (merge_fsi_blockmatrix_ == false)
   {
     // adapt solver tolerance
+    CORE::LINALG::SolverParams solver_params;
     if (solveradapttol_ and (iter_ > 1))
     {
-      double worst = normrhs_;
-      double wanted = tolrhs_;
-      solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+      solver_params.nonlin_tolerance = tolrhs_;
+      solver_params.nonlin_residual = normrhs_;
+      solver_params.lin_tol_better = solveradaptolbetter_;
     }
 
     // Infnormscaling: scale system before solving
@@ -2241,10 +2242,9 @@ void FSI::MonolithicXFEM::LinearSolve()
         solver_->Params().sublist("Inverse2"), true);
 
     // solve the problem, work is done here!
-    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_,
-        true,       // refactorize the preconditioner?
-        iter_ == 1  // build completely new solver including preconditioner
-    );
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
 
     // Infnormscaling: unscale system after solving
     UnscaleSolution(*systemmatrix_, *iterinc_, *rhs_);
@@ -2265,7 +2265,10 @@ void FSI::MonolithicXFEM::LinearSolve()
 
     //------------------------------------------
     // standard solver call
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    CORE::LINALG::SolverParams solver_params;
+    solver_params.refactor = true;
+    solver_params.reset = iter_ == 1;
+    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
   }  // MergeBlockMatrix
 
   ApplyNewtonDamping();
