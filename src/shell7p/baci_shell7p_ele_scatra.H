@@ -73,17 +73,7 @@ namespace DRT::ELEMENTS
      * @param id (in) : A unique global id
      * @param owner (in) : elements owner
      */
-    Shell7pScatra(int id, int owner)
-        : DRT::Element(id, owner),
-          distype_(CORE::FE::CellType::dis_none),
-          interface_ptr_(Teuchos::null),
-          thickness_(0.0),
-          material_post_setup_(false),
-          impltype_(INPAR::SCATRA::impltype_undefined)
-    {
-      nodal_directors_(0, 0);
-      shell_interface_ = nullptr;
-    };
+    Shell7pScatra(int id, int owner) : DRT::Element(id, owner){};
 
     //! copy Constructor
     Shell7pScatra(const Shell7pScatra& other);
@@ -196,19 +186,19 @@ namespace DRT::ELEMENTS
 
    private:
     //! discretization type
-    CORE::FE::CellType distype_;
+    CORE::FE::CellType distype_ = CORE::FE::CellType::dis_none;
 
     //! interface ptr, data exchange between the element and the time integrator.
-    Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+    Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_ = Teuchos::null;
 
     //! element technology
-    std::set<INPAR::STR::EleTech> eletech_;
+    std::set<INPAR::STR::EleTech> eletech_ = {};
 
     //! shell thickness in reference frame
-    double thickness_;
+    double thickness_ = 0.0;
 
     //! nodal director
-    CORE::LINALG::SerialDenseMatrix nodal_directors_;
+    CORE::LINALG::SerialDenseMatrix nodal_directors_ = {};
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;
@@ -217,7 +207,7 @@ namespace DRT::ELEMENTS
     std::shared_ptr<Shell7pEleCalcInterface> shell_interface_ = nullptr;
 
     //! scalar transport implementation type (physics)
-    INPAR::SCATRA::ImplType impltype_;
+    INPAR::SCATRA::ImplType impltype_ = INPAR::SCATRA::ImplType::impltype_undefined;
   };
 
 }  // namespace DRT::ELEMENTS
