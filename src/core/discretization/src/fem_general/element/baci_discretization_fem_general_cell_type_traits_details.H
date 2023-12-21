@@ -95,9 +95,9 @@ namespace CORE::FE::DETAILS
   /// @{
   template <CellType celltype, typename celltype_sequence, typename Function,
       typename UnsupportedCellTypeCallable>
-  auto CellTypeSwitchItem(Function fct, UnsupportedCellTypeCallable unsupported_celltype_callable)
-      -> std::invoke_result_t<Function,
-          std::integral_constant<CellType, first_celltype_in_sequence<celltype_sequence>::value>>
+  auto CellTypeSwitchItem([[maybe_unused]] Function fct,
+      UnsupportedCellTypeCallable unsupported_celltype_callable) -> std::invoke_result_t<Function,
+      std::integral_constant<CellType, first_celltype_in_sequence<celltype_sequence>::value>>
   {
     if constexpr (IsCellTypeInSequence(celltype, celltype_sequence{}))
     {

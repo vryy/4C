@@ -725,6 +725,21 @@ namespace INPAR
       kinem_linear,          ///< linear kinematics
       kinem_nonlinearTotLag  ///< nonlinear kinematics Total Lagrange
     };
+
+    static inline std::string KinemTypeString(const KinemType kinem_type)
+    {
+      switch (kinem_type)
+      {
+        case INPAR::STR::KinemType::kinem_vague:
+          return "Vague";
+        case INPAR::STR::KinemType::kinem_linear:
+          return "linear";
+        case INPAR::STR::KinemType::kinem_nonlinearTotLag:
+          return "nonlinear_total_lagrange";
+      }
+
+      dserror("Unknown kinematic type %d", kinem_type);
+    }
     //!@}
 
     /// set the structure parameters

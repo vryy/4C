@@ -14,6 +14,7 @@ formulation
 #include "baci_solid_ele_calc_lib.H"
 #include "baci_solid_ele_calc_lib_integration.H"
 #include "baci_solid_ele_calc_lib_io.H"
+#include "baci_solid_ele_interface_serializable.H"
 
 #include <Teuchos_ParameterList.hpp>
 

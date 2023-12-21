@@ -117,8 +117,6 @@ namespace DRT::ELEMENTS
 
     void Unpack(const std::vector<char>& data) override;
 
-    void SetKinematicType(INPAR::STR::KinemType kintype) { solid_ele_property_.kintype = kintype; }
-
     [[nodiscard]] CORE::FE::CellType Shape() const override { return celltype_; };
 
     [[nodiscard]] DRT::ElementType& ElementType() const override
@@ -183,11 +181,13 @@ namespace DRT::ELEMENTS
 
     INPAR::PORO::PoroType GetElePoroType() { return poro_ele_property_.porotype; }
 
-    std::set<INPAR::STR::EleTech> GetEleTech() { return solid_ele_property_.eletech; }
+    [[nodiscard]] bool HaveEAS() const
+    {
+      return solid_ele_property_.element_technology == ElementTechnology::eas_full ||
+             solid_ele_property_.element_technology == ElementTechnology::eas_mild;
+    }
 
     INPAR::STR::KinemType GetEleKinematicType() { return solid_ele_property_.kintype; }
-
-    STR::ELEMENTS::EasType GetEAStype() { return solid_ele_property_.eastype; }
 
     INPAR::SCATRA::ImplType GetImplType() { return poro_ele_property_.impltype; }
 

@@ -583,9 +583,8 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
         iseas_local = 1;
 
     DRT::ELEMENTS::Solid* solid = dynamic_cast<DRT::ELEMENTS::Solid*>(actele);
-    if (solid)
-      if (solid->GetEleTech().find(INPAR::STR::EleTech::eas) != solid->GetEleTech().end())
-        iseas_local = 1;
+    if (solid != nullptr)
+      if (solid->HaveEAS()) iseas_local = 1;
 
     // Detect additional pressure dofs -----------------------------------------
     if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance()) ispressure_local = 1;

@@ -10,6 +10,7 @@
 #include "baci_io_linedefinition.H"
 #include "baci_lib_element.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
+#include "baci_solid_ele_properties.H"
 
 BACI_NAMESPACE_OPEN
 
@@ -72,27 +73,46 @@ INPAR::STR::KinemType STR::UTILS::READELEMENT::ReadElementKinematicType(
   }
 }
 
-void STR::UTILS::READELEMENT::ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef,
-    STR::ELEMENTS::EasType& eastype, std::set<INPAR::STR::EleTech>& eletech)
+DRT::ELEMENTS::ElementTechnology STR::UTILS::READELEMENT::ReadElementTechnology(
+    DRT::INPUT::LineDefinition* linedef)
 {
   std::string type;
-  linedef->ExtractString("EAS", type);
-  if (type == "mild")
+  linedef->ExtractString("TECH", type);
+  if (type == "fbar")
   {
-    eastype = STR::ELEMENTS::EasType::eastype_h8_9;
-    eletech.insert(INPAR::STR::EleTech::eas);
+    return DRT::ELEMENTS::ElementTechnology::fbar;
   }
-  else if (type == "full")
+  else if (type == "eas_full")
   {
-    eastype = STR::ELEMENTS::EasType::eastype_h8_21;
-    eletech.insert(INPAR::STR::EleTech::eas);
+    return DRT::ELEMENTS::ElementTechnology::eas_full;
+  }
+  else if (type == "eas_mild")
+  {
+    return DRT::ELEMENTS::ElementTechnology::eas_mild;
   }
   else if (type == "none")
   {
-    eastype = STR::ELEMENTS::EasType::soh8_easnone;
+    return DRT::ELEMENTS::ElementTechnology::none;
   }
   else
-    dserror("unrecognized eas type for hex8: %s", type.c_str());
+    dserror("unrecognized element technology type %s", type.c_str());
+}
+
+DRT::ELEMENTS::PrestressTechnology STR::UTILS::READELEMENT::ReadPrestressTechnology(
+    DRT::INPUT::LineDefinition* linedef)
+{
+  std::string type;
+  linedef->ExtractString("PRESTRESS_TECH", type);
+  if (type == "none")
+  {
+    return DRT::ELEMENTS::PrestressTechnology::none;
+  }
+  else if (type == "mulf")
+  {
+    return DRT::ELEMENTS::PrestressTechnology::mulf;
+  }
+
+  dserror("unrecognized prestress technology type %s", type.c_str());
 }
 
 void STR::UTILS::NodalBlockInformationSolid(
