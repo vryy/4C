@@ -299,7 +299,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
     // ------------------------------------------------------ default
     // ------------ purely thermal / geometrically linear TSI problem
-    if (kintype == INPAR::STR::kinem_linear)  // geo_linear
+    if (kintype == INPAR::STR::KinemType::linear)  // geo_linear
     {
       // and now check if there is a convection heat transfer boundary condition
       CalculateConvectionFintCond(ele,  // current boundary element
@@ -317,7 +317,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ((kintype == INPAR::STR::kinem_nonlinearTotLag) and (la.Size() > 1))  // geo_nonlinear
+    if ((kintype == INPAR::STR::KinemType::nonlinearTotLag) and (la.Size() > 1))  // geo_nonlinear
     {
       // set views, here we assemble on the boundary dofs only!
       CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
@@ -341,7 +341,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
             coeff, surtemp, *tempstate);
 
       }  // disp!=0
-    }    // (la.Size() > 1) and (kintype == INPAR::STR::kinem_nonlinearTotLag)
+    }    // (la.Size() > 1) and (kintype == INPAR::STR::KinemType::nonlinearTotLag)
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
@@ -402,7 +402,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ((kintype == INPAR::STR::kinem_nonlinearTotLag) and (la.Size() > 1))  // geo_nonlinear
+    if ((kintype == INPAR::STR::KinemType::nonlinearTotLag) and (la.Size() > 1))  // geo_nonlinear
     {
       // and now get the current displacements/velocities
       if (discretization.HasState(1, "displacement"))
@@ -565,7 +565,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         }  // end of switch(timint)
 
       }  // disp!=0
-    }    // if ( (kintype == INPAR::STR::kinem_nonlinearTotLag) and (la.Size()>1) )
+    }    // if ( (kintype == INPAR::STR::KinemType::nonlinearTotLag) and (la.Size()>1) )
   }      // calc_thermo_fextconvection_coupltang
 
   else

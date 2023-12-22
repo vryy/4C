@@ -109,7 +109,7 @@ namespace DRT::ELEMENTS
   struct SolidElementProperties
   {
     //! kinematic type
-    INPAR::STR::KinemType kintype{INPAR::STR::kinem_vague};
+    INPAR::STR::KinemType kintype{INPAR::STR::KinemType::vague};
 
     //! element technology (none, F-Bar, EAS full, EAS mild)
     ElementTechnology element_technology{ElementTechnology::none};

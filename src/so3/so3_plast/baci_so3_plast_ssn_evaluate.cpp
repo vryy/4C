@@ -50,7 +50,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
   InvalidEleData();
   if (distype == CORE::FE::CellType::nurbs27) GetNurbsEleInfo(&discretization);
 
-  dsassert(kintype_ == INPAR::STR::kinem_nonlinearTotLag,
+  dsassert(kintype_ == INPAR::STR::KinemType::nonlinearTotLag,
       "only geometricallly nonlinear formluation for plasticity!");
 
   // start with "none"

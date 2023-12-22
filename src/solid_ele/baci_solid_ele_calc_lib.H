@@ -479,13 +479,13 @@ namespace DRT::ELEMENTS
   SpatialMaterialMapping<celltype> EvaluateSpatialMaterialMapping(
       const JacobianMapping<celltype>& jacobian_mapping,
       const ElementNodes<celltype>& nodal_coordinates, const double scale_defgrd = 1.0,
-      const INPAR::STR::KinemType& kinematictype = INPAR::STR::kinem_nonlinearTotLag)
+      const INPAR::STR::KinemType& kinematictype = INPAR::STR::KinemType::nonlinearTotLag)
   {
     SpatialMaterialMapping<celltype> spatial_material_mapping;
     spatial_material_mapping.deformation_gradient_ =
         CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
 
-    if (kinematictype == INPAR::STR::kinem_nonlinearTotLag)
+    if (kinematictype == INPAR::STR::KinemType::nonlinearTotLag)
     {
       spatial_material_mapping.deformation_gradient_.MultiplyTT(
           scale_defgrd, nodal_coordinates.displacements_, jacobian_mapping.N_XYZ_, scale_defgrd);

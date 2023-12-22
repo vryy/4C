@@ -1715,12 +1715,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeJacobianDeterminantVolume
   // compute J
   J = defgrd.Determinant();
 
-  if (so3_ele::kintype_ == INPAR::STR::kinem_nonlinearTotLag)  // total lagrange (nonlinear)
+  if (so3_ele::kintype_ == INPAR::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
     volchange = J;
   }
-  else if (so3_ele::kintype_ == INPAR::STR::kinem_linear)  // linear kinematics
+  else if (so3_ele::kintype_ == INPAR::STR::KinemType::linear)  // linear kinematics
   {
     // for linear kinematics the volume change is the trace of the linearized strains
 
@@ -1752,13 +1752,13 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,
   // compute linearization of J
   ComputeLinearizationOfJacobian(dJ_dus, J, N_XYZ, defgrd_inv);
 
-  if (so3_ele::kintype_ == INPAR::STR::kinem_nonlinearTotLag)  // total lagrange (nonlinear)
+  if (so3_ele::kintype_ == INPAR::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
     volchange = J;
     dvolchange_dus = dJ_dus;
   }
-  else if (so3_ele::kintype_ == INPAR::STR::kinem_linear)  // linear kinematics
+  else if (so3_ele::kintype_ == INPAR::STR::KinemType::linear)  // linear kinematics
   {
     // for linear kinematics the volume change is the trace of the linearized strains
 
@@ -1793,7 +1793,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeAuxiliaryValues(
   // F^-T * Grad p
   Finvgradp.MultiplyTN(defgrd_inv, Gradp);
 
-  if (so3_ele::kintype_ != INPAR::STR::kinem_linear)
+  if (so3_ele::kintype_ != INPAR::STR::KinemType::linear)
   {
     // dF^-T/dus
     dFinvTdus.Clear();
@@ -1906,7 +1906,7 @@ inline void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeLinearizationOfJac
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv)
 {
-  if (so3_ele::kintype_ == INPAR::STR::kinem_nonlinearTotLag)  // total lagrange (nonlinear)
+  if (so3_ele::kintype_ == INPAR::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     //------------------------------------ build F^-1 as vector 9x1
     CORE::LINALG::Matrix<numdim_ * numdim_, 1> defgrd_inv_vec;
@@ -1941,7 +1941,7 @@ inline void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeLinearizationOfJac
     // dJ/dF : dF/dus = J * F^-T * N,X
     dJ_dus.MultiplyTN(J, defgrd_inv_vec, N_X);
   }
-  else if (so3_ele::kintype_ == INPAR::STR::kinem_linear)  // linear kinematics
+  else if (so3_ele::kintype_ == INPAR::STR::KinemType::linear)  // linear kinematics
   {
     // J=1 -> no linearization
     dJ_dus.Clear();
@@ -2760,12 +2760,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeDefGradient(
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr)
 {
-  if (so3_ele::kintype_ == INPAR::STR::kinem_nonlinearTotLag)  // total lagrange (nonlinear)
+  if (so3_ele::kintype_ == INPAR::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr, N_XYZ);  //  (6.17)
   }
-  else if (so3_ele::kintype_ == INPAR::STR::kinem_linear)  // linear kinematics
+  else if (so3_ele::kintype_ == INPAR::STR::KinemType::linear)  // linear kinematics
   {
     defgrd.Clear();
     for (int i = 0; i < numdim_; i++) defgrd(i, i) = 1.0;

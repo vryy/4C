@@ -1281,7 +1281,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
-        // if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+        // if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
         //{
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);

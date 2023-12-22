@@ -128,7 +128,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == INPAR::STR::kinem_linear)
+      if (kintype_ == INPAR::STR::KinemType::linear)
       {
         sop5_linstiffmass(lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr, nullptr, nullptr,
             params, INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == INPAR::STR::kinem_linear)
+      if (kintype_ == INPAR::STR::KinemType::linear)
       {
         sop5_linstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
             params, INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == INPAR::STR::kinem_linear)
+      if (kintype_ == INPAR::STR::KinemType::linear)
       {
         sop5_linstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
             nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
@@ -259,7 +259,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         // special case: geometrically linear
-        if (kintype_ == INPAR::STR::kinem_linear)
+        if (kintype_ == INPAR::STR::KinemType::linear)
         {
           sop5_linstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain,
               &plstrain, params, iostress, iostrain, ioplstrain);

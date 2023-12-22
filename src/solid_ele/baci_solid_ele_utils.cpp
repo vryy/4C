@@ -63,13 +63,13 @@ INPAR::STR::KinemType STR::UTILS::READELEMENT::ReadElementKinematicType(
   std::string kinem;
   linedef->ExtractString("KINEM", kinem);
   if (kinem == "nonlinear")
-    return INPAR::STR::kinem_nonlinearTotLag;
+    return INPAR::STR::KinemType::nonlinearTotLag;
   else if (kinem == "linear")
-    return INPAR::STR::kinem_linear;
+    return INPAR::STR::KinemType::linear;
   else
   {
     dserror("unknown kinematic type %s", kinem.c_str());
-    return INPAR::STR::kinem_vague;
+    return INPAR::STR::KinemType::vague;
   }
 }
 

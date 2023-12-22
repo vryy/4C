@@ -23,7 +23,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_base::So_base(int id, int owner)
     : DRT::Element(id, owner),
-      kintype_(INPAR::STR::kinem_vague),
+      kintype_(INPAR::STR::KinemType::vague),
       interface_ptr_(Teuchos::null),
       material_post_setup_(false)
 {

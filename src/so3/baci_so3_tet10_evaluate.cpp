@@ -681,7 +681,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         // if a linear analysis is desired
-        if (kintype_ == INPAR::STR::kinem_linear)
+        if (kintype_ == INPAR::STR::KinemType::linear)
         {
           dserror("Linear case not implemented");
         }

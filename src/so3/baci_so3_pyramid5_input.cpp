@@ -32,11 +32,11 @@ bool DRT::ELEMENTS::So_pyramid5::ReadElement(
 
   if (buffer == "linear")
   {
-    kintype_ = INPAR::STR::kinem_linear;
+    kintype_ = INPAR::STR::KinemType::linear;
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
     dserror("Reading SO_PYRAMID5 element failed KINEM unknown");
@@ -58,7 +58,7 @@ bool DRT::ELEMENTS::So_pyramid5::ReadElement(
     admissibl_mat = true;
 
   // check for SVK material if geometrically linear
-  if ((kintype_ == INPAR::STR::kinem_linear) and (admissibl_mat == false))
+  if ((kintype_ == INPAR::STR::KinemType::linear) and (admissibl_mat == false))
     dserror("ERROR: Only linear elasticity (SVK) for geometrically linear pyramid5 element");
 
   return true;

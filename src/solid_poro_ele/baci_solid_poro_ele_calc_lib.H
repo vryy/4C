@@ -124,7 +124,7 @@ namespace DRT::ELEMENTS
       const DRT::Discretization& discretization, const std::vector<int>& lm,
       const INPAR::STR::KinemType& kinematictype)
   {
-    if (kinematictype == INPAR::STR::kinem_linear)
+    if (kinematictype == INPAR::STR::KinemType::linear)
     {
       // for linear kinematics the volume change is the trace of the linearized strains
 
@@ -172,7 +172,7 @@ namespace DRT::ELEMENTS
   {
     CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>> dDetDefGrad_dDisp;
 
-    if (kinematictype == INPAR::STR::kinem_linear)
+    if (kinematictype == INPAR::STR::KinemType::linear)
     {
       dDetDefGrad_dDisp.Clear();
       return dDetDefGrad_dDisp;
@@ -233,7 +233,7 @@ namespace DRT::ELEMENTS
           dDetDefGrad_dDisp,
       const JacobianMapping<celltype>& jacobian_mapping, const INPAR::STR::KinemType& kinematictype)
   {
-    if (kinematictype == INPAR::STR::kinem_linear)
+    if (kinematictype == INPAR::STR::KinemType::linear)
     {
       CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>> dVolchange_dDisp;
 

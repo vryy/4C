@@ -93,7 +93,7 @@ namespace MAT
     INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_pldruckprag; }
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::kinem_linear)
+      if (kinem != INPAR::STR::KinemType::linear)
         dserror(
             "The plastic Drucker Prager material model is only compatible with linear kinematics.");
     }

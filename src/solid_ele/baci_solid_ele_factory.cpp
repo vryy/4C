@@ -28,15 +28,13 @@ namespace
   {
     switch (kinem_type)
     {
-      case INPAR::STR::KinemType::kinem_linear:
-        return fct(
-            std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::kinem_linear>{});
-      case INPAR::STR::KinemType::kinem_nonlinearTotLag:
+      case INPAR::STR::KinemType::linear:
+        return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::linear>{});
+      case INPAR::STR::KinemType::nonlinearTotLag:
         return fct(std::integral_constant<INPAR::STR::KinemType,
-            INPAR::STR::KinemType::kinem_nonlinearTotLag>{});
-      case INPAR::STR::KinemType::kinem_vague:
-        return fct(
-            std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::kinem_vague>{});
+            INPAR::STR::KinemType::nonlinearTotLag>{});
+      case INPAR::STR::KinemType::vague:
+        return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::vague>{});
     }
 
     dserror("Your kinematic type is unknown: %d", kinem_type);
@@ -65,7 +63,7 @@ namespace
    * celltypes
    */
   template <CORE::FE::CellType celltype>
-  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::kinem_nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::nonlinearTotLag,
       DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::none>
   {
     using type = DRT::ELEMENTS::DisplacementBasedSolidIntegrator<celltype>;
@@ -76,7 +74,7 @@ namespace
    * small displacements)
    */
   template <CORE::FE::CellType celltype>
-  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::kinem_linear,
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::linear,
       DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::none>
   {
     using type = DRT::ELEMENTS::DisplacementBasedLinearKinematicsSolidIntegrator<celltype>;
@@ -87,7 +85,7 @@ namespace
    */
   template <>
   struct SolidCalculationFormulation<CORE::FE::CellType::hex8,
-      INPAR::STR::KinemType::kinem_nonlinearTotLag, DRT::ELEMENTS::ElementTechnology::eas_mild,
+      INPAR::STR::KinemType::nonlinearTotLag, DRT::ELEMENTS::ElementTechnology::eas_mild,
       DRT::ELEMENTS::PrestressTechnology::none>
   {
     using type = DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
@@ -99,7 +97,7 @@ namespace
    */
   template <>
   struct SolidCalculationFormulation<CORE::FE::CellType::hex8,
-      INPAR::STR::KinemType::kinem_nonlinearTotLag, DRT::ELEMENTS::ElementTechnology::eas_full,
+      INPAR::STR::KinemType::nonlinearTotLag, DRT::ELEMENTS::ElementTechnology::eas_full,
       DRT::ELEMENTS::PrestressTechnology::none>
   {
     using type = DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
@@ -110,7 +108,7 @@ namespace
    * @brief Nonlinear total lagrangian formulation with F-Bar for hex8 and pyramid 5
    */
   template <CORE::FE::CellType celltype>
-  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::kinem_nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::nonlinearTotLag,
       DRT::ELEMENTS::ElementTechnology::fbar, DRT::ELEMENTS::PrestressTechnology::none,
       std::enable_if_t<celltype == CORE::FE::CellType::hex8 ||
                        celltype == CORE::FE::CellType::pyramid5>>
@@ -122,7 +120,7 @@ namespace
    * @brief Nonlinear modified updated lagrangian prestressing for all celltypes
    */
   template <CORE::FE::CellType celltype>
-  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::kinem_nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::nonlinearTotLag,
       DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::mulf>
   {
     using type = DRT::ELEMENTS::SolidEleCalcMulf<celltype>;

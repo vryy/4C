@@ -29,12 +29,12 @@ bool DRT::ELEMENTS::So_tet10::ReadElement(
   // geometrically linear
   if (buffer == "linear")
   {
-    kintype_ = INPAR::STR::kinem_linear;
+    kintype_ = INPAR::STR::KinemType::linear;
     dserror("Reading of SO_TET10 element failed only nonlinear kinematics implemented");
   }
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
-    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   // geometrically non-linear with Updated Lagrangean approach
   else
     dserror("Reading of SO_TET10 element failed KINEM unknown");

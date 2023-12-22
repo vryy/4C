@@ -28,12 +28,12 @@ bool DRT::ELEMENTS::So_weg6::ReadElement(
   linedef->ExtractString("KINEM", buffer);
   if (buffer == "linear")
   {
-    kintype_ = INPAR::STR::kinem_linear;
+    kintype_ = INPAR::STR::KinemType::linear;
     dserror("Reading of SO_WEG6 element failed only nonlinear kinematics implemented");
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
     dserror("Reading SO_WEG6 element failed KINEM unknwon");
