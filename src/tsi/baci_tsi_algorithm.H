@@ -37,7 +37,7 @@ namespace DRT
 
 namespace CONTACT
 {
-  class CoTSILagrangeStrategy;
+  class CoLagrangeStrategyTsi;
   class CoNitscheStrategyTsi;
 }  // namespace CONTACT
 
@@ -167,7 +167,7 @@ namespace TSI
     Teuchos::RCP<ADAPTER::Thermo> thermo_;
 
     //! contact strategies
-    Teuchos::RCP<CONTACT::CoTSILagrangeStrategy> contact_strategy_lagrange_;
+    Teuchos::RCP<CONTACT::CoLagrangeStrategyTsi> contact_strategy_lagrange_;
     Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> contact_strategy_nitsche_;
 
     //@}

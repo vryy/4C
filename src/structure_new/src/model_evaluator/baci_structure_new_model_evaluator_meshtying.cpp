@@ -14,10 +14,10 @@
 
 #include "baci_contact_aug_plot.H"
 #include "baci_contact_aug_strategy.H"
+#include "baci_contact_lagrange_strategy_poro.H"
 #include "baci_contact_meshtying_abstract_strategy.H"
 #include "baci_contact_meshtying_noxinterface.H"
 #include "baci_contact_meshtying_strategy_factory.H"
-#include "baci_contact_poro_lagrange_strategy.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"

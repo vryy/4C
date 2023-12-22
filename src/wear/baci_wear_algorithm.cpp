@@ -22,11 +22,11 @@
 #include "baci_contact_aug_interface.H"
 #include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
+#include "baci_contact_lagrange_strategy_wear.H"
 #include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_contact_strategy_factory.H"
 #include "baci_contact_utils.H"
 #include "baci_contact_wear_interface.H"
-#include "baci_contact_wear_lagrange_strategy.H"
 #include "baci_inpar_ale.H"
 #include "baci_inpar_wear.H"
 #include "baci_lib_globalproblem.H"
@@ -77,7 +77,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   // copy interfaces for material configuration
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::WearLagrangeStrategy& cstrategy = static_cast<WEAR::WearLagrangeStrategy&>(strategy);
+  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
 
   // get dimension
   dim_ = strategy.Dim();
@@ -114,7 +114,7 @@ void WEAR::Algorithm::CheckInput()
 void WEAR::Algorithm::CreateMaterialInterface()
 {
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::WearLagrangeStrategy& cstrategy = static_cast<WEAR::WearLagrangeStrategy&>(strategy);
+  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
 
   // create some local variables (later to be stored in strategy)
   int dim = DRT::Problem::Instance()->NDim();

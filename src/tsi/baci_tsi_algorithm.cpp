@@ -20,10 +20,10 @@
 #include "baci_adapter_str_wrapper.H"
 #include "baci_adapter_thermo.H"
 #include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_tsi.H"
 #include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_contact_nitsche_strategy_tsi.H"
 #include "baci_contact_strategy_factory.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_coupling_adapter_volmortar.H"
@@ -491,7 +491,7 @@ void TSI::Algorithm::GetContactStrategy()
     // ---------------------------------------------------------------------
     // build the solver strategy object
     // ---------------------------------------------------------------------
-    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::CoTSILagrangeStrategy>(
+    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::CoLagrangeStrategyTsi>(
         factory.BuildStrategy(cparams, poroslave, poromaster, 1e8, interfaces), true);
 
     // build the search tree

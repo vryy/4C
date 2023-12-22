@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_tsi_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_tsi.H"
 
 #include "baci_contact_defines.H"
 #include "baci_contact_friction_node.H"
@@ -34,7 +34,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                             seitz 08/15|
  *----------------------------------------------------------------------*/
-CONTACT::CoTSILagrangeStrategy::CoTSILagrangeStrategy(
+CONTACT::CoLagrangeStrategyTsi::CoLagrangeStrategyTsi(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
@@ -49,7 +49,7 @@ CONTACT::CoTSILagrangeStrategy::CoTSILagrangeStrategy(
 /*------------------------------------------------------------------------*
  | Assign general thermo contact state                         seitz 08/15|
  *------------------------------------------------------------------------*/
-void CONTACT::CoTSILagrangeStrategy::SetState(
+void CONTACT::CoLagrangeStrategyTsi::SetState(
     const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
 {
   switch (statetype)
@@ -109,7 +109,7 @@ void CONTACT::CoTSILagrangeStrategy::SetState(
 }
 
 
-void CONTACT::CoTSILagrangeStrategy::Evaluate(
+void CONTACT::CoLagrangeStrategyTsi::Evaluate(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
     Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp)
@@ -804,7 +804,7 @@ void CONTACT::UTILS::AddVector(Epetra_Vector& src, Epetra_Vector& dst)
   return;
 }
 
-void CONTACT::CoTSILagrangeStrategy::RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,
+void CONTACT::CoLagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,
     Teuchos::RCP<Epetra_Vector> tinc, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> z_old = Teuchos::null;
@@ -875,7 +875,7 @@ void CONTACT::CoTSILagrangeStrategy::RecoverCoupled(Teuchos::RCP<Epetra_Vector> 
   return;
 };
 
-void CONTACT::CoTSILagrangeStrategy::StoreNodalQuantities(
+void CONTACT::CoLagrangeStrategyTsi::StoreNodalQuantities(
     MORTAR::StrategyBase::QuantityType type, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
@@ -919,7 +919,7 @@ void CONTACT::CoTSILagrangeStrategy::StoreNodalQuantities(
   }
 }
 
-void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::CoLagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (fscn_ == Teuchos::null) fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
   fscn_->PutScalar(0.0);
@@ -982,7 +982,7 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> di
   ftcn_ = ftcnp_;
 }
 
-void CONTACT::CoTSILagrangeStrategy::SetAlphafThermo(const Teuchos::ParameterList& tdyn)
+void CONTACT::CoLagrangeStrategyTsi::SetAlphafThermo(const Teuchos::ParameterList& tdyn)
 {
   INPAR::THR::DynamicType dyn_type =
       INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
@@ -1007,7 +1007,7 @@ void CONTACT::CoTSILagrangeStrategy::SetAlphafThermo(const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoTSILagrangeStrategy::DoWriteRestart(
+void CONTACT::CoLagrangeStrategyTsi::DoWriteRestart(
     std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors, bool forcedrestart) const
 {
   CONTACT::CoAbstractStrategy::DoWriteRestart(restart_vectors, forcedrestart);
@@ -1028,7 +1028,7 @@ void CONTACT::CoTSILagrangeStrategy::DoWriteRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoTSILagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::CoLagrangeStrategyTsi::DoReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   bool restartwithcontact = INPUT::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");

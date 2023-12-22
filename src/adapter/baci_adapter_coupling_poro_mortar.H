@@ -20,7 +20,7 @@
 #include "baci_config.H"
 
 #include "baci_adapter_coupling_nonlin_mortar.H"
-#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_poro.H"
 #include "baci_coupling_adapter.H"
 
 #include <Epetra_Comm.h>
@@ -74,7 +74,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> veli);  // h.Willmann
 
     // return the used poro lagrange strategy
-    Teuchos::RCP<CONTACT::PoroLagrangeStrategy> GetPoroStrategy()
+    Teuchos::RCP<CONTACT::CoLagrangeStrategyPoro> GetPoroStrategy()
     {
       if (porolagstrategy_ == Teuchos::null) dserror("GetPoroStrategy(): No strategy set!");
       return porolagstrategy_;
@@ -120,7 +120,7 @@ namespace ADAPTER
 
    private:
     // poro lagrange strategy
-    Teuchos::RCP<CONTACT::PoroLagrangeStrategy> porolagstrategy_;
+    Teuchos::RCP<CONTACT::CoLagrangeStrategyPoro> porolagstrategy_;
 
     // firstinit
     bool firstinit_;

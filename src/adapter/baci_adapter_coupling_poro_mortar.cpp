@@ -350,7 +350,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
   // create contact poro lagrange strategy for mesh tying
   porolagstrategy_ = Teuchos::rcp(
-      new CONTACT::PoroLagrangeStrategy(data_ptr, masterdis->DofRowMap(), masterdis->NodeRowMap(),
+      new CONTACT::CoLagrangeStrategyPoro(data_ptr, masterdis->DofRowMap(), masterdis->NodeRowMap(),
           input, interfaces, dim, comm_, alphaf, numcoupleddof, poroslave, poromaster));
 
   porolagstrategy_->Setup(false, true);

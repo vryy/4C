@@ -340,7 +340,7 @@ namespace MORTAR
     virtual bool WasInContact() const = 0;
     virtual bool WasInContactLastTimeStep() const = 0;
 
-    // Flag for Poro No Penetration Condition (overloaded by PoroLagrangeStrategy)
+    // Flag for Poro No Penetration Condition (overloaded by CoLagrangeStrategyPoro)
     virtual bool HasPoroNoPenetration() const { return false; }
 
     // Nitsche stuff

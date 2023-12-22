@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_TSI_LAGRANGE_STRATEGY_H
-#define BACI_CONTACT_TSI_LAGRANGE_STRATEGY_H
+#ifndef BACI_CONTACT_LAGRANGE_STRATEGY_TSI_H
+#define BACI_CONTACT_LAGRANGE_STRATEGY_TSI_H
 
 #include "baci_config.H"
 
@@ -54,14 +54,14 @@ namespace CONTACT
    For a more general documentation of the involved functions refer to CoAbstract Strategy.
 
    */
-  class CoTSILagrangeStrategy : public CoLagrangeStrategy
+  class CoLagrangeStrategyTsi : public CoLagrangeStrategy
   {
    public:
     /*!
       \brief Standard Constructor
 
      */
-    CoTSILagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    CoLagrangeStrategyTsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
@@ -177,8 +177,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoTSILagrangeStrategy operator=(const CoTSILagrangeStrategy& old) = delete;
-    CoTSILagrangeStrategy(const CoTSILagrangeStrategy& old) = delete;
+    CoLagrangeStrategyTsi operator=(const CoLagrangeStrategyTsi& old) = delete;
+    CoLagrangeStrategyTsi(const CoLagrangeStrategyTsi& old) = delete;
 
     // time integration
     double tsi_alpha_;
@@ -216,7 +216,7 @@ namespace CONTACT
 
     // pointer to TSI coupling object
     Teuchos::RCP<CORE::ADAPTER::Coupling> coupST_;
-  };  // class CoTSILagrangeStrategy
+  };  // class CoLagrangeStrategyTsi
 
   namespace UTILS
   {
@@ -228,4 +228,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_TSI_LAGRANGE_STRATEGY_H
+#endif  // BACI_CONTACT_LAGRANGE_STRATEGY_TSI_H

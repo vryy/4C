@@ -16,19 +16,19 @@
 #include "baci_contact_friction_node.H"
 #include "baci_contact_interface.H"
 #include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_poro.H"
+#include "baci_contact_lagrange_strategy_tsi.H"
+#include "baci_contact_lagrange_strategy_wear.H"
 #include "baci_contact_nitsche_strategy.H"
 #include "baci_contact_nitsche_strategy_fpi.H"
 #include "baci_contact_nitsche_strategy_fsi.H"
 #include "baci_contact_nitsche_strategy_poro.H"
 #include "baci_contact_node.H"
 #include "baci_contact_penalty_strategy.H"
-#include "baci_contact_poro_lagrange_strategy.H"
 #include "baci_contact_strategy_factory.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
 #include "baci_contact_utils.H"
 #include "baci_contact_utils_parallel.H"
 #include "baci_contact_wear_interface.H"
-#include "baci_contact_wear_lagrange_strategy.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
 #include "baci_inpar_wear.H"
@@ -553,11 +553,11 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
 
-  // create WearLagrangeStrategy for wear as non-distinct quantity
+  // create CoLagrangeStrategyWear for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wearLaw != INPAR::WEAR::wear_none &&
       (wearType == INPAR::WEAR::wear_intstate || wearType == INPAR::WEAR::wear_primvar))
   {
-    strategy_ = Teuchos::rcp(new WEAR::WearLagrangeStrategy(data_ptr, Discret().DofRowMap(),
+    strategy_ = Teuchos::rcp(new WEAR::CoLagrangeStrategyWear(data_ptr, Discret().DofRowMap(),
         Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
@@ -566,12 +566,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
     {
       strategy_ = Teuchos::rcp(
-          new PoroLagrangeStrategy(data_ptr, Discret().DofRowMap(), Discret().NodeRowMap(),
+          new CoLagrangeStrategyPoro(data_ptr, Discret().DofRowMap(), Discret().NodeRowMap(),
               contactParams, interfaces, dim, comm_, alphaf, maxdof, poroslave, poromaster));
     }
     else if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
-      strategy_ = Teuchos::rcp(new CoTSILagrangeStrategy(data_ptr, Discret().DofRowMap(),
+      strategy_ = Teuchos::rcp(new CoLagrangeStrategyTsi(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
@@ -1537,8 +1537,8 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   if (poro)
   {
     // output of poro no penetration lagrange multiplier!
-    CONTACT::PoroLagrangeStrategy& costrategy =
-        dynamic_cast<CONTACT::PoroLagrangeStrategy&>(GetStrategy());
+    CONTACT::CoLagrangeStrategyPoro& costrategy =
+        dynamic_cast<CONTACT::CoLagrangeStrategyPoro&>(GetStrategy());
     Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     CORE::LINALG::Export(*lambdaout, *lambdaoutexp);

@@ -24,11 +24,11 @@
 #include "baci_contact_friction_node.H"
 #include "baci_contact_integrator.H"
 #include "baci_contact_interface.H"
+#include "baci_contact_lagrange_strategy_wear.H"
 #include "baci_contact_manager.H"
 #include "baci_contact_meshtying_manager.H"
 #include "baci_contact_node.H"
 #include "baci_contact_wear_interface.H"
-#include "baci_contact_wear_lagrange_strategy.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_fs3i_biofilm_fsi_utils.H"
@@ -180,7 +180,7 @@ void WEAR::Partitioned::TimeLoopIterStagg()
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::WearLagrangeStrategy& cstrategy = static_cast<WEAR::WearLagrangeStrategy&>(strategy);
+  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
 
   // reset waccu, wold and wcurr...
   cstrategy.UpdateWearDiscretIterate(false);
@@ -249,7 +249,7 @@ void WEAR::Partitioned::TimeLoopStagg(bool alestep)
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::WearLagrangeStrategy& cstrategy = static_cast<WEAR::WearLagrangeStrategy&>(strategy);
+  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
 
   // counter and print header
   IncrementTimeAndStep();
@@ -633,7 +633,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::WearLagrangeStrategy& cstrategy = static_cast<WEAR::WearLagrangeStrategy&>(strategy);
+  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
 
   for (int i = 0; i < (int)interfaces_.size(); ++i)
   {
@@ -803,7 +803,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::WearLagrangeStrategy& cstrategy = static_cast<WEAR::WearLagrangeStrategy&>(strategy);
+  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
 
   INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
       DRT::Problem::Instance()->WearParams(), "WEARTYPE");
@@ -985,7 +985,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::WearLagrangeStrategy& cstrategy = dynamic_cast<WEAR::WearLagrangeStrategy&>(strategy);
+  WEAR::CoLagrangeStrategyWear& cstrategy = dynamic_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
 
   INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
       DRT::Problem::Instance()->WearParams(), "WEARTYPE");

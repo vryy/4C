@@ -12386,7 +12386,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
     dserror(
         "poroelastic mesh tying method needs the slave side to be poroelastic (invert master/slave "
         "definition)");
-  // see CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy for comment
+  // see CONTACT::CoLagrangeStrategyPoro::CoLagrangeStrategyPoro for comment
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();

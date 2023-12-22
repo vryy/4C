@@ -8,8 +8,8 @@ interface
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_PORO_LAGRANGE_STRATEGY_H
-#define BACI_CONTACT_PORO_LAGRANGE_STRATEGY_H
+#ifndef BACI_CONTACT_LAGRANGE_STRATEGY_PORO_H
+#define BACI_CONTACT_LAGRANGE_STRATEGY_PORO_H
 
 #include "baci_config.H"
 
@@ -34,14 +34,14 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
-  class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
+  class CoLagrangeStrategyPoro : public MonoCoupledLagrangeStrategy
   {
    public:
     /*!
     \brief Standard Constructor
 
     */
-    PoroLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    CoLagrangeStrategyPoro(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
         Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof, bool poroslave, bool poromaster);
@@ -187,8 +187,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    PoroLagrangeStrategy operator=(const PoroLagrangeStrategy& old) = delete;
-    PoroLagrangeStrategy(const PoroLagrangeStrategy& old) = delete;
+    CoLagrangeStrategyPoro operator=(const CoLagrangeStrategyPoro& old) = delete;
+    CoLagrangeStrategyPoro(const CoLagrangeStrategyPoro& old) = delete;
 
     // flag activation poro contact no penetration condition
     // h.Willmann the name is misleading as the bool is also used for other cases to access some
@@ -324,4 +324,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_PORO_LAGRANGE_STRATEGY_H
+#endif  // BACI_CONTACT_LAGRANGE_STRATEGY_PORO_H

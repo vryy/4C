@@ -20,6 +20,8 @@
 #include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
 #include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_tsi.H"
+#include "baci_contact_lagrange_strategy_wear.H"
 #include "baci_contact_nitsche_strategy.H"
 #include "baci_contact_nitsche_strategy_ssi.H"
 #include "baci_contact_nitsche_strategy_ssi_elch.H"
@@ -27,10 +29,8 @@
 #include "baci_contact_paramsinterface.H"
 #include "baci_contact_penalty_strategy.H"
 #include "baci_contact_tsi_interface.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
 #include "baci_contact_utils.H"
 #include "baci_contact_wear_interface.H"
-#include "baci_contact_wear_lagrange_strategy.H"
 #include "baci_inpar_s2i.H"
 #include "baci_inpar_ssi.H"
 #include "baci_inpar_validparameters.H"
@@ -1627,12 +1627,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   // time integration.
   double dummy = -1.0;
 
-  // create WearLagrangeStrategy for wear as non-distinct quantity
+  // create CoLagrangeStrategyWear for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wlaw != INPAR::WEAR::wear_none &&
       (wtype == INPAR::WEAR::wear_intstate || wtype == INPAR::WEAR::wear_primvar))
   {
     data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-    strategy_ptr = Teuchos::rcp(new WEAR::WearLagrangeStrategy(
+    strategy_ptr = Teuchos::rcp(new WEAR::CoLagrangeStrategyWear(
         data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
@@ -1641,7 +1641,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
         params.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
     {
       dserror("This contact strategy is not yet considered!");
-      //      strategy_ptr = Teuchos::rcp(new PoroLagrangeStrategy(
+      //      strategy_ptr = Teuchos::rcp(new CoLagrangeStrategyPoro(
       //          dof_row_map,
       //          node_row_map,
       //          params,
@@ -1655,7 +1655,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     else if (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::rcp(new CoTSILagrangeStrategy(data_ptr, dof_row_map, node_row_map,
+      strategy_ptr = Teuchos::rcp(new CoLagrangeStrategyTsi(data_ptr, dof_row_map, node_row_map,
           params, interfaces, dim, comm_ptr, dummy, dof_offset));
     }
     else

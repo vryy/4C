@@ -12,7 +12,7 @@
 
 #include "baci_contact_aug_plot.H"
 #include "baci_contact_aug_strategy.H"
-#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_poro.H"
 #include "baci_contact_strategy_factory.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
@@ -698,8 +698,8 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
   if (Strategy().HasPoroNoPenetration())
   {
     // output of poro no penetration lagrange multiplier!
-    const CONTACT::PoroLagrangeStrategy& poro_strategy =
-        dynamic_cast<const CONTACT::PoroLagrangeStrategy&>(Strategy());
+    const CONTACT::CoLagrangeStrategyPoro& poro_strategy =
+        dynamic_cast<const CONTACT::CoLagrangeStrategyPoro&>(Strategy());
     Teuchos::RCP<const Epetra_Vector> lambdaout = poro_strategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     CORE::LINALG::Export(*lambdaout, *lambdaoutexp);

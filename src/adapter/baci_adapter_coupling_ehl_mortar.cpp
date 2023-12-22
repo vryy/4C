@@ -13,7 +13,7 @@
 
 #include "baci_contact_friction_node.H"
 #include "baci_contact_interface.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_tsi.H"
 #include "baci_io.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_multiply.H"
