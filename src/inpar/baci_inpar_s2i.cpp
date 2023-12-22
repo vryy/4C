@@ -233,21 +233,24 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
               kinetic_model_choices;
           {
             {
-              // constant permeability
-              std::vector<Teuchos::RCP<INPUT::LineComponent>> constperm;
+              // constant and linear permeability
+              std::vector<Teuchos::RCP<INPUT::LineComponent>> constlinperm;
 
-              constperm.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMSCAL")));
-              constperm.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numscal")));
-              constperm.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("PERMEABILITIES")));
-              constperm.emplace_back(Teuchos::rcp(new INPUT::RealVectorComponent(
+              constlinperm.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMSCAL")));
+              constlinperm.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numscal")));
+              constlinperm.emplace_back(
+                  Teuchos::rcp(new INPUT::SeparatorComponent("PERMEABILITIES")));
+              constlinperm.emplace_back(Teuchos::rcp(new INPUT::RealVectorComponent(
                   "permeabilities", INPUT::LengthFromInt("numscal"))));
 
-              constperm.emplace_back(
+              constlinperm.emplace_back(
                   Teuchos::rcp(new INPUT::SeparatorComponent("IS_PSEUDO_CONTACT")));
-              constperm.emplace_back(Teuchos::rcp(new INPUT::IntComponent("is_pseudo_contact")));
+              constlinperm.emplace_back(Teuchos::rcp(new INPUT::IntComponent("is_pseudo_contact")));
 
               kinetic_model_choices.emplace(INPAR::S2I::kinetics_constperm,
-                  std::make_pair("ConstantPermeability", std::move(constperm)));
+                  std::make_pair("ConstantPermeability", constlinperm));
+              kinetic_model_choices.emplace(INPAR::S2I::kinetics_linearperm,
+                  std::make_pair("LinearPermeability", constlinperm));
             }
 
             {
