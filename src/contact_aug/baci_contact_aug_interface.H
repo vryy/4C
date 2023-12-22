@@ -14,17 +14,16 @@
 #include "baci_contact_aug_enum_lists.H"
 #include "baci_contact_aug_utils.H"
 #include "baci_contact_interface.H"
+#include "baci_contact_paramsinterface.H"
 #include "baci_linalg_fixedsizematrix.H"
 
 BACI_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  // forward declaration
-  class ParamsInterface;
-
   namespace AUG
   {
+    // forward declaration
     class NodeDataContainer;
     namespace INTERFACE
     {
