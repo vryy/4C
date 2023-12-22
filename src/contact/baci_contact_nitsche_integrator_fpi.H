@@ -25,9 +25,9 @@ namespace XFEM
 
 namespace CONTACT
 {
-  class CoElement;
+  class Element;
 
-  class CoIntegratorNitscheFpi : public CoIntegratorNitschePoro
+  class IntegratorNitscheFpi : public IntegratorNitschePoro
   {
    public:
     /*!
@@ -41,7 +41,7 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitscheFpi(
+    IntegratorNitscheFpi(
         Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
     //! @name Derived functions
     //! @{
@@ -113,7 +113,7 @@ namespace CONTACT
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override
     {
-      dserror("2d problems not available for CoIntegratorNitscheFsi, as CutFEM is only 3D!");
+      dserror("2d problems not available for IntegratorNitscheFsi, as CutFEM is only 3D!");
     }
 
    private:

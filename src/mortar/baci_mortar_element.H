@@ -706,7 +706,7 @@ namespace MORTAR
     /*!
     \brief Compute element unit normal derivative at local coordinate xi
            This function is a real stand-alone function to be called
-           for a CoElement in order to compute a unit normal derivative at any point.
+           for a Element in order to compute a unit normal derivative at any point.
     */
     virtual void DerivUnitNormalAtXi(
         const double* xi, std::vector<CORE::GEN::pairedvector<int, double>>& derivn);

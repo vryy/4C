@@ -43,7 +43,7 @@ namespace CORE::LINALG
 namespace CONTACT
 {
   // forward declarations
-  class CoInterface;
+  class Interface;
   class NoxInterface;
 
   /*! \brief Data container object for the abstract strategy
@@ -696,7 +696,7 @@ namespace CONTACT
    * Refer also to the Semesterarbeit of Bernd Budich, 2009
    *
    */
-  class CoAbstractStrategy : public MORTAR::StrategyBase
+  class AbstractStrategy : public MORTAR::StrategyBase
   {
    public:
     /*!
@@ -718,7 +718,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    CoAbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    AbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, int const maxdof);
@@ -1134,7 +1134,7 @@ namespace CONTACT
     bool Friction() const override { return Data().IsFriction(); }
 
     //! Return contact interfaces
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& ContactInterfaces() const
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& ContactInterfaces() const
     {
       return Interfaces();
     }
@@ -1352,7 +1352,7 @@ namespace CONTACT
     //! @name Quantity control methods
     //!@{
 
-    /*! \brief Get some nodal quantity globally and store into CoNodes
+    /*! \brief Get some nodal quantity globally and store into Nodes
 
      The enum input parameter defines, which quantity is be updated.
      Currently the possibilities "lmold", "lmcurrent", "lmupdate" and
@@ -1364,7 +1364,7 @@ namespace CONTACT
      problems. Finally, "lmuzawa" addresses the LM update within an
      Uzawa augmented Lagrangian scheme.
 
-     \param type (in): enum defining which quantity to store into CoNodes
+     \param type (in): enum defining which quantity to store into Nodes
 
      */
     void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) override;
@@ -1376,7 +1376,7 @@ namespace CONTACT
      tangential plane. */
     void ComputeContactStresses() override;
 
-    /*! \brief Get dirichlet B.C. status and store into CoNodes
+    /*! \brief Get dirichlet B.C. status and store into Nodes
 
      This is called once at the beginning of the simulation
      to set the D.B.C. status in each CNode.
@@ -1479,7 +1479,7 @@ namespace CONTACT
     /*! @name Purely virtual functions
      *
      * All these functions are defined in one or more specific derived classes,
-     * i.e CONTACT::CoLagrangeStrategy or CONTACT::CoPenaltyStrategy.
+     * i.e CONTACT::LagrangeStrategy or CONTACT::PenaltyStrategy.
      * As the base class MORTAR::StrategyBase is always called from the control routine
      * (time integrator), these functions need to be defined purely virtual here.
      */
@@ -1708,10 +1708,10 @@ namespace CONTACT
 
    protected:
     //! access the contact interfaces of the concrete strategies (read and write)
-    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() = 0;
+    virtual std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() = 0;
 
     //! access the contact interfaces of the concrete strategies (read-only)
-    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const = 0;
+    virtual const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const = 0;
 
     /*! \brief Evaluate contact
 
@@ -2296,7 +2296,7 @@ namespace CONTACT
 
     @param old Instance of this class to be copied
     */
-    CoAbstractStrategy(const CoAbstractStrategy& old) = delete;
+    AbstractStrategy(const AbstractStrategy& old) = delete;
 
     //! pointer to the data container object
     Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr_;
@@ -2308,7 +2308,7 @@ namespace CONTACT
 }  // namespace CONTACT
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& strategy);
+std::ostream& operator<<(std::ostream& os, const CONTACT::AbstractStrategy& strategy);
 
 BACI_NAMESPACE_CLOSE
 

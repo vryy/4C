@@ -444,7 +444,7 @@ void TSI::Algorithm::GetContactStrategy()
     STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
         StructureField()->ModelEvaluator(INPAR::STR::model_contact));
     contact_strategy_nitsche_ =
-        Teuchos::rcp_dynamic_cast<CONTACT::CoNitscheStrategyTsi>(a.StrategyPtr(), false);
+        Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategyTsi>(a.StrategyPtr(), false);
     contact_strategy_nitsche_->EnableRedistribution();
 
     thermo_->SetNitscheContactStrategy(contact_strategy_nitsche_);
@@ -474,7 +474,7 @@ void TSI::Algorithm::GetContactStrategy()
     factory.CheckDimension();
 
     // create some local variables (later to be stored in strategy)
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces;
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
     Teuchos::ParameterList cparams;
 
     // read and check contact input parameters
@@ -491,7 +491,7 @@ void TSI::Algorithm::GetContactStrategy()
     // ---------------------------------------------------------------------
     // build the solver strategy object
     // ---------------------------------------------------------------------
-    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::CoLagrangeStrategyTsi>(
+    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::LagrangeStrategyTsi>(
         factory.BuildStrategy(cparams, poroslave, poromaster, 1e8, interfaces), true);
 
     // build the search tree

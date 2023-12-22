@@ -231,7 +231,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
     {
       if (StructurePoro()->MeshtyingContactBridge()->HaveContact())
       {
-        CONTACT::CoNitscheStrategy* cs = dynamic_cast<CONTACT::CoNitscheStrategy*>(
+        CONTACT::NitscheStrategy* cs = dynamic_cast<CONTACT::NitscheStrategy*>(
             &StructurePoro()->MeshtyingContactBridge()->GetStrategy());
         if (!cs)
           dserror(

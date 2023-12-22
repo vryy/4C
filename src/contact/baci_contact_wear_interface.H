@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 
 namespace WEAR
 {
-  class WearInterface : public CONTACT::CoInterface
+  class WearInterface : public CONTACT::Interface
   {
    public:
     /*!

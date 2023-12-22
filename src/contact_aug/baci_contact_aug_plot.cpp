@@ -309,7 +309,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Plot::Direction::Get(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Plot::Create(Teuchos::ParameterList& nox_params,
-    const Teuchos::ParameterList& plot_params, const CONTACT::CoAbstractStrategy* strat)
+    const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat)
 {
   if (not Activated(plot_params)) return;
 
@@ -380,7 +380,7 @@ CONTACT::AUG::Plot::Plot()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Plot::Init(
-    const Teuchos::ParameterList& plot_params, const CONTACT::CoAbstractStrategy* strat)
+    const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat)
 {
   strat_ = dynamic_cast<const CONTACT::AUG::Strategy*>(strat);
   discret_ = plot_params.get<const DRT::Discretization*>("DISCRETIZATION");

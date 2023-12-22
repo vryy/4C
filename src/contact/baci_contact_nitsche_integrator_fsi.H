@@ -25,9 +25,9 @@ namespace XFEM
 
 namespace CONTACT
 {
-  class CoElement;
+  class Element;
 
-  class CoIntegratorNitscheFsi : public CoIntegratorNitsche
+  class IntegratorNitscheFsi : public IntegratorNitsche
   {
    public:
     /*!
@@ -41,7 +41,7 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitscheFsi(
+    IntegratorNitscheFsi(
         Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
     //! @name Derived functions
     //! @{
@@ -113,7 +113,7 @@ namespace CONTACT
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override
     {
-      dserror("2d problems not available for CoIntegratorNitscheFsi, as CutFEM is only 3D!");
+      dserror("2d problems not available for IntegratorNitscheFsi, as CutFEM is only 3D!");
     }
 
    private:
@@ -143,10 +143,10 @@ namespace CONTACT
   namespace UTILS
   {
     /// Compute Cauchy stress component sigma_{n dir} at local coord xsi
-    double SolidCauchyAtXi(CONTACT::CoElement* cele,  ///< the contact element
-        const CORE::LINALG::Matrix<2, 1>& xsi,        ///< local coord on the ele element
-        const CORE::LINALG::Matrix<3, 1>& n,          ///< normal n
-        const CORE::LINALG::Matrix<3, 1>& dir         ///< second directional vector
+    double SolidCauchyAtXi(CONTACT::Element* cele,  ///< the contact element
+        const CORE::LINALG::Matrix<2, 1>& xsi,      ///< local coord on the ele element
+        const CORE::LINALG::Matrix<3, 1>& n,        ///< normal n
+        const CORE::LINALG::Matrix<3, 1>& dir       ///< second directional vector
     );
   }  // namespace UTILS
 }  // namespace CONTACT

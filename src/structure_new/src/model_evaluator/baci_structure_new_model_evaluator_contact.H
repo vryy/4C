@@ -23,7 +23,7 @@ BACI_NAMESPACE_OPEN
 namespace CONTACT
 {
   class Manager;
-  class CoAbstractStrategy;
+  class AbstractStrategy;
 }  // namespace CONTACT
 
 namespace MORTAR
@@ -179,11 +179,11 @@ namespace STR
       //!@{
 
       //! Returns a pointer to the underlying contact strategy object
-      const Teuchos::RCP<CONTACT::CoAbstractStrategy>& StrategyPtr();
+      const Teuchos::RCP<CONTACT::AbstractStrategy>& StrategyPtr();
 
       //! Returns the underlying contact strategy object
-      CONTACT::CoAbstractStrategy& Strategy();
-      const CONTACT::CoAbstractStrategy& Strategy() const;
+      CONTACT::AbstractStrategy& Strategy();
+      const CONTACT::AbstractStrategy& Strategy() const;
 
       //!@}
 
@@ -197,7 +197,7 @@ namespace STR
       void PostSetup(Teuchos::ParameterList& cparams);
 
       /// Set the correct time integration parameters within the contact strategy
-      void SetTimeIntegrationInfo(CONTACT::CoAbstractStrategy& strategy) const;
+      void SetTimeIntegrationInfo(CONTACT::AbstractStrategy& strategy) const;
 
       void PostUpdateStepState();
 
@@ -207,7 +207,7 @@ namespace STR
       Teuchos::RCP<STR::MODELEVALUATOR::ContactData> eval_contact_ptr_;
 
       //! contact strategy
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr_;
+      Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr_;
 
     };  // class Contact
 

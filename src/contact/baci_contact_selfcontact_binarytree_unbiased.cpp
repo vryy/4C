@@ -152,14 +152,14 @@ void CONTACT::UnbiasedSelfBinaryTree::DefineSearchElements()
   {
     // get the current element to content of "isslave"
     DRT::Element* element = Discret().gElement(eleID);
-    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
+    CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     if (celement->IsSlave() != true)
       dserror("Element: this should not happen!");
     else
       for (int i = 0; i < element->NumNode(); ++i)
       {
         DRT::Node* node = element->Nodes()[i];
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
         if (cnode->IsSlave() != true) dserror("Node: this should not happen!");
       }
 
@@ -496,7 +496,7 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
   {
     const int gid = leafiter->first;
     DRT::Element* element = Discret().gElement(gid);
-    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
+    CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     // set contact element to slave
     celement->SetSlave() = true;
@@ -505,7 +505,7 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
     for (int i = 0; i < element->NumNode(); ++i)
     {
       DRT::Node* node = element->Nodes()[i];
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       cnode->SetSlave() = true;
     }
     // increment iterator

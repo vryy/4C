@@ -28,9 +28,9 @@ BACI_NAMESPACE_OPEN
 CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
     Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
-    : CoLagrangeStrategy(
+    : LagrangeStrategy(
           data_ptr, DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
       has_to_evaluate_(false),
       has_to_recover_(false)
@@ -49,7 +49,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
     Teuchos::RCP<Epetra_Vector>& rhs_s, const int step, const int iter, bool predictor)
 {
   // call the main routine for contact!!!
-  CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(dis, k_ss, rhs_s, step, iter, predictor);
+  CONTACT::AbstractStrategy::ApplyForceStiffCmt(dis, k_ss, rhs_s, step, iter, predictor);
 
   // Take care of the alternative condensation of the off-diagonal blocks!!!
   std::map<int, Teuchos::RCP<CORE::LINALG::SparseOperator>*>::iterator matiter;
@@ -71,7 +71,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
     const int step, const int iter, bool predictor)
 {
   // call the main routine for contact!!!
-  CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(dis, k_ss, rhs_s, step, iter, predictor);
+  CONTACT::AbstractStrategy::ApplyForceStiffCmt(dis, k_ss, rhs_s, step, iter, predictor);
 
   // Take care of the alternative condensation of the off-diagonal blocks!!!
   EvaluateOffDiagContact(k_sx, 0);
@@ -325,7 +325,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
-  CoLagrangeStrategy::Recover(
+  LagrangeStrategy::Recover(
       disi);  // Update Structural Part! --> Here just Part from Coupling Matrix will be added!
 
   if (inc.size() == 0 && csx_s_.size() == 0)

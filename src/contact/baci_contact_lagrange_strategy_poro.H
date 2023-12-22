@@ -34,16 +34,16 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
-  class CoLagrangeStrategyPoro : public MonoCoupledLagrangeStrategy
+  class LagrangeStrategyPoro : public MonoCoupledLagrangeStrategy
   {
    public:
     /*!
     \brief Standard Constructor
 
     */
-    CoLagrangeStrategyPoro(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    LagrangeStrategyPoro(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof, bool poroslave, bool poromaster);
 
 
@@ -187,8 +187,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoLagrangeStrategyPoro operator=(const CoLagrangeStrategyPoro& old) = delete;
-    CoLagrangeStrategyPoro(const CoLagrangeStrategyPoro& old) = delete;
+    LagrangeStrategyPoro operator=(const LagrangeStrategyPoro& old) = delete;
+    LagrangeStrategyPoro(const LagrangeStrategyPoro& old) = delete;
 
     // flag activation poro contact no penetration condition
     // h.Willmann the name is misleading as the bool is also used for other cases to access some

@@ -22,30 +22,30 @@ namespace CONTACT
   /*!
    * @brief Contact solving strategy with Nitsche's method.
    *
-   * This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   * For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   * This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   * For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
    */
-  class CoNitscheStrategySsi : public CoNitscheStrategy
+  class NitscheStrategySsi : public NitscheStrategy
   {
    public:
     //! Standard constructor
-    CoNitscheStrategySsi(const Epetra_Map* dofRowMap, const Epetra_Map* nodeRowMap,
+    NitscheStrategySsi(const Epetra_Map* dofRowMap, const Epetra_Map* nodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<Epetra_Comm>& comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(
+        : NitscheStrategy(
               dofRowMap, nodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof)
     {
     }
 
     //! Shared data constructor
-    CoNitscheStrategySsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategySsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dofRowMap, const Epetra_Map* nodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(data_ptr, dofRowMap, nodeRowMap, params, std::move(interface), dim,
-              comm, alphaf, maxdof)
+        : NitscheStrategy(data_ptr, dofRowMap, nodeRowMap, params, std::move(interface), dim, comm,
+              alphaf, maxdof)
     {
     }
 
@@ -90,9 +90,9 @@ namespace CONTACT
         const enum CONTACT::MatBlockType& bp) const;
 
     //! don't want = operator
-    CoNitscheStrategySsi operator=(const CoNitscheStrategySsi& old) = delete;
+    NitscheStrategySsi operator=(const NitscheStrategySsi& old) = delete;
     //! don't want copy constructor
-    CoNitscheStrategySsi(const CoNitscheStrategySsi& old) = delete;
+    NitscheStrategySsi(const NitscheStrategySsi& old) = delete;
 
    protected:
     Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(

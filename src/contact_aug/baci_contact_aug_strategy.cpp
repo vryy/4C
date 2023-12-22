@@ -145,7 +145,7 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
     const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
     const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
     int maxdof)
-    : CONTACT::CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
+    : CONTACT::AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
       augDataPtr_(Teuchos::rcp_dynamic_cast<CONTACT::AUG::DataContainer>(data_ptr, true)),
       augData_(*augDataPtr_)
 {
@@ -188,7 +188,7 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
   interface_.reserve(interfaces.size());
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
   {
-    const Teuchos::RCP<CONTACT::CoInterface>& interface = *cit;
+    const Teuchos::RCP<CONTACT::Interface>& interface = *cit;
     // cast to augmented interfaces just as sanity check
     interface_.push_back(Teuchos::rcp_dynamic_cast<CONTACT::AUG::Interface>(interface, true));
   }
@@ -266,7 +266,7 @@ void CONTACT::AUG::Strategy::PostSetup(bool redistributed, bool init)
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
-  CONTACT::CoAbstractStrategy::Update(dis);
+  CONTACT::AbstractStrategy::Update(dis);
   InitializeCn(Data().ConstantCn());
 }
 
@@ -346,7 +346,7 @@ void CONTACT::AUG::Strategy::RedistributeCn()
 void CONTACT::AUG::Strategy::DoReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
-  CONTACT::CoAbstractStrategy::DoReadRestart(reader, dis, cparams_ptr);
+  CONTACT::AbstractStrategy::DoReadRestart(reader, dis, cparams_ptr);
   PostSetup(false, false);
 }
 
@@ -709,7 +709,7 @@ void CONTACT::AUG::Strategy::Reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   Data().SetCurrentEvalState(MORTAR::eval_none);
-  CONTACT::CoAbstractStrategy::Reset(cparams, dispnp, xnew);
+  CONTACT::AbstractStrategy::Reset(cparams, dispnp, xnew);
 }
 
 /*----------------------------------------------------------------------*
@@ -1258,7 +1258,7 @@ void CONTACT::AUG::Strategy::CheckConservationLaws(CONTACT::ParamsInterface& cpa
     for (plain_interface_set::const_iterator cit = interface_.begin(); cit != interface_.end();
          ++cit, ++icount)
     {
-      const CoInterface& interface = **cit;
+      const CONTACT::Interface& interface = **cit;
 
       if (Comm().MyPID() == 0)
       {
@@ -1416,7 +1416,7 @@ void CONTACT::AUG::Strategy::ComputeContactStresses()
   // loop over all interfaces
   for (plain_interface_set::const_iterator cit = interface_.begin(); cit != interface_.end(); ++cit)
   {
-    const CoInterface& interface = **cit;
+    const CONTACT::Interface& interface = **cit;
 
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < interface.SlaveRowNodes()->NumMyElements(); ++j)
@@ -1424,7 +1424,7 @@ void CONTACT::AUG::Strategy::ComputeContactStresses()
       int gid = interface.SlaveRowNodes()->GID(j);
       DRT::Node* node = interface.Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
+      Node* cnode = dynamic_cast<Node*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
@@ -1433,8 +1433,8 @@ void CONTACT::AUG::Strategy::ComputeContactStresses()
 
       // get nodal normal and tangential directions
       double* nn = cnode->MoData().n();
-      double* nt1 = cnode->CoData().txi();
-      double* nt2 = cnode->CoData().teta();
+      double* nt1 = cnode->Data().txi();
+      double* nt2 = cnode->Data().teta();
       double lmn = cnode->MoData().lm()[0];
       double lmt1 = cnode->MoData().lm()[1];
       double lmt2 = cnode->MoData().lm()[2];
@@ -2165,7 +2165,7 @@ double CONTACT::AUG::Strategy::CharacteristicInterfaceElementLength(
   //  find the maximal characteristic interface element length
   double my_max_ih = -1.0;
 
-  for (const Teuchos::RCP<CONTACT::CoInterface>& iptr : interface_)
+  for (const Teuchos::RCP<CONTACT::Interface>& iptr : interface_)
   {
     const Interface& interface = dynamic_cast<const Interface&>(*iptr);
     my_max_ih = std::max(interface.MyCharacteristicElementLength(stype), my_max_ih);

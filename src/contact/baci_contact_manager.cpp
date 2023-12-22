@@ -45,7 +45,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
-CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
+CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
     : MORTAR::ManagerBase(), discret_(discret)
 {
   // overwrite base class communicator
@@ -54,7 +54,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   // create some local variables (later to be stored in strategy)
   const int dim = DRT::Problem::Instance()->NDim();
   if (dim != 2 && dim != 3) dserror("Contact problem must be 2D or 3D");
-  std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces;
+  std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
   Teuchos::ParameterList contactParams;
 
   // read and check contact input parameters
@@ -287,15 +287,15 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
             icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
     if (isanyselfcontact == true && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
-      dserror("CoManager: Self contact requires fully redundant slave and master storage");
+      dserror("Manager: Self contact requires fully redundant slave and master storage");
 
     // Use factory to create an empty interface and store it in this Manager.
-    Teuchos::RCP<CONTACT::CoInterface> newinterface = STRATEGY::Factory::CreateInterface(groupid1,
+    Teuchos::RCP<CONTACT::Interface> newinterface = STRATEGY::Factory::CreateInterface(groupid1,
         Comm(), dim, icparams, isself[0], Teuchos::null, Teuchos::null, contactconstitutivelawid);
     interfaces.push_back(newinterface);
 
     // Get the RCP to the last created interface
-    Teuchos::RCP<CONTACT::CoInterface> interface = interfaces.back();
+    Teuchos::RCP<CONTACT::Interface> interface = interfaces.back();
 
     // note that the nodal ids are unique because they come from
     // one global problem discretization containing all nodes of the
@@ -338,7 +338,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
           }
         }
 
-        // create CoNode object or FriNode object in the frictional case
+        // create Node object or FriNode object in the frictional case
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time
         // and found for the second, third, ... time!
@@ -395,13 +395,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
           // the only problem would have occurred for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
-          interface->AddCoNode(cnode);
+          interface->AddNode(cnode);
         }
         else
         {
-          Teuchos::RCP<CONTACT::CoNode> cnode =
-              Teuchos::rcp(new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
-                  Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
+          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(),
+              node->Owner(), Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
           if (nurbs)
@@ -454,7 +453,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
           // the only problem would have occured for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
-          interface->AddCoNode(cnode);
+          interface->AddNode(cnode);
         }
       }
     }
@@ -482,9 +481,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<DRT::Element> ele = fool->second;
-        Teuchos::RCP<CONTACT::CoElement> cele =
-            Teuchos::rcp(new CONTACT::CoElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
-                ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
+        Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize,
+            ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
 
         if ((contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
                 contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) &&
@@ -509,7 +507,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
           MORTAR::UTILS::PrepareNURBSElement(discret, ele, cele, dim);
         }
 
-        interface->AddCoElement(cele);
+        interface->AddElement(cele);
       }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
       ggsize += gsize;  // update global element counter
@@ -553,11 +551,11 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
 
-  // create CoLagrangeStrategyWear for wear as non-distinct quantity
+  // create LagrangeStrategyWear for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wearLaw != INPAR::WEAR::wear_none &&
       (wearType == INPAR::WEAR::wear_intstate || wearType == INPAR::WEAR::wear_primvar))
   {
-    strategy_ = Teuchos::rcp(new WEAR::CoLagrangeStrategyWear(data_ptr, Discret().DofRowMap(),
+    strategy_ = Teuchos::rcp(new WEAR::LagrangeStrategyWear(data_ptr, Discret().DofRowMap(),
         Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
@@ -566,17 +564,17 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
     {
       strategy_ = Teuchos::rcp(
-          new CoLagrangeStrategyPoro(data_ptr, Discret().DofRowMap(), Discret().NodeRowMap(),
+          new LagrangeStrategyPoro(data_ptr, Discret().DofRowMap(), Discret().NodeRowMap(),
               contactParams, interfaces, dim, comm_, alphaf, maxdof, poroslave, poromaster));
     }
     else if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
-      strategy_ = Teuchos::rcp(new CoLagrangeStrategyTsi(data_ptr, Discret().DofRowMap(),
+      strategy_ = Teuchos::rcp(new LagrangeStrategyTsi(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
     {
-      strategy_ = Teuchos::rcp(new CoLagrangeStrategy(data_ptr, Discret().DofRowMap(),
+      strategy_ = Teuchos::rcp(new LagrangeStrategy(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
@@ -585,7 +583,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
                algo != INPAR::MORTAR::algorithm_gpts) ||
            stype == INPAR::CONTACT::solution_uzawa)
   {
-    strategy_ = Teuchos::rcp(new CoPenaltyStrategy(data_ptr, Discret().DofRowMap(),
+    strategy_ = Teuchos::rcp(new PenaltyStrategy(data_ptr, Discret().DofRowMap(),
         Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
   }
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
@@ -595,24 +593,24 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
             contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) &&
         stype == INPAR::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::rcp(new CoNitscheStrategyPoro(data_ptr, Discret().DofRowMap(),
+      strategy_ = Teuchos::rcp(new NitscheStrategyPoro(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::fsi &&
              stype == INPAR::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::rcp(new CoNitscheStrategyFsi(data_ptr, Discret().DofRowMap(),
+      strategy_ = Teuchos::rcp(new NitscheStrategyFsi(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::fpi &&
              stype == INPAR::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::rcp(new CoNitscheStrategyFpi(data_ptr, Discret().DofRowMap(),
+      strategy_ = Teuchos::rcp(new NitscheStrategyFpi(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
     {
-      strategy_ = Teuchos::rcp(new CoNitscheStrategy(data_ptr, Discret().DofRowMap(),
+      strategy_ = Teuchos::rcp(new NitscheStrategy(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
@@ -627,7 +625,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     dserror("Unrecognized contact strategy");
   }
 
-  dynamic_cast<CONTACT::CoAbstractStrategy&>(*strategy_).Setup(false, true);
+  dynamic_cast<CONTACT::AbstractStrategy&>(*strategy_).Setup(false, true);
 
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
@@ -668,7 +666,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
 /*----------------------------------------------------------------------*
  |  read and check input parameters (public)                  popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
+bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter lists from DRT::Problem
   const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
@@ -1116,7 +1114,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   {
     // rauch 01/16
     if (Comm().MyPID() == 0)
-      std::cout << "\n \n  Warning: CONTACT::CoManager::ReadAndCheckInput() reads TIMESTEP = "
+      std::cout << "\n \n  Warning: CONTACT::Manager::ReadAndCheckInput() reads TIMESTEP = "
                 << stru.get<double>("TIMESTEP") << " from --STRUCTURAL DYNAMIC \n"
                 << std::endl;
     cparams.set<double>("TIMESTEP", stru.get<double>("TIMESTEP"));
@@ -1204,7 +1202,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 /*----------------------------------------------------------------------*
  |  write restart information for contact (public)            popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
+void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
 {
   // clear cache of maps due to varying vector size
   output.ClearMapCache();
@@ -1230,7 +1228,7 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output, bool for
 /*----------------------------------------------------------------------*
  |  read restart information for contact (public)             popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // If Parent Elements are required, we need to reconnect them before contact restart!
@@ -1239,9 +1237,9 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
   if (atype == INPAR::MORTAR::algorithm_gpts)
   {
     for (unsigned i = 0;
-         i < dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces().size();
+         i < dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy()).ContactInterfaces().size();
          ++i)
-      dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy())
+      dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy())
           .ContactInterfaces()[i]
           ->CreateVolumeGhosting();
   }
@@ -1262,7 +1260,7 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
+void CONTACT::Manager::PostprocessQuantities(IO::DiscretizationWriter& output)
 {
   if (GetStrategy().IsNitsche()) return;
 
@@ -1316,7 +1314,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> gapnodes = GetStrategy().ProblemNodes();
   Teuchos::RCP<Epetra_Vector> gaps =
-      Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strategy_)->ContactWGap();
+      Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strategy_)->ContactWGap();
   if (gaps != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));
@@ -1432,10 +1430,9 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   ///// attempt at obtaining the nid and relative displacement u of master nodes in contact - devaal
   // define my own interface
   MORTAR::StrategyBase& myStrategy = GetStrategy();
-  CoAbstractStrategy& myContactStrategy = dynamic_cast<CoAbstractStrategy&>(myStrategy);
+  AbstractStrategy& myContactStrategy = dynamic_cast<AbstractStrategy&>(myStrategy);
 
-  std::vector<Teuchos::RCP<CONTACT::CoInterface>> myInterface =
-      myContactStrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::Interface>> myInterface = myContactStrategy.ContactInterfaces();
 
   // check interface size - just doing this now for a single interface
 
@@ -1537,8 +1534,8 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   if (poro)
   {
     // output of poro no penetration lagrange multiplier!
-    CONTACT::CoLagrangeStrategyPoro& costrategy =
-        dynamic_cast<CONTACT::CoLagrangeStrategyPoro&>(GetStrategy());
+    CONTACT::LagrangeStrategyPoro& costrategy =
+        dynamic_cast<CONTACT::LagrangeStrategyPoro&>(GetStrategy());
     Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     CORE::LINALG::Export(*lambdaout, *lambdaoutexp);
@@ -1549,7 +1546,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::CoManager::PostprocessQuantitiesPerInterface(
+void CONTACT::Manager::PostprocessQuantitiesPerInterface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
   GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
@@ -1558,13 +1555,12 @@ void CONTACT::CoManager::PostprocessQuantitiesPerInterface(
 /*----------------------------------------------------------------------------------------------*
  |  Reconnect Contact Element -- Parent Element Pointers (required for restart)       ager 04/16|
  *---------------------------------------------------------------------------------------------*/
-void CONTACT::CoManager::ReconnectParentElements()
+void CONTACT::Manager::ReconnectParentElements()
 {
   {
     const Epetra_Map* elecolmap = discret_.ElementColMap();
 
-    CONTACT::CoAbstractStrategy& strategy =
-        dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy());
+    CONTACT::AbstractStrategy& strategy = dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy());
 
     for (auto& interface : strategy.ContactInterfaces())
     {
@@ -1580,8 +1576,8 @@ void CONTACT::CoManager::ReconnectParentElements()
 
         int volgid = faceele->ParentElementId();
         if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
-          dserror("CoManager::ReconnectParentElements: Element %d does not exist on this Proc!",
-              volgid);
+          dserror(
+              "Manager::ReconnectParentElements: Element %d does not exist on this Proc!", volgid);
 
         DRT::Element* vele = discret_.gElement(volgid);
         if (!vele) dserror("Cannot find element with gid %", volgid);
@@ -1595,8 +1591,8 @@ void CONTACT::CoManager::ReconnectParentElements()
 /*----------------------------------------------------------------------*
  |  Set Parent Elements for Poro Face Elements                ager 11/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoManager::SetPoroParentElement(int& slavetype, int& mastertype,
-    Teuchos::RCP<CONTACT::CoElement>& cele, Teuchos::RCP<DRT::Element>& ele)
+void CONTACT::Manager::SetPoroParentElement(int& slavetype, int& mastertype,
+    Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<DRT::Element>& ele)
 {
   // ints to communicate decision over poro bools between processors on every interface
   // safety check - because there may not be mixed interfaces and structural slave elements
@@ -1674,8 +1670,8 @@ void CONTACT::CoManager::SetPoroParentElement(int& slavetype, int& mastertype,
 /*----------------------------------------------------------------------*
  |  Find Physical Type (Poro or Structure) of Poro Interface  ager 11/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoManager::FindPoroInterfaceTypes(bool& poromaster, bool& poroslave,
-    bool& structmaster, bool& structslave, int& slavetype, int& mastertype)
+void CONTACT::Manager::FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
+    bool& structslave, int& slavetype, int& mastertype)
 {
   // find poro and structure elements when a poro coupling condition is applied on an element
   // and restrict to pure poroelastic or pure structural interfaces' sides.

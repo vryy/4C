@@ -37,7 +37,7 @@ namespace CONTACT
      *  with arbitrary shapes
      *
      *  \author hiermeier \date 03/17 */
-    class IntegrationWrapper : public CoIntegrator
+    class IntegrationWrapper : public Integrator
     {
       friend class IntegratorGeneric;
 
@@ -94,32 +94,32 @@ namespace CONTACT
      public:
       static CONTACT::AUG::IntegratorGeneric* Create(int probdim, CORE::FE::CellType slavetype,
           CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
-          CONTACT::CoIntegrator* wrapper);
+          CONTACT::Integrator* wrapper);
 
      private:
       static CONTACT::AUG::IntegratorGeneric* Create2D(CORE::FE::CellType slavetype,
           CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
-          CONTACT::CoIntegrator* wrapper);
+          CONTACT::Integrator* wrapper);
 
       template <CORE::FE::CellType slavetype>
       static CONTACT::AUG::IntegratorGeneric* Create2D(CORE::FE::CellType mastertype,
-          CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+          CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
       template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
       static CONTACT::AUG::IntegratorGeneric* Create2D(
-          CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+          CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
       static CONTACT::AUG::IntegratorGeneric* Create3D(CORE::FE::CellType slavetype,
           CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
-          CONTACT::CoIntegrator* wrapper);
+          CONTACT::Integrator* wrapper);
 
       template <CORE::FE::CellType slavetype>
       static CONTACT::AUG::IntegratorGeneric* Create3D(CORE::FE::CellType mastertype,
-          CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+          CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
       template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
       static CONTACT::AUG::IntegratorGeneric* Create3D(
-          CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+          CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
      protected:
       /// empty constructor for singleton construction
@@ -128,7 +128,7 @@ namespace CONTACT
       }
 
       /// initialize the singleton instance
-      void Init(CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper)
+      void Init(CONTACT::ParamsInterface* cparams, CONTACT::Integrator* wrapper)
       {
         if (not cparams or not wrapper)
           dserror(
@@ -141,7 +141,7 @@ namespace CONTACT
       }
 
      public:
-      IntegratorGeneric(CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator& wrapper)
+      IntegratorGeneric(CONTACT::ParamsInterface& cparams, CONTACT::Integrator& wrapper)
           : cparams_(&cparams), wrapper_(dynamic_cast<IntegrationWrapper*>(&wrapper)){};
 
       virtual ~IntegratorGeneric() = default;
@@ -211,11 +211,11 @@ namespace CONTACT
        *
        *  \author hiermeier \date 06/17 */
       static Integrator<probdim, slavetype, mastertype, IntPolicy>* Instance(
-          CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper);
+          CONTACT::ParamsInterface* cparams, CONTACT::Integrator* wrapper);
 
      public:
       //! Default constructor without active set information
-      Integrator(CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator& wrapper);
+      Integrator(CONTACT::ParamsInterface& cparams, CONTACT::Integrator& wrapper);
 
       // don't want = operator and cctor
       Integrator operator=(const Integrator& old) = delete;

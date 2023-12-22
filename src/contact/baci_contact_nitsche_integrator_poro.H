@@ -28,7 +28,7 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
-  class CoIntegratorNitschePoro : public CoIntegratorNitsche
+  class IntegratorNitschePoro : public IntegratorNitsche
   {
    public:
     /*!
@@ -42,7 +42,7 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitschePoro(
+    IntegratorNitschePoro(
         Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
    protected:

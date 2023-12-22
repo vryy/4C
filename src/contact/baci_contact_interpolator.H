@@ -43,25 +43,25 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
-  class CoNode;
+  class Node;
 }
 
 namespace NTS
 {
-  class CoInterpolator
+  class Interpolator
   {
    public:
     /*!
      \brief Constructor
 
      */
-    CoInterpolator(Teuchos::ParameterList& params, const int& dim);
+    Interpolator(Teuchos::ParameterList& params, const int& dim);
 
     /*!
      \brief Destructor
 
      */
-    virtual ~CoInterpolator() = default;
+    virtual ~Interpolator() = default;
 
     /*!
      \brief Interpolate for nts algorithm
@@ -89,7 +89,7 @@ namespace NTS
      \brief node-wise gap calculation for 3D problems
 
      */
-    void nwGap3D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
+    void nwGap3D(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, double* gpn);
 
@@ -118,7 +118,7 @@ namespace NTS
      \brief node-wise D/M calculation
 
      */
-    void nwDM2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void nwDM2D(CONTACT::Node& mynode, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::GEN::pairedvector<int, double>& dmxi);
 
@@ -126,7 +126,7 @@ namespace NTS
      \brief node-wise D/M calculation for 3D problems
 
      */
-    void nwDM3D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
+    void nwDM3D(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         std::vector<CORE::GEN::pairedvector<int, double>>& dmxi);
 
@@ -134,7 +134,7 @@ namespace NTS
      \brief node-wise gap calculation
 
      */
-    void nwGap2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void nwGap2D(CONTACT::Node& mynode, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::GEN::pairedvector<int, double>& dmxi, double* gpn);
 
@@ -142,7 +142,7 @@ namespace NTS
      \brief node-wise master temperature calculation for 3D problems
 
      */
-    void nwMasterTemp(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
+    void nwMasterTemp(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi);
 
@@ -150,7 +150,7 @@ namespace NTS
      \brief node-wise slip calculation
 
      */
-    void nwSlip2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
+    void nwSlip2D(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
@@ -161,7 +161,7 @@ namespace NTS
      \brief node-wise wear calculation (internal state var.)
 
      */
-    void nwWear2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
+    void nwWear2D(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
@@ -175,7 +175,7 @@ namespace NTS
      \brief node-wise wear calculation (primary variable)
 
      */
-    void nwTE2D(CONTACT::CoNode& mynode, double& area, double& jumpval,
+    void nwTE2D(CONTACT::Node& mynode, double& area, double& jumpval,
         CORE::GEN::pairedvector<int, double>& dslipmatrix);
 
     Teuchos::ParameterList& iparams_;  //< containing contact input parameters

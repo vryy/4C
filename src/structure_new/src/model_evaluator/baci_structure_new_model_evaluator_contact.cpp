@@ -49,7 +49,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   factory.CheckDimension();
 
   // create some local variables (later to be stored in strategy)
-  std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces;
+  std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
@@ -141,8 +141,7 @@ void STR::MODELEVALUATOR::Contact::CheckPseudo2D() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::SetTimeIntegrationInfo(
-    CONTACT::CoAbstractStrategy& strategy) const
+void STR::MODELEVALUATOR::Contact::SetTimeIntegrationInfo(CONTACT::AbstractStrategy& strategy) const
 {
   const INPAR::STR::DynamicType dyntype = TimInt().GetDataSDyn().GetDynamicType();
   const double time_fac = Int().GetIntParam();
@@ -619,9 +618,9 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
   ///// attempt at obtaining the nid and relative displacement u of master nodes in contact - devaal
   // define my own interface
   MORTAR::StrategyBase& myStrategy = strategy;
-  CoAbstractStrategy& myContactStrategy = dynamic_cast<CoAbstractStrategy&>(myStrategy);
+  AbstractStrategy& myContactStrategy = dynamic_cast<AbstractStrategy&>(myStrategy);
 
-  std::vector<Teuchos::RCP<CONTACT::CoInterface>> myInterface = Strategy().ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::Interface>> myInterface = Strategy().ContactInterfaces();
 
   // check interface size - just doing this now for a single interface
 
@@ -698,8 +697,8 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
   if (Strategy().HasPoroNoPenetration())
   {
     // output of poro no penetration lagrange multiplier!
-    const CONTACT::CoLagrangeStrategyPoro& poro_strategy =
-        dynamic_cast<const CONTACT::CoLagrangeStrategyPoro&>(Strategy());
+    const CONTACT::LagrangeStrategyPoro& poro_strategy =
+        dynamic_cast<const CONTACT::LagrangeStrategyPoro&>(Strategy());
     Teuchos::RCP<const Epetra_Vector> lambdaout = poro_strategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     CORE::LINALG::Export(*lambdaout, *lambdaoutexp);
@@ -737,7 +736,7 @@ const STR::MODELEVALUATOR::ContactData& STR::MODELEVALUATOR::Contact::EvalContac
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<CONTACT::CoAbstractStrategy>& STR::MODELEVALUATOR::Contact::StrategyPtr()
+const Teuchos::RCP<CONTACT::AbstractStrategy>& STR::MODELEVALUATOR::Contact::StrategyPtr()
 {
   CheckInitSetup();
   return strategy_ptr_;
@@ -745,7 +744,7 @@ const Teuchos::RCP<CONTACT::CoAbstractStrategy>& STR::MODELEVALUATOR::Contact::S
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoAbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy()
+CONTACT::AbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy()
 {
   CheckInitSetup();
   return *strategy_ptr_;
@@ -753,7 +752,7 @@ CONTACT::CoAbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const CONTACT::CoAbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy() const
+const CONTACT::AbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy() const
 {
   CheckInitSetup();
   return *strategy_ptr_;
@@ -900,7 +899,7 @@ void STR::MODELEVALUATOR::Contact::RunPreApplyJacobianInverse(const Epetra_Vecto
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
-  const_cast<CONTACT::CoAbstractStrategy&>(Strategy())
+  const_cast<CONTACT::AbstractStrategy&>(Strategy())
       .RunPreApplyJacobianInverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
 }
 

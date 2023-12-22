@@ -34,7 +34,7 @@ BACI_NAMESPACE_OPEN
 // forward declaration
 namespace CONTACT
 {
-  class CoNitscheStrategyTsi;
+  class NitscheStrategyTsi;
 }
 
 /*----------------------------------------------------------------------*
@@ -122,7 +122,7 @@ namespace THR
     );
 
     //! prepare thermal contact
-    void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> strategy) override
+    void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) override
     {
       contact_strategy_nitsche_ = strategy;
     }
@@ -500,7 +500,7 @@ namespace THR
     }
 
     //! Return thermal contact manager
-    Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> NitscheContactStrategy()
+    Teuchos::RCP<CONTACT::NitscheStrategyTsi> NitscheContactStrategy()
     {
       return contact_strategy_nitsche_;
     }
@@ -605,7 +605,7 @@ namespace THR
     //@{
 
     // thermo contact manager
-    Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> contact_strategy_nitsche_;
+    Teuchos::RCP<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
 
     //@}
 

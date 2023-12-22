@@ -38,7 +38,7 @@ WEAR::WearInterface::WearInterface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact)
-    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
+    : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
       wear_(false),
       wearimpl_(false),
       wearpv_(false),
@@ -415,7 +415,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
 
         for (int u = 0; u < Dim(); ++u)
         {
-          CORE::GEN::pairedvector<int, double>& numap = csnode->CoData().GetDerivN()[u];
+          CORE::GEN::pairedvector<int, double>& numap = csnode->Data().GetDerivN()[u];
           double lmu = csnode->MoData().lm()[u];
 
           // multiply T-column entry with lin n*lambda
@@ -557,7 +557,7 @@ void WEAR::WearInterface::AssembleLinT_D_Master(CORE::LINALG::SparseMatrix& lint
 
         for (int u = 0; u < Dim(); ++u)
         {
-          CORE::GEN::pairedvector<int, double>& numap = csnode->CoData().GetDerivN()[u];
+          CORE::GEN::pairedvector<int, double>& numap = csnode->Data().GetDerivN()[u];
           double lmu = csnode->MoData().lm()[u];
 
           // multiply T-column entry with lin n*lambda
@@ -922,7 +922,7 @@ void WEAR::WearInterface::EvaluateNodalNormals() const
 void WEAR::WearInterface::ExportNodalNormals() const
 {
   // call contact function
-  CONTACT::CoInterface::ExportNodalNormals();
+  CONTACT::Interface::ExportNodalNormals();
 
   std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
 
@@ -961,7 +961,7 @@ void WEAR::WearInterface::ExportNodalNormals() const
       int gid = mnoderowmap_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
       // fill nodal matrix
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
@@ -969,19 +969,19 @@ void WEAR::WearInterface::ExportNodalNormals() const
       (*loc)(0, 0) = cnode->MoData().n()[0];
       (*loc)(1, 0) = cnode->MoData().n()[1];
       (*loc)(2, 0) = cnode->MoData().n()[2];
-      (*loc)(0, 1) = cnode->CoData().txi()[0];
-      (*loc)(1, 1) = cnode->CoData().txi()[1];
-      (*loc)(2, 1) = cnode->CoData().txi()[2];
-      (*loc)(0, 2) = cnode->CoData().teta()[0];
-      (*loc)(1, 2) = cnode->CoData().teta()[1];
-      (*loc)(2, 2) = cnode->CoData().teta()[2];
+      (*loc)(0, 1) = cnode->Data().txi()[0];
+      (*loc)(1, 1) = cnode->Data().txi()[1];
+      (*loc)(2, 1) = cnode->Data().txi()[2];
+      (*loc)(0, 2) = cnode->Data().teta()[0];
+      (*loc)(1, 2) = cnode->Data().teta()[1];
+      (*loc)(2, 2) = cnode->Data().teta()[2];
 
       triad[gid] = loc;
 
       // fill nodal derivative vectors
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
 
       for (iter = derivn[0].begin(); iter != derivn[0].end(); ++iter)
       {
@@ -1064,7 +1064,7 @@ void WEAR::WearInterface::ExportNodalNormals() const
       int gid = masternodes->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
 
       if (cnode->Owner() == Comm().MyPID()) continue;
@@ -1074,17 +1074,17 @@ void WEAR::WearInterface::ExportNodalNormals() const
       cnode->MoData().n()[0] = (*loc)(0, 0);
       cnode->MoData().n()[1] = (*loc)(1, 0);
       cnode->MoData().n()[2] = (*loc)(2, 0);
-      cnode->CoData().txi()[0] = (*loc)(0, 1);
-      cnode->CoData().txi()[1] = (*loc)(1, 1);
-      cnode->CoData().txi()[2] = (*loc)(2, 1);
-      cnode->CoData().teta()[0] = (*loc)(0, 2);
-      cnode->CoData().teta()[1] = (*loc)(1, 2);
-      cnode->CoData().teta()[2] = (*loc)(2, 2);
+      cnode->Data().txi()[0] = (*loc)(0, 1);
+      cnode->Data().txi()[1] = (*loc)(1, 1);
+      cnode->Data().txi()[2] = (*loc)(2, 1);
+      cnode->Data().teta()[0] = (*loc)(0, 2);
+      cnode->Data().teta()[1] = (*loc)(1, 2);
+      cnode->Data().teta()[2] = (*loc)(2, 2);
 
       // extract derivative info
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
 
       for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
       derivn.resize(3, linsize);
@@ -1093,38 +1093,38 @@ void WEAR::WearInterface::ExportNodalNormals() const
       for (int k = 0; k < (int)(derivteta.size()); ++k) derivteta[k].clear();
       derivteta.resize(3, linsize);
 
-      cnode->CoData().GetDerivN()[0].resize(linsize);
-      cnode->CoData().GetDerivN()[1].resize(linsize);
-      cnode->CoData().GetDerivN()[2].resize(linsize);
+      cnode->Data().GetDerivN()[0].resize(linsize);
+      cnode->Data().GetDerivN()[1].resize(linsize);
+      cnode->Data().GetDerivN()[2].resize(linsize);
 
-      cnode->CoData().GetDerivTxi()[0].resize(linsize);
-      cnode->CoData().GetDerivTxi()[1].resize(linsize);
-      cnode->CoData().GetDerivTxi()[2].resize(linsize);
+      cnode->Data().GetDerivTxi()[0].resize(linsize);
+      cnode->Data().GetDerivTxi()[1].resize(linsize);
+      cnode->Data().GetDerivTxi()[2].resize(linsize);
 
-      cnode->CoData().GetDerivTeta()[0].resize(linsize);
-      cnode->CoData().GetDerivTeta()[1].resize(linsize);
-      cnode->CoData().GetDerivTeta()[2].resize(linsize);
+      cnode->Data().GetDerivTeta()[0].resize(linsize);
+      cnode->Data().GetDerivTeta()[1].resize(linsize);
+      cnode->Data().GetDerivTeta()[2].resize(linsize);
 
       for (int k = 0; k < (int)(n_x_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
+        (cnode->Data().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
       for (int k = 0; k < (int)(n_y_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
+        (cnode->Data().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
       for (int k = 0; k < (int)(n_z_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
+        (cnode->Data().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
 
       for (int k = 0; k < (int)(txi_x_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
+        (cnode->Data().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
       for (int k = 0; k < (int)(txi_y_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
+        (cnode->Data().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
       for (int k = 0; k < (int)(txi_z_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
+        (cnode->Data().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
 
       for (int k = 0; k < (int)(teta_x_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
+        (cnode->Data().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
       for (int k = 0; k < (int)(teta_y_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
+        (cnode->Data().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
       for (int k = 0; k < (int)(teta_z_key[gid].size()); ++k)
-        (cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+        (cnode->Data().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
     }
 
     // free memory
@@ -1163,7 +1163,7 @@ void WEAR::WearInterface::ExportNodalNormals() const
 void WEAR::WearInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
 {
   // call contact function
-  CONTACT::CoInterface::AssembleS(sglobal);
+  CONTACT::Interface::AssembleS(sglobal);
 
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -1174,7 +1174,7 @@ void WEAR::WearInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
 
@@ -1188,7 +1188,7 @@ void WEAR::WearInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
     if (wearimpl_ and !wearpv_)
     {
       // prepare assembly
-      std::map<int, double>& dwmap = cnode->CoData().GetDerivW();
+      std::map<int, double>& dwmap = cnode->Data().GetDerivW();
 
       for (colcurr = dwmap.begin(); colcurr != dwmap.end(); ++colcurr)
       {
@@ -1219,12 +1219,12 @@ void WEAR::WearInterface::AssembleLinG_W(CORE::LINALG::SparseMatrix& sglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
-    std::map<int, double>& dgmap = cnode->CoData().GetDerivGW();
+    std::map<int, double>& dgmap = cnode->Data().GetDerivGW();
     std::map<int, double>::iterator colcurr;
     int row = activen_->GID(i);
 
@@ -1291,10 +1291,10 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
-      std::map<int, double> dgmap = cnode->CoData().GetDerivG();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::map<int, double> dgmap = cnode->Data().GetDerivG();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -1315,7 +1315,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       // more information from node
       double* n = cnode->MoData().n();
       double* z = cnode->MoData().lm();
-      double& wgap = cnode->CoData().Getg();
+      double& wgap = cnode->Data().Getg();
 
       // iterator for maps
       std::map<int, double>::iterator colcurr;
@@ -1340,8 +1340,8 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       double jumptxi = 0;
       double jumpteta = 0;
       double* jump = cnode->FriData().jump();
-      double* txi = cnode->CoData().txi();
-      double* teta = cnode->CoData().teta();
+      double* txi = cnode->Data().txi();
+      double* teta = cnode->Data().teta();
 
       for (int i = 0; i < Dim(); i++) znor += n[i] * z[i];
 
@@ -1552,7 +1552,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       if (wearimpl_ and !wearpv_)
       {
         // linearization of weighted wear w.r.t. displacements **********************
-        std::map<int, double>& dwmap = cnode->CoData().GetDerivW();
+        std::map<int, double>& dwmap = cnode->Data().GetDerivW();
         for (colcurr = dwmap.begin(); colcurr != dwmap.end(); ++colcurr)
         {
           int col = colcurr->first;
@@ -1585,8 +1585,8 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
         dserror("AssembleLinStick: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
@@ -1622,8 +1622,8 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       double jumpteta = 0;
 
       // more information from node
-      double* txi = cnode->CoData().txi();
-      double* teta = cnode->CoData().teta();
+      double* txi = cnode->Data().txi();
+      double* teta = cnode->Data().teta();
       double* jump = cnode->FriData().jump();
 
       // slip
@@ -1801,9 +1801,9 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -1823,8 +1823,8 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
 
       // more information from node
       double* n = cnode->MoData().n();
-      double* txi = cnode->CoData().txi();
-      double* teta = cnode->CoData().teta();
+      double* txi = cnode->Data().txi();
+      double* teta = cnode->Data().teta();
       double* z = cnode->MoData().lm();
 
       // iterator for maps
@@ -1930,7 +1930,7 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
 
           /*** 1 ****************** frcoeff*cn*deriv (g).(ztan+ct*utan) ***/
           // prepare assembly
-          std::map<int, double>& dgwmap = cnode->CoData().GetDerivGW();
+          std::map<int, double>& dgwmap = cnode->Data().GetDerivGW();
 
           // loop over all entries of the current derivative map
           for (colcurr = dgwmap.begin(); colcurr != dgwmap.end(); ++colcurr)
@@ -1991,9 +1991,9 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -2013,10 +2013,10 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 
       // more information from node
       double* n = cnode->MoData().n();
-      double* txi = cnode->CoData().txi();
-      double* teta = cnode->CoData().teta();
+      double* txi = cnode->Data().txi();
+      double* teta = cnode->Data().teta();
       double* z = cnode->MoData().lm();
-      double& wgap = cnode->CoData().Getg();
+      double& wgap = cnode->Data().Getg();
 
       // iterator for maps
       std::map<int, double>::iterator colcurr;
@@ -2371,7 +2371,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 #ifdef CONSISTENTSLIP
         /*** Additional Terms ***/
         // wgap derivative
-        std::map<int, double>& dgmap = cnode->CoData().GetDerivG();
+        std::map<int, double>& dgmap = cnode->Data().GetDerivG();
 
         for (colcurr = dgmap.begin(); colcurr != dgmap.end(); ++colcurr)
         {
@@ -2670,7 +2670,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 
         /*** 7 ****************** frcoeff*cn*deriv (g).(ztan+ct*utan) ***/
         // prepare assembly
-        std::map<int, double>& dgmap = cnode->CoData().GetDerivG();
+        std::map<int, double>& dgmap = cnode->Data().GetDerivG();
 
         // loop over all entries of the current derivative map
         for (colcurr = dgmap.begin(); colcurr != dgmap.end(); ++colcurr)
@@ -2690,7 +2690,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
          *************************************************************************/
         if (wearimpl_ and !wearpv_)
         {
-          std::map<int, double>& dwmap = cnode->CoData().GetDerivW();
+          std::map<int, double>& dwmap = cnode->Data().GetDerivW();
 #ifdef CONSISTENTSLIP
           // loop over all entries of the current derivative map
           for (colcurr = dwmap.begin(); colcurr != dwmap.end(); ++colcurr)
@@ -2759,12 +2759,12 @@ void WEAR::WearInterface::AssembleLinWLm(CORE::LINALG::SparseMatrix& sglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleWLm: Node ownership inconsistency!");
 
     // prepare assembly
-    std::map<int, double>& dwmap = cnode->CoData().GetDerivWlm();
+    std::map<int, double>& dwmap = cnode->Data().GetDerivWlm();
     std::map<int, double>::iterator colcurr;
     int row = activen_->GID(i);
     // row number of entries
@@ -2820,12 +2820,12 @@ void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
     ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
     // prepare assembly, get information from node
-    std::map<int, double>& dwmap = cnode->CoData().GetDerivWlm();
+    std::map<int, double>& dwmap = cnode->Data().GetDerivWlm();
 
     double* jump = cnode->FriData().jump();
     double* n = cnode->MoData().n();
-    double* txi = cnode->CoData().txi();
-    double* teta = cnode->CoData().teta();
+    double* txi = cnode->Data().txi();
+    double* teta = cnode->Data().teta();
     double* z = cnode->MoData().lm();
 
     // iterator for maps
@@ -2912,12 +2912,12 @@ void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
     ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
     // prepare assembly, get information from node
-    std::map<int, double>& dwmap = cnode->CoData().GetDerivWlm();
+    std::map<int, double>& dwmap = cnode->Data().GetDerivWlm();
 
     double* jump = cnode->FriData().jump();
     double* n = cnode->MoData().n();
-    double* txi = cnode->CoData().txi();
-    double* teta = cnode->CoData().teta();
+    double* txi = cnode->Data().txi();
+    double* teta = cnode->Data().teta();
     double* z = cnode->MoData().lm();
 
     // iterator for maps
@@ -3372,7 +3372,7 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 bool WEAR::WearInterface::BuildActiveSet(bool init)
 {
   // call contact function
-  CONTACT::CoInterface::BuildActiveSet(init);
+  CONTACT::Interface::BuildActiveSet(init);
 
   // define local variables
   std::vector<int> mynodegids(0);
@@ -3400,7 +3400,7 @@ bool WEAR::WearInterface::BuildActiveSet(bool init)
       int gid = masternodes->GID(k);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       const int numdof = cnode->NumDof();
 
       int inv = 0;
@@ -3441,7 +3441,7 @@ bool WEAR::WearInterface::BuildActiveSet(bool init)
 void WEAR::WearInterface::InitializeDataContainer()
 {
   // call contact class function which calls mortar function
-  CONTACT::CoInterface::InitializeDataContainer();
+  CONTACT::Interface::InitializeDataContainer();
 
   //***********************************************************
   // both-sided wear
@@ -3814,7 +3814,7 @@ void WEAR::WearInterface::Initialize()
 
   for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
   {
-    CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
+    CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->lColNode(i));
 
     // reset feasible projection and segmentation status
     node->HasProj() = false;
@@ -3854,7 +3854,7 @@ void WEAR::WearInterface::Initialize()
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // reset nodal Mortar maps
     cnode->MoData().GetD().clear();
@@ -3862,30 +3862,30 @@ void WEAR::WearInterface::Initialize()
     cnode->MoData().GetMmod().clear();
 
     // reset derivative maps of normal vector
-    for (int j = 0; j < (int)((cnode->CoData().GetDerivN()).size()); ++j)
-      (cnode->CoData().GetDerivN())[j].clear();
-    (cnode->CoData().GetDerivN()).resize(0, 0);
+    for (int j = 0; j < (int)((cnode->Data().GetDerivN()).size()); ++j)
+      (cnode->Data().GetDerivN())[j].clear();
+    (cnode->Data().GetDerivN()).resize(0, 0);
 
     // reset derivative maps of tangent vectors
-    for (int j = 0; j < (int)((cnode->CoData().GetDerivTxi()).size()); ++j)
-      (cnode->CoData().GetDerivTxi())[j].clear();
-    (cnode->CoData().GetDerivTxi()).resize(0, 0);
-    for (int j = 0; j < (int)((cnode->CoData().GetDerivTeta()).size()); ++j)
-      (cnode->CoData().GetDerivTeta())[j].clear();
-    (cnode->CoData().GetDerivTeta()).resize(0, 0);
+    for (int j = 0; j < (int)((cnode->Data().GetDerivTxi()).size()); ++j)
+      (cnode->Data().GetDerivTxi())[j].clear();
+    (cnode->Data().GetDerivTxi()).resize(0, 0);
+    for (int j = 0; j < (int)((cnode->Data().GetDerivTeta()).size()); ++j)
+      (cnode->Data().GetDerivTeta())[j].clear();
+    (cnode->Data().GetDerivTeta()).resize(0, 0);
 
     // reset derivative map of Mortar matrices
-    (cnode->CoData().GetDerivD()).clear();
-    (cnode->CoData().GetDerivM()).clear();
+    (cnode->Data().GetDerivD()).clear();
+    (cnode->Data().GetDerivM()).clear();
 
     // reset nodal weighted gap and derivative
-    cnode->CoData().Getg() = 1.0e12;
-    (cnode->CoData().GetDerivG()).clear();
+    cnode->Data().Getg() = 1.0e12;
+    (cnode->Data().GetDerivG()).clear();
 
     // reset derivative map of lagrange multipliers
-    for (int j = 0; j < (int)((cnode->CoData().GetDerivZ()).size()); ++j)
-      (cnode->CoData().GetDerivZ())[j].clear();
-    (cnode->CoData().GetDerivZ()).resize(0);
+    for (int j = 0; j < (int)((cnode->Data().GetDerivZ()).size()); ++j)
+      (cnode->Data().GetDerivZ())[j].clear();
+    (cnode->Data().GetDerivZ()).resize(0);
 
     //************************************
     //              friction
@@ -3919,8 +3919,8 @@ void WEAR::WearInterface::Initialize()
       // only for implicit wear algorithm
       if (wearimpl_ and !wearpv_)
       {
-        (cnode->CoData().GetDerivW()).clear();
-        (cnode->CoData().GetDerivWlm()).clear();
+        (cnode->Data().GetDerivW()).clear();
+        (cnode->Data().GetDerivWlm()).clear();
       }
 
       if (wearpv_)
@@ -3937,7 +3937,7 @@ void WEAR::WearInterface::Initialize()
         (frinode->WearData().GetDerivTw()).clear();
         (frinode->WearData().GetDerivE()).clear();
 
-        (frinode->CoData().GetDerivGW()).clear();
+        (frinode->Data().GetDerivGW()).clear();
       }
       if (wear_)
       {
@@ -4062,7 +4062,7 @@ void WEAR::WearInterface::SplitSlaveDofs()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // add first dof to Nmap
     myNgids[countN] = cnode->Dofs()[0];
@@ -4119,7 +4119,7 @@ void WEAR::WearInterface::SplitMasterDofs()
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // add first dof to Nmap
     myNgids[countN] = cnode->Dofs()[0];

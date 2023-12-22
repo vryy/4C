@@ -18,7 +18,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegratorEhl::IntegrateGP_3D(MORTAR::MortarElement& sele,
+void CONTACT::IntegratorEhl::IntegrateGP_3D(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -33,7 +33,7 @@ void CONTACT::CoIntegratorEhl::IntegrateGP_3D(MORTAR::MortarElement& sele,
   // check bound
   bool bound = false;
   for (int i = 0; i < sele.NumNode(); ++i)
-    if (dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i])->IsOnBoundorCE())
+    if (dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->IsOnBoundorCE())
       dserror("no boundary modification for EHL implemented");
 
   // is quadratic case?
@@ -67,7 +67,7 @@ void CONTACT::CoIntegratorEhl::IntegrateGP_3D(MORTAR::MortarElement& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegratorEhl::IntegrateGP_2D(MORTAR::MortarElement& sele,
+void CONTACT::IntegratorEhl::IntegrateGP_2D(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -83,7 +83,7 @@ void CONTACT::CoIntegratorEhl::IntegrateGP_2D(MORTAR::MortarElement& sele,
 }
 
 
-void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement& sele,
+void CONTACT::IntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement& sele,
     const double* xi, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const CORE::LINALG::SerialDenseVector& lmval, const CORE::LINALG::SerialDenseMatrix& lmderiv,
     const CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap,
@@ -125,14 +125,13 @@ void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement
   for (int a = 0; a < sele.NumNode(); ++a)
   {
     DRT::Node* node = sele.Nodes()[a];
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("this is not a contact node");
 
     for (int c = 0; c < sele.NumNode(); ++c)
     {
       CORE::LINALG::Matrix<3, 1>& tmp =
-          cnode->CoEhlData()
-              .GetSurfGrad()[dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[c])->Dofs()[0]];
+          cnode->EhlData().GetSurfGrad()[dynamic_cast<CONTACT::Node*>(sele.Nodes()[c])->Dofs()[0]];
       for (int d = 0; d < Dim(); ++d)
         for (int al = 0; al < Dim() - 1; ++al)
           tmp(d) += wgt * jac * lmval(a) * sderiv(c, al) * gxi_contra.at(al).at(d);
@@ -143,9 +142,9 @@ void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement
       for (auto p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
       {
         CORE::LINALG::Matrix<3, 1>& tmp =
-            cnode->CoEhlData()
+            cnode->EhlData()
                 .GetSurfGradDeriv()[p->first]
-                                   [dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[c])->Dofs()[0]];
+                                   [dynamic_cast<CONTACT::Node*>(sele.Nodes()[c])->Dofs()[0]];
         for (int d = 0; d < Dim(); ++d)
           for (int al = 0; al < Dim() - 1; ++al)
             tmp(d) += wgt * p->second * lmval(a) * sderiv(c, al) * gxi_contra.at(al).at(d);
@@ -154,9 +153,9 @@ void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement
         for (auto p = dsxigp.at(e).begin(); p != dsxigp.at(e).end(); ++p)
         {
           CORE::LINALG::Matrix<3, 1>& tmp =
-              cnode->CoEhlData()
+              cnode->EhlData()
                   .GetSurfGradDeriv()[p->first]
-                                     [dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[c])->Dofs()[0]];
+                                     [dynamic_cast<CONTACT::Node*>(sele.Nodes()[c])->Dofs()[0]];
           for (int d = 0; d < Dim(); ++d)
             for (int al = 0; al < Dim() - 1; ++al)
               tmp(d) +=
@@ -166,9 +165,9 @@ void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement
       for (auto p = dualmap.begin(); p != dualmap.end(); ++p)
       {
         CORE::LINALG::Matrix<3, 1>& tmp =
-            cnode->CoEhlData()
+            cnode->EhlData()
                 .GetSurfGradDeriv()[p->first]
-                                   [dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[c])->Dofs()[0]];
+                                   [dynamic_cast<CONTACT::Node*>(sele.Nodes()[c])->Dofs()[0]];
         for (int d = 0; d < Dim(); ++d)
           for (int al = 0; al < Dim() - 1; ++al)
             for (int m = 0; m < sele.NumNode(); ++m)
@@ -181,7 +180,7 @@ void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement
   return;
 }
 
-void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
+void CONTACT::IntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const CORE::LINALG::SerialDenseVector& sval,
     const CORE::LINALG::SerialDenseVector& lmval, const CORE::LINALG::SerialDenseVector& mval,
     const CORE::LINALG::SerialDenseMatrix& sderiv, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -215,14 +214,14 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
 
   for (int i = 0; i < sele.NumNode(); ++i)
   {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i]);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(sele.Nodes()[i]);
     for (int d = 0; d < dim; ++d)
-      cnode->CoEhlData().GetWeightedRelTangVel()(d) +=
+      cnode->EhlData().GetWeightedRelTangVel()(d) +=
           jac * wgt * lmval(i) * (vt1 * t1(d) + vt2 * t2(d));
 
     for (auto p = derivjac.begin(); p != derivjac.end(); ++p)
     {
-      CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedRelTangVelDeriv()[p->first];
+      CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedRelTangVelDeriv()[p->first];
       for (int d = 0; d < dim; ++d)
         tmp(d) += p->second * wgt * lmval(i) * (vt1 * t1(d) + vt2 * t2(d));
     }
@@ -230,14 +229,14 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
     for (int e = 0; e < dim - 1; ++e)
       for (auto p = derivsxi.at(e).begin(); p != derivsxi.at(e).end(); ++p)
       {
-        CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedRelTangVelDeriv()[p->first];
+        CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedRelTangVelDeriv()[p->first];
         for (int d = 0; d < dim; ++d)
           tmp(d) += jac * wgt * lmderiv(i, e) * p->second * (vt1 * t1(d) + vt2 * t2(d));
       }
 
     for (auto p = dualmap.begin(); p != dualmap.end(); ++p)
     {
-      CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedRelTangVelDeriv()[p->first];
+      CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedRelTangVelDeriv()[p->first];
       for (int d = 0; d < dim; ++d)
         for (int m = 0; m < sele.NumNode(); ++m)
           tmp(d) += jac * wgt * p->second(i, m) * sval(m) * (vt1 * t1(d) + vt2 * t2(d));
@@ -245,24 +244,24 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
 
     for (auto p = dvt1.begin(); p != dvt1.end(); ++p)
     {
-      CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedRelTangVelDeriv()[p->first];
+      CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedRelTangVelDeriv()[p->first];
       for (int d = 0; d < dim; ++d) tmp(d) += jac * wgt * lmval(i) * p->second * t1(d);
     }
 
     for (int d = 0; d < dim; ++d)
       for (auto p = dt1.at(d).begin(); p != dt1.at(d).end(); ++p)
-        cnode->CoEhlData().GetWeightedRelTangVelDeriv()[p->first](d) +=
+        cnode->EhlData().GetWeightedRelTangVelDeriv()[p->first](d) +=
             jac * wgt * lmval(i) * vt1 * p->second;
 
     for (auto p = dvt2.begin(); p != dvt2.end(); ++p)
     {
-      CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedRelTangVelDeriv()[p->first];
+      CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedRelTangVelDeriv()[p->first];
       for (int d = 0; d < dim; ++d) tmp(d) += jac * wgt * lmval(i) * p->second * t2(d);
     }
 
     for (int d = 0; d < dim; ++d)
       for (auto p = dt2.at(d).begin(); p != dt2.at(d).end(); ++p)
-        cnode->CoEhlData().GetWeightedRelTangVelDeriv()[p->first](d) +=
+        cnode->EhlData().GetWeightedRelTangVelDeriv()[p->first](d) +=
             jac * wgt * lmval(i) * vt2 * p->second;
   }
 
@@ -272,14 +271,14 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
 
   for (int i = 0; i < sele.NumNode(); ++i)
   {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i]);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(sele.Nodes()[i]);
     for (int d = 0; d < dim; ++d)
-      cnode->CoEhlData().GetWeightedAvTangVel()(d) -=
+      cnode->EhlData().GetWeightedAvTangVel()(d) -=
           jac * wgt * lmval(i) * (vt1 * t1(d) + vt2 * t2(d));
 
     for (auto p = derivjac.begin(); p != derivjac.end(); ++p)
     {
-      CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedAvTangVelDeriv()[p->first];
+      CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedAvTangVelDeriv()[p->first];
       for (int d = 0; d < dim; ++d)
         tmp(d) -= p->second * wgt * lmval(i) * (vt1 * t1(d) + vt2 * t2(d));
     }
@@ -287,14 +286,14 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
     for (int e = 0; e < dim - 1; ++e)
       for (auto p = derivsxi.at(e).begin(); p != derivsxi.at(e).end(); ++p)
       {
-        CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedAvTangVelDeriv()[p->first];
+        CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedAvTangVelDeriv()[p->first];
         for (int d = 0; d < dim; ++d)
           tmp(d) -= jac * wgt * lmderiv(i, e) * p->second * (vt1 * t1(d) + vt2 * t2(d));
       }
 
     for (auto p = dualmap.begin(); p != dualmap.end(); ++p)
     {
-      CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedAvTangVelDeriv()[p->first];
+      CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedAvTangVelDeriv()[p->first];
       for (int d = 0; d < dim; ++d)
         for (int m = 0; m < sele.NumNode(); ++m)
           tmp(d) -= jac * wgt * p->second(i, m) * sval(m) * (vt1 * t1(d) + vt2 * t2(d));
@@ -302,24 +301,24 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
 
     for (auto p = dvt1.begin(); p != dvt1.end(); ++p)
     {
-      CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedAvTangVelDeriv()[p->first];
+      CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedAvTangVelDeriv()[p->first];
       for (int d = 0; d < dim; ++d) tmp(d) -= jac * wgt * lmval(i) * p->second * t1(d);
     }
 
     for (int d = 0; d < dim; ++d)
       for (auto p = dt1.at(d).begin(); p != dt1.at(d).end(); ++p)
-        cnode->CoEhlData().GetWeightedAvTangVelDeriv()[p->first](d) -=
+        cnode->EhlData().GetWeightedAvTangVelDeriv()[p->first](d) -=
             jac * wgt * lmval(i) * vt1 * p->second;
 
     for (auto p = dvt2.begin(); p != dvt2.end(); ++p)
     {
-      CORE::LINALG::Matrix<3, 1>& tmp = cnode->CoEhlData().GetWeightedAvTangVelDeriv()[p->first];
+      CORE::LINALG::Matrix<3, 1>& tmp = cnode->EhlData().GetWeightedAvTangVelDeriv()[p->first];
       for (int d = 0; d < dim; ++d) tmp(d) -= jac * wgt * lmval(i) * p->second * t2(d);
     }
 
     for (int d = 0; d < dim; ++d)
       for (auto p = dt2.at(d).begin(); p != dt2.at(d).end(); ++p)
-        cnode->CoEhlData().GetWeightedAvTangVelDeriv()[p->first](d) -=
+        cnode->EhlData().GetWeightedAvTangVelDeriv()[p->first](d) -=
             jac * wgt * lmval(i) * vt2 * p->second;
   }
 

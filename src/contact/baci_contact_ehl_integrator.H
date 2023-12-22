@@ -29,7 +29,7 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
-  class CoIntegratorEhl : public CONTACT::CoIntegrator
+  class IntegratorEhl : public CONTACT::Integrator
   {
    public:
     /*!
@@ -43,9 +43,9 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorEhl(
+    IntegratorEhl(
         Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
-        : CoIntegrator(params, eletype, comm)
+        : Integrator(params, eletype, comm)
     {
     }
 

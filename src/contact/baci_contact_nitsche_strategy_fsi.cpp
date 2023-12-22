@@ -19,25 +19,25 @@
 
 BACI_NAMESPACE_OPEN
 
-void CONTACT::CoNitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+void CONTACT::NitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
   if (predictor) return;
-  CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
+  CONTACT::NitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
 }
 
-void CONTACT::CoNitscheStrategyFsi::SetState(
+void CONTACT::NitscheStrategyFsi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
-  CONTACT::CoNitscheStrategy::SetState(statename, vec);
+  CONTACT::NitscheStrategy::SetState(statename, vec);
   if (statename == MORTAR::state_new_displacement)
   {
     DoContactSearch();
   }
 }
 
-void CONTACT::CoNitscheStrategyFsi::DoContactSearch()
+void CONTACT::NitscheStrategyFsi::DoContactSearch()
 {
   for (auto& interface : interface_)
   {
@@ -48,15 +48,15 @@ void CONTACT::CoNitscheStrategyFsi::DoContactSearch()
   }
 }
 
-bool CONTACT::CoNitscheStrategyFsi::CheckNitscheContactState(CONTACT::CoElement* cele,
+bool CONTACT::NitscheStrategyFsi::CheckNitscheContactState(CONTACT::Element* cele,
     const CORE::LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   return CONTACT::UTILS::CheckNitscheContactState(
       *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 
-bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinterface,
-    const double& pen_n, INPAR::CONTACT::NitscheWeighting weighting, CONTACT::CoElement* cele,
+bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterface,
+    const double& pen_n, INPAR::CONTACT::NitscheWeighting weighting, CONTACT::Element* cele,
     const CORE::LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   // No master elements found
@@ -70,7 +70,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
     dserror("This element shape is not yet implemented!");
 
   // find the corresponding master element
-  CONTACT::CoElement* other_cele = nullptr;
+  CONTACT::Element* other_cele = nullptr;
   double mxi[2] = {0.0, 0.0};
   double projalpha = 0.0;
   static const double tol = 1e-4;
@@ -79,7 +79,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
   for (int m = 0; m < cele->MoData().NumSearchElements(); ++m)
   {
     if (other_cele) break;
-    auto* test_ele = dynamic_cast<CONTACT::CoElement*>(
+    auto* test_ele = dynamic_cast<CONTACT::Element*>(
         contactinterface.Discret().gElement(cele->MoData().SearchElements()[m]));
     if (!test_ele) dserror("Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
 

@@ -22,19 +22,19 @@ BACI_NAMESPACE_OPEN
 namespace CONTACT
 {
   // forward declaration
-  class CoNode;
+  class Node;
 
-  class CoNodeType : public CORE::COMM::ParObjectType
+  class NodeType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const final { return "CoNodeType"; }
+    std::string Name() const final { return "CONTACT::NodeType"; }
 
-    static CoNodeType& Instance() { return instance_; };
+    static NodeType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static CoNodeType instance_;
+    static NodeType instance_;
   };
 
   /*!
@@ -42,11 +42,11 @@ namespace CONTACT
 
    This class contains additional information from contact nodes which are
    are not needed for contact search and therefore are only available on the
-   node's processor (ColMap). The class CoNodeDataContainer must be declared
-   before the CoNode itself.
+   node's processor (ColMap). The class NodeDataContainer must be declared
+   before the Node itself.
 
    */
-  class CoNodeDataContainer
+  class NodeDataContainer
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -55,13 +55,13 @@ namespace CONTACT
      \brief Standard Constructor
 
      */
-    CoNodeDataContainer();
+    NodeDataContainer();
 
     /*!
      \brief Destructor
 
      */
-    virtual ~CoNodeDataContainer() = default;
+    virtual ~NodeDataContainer() = default;
     /*!
      \brief Pack this class so that it can be communicated
 
@@ -392,10 +392,10 @@ namespace CONTACT
 
    private:
     //! Operator= (disabled)
-    CoNodeDataContainer operator=(const CoNodeDataContainer& old) = delete;
+    NodeDataContainer operator=(const NodeDataContainer& old) = delete;
 
     //! Copy constructor (disabled)
-    CoNodeDataContainer(const CoNodeDataContainer& old) = delete;
+    NodeDataContainer(const NodeDataContainer& old) = delete;
   };
 
   namespace AUG
@@ -417,11 +417,11 @@ namespace CONTACT
       /// @{
 
       /// constructor
-      NodeDataContainer(CoNode& parentNode);
+      NodeDataContainer(Node& parentNode);
 
       /// constructor
       NodeDataContainer(
-          CoNode& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster);
+          Node& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster);
 
       virtual ~NodeDataContainer() = default;
 
@@ -662,22 +662,22 @@ namespace CONTACT
       Debug debug_;
 
       /// constant reference to the parent node
-      const CoNode& parentNode_;
+      const Node& parentNode_;
 
     };  // class NodeDataContainer
   }     // namespace AUG
 
-  // class CoNodeDataContainer
+  // class NodeDataContainer
 
   /*!
   \brief A class containing additional data from poro contact nodes
 
   This class contains additional information from poro contact nodes which are
   are not needed for normal contact nodes.
-  CoNodePoroDataContainer must be declared before the CoNode itself.
+  NodePoroDataContainer must be declared before the Node itself.
 
   */
-  class CoNodePoroDataContainer
+  class NodePoroDataContainer
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -686,13 +686,13 @@ namespace CONTACT
     \brief Standard Constructor
 
     */
-    CoNodePoroDataContainer();
+    NodePoroDataContainer();
 
     /*!
     \brief Destructor
 
     */
-    virtual ~CoNodePoroDataContainer() = default;
+    virtual ~NodePoroDataContainer() = default;
     /*!
     \brief Pack this class so that it can be communicated
 
@@ -769,8 +769,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNodePoroDataContainer operator=(const CoNodePoroDataContainer& old) = delete;
-    CoNodePoroDataContainer(const CoNodePoroDataContainer& old) = delete;
+    NodePoroDataContainer operator=(const NodePoroDataContainer& old) = delete;
+    NodePoroDataContainer(const NodePoroDataContainer& old) = delete;
 
 
     double ncouprow_;  // nodal entry of n-coupling vector
@@ -785,7 +785,7 @@ namespace CONTACT
     double fpres_;      // fluid pressure for porous problem
     double svel_[3];    // structural velocity for porous problem
     double porolm_[3];  // lagrange multiplier from poro no penetration condition!
-  };                    // class CoNodePoroDataContainer
+  };                    // class NodePoroDataContainer
 
   /*!
   \brief A class containing additional data from tsi contact nodes
@@ -794,7 +794,7 @@ namespace CONTACT
   are not needed for normal contact nodes.
 
   */
-  class CoNodeTSIDataContainer
+  class NodeTSIDataContainer
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -803,19 +803,19 @@ namespace CONTACT
     \brief Standard Constructor
 
     */
-    CoNodeTSIDataContainer(double t_ref, double t_dam);
+    NodeTSIDataContainer(double t_ref, double t_dam);
 
     /*!
     \brief empty Constructor: unpack data later
 
     */
-    CoNodeTSIDataContainer(){};
+    NodeTSIDataContainer(){};
 
     /*!
     \brief Destructor
 
     */
-    virtual ~CoNodeTSIDataContainer() = default;
+    virtual ~NodeTSIDataContainer() = default;
     /*!
     \brief Pack this class so that it can be communicated
 
@@ -872,8 +872,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNodeTSIDataContainer operator=(const CoNodeTSIDataContainer& old) = delete;
-    CoNodeTSIDataContainer(const CoNodeTSIDataContainer& old) = delete;
+    NodeTSIDataContainer operator=(const NodeTSIDataContainer& old) = delete;
+    NodeTSIDataContainer(const NodeTSIDataContainer& old) = delete;
 
     double temp_;
     double t_ref_;
@@ -884,7 +884,7 @@ namespace CONTACT
     std::map<int, double> derivTempMasterDisp_;
     std::map<int, double> derivTempMasterTemp_;
 
-  };  // class CoNodeTSIDataContainer
+  };  // class NodeTSIDataContainer
 
   /*!
   \brief A class containing additional data from EHL contact nodes
@@ -893,14 +893,14 @@ namespace CONTACT
   are not needed for normal contact nodes.
 
   */
-  class CoNodeEhlDataContainer
+  class NodeEhlDataContainer
   {
    public:
     //! empty c-tor
-    CoNodeEhlDataContainer() {}
+    NodeEhlDataContainer() {}
 
     //! d-tor
-    virtual ~CoNodeEhlDataContainer() = default;
+    virtual ~NodeEhlDataContainer() = default;
 
     //! pack for parallel communication
     virtual void Pack(CORE::COMM::PackBuffer& data) const {
@@ -943,8 +943,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNodeEhlDataContainer operator=(const CoNodeEhlDataContainer& old) = delete;
-    CoNodeEhlDataContainer(const CoNodeEhlDataContainer& old) = delete;
+    NodeEhlDataContainer operator=(const NodeEhlDataContainer& old) = delete;
+    NodeEhlDataContainer(const NodeEhlDataContainer& old) = delete;
 
     // actual data
     CORE::LINALG::Matrix<3, 1> weighted_relTangVel_;
@@ -963,13 +963,13 @@ namespace CONTACT
    This class represents a finite element node capable of contact.
 
    */
-  class CoNode : public MORTAR::MortarNode
+  class Node : public MORTAR::MortarNode
   {
    public:
     //! @name Enums and Friends
 
     /*!
-     \brief The Discretization is a friend of CoNode
+     \brief The Discretization is a friend of Node
      */
     friend class DRT::Discretization;
 
@@ -988,22 +988,22 @@ namespace CONTACT
      \param initactive (in): flag indicating whether initially set to active
 
      */
-    CoNode(int id, const std::vector<double>& coords, const int owner, const std::vector<int>& dofs,
+    Node(int id, const std::vector<double>& coords, const int owner, const std::vector<int>& dofs,
         const bool isslave, const bool initactive);
 
     /*!
      \brief Copy Constructor
 
-     Makes a deep copy of a CoNode
+     Makes a deep copy of a Node
 
      */
-    CoNode(const CONTACT::CoNode& old);
+    Node(const CONTACT::Node& old);
 
     /*!
      \brief Deep copy the derived class and return pointer to it
 
      */
-    CONTACT::CoNode* Clone() const override;
+    CONTACT::Node* Clone() const override;
 
 
     /*!
@@ -1013,7 +1013,7 @@ namespace CONTACT
      top of lib/parobject.H.
 
      */
-    int UniqueParObjectId() const override { return CoNodeType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return NodeType::Instance().UniqueParObjectId(); }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -1078,8 +1078,8 @@ namespace CONTACT
      contact specific quantities/information are stored.
 
      */
-    inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
-    inline CONTACT::CoNodeDataContainer& CoData() const { return *codata_; }
+    inline CONTACT::NodeDataContainer& Data() { return *codata_; }
+    inline CONTACT::NodeDataContainer& Data() const { return *codata_; }
 
     /*! \brief Return data container of this augmented contact node
      *
@@ -1098,9 +1098,9 @@ namespace CONTACT
       return *augdata_;
     };
 
-    inline CONTACT::CoNodePoroDataContainer& CoPoroData() { return *coporodata_; }
-    inline CONTACT::CoNodeTSIDataContainer& CoTSIData() { return *cTSIdata_; }
-    inline CONTACT::CoNodeEhlDataContainer& CoEhlData() { return *cEHLdata_; }
+    inline CONTACT::NodePoroDataContainer& PoroData() { return *coporodata_; }
+    inline CONTACT::NodeTSIDataContainer& TSIData() { return *cTSIdata_; }
+    inline CONTACT::NodeEhlDataContainer& EhlData() { return *cEHLdata_; }
 
     //@}
 
@@ -1273,7 +1273,7 @@ namespace CONTACT
 
     //! @}
 
-    virtual bool HasCoTSIData() { return (cTSIdata_ != Teuchos::null); }
+    virtual bool HasTSIData() { return (cTSIdata_ != Teuchos::null); }
 
     /*!
      \brief Write nodal normals to old ones
@@ -1313,25 +1313,25 @@ namespace CONTACT
     int linsize_;
 
     //! Additional information of proc's contact nodes
-    Teuchos::RCP<CONTACT::CoNodeDataContainer> codata_;
+    Teuchos::RCP<CONTACT::NodeDataContainer> codata_;
 
     //! Additional information of proc's augmented contact nodes
     Teuchos::RCP<CONTACT::AUG::NodeDataContainer> augdata_;
 
     //! Additional information of proc's poro contact nodes
-    Teuchos::RCP<CONTACT::CoNodePoroDataContainer> coporodata_;
+    Teuchos::RCP<CONTACT::NodePoroDataContainer> coporodata_;
 
     //! Additional information of TSI contact nodes
-    Teuchos::RCP<CONTACT::CoNodeTSIDataContainer> cTSIdata_;
+    Teuchos::RCP<CONTACT::NodeTSIDataContainer> cTSIdata_;
 
     //! Additional information of EHL contact nodes
-    Teuchos::RCP<CONTACT::CoNodeEhlDataContainer> cEHLdata_;
+    Teuchos::RCP<CONTACT::NodeEhlDataContainer> cEHLdata_;
   };
-  // class CoNode
+  // class Node
 }  // namespace CONTACT
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CONTACT::CoNode& cnode);
+std::ostream& operator<<(std::ostream& os, const CONTACT::Node& cnode);
 
 BACI_NAMESPACE_CLOSE
 

@@ -44,7 +44,7 @@ namespace CONTACT
 
    */
 
-  class CoIntegrator
+  class Integrator
   {
    public:
     /*!
@@ -58,19 +58,18 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegrator(
-        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
+    Integrator(Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
     /*!
      \brief Destructor
 
      */
-    virtual ~CoIntegrator() = default;
+    virtual ~Integrator() = default;
 
     //! don't want = operator
-    CoIntegrator operator=(const CoIntegrator& old) = delete;
+    Integrator operator=(const Integrator& old) = delete;
     //! don't want copy constructor
-    CoIntegrator(const CoIntegrator& old) = delete;
+    Integrator(const Integrator& old) = delete;
 
     //! get specified integration type
     inline enum INPAR::MORTAR::IntType IntegrationType() const { return integrationtype_; }
@@ -903,7 +902,7 @@ namespace CONTACT
    private:
     //! integration type from the parameter-list
     INPAR::MORTAR::IntType integrationtype_;
-  };  // class CoIntegrator
+  };  // class Integrator
 }  // namespace CONTACT
 
 

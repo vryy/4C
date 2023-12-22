@@ -77,7 +77,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   // copy interfaces for material configuration
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
+  WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   // get dimension
   dim_ = strategy.Dim();
@@ -114,7 +114,7 @@ void WEAR::Algorithm::CheckInput()
 void WEAR::Algorithm::CreateMaterialInterface()
 {
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
+  WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   // create some local variables (later to be stored in strategy)
   int dim = DRT::Problem::Instance()->NDim();
@@ -306,12 +306,12 @@ void WEAR::Algorithm::CreateMaterialInterface()
       dserror("Self contact requires fully redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
-    Teuchos::RCP<CONTACT::CoInterface> newinterface = CONTACT::STRATEGY::Factory::CreateInterface(
+    Teuchos::RCP<CONTACT::Interface> newinterface = CONTACT::STRATEGY::Factory::CreateInterface(
         groupid1, Comm(), dim, icparams, isself[0], Teuchos::null);
     interfacesMat_.push_back(newinterface);
 
     // get it again
-    Teuchos::RCP<CONTACT::CoInterface> interface = interfacesMat_[(int)interfacesMat_.size() - 1];
+    Teuchos::RCP<CONTACT::Interface> interface = interfacesMat_[(int)interfacesMat_.size() - 1];
 
     // note that the nodal ids are unique because they come from
     // one global problem discretization containing all nodes of the
@@ -352,7 +352,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
             }
         }
 
-        // create CoNode object or FriNode object in the frictional case
+        // create Node object or FriNode object in the frictional case
         INPAR::CONTACT::FrictionType ftype =
             INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
 
@@ -397,12 +397,12 @@ void WEAR::Algorithm::CreateMaterialInterface()
           // the only problem would have occured for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
-          interface->AddCoNode(cnode);
+          interface->AddNode(cnode);
         }
         else
         {
-          Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(),
-              node->X(), node->Owner(), structure_->Discretization()->Dof(0, node), isslave[j],
+          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(),
+              node->Owner(), structure_->Discretization()->Dof(0, node), isslave[j],
               isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
@@ -431,7 +431,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
           // the only problem would have occured for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
-          interface->AddCoNode(cnode);
+          interface->AddNode(cnode);
         }
       }
     }
@@ -459,8 +459,8 @@ void WEAR::Algorithm::CreateMaterialInterface()
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<DRT::Element> ele = fool->second;
-        Teuchos::RCP<CONTACT::CoElement> cele =
-            Teuchos::rcp(new CONTACT::CoElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
+        Teuchos::RCP<CONTACT::Element> cele =
+            Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
                 ele->NumNode(), ele->NodeIds(), isslave[j], cparams.get<bool>("NURBS")));
 
         //------------------------------------------------------------------
@@ -486,7 +486,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
           cele->NormalFac() = normalfac;
         }
 
-        interface->AddCoElement(cele);
+        interface->AddElement(cele);
       }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
       ggsize += gsize;  // update global element counter

@@ -42,7 +42,7 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
        * and also classical Penalty with Gauss-point-to-segment (GPTS).
        *
        * In theory, penalty with GPTS should work just fine, because it should never need a volume
-       * ghosting. However, penalty with GPTS is implemented in the CoNitscheStrategy, which
+       * ghosting. However, penalty with GPTS is implemented in the NitscheStrategy, which
        * always requires volume ghosting.
        *
        * Other cases require volume ghosting as well and, thus, have to stick to the old code

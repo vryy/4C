@@ -38,12 +38,12 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
-WEAR::CoLagrangeStrategyWear::CoLagrangeStrategyWear(
+WEAR::LagrangeStrategyWear::LagrangeStrategyWear(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces, int dim,
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces, int dim,
     Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-    : CoLagrangeStrategy(
+    : LagrangeStrategy(
           data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, alphaf, maxdof),
       weightedwear_(false),
       wbothpv_(false),
@@ -57,7 +57,7 @@ WEAR::CoLagrangeStrategyWear::CoLagrangeStrategyWear(
   for (int z = 0; z < (int)interfaces.size(); ++z)
   {
     interface_.push_back(Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interfaces[z]));
-    if (interface_[z] == Teuchos::null) dserror("CoLagrangeStrategyWear: Interface-cast failed!");
+    if (interface_[z] == Teuchos::null) dserror("LagrangeStrategyWear: Interface-cast failed!");
   }
 
   // set wear contact status
@@ -92,10 +92,10 @@ WEAR::CoLagrangeStrategyWear::CoLagrangeStrategyWear(
 /*----------------------------------------------------------------------*
  | setup this strategy object                               seitz 11/16 |
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::Setup(bool redistributed, bool init)
+void WEAR::LagrangeStrategyWear::Setup(bool redistributed, bool init)
 {
   // base class setup
-  CoAbstractStrategy::Setup(redistributed, init);
+  AbstractStrategy::Setup(redistributed, init);
 
   // wear specific setup
   SetupWear(redistributed, init);
@@ -105,7 +105,7 @@ void WEAR::CoLagrangeStrategyWear::Setup(bool redistributed, bool init)
 /*----------------------------------------------------------------------*
  | setup this strategy object                               farah 09/13 |
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::SetupWear(bool redistributed, bool init)
+void WEAR::LagrangeStrategyWear::SetupWear(bool redistributed, bool init)
 {
   // max dof number -- disp dofs and lm dofs considered
   maxdofwear_ = maxdof_ + glmdofrowmap_->NumGlobalElements();
@@ -326,7 +326,7 @@ void WEAR::CoLagrangeStrategyWear::SetupWear(bool redistributed, bool init)
 /*----------------------------------------------------------------------*
  | initialize wear stuff for next Newton step                farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::InitMortar()
+void WEAR::LagrangeStrategyWear::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing D,M etc.
@@ -386,10 +386,10 @@ void WEAR::CoLagrangeStrategyWear::InitMortar()
 /*----------------------------------------------------------------------*
  | Assemble wear stuff for next Newton step                  farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::AssembleMortar()
+void WEAR::LagrangeStrategyWear::AssembleMortar()
 {
   // call base routine
-  CONTACT::CoAbstractStrategy::AssembleMortar();
+  CONTACT::AbstractStrategy::AssembleMortar();
 
   // for all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -444,7 +444,7 @@ void WEAR::CoLagrangeStrategyWear::AssembleMortar()
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           if (cnode->FriData().Slip() == true)
-            cnode->CoData().Getg() += cnode->WearData().WeightedWear();
+            cnode->Data().Getg() += cnode->WearData().WeightedWear();
         }
       }
     }
@@ -461,9 +461,9 @@ void WEAR::CoLagrangeStrategyWear::AssembleMortar()
 /*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step  farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::Initialize()
+void WEAR::LagrangeStrategyWear::Initialize()
 {
-  CONTACT::CoLagrangeStrategy::Initialize();
+  CONTACT::LagrangeStrategy::Initialize();
 
   // (re)setup global tangent matrix
   tmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gactivet_, 3));
@@ -557,7 +557,7 @@ void WEAR::CoLagrangeStrategyWear::Initialize()
  | condense wear and lm. for impl/expl wear algorithm        farah 10/13|
  | Internal state variable approach!                                    |
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::CondenseWearImplExpl(
+void WEAR::LagrangeStrategyWear::CondenseWearImplExpl(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     Teuchos::RCP<Epetra_Vector>& gact)
 {
@@ -1540,7 +1540,7 @@ void WEAR::CoLagrangeStrategyWear::CondenseWearImplExpl(
 /*----------------------------------------------------------------------*
  | condense wear and lm. for discr. wear algorithm           farah 10/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::CondenseWearDiscr(
+void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     Teuchos::RCP<Epetra_Vector>& gact)
 {
@@ -2614,7 +2614,7 @@ void WEAR::CoLagrangeStrategyWear::CondenseWearDiscr(
 /*----------------------------------------------------------------------*
  | evaluate frictional wear contact (public)                 farah 10/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::EvaluateFriction(
+void WEAR::LagrangeStrategyWear::EvaluateFriction(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // check if contact contributions are present,
@@ -3017,7 +3017,7 @@ void WEAR::CoLagrangeStrategyWear::EvaluateFriction(
 /*----------------------------------------------------------------------*
  | preparation for self-contact and assemble lind/m          farah 10/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::PrepareSaddlePointSystem(
+void WEAR::LagrangeStrategyWear::PrepareSaddlePointSystem(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   //----------------------------------------------------------------------
@@ -3120,7 +3120,7 @@ void WEAR::CoLagrangeStrategyWear::PrepareSaddlePointSystem(
 /*----------------------------------------------------------------------*
  | Setup 2x2 saddle point system for contact problems      wiesner 11/14|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::BuildSaddlePointSystem(
+void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     Teuchos::RCP<CORE::LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd,
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
@@ -3194,7 +3194,7 @@ void WEAR::CoLagrangeStrategyWear::BuildSaddlePointSystem(
   // *** CASE 1: FRICTIONLESS CONTACT ************************************
   if (!friction_)
   {
-    dserror("CoLagrangeStrategyWear::SaddlePointSolve: Wear called without friction!");
+    dserror("LagrangeStrategyWear::SaddlePointSolve: Wear called without friction!");
   }
 
   //**********************************************************************
@@ -3941,7 +3941,7 @@ void WEAR::CoLagrangeStrategyWear::BuildSaddlePointSystem(
 /*------------------------------------------------------------------------*
  | Update internal member variables after saddle point solve wiesner 11/14|
  *------------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::UpdateDisplacementsAndLMincrements(
+void WEAR::LagrangeStrategyWear::UpdateDisplacementsAndLMincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
   //**********************************************************************
@@ -4026,7 +4026,7 @@ void WEAR::CoLagrangeStrategyWear::UpdateDisplacementsAndLMincrements(
 /*-----------------------------------------------------------------------*
 |  Output de-weighted wear vector                             farah 09/14|
 *-----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::OutputWear()
+void WEAR::LagrangeStrategyWear::OutputWear()
 {
   //***********************************************
   //                 primvar wear
@@ -4230,7 +4230,7 @@ void WEAR::CoLagrangeStrategyWear::OutputWear()
 /*----------------------------------------------------------------------*
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::DoWriteRestart(
+void WEAR::LagrangeStrategyWear::DoWriteRestart(
     std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors, bool forcedrestart) const
 {
   // TODO: extend this function to forcedrestart -- write output for
@@ -4265,7 +4265,7 @@ void WEAR::CoLagrangeStrategyWear::DoWriteRestart(
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
       // set value active / inactive in toggle vector
@@ -4292,7 +4292,7 @@ void WEAR::CoLagrangeStrategyWear::DoWriteRestart(
 /*----------------------------------------------------------------------*
  | Recovery method                                           farah 10/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
+void WEAR::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -4539,7 +4539,7 @@ void WEAR::CoLagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-bool WEAR::CoLagrangeStrategyWear::RedistributeContact(
+bool WEAR::LagrangeStrategyWear::RedistributeContact(
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // get out of here if parallel redistribution is switched off
@@ -4697,7 +4697,7 @@ bool WEAR::CoLagrangeStrategyWear::RedistributeContact(
 /*----------------------------------------------------------------------*
  |  read restart information for contact                      popp 03/08|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::DoReadRestart(
+void WEAR::LagrangeStrategyWear::DoReadRestart(
     IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
 {
   // check whether this is a restart with contact of a previously
@@ -4771,7 +4771,7 @@ void WEAR::CoLagrangeStrategyWear::DoReadRestart(
       {
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
         // set value active / inactive in cnode
         cnode->Active() = true;
@@ -4878,10 +4878,10 @@ void WEAR::CoLagrangeStrategyWear::DoReadRestart(
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)     farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
+void WEAR::LagrangeStrategyWear::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
   // call base routine
-  CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(firstStepPredictor);
+  CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(firstStepPredictor);
 
   // for both-sided wear
   gminvolvednodes_ = Teuchos::null;
@@ -4937,7 +4937,7 @@ void WEAR::CoLagrangeStrategyWear::UpdateActiveSetSemiSmooth(const bool firstSte
 /*----------------------------------------------------------------------*
  |  Update Wear rhs for seq. staggered partitioned sol.      farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::UpdateWearDiscretIterate(bool store)
+void WEAR::LagrangeStrategyWear::UpdateWearDiscretIterate(bool store)
 {
   if (store)
   {
@@ -4988,7 +4988,7 @@ void WEAR::CoLagrangeStrategyWear::UpdateWearDiscretIterate(bool store)
 /*----------------------------------------------------------------------*
  |  Update Wear for different time scales                    farah 12/13|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::UpdateWearDiscretAccumulation()
+void WEAR::LagrangeStrategyWear::UpdateWearDiscretAccumulation()
 {
   if (weartimescales_) StoreNodalQuantities(MORTAR::StrategyBase::wupdateT);
 
@@ -4998,10 +4998,10 @@ void WEAR::CoLagrangeStrategyWear::UpdateWearDiscretAccumulation()
 /*----------------------------------------------------------------------*
  |  Update and output contact at end of time step            farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::Update(Teuchos::RCP<const Epetra_Vector> dis)
+void WEAR::LagrangeStrategyWear::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // call base routine
-  CONTACT::CoAbstractStrategy::Update(dis);
+  CONTACT::AbstractStrategy::Update(dis);
 
   // wear: store history values
   if (weightedwear_) StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
@@ -5013,7 +5013,7 @@ void WEAR::CoLagrangeStrategyWear::Update(Teuchos::RCP<const Epetra_Vector> dis)
 /*----------------------------------------------------------------------*
  |  Store wear data                                          farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::CoLagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
+void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
 {
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -5042,7 +5042,7 @@ void WEAR::CoLagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Qu
         break;
       }
       default:
-        CONTACT::CoAbstractStrategy::StoreNodalQuantities(type);
+        CONTACT::AbstractStrategy::StoreNodalQuantities(type);
         break;
     }  // switch
 
@@ -5122,7 +5122,7 @@ void WEAR::CoLagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Qu
         int gid = snodemap->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
         // be aware of problem dimension
         const int dim = Dim();

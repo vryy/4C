@@ -543,16 +543,16 @@ void EHL::Base::SetupUnprojectableDBC()
     DRT::Node* node = mortaradapter_->Interface()->Discret().gNode(
         mortaradapter_->Interface()->SlaveRowNodes()->GID(i));
     if (!node) dserror("gnode returned nullptr");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("dynamic cast failed");
-    if (cnode->CoData().Getg() > 1.e11)
+    if (cnode->Data().Getg() > 1.e11)
     {
       for (int e = 0; e < cnode->NumElement(); ++e)
       {
         DRT::Element* ele = cnode->Elements()[e];
         for (int nn = 0; nn < ele->NumNode(); ++nn)
         {
-          CONTACT::CoNode* cnn = dynamic_cast<CONTACT::CoNode*>(ele->Nodes()[nn]);
+          CONTACT::Node* cnn = dynamic_cast<CONTACT::Node*>(ele->Nodes()[nn]);
           if (!cnn) dserror("cast failed");
           for (int j = 0; j < 3; ++j)
           {

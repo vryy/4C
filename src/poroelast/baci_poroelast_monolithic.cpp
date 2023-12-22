@@ -111,13 +111,13 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
     {
       if (StructureField()->MeshtyingContactBridge()->HaveContact())
       {
-        auto* poro_lagrange_strat = dynamic_cast<CONTACT::CoLagrangeStrategyPoro*>(
+        auto* poro_lagrange_strat = dynamic_cast<CONTACT::LagrangeStrategyPoro*>(
             &StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
         if (poro_lagrange_strat)
           no_penetration_ = poro_lagrange_strat->HasPoroNoPenetration();
         else
         {
-          auto* co_nitsche_strategy = dynamic_cast<CONTACT::CoNitscheStrategyPoro*>(
+          auto* co_nitsche_strategy = dynamic_cast<CONTACT::NitscheStrategyPoro*>(
               &StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
           if (co_nitsche_strategy)
           {
@@ -1727,7 +1727,7 @@ void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(
         // Recover structural contact lagrange multiplier !!! For Poro & FPSI Problems this is
         // deactivated in the Structure!!!
 
-        CONTACT::CoLagrangeStrategyPoro& costrategy = static_cast<CONTACT::CoLagrangeStrategyPoro&>(
+        CONTACT::LagrangeStrategyPoro& costrategy = static_cast<CONTACT::LagrangeStrategyPoro&>(
             StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
 
         // displacement and fluid velocity & pressure incremental vector
@@ -1776,9 +1776,8 @@ void POROELAST::Monolithic::SetPoroContactStates()
       {
         if (!nit_contact_)  // Lagmult contact
         {
-          CONTACT::CoLagrangeStrategyPoro& costrategy =
-              static_cast<CONTACT::CoLagrangeStrategyPoro&>(
-                  StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
+          CONTACT::LagrangeStrategyPoro& costrategy = static_cast<CONTACT::LagrangeStrategyPoro&>(
+              StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
           Teuchos::RCP<Epetra_Vector> fvel = Teuchos::rcp(
               new Epetra_Vector(*FluidField()->ExtractVelocityPart(FluidField()->Velnp())));
           fvel = FluidStructureCoupling().SlaveToMaster(fvel);
@@ -1810,9 +1809,8 @@ void POROELAST::Monolithic::SetPoroContactStates()
         }
         else
         {
-          CONTACT::CoNitscheStrategyPoro& costrategy =
-              dynamic_cast<CONTACT::CoNitscheStrategyPoro&>(
-                  StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
+          CONTACT::NitscheStrategyPoro& costrategy = dynamic_cast<CONTACT::NitscheStrategyPoro&>(
+              StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
           costrategy.SetParentState(MORTAR::state_fvelocity, *FluidField()->Velnp());
         }
       }
@@ -1831,9 +1829,8 @@ void POROELAST::Monolithic::EvalPoroMortar()
       {
         if (!nit_contact_)  // Lagmult contact
         {
-          CONTACT::CoLagrangeStrategyPoro& costrategy =
-              static_cast<CONTACT::CoLagrangeStrategyPoro&>(
-                  StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
+          CONTACT::LagrangeStrategyPoro& costrategy = static_cast<CONTACT::LagrangeStrategyPoro&>(
+              StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
           //---Modifiy coupling matrix k_sf
 
           // Get matrix block!
@@ -1883,7 +1880,7 @@ void POROELAST::Monolithic::EvalPoroMortar()
         }
         else  // add nitsche contributions to sysmat and rhs
         {
-          CONTACT::CoNitscheStrategyPoro* pstrat = dynamic_cast<CONTACT::CoNitscheStrategyPoro*>(
+          CONTACT::NitscheStrategyPoro* pstrat = dynamic_cast<CONTACT::NitscheStrategyPoro*>(
               &StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
 
           systemmatrix_->UnComplete();

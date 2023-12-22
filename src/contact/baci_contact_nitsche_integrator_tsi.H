@@ -28,7 +28,7 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
-  class CoIntegratorNitscheTsi : public CONTACT::CoIntegratorNitsche
+  class IntegratorNitscheTsi : public CONTACT::IntegratorNitsche
   {
    public:
     /*!
@@ -42,9 +42,9 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitscheTsi(
+    IntegratorNitscheTsi(
         Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
-        : CoIntegratorNitsche(params, eletype, comm),
+        : IntegratorNitsche(params, eletype, comm),
           theta_thermo_(params.get<double>("NITSCHE_THETA_TSI")),
           nit_thr_(INPUT::IntegralValue<INPAR::CONTACT::NitscheThermoMethod>(
               params, "NITSCHE_METHOD_TSI")),

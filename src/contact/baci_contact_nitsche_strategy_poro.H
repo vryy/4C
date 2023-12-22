@@ -28,30 +28,30 @@ namespace CONTACT
   /*!
    \brief Contact solving strategy with Nitsche's method.
 
-   This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
 
    */
-  class CoNitscheStrategyPoro : public CoNitscheStrategy
+  class NitscheStrategyPoro : public NitscheStrategy
   {
    public:
     //! Standard constructor
-    CoNitscheStrategyPoro(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface,
+    NitscheStrategyPoro(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
         int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(
+        : NitscheStrategy(
               DofRowMap, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           no_penetration_(params.get<bool>("CONTACTNOPEN"))
     {
     }
 
     //! Shared data constructor
-    CoNitscheStrategyPoro(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategyPoro(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
-              comm, alphaf, maxdof),
+        : NitscheStrategy(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim, comm,
+              alphaf, maxdof),
           no_penetration_(params.get<bool>("CONTACTNOPEN"))
     {
     }
@@ -76,8 +76,8 @@ namespace CONTACT
     bool HasPoroNoPenetration() const override { return no_penetration_; }
 
     // don't want = operator and cctor
-    CoNitscheStrategyPoro operator=(const CoNitscheStrategyPoro& old) = delete;
-    CoNitscheStrategyPoro(const CoNitscheStrategyPoro& old) = delete;
+    NitscheStrategyPoro operator=(const NitscheStrategyPoro& old) = delete;
+    NitscheStrategyPoro(const NitscheStrategyPoro& old) = delete;
 
    protected:
     // create an appropriate vector for the RHS

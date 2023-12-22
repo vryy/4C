@@ -255,7 +255,7 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
   }
 }
 
-bool XFEM::XFluid_Contact_Comm::CheckNitscheContactState(CONTACT::CoElement* cele,
+bool XFEM::XFluid_Contact_Comm::CheckNitscheContactState(CONTACT::Element* cele,
     const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
     const double& full_fsi_traction,        // stressfluid + penalty
     double& gap                             // gap
@@ -279,7 +279,7 @@ bool XFEM::XFluid_Contact_Comm::Get_Contact_State(int sid,      // Solid Surface
 
   int startgid =
       condition_manager_->GetMeshCouplingStartGID(condition_manager_->GetCouplingIndex(mcname));
-  CONTACT::CoElement* cele = GetContactEle(sid + startgid);
+  CONTACT::Element* cele = GetContactEle(sid + startgid);
   if (cele)
     return CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
   else
@@ -599,8 +599,7 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
 
   for (int i = 0; i < contact_interface_dis.ElementColMap()->NumMyElements(); ++i)
   {
-    CONTACT::CoElement* cele =
-        dynamic_cast<CONTACT::CoElement*>(contact_interface_dis.lColElement(i));
+    CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(contact_interface_dis.lColElement(i));
     if (!cele) dserror("no contact element or no element at all");
     const int c_parent_id = cele->ParentElementId();
     const int c_parent_surf = cele->FaceParentNumber();
@@ -650,9 +649,9 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
   ele_ptrs_already_setup_ = true;
 
   contact_strategy_fsi_ =
-      dynamic_cast<CONTACT::CoNitscheStrategyFsi*>(&contact_strategy_);  // might be nullptr
+      dynamic_cast<CONTACT::NitscheStrategyFsi*>(&contact_strategy_);  // might be nullptr
   contact_strategy_fpi_ =
-      dynamic_cast<CONTACT::CoNitscheStrategyFpi*>(&contact_strategy_);  // might be nullptr
+      dynamic_cast<CONTACT::NitscheStrategyFpi*>(&contact_strategy_);  // might be nullptr
 }
 
 bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele,

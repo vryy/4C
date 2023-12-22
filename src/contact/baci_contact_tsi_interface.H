@@ -19,14 +19,14 @@ BACI_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  class CoTSIInterface : public CoInterface
+  class TSIInterface : public Interface
   {
    public:
     /*!
     \brief Constructor
 
     */
-    CoTSIInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
+    TSIInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact);
 

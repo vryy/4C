@@ -26,7 +26,7 @@ namespace CONTACT
    * @note Relevant methods are already templated w.r.t. the problem dimension. Currently only
    * 'dim=3' is used and tested but it should be quite easy to extend this if necessary.
    */
-  class CoIntegratorNitscheSsiElch : public CoIntegratorNitscheSsi
+  class IntegratorNitscheSsiElch : public IntegratorNitscheSsi
   {
    public:
     /*!
@@ -42,7 +42,7 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param[in] comm     contact interface communicator
      */
-    CoIntegratorNitscheSsiElch(
+    IntegratorNitscheSsiElch(
         Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
    private:

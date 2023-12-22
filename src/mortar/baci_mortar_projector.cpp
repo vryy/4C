@@ -1615,7 +1615,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   {
     DRT::Node* node = mele.Nodes()[i];
     if (!node) dserror("Cannot find master node");
-    CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
     linsize += mnode->GetLinsize();
   }
 
@@ -1650,12 +1650,12 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     // get master node
     DRT::Node* node = mele.Nodes()[i];
     if (!node) dserror("Cannot find master node");
-    CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     for (int k = 0; k < 3; ++k)
     {
-      for (_CI p = mnode->CoData().GetDerivN()[k].begin();
-           p != mnode->CoData().GetDerivN()[k].end(); ++p)
+      for (_CI p = mnode->Data().GetDerivN()[k].begin(); p != mnode->Data().GetDerivN()[k].end();
+           ++p)
       {
         (auxnormalLin[k])[p->first] += mval(i) * (p->second);
       }
@@ -1707,7 +1707,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     // get master node
     DRT::Node* node = mele.Nodes()[k];
     if (!node) dserror("Cannot find master node");
-    CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     for (_CI p = etaLin[0].begin(); p != etaLin[0].end(); ++p)
     {
@@ -1723,14 +1723,11 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
       (n_eta1_deriv[2])[p->first] += mderiv(1, k) * (p->second) * mnode->MoData().n()[2];
     }
 
-    for (_CI p = mnode->CoData().GetDerivN()[0].begin(); p != mnode->CoData().GetDerivN()[0].end();
-         ++p)
+    for (_CI p = mnode->Data().GetDerivN()[0].begin(); p != mnode->Data().GetDerivN()[0].end(); ++p)
       (n_n_deriv[0])[p->first] += mval(k) * (p->second);
-    for (_CI p = mnode->CoData().GetDerivN()[1].begin(); p != mnode->CoData().GetDerivN()[1].end();
-         ++p)
+    for (_CI p = mnode->Data().GetDerivN()[1].begin(); p != mnode->Data().GetDerivN()[1].end(); ++p)
       (n_n_deriv[1])[p->first] += mval(k) * (p->second);
-    for (_CI p = mnode->CoData().GetDerivN()[2].begin(); p != mnode->CoData().GetDerivN()[2].end();
-         ++p)
+    for (_CI p = mnode->Data().GetDerivN()[2].begin(); p != mnode->Data().GetDerivN()[2].end(); ++p)
       (n_n_deriv[2])[p->first] += mval(k) * (p->second);
   }
 
@@ -1950,12 +1947,12 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     // get master node
     DRT::Node* node = mele.Nodes()[i];
     if (!node) dserror("Cannot find master node");
-    CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     for (int k = 0; k < 3; ++k)
     {
-      for (_CI p = mnode->CoData().GetDerivN()[k].begin();
-           p != mnode->CoData().GetDerivN()[k].end(); ++p)
+      for (_CI p = mnode->Data().GetDerivN()[k].begin(); p != mnode->Data().GetDerivN()[k].end();
+           ++p)
       {
         (auxnormalLin[k])[p->first] += mval(i) * (p->second);
       }
@@ -2006,7 +2003,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     // get master node
     DRT::Node* node = mele.Nodes()[k];
     if (!node) dserror("Cannot find master node");
-    CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     for (_CI p = etaLin[0].begin(); p != etaLin[0].end(); ++p)
     {
@@ -2015,14 +2012,11 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
       (n_eta0_deriv[2])[p->first] += mderiv(0, k) * (p->second) * mnode->MoData().n()[2];
     }
 
-    for (_CI p = mnode->CoData().GetDerivN()[0].begin(); p != mnode->CoData().GetDerivN()[0].end();
-         ++p)
+    for (_CI p = mnode->Data().GetDerivN()[0].begin(); p != mnode->Data().GetDerivN()[0].end(); ++p)
       (n_n_deriv[0])[p->first] += mval(k) * (p->second);
-    for (_CI p = mnode->CoData().GetDerivN()[1].begin(); p != mnode->CoData().GetDerivN()[1].end();
-         ++p)
+    for (_CI p = mnode->Data().GetDerivN()[1].begin(); p != mnode->Data().GetDerivN()[1].end(); ++p)
       (n_n_deriv[1])[p->first] += mval(k) * (p->second);
-    for (_CI p = mnode->CoData().GetDerivN()[2].begin(); p != mnode->CoData().GetDerivN()[2].end();
-         ++p)
+    for (_CI p = mnode->Data().GetDerivN()[2].begin(); p != mnode->Data().GetDerivN()[2].end(); ++p)
       (n_n_deriv[2])[p->first] += mval(k) * (p->second);
   }
 

@@ -13,30 +13,30 @@
 #include "baci_linalg_serialdensevector.H"
 
 BACI_NAMESPACE_OPEN
-CONTACT::CoElementType CONTACT::CoElementType::instance_;
+CONTACT::ElementType CONTACT::ElementType::instance_;
 
-CONTACT::CoElementType& CONTACT::CoElementType::Instance() { return instance_; }
+CONTACT::ElementType& CONTACT::ElementType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* CONTACT::CoElementType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* CONTACT::ElementType::Create(const std::vector<char>& data)
 {
-  CONTACT::CoElement* ele =
-      new CONTACT::CoElement(0, 0, CORE::FE::CellType::dis_none, 0, nullptr, false);
+  CONTACT::Element* ele =
+      new CONTACT::Element(0, 0, CORE::FE::CellType::dis_none, 0, nullptr, false);
   ele->Unpack(data);
   return ele;
 }
 
-Teuchos::RCP<DRT::Element> CONTACT::CoElementType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> CONTACT::ElementType::Create(const int id, const int owner)
 {
-  // return Teuchos::rcp( new CoElement( id, owner ) );
+  // return Teuchos::rcp( new Element( id, owner ) );
   return Teuchos::null;
 }
 
-void CONTACT::CoElementType::NodalBlockInformation(
+void CONTACT::ElementType::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
-CORE::LINALG::SerialDenseMatrix CONTACT::CoElementType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix CONTACT::ElementType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
@@ -47,7 +47,7 @@ CORE::LINALG::SerialDenseMatrix CONTACT::CoElementType::ComputeNullSpace(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoElement::CoElement(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+CONTACT::Element::Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
     const int* nodeids, const bool isslave, bool isnurbs)
     : MORTAR::MortarElement(id, owner, shape, numnode, nodeids, isslave, isnurbs)
 {
@@ -59,7 +59,7 @@ CONTACT::CoElement::CoElement(int id, int owner, const CORE::FE::CellType& shape
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                        mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoElement::CoElement(const CONTACT::CoElement& old) : MORTAR::MortarElement(old)
+CONTACT::Element::Element(const CONTACT::Element& old) : MORTAR::MortarElement(old)
 {
   // empty copy-constructor
 
@@ -69,16 +69,16 @@ CONTACT::CoElement::CoElement(const CONTACT::CoElement& old) : MORTAR::MortarEle
 /*----------------------------------------------------------------------*
  |  clone-ctor (public)                                      mwgee 10/07|
  *----------------------------------------------------------------------*/
-DRT::Element* CONTACT::CoElement::Clone() const
+DRT::Element* CONTACT::Element::Clone() const
 {
-  CONTACT::CoElement* newele = new CONTACT::CoElement(*this);
+  CONTACT::Element* newele = new CONTACT::Element(*this);
   return newele;
 }
 
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const CONTACT::CoElement& element)
+std::ostream& operator<<(std::ostream& os, const CONTACT::Element& element)
 {
   element.Print(os);
   return os;
@@ -87,7 +87,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoElement& element)
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::Print(std::ostream& os) const
+void CONTACT::Element::Print(std::ostream& os) const
 {
   os << "Contact ";
   MORTAR::MortarElement::Print(os);
@@ -99,7 +99,7 @@ void CONTACT::CoElement::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::Element::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -118,7 +118,7 @@ void CONTACT::CoElement::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::Unpack(const std::vector<char>& data)
+void CONTACT::Element::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -137,30 +137,29 @@ void CONTACT::CoElement::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  number of dofs per node (public)                         mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::CoElement::NumDofPerNode(const DRT::Node& node) const
+int CONTACT::Element::NumDofPerNode(const DRT::Node& node) const
 {
-  const CONTACT::CoNode* cnode = dynamic_cast<const CONTACT::CoNode*>(&node);
-  if (!cnode) dserror("Node is not a CoNode");
+  const CONTACT::Node* cnode = dynamic_cast<const CONTACT::Node*>(&node);
+  if (!cnode) dserror("Node is not a Node");
   return cnode->NumDof();
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::CoElement::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int CONTACT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+    CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
 {
-  dserror("CONTACT::CoElement::Evaluate not implemented!");
+  dserror("CONTACT::Element::Evaluate not implemented!");
   return -1;
 }
 
 /*----------------------------------------------------------------------*
  |  Build element normal derivative at node                   popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens,
+void CONTACT::Element::DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivn)
 {
   // find this node in my list of nodes and get local numbering
@@ -179,7 +178,7 @@ void CONTACT::CoElement::DerivNormalAtNode(int nid, int& i, CORE::LINALG::Serial
 /*----------------------------------------------------------------------*
  |  Compute element normal derivative at loc. coord. xi       popp 09/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens,
+void CONTACT::Element::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivn)
 {
   // initialize variables
@@ -214,7 +213,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::Seria
   // now loop over all element nodes for derivatives
   for (int n = 0; n < nnodes; ++n)
   {
-    CoNode* mycnode = dynamic_cast<CoNode*>(mynodes[n]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[n]);
     if (!mycnode) dserror("DerivNormalAtXi: Null pointer!");
     int ndof = mycnode->NumDof();
 
@@ -245,7 +244,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::Seria
 /*----------------------------------------------------------------------*
  |  Compute element normal of last time step at xi          seitz 05/17 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::OldUnitNormalAtXi(
+void CONTACT::Element::OldUnitNormalAtXi(
     const double* xi, CORE::LINALG::Matrix<3, 1>& n_old, CORE::LINALG::Matrix<3, 2>& d_n_old_dxi)
 {
   const int nnodes = NumNode();
@@ -262,16 +261,16 @@ void CONTACT::CoElement::OldUnitNormalAtXi(
   CORE::LINALG::Matrix<3, 2> tmp_n_deriv;
   for (int i = 0; i < nnodes; ++i)
   {
-    CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Nodes()[i]);
+    Node* cnode = dynamic_cast<CONTACT::Node*>(Nodes()[i]);
     if (!cnode) dserror("this is not a FriNode!");
 
     for (int d = 0; d < Dim(); ++d)
     {
-      if (CORE::LINALG::Matrix<3, 1>(cnode->CoData().Normal_old(), true).Norm2() < 0.9)
+      if (CORE::LINALG::Matrix<3, 1>(cnode->Data().Normal_old(), true).Norm2() < 0.9)
         dserror("where's my old normal");
-      tmp_n(d) += val(i) * cnode->CoData().Normal_old()[d];
+      tmp_n(d) += val(i) * cnode->Data().Normal_old()[d];
       for (int x = 0; x < Dim() - 1; ++x)
-        tmp_n_deriv(d, x) += deriv(i, x) * cnode->CoData().Normal_old()[d];
+        tmp_n_deriv(d, x) += deriv(i, x) * cnode->Data().Normal_old()[d];
     }
   }
   const double l = tmp_n.Norm2();
@@ -286,7 +285,7 @@ void CONTACT::CoElement::OldUnitNormalAtXi(
 /*----------------------------------------------------------------------*
  |  Evaluate derivative J,xi of Jacobian determinant          popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::DJacDXi(
+void CONTACT::Element::DJacDXi(
     double* djacdxi, double* xi, const CORE::LINALG::SerialDenseMatrix& secderiv)
 {
   // the derivative dJacdXi
@@ -382,7 +381,7 @@ void CONTACT::CoElement::DJacDXi(
 }
 
 
-void CONTACT::CoElement::PrepareDderiv(const std::vector<MORTAR::MortarElement*>& meles)
+void CONTACT::Element::PrepareDderiv(const std::vector<MORTAR::MortarElement*>& meles)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
@@ -392,8 +391,7 @@ void CONTACT::CoElement::PrepareDderiv(const std::vector<MORTAR::MortarElement*>
       numderiv, 0, CORE::LINALG::SerialDenseMatrix(NumNode(), NumNode())));
 }
 
-void CONTACT::CoElement::PrepareMderiv(
-    const std::vector<MORTAR::MortarElement*>& meles, const int m)
+void CONTACT::Element::PrepareMderiv(const std::vector<MORTAR::MortarElement*>& meles, const int m)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
@@ -404,7 +402,7 @@ void CONTACT::CoElement::PrepareMderiv(
 }
 
 
-void CONTACT::CoElement::AssembleDderivToNodes(bool dual)
+void CONTACT::Element::AssembleDderivToNodes(bool dual)
 {
   if (dMatrixDeriv_ == Teuchos::null)
     dserror("AssembleDderivToNodes called w/o PrepareDderiv first");
@@ -413,14 +411,14 @@ void CONTACT::CoElement::AssembleDderivToNodes(bool dual)
 
   for (int j = 0; j < NumNode(); ++j)
   {
-    CONTACT::CoNode* cnode_j = dynamic_cast<CONTACT::CoNode*>(Nodes()[j]);
+    CONTACT::Node* cnode_j = dynamic_cast<CONTACT::Node*>(Nodes()[j]);
 
     if (!dual)
     {
       for (int k = 0; k < NumNode(); ++k)
       {
-        CONTACT::CoNode* cnode_k = dynamic_cast<CONTACT::CoNode*>(Nodes()[k]);
-        std::map<int, double>& ddmap_jk = cnode_j->CoData().GetDerivD()[cnode_k->Id()];
+        CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(Nodes()[k]);
+        std::map<int, double>& ddmap_jk = cnode_j->Data().GetDerivD()[cnode_k->Id()];
 
         for (CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
                  dMatrixDeriv_->begin();
@@ -430,7 +428,7 @@ void CONTACT::CoElement::AssembleDderivToNodes(bool dual)
     }
     else
     {
-      std::map<int, double>& ddmap_jj = cnode_j->CoData().GetDerivD()[cnode_j->Id()];
+      std::map<int, double>& ddmap_jj = cnode_j->Data().GetDerivD()[cnode_j->Id()];
 
       for (CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
                dMatrixDeriv_->begin();
@@ -441,7 +439,7 @@ void CONTACT::CoElement::AssembleDderivToNodes(bool dual)
   dMatrixDeriv_ = Teuchos::null;
 }
 
-void CONTACT::CoElement::AssembleMderivToNodes(MORTAR::MortarElement& mele)
+void CONTACT::Element::AssembleMderivToNodes(MORTAR::MortarElement& mele)
 {
   if (mMatrixDeriv_ == Teuchos::null)
     dserror("AssembleMderivToNodes called w/o PrepareMderiv first");
@@ -449,12 +447,12 @@ void CONTACT::CoElement::AssembleMderivToNodes(MORTAR::MortarElement& mele)
 
   for (int j = 0; j < NumNode(); ++j)
   {
-    CONTACT::CoNode* cnode_j = dynamic_cast<CONTACT::CoNode*>(Nodes()[j]);
+    CONTACT::Node* cnode_j = dynamic_cast<CONTACT::Node*>(Nodes()[j]);
 
     for (int k = 0; k < mele.NumNode(); ++k)
     {
-      CONTACT::CoNode* cnode_k = dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[k]);
-      std::map<int, double>& dmmap_jk = cnode_j->CoData().GetDerivM()[cnode_k->Id()];
+      CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(mele.Nodes()[k]);
+      std::map<int, double>& dmmap_jk = cnode_j->Data().GetDerivM()[cnode_k->Id()];
 
       for (CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
                mMatrixDeriv_->begin();

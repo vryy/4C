@@ -28,7 +28,7 @@ CONTACT::AUG::LAGRANGE::Strategy::Strategy(
   // cast to steepest ascent interfaces
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
   {
-    const Teuchos::RCP<CONTACT::CoInterface>& interface = *cit;
+    const Teuchos::RCP<CONTACT::Interface>& interface = *cit;
     // test interfaces for the correct type
     Teuchos::rcp_dynamic_cast<CONTACT::AUG::LAGRANGE::Interface>(interface, true);
   }

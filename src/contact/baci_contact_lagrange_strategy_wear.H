@@ -30,16 +30,16 @@ namespace WEAR
   class WearInterface;
 
 
-  class CoLagrangeStrategyWear : public CONTACT::CoLagrangeStrategy
+  class LagrangeStrategyWear : public CONTACT::LagrangeStrategy
   {
    public:
     /*!
     \brief Standard Constructor
 
     */
-    CoLagrangeStrategyWear(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    LagrangeStrategyWear(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
 
@@ -338,8 +338,8 @@ namespace WEAR
 
    private:
     // don't want = operator and cctor
-    CoLagrangeStrategyWear operator=(const CoLagrangeStrategyWear& old) = delete;
-    CoLagrangeStrategyWear(const CoLagrangeStrategyWear& old) = delete;
+    LagrangeStrategyWear operator=(const LagrangeStrategyWear& old) = delete;
+    LagrangeStrategyWear(const LagrangeStrategyWear& old) = delete;
 
     std::vector<Teuchos::RCP<WEAR::WearInterface>> interface_;
 

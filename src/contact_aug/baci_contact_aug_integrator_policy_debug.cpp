@@ -82,7 +82,7 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Deb
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     CORE::GEN::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
@@ -107,7 +107,7 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Deb
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     CORE::GEN::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
@@ -294,7 +294,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
     std::pair<int, double>& val = cnode.AugData().Get_Debug();
 
     val.first = cnode.Id();
@@ -313,7 +313,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
 
     //    CORE::GEN::copy( cnode.AugData().GetDeriv1st_Kappa(), d_debug );
@@ -336,7 +336,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
     std::vector<std::pair<int, double>>& vals = cnode.AugData().Get_DebugVec();
 
     for (unsigned d = 0; d < probdim; ++d)
@@ -358,7 +358,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
     if (d_debug.size() < probdim)
@@ -389,7 +389,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
     std::pair<int, double>& scalar = cnode.AugData().Get_Debug();
 
     scalar.first = cnode.Id();
@@ -409,7 +409,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
     std::pair<int, double>& scalar = cnode.AugData().Get_Debug();
 
     scalar.first = cnode.Id();
@@ -440,7 +440,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
   CORE::LINALG::Matrix<probdim, 1> xs_int(true);
   for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
   {
-    const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
+    const Node& snode = static_cast<const Node&>(*snodes[k]);
     const double* xs = snode.xspatial();
 
     for (unsigned j = 0; j < probdim; ++j)
@@ -474,7 +474,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
   {
     const double tmp = wgt * jac * lmval(i, 0);
 
-    CoNode& cnode = static_cast<CoNode&>(*snodes[i]);
+    Node& cnode = static_cast<Node&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     if (d_debug.capacity() == 0)
@@ -516,7 +516,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
   {
     const double tmp = wgt * jac * lmval(i, 0);
 
-    CoNode& cnode = static_cast<CoNode&>(*snodes[i]);
+    Node& cnode = static_cast<Node&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
@@ -527,7 +527,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     // --- linearized normal multiplied by the varied slave position ----------
     for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
     {
-      const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
+      const Node& snode = static_cast<const Node&>(*snodes[k]);
       const int* sdof = snode.Dofs().data();
 
       // variation of the slave position multiplied with the linearized
@@ -601,7 +601,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     CORE::LINALG::Matrix<probdim, 1> xs_int(true);
     for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
     {
-      const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
+      const Node& snode = static_cast<const Node&>(*snodes[k]);
       const double* xs = snode.xspatial();
 
       for (unsigned j = 0; j < probdim; ++j)
@@ -637,7 +637,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
         for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
         {
-          const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
+          const Node& snode = static_cast<const Node&>(*snodes[k]);
           const int* sdof = snode.Dofs().data();
 
           CORE::GEN::increaseCapacity(dd_debug_var);
@@ -658,7 +658,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     CORE::GEN::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
@@ -683,7 +683,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     CORE::GEN::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
@@ -714,7 +714,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
     std::vector<std::pair<int, double>>& vals = cnode.AugData().Get_DebugVec();
 
     if (vals.size() < my::MASTERDIM)
@@ -739,7 +739,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
     if (d_debug.size() < my::MASTERDIM)
@@ -770,7 +770,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndVecMap& dd_debug = cnode.AugData().GetDeriv2nd_DebugVec();
     if (dd_debug.size() < my::MASTERDIM)
@@ -806,7 +806,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
     CORE::GEN::copy(cnode.AugData().GetDeriv1st_N(), d_debug);
@@ -823,7 +823,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndVecMap& dd_debug = cnode.AugData().GetDeriv2nd_DebugVec();
     CORE::GEN::copy(cnode.AugData().GetDeriv2nd_N(), dd_debug);
@@ -841,7 +841,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     if (d_debug.capacity() == 0)
@@ -868,7 +868,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
@@ -922,7 +922,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     if (d_debug.capacity() == 0) CORE::GEN::reset(1, d_debug);
@@ -965,7 +965,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
@@ -1009,7 +1009,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
     if (d_debug.size() < 3)
@@ -1047,7 +1047,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
+    Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndVecMap& dd_debug = cnode.AugData().GetDeriv2nd_DebugVec();
     if (dd_debug.size() < 3)

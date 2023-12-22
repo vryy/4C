@@ -487,7 +487,7 @@ void SSI::SSIMono::SetupContactStrategy()
     // get the contact model evaluator and store a pointer to the strategy
     auto& model_evaluator_contact = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
         StructureField()->ModelEvaluator(INPAR::STR::model_contact));
-    contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::CoNitscheStrategySsi>(
+    contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategySsi>(
         model_evaluator_contact.StrategyPtr(), true);
   }
   else
@@ -815,7 +815,7 @@ void SSI::SSIMono::SetupSystem()
 
   // instantiate appropriate contact class
   strategy_contact_ =
-      SSI::BuildContactStrategy(CoNitscheStrategySsi(), ssi_maps_, ScaTraField()->MatrixType());
+      SSI::BuildContactStrategy(NitscheStrategySsi(), ssi_maps_, ScaTraField()->MatrixType());
 
   // instantiate appropriate mesh tying class
   strategy_meshtying_ = SSI::BuildMeshtyingStrategy(

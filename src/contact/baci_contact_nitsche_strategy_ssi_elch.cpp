@@ -13,9 +13,9 @@ BACI_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategySsiElch::Integrate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategySsiElch::Integrate(const CONTACT::ParamsInterface& cparams)
 {
-  CONTACT::CoNitscheStrategy::Integrate(cparams);
+  CONTACT::NitscheStrategy::Integrate(cparams);
 
   fs_ = CreateRhsBlockPtr(CONTACT::VecBlockType::elch);
   kss_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::elch_elch);

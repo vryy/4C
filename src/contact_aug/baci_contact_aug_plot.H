@@ -77,7 +77,7 @@ namespace INPAR
 }  // namespace INPAR
 namespace CONTACT
 {
-  class CoAbstractStrategy;
+  class AbstractStrategy;
   namespace AUG
   {
     enum class WGapGradientType : char;
@@ -89,7 +89,7 @@ namespace CONTACT
     {
      public:
       static void Create(Teuchos::ParameterList& nox_params,
-          const Teuchos::ParameterList& plot_params, const CONTACT::CoAbstractStrategy* strat);
+          const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat);
 
       void Do(const ::NOX::Solver::Generic& solver);
 
@@ -101,8 +101,7 @@ namespace CONTACT
 
       Plot();
 
-      void Init(
-          const Teuchos::ParameterList& plot_params, const CONTACT::CoAbstractStrategy* strat);
+      void Init(const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat);
 
       void Setup();
 

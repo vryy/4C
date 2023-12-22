@@ -28,7 +28,7 @@ namespace CONTACT
 
   */
 
-  class CoCoupling2d : public MORTAR::Coupling2d
+  class Coupling2d : public MORTAR::Coupling2d
   {
    public:
     /*!
@@ -39,7 +39,7 @@ namespace CONTACT
     performed in parallel by individual processes.
 
     */
-    CoCoupling2d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
+    Coupling2d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
         MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
     //! @name Evlauation methods
@@ -48,7 +48,7 @@ namespace CONTACT
     \brief Integrate overlap of slave / master pair (2D)
 
     Derived version! Most importantly, in this derived version
-    a CONTACT::CoIntegrator instance is created, which also
+    a CONTACT::Integrator instance is created, which also
     does integration of the mortar quantity linearizations
 
     This method integrates the overlap of the current MortarElement
@@ -81,13 +81,13 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling2d operator=(const CoCoupling2d& old) = delete;
-    CoCoupling2d(const CoCoupling2d& old) = delete;
+    Coupling2d operator=(const Coupling2d& old) = delete;
+    Coupling2d(const Coupling2d& old) = delete;
 
     // new variables as compared to base class
     INPAR::CONTACT::SolvingStrategy stype_;
 
-  };  // class CoCoupling2d
+  };  // class Coupling2d
 
   /*!
   \brief A class representing the framework for mortar coupling of ONE
@@ -96,7 +96,7 @@ namespace CONTACT
 
   */
 
-  class CoCoupling2dManager : public MORTAR::Coupling2dManager
+  class Coupling2dManager : public MORTAR::Coupling2dManager
   {
    public:
     /*!
@@ -107,7 +107,7 @@ namespace CONTACT
     performed in parallel by individual processes.
 
     */
-    CoCoupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
+    Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
         std::vector<MORTAR::MortarElement*> mele);
 
@@ -150,12 +150,12 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling2dManager operator=(const CoCoupling2dManager& old) = delete;
-    CoCoupling2dManager(const CoCoupling2dManager& old) = delete;
+    Coupling2dManager operator=(const Coupling2dManager& old) = delete;
+    Coupling2dManager(const Coupling2dManager& old) = delete;
 
     INPAR::CONTACT::SolvingStrategy stype_;  // solving strategy
 
-  };  // class CoCoupling2dManager
+  };  // class Coupling2dManager
 
 }  // namespace CONTACT
 

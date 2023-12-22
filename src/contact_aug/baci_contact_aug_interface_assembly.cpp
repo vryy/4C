@@ -96,7 +96,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     const int sgid = mysnodegids[i];
 
     DRT::Node* node = idiscret_.gNode(sgid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
     if (not cnode) dserror("Dynamic cast failed!");
 
     dsassert(cnode->Owner() == Inter().Comm().MyPID(), "Node ownership inconsistency!");
@@ -140,7 +140,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Va
   {
     const int agid = myanodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_.gNode(agid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(agid));
     if (not cnode) dserror("Cannot find the active node with gid %", agid);
 
     const int cn_lid = cnVec.Map().LID(agid);
@@ -188,7 +188,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
   {
     const int igid = myinodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_.gNode(igid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(igid));
     if (not cnode) dserror("Cannot find the inactive node with gid %", igid);
 
     const int cn_lid = cnVec.Map().LID(igid);
@@ -247,7 +247,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
   {
     const int igid = myinodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_.gNode(igid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(igid));
     if (not cnode) dserror("Cannot find the inactive node with gid %", igid);
 
     const double lmn = cnode->MoData().lm()[0];
@@ -283,7 +283,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
   {
     const int agid = myanodegids[i];
 
-    CoNode* cnode = static_cast<CoNode*>(idiscret_.gNode(agid));
+    Node* cnode = static_cast<Node*>(idiscret_.gNode(agid));
     if (!cnode) dserror("Cannot find active node with gid %", agid);
 
     // get Lagrange multiplier in normal direction
@@ -332,7 +332,7 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
   {
     const int agid = myanodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(this->idiscret_.gNode(agid));
+    Node* cnode = dynamic_cast<Node*>(this->idiscret_.gNode(agid));
     if (not cnode) dserror("Cannot find the active node with gid %", agid);
 
     NodeDataContainer& augdata = cnode->AugData();
@@ -408,7 +408,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
   {
     const int agid = myanodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_.gNode(agid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(agid));
     if (not cnode) dserror("Cannot find the active node with gid %", agid);
 
     NodeDataContainer& augdata = cnode->AugData();
@@ -537,7 +537,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
   {
     const int agid = mynodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_.gNode(agid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(agid));
     if (not cnode) dserror("Cannot find the active node with gid %", agid);
 
     const int rowId = ndof_rowmap.GID(i);

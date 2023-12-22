@@ -20,19 +20,19 @@ namespace CONTACT
   /*!
    * @brief Contact solving strategy with Nitsche's method.
    *
-   * This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   * For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   * This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   * For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
    */
-  class CoNitscheStrategySsiElch : public CoNitscheStrategySsi
+  class NitscheStrategySsiElch : public NitscheStrategySsi
   {
    public:
     //! Shared data constructor
-    CoNitscheStrategySsiElch(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategySsiElch(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-        : CoNitscheStrategySsi(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
+        : NitscheStrategySsi(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof)
     {
     }
@@ -47,10 +47,10 @@ namespace CONTACT
     void Integrate(const CONTACT::ParamsInterface& cparams) override;
 
     //! don't want = operator
-    CoNitscheStrategySsiElch operator=(const CoNitscheStrategySsiElch& old) = delete;
+    NitscheStrategySsiElch operator=(const NitscheStrategySsiElch& old) = delete;
 
     //! don't want copy constructor
-    CoNitscheStrategySsiElch(const CoNitscheStrategySsiElch& old) = delete;
+    NitscheStrategySsiElch(const NitscheStrategySsiElch& old) = delete;
   };
 }  // namespace CONTACT
 BACI_NAMESPACE_CLOSE

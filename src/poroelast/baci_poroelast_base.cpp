@@ -308,7 +308,7 @@ void POROELAST::PoroBase::Update()
     {
       if (StructureField()->MeshtyingContactBridge()->HaveContact() && !nit_contact_)
       {
-        (static_cast<CONTACT::CoLagrangeStrategyPoro&>(
+        (static_cast<CONTACT::LagrangeStrategyPoro&>(
              StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy()))
             .UpdatePoroContact();
       }

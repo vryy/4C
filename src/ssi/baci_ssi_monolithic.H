@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 // forward declarations
 namespace CONTACT
 {
-  class CoNitscheStrategySsi;
+  class NitscheStrategySsi;
 }
 
 namespace INPAR::SSI
@@ -86,7 +86,7 @@ namespace SSI
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! return contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::CoNitscheStrategySsi> CoNitscheStrategySsi() const
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> NitscheStrategySsi() const
     {
       return contact_strategy_nitsche_;
     }
@@ -249,7 +249,7 @@ namespace SSI
     void UpdateIterStructure();
 
     //! store contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_strategy_nitsche_;
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
 
     //! Dirichlet boundary condition handler
     Teuchos::RCP<SSI::DBCHandlerBase> dbc_handler_;

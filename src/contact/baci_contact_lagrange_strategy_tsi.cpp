@@ -34,12 +34,12 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                             seitz 08/15|
  *----------------------------------------------------------------------*/
-CONTACT::CoLagrangeStrategyTsi::CoLagrangeStrategyTsi(
+CONTACT::LagrangeStrategyTsi::LagrangeStrategyTsi(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
     Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-    : CoLagrangeStrategy(
+    : LagrangeStrategy(
           data_ptr, DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
       tsi_alpha_(1.)
 {
@@ -49,7 +49,7 @@ CONTACT::CoLagrangeStrategyTsi::CoLagrangeStrategyTsi(
 /*------------------------------------------------------------------------*
  | Assign general thermo contact state                         seitz 08/15|
  *------------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategyTsi::SetState(
+void CONTACT::LagrangeStrategyTsi::SetState(
     const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
 {
   switch (statetype)
@@ -65,14 +65,14 @@ void CONTACT::CoLagrangeStrategyTsi::SetState(
 
         for (int i = 0; i < idiscr.NumMyColNodes(); ++i)
         {
-          CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscr.lColNode(i));
+          CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscr.lColNode(i));
           if (node == nullptr) dserror("cast failed");
           std::vector<double> mytemp(1);
           std::vector<int> lm(1, node->Dofs()[0]);
 
           DRT::UTILS::ExtractMyValues(*global, mytemp, lm);
-          if (node->HasCoTSIData())  // in case the interface has not been initialized yet
-            node->CoTSIData().Temp() = mytemp[0];
+          if (node->HasTSIData())  // in case the interface has not been initialized yet
+            node->TSIData().Temp() = mytemp[0];
         }
       }
       break;
@@ -89,18 +89,18 @@ void CONTACT::CoLagrangeStrategyTsi::SetState(
 
         for (int i = 0; i < idiscr.NumMyColNodes(); ++i)
         {
-          CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscr.lColNode(i));
+          CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscr.lColNode(i));
           std::vector<int> lm(1, node->Dofs()[0]);
           std::vector<double> myThermoLM(1, 0.);
           DRT::UTILS::ExtractMyValues(*global, myThermoLM, lm);
-          node->CoTSIData().ThermoLM() = myThermoLM[0];
+          node->TSIData().ThermoLM() = myThermoLM[0];
         }
       }
       break;
     }
     default:
     {
-      CONTACT::CoAbstractStrategy::SetState(statetype, vec);
+      CONTACT::AbstractStrategy::SetState(statetype, vec);
       break;
     }
   }
@@ -109,7 +109,7 @@ void CONTACT::CoLagrangeStrategyTsi::SetState(
 }
 
 
-void CONTACT::CoLagrangeStrategyTsi::Evaluate(
+void CONTACT::LagrangeStrategyTsi::Evaluate(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
     Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp)
@@ -205,9 +205,8 @@ void CONTACT::CoLagrangeStrategyTsi::Evaluate(
   // stick / slip linearization
   for (unsigned i = 0; i < interface_.size(); ++i)
   {
-    CONTACT::CoTSIInterface* tsi_interface =
-        dynamic_cast<CONTACT::CoTSIInterface*>(&(*interface_[i]));
-    if (!tsi_interface) dserror("in TSI contact, this should be a CoTSIInterface!");
+    CONTACT::TSIInterface* tsi_interface = dynamic_cast<CONTACT::TSIInterface*>(&(*interface_[i]));
+    if (!tsi_interface) dserror("in TSI contact, this should be a TSIInterface!");
 
     // linearized normal contact
     interface_[i]->AssembleS(s);
@@ -233,9 +232,9 @@ void CONTACT::CoLagrangeStrategyTsi::Evaluate(
 
     tsi_interface->AssembleLinDM(linDcontactLM, linMcontactLM);
     tsi_interface->AssembleLinDM_X(
-        nullptr, &linMdiss, 1., CONTACT::CoTSIInterface::LinDM_Diss, gsnoderowmap_);
+        nullptr, &linMdiss, 1., CONTACT::TSIInterface::LinDM_Diss, gsnoderowmap_);
     tsi_interface->AssembleLinDM_X(
-        &linDThermoLM, &linMThermoLM, 1., CONTACT::CoTSIInterface::LinDM_ThermoLM, gsnoderowmap_);
+        &linDThermoLM, &linMThermoLM, 1., CONTACT::TSIInterface::LinDM_ThermoLM, gsnoderowmap_);
   }
 
   // complete all those linearizations
@@ -804,7 +803,7 @@ void CONTACT::UTILS::AddVector(Epetra_Vector& src, Epetra_Vector& dst)
   return;
 }
 
-void CONTACT::CoLagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,
+void CONTACT::LagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,
     Teuchos::RCP<Epetra_Vector> tinc, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> z_old = Teuchos::null;
@@ -875,7 +874,7 @@ void CONTACT::CoLagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> 
   return;
 };
 
-void CONTACT::CoLagrangeStrategyTsi::StoreNodalQuantities(
+void CONTACT::LagrangeStrategyTsi::StoreNodalQuantities(
     MORTAR::StrategyBase::QuantityType type, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
@@ -905,21 +904,21 @@ void CONTACT::CoLagrangeStrategyTsi::StoreNodalQuantities(
           int gid = snodemap->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("Cannot find node with gid %", gid);
-          CoNode* cnode = dynamic_cast<CoNode*>(node);
+          Node* cnode = dynamic_cast<Node*>(node);
 
-          cnode->CoTSIData().ThermoLM() =
+          cnode->TSIData().ThermoLM() =
               (*vectorinterface)[(vectorinterface->Map()).LID(cnode->Dofs()[0])];
         }
       }
       break;
     }
     default:
-      CONTACT::CoAbstractStrategy::StoreNodalQuantities(type);
+      CONTACT::AbstractStrategy::StoreNodalQuantities(type);
       break;
   }
 }
 
-void CONTACT::CoLagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::LagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (fscn_ == Teuchos::null) fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
   fscn_->PutScalar(0.0);
@@ -937,7 +936,7 @@ void CONTACT::CoLagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> di
   tmp->Scale(-1.);
   CONTACT::UTILS::AddVector(*tmp, *fscn_);
 
-  CONTACT::CoAbstractStrategy::Update(dis);
+  CONTACT::AbstractStrategy::Update(dis);
 
   CORE::LINALG::SparseMatrix dThr(*coupST_->MasterToSlaveMap(gsdofrowmap_), 100, true, false,
       CORE::LINALG::SparseMatrix::FE_MATRIX);
@@ -964,7 +963,7 @@ void CONTACT::CoLagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> di
   CORE::LINALG::SparseMatrix m_LinDissContactLM(
       *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
   for (unsigned i = 0; i < interface_.size(); ++i)
-    dynamic_cast<CONTACT::CoTSIInterface*>(&(*interface_[i]))
+    dynamic_cast<CONTACT::TSIInterface*>(&(*interface_[i]))
         ->AssembleDM_linDiss(nullptr, nullptr, nullptr, &m_LinDissContactLM, 1.);
   m_LinDissContactLM.Complete(*gactivedofs_, *gmdofrowmap_);
   Teuchos::RCP<Epetra_Vector> z_act = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
@@ -982,7 +981,7 @@ void CONTACT::CoLagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> di
   ftcn_ = ftcnp_;
 }
 
-void CONTACT::CoLagrangeStrategyTsi::SetAlphafThermo(const Teuchos::ParameterList& tdyn)
+void CONTACT::LagrangeStrategyTsi::SetAlphafThermo(const Teuchos::ParameterList& tdyn)
 {
   INPAR::THR::DynamicType dyn_type =
       INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
@@ -1007,10 +1006,10 @@ void CONTACT::CoLagrangeStrategyTsi::SetAlphafThermo(const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategyTsi::DoWriteRestart(
+void CONTACT::LagrangeStrategyTsi::DoWriteRestart(
     std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors, bool forcedrestart) const
 {
-  CONTACT::CoAbstractStrategy::DoWriteRestart(restart_vectors, forcedrestart);
+  CONTACT::AbstractStrategy::DoWriteRestart(restart_vectors, forcedrestart);
 
   if (fscn_ != Teuchos::null)
   {
@@ -1028,12 +1027,12 @@ void CONTACT::CoLagrangeStrategyTsi::DoWriteRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategyTsi::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::LagrangeStrategyTsi::DoReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   bool restartwithcontact = INPUT::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
 
-  CONTACT::CoAbstractStrategy::DoReadRestart(reader, dis);
+  CONTACT::AbstractStrategy::DoReadRestart(reader, dis);
   fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
   if (!restartwithcontact) reader.ReadVector(fscn_, "last_contact_force");
 

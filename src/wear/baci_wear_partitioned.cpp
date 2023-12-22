@@ -180,7 +180,7 @@ void WEAR::Partitioned::TimeLoopIterStagg()
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
+  WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   // reset waccu, wold and wcurr...
   cstrategy.UpdateWearDiscretIterate(false);
@@ -249,7 +249,7 @@ void WEAR::Partitioned::TimeLoopStagg(bool alestep)
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
+  WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   // counter and print header
   IncrementTimeAndStep();
@@ -520,8 +520,8 @@ void WEAR::Partitioned::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
     Teuchos::RCP<Epetra_Vector>& disinterface_m, Teuchos::RCP<Epetra_Vector>& disinterface_g)
 {
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
-  std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface = cstrategy.ContactInterfaces();
+  CONTACT::AbstractStrategy& cstrategy = static_cast<CONTACT::AbstractStrategy&>(strategy);
+  std::vector<Teuchos::RCP<CONTACT::Interface>> interface = cstrategy.ContactInterfaces();
   Teuchos::RCP<WEAR::WearInterface> winterface =
       Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interface[0]);
   if (winterface == Teuchos::null) dserror("Casting to WearInterface returned null!");
@@ -633,7 +633,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
+  WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   for (int i = 0; i < (int)interfaces_.size(); ++i)
   {
@@ -699,10 +699,10 @@ void WEAR::Partitioned::WearSpatialMasterMap(
       int gid = winterface->MasterColElements()->GID(j);
       DRT::Element* ele = winterface->Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %", gid);
-      CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
+      CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-      Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
-          new CONTACT::CoIntegrator(winterface->InterfaceParams(), cele->Shape(), Comm()));
+      Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::rcp(
+          new CONTACT::Integrator(winterface->InterfaceParams(), cele->Shape(), Comm()));
 
       integrator->IntegrateD(*cele, Comm());
     }
@@ -803,7 +803,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::CoLagrangeStrategyWear& cstrategy = static_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
+  WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
       DRT::Problem::Instance()->WearParams(), "WEARTYPE");
@@ -985,7 +985,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::CoLagrangeStrategyWear& cstrategy = dynamic_cast<WEAR::CoLagrangeStrategyWear&>(strategy);
+  WEAR::LagrangeStrategyWear& cstrategy = dynamic_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
       DRT::Problem::Instance()->WearParams(), "WEARTYPE");
@@ -1090,10 +1090,10 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       int gid = interfacesMat_[m]->SlaveColElements()->GID(j);
       DRT::Element* ele = interfacesMat_[m]->Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %", gid);
-      CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
+      CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-      Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
-          new CONTACT::CoIntegrator(interfacesMat_[m]->InterfaceParams(), cele->Shape(), Comm()));
+      Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::rcp(
+          new CONTACT::Integrator(interfacesMat_[m]->InterfaceParams(), cele->Shape(), Comm()));
 
       integrator->IntegrateD(*cele, Comm());
     }
@@ -1312,10 +1312,10 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       int gid = winterface->MasterColElements()->GID(j);
       DRT::Element* ele = winterface->Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %", gid);
-      CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
+      CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-      Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
-          new CONTACT::CoIntegrator(winterface->InterfaceParams(), cele->Shape(), Comm()));
+      Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::rcp(
+          new CONTACT::Integrator(winterface->InterfaceParams(), cele->Shape(), Comm()));
 
       integrator->IntegrateD(*cele, Comm());
     }
@@ -1329,10 +1329,10 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       int gid = winterfaceMat->MasterColElements()->GID(j);
       DRT::Element* ele = winterfaceMat->Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %", gid);
-      CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
+      CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-      Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
-          new CONTACT::CoIntegrator(winterfaceMat->InterfaceParams(), cele->Shape(), Comm()));
+      Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::rcp(
+          new CONTACT::Integrator(winterfaceMat->InterfaceParams(), cele->Shape(), Comm()));
 
       integrator->IntegrateD(*cele, Comm());
     }

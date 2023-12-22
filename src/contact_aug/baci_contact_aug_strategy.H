@@ -712,7 +712,7 @@ namespace CONTACT
      *
      *  \author hiermeier
      *  \date 04/15*/
-    class Strategy : public CONTACT::CoAbstractStrategy
+    class Strategy : public CONTACT::AbstractStrategy
     {
       /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
        *  strategies and needs access to all methods. */
@@ -1199,7 +1199,7 @@ namespace CONTACT
        * (in): current search direction (in general NOT the actual step, keep in mind that the step
        * length can differ from 1.0) \param xnew    (in): new solution vector of the NOX solver
        *
-       * (see the CONTACT::CoAbstractStrategy for more information)
+       * (see the CONTACT::AbstractStrategy for more information)
        *
        * \date 03/2016
        * \author hiermeier */

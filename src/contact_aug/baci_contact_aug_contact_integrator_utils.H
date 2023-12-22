@@ -28,8 +28,8 @@ namespace MORTAR
 
 namespace CONTACT
 {
-  class CoIntegrator;
-  class CoNode;
+  class Integrator;
+  class Node;
   namespace INTEGRATOR
   {
     struct ElementNormal;
@@ -49,7 +49,7 @@ namespace CONTACT
     double UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
         const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal);
 
-    void Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
+    void Deriv1st_AveragedSlaveNormal(CONTACT::Node& cnode,
         const std::vector<ElementNormal>& adj_ele_normals, const double avg_normal_length,
         Deriv1stVecMap& d_nodal_avg_normal);
 
@@ -64,7 +64,7 @@ namespace CONTACT
         const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
         const Deriv1stVecMap& d_non_unit_normal, Deriv1stVecMap& d_unit_normal, const bool reset);
 
-    void Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
+    void Deriv2nd_AveragedSlaveNormal(CONTACT::Node& cnode,
         const std::vector<ElementNormal>& adj_ele_normals, const double avg_normal_length,
         const Deriv1stVecMap& d_nodal_avg_normal);
 
@@ -102,7 +102,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 03/17 */
     bool FindFeasibleMasterElements(MORTAR::MortarElement& sele,
-        const std::vector<MORTAR::MortarElement*>& meles, bool boundary_ele, CoIntegrator& wrapper,
+        const std::vector<MORTAR::MortarElement*>& meles, bool boundary_ele, Integrator& wrapper,
         UniqueProjInfoPair& projInfo);
 
     /** \brief Find a feasible master element in a given set of master elements
@@ -120,7 +120,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 03/17 */
     inline bool FindFeasibleMasterElements(MORTAR::MortarElement& sele,
-        const std::vector<MORTAR::MortarElement*>& meles, CoIntegrator& wrapper,
+        const std::vector<MORTAR::MortarElement*>& meles, Integrator& wrapper,
         UniqueProjInfoPair& projInfo)
     {
       return FindFeasibleMasterElements(sele, meles, true, wrapper, projInfo);

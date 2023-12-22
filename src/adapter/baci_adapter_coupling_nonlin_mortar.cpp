@@ -82,7 +82,7 @@ void ADAPTER::CouplingNonLinMortar::Setup(Teuchos::RCP<DRT::Discretization> mast
   std::map<int, Teuchos::RCP<DRT::Element>> masterelements;
   std::map<int, Teuchos::RCP<DRT::Element>> slaveelements;
 
-  Teuchos::RCP<CONTACT::CoInterface> interface;
+  Teuchos::RCP<CONTACT::Interface> interface;
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
@@ -240,7 +240,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
     std::map<int, DRT::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
     std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
-    Teuchos::RCP<CONTACT::CoInterface>& interface, int numcoupleddof)
+    Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
 {
   const bool isnurbs = input.get<bool>("NURBS");
 
@@ -248,7 +248,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
   const int dim = DRT::Problem::Instance()->NDim();
 
   // create an empty mortar interface
-  interface = CONTACT::CoInterface::Create(0, *comm_, dim, input, false);
+  interface = CONTACT::Interface::Create(0, *comm_, dim, input, false);
 
   //  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and
   //  slidingale==false) or
@@ -294,7 +294,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
         ii += 1;
       }
     }
-    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+    Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(
         new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), dofids, false, false, false));
 
     if (isnurbs)
@@ -304,7 +304,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
       cnode->NurbsW() = cp->W();
     }
 
-    interface->AddCoNode(cnode);
+    interface->AddNode(cnode);
   }
 
   // feeding slave nodes to the interface including ghosted nodes
@@ -325,7 +325,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
         ii += 1;
       }
     }
-    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+    Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(
         new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), dofids, true, true, false));
 
     if (isnurbs)
@@ -335,7 +335,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
       cnode->NurbsW() = cp->W();
     }
 
-    interface->AddCoNode(cnode);
+    interface->AddNode(cnode);
   }
 }
 
@@ -347,7 +347,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
     std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
     std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
-    Teuchos::RCP<CONTACT::CoInterface>& interface, int numcoupleddof)
+    Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
 {
   const bool isnurbs = input.get<bool>("NURBS");
 
@@ -392,7 +392,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
-    Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(
+    Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, isnurbs));
 
     if (isnurbs)
@@ -416,7 +416,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
       cele->NormalFac() = normalfac;
     }
 
-    interface->AddCoElement(cele);
+    interface->AddElement(cele);
   }
 
   // feeding slave elements to the interface
@@ -429,7 +429,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
     // an element offset AND a node offset for the the slave mortar elements
     if (true)  //(slidingale==false)
     {
-      Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(
+      Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
           ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true, isnurbs));
 
       if (isnurbs)
@@ -453,7 +453,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
         cele->NormalFac() = normalfac;
       }
 
-      interface->AddCoElement(cele);
+      interface->AddElement(cele);
     }
     else
     {
@@ -463,10 +463,10 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
         nidsoff.push_back(ele->NodeIds()[ele->NumNode() - 1 - i] + nodeoffset);
       }
 
-      Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(
+      Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
           ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->NumNode(), nidsoff.data(), true));
 
-      interface->AddCoElement(cele);
+      interface->AddElement(cele);
     }
   }
 
@@ -507,7 +507,7 @@ void ADAPTER::CouplingNonLinMortar::InitMatrices()
  |  complete interface (also print and parallel redist.)     farah 02/16|
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingNonLinMortar::CompleteInterface(
-    Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::CoInterface>& interface)
+    Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   const Teuchos::ParameterList& input =
       DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
@@ -658,8 +658,8 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   const int dim = DRT::Problem::Instance()->NDim();
 
   // generate contact interface
-  Teuchos::RCP<CONTACT::CoInterface> interface =
-      CONTACT::CoInterface::Create(0, comm, dim, input, false);
+  Teuchos::RCP<CONTACT::Interface> interface =
+      CONTACT::Interface::Create(0, comm, dim, input, false);
 
   // feeding nodes to the interface including ghosted nodes
   std::map<int, DRT::Node*>::const_iterator nodeiter;
@@ -676,10 +676,10 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   {
     DRT::Node* node = nodeiter->second;
 
-    Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
+    Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
         node->Id(), node->X(), node->Owner(), masterdis->Dof(node), false, false, false));
 
-    interface->AddCoNode(mrtrnode);
+    interface->AddNode(mrtrnode);
   }
 
   // SLAVE NODES
@@ -688,10 +688,10 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   {
     DRT::Node* node = nodeiter->second;
 
-    Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
+    Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
         node->Id(), node->X(), node->Owner(), slavedis->Dof(node), true, true, false));
 
-    interface->AddCoNode(mrtrnode);
+    interface->AddNode(mrtrnode);
   }
 
   // MASTER ELEMENTS
@@ -700,10 +700,10 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
 
-    Teuchos::RCP<CONTACT::CoElement> mrtrele = Teuchos::rcp(new CONTACT::CoElement(
+    Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::rcp(new CONTACT::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false));
 
-    interface->AddCoElement(mrtrele);
+    interface->AddElement(mrtrele);
   }
 
   // SLAVE ELEMENTS
@@ -712,10 +712,10 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
 
-    Teuchos::RCP<CONTACT::CoElement> mrtrele = Teuchos::rcp(new CONTACT::CoElement(
+    Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::rcp(new CONTACT::Element(
         ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true));
 
-    interface->AddCoElement(mrtrele);
+    interface->AddElement(mrtrele);
   }
 
   /* Finalize the interface construction
@@ -797,10 +797,10 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
     int gid = interface_->SlaveColElements()->GID(j);
     DRT::Element* ele = interface_->Discret().gElement(gid);
     if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
-    CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
+    CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-    Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
-        new CONTACT::CoIntegrator(interface_->InterfaceParams(), cele->Shape(), *comm_));
+    Teuchos::RCP<CONTACT::Integrator> integrator =
+        Teuchos::rcp(new CONTACT::Integrator(interface_->InterfaceParams(), cele->Shape(), *comm_));
 
     integrator->IntegrateD(*cele, *comm_, true);
   }

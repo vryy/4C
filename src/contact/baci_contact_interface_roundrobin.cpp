@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
  |  store the required ghosting within a round              farah 10/13 |
  |  robin iteration for current interface (public)                      |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::RoundRobinExtendGhosting(bool firstevaluation)
+void CONTACT::Interface::RoundRobinExtendGhosting(bool firstevaluation)
 {
   std::vector<int> element_GIDs_to_be_ghosted;
   std::vector<int> node_GIDs_to_be_ghosted;
@@ -29,14 +29,14 @@ void CONTACT::CoInterface::RoundRobinExtendGhosting(bool firstevaluation)
     int gid = SlaveColElements()->GID(k);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    CoElement* slave_ele = dynamic_cast<CoElement*>(ele);
+    Element* slave_ele = dynamic_cast<Element*>(ele);
 
     for (int j = 0; j < slave_ele->MoData().NumSearchElements(); ++j)
     {
       int gid2 = slave_ele->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("Cannot find master element with gid %", gid2);
-      CoElement* melement = dynamic_cast<CoElement*>(ele2);
+      Element* melement = dynamic_cast<Element*>(ele2);
 
       element_GIDs_to_be_ghosted.push_back(melement->Id());
 
@@ -74,7 +74,7 @@ void CONTACT::CoInterface::RoundRobinExtendGhosting(bool firstevaluation)
  | perform the ownership change within a round robin        farah 10/13 |
  | iteration                                                            |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::RoundRobinChangeOwnership()
+void CONTACT::Interface::RoundRobinChangeOwnership()
 {
   // pack/unpack friction nodes is only required for wear problems
   // so we should create a slightly redundant function for the wear-
@@ -430,7 +430,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
  |  change master ownership clockwise for contact            farah 10/13|
  |  interface without evaluation of the interface                       |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::RoundRobinDetectGhosting()
+void CONTACT::Interface::RoundRobinDetectGhosting()
 {
   if (SearchAlg() == INPAR::MORTAR::search_bfele)
     EvaluateSearchBruteForce(SearchParam());

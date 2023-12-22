@@ -36,11 +36,11 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
+CONTACT::PenaltyStrategy::PenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
+    const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+    const int maxdof)
+    : AbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
           NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
@@ -53,12 +53,12 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(const Epetra_Map* DofRowMap,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
+CONTACT::PenaltyStrategy::PenaltyStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
+    : AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
@@ -72,7 +72,7 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
 /*----------------------------------------------------------------------*
  |  save the gap-scaling kappa from reference config          popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // initialize the displacement field
   SetState(MORTAR::state_new_displacement, *dis);
@@ -95,7 +95,7 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
       int gid1 = interface_[i]->SlaveColElements()->GID(j);
       DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
       if (!ele1) dserror("Cannot find slave element with gid %", gid1);
-      CoElement* selement = dynamic_cast<CoElement*>(ele1);
+      Element* selement = dynamic_cast<Element*>(ele1);
 
       interface_[i]->IntegrateKappaPenalty(*selement);
     }
@@ -106,17 +106,17 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
+      Node* cnode = dynamic_cast<Node*>(node);
 
       // get nodal weighted gap
       // (this is where we stored the shape function integrals)
-      double gap = cnode->CoData().Getg();
+      double gap = cnode->Data().Getg();
 
       // store kappa as the inverse of gap
       // (this removes the scaling introduced by weighting the gap!!!)
-      cnode->CoData().Kappa() = 1.0 / gap;
+      cnode->Data().Kappa() = 1.0 / gap;
 
-      // std::cout << "S-NODE #" << gid << " kappa=" << cnode->CoData().Kappa() << std::endl;
+      // std::cout << "S-NODE #" << gid << " kappa=" << cnode->Data().Kappa() << std::endl;
     }
   }
 }
@@ -124,7 +124,7 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
 /*----------------------------------------------------------------------*
  | evaluate relative movement in predictor step               popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvaluateRelMovPredict()
+void CONTACT::PenaltyStrategy::EvaluateRelMovPredict()
 {
   // only for frictional contact
   if (friction_ == false) return;
@@ -138,7 +138,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateRelMovPredict()
 /*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::Initialize()
+void CONTACT::PenaltyStrategy::Initialize()
 {
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
@@ -159,7 +159,7 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 /*----------------------------------------------------------------------*
  | evaluate contact and create linear system                  popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvaluateContact(
+void CONTACT::PenaltyStrategy::EvaluateContact(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // in the beginning of this function, the regularized contact forces
@@ -398,7 +398,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(
 /*----------------------------------------------------------------------*
  | evaluate frictional contact and create linear system gitterle   10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvaluateFriction(
+void CONTACT::PenaltyStrategy::EvaluateFriction(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // this is almost the same as in the frictionless contact
@@ -429,7 +429,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateFriction(
 /*----------------------------------------------------------------------*
  | reset penalty parameter to intial value                    popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::ResetPenalty()
+void CONTACT::PenaltyStrategy::ResetPenalty()
 {
   // reset penalty parameter in strategy
   Params().set<double>("PENALTYPARAM", InitialPenalty());
@@ -448,7 +448,7 @@ void CONTACT::CoPenaltyStrategy::ResetPenalty()
 /*----------------------------------------------------------------------*
  | modify penalty parameter to intial value                    mhv 03/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::ModifyPenalty()
+void CONTACT::PenaltyStrategy::ModifyPenalty()
 {
   // generate random number between 0.95 and 1.05
   double randnum = ((double)rand() / (double)RAND_MAX) * 0.1 + 0.95;
@@ -471,7 +471,7 @@ void CONTACT::CoPenaltyStrategy::ModifyPenalty()
 /*----------------------------------------------------------------------*
  | intialize second, third,... Uzawa step                     popp 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::InitializeUzawa(
+void CONTACT::PenaltyStrategy::InitializeUzawa(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // remove old stiffness terms
@@ -544,11 +544,11 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(
       int gid = interface_[i]->SlaveColNodesBound()->GID(i);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
+      Node* cnode = dynamic_cast<Node*>(node);
 
-      for (int k = 0; k < (int)((cnode->CoData().GetDerivZ()).size()); ++k)
-        (cnode->CoData().GetDerivZ())[k].clear();
-      (cnode->CoData().GetDerivZ()).resize(0);
+      for (int k = 0; k < (int)((cnode->Data().GetDerivZ()).size()); ++k)
+        (cnode->Data().GetDerivZ())[k].clear();
+      (cnode->Data().GetDerivZ()).resize(0);
     }
   }
 
@@ -568,7 +568,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(
 /*----------------------------------------------------------------------*
  | evaluate L2-norm of active constraints                     popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
+void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 {
   // initialize parameters
   double cnorm = 0.0;
@@ -692,7 +692,7 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 /*----------------------------------------------------------------------*
  | store Lagrange multipliers for next Uzawa step             popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::UpdateUzawaAugmentedLagrange()
+void CONTACT::PenaltyStrategy::UpdateUzawaAugmentedLagrange()
 {
   // store current LM into Uzawa LM
   // (note that this is also done after the last Uzawa step of one
@@ -706,7 +706,7 @@ void CONTACT::CoPenaltyStrategy::UpdateUzawaAugmentedLagrange()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
+void CONTACT::PenaltyStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 {
   //---------------------------------------------------------------
   // For selfcontact the master/slave sets are updated within the -
@@ -748,7 +748,7 @@ void CONTACT::CoPenaltyStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::Assemble()
+void CONTACT::PenaltyStrategy::Assemble()
 {
   fc_ = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   kc_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ProblemDofs(), 100, true, true));
@@ -932,7 +932,7 @@ void CONTACT::CoPenaltyStrategy::Assemble()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
   // if there are no active contact contributions
@@ -962,7 +962,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetRhsBlockPtr(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::PenaltyStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
 {
   // call the evaluate force routine if not done before
   if (!evalForceCalled_) EvalForce(cparams);
@@ -974,7 +974,7 @@ void CONTACT::CoPenaltyStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparam
 /*----------------------------------------------------------------------*
  | set force evaluation flag before evaluation step          farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::PenaltyStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
 {
   const enum MORTAR::ActionType& act = cparams.GetActionType();
 
@@ -1004,7 +1004,7 @@ void CONTACT::CoPenaltyStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
 /*----------------------------------------------------------------------*
  | set force evaluation flag after evaluation                farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::PenaltyStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
 {
   const enum MORTAR::ActionType& act = cparams.GetActionType();
 
@@ -1042,7 +1042,7 @@ void CONTACT::CoPenaltyStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoPenaltyStrategy::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::PenaltyStrategy::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active contact contributions
@@ -1069,41 +1069,40 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoPenaltyStrategy::GetMatrixBl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetLagrMultN(const bool& redist) const
+Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultN(const bool& redist) const
 {
   if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
-    return CONTACT::CoAbstractStrategy::GetLagrMultN(redist);
+    return CONTACT::AbstractStrategy::GetLagrMultN(redist);
   else
     return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetLagrMultNp(
-    const bool& redist) const
+Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultNp(const bool& redist) const
 {
   if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
-    return CONTACT::CoAbstractStrategy::GetLagrMultNp(redist);
+    return CONTACT::AbstractStrategy::GetLagrMultNp(redist);
   else
     return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::CoPenaltyStrategy::LagrMultOld()
+Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::LagrMultOld()
 {
   if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
-    return CONTACT::CoAbstractStrategy::LagrMultOld();
+    return CONTACT::AbstractStrategy::LagrMultOld();
   else
     return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::CoPenaltyStrategy::LMDoFRowMapPtr(const bool& redist) const
+Teuchos::RCP<const Epetra_Map> CONTACT::PenaltyStrategy::LMDoFRowMapPtr(const bool& redist) const
 {
   if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
-    return CONTACT::CoAbstractStrategy::LMDoFRowMapPtr(redist);
+    return CONTACT::AbstractStrategy::LMDoFRowMapPtr(redist);
   else
     return Teuchos::null;
 }

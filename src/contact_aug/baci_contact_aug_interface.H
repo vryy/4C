@@ -192,7 +192,7 @@ namespace CONTACT
     /** \brief Augmented contact interface class
      *
      *  \author hiermeier \date 03/17 */
-    class Interface : public CONTACT::CoInterface
+    class Interface : public CONTACT::Interface
     {
      public:
       /** \brief Alternative constructor
@@ -389,7 +389,7 @@ namespace CONTACT
 
       /// set nodes initially active (by gap and/or condition line)
       bool SetNodeInitiallyActive(
-          const CONTACT::ParamsInterface& cparams, CONTACT::CoNode& cnode) const;
+          const CONTACT::ParamsInterface& cparams, CONTACT::Node& cnode) const;
 
       //! Split the sdofrowmap_ into a normal and tangential part
       void SplitSlaveDofs();
@@ -478,7 +478,7 @@ namespace CONTACT
       /// @}
 
      private:
-      void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
+      void SetNodeInitiallyActiveByGap(Node& cnode) const;
 
       void BuildActiveColMaps();
 
@@ -492,15 +492,15 @@ namespace CONTACT
       template <enum CONTACT::AUG::SideType side>
       void AssembleGradientBBMatrixContributionOfSide(const int nummynodes,
           const int* const mynodegids, const Epetra_BlockMap& dincr_block_map,
-          const Epetra_BlockMap& lm_block_map, const CoNode& cnode_k, const double scalar,
+          const Epetra_BlockMap& lm_block_map, const Node& cnode_k, const double scalar,
           const double lk, const double* const dincr_vals, const double* const lm_vals,
           double* const lmincr_vals, double& lmincr_k) const;
 
       template <enum CONTACT::AUG::SideType side>
-      const Deriv1stMap& GetVarWGapOfSide(const CoNode& cnode) const;
+      const Deriv1stMap& GetVarWGapOfSide(const Node& cnode) const;
 
       template <enum CONTACT::AUG::SideType side>
-      const Deriv2ndMap& GetVarWGapLinOfSide(const CoNode& cnode) const;
+      const Deriv2ndMap& GetVarWGapLinOfSide(const Node& cnode) const;
 
      protected:
       // don't want = operator and cctor
@@ -731,16 +731,16 @@ namespace CONTACT
     /// Interface class member function specializations
     template <>
     const CONTACT::AUG::Deriv1stMap& Interface::GetVarWGapOfSide<SideType::master>(
-        const CoNode& cnode) const;
+        const Node& cnode) const;
     template <>
     const CONTACT::AUG::Deriv1stMap& Interface::GetVarWGapOfSide<SideType::slave>(
-        const CoNode& cnode) const;
+        const Node& cnode) const;
     template <>
     const CONTACT::AUG::Deriv2ndMap& Interface::GetVarWGapLinOfSide<SideType::master>(
-        const CoNode& cnode) const;
+        const Node& cnode) const;
     template <>
     const CONTACT::AUG::Deriv2ndMap& Interface::GetVarWGapLinOfSide<SideType::slave>(
-        const CoNode& cnode) const;
+        const Node& cnode) const;
 
   }  // namespace AUG
 }  // namespace CONTACT

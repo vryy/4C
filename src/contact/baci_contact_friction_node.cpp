@@ -233,14 +233,14 @@ void CONTACT::FriNodeWearDataContainer::Unpack(
  *----------------------------------------------------------------------*/
 CONTACT::FriNode::FriNode(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive, const bool friplus)
-    : CONTACT::CoNode(id, coords, owner, dofs, isslave, initactive), wear_(friplus)
+    : CONTACT::Node(id, coords, owner, dofs, isslave, initactive), wear_(friplus)
 {
 }
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                        mgit 02/10|
  *----------------------------------------------------------------------*/
-CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) : CONTACT::CoNode(old), wear_(old.wear_)
+CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) : CONTACT::Node(old), wear_(old.wear_)
 {
   // not yet used and thus not necessarily consistent
   dserror("FriNode copy-ctor not yet implemented");
@@ -274,7 +274,7 @@ void CONTACT::FriNode::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Contact ";
-  CONTACT::CoNode::Print(os);
+  CONTACT::Node::Print(os);
   if (IsSlave())
     if (IsInitActive()) os << " InitActive ";
 
@@ -295,7 +295,7 @@ void CONTACT::FriNode::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, type);
 
   // add base class MORTAR::MortarNode
-  CONTACT::CoNode::Pack(data);
+  CONTACT::Node::Pack(data);
 
   // add data_
   bool hasdata = (fridata_ != Teuchos::null);
@@ -319,10 +319,10 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class CONTACT::CoNode
+  // extract base class CONTACT::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  CONTACT::CoNode::Unpack(basedata);
+  CONTACT::Node::Unpack(basedata);
 
   // **************************
   // FriData
@@ -363,7 +363,7 @@ double CONTACT::FriNode::FrCoeff(const double& frcoeff_in)
   // in TSI case, the friction coefficient is temperature dependent
   else
   {
-    double maxT = std::max(CoTSIData().Temp(), CoTSIData().TempMaster());
+    double maxT = std::max(TSIData().Temp(), TSIData().TempMaster());
     return frcoeff_in * (maxT - cTSIdata_->Temp_Dam()) * (maxT - cTSIdata_->Temp_Dam()) /
            ((cTSIdata_->Temp_Dam() - cTSIdata_->Temp_Ref()) *
                (cTSIdata_->Temp_Dam() - cTSIdata_->Temp_Ref()));
@@ -386,19 +386,19 @@ void CONTACT::FriNode::derivFrCoeffTemp(
   double T_ref = cTSIdata_->Temp_Ref();
   if (cTSIdata_->Temp() > cTSIdata_->TempMaster())
   {
-    double maxT = CoTSIData().Temp();
+    double maxT = TSIData().Temp();
     derivT[Dofs()[0]] += 2. * frcoeff_in * (maxT - T_dam) / ((T_dam - T_ref) * (T_dam - T_ref));
     derivDisp.clear();
   }
   else
   {
-    double maxT = CoTSIData().TempMaster();
-    for (std::map<int, double>::const_iterator i = CoTSIData().DerivTempMasterTemp().begin();
-         i != CoTSIData().DerivTempMasterTemp().end(); ++i)
+    double maxT = TSIData().TempMaster();
+    for (std::map<int, double>::const_iterator i = TSIData().DerivTempMasterTemp().begin();
+         i != TSIData().DerivTempMasterTemp().end(); ++i)
       derivT[i->first] +=
           2. * frcoeff_in * (maxT - T_dam) / ((T_dam - T_ref) * (T_dam - T_ref)) * i->second;
-    for (std::map<int, double>::const_iterator i = CoTSIData().DerivTempMasterDisp().begin();
-         i != CoTSIData().DerivTempMasterDisp().end(); ++i)
+    for (std::map<int, double>::const_iterator i = TSIData().DerivTempMasterDisp().begin();
+         i != TSIData().DerivTempMasterDisp().end(); ++i)
       derivDisp[i->first] +=
           2. * frcoeff_in * (maxT - T_dam) / ((T_dam - T_ref) * (T_dam - T_ref)) * i->second;
   }
@@ -598,7 +598,7 @@ void CONTACT::FriNode::InitializeDataContainer()
   if (modata_ == Teuchos::null && codata_ == Teuchos::null && fridata_ == Teuchos::null)
   {
     modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
-    codata_ = Teuchos::rcp(new CONTACT::CoNodeDataContainer());
+    codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
     fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
   }
 

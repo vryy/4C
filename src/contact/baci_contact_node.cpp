@@ -17,14 +17,14 @@
 
 BACI_NAMESPACE_OPEN
 
-CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
+CONTACT::NodeType CONTACT::NodeType::instance_;
 
 
-CORE::COMM::ParObject* CONTACT::CoNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* CONTACT::NodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
-  auto* node = new CONTACT::CoNode(0, x, 0, dofs, false, false);
+  auto* node = new CONTACT::Node(0, x, 0, dofs, false, false);
   node->Unpack(data);
   return node;
 }
@@ -33,7 +33,7 @@ CORE::COMM::ParObject* CONTACT::CoNodeType::Create(const std::vector<char>& data
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 02/10 |
  *----------------------------------------------------------------------*/
-CONTACT::CoNodeDataContainer::CoNodeDataContainer()
+CONTACT::NodeDataContainer::NodeDataContainer()
     : grow_(1.0e12),
       gnts_(1.0e12),
       glts_(1.0e12),
@@ -61,7 +61,7 @@ CONTACT::CoNodeDataContainer::CoNodeDataContainer()
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::NodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add txi_
   CORE::COMM::ParObject::AddtoPack(data, txi_, 3 * sizeof(double));
@@ -86,7 +86,7 @@ void CONTACT::CoNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeDataContainer::Unpack(
+void CONTACT::NodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // txi_
@@ -107,7 +107,7 @@ void CONTACT::CoNodeDataContainer::Unpack(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::NodeDataContainer::NodeDataContainer(CoNode& parentNode)
+CONTACT::AUG::NodeDataContainer::NodeDataContainer(Node& parentNode)
     : mentries_(-1),
       kappa_(1.0e12),
       wGap_(1.0e12),
@@ -120,7 +120,7 @@ CONTACT::AUG::NodeDataContainer::NodeDataContainer(CoNode& parentNode)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::NodeDataContainer::NodeDataContainer(
-    CoNode& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster)
+    Node& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster)
     : kappa_(1.0e12), wGap_(1.0e12), augA_(1.0e12), parentNode_(parentNode)
 {
   mentries_ = ApproximateMEntries(slMaElementAreaRatio, isTriangleOnMaster);
@@ -265,7 +265,7 @@ void CONTACT::AUG::NodeDataContainer::Debug::Complete()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ager 08/14|
  *----------------------------------------------------------------------*/
-CONTACT::CoNodePoroDataContainer::CoNodePoroDataContainer()
+CONTACT::NodePoroDataContainer::NodePoroDataContainer()
 {
   ncouprow_ = 0.0;
   for (int i = 0; i < 3; ++i)
@@ -282,7 +282,7 @@ CONTACT::CoNodePoroDataContainer::CoNodePoroDataContainer()
  |  Pack data                                                  (public) |
  |                                                            ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodePoroDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::NodePoroDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add fvel
   CORE::COMM::ParObject::AddtoPack(data, fvel_, 3 * sizeof(double));
@@ -301,7 +301,7 @@ void CONTACT::CoNodePoroDataContainer::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodePoroDataContainer::Unpack(
+void CONTACT::NodePoroDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // fvel
@@ -320,7 +320,7 @@ void CONTACT::CoNodePoroDataContainer::Unpack(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            seitz 08/15|
  *----------------------------------------------------------------------*/
-CONTACT::CoNodeTSIDataContainer::CoNodeTSIDataContainer(double t_ref, double t_dam)
+CONTACT::NodeTSIDataContainer::NodeTSIDataContainer(double t_ref, double t_dam)
     : temp_(-1.e12), t_ref_(t_ref), t_dam_(t_dam), thermo_lm_(0.), temp_master_(-1.e12)
 {
   return;
@@ -330,7 +330,7 @@ CONTACT::CoNodeTSIDataContainer::CoNodeTSIDataContainer(double t_ref, double t_d
  |  Pack data                                                  (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeTSIDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::NodeTSIDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::ParObject::AddtoPack(data, temp_master_);
   CORE::COMM::ParObject::AddtoPack(data, t_ref_);
@@ -344,7 +344,7 @@ void CONTACT::CoNodeTSIDataContainer::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeTSIDataContainer::Unpack(
+void CONTACT::NodeTSIDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   CORE::COMM::ParObject::ExtractfromPack(position, data, temp_master_);
@@ -359,7 +359,7 @@ void CONTACT::CoNodeTSIDataContainer::Unpack(
  |  clear data                                                 (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeTSIDataContainer::Clear()
+void CONTACT::NodeTSIDataContainer::Clear()
 {
   temp_master_ = -1.e12;
   derivTempMasterDisp_.clear();
@@ -371,7 +371,7 @@ void CONTACT::CoNodeTSIDataContainer::Clear()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoNode::CoNode(int id, const std::vector<double>& coords, const int owner,
+CONTACT::Node::Node(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive)
     : MORTAR::MortarNode(id, coords, owner, dofs, isslave),
       active_(false),
@@ -388,7 +388,7 @@ CONTACT::CoNode::CoNode(int id, const std::vector<double>& coords, const int own
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoNode::CoNode(const CONTACT::CoNode& old)
+CONTACT::Node::Node(const CONTACT::Node& old)
     : MORTAR::MortarNode(old),
       active_(old.active_),
       initactive_(old.initactive_),
@@ -400,25 +400,25 @@ CONTACT::CoNode::CoNode(const CONTACT::CoNode& old)
       cTSIdata_(Teuchos::null)
 {
   // not yet used and thus not necessarily consistent
-  dserror("CoNode copy-ctor not yet implemented");
+  dserror("Node copy-ctor not yet implemented");
 
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of CoNode and return pointer to it (public) |
+ |  Deep copy this instance of Node and return pointer to it (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoNode* CONTACT::CoNode::Clone() const
+CONTACT::Node* CONTACT::Node::Clone() const
 {
-  CONTACT::CoNode* newnode = new CONTACT::CoNode(*this);
+  CONTACT::Node* newnode = new CONTACT::Node(*this);
   return newnode;
 }
 
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const CONTACT::CoNode& cnode)
+std::ostream& operator<<(std::ostream& os, const CONTACT::Node& cnode)
 {
   cnode.Print(os);
   return os;
@@ -427,7 +427,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoNode& cnode)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::Print(std::ostream& os) const
+void CONTACT::Node::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Contact ";
@@ -441,7 +441,7 @@ void CONTACT::CoNode::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::Node::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -489,7 +489,7 @@ void CONTACT::CoNode::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::Unpack(const std::vector<char>& data)
+void CONTACT::Node::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -513,7 +513,7 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
   bool hasdata = ExtractInt(position, data);
   if (hasdata)
   {
-    codata_ = Teuchos::rcp(new CONTACT::CoNodeDataContainer());
+    codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
     codata_->Unpack(position, data);
   }
   else
@@ -536,7 +536,7 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
   bool hasdataporo = ExtractInt(position, data);
   if (hasdataporo)
   {
-    coporodata_ = Teuchos::rcp(new CONTACT::CoNodePoroDataContainer());
+    coporodata_ = Teuchos::rcp(new CONTACT::NodePoroDataContainer());
     coporodata_->Unpack(position, data);
   }
   else
@@ -548,7 +548,7 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
   bool hasTSIdata = (bool)ExtractInt(position, data);
   if (hasTSIdata)
   {
-    cTSIdata_ = Teuchos::rcp(new CONTACT::CoNodeTSIDataContainer());
+    cTSIdata_ = Teuchos::rcp(new CONTACT::NodeTSIDataContainer());
     cTSIdata_->Unpack(position, data);
   }
   else
@@ -562,17 +562,17 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Add a value to the weighted gap                           popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddgValue(double& val)
+void CONTACT::Node::AddgValue(double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave() == false) dserror("AddgValue: function called for master node %i", Id());
   if (IsOnBound() == true) dserror("AddgValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
-  if (CoData().Getg() == 1.0e12) CoData().Getg() = 0.0;
+  if (Data().Getg() == 1.0e12) Data().Getg() = 0.0;
 
   // add given value to grow_
-  CoData().Getg() += val;
+  Data().Getg() += val;
 
   return;
 }
@@ -581,7 +581,7 @@ void CONTACT::CoNode::AddgValue(double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the weighted gap                      hiermeier 04/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddWGapValue(const double val)
+void CONTACT::Node::AddWGapValue(const double val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave() == false) dserror("AddWGapValue: function called for master node %i", Id());
@@ -599,14 +599,14 @@ void CONTACT::CoNode::AddWGapValue(const double val)
 /*----------------------------------------------------------------------*
  |  Add a value to the nts gap                               farah 01/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddntsGapValue(double& val)
+void CONTACT::Node::AddntsGapValue(double& val)
 {
   // check if this is a master node or slave boundary node
   // initialize if called for the first time
-  if (CoData().Getgnts() == 1.0e12) CoData().Getgnts() = 0;
+  if (Data().Getgnts() == 1.0e12) Data().Getgnts() = 0;
 
   // add given value to wGap_
-  CoData().Getgnts() += val;
+  Data().Getgnts() += val;
 
   return;
 }
@@ -614,13 +614,13 @@ void CONTACT::CoNode::AddntsGapValue(double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the lts gap                               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddltsGapValue(double& val)
+void CONTACT::Node::AddltsGapValue(double& val)
 {
   // initialize if called for the first time
-  if (CoData().Getglts() == 1.0e12) CoData().Getglts() = 0;
+  if (Data().Getglts() == 1.0e12) Data().Getglts() = 0;
 
   // add given value to wGap_
-  CoData().Getglts() += val;
+  Data().Getglts() += val;
 
   return;
 }
@@ -628,25 +628,25 @@ void CONTACT::CoNode::AddltsGapValue(double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the ltl gap                               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddltlGapValue(double* val)
+void CONTACT::Node::AddltlGapValue(double* val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave() == false) dserror("function called for master node %i", Id());
   if (!IsOnEdge()) dserror("function call for non edge node! %i", Id());
 
   // initialize if called for the first time
-  if (CoData().Getgltl()[0] == 1.0e12 or CoData().Getgltl()[1] == 1.0e12 or
-      CoData().Getgltl()[2] == 1.0e12)
+  if (Data().Getgltl()[0] == 1.0e12 or Data().Getgltl()[1] == 1.0e12 or
+      Data().Getgltl()[2] == 1.0e12)
   {
-    CoData().Getgltl()[0] = 0.0;
-    CoData().Getgltl()[1] = 0.0;
-    CoData().Getgltl()[2] = 0.0;
+    Data().Getgltl()[0] = 0.0;
+    Data().Getgltl()[1] = 0.0;
+    Data().Getgltl()[2] = 0.0;
   }
 
   // add given value to wGap_
-  CoData().Getgltl()[0] += val[0];
-  CoData().Getgltl()[1] += val[1];
-  CoData().Getgltl()[2] += val[2];
+  Data().Getgltl()[0] += val[0];
+  Data().Getgltl()[1] += val[1];
+  Data().Getgltl()[2] += val[2];
 
   return;
 }
@@ -654,25 +654,25 @@ void CONTACT::CoNode::AddltlGapValue(double* val)
 /*----------------------------------------------------------------------*
  |  Add a value to the ltl jump                               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddltlJumpValue(double* val)
+void CONTACT::Node::AddltlJumpValue(double* val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave() == false) dserror("function called for master node %i", Id());
   if (!IsOnEdge()) dserror("function call for non edge node! %i", Id());
 
   // initialize if called for the first time
-  if (CoData().Getjumpltl()[0] == 1.0e12 or CoData().Getjumpltl()[1] == 1.0e12 or
-      CoData().Getjumpltl()[2] == 1.0e12)
+  if (Data().Getjumpltl()[0] == 1.0e12 or Data().Getjumpltl()[1] == 1.0e12 or
+      Data().Getjumpltl()[2] == 1.0e12)
   {
-    CoData().Getjumpltl()[0] = 0.0;
-    CoData().Getjumpltl()[1] = 0.0;
-    CoData().Getjumpltl()[2] = 0.0;
+    Data().Getjumpltl()[0] = 0.0;
+    Data().Getjumpltl()[1] = 0.0;
+    Data().Getjumpltl()[2] = 0.0;
   }
 
   // add given value to wGap_
-  CoData().Getjumpltl()[0] += val[0];
-  CoData().Getjumpltl()[1] += val[1];
-  CoData().Getjumpltl()[2] += val[2];
+  Data().Getjumpltl()[0] += val[0];
+  Data().Getjumpltl()[1] += val[1];
+  Data().Getjumpltl()[2] += val[2];
 
   return;
 }
@@ -681,7 +681,7 @@ void CONTACT::CoNode::AddltlJumpValue(double* val)
 /*----------------------------------------------------------------------*
  |  Add a value to scaling factor kappa                  hiermeier 04/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddKappaValue(double& val)
+void CONTACT::Node::AddKappaValue(double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave() == false) dserror("AddKappaValue: function called for master node %i", Id());
@@ -699,21 +699,21 @@ void CONTACT::CoNode::AddKappaValue(double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the 'DerivZ' map                           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
+void CONTACT::Node::AddDerivZValue(int& row, const int& col, double val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave() == false) dserror("AddZValue: function called for master node %i", Id());
   if (IsOnBound() == true) dserror("AddZValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)CoData().GetDerivZ().size() == 0) CoData().GetDerivZ().resize(NumDof());
+  if ((int)Data().GetDerivZ().size() == 0) Data().GetDerivZ().resize(NumDof());
 
   // check row index input
-  if ((int)CoData().GetDerivZ().size() <= row)
+  if ((int)Data().GetDerivZ().size() <= row)
     dserror("AddDerivZValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  std::map<int, double>& zmap = CoData().GetDerivZ()[row];
+  std::map<int, double>& zmap = Data().GetDerivZ()[row];
   zmap[col] += val;
 
   return;
@@ -722,7 +722,7 @@ void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
 /*----------------------------------------------------------------------*
  |  Initialize data container                             gitterle 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::InitializeDataContainer()
+void CONTACT::Node::InitializeDataContainer()
 {
   // get maximum size of lin vectors
   linsize_ = 0;
@@ -756,7 +756,7 @@ void CONTACT::CoNode::InitializeDataContainer()
   // only initialize if not yet done
   if (modata_ == Teuchos::null && codata_ == Teuchos::null)
   {
-    codata_ = Teuchos::rcp(new CONTACT::CoNodeDataContainer());
+    codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
     modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
   }
 
@@ -765,7 +765,7 @@ void CONTACT::CoNode::InitializeDataContainer()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::CoNode::InitializeAugDataContainer(
+void CONTACT::Node::InitializeAugDataContainer(
     const int slMaElementAreaRatio, const bool isTriangleOnMaster)
 {
   // Do it only, if the container has not been initialized, yet.
@@ -781,13 +781,13 @@ void CONTACT::CoNode::InitializeAugDataContainer(
 /*-----------------------------------------------------------------------*
  |  Initialize poro data container                             ager 07/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::InitializePoroDataContainer()
+void CONTACT::Node::InitializePoroDataContainer()
 {
   // only initialize if not yet done
 
   if (coporodata_ == Teuchos::null)
   {
-    coporodata_ = Teuchos::rcp(new CONTACT::CoNodePoroDataContainer());
+    coporodata_ = Teuchos::rcp(new CONTACT::NodePoroDataContainer());
   }
 
   return;
@@ -796,13 +796,13 @@ void CONTACT::CoNode::InitializePoroDataContainer()
 /*-----------------------------------------------------------------------*
  |  Initialize ehl data container                             seitz 11/17|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::InitializeEhlDataContainer()
+void CONTACT::Node::InitializeEhlDataContainer()
 {
   // only initialize if not yet done
 
   if (cEHLdata_ == Teuchos::null)
   {
-    cEHLdata_ = Teuchos::rcp(new CONTACT::CoNodeEhlDataContainer());
+    cEHLdata_ = Teuchos::rcp(new CONTACT::NodeEhlDataContainer());
   }
 
   return;
@@ -811,12 +811,12 @@ void CONTACT::CoNode::InitializeEhlDataContainer()
 /*-----------------------------------------------------------------------*
  |  Initialize TSI data container                             seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::InitializeTSIDataContainer(double t_ref, double t_dam)
+void CONTACT::Node::InitializeTSIDataContainer(double t_ref, double t_dam)
 {
   // only initialize if not yet done
 
   if (cTSIdata_ == Teuchos::null)
-    cTSIdata_ = Teuchos::rcp(new CONTACT::CoNodeTSIDataContainer(t_ref, t_dam));
+    cTSIdata_ = Teuchos::rcp(new CONTACT::NodeTSIDataContainer(t_ref, t_dam));
 
   return;
 }
@@ -824,7 +824,7 @@ void CONTACT::CoNode::InitializeTSIDataContainer(double t_ref, double t_dam)
 /*----------------------------------------------------------------------*
  |  Reset data container                                      popp 09/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::ResetDataContainer()
+void CONTACT::Node::ResetDataContainer()
 {
   // reset to Teuchos::null
   codata_ = Teuchos::null;
@@ -837,7 +837,7 @@ void CONTACT::CoNode::ResetDataContainer()
 /*----------------------------------------------------------------------*
  |  Build averaged nodal edge tangents                       farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::BuildAveragedEdgeTangent()
+void CONTACT::Node::BuildAveragedEdgeTangent()
 {
   for (int j = 0; j < 3; ++j)
   {
@@ -856,7 +856,7 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   // loop over all surface elements
   for (int surfele = 0; surfele < nseg; ++surfele)
   {
-    CoElement* cele = dynamic_cast<CoElement*>(adjeles[surfele]);
+    Element* cele = dynamic_cast<Element*>(adjeles[surfele]);
 
     if (cele->Shape() == CORE::FE::CellType::quad4)
     {
@@ -960,13 +960,13 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   //**************************************************
   //      CALC ADJACENT TANGENTS
   //**************************************************
-  CoNode* n1 = nullptr;
-  CoNode* n2 = nullptr;
+  Node* n1 = nullptr;
+  Node* n2 = nullptr;
 
   if (lineElementsS[dummy[0]]->Nodes()[0]->Id() != Id())
-    n1 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[0]);
+    n1 = dynamic_cast<Node*>(lineElementsS[dummy[0]]->Nodes()[0]);
   else if (lineElementsS[dummy[0]]->Nodes()[1]->Id() != Id())
-    n1 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[1]);
+    n1 = dynamic_cast<Node*>(lineElementsS[dummy[0]]->Nodes()[1]);
   else
     dserror("ERROR");
 
@@ -978,9 +978,9 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   else
   {
     if (lineElementsS[dummy[1]]->Nodes()[0]->Id() != Id())
-      n2 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[0]);
+      n2 = dynamic_cast<Node*>(lineElementsS[dummy[0]]->Nodes()[0]);
     else if (lineElementsS[dummy[1]]->Nodes()[1]->Id() != Id())
-      n2 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[1]);
+      n2 = dynamic_cast<Node*>(lineElementsS[dummy[0]]->Nodes()[1]);
     else
       dserror("ERROR");
   }
@@ -1002,10 +1002,10 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   //**************************************************
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  for (int j = 0; j < (int)((CoData().GetDerivTangent()).size()); ++j)
-    (CoData().GetDerivTangent())[j].clear();
-  (CoData().GetDerivTangent()).resize(0, 0);
-  if ((int)CoData().GetDerivTangent().size() == 0) CoData().GetDerivTangent().resize(3, 2 * 100);
+  for (int j = 0; j < (int)((Data().GetDerivTangent()).size()); ++j)
+    (Data().GetDerivTangent())[j].clear();
+  (Data().GetDerivTangent()).resize(0, 0);
+  if ((int)Data().GetDerivTangent().size() == 0) Data().GetDerivTangent().resize(3, 2 * 100);
 
   std::vector<CORE::GEN::pairedvector<int, double>> lint(3, 100);  // added all sizes
   if (n1 != nullptr)
@@ -1043,18 +1043,18 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
     Lin3[2][p->first] += p->second * MoData().EdgeTangent()[2] / (length * length * length);
 
   for (_CI p = Lin1[0].begin(); p != Lin1[0].end(); ++p)
-    CoData().GetDerivTangent()[0][p->first] += p->second;
+    Data().GetDerivTangent()[0][p->first] += p->second;
   for (_CI p = Lin1[1].begin(); p != Lin1[1].end(); ++p)
-    CoData().GetDerivTangent()[1][p->first] += p->second;
+    Data().GetDerivTangent()[1][p->first] += p->second;
   for (_CI p = Lin1[2].begin(); p != Lin1[2].end(); ++p)
-    CoData().GetDerivTangent()[2][p->first] += p->second;
+    Data().GetDerivTangent()[2][p->first] += p->second;
 
   for (_CI p = Lin3[0].begin(); p != Lin3[0].end(); ++p)
-    CoData().GetDerivTangent()[0][p->first] -= p->second;
+    Data().GetDerivTangent()[0][p->first] -= p->second;
   for (_CI p = Lin3[1].begin(); p != Lin3[1].end(); ++p)
-    CoData().GetDerivTangent()[1][p->first] -= p->second;
+    Data().GetDerivTangent()[1][p->first] -= p->second;
   for (_CI p = Lin3[2].begin(); p != Lin3[2].end(); ++p)
-    CoData().GetDerivTangent()[2][p->first] -= p->second;
+    Data().GetDerivTangent()[2][p->first] -= p->second;
 
   // std::cout << "tangent = " << MoData().EdgeTangent()[0] << "  " << MoData().EdgeTangent()[1] <<
   // "  " << MoData().EdgeTangent()[2] << std::endl;
@@ -1066,14 +1066,14 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
 /*----------------------------------------------------------------------*
  |  Build averaged nodal normal + tangents                    popp 12/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::BuildAveragedNormal()
+void CONTACT::Node::BuildAveragedNormal()
 {
   // reset normal and tangents when this method is called
   for (int j = 0; j < 3; ++j)
   {
     MoData().n()[j] = 0.0;
-    CoData().txi()[j] = 0.0;
-    CoData().teta()[j] = 0.0;
+    Data().txi()[j] = 0.0;
+    Data().teta()[j] = 0.0;
   }
 
   int nseg = NumElement();
@@ -1096,7 +1096,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
   // loop over all adjacent elements
   for (int i = 0; i < nseg; ++i)
   {
-    CoElement* adjcele = dynamic_cast<CoElement*>(adjeles[i]);
+    Element* adjcele = dynamic_cast<Element*>(adjeles[i]);
 
     // build element normal at current node
     // (we have to pass in the index i to be able to store the
@@ -1133,14 +1133,14 @@ void CONTACT::CoNode::BuildAveragedNormal()
   if (NumDof() == 2)
   {
     // simple definition for txi
-    CoData().txi()[0] = -MoData().n()[1];
-    CoData().txi()[1] = MoData().n()[0];
-    CoData().txi()[2] = 0.0;
+    Data().txi()[0] = -MoData().n()[1];
+    Data().txi()[1] = MoData().n()[0];
+    Data().txi()[2] = 0.0;
 
     // teta is z-axis
-    CoData().teta()[0] = 0.0;
-    CoData().teta()[1] = 0.0;
-    CoData().teta()[2] = 1.0;
+    Data().teta()[0] = 0.0;
+    Data().teta()[1] = 0.0;
+    Data().teta()[2] = 1.0;
   }
   else if (NumDof() == 3)
   {
@@ -1148,31 +1148,31 @@ void CONTACT::CoNode::BuildAveragedNormal()
     // we want to treat a 3D mesh as pseudo 2D contact problem
     // with all nodes fixed in z-direction
     // thus, the second tangent is fixed to (0,0,1)
-    CoData().teta()[0] = 0.0;
-    CoData().teta()[1] = 0.0;
-    CoData().teta()[2] = 1.0;
+    Data().teta()[0] = 0.0;
+    Data().teta()[1] = 0.0;
+    Data().teta()[2] = 1.0;
 
     // txi follows from corkscrew rule (txi = teta x n)
-    CoData().txi()[0] = CoData().teta()[1] * MoData().n()[2] - CoData().teta()[2] * MoData().n()[1];
-    CoData().txi()[1] = CoData().teta()[2] * MoData().n()[0] - CoData().teta()[0] * MoData().n()[2];
-    CoData().txi()[2] = CoData().teta()[0] * MoData().n()[1] - CoData().teta()[1] * MoData().n()[0];
+    Data().txi()[0] = Data().teta()[1] * MoData().n()[2] - Data().teta()[2] * MoData().n()[1];
+    Data().txi()[1] = Data().teta()[2] * MoData().n()[0] - Data().teta()[0] * MoData().n()[2];
+    Data().txi()[2] = Data().teta()[0] * MoData().n()[1] - Data().teta()[1] * MoData().n()[0];
 #else
 
     if (abs(MoData().n()[0]) > 1.0e-4 || abs(MoData().n()[1]) > 1.0e-4)
     {
-      CoData().txi()[0] = -MoData().n()[1];
-      CoData().txi()[1] = MoData().n()[0];
-      CoData().txi()[2] = 0.0;
+      Data().txi()[0] = -MoData().n()[1];
+      Data().txi()[1] = MoData().n()[0];
+      Data().txi()[2] = 0.0;
     }
     else
     {
-      CoData().txi()[0] = 0.0;
-      CoData().txi()[1] = -MoData().n()[2];
-      CoData().txi()[2] = MoData().n()[1];
+      Data().txi()[0] = 0.0;
+      Data().txi()[1] = -MoData().n()[2];
+      Data().txi()[2] = MoData().n()[1];
     }
 
-    ltxi = sqrt(CoData().txi()[0] * CoData().txi()[0] + CoData().txi()[1] * CoData().txi()[1] +
-                CoData().txi()[2] * CoData().txi()[2]);
+    ltxi = sqrt(Data().txi()[0] * Data().txi()[0] + Data().txi()[1] * Data().txi()[1] +
+                Data().txi()[2] * Data().txi()[2]);
     if (ltxi < 1e-12)
     {
       std::cout << "tangent 1 zero: node slave= " << IsSlave() << "  length= " << ltxi << std::endl;
@@ -1180,15 +1180,15 @@ void CONTACT::CoNode::BuildAveragedNormal()
     }
     else
     {
-      for (int j = 0; j < 3; ++j) CoData().txi()[j] /= ltxi;
+      for (int j = 0; j < 3; ++j) Data().txi()[j] /= ltxi;
     }
 
 
 
     // teta follows from corkscrew rule (teta = n x txi)
-    CoData().teta()[0] = MoData().n()[1] * CoData().txi()[2] - MoData().n()[2] * CoData().txi()[1];
-    CoData().teta()[1] = MoData().n()[2] * CoData().txi()[0] - MoData().n()[0] * CoData().txi()[2];
-    CoData().teta()[2] = MoData().n()[0] * CoData().txi()[1] - MoData().n()[1] * CoData().txi()[0];
+    Data().teta()[0] = MoData().n()[1] * Data().txi()[2] - MoData().n()[2] * Data().txi()[1];
+    Data().teta()[1] = MoData().n()[2] * Data().txi()[0] - MoData().n()[0] * Data().txi()[2];
+    Data().teta()[2] = MoData().n()[0] * Data().txi()[1] - MoData().n()[1] * Data().txi()[0];
 
 #endif  // #ifdef CONTACTPSEUDO2D
   }
@@ -1204,40 +1204,40 @@ void CONTACT::CoNode::BuildAveragedNormal()
 /*----------------------------------------------------------------------*
  |  Build directional deriv. of nodal normal + tangents       popp 09/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::DerivAveragedNormal(
+void CONTACT::Node::DerivAveragedNormal(
     CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi)
 {
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
 
   // prepare nodal storage maps for derivative
-  if ((int)CoData().GetDerivN().size() == 0) CoData().GetDerivN().resize(3, linsize_);
-  if ((int)CoData().GetDerivTxi().size() == 0) CoData().GetDerivTxi().resize(3, linsize_);
-  if ((int)CoData().GetDerivTeta().size() == 0) CoData().GetDerivTeta().resize(3, linsize_);
+  if ((int)Data().GetDerivN().size() == 0) Data().GetDerivN().resize(3, linsize_);
+  if ((int)Data().GetDerivTxi().size() == 0) Data().GetDerivTxi().resize(3, linsize_);
+  if ((int)Data().GetDerivTeta().size() == 0) Data().GetDerivTeta().resize(3, linsize_);
 
   // loop over all adjacent elements
   for (int i = 0; i < nseg; ++i)
   {
-    CoElement* adjcele = dynamic_cast<CoElement*>(adjeles[i]);
+    Element* adjcele = dynamic_cast<Element*>(adjeles[i]);
 
     // build element normal derivative at current node
-    adjcele->DerivNormalAtNode(Id(), i, elens, CoData().GetDerivN());
+    adjcele->DerivNormalAtNode(Id(), i, elens, Data().GetDerivN());
   }
 
   // modify normal in case of symmetry condition
   for (int i = 0; i < 3; i++)
-    if (DbcDofs()[i]) CoData().GetDerivN()[i].clear();
+    if (DbcDofs()[i]) Data().GetDerivN()[i].clear();
 
   // normalize directional derivative
   // (length differs for weighted/unweighted case but not the procedure!)
   // (be careful with reference / copy of derivative maps!)
   typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-  CORE::GEN::pairedvector<int, double>& derivnx = CoData().GetDerivN()[0];
-  CORE::GEN::pairedvector<int, double>& derivny = CoData().GetDerivN()[1];
-  CORE::GEN::pairedvector<int, double>& derivnz = CoData().GetDerivN()[2];
-  CORE::GEN::pairedvector<int, double> cderivnx = CoData().GetDerivN()[0];
-  CORE::GEN::pairedvector<int, double> cderivny = CoData().GetDerivN()[1];
-  CORE::GEN::pairedvector<int, double> cderivnz = CoData().GetDerivN()[2];
+  CORE::GEN::pairedvector<int, double>& derivnx = Data().GetDerivN()[0];
+  CORE::GEN::pairedvector<int, double>& derivny = Data().GetDerivN()[1];
+  CORE::GEN::pairedvector<int, double>& derivnz = Data().GetDerivN()[2];
+  CORE::GEN::pairedvector<int, double> cderivnx = Data().GetDerivN()[0];
+  CORE::GEN::pairedvector<int, double> cderivny = Data().GetDerivN()[1];
+  CORE::GEN::pairedvector<int, double> cderivnz = Data().GetDerivN()[2];
   const double nxnx = MoData().n()[0] * MoData().n()[0];
   const double nxny = MoData().n()[0] * MoData().n()[1];
   const double nxnz = MoData().n()[0] * MoData().n()[2];
@@ -1302,8 +1302,8 @@ void CONTACT::CoNode::DerivAveragedNormal(
     // get directional derivative of nodal tangent txi "for free"
     // (we just have to use the orthogonality of n and t)
     // the directional derivative of nodal tangent teta is 0
-    CORE::GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
-    CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
 
     for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] = -(p->second);
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p) derivtxiy[p->first] = (p->second);
@@ -1320,24 +1320,24 @@ void CONTACT::CoNode::DerivAveragedNormal(
 
     // get normalized tangent derivative txi
     // use corkscrew rule from BuildAveragedNormal()
-    CORE::GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
-    CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
-    CORE::GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
+    CORE::GEN::pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {
-      derivtxiy[p->first] += CoData().teta()[2] * (p->second);
-      derivtxiz[p->first] -= CoData().teta()[1] * (p->second);
+      derivtxiy[p->first] += Data().teta()[2] * (p->second);
+      derivtxiz[p->first] -= Data().teta()[1] * (p->second);
     }
     for (CI p = derivny.begin(); p != derivny.end(); ++p)
     {
-      derivtxix[p->first] -= CoData().teta()[2] * (p->second);
-      derivtxiz[p->first] += CoData().teta()[0] * (p->second);
+      derivtxix[p->first] -= Data().teta()[2] * (p->second);
+      derivtxiz[p->first] += Data().teta()[0] * (p->second);
     }
     for (CI p = derivnz.begin(); p != derivnz.end(); ++p)
     {
-      derivtxix[p->first] += CoData().teta()[1] * (p->second);
-      derivtxiy[p->first] -= CoData().teta()[0] * (p->second);
+      derivtxix[p->first] += Data().teta()[1] * (p->second);
+      derivtxiy[p->first] -= Data().teta()[0] * (p->second);
     }
   }
 #else
@@ -1345,8 +1345,8 @@ void CONTACT::CoNode::DerivAveragedNormal(
     // use definitions for txi from BuildAveragedNormal()
     if (abs(MoData().n()[0]) > 1.0e-4 || abs(MoData().n()[1]) > 1.0e-4)
     {
-      CORE::GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
-      CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
+      CORE::GEN::pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+      CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
 
       for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] -= (p->second);
 
@@ -1354,8 +1354,8 @@ void CONTACT::CoNode::DerivAveragedNormal(
     }
     else
     {
-      CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
-      CORE::GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
+      CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+      CORE::GEN::pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
 
       for (CI p = derivnz.begin(); p != derivnz.end(); ++p) derivtxiy[p->first] -= (p->second);
 
@@ -1365,18 +1365,18 @@ void CONTACT::CoNode::DerivAveragedNormal(
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
     typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-    CORE::GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
-    CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
-    CORE::GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
-    CORE::GEN::pairedvector<int, double> cderivtxix = CoData().GetDerivTxi()[0];
-    CORE::GEN::pairedvector<int, double> cderivtxiy = CoData().GetDerivTxi()[1];
-    CORE::GEN::pairedvector<int, double> cderivtxiz = CoData().GetDerivTxi()[2];
-    const double txtx = CoData().txi()[0] * CoData().txi()[0];
-    const double txty = CoData().txi()[0] * CoData().txi()[1];
-    const double txtz = CoData().txi()[0] * CoData().txi()[2];
-    const double tyty = CoData().txi()[1] * CoData().txi()[1];
-    const double tytz = CoData().txi()[1] * CoData().txi()[2];
-    const double tztz = CoData().txi()[2] * CoData().txi()[2];
+    CORE::GEN::pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
+    CORE::GEN::pairedvector<int, double> cderivtxix = Data().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double> cderivtxiy = Data().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double> cderivtxiz = Data().GetDerivTxi()[2];
+    const double txtx = Data().txi()[0] * Data().txi()[0];
+    const double txty = Data().txi()[0] * Data().txi()[1];
+    const double txtz = Data().txi()[0] * Data().txi()[2];
+    const double tyty = Data().txi()[1] * Data().txi()[1];
+    const double tytz = Data().txi()[1] * Data().txi()[2];
+    const double tztz = Data().txi()[2] * Data().txi()[2];
 
     // build a vector with all keys from x,y,z maps
     // (we need this in order not to miss any entry!)
@@ -1432,24 +1432,24 @@ void CONTACT::CoNode::DerivAveragedNormal(
 
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
-    CORE::GEN::pairedvector<int, double>& derivtetax = CoData().GetDerivTeta()[0];
-    CORE::GEN::pairedvector<int, double>& derivtetay = CoData().GetDerivTeta()[1];
-    CORE::GEN::pairedvector<int, double>& derivtetaz = CoData().GetDerivTeta()[2];
+    CORE::GEN::pairedvector<int, double>& derivtetax = Data().GetDerivTeta()[0];
+    CORE::GEN::pairedvector<int, double>& derivtetay = Data().GetDerivTeta()[1];
+    CORE::GEN::pairedvector<int, double>& derivtetaz = Data().GetDerivTeta()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {
-      derivtetay[p->first] -= CoData().txi()[2] * (p->second);
-      derivtetaz[p->first] += CoData().txi()[1] * (p->second);
+      derivtetay[p->first] -= Data().txi()[2] * (p->second);
+      derivtetaz[p->first] += Data().txi()[1] * (p->second);
     }
     for (CI p = derivny.begin(); p != derivny.end(); ++p)
     {
-      derivtetax[p->first] += CoData().txi()[2] * (p->second);
-      derivtetaz[p->first] -= CoData().txi()[0] * (p->second);
+      derivtetax[p->first] += Data().txi()[2] * (p->second);
+      derivtetaz[p->first] -= Data().txi()[0] * (p->second);
     }
     for (CI p = derivnz.begin(); p != derivnz.end(); ++p)
     {
-      derivtetax[p->first] -= CoData().txi()[1] * (p->second);
-      derivtetay[p->first] += CoData().txi()[0] * (p->second);
+      derivtetax[p->first] -= Data().txi()[1] * (p->second);
+      derivtetay[p->first] += Data().txi()[0] * (p->second);
     }
     for (CI p = derivtxix.begin(); p != derivtxix.end(); ++p)
     {
@@ -1475,24 +1475,24 @@ void CONTACT::CoNode::DerivAveragedNormal(
 /*----------------------------------------------------------------------*
  |  Add a value to the NCoup of this node                      ager 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddNcoupValue(double& val)
+void CONTACT::Node::AddNcoupValue(double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave() == false) dserror("AddNcoupValue: function called for master node %i", Id());
   if (IsOnBound() == true) dserror("AddNcoupValue: function called for boundary node %i", Id());
 
   // add given value to ncoup
-  CoPoroData().GetnCoup() += val;
+  PoroData().GetnCoup() += val;
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Store nodal normals to old ones                         seitz 05/17 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::StoreOldNormal()
+void CONTACT::Node::StoreOldNormal()
 {
   // write entries to old ones
-  for (int j = 0; j < 3; ++j) CoData().Normal_old()[j] = MoData().n()[j];
+  for (int j = 0; j < 3; ++j) Data().Normal_old()[j] = MoData().n()[j];
 
   return;
 }

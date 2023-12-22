@@ -25,14 +25,14 @@ namespace DRT
 namespace CONTACT
 {
   // forward declarations
-  class CoElement;
+  class Element;
 
   /*!
   \brief BACI implementation of main class to control all contact
 
   */
 
-  class CoManager : public MORTAR::ManagerBase
+  class Manager : public MORTAR::ManagerBase
   {
    public:
     /*!
@@ -53,7 +53,7 @@ namespace CONTACT
     \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
     */
-    CoManager(DRT::Discretization& discret, double alphaf = 0.0);
+    Manager(DRT::Discretization& discret, double alphaf = 0.0);
 
 
 
@@ -128,8 +128,8 @@ namespace CONTACT
     \param[out] ele Reference to pointer of contact parent element
 
     */
-    void SetPoroParentElement(int& slavetype, int& mastertype,
-        Teuchos::RCP<CONTACT::CoElement>& cele, Teuchos::RCP<DRT::Element>& ele);
+    void SetPoroParentElement(int& slavetype, int& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
+        Teuchos::RCP<DRT::Element>& ele);
 
     /*!
     \brief Find Physical Type (Poro or Structure) of Poro Interface
@@ -163,12 +163,12 @@ namespace CONTACT
     bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
 
     //! don't want operator=
-    CoManager operator=(const CoManager& old) = delete;
+    Manager operator=(const Manager& old) = delete;
 
     //! don't want copy constructor
-    CoManager(const CoManager& old) = delete;
+    Manager(const Manager& old) = delete;
 
-  };  // class CoManager
+  };  // class Manager
 }  // namespace CONTACT
 
 BACI_NAMESPACE_CLOSE

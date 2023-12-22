@@ -46,7 +46,7 @@ CONTACT::AUG::InterfaceDataContainer::InterfaceDataContainer()
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::Interface::Interface(
     const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr)
-    : CONTACT::CoInterface(interfaceData_ptr),
+    : CONTACT::Interface(interfaceData_ptr),
       interfaceData_ptr_(interfaceData_ptr),
       interfaceData_(*interfaceData_ptr_)
 {
@@ -58,7 +58,7 @@ CONTACT::AUG::Interface::Interface(
 CONTACT::AUG::Interface::Interface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
     const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact, bool selfcontact)
-    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
+    : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
       interfaceData_ptr_(
           Teuchos::rcp_dynamic_cast<AUG::InterfaceDataContainer>(interfaceData_ptr, true)),
       interfaceData_(*interfaceData_ptr_)
@@ -237,7 +237,7 @@ void CONTACT::AUG::Interface::Initialize()
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // call initialization routine of the contact_interface
-  CoInterface::Initialize();
+  CONTACT::Interface::Initialize();
 
   // setup member variables (has to be done only once)
   Setup();
@@ -253,7 +253,7 @@ void CONTACT::AUG::Interface::Initialize()
     const int gid = mynodegids[i];
 
     DRT::Node* node = Discret().gNode(gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
     if (not cnode) dserror("Dynamic cast for node gid %d failed!", gid);
 
     cnode->InitializeAugDataContainer(
@@ -369,7 +369,7 @@ void CONTACT::AUG::Interface::EvaluateNodalNormals() const
     const int gid = mygids[i];
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode& cnode = dynamic_cast<CONTACT::CoNode&>(*node);
+    CONTACT::Node& cnode = dynamic_cast<CONTACT::Node&>(*node);
 
     /*------------------------------------------------------------------------*/
     std::vector<CONTACT::INTEGRATOR::ElementNormal> adj_ele_normals;
@@ -418,7 +418,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
       int gid = my_rgids[i];
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
+      Node* cnode = dynamic_cast<Node*>(node);
 
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& normals_i = normals[gid];
 
@@ -447,7 +447,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
       int gid = my_cgids[i];
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode& cnode = dynamic_cast<CoNode&>(*node);
+      Node& cnode = dynamic_cast<Node&>(*node);
 
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& normals_i = normals[gid];
 
@@ -477,7 +477,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
     for (unsigned i = 0; i < my_row_num_entries; ++i)
     {
       const int gid = my_rgids[i];
-      CoNode& cnode = dynamic_cast<CoNode&>(*idiscret_->gNode(gid));
+      Node& cnode = dynamic_cast<Node&>(*idiscret_->gNode(gid));
 
       const Deriv1stVecMap& d_normal = cnode.AugData().GetDeriv1st_N();
       Deriv1stVecMap& exp_d_n = export_d_normals[gid];
@@ -501,7 +501,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
     for (unsigned i = 0; i < my_col_num_entries; ++i)
     {
       const int gid = my_cgids[i];
-      CoNode& cnode = dynamic_cast<CoNode&>(*idiscret_->gNode(gid));
+      Node& cnode = dynamic_cast<Node&>(*idiscret_->gNode(gid));
 
       Deriv1stVecMap& d_normal = cnode.AugData().GetDeriv1st_N();
       const Deriv1stVecMap& exp_d_n = export_d_normals[gid];
@@ -528,7 +528,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
     for (unsigned i = 0; i < my_num_entries; ++i)
     {
       const int gid = my_gids[i];
-      CoNode& cnode = dynamic_cast<CoNode&>(*idiscret_->gNode(gid));
+      Node& cnode = dynamic_cast<Node&>(*idiscret_->gNode(gid));
 
       const Deriv2ndVecMap& dd_normal = cnode.AugData().GetDeriv2nd_N();
       Deriv2ndVecMap& exp_dd_n = export_dd_normals[gid];
@@ -552,7 +552,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
     for (unsigned i = 0; i < my_col_num_entries; ++i)
     {
       const int gid = my_cgids[i];
-      CoNode& cnode = dynamic_cast<CoNode&>(*idiscret_->gNode(gid));
+      Node& cnode = dynamic_cast<Node&>(*idiscret_->gNode(gid));
 
       Deriv2ndVecMap& dd_normal = cnode.AugData().GetDeriv2nd_N();
       const Deriv2ndVecMap& exp_dd_n = export_dd_normals[gid];
@@ -664,8 +664,8 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
-    if (not cnode) dserror("Dynamic_cast to CoNode failed! [node-gid=%d]", gid);
+    Node* cnode = dynamic_cast<Node*>(node);
+    if (not cnode) dserror("Dynamic_cast to Node failed! [node-gid=%d]", gid);
 
     // calculate averaged weighted gap
     const double wGap = cnode->AugData().GetWGap();
@@ -716,8 +716,8 @@ void CONTACT::AUG::Interface::AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapA
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
-    if (not cnode) dserror("Dynamic_cast to CoNode failed! [node-gid=%d]", gid);
+    Node* cnode = dynamic_cast<Node*>(node);
+    if (not cnode) dserror("Dynamic_cast to Node failed! [node-gid=%d]", gid);
     const double wGap = cnode->AugData().GetWGap();
 
     const int rgid = myslndof_gids[i];
@@ -757,7 +757,7 @@ void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
           "ERROR: AssembleDGLmrhs: Cannot find slave"
           " node with gid %",
           gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    Node* cnode = static_cast<Node*>(node);
 
     double lmn = cnode->MoData().lm()[0];
 
@@ -793,7 +793,7 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
 
-    CoNode* cnode = static_cast<CoNode*>(node);
+    Node* cnode = static_cast<Node*>(node);
 
     // *** augmented Area ***
     const double augA = cnode->AugData().GetAugA();
@@ -853,7 +853,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
   {
     const int gid = mynodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode) dserror("Cannot find inactive slave node with gid %", gid);
 
     if (cnode->Owner() != Comm().MyPID())
@@ -902,7 +902,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) cons
   {
     const int gid = mynodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode)
       dserror(
           "ERROR: AssembleDLmTLmTRhs: Cannot find active"
@@ -972,7 +972,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(CORE::LINALG::SparseMatrix& 
   {
     const int gid = mynodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode)
       dserror(
           "ERROR: AssembleDLmTLmTrhs: Cannot find slave"
@@ -1023,7 +1023,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(
 
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleDGLmLin: Node ownership inconsistency!");
 
@@ -1070,7 +1070,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
   {
     const int gid = mynodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode)
       dserror(
           "ERROR: AssembleAugInactiveMatrix: Cannot find"
@@ -1127,7 +1127,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
   {
     const int gid = mynodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode)
       dserror(
           "ERROR: AssembleAugInactiveMatrix: Cannot find"
@@ -1177,7 +1177,7 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
   {
     const int gid = mynodegids[i];
 
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = static_cast<Node*>(idiscret_->gNode(gid));
 
     if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
@@ -1217,7 +1217,7 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
   for (int i = 0; i < augInactiveSlaveNodes->NumMyElements(); ++i)
   {
     int gid = augInactiveSlaveNodes->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = static_cast<Node*>(idiscret_->gNode(gid));
 
     if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
@@ -1260,7 +1260,7 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
   {
     const int gid = mynodegids[i];
 
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode) dserror("Cannot find node with gid %i", gid);
 
     const int numdof = cnode->NumDof();
@@ -1299,7 +1299,7 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
-    const CONTACT::ParamsInterface& cparams, CONTACT::CoNode& cnode) const
+    const CONTACT::ParamsInterface& cparams, CONTACT::Node& cnode) const
 {
   static const bool init_contact_by_gap =
       INPUT::IntegralValue<int>(InterfaceParams(), "INITCONTACTBYGAP");
@@ -1331,7 +1331,7 @@ bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::SetNodeInitiallyActiveByGap(CONTACT::CoNode& cnode) const
+void CONTACT::AUG::Interface::SetNodeInitiallyActiveByGap(CONTACT::Node& cnode) const
 {
   static const double initcontactval = InterfaceParams().get<double>("INITCONTACTGAPVALUE");
 
@@ -1369,7 +1369,7 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
 
-    CoNode* cnode = static_cast<CoNode*>(node);
+    Node* cnode = static_cast<Node*>(node);
 
     // add first dof to nMap
     myNGids[countN] = cnode->Dofs()[0];
@@ -1429,7 +1429,7 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = static_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode) dserror("Cannot find slave node with gid %", gid);
 
     // add first dof to nMap
@@ -1596,7 +1596,7 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
   {
     const int gid = mynodegids[lid];
 
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    Node* cnode = static_cast<Node*>(idiscret_->gNode(gid));
     if (not cnode) dserror("Cannot find slave node with gid %", gid);
 
     const int ndof = cnode->Dofs()[0];
@@ -1702,7 +1702,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
   {
     const int kgid = mynodegids[k];
 
-    CoNode* cnode_k = static_cast<CoNode*>(idiscret_->gNode(kgid));
+    Node* cnode_k = static_cast<Node*>(idiscret_->gNode(kgid));
     dsassert(cnode_k, "ERROR: Cannot find slave node!");
 
     const int ndof_k = cnode_k->Dofs()[0];
@@ -1742,9 +1742,9 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
 template <enum CONTACT::AUG::SideType side>
 void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(const int nummynodes,
     const int* const mynodegids, const Epetra_BlockMap& dincr_block_map,
-    const Epetra_BlockMap& lm_block_map, const CoNode& cnode_k, const double scalar,
-    const double lk, const double* const dincr_vals, const double* const lm_vals,
-    double* const lmincr_vals, double& lmincr_k) const
+    const Epetra_BlockMap& lm_block_map, const Node& cnode_k, const double scalar, const double lk,
+    const double* const dincr_vals, const double* const lm_vals, double* const lmincr_vals,
+    double& lmincr_k) const
 {
   const Deriv1stMap& varWGapSideMap = GetVarWGapOfSide<side>(cnode_k);
 
@@ -1762,7 +1762,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(const i
     {
       const int jgid = mynodegids[j];
 
-      CoNode* cnode_j = static_cast<CoNode*>(idiscret_->gNode(jgid));
+      Node* cnode_j = static_cast<Node*>(idiscret_->gNode(jgid));
       dsassert(cnode_j, "ERROR: Cannot find slave node!");
 
       const Deriv2ndMap& varWGapLinSideMap = GetVarWGapLinOfSide<side>(*cnode_j);
@@ -1806,7 +1806,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(const i
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const CoNode& cnode) const
+CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const Node& cnode) const
 {
   return cnode.AugData().GetDeriv1st_WGapMa();
 }
@@ -1815,7 +1815,7 @@ CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const 
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const CoNode& cnode) const
+CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const Node& cnode) const
 {
   return cnode.AugData().GetDeriv1st_WGapSl();
 }
@@ -1825,7 +1825,7 @@ CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const C
 template <>
 const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
-    const CoNode& cnode) const
+    const Node& cnode) const
 {
   return cnode.AugData().GetDeriv2nd_WGapMa();
 }
@@ -1834,8 +1834,7 @@ CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv2ndMap&
-CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(
-    const CoNode& cnode) const
+CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(const Node& cnode) const
 {
   return cnode.AugData().GetDeriv2nd_WGapSl();
 }
@@ -1878,7 +1877,7 @@ double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
 
   for (int i = 0; i < num_my_anodes; ++i)
   {
-    const CoNode* cnode = dynamic_cast<const CoNode*>(idiscret_->gNode(my_anode_gids[i]));
+    const Node* cnode = dynamic_cast<const Node*>(idiscret_->gNode(my_anode_gids[i]));
     if (not cnode) dserror("Dynamic cast failed!");
 
     {
@@ -1961,8 +1960,8 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
     {
       case CORE::FE::CellType::line2:
       {
-        const CoNode& cnode0 = dynamic_cast<const CoNode&>(*nodes[0]);
-        const CoNode& cnode1 = dynamic_cast<const CoNode&>(*nodes[1]);
+        const Node& cnode0 = dynamic_cast<const Node&>(*nodes[0]);
+        const Node& cnode1 = dynamic_cast<const Node&>(*nodes[1]);
 
         const CORE::LINALG::Matrix<3, 1> X0(cnode0.X().data(), true);
         CORE::LINALG::Matrix<3, 1> diffX(cnode1.X().data(), false);
@@ -2085,7 +2084,8 @@ void CONTACT::AUG::Interface::SplitIntoFarAndCloseSets(std::vector<int>& close_s
     }
   }
   else
-    CoInterface::SplitIntoFarAndCloseSets(close_sele, far_sele, local_close_nodes, local_far_nodes);
+    CONTACT::Interface::SplitIntoFarAndCloseSets(
+        close_sele, far_sele, local_close_nodes, local_far_nodes);
 }
 
 /*----------------------------------------------------------------------------*
@@ -2178,16 +2178,15 @@ template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::plain_double_map
     double scal, const plain_double_map& values, CORE::LINALG::SparseMatrix& mat, double threshold);
 
 template const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(
-    const CoNode& cnode) const;
+CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const Node& cnode) const;
 template const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const CoNode& cnode) const;
+CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const Node& cnode) const;
 
 template const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
-    const CoNode& cnode) const;
+    const Node& cnode) const;
 template const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(
-    const CoNode& cnode) const;
+    const Node& cnode) const;
 
 BACI_NAMESPACE_CLOSE
