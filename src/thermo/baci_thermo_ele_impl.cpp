@@ -418,13 +418,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
     const INPAR::STR::KinemType kintype = therm->KinType();
     // thermal problem or geometrically linear TSI problem
-    if (kintype == INPAR::STR::kinem_linear)
+    if (kintype == INPAR::STR::KinemType::linear)
     {
       LinearHeatfluxTempgrad(ele, &eheatflux, &etempgrad);
-    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
+    }  // TSI: (kintype_ == INPAR::STR::KinemType::linear)
 
     // geometrically nonlinear TSI problem
-    if (kintype == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype == INPAR::STR::KinemType::nonlinearTotLag)
     {
       // if it's a TSI problem and there are current displacements/velocities
       if (la.Size() > 1)
@@ -691,7 +691,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateTangCapaFint(Element* ele, cons
   }  // la.Size>1
 
   // geometrically linear TSI problem
-  if ((kintype == INPAR::STR::kinem_linear))
+  if ((kintype == INPAR::STR::KinemType::linear))
   {
     // purely thermal contributions
     LinearThermoContribution(ele, time, etang,
@@ -708,10 +708,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateTangCapaFint(Element* ele, cons
       // A_k * a_k - (d^2 psi / dT da_k) * a_k'
       if (plasticmat_) LinearDissipationFint(ele, efint, params);
     }
-  }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
+  }  // TSI: (kintype_ == INPAR::STR::KinemType::linear)
 
   // geometrically nonlinear TSI problem
-  else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
+  else if (kintype == INPAR::STR::KinemType::nonlinearTotLag)
   {
     NonlinearThermoDispContribution(
         ele, time, mydisp, myvel, etang, ecapa, ecapalin, efint, params);
@@ -721,7 +721,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateTangCapaFint(Element* ele, cons
 #endif
 
     if (plasticmat_) NonlinearDissipationFintTang(ele, mydisp, etang, efint, params);
-  }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+  }  // TSI: (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
 }
 
 template <CORE::FE::CellType distype>
@@ -744,7 +744,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(DRT::Element* ele,
     // --> calculate coupling stiffness term in case of monolithic TSI
 
     // geometrically linear TSI problem
-    if (kintype == INPAR::STR::kinem_linear)
+    if (kintype == INPAR::STR::KinemType::linear)
     {
       LinearCoupledTang(ele, mydisp, myvel, etangcoupl, params);
 
@@ -752,10 +752,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(DRT::Element* ele,
       if (plasticmat_) LinearDissipationCoupledTang(ele, etangcoupl, params);
       // --> be careful: so far only implicit Euler for time integration
       //                 of the evolution equation available!!!
-    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
+    }  // TSI: (kintype_ == INPAR::STR::KinemType::linear)
 
     // geometrically nonlinear TSI problem
-    if (kintype == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype == INPAR::STR::KinemType::nonlinearTotLag)
     {
       NonlinearCoupledTang(ele, mydisp, myvel, etangcoupl, params);
 

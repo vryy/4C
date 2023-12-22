@@ -143,7 +143,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
   {
-    if (kintype_ == INPAR::STR::kinem_linear)
+    if (kintype_ == INPAR::STR::KinemType::linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");
 
     structale_ = true;
@@ -184,7 +184,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
   {
-    if (kintype_ == INPAR::STR::kinem_linear)
+    if (kintype_ == INPAR::STR::KinemType::linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");
 
     structale_ = true;

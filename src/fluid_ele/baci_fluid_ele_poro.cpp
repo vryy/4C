@@ -77,7 +77,7 @@ void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition(
 }
 
 DRT::ELEMENTS::FluidPoro::FluidPoro(int id, int owner)
-    : Fluid(id, owner), kintype_(INPAR::STR::kinem_vague)
+    : Fluid(id, owner), kintype_(INPAR::STR::KinemType::vague)
 {
   anisotropic_permeability_directions_.resize(3, std::vector<double>(1, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(3, std::vector<double>(1, 0.0));

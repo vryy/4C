@@ -77,7 +77,7 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
       mixres_(true),
       struct_mat_(Teuchos::null),
       const_permeability_(true),
-      kintype_(INPAR::STR::kinem_vague)
+      kintype_(INPAR::STR::KinemType::vague)
 {
   anisotropic_permeability_directions_.resize(nsd_, std::vector<double>(nsd_, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(nsd_, std::vector<double>(nen_, 0.0));
@@ -740,7 +740,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(Teuchos::ParameterList& 
 
   // add displacement when fluid nodes move in the ALE case
   // if (isale)
-  // if(kintype_!=INPAR::STR::kinem_linear)
+  // if(kintype_!=INPAR::STR::KinemType::linear)
   {
     Base::xyze_ += edispnp;
     xyzeold_ += edispn;
@@ -4683,7 +4683,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeFDerivative(
 {
   F_X.Clear();
 
-  if (Base::is_higher_order_ele_ and kintype_ != INPAR::STR::kinem_linear)
+  if (Base::is_higher_order_ele_ and kintype_ != INPAR::STR::KinemType::linear)
   {
     for (int i = 0; i < nsd_; i++)
     {
@@ -5218,7 +5218,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
           val_reatensorlinODgridvel += (*dphi_dus)(gid)*porosity_inv * reac_grid_vel_idim;
         }
 
-        if (kintype_ != INPAR::STR::kinem_linear)
+        if (kintype_ != INPAR::STR::KinemType::linear)
         {
           const double derxy_idim_inode = Base::derxy_(idim, inode);
           for (int ldim = 0; ldim < nsd_; ++ldim)
@@ -6202,12 +6202,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeDefGradient(
     CORE::LINALG::Matrix<nsd_, nsd_>& defgrd, const CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ,
     const CORE::LINALG::Matrix<nsd_, nen_>& xcurr)
 {
-  if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)  // total lagrange (nonlinear)
+  if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr, N_XYZ);  //  (6.17)
   }
-  else if (kintype_ == INPAR::STR::kinem_linear)  // linear kinematics
+  else if (kintype_ == INPAR::STR::KinemType::linear)  // linear kinematics
   {
     defgrd.Clear();
     for (int i = 0; i < nsd_; i++) defgrd(i, i) = 1.0;
@@ -6459,7 +6459,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     static CORE::LINALG::Matrix<6, 1> glstrain(true);
     glstrain.Clear();
-    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       // Right Cauchy-Green tensor = F^T * F
       CORE::LINALG::Matrix<nsd_, nsd_> cauchygreen;
@@ -6537,7 +6537,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
     static CORE::LINALG::Matrix<6, nsd_> E_X(true);
     E_X.Clear();
 
-    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       if (nsd_ == 3)
       {
@@ -6812,12 +6812,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeJacobianDeterminantVolumeC
   // compute J
   J = defgrd.Determinant();
 
-  if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)  // total lagrange (nonlinear)
+  if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
     volchange = J;
   }
-  else if (kintype_ == INPAR::STR::kinem_linear)  // linear kinematics
+  else if (kintype_ == INPAR::STR::KinemType::linear)  // linear kinematics
   {
     // for linear kinematics the volume change is the trace of the linearized strains
 

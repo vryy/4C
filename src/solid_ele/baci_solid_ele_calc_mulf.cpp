@@ -37,9 +37,9 @@ namespace
       const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const CORE::LINALG::Matrix<num_nodes<celltype>, num_dim<celltype>>& nodal_displacements,
       const DRT::ELEMENTS::MulfHistoryData<celltype>& mulf_history_data,
-      const INPAR::STR::KinemType& kinematictype = INPAR::STR::kinem_nonlinearTotLag)
+      const INPAR::STR::KinemType& kinematictype = INPAR::STR::KinemType::nonlinearTotLag)
   {
-    if (kinematictype == INPAR::STR::kinem_linear)
+    if (kinematictype == INPAR::STR::KinemType::linear)
     {
       dserror(
           "Linear kinematics have not yet been implemented for MULF "
@@ -64,7 +64,7 @@ namespace
       const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const CORE::LINALG::Matrix<num_nodes<celltype>, num_dim<celltype>>& nodal_displacements,
       const DRT::ELEMENTS::MulfHistoryData<celltype>& mulf_history_data,
-      const INPAR::STR::KinemType& kinematictype = INPAR::STR::kinem_nonlinearTotLag)
+      const INPAR::STR::KinemType& kinematictype = INPAR::STR::KinemType::nonlinearTotLag)
   {
     DRT::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping;
 

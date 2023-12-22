@@ -130,7 +130,7 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
     const INPAR::STR::PreStress prestressType,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp)
 {
-  if (kinemType == INPAR::STR::kinem_linear)
+  if (kinemType == INPAR::STR::KinemType::linear)
   {
     defgrd.Clear();
     for (auto i = 0; i < CORE::FE::dim<distype>; ++i)

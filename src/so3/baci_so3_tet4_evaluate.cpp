@@ -417,7 +417,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
 
           // build multiplicative incremental defgrd
           // defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-          if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+          if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
           {
             defgrd.MultiplyTN(xdisp, N_xyz);
           }
@@ -437,7 +437,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         else
         {
           // in kinematically linear analysis the deformation gradient is equal to identity
-          if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+          if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
           {
             defgrd.MultiplyTN(xdisp, nxyz);
           }
@@ -835,7 +835,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         // if a linear analysis is desired
-        if (kintype_ == INPAR::STR::kinem_linear)
+        if (kintype_ == INPAR::STR::KinemType::linear)
         {
           dserror("Linear case not implemented");
         }
@@ -1271,7 +1271,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(false);
-    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
@@ -1530,7 +1530,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
       // size is 12x12
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
 
-      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+      if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
       {
         // integrate `geometric' stiffness matrix and add to keu
         // auxiliary integrated stress
@@ -1674,7 +1674,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(false);
-        if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+        if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
         {
           // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
           glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
@@ -1956,7 +1956,7 @@ void DRT::ELEMENTS::So_tet4::DefGradient(const std::vector<double>& disp,
 
     // build multiplicative incremental defgrd
     CORE::LINALG::Matrix<3, 3> defgrd(true);
-    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       defgrd.MultiplyTN(xdisp, N_xyz);
     }
@@ -1973,7 +1973,7 @@ void DRT::ELEMENTS::So_tet4::ComputeDeformationGradient(
     CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
     const CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, const int gp) const
 {
-  if (kintype_ == INPAR::STR::kinem_linear)
+  if (kintype_ == INPAR::STR::KinemType::linear)
   {
     // in the linear case, the deformation gradient is the identity matrix
     defgrd.Clear();
@@ -2041,7 +2041,7 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
     // get the nxyz old state
     prestress.StoragetoMatrix(gp, nxyzhist, prestress.JHistory());
     // build multiplicative incremental defgrd
-    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       defgrd.MultiplyTN(xdisp, nxyzhist);
     }

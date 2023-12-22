@@ -177,7 +177,7 @@ DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
     : DRT::Element(id, owner), distype_(CORE::FE::CellType::dis_none)
 {
   // default: geometrically linear, also including purely thermal probelm
-  kintype_ = INPAR::STR::kinem_linear;
+  kintype_ = INPAR::STR::KinemType::linear;
   return;
 }  // ctor
 

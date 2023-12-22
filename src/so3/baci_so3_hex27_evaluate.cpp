@@ -136,13 +136,13 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == INPAR::STR::kinem_linear)
+      if (kintype_ == INPAR::STR::KinemType::linear)
       {
         soh27_linstiffmass(lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr, nullptr, nullptr,
             params, INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
-      else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+      else if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
       {
         soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr,
             &elevec1, nullptr, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
@@ -171,13 +171,13 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == INPAR::STR::kinem_linear)
+      if (kintype_ == INPAR::STR::KinemType::linear)
       {
         soh27_linstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
             params, INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
-      else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+      else if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
       {
         soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr,
             &elevec1, nullptr, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
@@ -237,14 +237,14 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       else
       {
         // special case: geometrically linear
-        if (kintype_ == INPAR::STR::kinem_linear)
+        if (kintype_ == INPAR::STR::KinemType::linear)
         {
           soh27_linstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
               nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
               INPAR::STR::strain_none);
         }
         // standard is: geometrically non-linear with Total Lagrangean approach
-        else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+        else if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
         {
           soh27_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2,
               &elevec1, &elevec2, &elevec3, nullptr, nullptr, nullptr, params,
@@ -311,13 +311,13 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         // special case: geometrically linear
-        if (kintype_ == INPAR::STR::kinem_linear)
+        if (kintype_ == INPAR::STR::KinemType::linear)
         {
           soh27_linstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain,
               &plstrain, params, iostress, iostrain, ioplstrain);
         }
         // standard is: geometrically non-linear with Total Lagrangean approach
-        else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+        else if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
         {
           soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
               nullptr, nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain,

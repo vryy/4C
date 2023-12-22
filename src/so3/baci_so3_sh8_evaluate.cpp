@@ -551,7 +551,7 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
   if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     dserror("mulf is unsupported for the So_sh8 element!");
 
-  if (kintype_ != INPAR::STR::kinem_nonlinearTotLag)
+  if (kintype_ != INPAR::STR::KinemType::nonlinearTotLag)
     dserror("Unsupported kinematic type for the So_sh8 element!");
 
   // initialization of internal energy

@@ -443,14 +443,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+      if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
       {
         soh8_nlnstiffmass_gemm(lm, mydispo, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr,
             nullptr, nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
             INPAR::STR::strain_none);
       }
       // special case: geometric linear
-      else  // kintype_ != INPAR::STR::kinem_nonlinearTotLag)
+      else  // kintype_ != INPAR::STR::KinemType::nonlinearTotLag)
       {
         dserror("ERROR: Generalized EMM only makes sense in nonlinear realm");
       }
@@ -824,7 +824,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           glstrain(4) = cauchygreen(1, 2);
           glstrain(5) = cauchygreen(2, 0);
         }
-        else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+        else if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
         {
           // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
           defgrd.MultiplyTT(xcurr, N_XYZ);
@@ -840,7 +840,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           glstrain(4) = cauchygreen(1, 2);
           glstrain(5) = cauchygreen(2, 0);
         }
-        else if (kintype_ == INPAR::STR::kinem_linear)
+        else if (kintype_ == INPAR::STR::KinemType::linear)
         {
           // in kinematically linear analysis the deformation gradient is equal to identity
           // no difference between reference and current state
@@ -2041,7 +2041,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       Fnew.Multiply(defgrd, Fhist);
       defgrd = Fnew;
     }
-    else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    else if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       // standard kinematically nonlinear analysis
       defgrd.MultiplyTT(xcurr, N_XYZ);
@@ -2122,7 +2122,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
-    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
@@ -2488,7 +2488,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       }
 
 
-      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+      if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
       {
         // integrate `geometric' stiffness matrix and add to keu *****************
         CORE::LINALG::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
@@ -3276,7 +3276,7 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const std::vector<double>& disp,
 
     // build defgrd (independent of xrefe!)
     CORE::LINALG::Matrix<3, 3> defgrd(true);
-    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       defgrd.MultiplyTT(xdisp, N_xyz);
     }
@@ -3312,7 +3312,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
     // get derivatives wrt to invJhist
     N_xyz.Multiply(invJhist, derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
     {
       defgrd.MultiplyTT(xdisp, N_xyz);
     }

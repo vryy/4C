@@ -716,22 +716,22 @@ namespace INPAR
     }
 
     /// kinematic description
-    enum KinemType
+    enum class KinemType
     {
-      kinem_vague = 0,       ///< undetermined kinematics
-      kinem_linear,          ///< linear kinematics
-      kinem_nonlinearTotLag  ///< nonlinear kinematics Total Lagrange
+      vague,           ///< undetermined kinematics
+      linear,          ///< linear kinematics
+      nonlinearTotLag  ///< nonlinear kinematics Total Lagrange
     };
 
     static inline std::string KinemTypeString(const KinemType kinem_type)
     {
       switch (kinem_type)
       {
-        case INPAR::STR::KinemType::kinem_vague:
-          return "Vague";
-        case INPAR::STR::KinemType::kinem_linear:
+        case INPAR::STR::KinemType::vague:
+          return "vague";
+        case INPAR::STR::KinemType::linear:
           return "linear";
-        case INPAR::STR::KinemType::kinem_nonlinearTotLag:
+        case INPAR::STR::KinemType::nonlinearTotLag:
           return "nonlinear_total_lagrange";
       }
 

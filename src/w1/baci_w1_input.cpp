@@ -66,10 +66,10 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   // kinematics type
   linedef->ExtractString("KINEM", buffer);
   // geometrically linear
-  if (buffer == "linear") kintype_ = INPAR::STR::kinem_linear;
+  if (buffer == "linear") kintype_ = INPAR::STR::KinemType::linear;
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
-    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   else
     dserror("Illegal KINEM type '%s'", buffer.c_str());
 
@@ -137,7 +137,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   stresstype_ = w1_xy;
 
   // check for invalid combinations
-  if (kintype_ == INPAR::STR::kinem_linear && iseas_ == true)
+  if (kintype_ == INPAR::STR::KinemType::linear && iseas_ == true)
     dserror("ERROR: No EAS for geometrically linear WALL element");
 
   // validate kinematics of solid material

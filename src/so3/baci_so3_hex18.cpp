@@ -261,7 +261,7 @@ bool DRT::ELEMENTS::So_hex18::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
     dserror("Reading SO_HEX18 element failed KINEM unknown");

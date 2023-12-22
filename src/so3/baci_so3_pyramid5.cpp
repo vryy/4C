@@ -101,7 +101,7 @@ void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition(
 DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
     : So_base(id, owner), data_(), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
-  kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+  kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   invJ_.resize(NUMGPT_SOP5, CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
   detJ_.resize(NUMGPT_SOP5, 0.0);
 
