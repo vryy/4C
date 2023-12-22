@@ -56,6 +56,10 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
       print_matlab_(INPUT::IntegralValue<bool>(
           globaltimeparams.sublist("MONOLITHIC"), "PRINT_MAT_RHS_MAP_MATLAB")),
+      relax_lin_solver_tolerance_(
+          globaltimeparams.sublist("MONOLITHIC").get<double>("RELAX_LIN_SOLVER_TOLERANCE")),
+      relax_lin_solver_iter_step_(
+          globaltimeparams.sublist("MONOLITHIC").get<int>("RELAX_LIN_SOLVER_STEP")),
       solver_(Teuchos::rcp(new CORE::LINALG::Solver(
           DRT::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
@@ -857,6 +861,14 @@ void SSI::SSIMono::SolveLinearSystem()
   CORE::LINALG::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = IterationCount() == 1;
+  if (relax_lin_solver_iter_step_ > 0)
+  {
+    solver_->ResetTolerance();
+    if (IterationCount() <= relax_lin_solver_iter_step_)
+    {
+      solver_params.tolerance = solver_->GetTolerance() * relax_lin_solver_tolerance_;
+    }
+  }
   solver_->Solve(ssi_matrices_->SystemMatrix()->EpetraOperator(), ssi_vectors_->Increment(),
       ssi_vectors_->Residual(), solver_params);
 

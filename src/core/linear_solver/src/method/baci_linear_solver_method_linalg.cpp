@@ -116,6 +116,25 @@ void CORE::LINALG::Solver::AdaptTolerance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void CORE::LINALG::Solver::SetTolerance(const double tolerance)
+{
+  if (!Params().isSublist("Belos Parameters"))
+    dserror("Set tolerance of linear solver only for Belos solver.");
+
+  Teuchos::ParameterList& solver_params = Params().sublist("Belos Parameters");
+
+  const bool have_saved_value = solver_params.isParameter("Convergence Tolerance Saved");
+  if (!have_saved_value)
+  {
+    solver_params.set<double>(
+        "Convergence Tolerance Saved", solver_params.get<double>("Convergence Tolerance", 1.0e-8));
+  }
+
+  solver_params.set<double>("Convergence Tolerance", tolerance);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CORE::LINALG::Solver::ResetTolerance()
 {
   if (!Params().isSublist("Belos Parameters")) return;
@@ -137,9 +156,17 @@ void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1)   Setup");
 
-  if (params.lin_tol_better > 0.0)
+  dsassert(!(params.lin_tol_better > -1.0 and params.tolerance > 0.0),
+      "Do not set tolerance and adaptive tolerance to the linear solver.");
+
+  if (params.lin_tol_better > -1.0)
   {
     AdaptTolerance(params.nonlin_tolerance, params.nonlin_residual, params.lin_tol_better);
+  }
+
+  if (params.tolerance > 0.0)
+  {
+    SetTolerance(params.tolerance);
   }
 
   // reset data flags on demand

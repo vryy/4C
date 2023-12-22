@@ -61,6 +61,9 @@ namespace CORE::LINALG
     //! for adaptivity of the tolerance: factor by which the tolerance of the linear solver should
     //! be stricter than the current residual of the nonlinear solver
     double lin_tol_better = -1.0;
+
+    //! tolerance of linear solver
+    double tolerance = -1.0;
   };
 
   /*!
@@ -159,6 +162,12 @@ namespace CORE::LINALG
     All data is destroyed except the parameter list
     */
     void Reset();
+
+    //! get tolerance from Belos solver
+    double GetTolerance() const
+    {
+      return Params().sublist("Belos Parameters").get<double>("Convergence Tolerance", 1.0e-8);
+    }
 
     /*!
     \brief Adapt tolerance of iterative solver
@@ -281,6 +290,9 @@ namespace CORE::LINALG
     */
     void AdaptTolerance(
         const double desirednlnres, const double currentnlnres, const double better);
+
+    //! set tolerance to Belos solver
+    void SetTolerance(double tolerance);
 
     //! a communicator
     const Epetra_Comm& comm_;
