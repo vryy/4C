@@ -20,6 +20,7 @@
 #include "baci_mixture_prestress_strategy_constant.H"
 #include "baci_mixture_prestress_strategy_isocyl.H"
 #include "baci_mixture_prestress_strategy_iterative.H"
+#include "baci_mixture_rule_function.H"
 #include "baci_mixture_rule_growthremodel.H"
 #include "baci_mixture_rule_simple.H"
 
@@ -1196,6 +1197,8 @@ template MIXTURE::PAR::IsotropicCylinderPrestressStrategy* MAT::CreateMaterialPa
 template MIXTURE::PAR::ConstantPrestressStrategy* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::IterativePrestressStrategy* MAT::CreateMaterialParameterInstance(
+    Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::FunctionMixtureRule* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::SimpleMixtureRule* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);

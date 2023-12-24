@@ -298,6 +298,7 @@ namespace INPAR
       mix_growth_strategy_stiffness,  ///< Growth modeled as an expansion of the entire cell (growth
                                       ///< happens mainly in the direction of the smallest
                                       ///< stiffness)
+      mix_rule_function,              ///< Function rule for the mixture model
       mix_rule_simple,                ///< Simple rule for the mixture model
       mix_rule_growthremodel,         ///< Homogenized constrained mixture
       mix_prestress_strategy_cylinder,     ///< Prestress strategy for a cylinder

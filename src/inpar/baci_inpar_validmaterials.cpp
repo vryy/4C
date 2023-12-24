@@ -4049,6 +4049,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
   }
 
   /*----------------------------------------------------------------------*/
+  // Function mixture rule for solid mixtures
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Rule_Function",
+        "A mixture rule where the mass fractions are scaled by functions of space and time",
+        INPAR::MAT::mix_rule_function));
+
+    AddNamedReal(m, "DENS", "");
+    AddNamedInt(m, "NUMCONST", "number of mixture constituents");
+    AddNamedIntVector(m, "MASSFRACFUNCT",
+        "list of functions (their ids) defining the mass fractions of the mixture constituents",
+        "NUMCONST");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Base mixture rule for solid mixtures
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
