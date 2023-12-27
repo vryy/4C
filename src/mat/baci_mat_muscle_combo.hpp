@@ -16,7 +16,6 @@ active strain approach) with variable time-dependent activation
 #include "baci_comm_parobjectfactory.hpp"
 #include "baci_mat_anisotropy.hpp"
 #include "baci_mat_anisotropy_extension_default.hpp"
-#include "baci_mat_anisotropy_extension_provider.hpp"
 #include "baci_mat_par_parameter.hpp"
 #include "baci_mat_so3_material.hpp"
 #include "baci_utils_function.hpp"
@@ -74,7 +73,7 @@ namespace MAT
   class Muscle_ComboType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const override { return "Muscle_ComboType"; }
+    [[nodiscard]] std::string Name() const override { return "Muscle_ComboType"; }
 
     static Muscle_ComboType& Instance() { return instance_; };
 
@@ -119,22 +118,27 @@ namespace MAT
     // Constructor for the material given the material parameters
     explicit Muscle_Combo(MAT::PAR::Muscle_Combo* params);
 
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Muscle_Combo(*this)); }
+    [[nodiscard]] Teuchos::RCP<Material> Clone() const override
+    {
+      return Teuchos::rcp(new Muscle_Combo(*this));
+    }
 
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
 
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_muscle_combo; };
+    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_muscle_combo;
+    };
 
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::linear ||
-              kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (kinem != INPAR::STR::KinemType::linear && kinem != INPAR::STR::KinemType::nonlinearTotLag)
         dserror("element and material kinematics are not compatible");
     }
 
-    double Density() const override { return params_->density_; }
+    [[nodiscard]] double Density() const override { return params_->density_; }
 
-    int UniqueParObjectId() const override
+    [[nodiscard]] int UniqueParObjectId() const override
     {
       return Muscle_ComboType::Instance().UniqueParObjectId();
     }

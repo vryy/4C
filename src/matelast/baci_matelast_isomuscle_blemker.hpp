@@ -92,7 +92,7 @@ namespace MAT
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       /// Provide the material type
-      INPAR::MAT::MaterialType MaterialType() const override
+      [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_isomuscleblemker;
       }
@@ -122,7 +122,6 @@ namespace MAT
           bool& viscogeneral) override
       {
         anisomod = true;
-        return;
       };
 
      protected:

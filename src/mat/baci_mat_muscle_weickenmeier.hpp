@@ -104,7 +104,7 @@ namespace MAT
   class Muscle_WeickenmeierType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const override { return "Muscle_WeickenmeierType"; }
+    [[nodiscard]] std::string Name() const override { return "Muscle_WeickenmeierType"; }
 
     static Muscle_WeickenmeierType& Instance() { return instance_; };
 
@@ -148,28 +148,27 @@ namespace MAT
     // Constructor for the material given the material parameters
     explicit Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* params);
 
-    Teuchos::RCP<Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new Muscle_Weickenmeier(*this));
     }
 
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
 
-    INPAR::MAT::MaterialType MaterialType() const override
+    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_muscle_weickenmeier;
     };
 
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::linear ||
-              kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (kinem != INPAR::STR::KinemType::linear && kinem != INPAR::STR::KinemType::nonlinearTotLag)
         dserror("element and material kinematics are not compatible");
     }
 
-    double Density() const override { return params_->density_; }
+    [[nodiscard]] double Density() const override { return params_->density_; }
 
-    int UniqueParObjectId() const override
+    [[nodiscard]] int UniqueParObjectId() const override
     {
       return Muscle_WeickenmeierType::Instance().UniqueParObjectId();
     }
