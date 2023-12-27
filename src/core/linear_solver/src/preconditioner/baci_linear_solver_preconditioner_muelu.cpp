@@ -871,163 +871,175 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
 
   SetupLinearProblem(matrix, x, b);
 
-  // check wheter input matrix is an actual blocked operator
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
-  if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
-
-  // split matrix into components
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA13 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 2).EpetraMatrix()));
-
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA23 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 2).EpetraMatrix()));
-
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA31 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(2, 0).EpetraMatrix()));
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA32 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(2, 1).EpetraMatrix()));
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA33 =
-      Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(2, 2).EpetraMatrix()));
-
-  Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap =
-      Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
-
-  Teuchos::ParameterList& solidList = muelulist_.sublist("Inverse1");
-  Teuchos::ParameterList& fluidList = muelulist_.sublist("Inverse2");
-  Teuchos::ParameterList& aleList = muelulist_.sublist("Inverse3");
-
-  // information about the fsi subproblems
-  const int numSolidDofsPerNode = solidList.get<int>("PDE equations");
-  const int numFluidDofsPerNode = fluidList.get<int>("PDE equations");
-  const int numAleDofsPerNode = aleList.get<int>("PDE equations");
-
-  // explicit information about the fluid
-  const int numVelocityDofsPerNode =
-      fluidList.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
-  const int numPressureDofsPerNode =
-      fluidList.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
-
-  if (numFluidDofsPerNode != (numVelocityDofsPerNode + numPressureDofsPerNode))
-    dserror("Number of fluid dofs does not match the number of velocity and pressure dofs");
-
-  // define strided maps
-  std::vector<size_t> solidStriding;
-  std::vector<size_t> fluidStriding;
-  std::vector<size_t> aleStriding;
-  solidStriding.push_back(numSolidDofsPerNode);
-  fluidStriding.push_back(numVelocityDofsPerNode);
-  fluidStriding.push_back(numPressureDofsPerNode);
-  aleStriding.push_back(numAleDofsPerNode);
-
-  Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> solidmap =
-      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA11->getRowMap()->lib(),
-          xA11->getRowMap()->getGlobalNumElements(), xA11->getRowMap()->getLocalElementList(),
-          xA11->getRowMap()->getIndexBase(), solidStriding, xA11->getRowMap()->getComm(), -1));
-  Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> fluidmap =
-      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA22->getRowMap()->lib(),
-          xA22->getRowMap()->getGlobalNumElements(), xA22->getRowMap()->getLocalElementList(),
-          xA22->getRowMap()->getIndexBase(), fluidStriding, xA22->getRowMap()->getComm(), -1));
-  Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> alemap =
-      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA33->getRowMap()->lib(),
-          xA33->getRowMap()->getGlobalNumElements(), xA33->getRowMap()->getLocalElementList(),
-          xA33->getRowMap()->getIndexBase(), aleStriding, xA33->getRowMap()->getComm(), -1));
-
-  // build map extractor for fsi problem
-  std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> maps;
-  maps.emplace_back(solidmap);
-  maps.emplace_back(fluidmap);
-  maps.emplace_back(alemap);
-
-  Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
-      Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, maps);
-
-  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> velocitymap =
-      Xpetra::StridedMapFactory<LO, GO, NO>::Build(fluidmap, 0);
-  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> pressuremap =
-      Xpetra::StridedMapFactory<LO, GO, NO>::Build(fluidmap, 1);
-
-  // build blocked Xpetra operator
-  Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp =
-      Teuchos::rcp(new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 42));
-
-  bOp->setMatrix(0, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11)));
-  bOp->setMatrix(0, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12)));
-  bOp->setMatrix(0, 2, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA13)));
-  bOp->setMatrix(1, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21)));
-  bOp->setMatrix(1, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22)));
-  bOp->setMatrix(1, 2, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA23)));
-  bOp->setMatrix(2, 0, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA31)));
-  bOp->setMatrix(2, 1, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA32)));
-  bOp->setMatrix(2, 2, Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA33)));
-
-  bOp->fillComplete();
-
-  Teuchos::ParameterList mueluParameters = muelulist_.sublist("MueLu (FSI) Parameters");
-  if (mueluParameters.get<bool>("MUELU_XML_ENFORCE"))
+  if (create)
   {
-    if (create)
-    {
-      if (!mueluParameters.isParameter("MUELU_XML_FILE"))
-        dserror(
-            "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
-            "Please set it as entry 'MUELU_XML_FILE'.");
-      std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
+    // check wheter input matrix is an actual blocked operator
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
+        Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+    if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
-      const int solidDimns = solidList.get<int>("null space: dimension", -1);
-      if (solidDimns == -1 || numSolidDofsPerNode == -1)
-        dserror("Error: PDE equations of solid or null space dimension wrong.");
+    // split matrix into components
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA13 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 2).EpetraMatrix()));
 
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
-          CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
-              solidmap, muelulist_.sublist("Inverse1"));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA23 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 2).EpetraMatrix()));
 
-      const int fluidDimns = fluidList.get<int>("null space: dimension", -1);
-      if (fluidDimns == -1 || numFluidDofsPerNode == -1)
-        dserror("Error: PDE equations of fluid or null space dimension wrong.");
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA31 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(2, 0).EpetraMatrix()));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA32 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(2, 1).EpetraMatrix()));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA33 =
+        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(2, 2).EpetraMatrix()));
 
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
-          CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
-              fluidmap, muelulist_.sublist("Inverse2"));
+    Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> fullrangemap =
+        Teuchos::rcp(new Xpetra::EpetraMapT<GO, NO>(Teuchos::rcpFromRef(A->FullRangeMap())));
 
-      const int aleDimns = aleList.get<int>("null space: dimension", -1);
-      if (aleDimns == -1 || numAleDofsPerNode == -1)
-        dserror("Error: PDE equations of ale or null space dimension wrong.");
+    Teuchos::ParameterList& solidList = muelulist_.sublist("Inverse1");
+    Teuchos::ParameterList& fluidList = muelulist_.sublist("Inverse2");
+    Teuchos::ParameterList& aleList = muelulist_.sublist("Inverse3");
 
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace33 =
-          CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
-              alemap, muelulist_.sublist("Inverse3"));
+    // information about the fsi subproblems
+    const int numSolidDofsPerNode = solidList.get<int>("PDE equations");
+    const int numFluidDofsPerNode = fluidList.get<int>("PDE equations");
+    const int numAleDofsPerNode = aleList.get<int>("PDE equations");
 
-      MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
-          xmlFileName, *(bOp->getRangeMap()->getComm()));
+    // explicit information about the fluid
+    const int numVelocityDofsPerNode =
+        fluidList.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
+    const int numPressureDofsPerNode =
+        fluidList.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
 
-      Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = mueLuFactory.CreateHierarchy();
-      H->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>>(bOp));
-      H->GetLevel(0)->Set("Nullspace1", nullspace11);
-      H->GetLevel(0)->Set("Nullspace2", nullspace22);
-      H->GetLevel(0)->Set("Nullspace3", nullspace33);
-      H->GetLevel(0)->Set(
-          "Map1", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, NO>>(velocitymap));
-      H->GetLevel(0)->Set(
-          "Map2", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, NO>>(pressuremap));
+    if (numFluidDofsPerNode != (numVelocityDofsPerNode + numPressureDofsPerNode))
+      dserror("Number of fluid dofs does not match the number of velocity and pressure dofs");
 
-      mueLuFactory.SetupHierarchy(*H);
+    // define strided maps
+    std::vector<size_t> solidStriding;
+    std::vector<size_t> fluidStriding;
+    std::vector<size_t> aleStriding;
+    solidStriding.push_back(numSolidDofsPerNode);
+    fluidStriding.push_back(numVelocityDofsPerNode);
+    fluidStriding.push_back(numPressureDofsPerNode);
+    aleStriding.push_back(numAleDofsPerNode);
 
-      // set multigrid preconditioner
-      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
-    }
-  }
-  else
-  {
-    dserror("The MueLu preconditioner for FSI problems only works with an appropriate .xml file");
+    Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> solidmap =
+        Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA11->getRowMap()->lib(),
+            xA11->getRowMap()->getGlobalNumElements(), xA11->getRowMap()->getLocalElementList(),
+            xA11->getRowMap()->getIndexBase(), solidStriding, xA11->getRowMap()->getComm(), -1));
+    Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> fluidmap =
+        Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA22->getRowMap()->lib(),
+            xA22->getRowMap()->getGlobalNumElements(), xA22->getRowMap()->getLocalElementList(),
+            xA22->getRowMap()->getIndexBase(), fluidStriding, xA22->getRowMap()->getComm(), -1));
+    Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> alemap =
+        Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA33->getRowMap()->lib(),
+            xA33->getRowMap()->getGlobalNumElements(), xA33->getRowMap()->getLocalElementList(),
+            xA33->getRowMap()->getIndexBase(), aleStriding, xA33->getRowMap()->getComm(), -1));
+
+    // build map extractor for fsi problem
+    std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> maps;
+    maps.emplace_back(solidmap);
+    maps.emplace_back(fluidmap);
+    maps.emplace_back(alemap);
+
+    Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
+        Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, maps);
+
+    Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> velocitymap =
+        Xpetra::StridedMapFactory<LO, GO, NO>::Build(fluidmap, 0);
+    Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> pressuremap =
+        Xpetra::StridedMapFactory<LO, GO, NO>::Build(fluidmap, 1);
+
+    // build blocked Xpetra operator
+    Pmatrix_ = Teuchos::rcp(
+        new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 42));
+
+    Pmatrix_->setMatrix(0, 0,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA11))));
+    Pmatrix_->setMatrix(0, 1,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA12))));
+    Pmatrix_->setMatrix(0, 2,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA13))));
+    Pmatrix_->setMatrix(1, 0,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA21))));
+    Pmatrix_->setMatrix(1, 1,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA22))));
+    Pmatrix_->setMatrix(1, 2,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA23))));
+    Pmatrix_->setMatrix(2, 0,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA31))));
+    Pmatrix_->setMatrix(2, 1,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA32))));
+    Pmatrix_->setMatrix(2, 2,
+        Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
+            Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(xA33))));
+
+    Pmatrix_->fillComplete();
+
+    Teuchos::ParameterList mueluParameters = muelulist_.sublist("MueLu (FSI) Parameters");
+
+    if (!mueluParameters.isParameter("MUELU_XML_FILE"))
+      dserror(
+          "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
+          "Please set it as entry 'MUELU_XML_FILE'.");
+    std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
+
+    const int solidDimns = solidList.get<int>("null space: dimension", -1);
+    if (solidDimns == -1 || numSolidDofsPerNode == -1)
+      dserror("Error: PDE equations of solid or null space dimension wrong.");
+
+    Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
+        CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
+            solidmap, muelulist_.sublist("Inverse1"));
+
+    const int fluidDimns = fluidList.get<int>("null space: dimension", -1);
+    if (fluidDimns == -1 || numFluidDofsPerNode == -1)
+      dserror("Error: PDE equations of fluid or null space dimension wrong.");
+
+    Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
+        CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
+            fluidmap, muelulist_.sublist("Inverse2"));
+
+    const int aleDimns = aleList.get<int>("null space: dimension", -1);
+    if (aleDimns == -1 || numAleDofsPerNode == -1)
+      dserror("Error: PDE equations of ale or null space dimension wrong.");
+
+    Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace33 =
+        CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
+            alemap, muelulist_.sublist("Inverse3"));
+
+    MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
+        xmlFileName, *(Pmatrix_->getRangeMap()->getComm()));
+
+    H_ = mueLuFactory.CreateHierarchy();
+    H_->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>>(Pmatrix_));
+    H_->GetLevel(0)->Set("Nullspace1", nullspace11);
+    H_->GetLevel(0)->Set("Nullspace2", nullspace22);
+    H_->GetLevel(0)->Set("Nullspace3", nullspace33);
+    H_->GetLevel(0)->Set(
+        "Map1", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, NO>>(velocitymap));
+    H_->GetLevel(0)->Set(
+        "Map2", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, NO>>(pressuremap));
+
+    mueLuFactory.SetupHierarchy(*H_);
+
+    // set multigrid preconditioner
+    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
   }
 }
 
