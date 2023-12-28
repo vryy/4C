@@ -258,7 +258,7 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Pmatrix_;
+    Teuchos::RCP<Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> Pmatrix_;
   };
 
   namespace MUELU::UTILS
