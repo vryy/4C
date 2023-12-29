@@ -14,7 +14,7 @@
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
         "BACI_WITH_ARBORX": "ON",
         "BACI_WITH_GOOGLETEST": "OFF",
-        "BUILD_DOXYGEN": "OFF"
+        "BACI_BUILD_DOXYGEN": "OFF"
       }
     },
     {

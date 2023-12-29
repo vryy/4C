@@ -28,10 +28,10 @@
         "CMAKE_C_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "BACI_WITH_GOOGLETEST": "ON",
-        "BUILD_DOXYGEN": "ON",
+        "BACI_BUILD_DOXYGEN": "ON",
         "BACI_BUILD_READTHEDOCS": "ON",
-        "DOXYGEN_USE_LOCAL_MATHJAX": "ON",
-        "DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/opt/baci-dependencies-testing/MathJax-2.7.9",
+        "BACI_DOXYGEN_USE_LOCAL_MATHJAX": "ON",
+        "BACI_DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/opt/baci-dependencies-testing/MathJax-2.7.9",
         "BACI_WITH_ARBORX": "ON"
       }
     },

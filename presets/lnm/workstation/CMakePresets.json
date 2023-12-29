@@ -25,8 +25,8 @@
         "PVPYTHON": "/lnm/programs64/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
         "CMAKE_C_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
-        "DOXYGEN_USE_LOCAL_MATHJAX": "ON",
-        "DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/lnm/programs64/mathjax-2.7.9"
+        "BACI_DOXYGEN_USE_LOCAL_MATHJAX": "ON",
+        "BACI_DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/lnm/programs64/mathjax-2.7.9"
       }
     },
     {

@@ -1,7 +1,7 @@
 #
 # Build routine/test for doxygen documentation
-option(BUILD_DOXYGEN "Build doxygen documentation" OFF)
-if(BUILD_DOXYGEN)
+baci_process_global_option(BACI_BUILD_DOXYGEN "Build doxygen documentation" OFF)
+if(BACI_BUILD_DOXYGEN)
 
   # add doc-specific cmake modules
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)

@@ -63,7 +63,7 @@ Such a local preset could look like this::
             "BACI_WITH_GOOGLETEST": "OFF",
             "BACI_BUILD_READTHEDOCS": "ON",
             "BACI_SPHINX_THEME": "sphinx_rtd_theme",
-            "BUILD_DOXYGEN": "ON",
+            "BACI_BUILD_DOXYGEN": "ON",
           }
         }
       ]
