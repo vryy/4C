@@ -11,8 +11,8 @@ target_compile_options(baci_global_compile_settings INTERFACE "-Wextra")
 target_compile_options(baci_global_compile_settings INTERFACE "-Wno-unused-parameter")
 target_compile_options(baci_global_compile_settings INTERFACE "-Wvla")
 
-baci_process_global_option(DSERROR_DUMP "dserror creates a core file" OFF)
-baci_process_global_option(TRAP_FE "Crash BACI if a nan or inf occurs" ON)
+baci_process_global_option(BACI_DSERROR_DUMP "dserror creates a core file" OFF)
+baci_process_global_option(BACI_TRAP_FE "Crash BACI if a nan or inf occurs" ON)
 
 baci_process_global_option(
   BACI_DEBUG

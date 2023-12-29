@@ -499,7 +499,7 @@ int main(int argc, char** argv)
     problem->Done();
     comm = Teuchos::null;
 
-#ifdef DSERROR_DUMP
+#ifdef BACI_DSERROR_DUMP
     abort();
 #endif
 

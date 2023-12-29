@@ -9,10 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <sstream>
-#ifdef TRAP_FE
-#include <fenv.h>
-#endif
+
+#include "baci_structure_timint_impl.H"
 
 #include "baci_beamcontact_beam3contact_manager.H"
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
@@ -52,8 +50,12 @@
 #include "baci_so3_shw6.H"
 #include "baci_structure_aux.H"
 #include "baci_structure_timint.H"
-#include "baci_structure_timint_impl.H"
 #include "baci_structure_timint_noxgroup.H"
+
+#include <sstream>
+#ifdef BACI_TRAP_FE
+#include <cfenv>
+#endif
 
 BACI_NAMESPACE_OPEN
 
@@ -1922,11 +1924,11 @@ int STR::TimIntImpl::NewtonLS()
     }
     {
       int exceptcount = 0;
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
       fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
       EvaluateForceStiffResidual(params);
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
       if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO) ||
           params.get<bool>("eval_error") == true)
         exceptcount = 1;
@@ -1934,7 +1936,7 @@ int STR::TimIntImpl::NewtonLS()
       int tmp = 0;
       discret_->Comm().SumAll(&exceptcount, &tmp, 1);
       if (tmp) eval_error = true;
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
       feclearexcept(FE_ALL_EXCEPT);
       feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
@@ -2141,7 +2143,7 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& merit_fct)
 {
   // --- Checking for floating point exceptions
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
   fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
 
@@ -2172,7 +2174,7 @@ void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& meri
     discret_->Comm().SumAll(&loc, &cond_res_, 1);
   }
 
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
   if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO) ||
       params.get<bool>("eval_error") == true)
     exceptcount = 1;
@@ -2186,7 +2188,7 @@ void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& meri
   else
     isexcept = false;
 
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
   feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
   feclearexcept(FE_ALL_EXCEPT);
 #endif
@@ -2225,7 +2227,7 @@ void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& meri
 /*----------------------------------------------------------------------*/
 int STR::TimIntImpl::LsEvalMeritFct(double& merit_fct)
 {
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
   fedisableexcept(FE_OVERFLOW);
 #endif
   int err = 0;
@@ -2244,13 +2246,13 @@ int STR::TimIntImpl::LsEvalMeritFct(double& merit_fct)
   merit_fct *= 0.5;
 
   int exceptcount = 0;
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
   if (fetestexcept(FE_OVERFLOW)) exceptcount = 1;
 #endif
   int exceptsum = 0;
   discret_->Comm().SumAll(&exceptcount, &exceptsum, 1);
   if (exceptsum != 0) return err;
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
   feclearexcept(FE_ALL_EXCEPT);
   feenableexcept(FE_OVERFLOW);
 #endif

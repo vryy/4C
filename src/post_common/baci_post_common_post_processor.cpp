@@ -931,7 +931,7 @@ int main(int argc, char** argv)
 
     // proper cleanup
     DRT::Problem::Done();
-#ifdef DSERROR_DUMP
+#ifdef BACI_DSERROR_DUMP
     abort();
 #endif
 
