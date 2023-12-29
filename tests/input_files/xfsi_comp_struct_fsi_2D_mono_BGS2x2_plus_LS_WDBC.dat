@@ -156,7 +156,6 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        50
-AZSCAL                          none
 AZSUB                           300
 AZTOL                           1e-08
 --------------------------------------------------------------------SOLVER 2
@@ -170,7 +169,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          MLFLUID2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08

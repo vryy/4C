@@ -23,7 +23,6 @@ AZITER                          1000
 AZSUB                           400
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZSCAL                          infnorm
 AZCONV                          AZ_noscaled
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1000
@@ -106,7 +105,6 @@ AZITER                          1000
 AZSUB                           150
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZSCAL                          infnorm
 AZCONV                          AZ_noscaled
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1
@@ -251,7 +249,6 @@ AZITER                          1000
 AZSUB                           40
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZSCAL                          infnorm
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1000
 ML_MAXLEVEL                     3

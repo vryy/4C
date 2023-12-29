@@ -115,7 +115,6 @@ AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Zero
-AZSCAL                          infnorm
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1
 ML_MAXLEVEL                     2
@@ -146,7 +145,6 @@ AZOMEGA                         0.79
 AZGRAPH                         1
 IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1
 ML_MAXLEVEL                     2
@@ -177,7 +175,6 @@ AZOMEGA                         0.69
 AZGRAPH                         1
 IFPACKOVERLAP                   3
 IFPACKCOMBINE                   Zero
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1000
 ML_MAXLEVEL                     2

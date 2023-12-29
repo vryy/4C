@@ -18,7 +18,6 @@ AZSUB                           50
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          infnorm
 AZCONV                          AZ_r0
 SUB_SOLVER1                     2
 SUB_SOLVER2                     3
@@ -37,7 +36,6 @@ AZSUB                           50
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          infnorm
 ML_PRINT                        0
 ML_MAXCOARSESIZE                10000
 ML_MAXLEVEL                     5
@@ -67,7 +65,6 @@ AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1
 ML_MAXLEVEL                     2

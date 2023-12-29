@@ -87,7 +87,6 @@ AZITER         1000
 AZSUB          1000
 AZOMEGA        1.0
 AZGRAPH        1
-AZSCAL         none
 ML_PRINT          0
 ML_MAXCOARSESIZE  125
 ML_MAXLEVEL       3

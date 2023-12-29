@@ -92,7 +92,6 @@ AZGRAPH                         1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1000
 ML_MAXLEVEL                     3

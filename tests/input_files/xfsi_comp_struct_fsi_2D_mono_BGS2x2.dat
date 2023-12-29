@@ -154,7 +154,6 @@ AZCONV                          AZ_r0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
-AZSCAL                          none
 AZSUB                           300
 AZTOL                           1e-08
 --------------------------------------------------------------------SOLVER 2
@@ -167,7 +166,6 @@ AZITER                          1000
 AZOMEGA                         0
 AZPREC                          MLFLUID2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZTOL                           1e-08
 IFPACKCOMBINE                   Add

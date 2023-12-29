@@ -57,7 +57,6 @@ AZSUB                           25                            // size of krylov 
 AZOMEGA                         1.0                           // unused
 AZGRAPH                         1                             // unused
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
 AZCONV                          AZ_r0                         // AZ_r0 AZ_noscaled AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZTECOO_conv_test AZ_inf_noscaled
 ML_PRINT                        0                             // ML print-out level (0-10)
 ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this

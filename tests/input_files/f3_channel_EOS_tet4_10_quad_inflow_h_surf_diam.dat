@@ -78,7 +78,6 @@ AZPREC                          MLFLUID2
 AZREUSE                         0
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZSCAL                          none
 IFPACKGFILL                     0
 AZTOL                           1.0E-12
 AZCONV                          AZ_r0

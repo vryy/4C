@@ -106,7 +106,6 @@ AZOMEGA                         0
 AZOUTPUT                        10
 AZPREC                          MueLu
 AZREUSE                         10
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
@@ -145,7 +144,6 @@ AZSUB                           300
 AZOMEGA                         0.67
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 SUB_SOLVER1                     3
 SUB_SOLVER2                     3
 --------------------------------------------------------------------SOLVER 3
@@ -163,7 +161,6 @@ AZSUB                           50
 AZOMEGA                         0.67
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                350
 ML_MAXLEVEL                     5
@@ -188,7 +185,6 @@ AZOMEGA                         0
 AZOUTPUT                        10
 AZPREC                          MueLu
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08

@@ -120,7 +120,6 @@ AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 AZCONV                          AZ_r0
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000
@@ -146,7 +145,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          ML
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
@@ -183,7 +181,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          BGS2x2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08

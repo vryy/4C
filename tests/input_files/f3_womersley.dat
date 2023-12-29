@@ -102,7 +102,6 @@ AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKCOMBINE                   Zero
 IFPACKOVERLAP                   0
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                10000
 ML_MAXLEVEL                     5
