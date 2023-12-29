@@ -84,16 +84,6 @@ namespace
 }  // namespace
 
 
-void PrintFunctionDatHeader()
-{
-  CORE::UTILS::FunctionManager functionmanager;
-  INPUT::Lines lines = functionmanager.ValidFunctionLines();
-
-  lines.Print(std::cout);
-}
-
-
-
 void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
   using namespace INPUT;

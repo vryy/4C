@@ -40,7 +40,12 @@ namespace INPUT
 
 namespace CORE::UTILS
 {
-  /// class that manages all defined spatial functions
+  /**
+   * A class that collects various (mathematical) BACI Functions specified by the user.
+   *
+   * An instance of this class is available after reading the input file. The specific ways how to
+   * parse Functions from input data are attached within the various modules.
+   */
   class FunctionManager
   {
    public:
@@ -49,14 +54,14 @@ namespace CORE::UTILS
      */
     using FunctionFactory = std::function<std::any(const std::vector<INPUT::LineDefinition>&)>;
 
-    /// Return all known input lines that define a DRT::Function.
+    /// Return all known input lines that define a Function.
     INPUT::Lines ValidFunctionLines();
 
-    /// read the baci input file and set up all functions
+    /// Read the baci input file and set up all Functions.
     void ReadInput(INPUT::DatFileReader& reader);
 
     /**
-     * Tell the FunctionManager how to parse a set of @p possoble_lines into a Function object.
+     * Tell the FunctionManager how to parse a set of @p possible_lines into a Function object.
      * When the ReadInput() function is called, this class will try to read lines encountered in
      * the input file according to the @p possible_lines that were previously passed in this
      * function. If one or more of these lines match, they are parsed and the @p function_factory
@@ -99,11 +104,6 @@ namespace CORE::UTILS
    */
   void AddValidBuiltinFunctions(FunctionManager& function_manager);
 }  // namespace CORE::UTILS
-
-
-
-/// Print the possible function definition lines to `std::cout`
-void PrintFunctionDatHeader();
 
 
 // --- template and inline functions --- //
