@@ -35,7 +35,7 @@ namespace DRT
   class ContainerType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const override { return "ContainerType"; }
+    [[nodiscard]] std::string Name() const override { return "ContainerType"; }
 
     static ContainerType& Instance() { return instance_; };
 
@@ -44,8 +44,6 @@ namespace DRT
    private:
     static ContainerType instance_;
   };
-
-  // forward declarations
 
   /*!
   \brief A data storage container
@@ -63,49 +61,11 @@ namespace DRT
   class Container : public CORE::COMM::ParObject
   {
    public:
-    //! @name Constructors and destructors and related methods
+    [[nodiscard]] int UniqueParObjectId() const override;
 
-    /*!
-    \brief Standard Constructor
-
-    */
-    Container();
-
-    /*!
-    \brief Copy Constructor
-
-    Makes a deep copy of a Node
-
-    */
-    Container(const DRT::Container& old);
-
-
-    /*!
-    \brief Return unique ParObject id
-
-    every class imploementing ParObject needs a unique id defined at the
-    top of this file.
-
-    */
-    int UniqueParObjectId() const override;
-
-    /*!
-    \brief Pack this class so it can be communicated
-
-    \ref Pack and \ref Unpack are used to communicate this class
-
-    */
     void Pack(CORE::COMM::PackBuffer& data) const override;
 
-    /*!
-    \brief Unpack data from a char vector into this class
-
-    \ref Pack and \ref Unpack are used to communicate this class
-
-    */
     void Unpack(const std::vector<char>& data) override;
-
-    //@}
 
     //! @name Query methods
 
@@ -126,11 +86,7 @@ namespace DRT
 
     \note If record with name name already exists, it will be overwritten
     */
-    void Add(const std::string& name, const int& data)
-    {
-      Add(name, &data, 1);
-      return;
-    }
+    void Add(const std::string& name, const int& data);
 
     /*!
     \brief Add vector of int to the container
@@ -141,7 +97,7 @@ namespace DRT
 
     \note If record with name name already exists, it will be overwritten
     */
-    void Add(const std::string& name, const int* data, const int num);
+    void Add(const std::string& name, const int* data, const std::size_t num);
 
     /*!
     \brief Add vector of int to the container
@@ -151,21 +107,7 @@ namespace DRT
 
     \note If record with name name already exists, it will be overwritten
     */
-    void Add(const std::string& name, const std::vector<int>& data)
-    {
-      Add(name, data.data(), data.size());
-      return;
-    }
-
-    /*!
-    \brief Add Teuchos::rcp to vector of int to the container
-
-    \param name : Name of data to store data with
-    \param data : Teuchos::rcp to vector of integers to be added
-
-    \note If record with name name already exists, it will be overwritten
-    */
-    void Add(const std::string& name, Teuchos::RCP<std::vector<int>> data);
+    void Add(const std::string& name, const std::vector<int>& data);
 
     /*!
     \brief Add a double to the container
@@ -175,11 +117,7 @@ namespace DRT
 
     \note If record with name name already exists, it will be overwritten
     */
-    void Add(const std::string& name, const double& data)
-    {
-      Add(name, &data, 1);
-      return;
-    }
+    void Add(const std::string& name, const double& data);
 
     /*!
     \brief Add vector of double to the container
@@ -190,7 +128,7 @@ namespace DRT
 
     \note If record with name name already exists, it will be overwritten
     */
-    void Add(const std::string& name, const double* data, const int num);
+    void Add(const std::string& name, const double* data, const std::size_t num);
 
     /*!
     \brief Add vector of double to the container
@@ -200,21 +138,7 @@ namespace DRT
 
     \note If record with name name already exists, it will be overwritten
     */
-    void Add(const std::string& name, const std::vector<double>& data)
-    {
-      Add(name, data.data(), data.size());
-      return;
-    }
-
-    /*!
-   \brief Add Teuchos::rcp to vector of double to the container
-
-   \param name : Name of data to store data with
-   \param data : Teuchos::rcp to vector of doubles to be added
-
-   \note If record with name name already exists, it will be overwritten
-   */
-    void Add(const std::string& name, Teuchos::RCP<std::vector<double>> data);
+    void Add(const std::string& name, const std::vector<double>& data);
 
     /*!
     \brief Add a map of vectors of doubles to the container
@@ -227,16 +151,6 @@ namespace DRT
     void Add(const std::string& name, const std::map<int, std::vector<double>>& data);
 
     /*!
-   \brief Add Teuchos::rcp to map of vector of doubles to the container
-
-   \param name : Name of data to store data with
-   \param data : Teuchos::rcp to map of vector of doubles to be added
-
-   \note If record with name name already exists, it will be overwritten
-   */
-    void Add(const std::string& name, Teuchos::RCP<std::map<int, std::vector<double>>> data);
-
-    /*!
     \brief Add a string to the container
 
     \param name : Name of data to store data with
@@ -247,20 +161,6 @@ namespace DRT
     void Add(const std::string& name, const std::string& data);
 
     /*!
-    \brief Add a string to the container
-
-    \param name : Name of data to store data with
-    \param data : string to store
-
-    \note If record with name name already exists, it will be overwritten
-    */
-    void Add(const std::string& name, const char data[])
-    {
-      Add(name, (std::string)data);
-      return;
-    }
-
-    /*!
     \brief Add a CORE::LINALG::SerialDenseMatrix to the container
 
     \param name : Name of data to store data with
@@ -269,78 +169,6 @@ namespace DRT
     \note If record with name name already exists, it will be overwritten
     */
     void Add(const std::string& name, const CORE::LINALG::SerialDenseMatrix& matrix);
-
-    /*!
-   \brief Add Teuchos::rcp to CORE::LINALG::SerialDenseMatrix to the container
-
-   \param name : Name of data to store data with
-   \param data : Teuchos::rcp to CORE::LINALG::SerialDenseMatrix to be added
-
-   \note If record with name name already exists, it will be overwritten
-   */
-    void Add(const std::string& name, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matrix);
-
-    /*!
-   \brief Add Teuchos::rcp to Epetra_MultiVector to the container
-
-   \param name : Name of data to store data with
-   \param data : Teuchos::rcp to Epetra_MultiVector to be added
-
-   \note If record with name name already exists, it will be overwritten
-
-   \warning data stored in Epetra_MultiVector will not participate in
-            Pack/Unpack functionality of the container but is deep-copied in
-            the copy-constructor
-   */
-    void Add(const std::string& name, Epetra_MultiVector& data);
-
-    /*!
-   \brief Add Teuchos::rcp to Epetra_Vector to the container
-
-   \param name : Name of data to store data with
-   \param data : Teuchos::rcp to Epetra_Vector to be added
-
-   \note If record with name name already exists, it will be overwritten
-
-   \warning data stored in Epetra_Vector will not participate in
-            Pack/Unpack functionality of the container but is deep-copied in
-            the copy-constructor
-   */
-    void Add(const std::string& name, Epetra_Vector& data);
-
-    /*!
-    \brief Add a CORE::LINALG::Matrix to the container, templated on the dimension
-           of the CORE::LINALG::Matrix
-
-    \param name : Name of data to store data with
-    \param data : matrix to store
-
-    \note Internally transformed into a CORE::LINALG::SerialDenseMatrix.
-
-    Usage is<br>
-    \code
-      DRT::Container->Add<6,6>("mfool_name", CORE::LINALG::Matrix<6,6>);
-    \endcode
-
-    \note Extracting only possible via CORE::LINALG::SerialDenseMatrix, which then
-          can be used to set a view on the data:
-
-    Usage is<br>
-    \code
-          CORE::LINALG::Matrix<6,6> xyz(*(const_cast<CORE::LINALG::SerialDenseMatrix*>(Container::
-          Get<CORE::LINALG::SerialDenseMatrix>("mfool_name"))), true);
-    \endcode
-    */
-    template <int row, int col>
-    void Add(const std::string& name, const CORE::LINALG::Matrix<row, col>& matrix)
-    {
-      CORE::LINALG::SerialDenseMatrix data(row, col);
-      for (int i = 0; i < row; i++)
-        for (int j = 0; j < col; j++) data(i, j) = matrix(i, j);
-
-      Add(name, data);
-      return;
-    };
 
     //@}
 
@@ -398,7 +226,7 @@ namespace DRT
     int mynumber = Container::Getint("name_of_my_number")
     \endcode
     */
-    int GetInt(const std::string& name) const;
+    [[nodiscard]] int GetInt(const std::string& name) const;
 
     /*!
     \brief Get a single double back without all that hassle
@@ -412,7 +240,7 @@ namespace DRT
     double mynumber = Container::GetDouble("name_of_my_number")
     \endcode
     */
-    double GetDouble(const std::string& name) const;
+    [[nodiscard]] double GetDouble(const std::string& name) const;
 
     /*!
     \brief Get data of type int, double, string or CORE::LINALG::SerialDenseMatrix
@@ -468,88 +296,26 @@ namespace DRT
     /*!
     \brief Delete everything in this container
     */
-    void Clear()
-    {
-      intdata_.clear();
-      doubledata_.clear();
-      mapdata_.clear();
-      stringdata_.clear();
-      matdata_.clear();
-      return;
-    }
+    void Clear();
 
     //@}
 
-    //! @name deep copy access methods
-    /// to extract all data
 
-    std::pair<std::map<std::string, Teuchos::RCP<std::vector<int>>>::const_iterator,
-        std::map<std::string, Teuchos::RCP<std::vector<int>>>::const_iterator>
-    IntRange()
-    {
-      return std::make_pair(intdata_.begin(), intdata_.end());
-    }
-
-    std::pair<std::map<std::string, Teuchos::RCP<std::vector<double>>>::const_iterator,
-        std::map<std::string, Teuchos::RCP<std::vector<double>>>::const_iterator>
-    DoubleRange()
-    {
-      return std::make_pair(doubledata_.begin(), doubledata_.end());
-    }
-
-    std::pair<
-        std::map<std::string, Teuchos::RCP<std::map<int, std::vector<double>>>>::const_iterator,
-        std::map<std::string, Teuchos::RCP<std::map<int, std::vector<double>>>>::const_iterator>
-    MapRange()
-    {
-      return std::make_pair(mapdata_.begin(), mapdata_.end());
-    }
-
-    std::pair<std::map<std::string, std::string>::const_iterator,
-        std::map<std::string, std::string>::const_iterator>
-    StringRange()
-    {
-      return std::make_pair(stringdata_.begin(), stringdata_.end());
-    }
-
-    std::pair<std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::const_iterator,
-        std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::const_iterator>
-    MatRange()
-    {
-      return std::make_pair(matdata_.begin(), matdata_.end());
-    }
-
-    std::pair<std::map<std::string, Teuchos::RCP<Epetra_MultiVector>>::const_iterator,
-        std::map<std::string, Teuchos::RCP<Epetra_MultiVector>>::const_iterator>
-    EvecRange()
-    {
-      return std::make_pair(evecdata_.begin(), evecdata_.end());
-    }
-
-    //@
-
-   private:  // these methods are for PURE internal use
-    // don't want = operator
-    Container operator=(const Container& old);
-
-   protected:
+   private:
     //! a map to store integer data in
-    std::map<std::string, Teuchos::RCP<std::vector<int>>> intdata_;
+    std::map<std::string, std::vector<int>> intdata_;
 
     //! a map to store double data in
-    std::map<std::string, Teuchos::RCP<std::vector<double>>> doubledata_;
+    std::map<std::string, std::vector<double>> doubledata_;
 
     //! a map to store maps of stl vector data
-    std::map<std::string, Teuchos::RCP<std::map<int, std::vector<double>>>> mapdata_;
+    std::map<std::string, std::map<int, std::vector<double>>> mapdata_;
 
     //! a map to store string data in
     std::map<std::string, std::string> stringdata_;
 
     //! a map to store matrices in
-    std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> matdata_;
-
-    //! a map to store epetra vectors in
-    std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> evecdata_;
+    std::map<std::string, CORE::LINALG::SerialDenseMatrix> matdata_;
 
   };  // class Container
 }  // namespace DRT
