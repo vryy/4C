@@ -41,10 +41,9 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
   Teuchos::setStringToIntegralParameter<NotAllGaussPointsProjectValidAction>(
       "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "fail",
       "What to do if not all Gauss points of a segment project valid",
-      Teuchos::tuple<std::string>("fail", "warning", "proceed"),
-      Teuchos::tuple<NotAllGaussPointsProjectValidAction>(NotAllGaussPointsProjectValidAction::fail,
-          NotAllGaussPointsProjectValidAction::warning,
-          NotAllGaussPointsProjectValidAction::proceed),
+      Teuchos::tuple<std::string>("fail", "warning"),
+      Teuchos::tuple<NotAllGaussPointsProjectValidAction>(
+          NotAllGaussPointsProjectValidAction::fail, NotAllGaussPointsProjectValidAction::warning),
       &list);
 
   // Number of integration points on the line.
