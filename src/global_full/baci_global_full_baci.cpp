@@ -298,7 +298,6 @@ int main(int argc, char *argv[])
       PrintContactConstitutiveLawDatHeader();
       DRT::UTILS::PrintCloningMaterialMapDatHeader();
       PrintElementDatHeader();
-      PrintFunctionDatHeader();
       PrintResultDescrDatHeader();
       printf("\n\n");
     }
