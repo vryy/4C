@@ -104,7 +104,7 @@ namespace CONTACT
       }
 
       /// Return quick accessible contact constitutive law parameter data
-      virtual CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const { return params_; }
+      CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const override { return params_; }
 
       //! @name Evaluation methods
       //@{

@@ -10,16 +10,17 @@ passive-scalar transport
 
 *----------------------------------------------------------------------*/
 
+#include "baci_scatra_turbulence_hit_scalar_forcing.H"
+
+#include "baci_comm_exporter.H"
+#include "baci_scatra_timint_genalpha.H"
+#include "baci_scatra_timint_implicit.H"
+
 #include <complex>
 
 #ifdef BACI_WITH_FFTW
 #include <fftw3.h>
 #endif
-
-#include "baci_comm_exporter.H"
-#include "baci_scatra_timint_genalpha.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
 BACI_NAMESPACE_OPEN
 
