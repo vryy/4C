@@ -104,9 +104,20 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
   condnamemap[0] = Teuchos::rcp(new DRT::Container());
 
-  condnamemap[0]->Add<3, 3>("defgrd", *defgrd_enh);
-  condnamemap[0]->Add<6, 6>("cmat", *cmat);
-  condnamemap[0]->Add<6, 1>("stress", *stress);
+  const auto convert_to_serial_dense_matrix = [](const auto& matrix)
+  {
+    using MatrixType = std::decay_t<decltype(matrix)>;
+    constexpr int n_rows = MatrixType::numRows();
+    constexpr int n_cols = MatrixType::numCols();
+    CORE::LINALG::SerialDenseMatrix data(n_rows, n_cols);
+    for (int i = 0; i < n_rows; i++)
+      for (int j = 0; j < n_cols; j++) data(i, j) = matrix(i, j);
+    return data;
+  };
+
+  condnamemap[0]->Add("defgrd", convert_to_serial_dense_matrix(*defgrd_enh));
+  condnamemap[0]->Add("cmat", convert_to_serial_dense_matrix(*cmat));
+  condnamemap[0]->Add("stress", convert_to_serial_dense_matrix(*stress));
   condnamemap[0]->Add("gp", gp);
   condnamemap[0]->Add("microdisnum", microdisnum);
   condnamemap[0]->Add("V0", V0);
