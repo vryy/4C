@@ -8,7 +8,7 @@
       "cacheVariables": {
         "CMAKE_CXX_FLAGS": "-march=native",
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_C_FLAGS": "-march=native", 
+        "CMAKE_C_FLAGS": "-march=native",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-L$env{HDF5_ROOT}/lib -L$env{BOOST_ROOT}/lib -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
@@ -28,16 +28,11 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "$env{OPENMPI_ROOT}/bin/mpic++",
         "CMAKE_C_COMPILER": "$env{OPENMPI_ROOT}/bin/mpicc",
-        "Trilinos_PREFIX": "$env{TRILINOS_ROOT}/lib64/cmake/Trilinos",
-        "Kokkos_ROOT": "$env{TRILINOS_ROOT}/lib64/cmake/Kokkos",
-        "QHULL_LIBRARY_DIR": "$env{QHULL_ROOT}/lib",
-        "QHULL_INCLUDE_DIR": "$env{QHULL_ROOT}/include/libqhull",
-        "BOOST_INCLUDE_DIR": "$env{BOOST_ROOT}/include",
-        "BOOST_LIBRARY_DIR": "$env{BOOST_ROOT}/lib",
-        "USE_USERSPECIFIED_BOOST": "ON",
+        "BACI_TRILINOS_ROOT": "$env{TRILINOS_ROOT}",
+        "BACI_QHULL_ROOT": "$env{QHULL_ROOT}",
+        "BACI_BOOST_ROOT": "$env{BOOST_ROOT}",
         "BOOST_EXCLUDE_SYSTEM_PATHS": "ON",
-        "SEARCH_CLN_LIBRARY_DIR": "$env{CLN_ROOT}/lib",
-        "CLN_INCLUDE_DIR": "$env{CLN_ROOT}/include",
+        "BACI_CLN_ROOT": "$env{CLN_ROOT}",
         "MPI_RUN": "$env{OPENMPI_ROOT}/bin/mpirun"
       }
     }

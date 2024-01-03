@@ -16,11 +16,9 @@
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
-        "Trilinos_PREFIX": "/lnm/lib/packages/trilinos/15-0-0/release",
-        "QHULL_INCLUDE_DIR": "/lnm/lib/packages/qhull/2012-1/include/libqhull",
-        "QHULL_LIBRARY_DIR": "/lnm/lib/packages/qhull/2012-1/lib",
-        "CLN_INCLUDE_DIR": "/lnm/lib/packages/cln/1-3-4/include",
-        "SEARCH_CLN_LIBRARY_DIR": "/lnm/lib/packages/cln/1-3-4/lib",
+        "BACI_TRILINOS_ROOT": "/lnm/lib/packages/trilinos/15-0-0/release",
+        "BACI_QHULL_ROOT": "/lnm/lib/packages/qhull/2012-1",
+        "BACI_CLN_ROOT": "/lnm/lib/packages/cln/1-3-4",
         "MPI_RUN": "/usr/bin/mpirun",
         "PVPYTHON": "/lnm/programs64/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
         "CMAKE_C_COMPILER_LAUNCHER": "ccache",
@@ -43,7 +41,7 @@
         ".lnm_workstation_base"
       ],
       "cacheVariables": {
-        "Trilinos_PREFIX": "/lnm/lib/packages/trilinos/15-0-0/relwithdebinfo",
+        "BACI_TRILINOS_ROOT": "/lnm/lib/packages/trilinos/15-0-0/relwithdebinfo",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
@@ -54,7 +52,7 @@
         ".lnm_workstation_base"
       ],
       "cacheVariables": {
-        "Trilinos_PREFIX": "/lnm/lib/packages/trilinos/15-0-0/relwithdebinfo",
+        "BACI_TRILINOS_ROOT": "/lnm/lib/packages/trilinos/15-0-0/relwithdebinfo",
         "CMAKE_BUILD_TYPE": "DEBUG"
       }
     },
@@ -65,7 +63,7 @@
         ".lnm_workstation_base"
       ],
       "cacheVariables": {
-        "Trilinos_PREFIX": "/lnm/lib/2022_Q1/trilinos_relwithdebinfo",
+        "BACI_TRILINOS_ROOT": "/lnm/lib/packages/trilinos/15-0-0/relwithdebinfo",
         "CMAKE_BUILD_TYPE": "DEBUG",
         "CMAKE_CXX_FLAGS_DEBUG": "-O2 -funroll-loops",
         "CMAKE_C_FLAGS_DEBUG": "-O2 -funroll-loops",

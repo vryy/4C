@@ -25,10 +25,9 @@
 #define BACI_NAMESPACE_CLOSE }
 
 /// Dependencies
+/// The following flags are set when configuring the project with CMake.
 
-#cmakedefine BACI_WITH_ARBORX
-#cmakedefine BACI_WITH_MIRCO
-
+@BACI_DEFINES_FOR_EXTERNAL_DEPENDENCIES@
 
 // Centrally include MPI which is a core dependency that needs configuration.
 // Disable the (deprecated) C++ bindings of OpenMPI. We are not using them, and they throw warnings
