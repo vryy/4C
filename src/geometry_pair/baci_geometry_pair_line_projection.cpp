@@ -129,8 +129,8 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
       n_projections, optional_args...);
 
   // Check if a warning or an error should be output
-  const bool all_valid = n_valid_projections == (unsigned int)gauss_points.nquad;
-  const bool all_projected = n_projections == (unsigned int)gauss_points.nquad;
+  const bool all_valid = n_valid_projections == static_cast<unsigned int>(gauss_points.nquad);
+  const bool all_projected = n_projections == static_cast<unsigned int>(gauss_points.nquad);
   const bool is_warning = all_projected and (!all_valid) and
                           evaluation_data.GetNotAllGaussPointsProjectValidAction() ==
                               INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning;
