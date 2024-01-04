@@ -21,7 +21,6 @@
         "BACI_TRILINOS_ROOT": "/opt/baci-dependencies",
         "BACI_QHULL_ROOT": "/opt/baci-dependencies",
         "BACI_CLN_ROOT": "/opt/baci-dependencies",
-        "MPI_RUN": "/usr/bin/mpirun",
         "PVPYTHON": "/opt/baci-dependencies-testing/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
         "CMAKE_C_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",

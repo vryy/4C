@@ -29,8 +29,7 @@
       ],
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpic++",
-        "CMAKE_C_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpicc",
-        "MPI_RUN": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpirun"
+        "CMAKE_C_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpicc"
       }
     },
     {
@@ -42,8 +41,7 @@
       ],
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpic++",
-        "CMAKE_C_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpicc",
-        "MPI_RUN": "/opt/openmpi/4.1.5/gcc/bin/mpirun"
+        "CMAKE_C_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpicc"
       }
     },
     {
@@ -59,8 +57,7 @@
         "CMAKE_C_COMPILER": "/lnm/mpi407_gcc930/bin/mpicc",
         "Boost_NO_BOOST_CMAKE": "ON",
         "BOOST_INCLUDEDIR": "/lnm/boost/gcc9/include",
-        "BOOST_LIBRARYDIR": "/lnm/boost/gcc9/lib",
-        "MPI_RUN": "/lnm/mpi407_gcc930/bin/mpirun"
+        "BOOST_LIBRARYDIR": "/lnm/boost/gcc9/lib"
       }
     }
   ]
