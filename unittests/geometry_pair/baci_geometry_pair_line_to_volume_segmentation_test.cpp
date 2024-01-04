@@ -400,7 +400,7 @@ namespace
     INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
     line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
     line_to_volume_params_list.set(
-        "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "proceed");
+        "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "warning");
     evaluation_data_ =
         Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
 
@@ -452,6 +452,6 @@ namespace
     // Create and evaluate the geometry pairs.
     BACI_EXPECT_THROW_WITH_MESSAGE(CreateEvaluatePairs(geometry_pairs, q_line_elements,
                                        q_rot_line_elements, q_volume_elements, segments_vector),
-        std::runtime_error, "All Gauss points need to have a valid projection");
+        std::runtime_error, "Error when projecting the Gauss points.");
   }
 }  // namespace

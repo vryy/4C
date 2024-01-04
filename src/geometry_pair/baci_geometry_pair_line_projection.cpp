@@ -124,12 +124,21 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
 
   // Project the Gauss points to the other geometry.
   unsigned int n_valid_projections;
-  ProjectPointsOnLineToOther(
-      pair, q_line, q_other, projection_points, n_valid_projections, optional_args...);
+  unsigned int n_projections;
+  ProjectPointsOnLineToOther(pair, q_line, q_other, projection_points, n_valid_projections,
+      n_projections, optional_args...);
 
-  if ((n_valid_projections != (unsigned int)gauss_points.nquad) and
-      evaluation_data.GetNotAllGaussPointsProjectValidAction() !=
-          INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::proceed)
+  // Check if a warning or an error should be output
+  const bool all_valid = n_valid_projections == static_cast<unsigned int>(gauss_points.nquad);
+  const bool all_projected = n_projections == static_cast<unsigned int>(gauss_points.nquad);
+  const bool is_warning = all_projected and (!all_valid) and
+                          evaluation_data.GetNotAllGaussPointsProjectValidAction() ==
+                              INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning;
+  const bool is_error =
+      !all_projected or
+      (!all_valid and evaluation_data.GetNotAllGaussPointsProjectValidAction() !=
+                          INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning);
+  if (is_warning or is_error)
   {
     // Add detailed output that allows for a reconstruction of the failed projection
     std::stringstream error_message;
@@ -161,18 +170,16 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
     }
 
     // Depending on the input file, print a warning or fail
-    if (evaluation_data.GetNotAllGaussPointsProjectValidAction() ==
-        INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning)
+    if (is_warning)
     {
       std::cout << error_message.str();
     }
     else
     {
-      dserror(
-          error_message.str() +
-              "\n\nAll Gauss points need to have a valid projection. The number of Gauss points "
-              "is %d, but the number of valid projections is %d!",
-          gauss_points.nquad, n_valid_projections);
+      dserror(error_message.str() +
+                  "\n\nError when projecting the Gauss points. There are %d Gauss points, %d "
+                  "could be projected and %d of the projected ones are valid.",
+          gauss_points.nquad, n_projections, n_valid_projections);
     }
   }
 }

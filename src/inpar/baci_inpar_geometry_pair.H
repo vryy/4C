@@ -47,8 +47,7 @@ namespace INPAR
     enum class NotAllGaussPointsProjectValidAction
     {
       fail,     // Raise an error
-      warning,  // Print a warning message to the terminal
-      proceed   // Continue the evaluation of the geometry pair
+      warning,  // Print a warning message to the terminal and continue to evaluate the pair
     };
 
     /**
