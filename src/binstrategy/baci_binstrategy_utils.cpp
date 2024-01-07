@@ -61,7 +61,7 @@ namespace BINSTRATEGY
       // fillcomplete discret with extended ghosting
       discret->FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // print distribution after standard ghosting
       if (discret->Comm().MyPID() == 0)
         std::cout << "parallel distribution with extended ghosting" << std::endl;

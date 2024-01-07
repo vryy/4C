@@ -131,7 +131,7 @@ void XFEM::XFieldField::Coupling::MasterToSlave(const Teuchos::RCP<const Epetra_
     }
     case XFEM::map_nodes:
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not mv->Map().PointSameAs(*masternodemap_)) dserror("master node map vector expected");
       if (not sv->Map().PointSameAs(*slavenodemap_)) dserror("slave node map vector expected");
       if (sv->NumVectors() != mv->NumVectors())
@@ -161,7 +161,7 @@ void XFEM::XFieldField::Coupling::SlaveToMaster(const Teuchos::RCP<const Epetra_
     }
     case XFEM::map_nodes:
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not mv->Map().PointSameAs(*masternodemap_)) dserror("master node map vector expected");
       if (not sv->Map().PointSameAs(*slavenodemap_)) dserror("slave node map vector expected");
       if (sv->NumVectors() != mv->NumVectors())

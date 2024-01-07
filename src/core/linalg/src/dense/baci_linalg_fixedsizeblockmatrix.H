@@ -68,7 +68,7 @@ namespace CORE::LINALG
     const value_type* operator()(unsigned row, unsigned col) const
     {
       const value_type* b = blocks_[Position(row, col)];
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (b == nullptr) dserror("null block access");
 #endif
       return b;
@@ -87,11 +87,11 @@ namespace CORE::LINALG
 
     const value_type* operator()(unsigned pos) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (pos >= brows * bcols) dserror("block index out of range");
 #endif
       const value_type* b = blocks_[pos];
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (b == nullptr) dserror("null block access");
 #endif
       return b;
@@ -187,7 +187,7 @@ namespace CORE::LINALG
    private:
     int Position(unsigned row, unsigned col) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (row >= brows or col >= bcols) dserror("block index out of range");
 #endif
       return row + brows * col;

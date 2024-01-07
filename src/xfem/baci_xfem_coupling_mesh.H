@@ -144,7 +144,7 @@ namespace XFEM
       // number space dimensions for element
       // const size_t nsd = projection_matrix.Rows();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (projection_matrix.numRows() != projection_matrix.numCols() ||
           projection_matrix.numRows() != normal.numRows())
         dserror(

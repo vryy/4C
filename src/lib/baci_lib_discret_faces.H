@@ -259,7 +259,7 @@ namespace DRT
     */
     virtual inline DRT::Element* lRowFace(int lid) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (!Filled()) dserror("DRT::DiscretizationFaces::lRowIntFace: Filled() != true");
 #endif
       return facerowptr_[lid];
@@ -276,7 +276,7 @@ namespace DRT
     */
     virtual inline DRT::Element* lColFace(int lid) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (!Filled()) dserror("DRT::DiscretizationFaces::lColIntFace: Filled() != true");
 #endif
       return facecolptr_[lid];

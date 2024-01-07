@@ -231,7 +231,7 @@ void FLD::XFluidState::InitCouplingMatricesAndRhs()
   {
     Teuchos::RCP<XFEM::CouplingBase> coupling = condition_manager_->GetCouplingByIdx(coup_idx);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (coupling == Teuchos::null) dserror("invalid coupling object!");
 #endif
 

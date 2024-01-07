@@ -729,7 +729,7 @@ namespace MORTAR
 
     double inline GetNodalCoords(const int direction, const int node)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(Points()[node]);
       if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
       return mymrtrnode->xspatial()[direction];
@@ -747,7 +747,7 @@ namespace MORTAR
 
     double inline GetNodalCoordsOld(const int direction, const int node)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(Points()[node]);
       if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
       return mymrtrnode->X()[direction] + mymrtrnode->uold()[direction];

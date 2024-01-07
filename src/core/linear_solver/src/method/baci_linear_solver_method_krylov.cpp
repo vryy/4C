@@ -272,7 +272,7 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
     }
     else
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       Params().print(std::cout);
 #endif
 

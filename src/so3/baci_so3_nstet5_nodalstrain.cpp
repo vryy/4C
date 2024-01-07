@@ -252,7 +252,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
             for (int j = 0; j < ndofperpatch; ++j)
             {
               int* loc = std::lower_bound(indices, indices + length, lclm[j]);
-              // #ifdef DEBUG
+              // #ifdef BACI_DEBUG
               if (*loc != lclm[j]) dserror("Cannot find local column entry %d", lclm[j]);
               // #endif
               int pos = loc - indices;

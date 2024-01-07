@@ -186,7 +186,7 @@ void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector>
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (walldatastate->GetDispRow() == Teuchos::null or walldatastate->GetDispCol() == Teuchos::null)
     dserror("wall displacements not initialized!");
   if (walldatastate->GetVelCol() == Teuchos::null) dserror("wall velocities not initialized!");

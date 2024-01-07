@@ -168,7 +168,7 @@ void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
         // local id of nodal dof in current spatial direction
         const int lid = walldiscretization_->DofRowMap()->LID(lm[dim]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // safety check
         if (lid < 0) dserror("dof gid=%d not in dof row map!", lm[dim]);
 #endif
@@ -189,7 +189,7 @@ void PARTICLEWALL::WallHandlerBase::GetMaxWallPositionIncrement(
 {
   if (walldatastate_->GetDispRow() != Teuchos::null)
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety checks
     if (walldatastate_->GetDispRowLastTransfer() == Teuchos::null)
       dserror("vector of wall displacements after last transfer not set!");
@@ -230,7 +230,7 @@ void PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles()
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   walldatastate_->CheckForCorrectMaps();
 #endif
 
@@ -265,7 +265,7 @@ void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   walldatastate_->CheckForCorrectMaps();
 #endif
 
@@ -373,7 +373,7 @@ PARTICLEWALL::WallHandlerBase::GetPotentialWallNeighbors() const
 void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
     DRT::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (walldiscretization_->ElementColMap()->LID(ele->Id()) < 0)
     dserror("element gid=%d not in element column map!", ele->Id());
 #endif
@@ -382,7 +382,7 @@ void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
   DRT::Node** nodes = ele->Nodes();
   const int numnodes = ele->NumNode();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   for (int i = 0; i < numnodes; ++i)
     if (walldiscretization_->NodeColMap()->LID(nodes[i]->Id()) < 0)
       dserror(
@@ -399,7 +399,7 @@ void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
     std::vector<int> lmstride;
     ele->LocationVector(*walldiscretization_, lm_wall, lmowner, lmstride);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     for (int i = 0; i < numnodes * 3; ++i)
       if (walldiscretization_->DofColMap()->LID(lm_wall[i]) < 0)
         dserror("dof gid=%d not in dof column map!", lm_wall[i]);

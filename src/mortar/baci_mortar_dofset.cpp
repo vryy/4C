@@ -49,7 +49,7 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
 
     // get dofs of node as we want them
     MORTAR::MortarNode* mrtrnode =
-#ifndef DEBUG
+#ifndef BACI_DEBUG
         static_cast<MORTAR::MortarNode*>(node);
 #else
         dynamic_cast<MORTAR::MortarNode*>(node);

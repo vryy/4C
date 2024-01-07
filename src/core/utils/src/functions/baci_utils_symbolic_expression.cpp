@@ -504,7 +504,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   T Parser<T>::Evaluate(const std::map<std::string, T>& variable_values,
       const std::map<std::string, double>& constants) const
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     const bool all_required_variables_passed =
         std::all_of(parsed_variable_constant_names_.begin(), parsed_variable_constant_names_.end(),
             [&](const auto& var_name)

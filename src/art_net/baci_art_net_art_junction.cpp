@@ -618,7 +618,7 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval(CORE::LINALG::SerialDenseVector &f
 void ART::UTILS::ArtJunctionBc::Update_Result(
     CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx)
 {
-#if DEBUG
+#ifdef BACI_DEBUG
   if (xn.length() != dx.length())
   {
     dserror("Both, the result and the result change, must have similar size");

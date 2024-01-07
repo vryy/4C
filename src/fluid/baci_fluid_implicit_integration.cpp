@@ -1973,7 +1973,7 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
       // Set master ele to the Material for evaluation.
       Teuchos::RCP<MAT::Material> material = p_master->Material();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // Set master ele to the Material for slave.
       Teuchos::RCP<MAT::Material> material_s = p_slave->Material();
 

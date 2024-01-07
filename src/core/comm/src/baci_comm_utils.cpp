@@ -149,7 +149,7 @@ namespace CORE::COMM
           gsum += grouplayout[color];
         } while (gsum <= myrank);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         std::cout << "Nested parallelism layout: Global rank: " << myrank
                   << " is in group: " << color << std::endl;
 #endif

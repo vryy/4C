@@ -190,7 +190,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialAffiliationPairData()
     affiliationpairdata.insert(std::make_pair(globalid_i[0], rigidbody_k));
   }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
@@ -215,7 +215,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
   // number of global ids on all processors
   const int numglobalids = allprocmaxglobalid + 1;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not(rigidbodyuniqueglobalidhandler_->GetMaxGlobalId() < 0))
     dserror("maximum global id of rigid body unique global identifier handler already touched!");
 #endif
@@ -227,7 +227,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
   // draw requested number of global ids
   rigidbodyuniqueglobalidhandler_->DrawRequestedNumberOfGlobalIds(requesteduniqueglobalids);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (myrank_ == 0)
     for (int i = 0; i < numglobalids; ++i)
       if (requesteduniqueglobalids[i] != i) dserror("drawn requested global ids not consecutive!");
@@ -802,7 +802,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
@@ -815,7 +815,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
       dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
@@ -844,7 +844,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
     const double* mass_k = &rigidbodydatastate_->GetRefMass()[rigidbody_k];
     double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (not(mass_k[0] > 0.0)) dserror("partial mass of rigid body %d is zero!", rigidbody_k);
 #endif
 
@@ -860,7 +860,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
       dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
@@ -983,7 +983,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
     // number of partial mass quantities of rigid body k including this processor
     const int numpartial_k = ownedrigidbodiestohostingprocs_[rigidbody_k].size() + 1;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (static_cast<int>(partialmass_k.size()) != numpartial_k or
         static_cast<int>(partialpos_k.size()) != numpartial_k)
       dserror("the number of partial mass quantities of rigid body %d do not match!", rigidbody_k);
@@ -1019,7 +1019,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
     // number of partial mass quantities of rigid body k including this processor
     const int numpartial_k = ownedrigidbodiestohostingprocs_[rigidbody_k].size() + 1;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (static_cast<int>(partialmass_k.size()) != numpartial_k or
         static_cast<int>(partialinertia_k.size()) != numpartial_k)
       dserror("the number of partial mass quantities of rigid body %d do not match!", rigidbody_k);
@@ -1095,7 +1095,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
@@ -1108,7 +1108,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
       dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
@@ -1516,7 +1516,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBody
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
@@ -1529,7 +1529,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBody
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
       dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
@@ -1565,7 +1565,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
@@ -1578,7 +1578,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
       dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
@@ -1614,7 +1614,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
@@ -1627,7 +1627,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
       dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
@@ -1664,7 +1664,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
@@ -1677,7 +1677,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
       dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
@@ -1717,7 +1717,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
@@ -1730,7 +1730,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
       dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
@@ -1781,7 +1781,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodyMelting(
     {
       auto it = affiliationpairdata.find(globalid_i);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // no affiliation pair for current global id
       if (it == affiliationpairdata.end())
         dserror("no affiliated rigid body found for particle with global id %d", globalid_i);
@@ -1825,7 +1825,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
       PARTICLEENGINE::LocalIndexTupleShrdPtr localindextuple =
           particleengineinterface_->GetLocalIndexInSpecificContainer(globalid_i);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not localindextuple)
         dserror("particle with global id %d not found on this processor!", globalid_i);
 

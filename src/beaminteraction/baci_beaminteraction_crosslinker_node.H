@@ -101,7 +101,7 @@ namespace CROSSLINKING
      */
     const std::vector<std::pair<int, int>>& GetClBSpotStatus()
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // safety check
       if ((int)clbspots_.size() != 2) dserror("crosslinker has wrong bspot size");
 #endif

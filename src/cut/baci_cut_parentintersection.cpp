@@ -940,7 +940,7 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name)
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ParentIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   NormalMesh().Status();
 
 #ifdef DEBUGCUTLIBRARY

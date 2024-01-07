@@ -4298,7 +4298,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 
   stcmat_->Complete();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (iter_ == 1 && step_ == 0)
   {
     std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
@@ -4324,7 +4324,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     discret_->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     tmpstcmat->Complete();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (iter_ == 1 && step_ == 0)
     {
       std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();

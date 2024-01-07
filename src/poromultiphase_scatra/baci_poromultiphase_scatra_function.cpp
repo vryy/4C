@@ -1094,7 +1094,7 @@ double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
   if (not this->order_checked_) CheckOrder(variables, constants);
 
     // In debug mode, check order of variables and constants vector on every call
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   CheckOrder(variables, constants);
 #endif
 
@@ -1136,7 +1136,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
 // In debug mode, check order of variables and constants vector on every call
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   CheckOrder(variables, constants);
 #endif
   // Check order of variables and constants vector only once (since it does not change)
@@ -1273,7 +1273,7 @@ double POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Evaluate(
   if (not this->order_checked_) CheckOrder(variables, constants);
 
     // In debug mode, check order of variables and constants vector on every call
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   CheckOrder(variables, constants);
 #endif
 
@@ -1331,7 +1331,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Eva
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
 // In debug mode, check order of variables and constants vector on every call
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   CheckOrder(variables, constants);
 #endif
 

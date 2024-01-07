@@ -610,7 +610,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     xji.Invert(xjm);
     xji_n.Invert(xjm_n);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // check unitiy of  [xji] o [xjm]
     CORE::LINALG::Matrix<nsd_, nsd_> eye;
     eye.Multiply(xji, xjm);
@@ -726,7 +726,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     else
       porosityint = 1.0;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (porosityint < 0.00001)
     {
       std::cout << "Discretization: " << discretization.Name() << std::endl;
@@ -1093,7 +1093,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       }
     }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (abs(scalarintegraltransformfac - Base::drs_) > 1e-11)
     {
       std::cout << "Base::drs_ = " << Base::drs_ << std::endl;

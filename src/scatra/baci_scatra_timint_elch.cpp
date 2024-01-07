@@ -3215,7 +3215,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
 
       for (const auto& dofs : partitioned_dofs)
       {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         std::unordered_set<int> dof_set(dofs.begin(), dofs.end());
         dsassert(dof_set.size() == dofs.size(), "The dofs are not unique");
 #endif

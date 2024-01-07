@@ -717,7 +717,7 @@ namespace IMMERSED
               std::cout << "WARNING !! Immersed point is lying on element edge! validsource="
                         << validsource << "for eleid=" << sourceele->Id() << std::endl;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
               if (abs(scalarproduct) < 1e-13 and validsource)
               {
                 std::cout << "scalarproduct = " << scalarproduct << std::endl;
@@ -876,7 +876,7 @@ namespace IMMERSED
 
     }  // end for irobin
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (owner != comm.MyPID())
       dserror("after round robin every proc should have recieved his original data");
 #endif
@@ -1191,7 +1191,7 @@ namespace IMMERSED
 
     }  // end for irobin
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (owner != comm.MyPID())
       dserror("after round robin every proc should have recieved his original data");
 #endif
@@ -1597,7 +1597,7 @@ namespace IMMERSED
 
     }  // loop over all procs
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (owner != comm.MyPID())
       dserror("after round robin every proc should have received his original data");
 #endif
@@ -1634,7 +1634,7 @@ namespace IMMERSED
     // result variable
     double tempresult = -1234.0;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (!(evaldis->Filled())) dserror("FillComplete() was not called");
     if (!(evaldis->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 #endif

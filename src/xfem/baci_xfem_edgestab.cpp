@@ -298,7 +298,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         }
         else if ((*f)->Position() == CORE::GEO::CUT::Point::oncutsurface)
         {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           std::cout << "the position of this facet of face " << faceele->Id()
                     << " is oncutsurface, we do not stabilize it!!! " << std::endl;
 #endif
@@ -437,7 +437,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         }
         else if ((*f)->Position() == CORE::GEO::CUT::Point::oncutsurface)
         {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           std::cout << "the position of this facet of face " << faceele->Id()
                     << " is oncutsurface, we do not stabilize it!!! " << std::endl;
 #endif

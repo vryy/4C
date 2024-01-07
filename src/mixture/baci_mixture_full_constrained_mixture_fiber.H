@@ -297,7 +297,7 @@ namespace MIXTURE
 
     Number adaptive_tolerance_ = 1e-6;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     bool state_is_set_ = false;
 #endif
   };

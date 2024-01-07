@@ -304,7 +304,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
     }
     else
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // safety check
       if (not binstrategy_->BinDiscret()->HaveGlobalElement(binId))
         dserror(
@@ -451,7 +451,7 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(Teuchos::RCP<DR
   {
     DRT::MESHFREE::MeshfreeMultiBin* currbin =
         dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(binstrategy_->BinDiscret()->gElement(binId));
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (currbin == nullptr)
       dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
@@ -537,7 +537,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
   {
     DRT::Node* currlinker = binstrategy_->BinDiscret()->lRowNode(i);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (currlinker->NumElement() != 1) dserror("ERROR: A linker is assigned to more than one bin!");
 #endif
 
@@ -579,7 +579,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
     for (size_t iter = 0; iter < tobemoved.size(); ++iter) currbin->DeleteNode(tobemoved[iter]);
   }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (homelesslinker.size())
     std::cout << "There are " << homelesslinker.size() << " homeless linker on proc" << myrank_
               << std::endl;

@@ -86,7 +86,7 @@ namespace PARTICLEENGINE
      */
     inline void CheckAndDecreaseContainerSize()
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (particlestored_ > containersize_)
         dserror(
             "checking size of container not possible: particles stored %d > new container size %d!",
@@ -180,7 +180,7 @@ namespace PARTICLEENGINE
      */
     inline int GetStateDim(ParticleState state)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedstates_.count(state))
         dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
@@ -209,7 +209,7 @@ namespace PARTICLEENGINE
      */
     inline double* GetPtrToState(ParticleState state, int index)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedstates_.count(state))
         dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 
@@ -239,7 +239,7 @@ namespace PARTICLEENGINE
      */
     inline double* CondGetPtrToState(ParticleState state, int index)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (index < 0 or index > (particlestored_ - 1))
         dserror("can not return pointer to state of particle as index %d out of bounds!", index);
 #endif
@@ -260,7 +260,7 @@ namespace PARTICLEENGINE
      */
     inline int* GetPtrToGlobalID(int index)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (index < 0 or index > (particlestored_ - 1))
         dserror(
             "can not return pointer to global id of particle as index %d out of bounds!", index);
@@ -284,7 +284,7 @@ namespace PARTICLEENGINE
      */
     inline void ScaleState(double fac, ParticleState state)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedstates_.count(state))
         dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
@@ -304,7 +304,7 @@ namespace PARTICLEENGINE
      */
     inline void UpdateState(double facA, ParticleState stateA, double facB, ParticleState stateB)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedstates_.count(stateA))
         dserror("particle state '%s' not stored in container!", EnumToStateName(stateA).c_str());
 
@@ -328,7 +328,7 @@ namespace PARTICLEENGINE
      */
     inline void SetState(std::vector<double> val, ParticleState state)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedstates_.count(state))
         dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 
@@ -350,7 +350,7 @@ namespace PARTICLEENGINE
      */
     inline void ClearState(ParticleState state)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedstates_.count(state))
         dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif

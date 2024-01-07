@@ -1599,7 +1599,7 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
       if (diagonalblock)
       {
         double v = 1.0;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         int err = sysmat_gp->EpetraMatrix()->InsertGlobalValues(row, 1, &v, &row);
         if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
@@ -4575,7 +4575,7 @@ void FLD::XFluid::SetInitialFlowField(
     DRT::Element* ele = elelist[0];  // (arbitrary!) first element
     // get material from first (arbitrary!) element adjacent to this node
     const Teuchos::RCP<MAT::Material> material = ele->Material();
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // check if we really got a list of materials
     dsassert(
         material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
@@ -4587,7 +4587,7 @@ void FLD::XFluid::SetInitialFlowField(
     Teuchos::RCP<const MAT::Material> matptr0 = matlist->MaterialById(matlist->MatID(0));
     // get unburnt material (second material in material list)
     Teuchos::RCP<const MAT::Material> matptr1 = matlist->MaterialById(matlist->MatID(1));
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     dsassert(matptr0->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
     dsassert(matptr1->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
 #endif

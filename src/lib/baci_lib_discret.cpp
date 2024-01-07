@@ -147,7 +147,7 @@ bool DRT::Discretization::ClearDiscret()
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::NodeRowMap() const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
     return noderowmap_.get();
   else
@@ -162,7 +162,7 @@ const Epetra_Map* DRT::Discretization::NodeRowMap() const
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::NodeColMap() const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
     return nodecolmap_.get();
   else
@@ -177,7 +177,7 @@ const Epetra_Map* DRT::Discretization::NodeColMap() const
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::ElementRowMap() const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
     return elerowmap_.get();
   else
@@ -192,7 +192,7 @@ const Epetra_Map* DRT::Discretization::ElementRowMap() const
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::ElementColMap() const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
     return elecolmap_.get();
   else
@@ -207,7 +207,7 @@ const Epetra_Map* DRT::Discretization::ElementColMap() const
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumGlobalElements() const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
     return ElementRowMap()->NumGlobalElements();
   else
@@ -222,7 +222,7 @@ int DRT::Discretization::NumGlobalElements() const
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumMyRowElements() const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
     return ElementRowMap()->NumMyElements();
   else
@@ -247,7 +247,7 @@ int DRT::Discretization::NumMyColElements() const
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumGlobalNodes() const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
     return NodeRowMap()->NumGlobalElements();
   else
@@ -262,7 +262,7 @@ int DRT::Discretization::NumGlobalNodes() const
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumMyRowNodes() const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
     return NodeRowMap()->NumMyElements();
   else
@@ -294,7 +294,7 @@ bool DRT::Discretization::HaveGlobalElement(const int gid) const
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Discretization::gElement(const int gid) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr = element_.find(gid);
   if (curr == element_.end())
     dserror("Element with gobal id gid=%d not stored on this proc", gid);
@@ -317,7 +317,7 @@ bool DRT::Discretization::HaveGlobalNode(const int gid) const
  *----------------------------------------------------------------------*/
 DRT::Node* DRT::Discretization::gNode(int gid) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator curr = node_.find(gid);
   if (curr == node_.end())
     dserror("Node with global id gid=%d not stored on this proc", gid);
@@ -578,7 +578,7 @@ void DRT::Discretization::SetState(
   // maps.
   if (vecmap.PointSameAs(*colmap))
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (not colmap->SameAs(vecmap))
     {
       dserror("col map of discretization and state vector %s are different. This is a fatal bug!",
@@ -592,7 +592,7 @@ void DRT::Discretization::SetState(
   }
   else  // if it's not in column map export and allocate
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (not DofRowMap(nds)->SameAs(state->Map()))
     {
       dserror("row map of discretization and state vector %s are different. This is a fatal bug!",

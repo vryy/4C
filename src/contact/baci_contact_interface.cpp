@@ -9457,7 +9457,7 @@ void CONTACT::CoInterface::SetNodeInitiallyActive(CONTACT::CoNode& cnode) const
   else if (init_contact_by_gap)
     SetNodeInitiallyActiveByGap(cnode);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (node_init_active)
     std::cout << "Node #" << std::setw(5) << cnode.Id()
               << " is set initially active via the condition line.\n";

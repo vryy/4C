@@ -896,7 +896,7 @@ void CORE::GEO::MESHFREE::BoundingBox::
 {
   ThrowIfNotInit();
   // safety check
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   for (int dim = 0; dim < 3; ++dim)
     if (abs(edgelength_[dim]) < 1e-12)
       dserror(" you are about to devide by zero, edgelength not correctly initialized.");
@@ -931,7 +931,7 @@ void CORE::GEO::MESHFREE::BoundingBox::
 {
   ThrowIfNotInit();
   // safety check
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   for (int dim = 0; dim < 3; ++dim)
     if (abs(edgelength_[dim]) < 1e-12)
       dserror(" you are about to devide by zero, edgelength not correctly initialized.");

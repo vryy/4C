@@ -956,7 +956,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
     std::vector<DRT::Element const*> ele_ptrs(2);
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele_ptrs[0]) == nullptr)
       dserror("first element of element pair must be a beam element");
 #endif

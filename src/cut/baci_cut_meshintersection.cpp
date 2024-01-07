@@ -373,7 +373,7 @@ void CORE::GEO::CUT::MeshIntersection::Status(INPAR::CUT::VCellGaussPts gausstyp
   // call status of parent intersection
   my::Status(gausstype);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   for (std::vector<Teuchos::RCP<MeshHandle>>::iterator i = cut_mesh_.begin(); i != cut_mesh_.end();
        ++i)
   {

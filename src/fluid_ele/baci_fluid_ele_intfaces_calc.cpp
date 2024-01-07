@@ -198,7 +198,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     patch_components_lmowner[field].push_back(owner);
   }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   for (int isd = 0; isd < numdofpernode; isd++)
     if ((int)(patch_components_lm[isd].size()) != numnodeinpatch)
       dserror("patch_components_lm[%d] has wrong size: size is %i but expected %i", isd,

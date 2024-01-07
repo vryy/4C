@@ -740,7 +740,7 @@ void CORE::GEO::CutWizard::Output(bool include_inner)
 {
   if (gmsh_output_) DumpGmshNumDOFSets(include_inner);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   PrintCellStats();
 #endif
 

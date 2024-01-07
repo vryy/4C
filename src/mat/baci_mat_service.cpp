@@ -34,7 +34,7 @@ template <typename T>
 void MAT::AddtoCmatHolzapfelProduct(
     CORE::LINALG::Matrix<6, 6, T>& cmat, const CORE::LINALG::Matrix<6, 1, T>& invc, const T scalar)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (cmat.numRows() != 6 or cmat.numCols() != 6 or invc.numRows() != 6)
     dserror("Wrong dimensions in function AddtoCmatHolzapfelProduct");
 #endif
@@ -114,7 +114,7 @@ void MAT::ElastSymTensorMultiplyAddSym(CORE::LINALG::Matrix<6, 6>& C, const doub
     const CORE::LINALG::Matrix<3, 3>& A, const CORE::LINALG::Matrix<3, 3>& B,
     const double ScalarThis)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check sizes
   if (A.numRows() != A.numCols() || B.numRows() != B.numCols() || A.numRows() != 3 ||
       B.numRows() != 3)
@@ -202,7 +202,7 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
     const CORE::LINALG::Matrix<6, 1>& pk2, const CORE::LINALG::Matrix<6, 6>& cmat)
 {
   // useful call?
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if ((pk2vol == nullptr) and (cvol == nullptr) and (pk2iso == nullptr) and (ciso == nullptr))
     dserror("Useful call? Apparently you do not want to compute anything");
 #endif
@@ -884,7 +884,7 @@ template <int dim>
 CORE::LINALG::Matrix<6, 6> MAT::PullBackFourTensor(
     const CORE::LINALG::Matrix<dim, dim>& defgr, const CORE::LINALG::Matrix<6, 6>& cMatVoigt)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (dim != 3) dserror("Current implementation only valid for dim = 3.");
 #endif
 
@@ -964,7 +964,7 @@ template <int dim>
 void MAT::SetupFourTensor(
     CORE::LINALG::FourTensor<dim>& fourTensor, const CORE::LINALG::Matrix<6, 6>& matrixVoigt)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (dim != 3) dserror("Current implementation only valid for dim = 3.");
 #endif
   // Setup 4-Tensor from 6x6 Voigt matrix (which has to be the representative of a 4 tensor with at
@@ -1061,7 +1061,7 @@ template <int dim>
 void MAT::Setup6x6VoigtMatrix(
     CORE::LINALG::Matrix<6, 6>& matrixVoigt, const CORE::LINALG::FourTensor<dim>& fourTensor)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (dim != 3) dserror("Current implementation only valid for dim = 3.");
 #endif
 

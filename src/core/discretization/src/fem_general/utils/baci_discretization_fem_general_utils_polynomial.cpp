@@ -683,7 +683,7 @@ namespace CORE::FE
 
 
     // Sanity check: Polynomials should be nodal in the Fekete points
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     for (unsigned int i = 0; i < Size(); ++i)
     {
       for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = feketePoints_(d, i);

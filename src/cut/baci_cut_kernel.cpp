@@ -795,7 +795,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
     normalvec->Scale(1.0 / doubleareacrossprod);  // Scale to unit normal
   }
 
-#if DEBUG
+#ifdef BACI_DEBUG
   CORE::LINALG::Matrix<3, 1> v12;
   v12.Update(1, p1, -1, p2, 0);
 

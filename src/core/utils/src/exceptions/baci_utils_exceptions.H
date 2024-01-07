@@ -29,7 +29,7 @@ void cpp_dslatest(const std::string file, const int line);
 inline void cpp_dsassert_func(const char* file, const int line, const bool test, const char* string)
 {
   // inline to avoid function call in release mode
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!test)
   {
     cpp_dslatest(file, line);
@@ -62,7 +62,7 @@ void run_time_error_latest(const std::string file, const std::string func, const
 
 // do not emit any code in release mode for dsassert (i.e., 'test' is not evaluated and optimized
 // away)
-#ifdef DEBUG
+#ifdef BACI_DEBUG
 #define dsassert(test, string) cpp_dsassert_func(__FILE__, __LINE__, test, string)
 #else
 #define dsassert(test, string)

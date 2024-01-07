@@ -283,7 +283,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
 void CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not mv->Map().PointSameAs(P21_->DomainMap())) dserror("master dof map vector expected");
   if (not sv->Map().PointSameAs(P21_->RowMap())) dserror("slave dof map vector expected");
   if (sv->NumVectors() != mv->NumVectors())
@@ -371,7 +371,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
 void CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not mv->Map().PointSameAs(P12_->RowMap())) dserror("master dof map vector expected");
   if (not sv->Map().PointSameAs(P21_->RowMap())) dserror("slave dof map vector expected");
   if (sv->NumVectors() != mv->NumVectors())

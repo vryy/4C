@@ -87,7 +87,7 @@ namespace PARTICLEENGINE
      */
     inline ParticleContainer* GetSpecificContainer(ParticleType type, ParticleStatus status) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedtypes_.count(type))
         dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
@@ -110,7 +110,7 @@ namespace PARTICLEENGINE
     inline void ScaleStateSpecificContainer(
         double fac, ParticleState state, ParticleType type) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedtypes_.count(type))
         dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
@@ -133,7 +133,7 @@ namespace PARTICLEENGINE
     inline void UpdateStateSpecificContainer(double facA, ParticleState stateA, double facB,
         ParticleState stateB, ParticleType type) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedtypes_.count(type))
         dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
@@ -153,7 +153,7 @@ namespace PARTICLEENGINE
     inline void SetStateSpecificContainer(
         std::vector<double> val, ParticleState state, ParticleType type) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedtypes_.count(type))
         dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
@@ -171,7 +171,7 @@ namespace PARTICLEENGINE
      */
     inline void ClearStateSpecificContainer(ParticleState state, ParticleType type) const
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not storedtypes_.count(type))
         dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif

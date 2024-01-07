@@ -89,7 +89,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(
       }
       else
       {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (dis.NodeRowMap()->MyGID(master->first))
         {
           dserror("slave not on proc but master owned by proc\n");

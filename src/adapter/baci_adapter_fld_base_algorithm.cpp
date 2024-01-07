@@ -594,7 +594,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // input file
     if (timeint != INPAR::FLUID::timeint_one_step_theta and ostnew)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       dserror(
           "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
           "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
@@ -1352,7 +1352,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     // input file
     if (timeint != INPAR::FLUID::timeint_one_step_theta and ostnew)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       dserror(
           "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
           "but you set the flag NEW_OST to use the new implementation of the One Step Theta "

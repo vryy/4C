@@ -148,7 +148,7 @@ void DRT::UTILS::GhostDiscretizationOnAllProcs(
   distobeghosted->ExportColumnElements(*newelecolmap);
 
   // Safety checks in DEBUG
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   int nummycolnodes = newnodecolmap->NumMyElements();
   std::vector<int> sizelist(com->NumProc());
   com->GatherAll(&nummycolnodes, sizelist.data(), 1);

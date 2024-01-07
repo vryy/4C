@@ -64,7 +64,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank)
                << IO::endl;
   }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   switch (intterms_prev_state_)
   {
     case INPAR::XFEM::PreviousState_only_consistency:

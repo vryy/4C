@@ -92,7 +92,7 @@ namespace CORE::LINALG
   template <int dim>
   inline double& FourTensor<dim>::operator()(int i1, int i2, int i3, int i4)
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (i1 >= dim or i2 >= dim or i3 >= dim or i4 >= dim)
       dserror("Indices %i,%i,%i,%i out of range in FourTensor<%i>.", i1, i2, i3, i4, dim);
 #endif
@@ -102,7 +102,7 @@ namespace CORE::LINALG
   template <int dim>
   inline const double& FourTensor<dim>::operator()(int i1, int i2, int i3, int i4) const
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (i1 >= dim or i2 >= dim or i3 >= dim or i4 >= dim)
       dserror("Indices %i,%i,%i,%i out of range in FourTensor<%i>.", i1, i2, i3, i4, dim);
 #endif

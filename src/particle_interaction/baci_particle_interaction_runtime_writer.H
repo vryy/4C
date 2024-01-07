@@ -74,7 +74,7 @@ namespace PARTICLEINTERACTION
     //! get specific runtime vtp writer
     inline IO::VisualizationManager* GetSpecificRuntimeVtuWriter(const std::string& fieldname)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not runtime_visualization_managers_.count(fieldname))
         dserror("no runtime vtp writer for field '%s' stored!", fieldname.c_str());
 #endif
@@ -85,7 +85,7 @@ namespace PARTICLEINTERACTION
     //! get specific runtime csv writer
     inline IO::RuntimeCsvWriter* GetSpecificRuntimeCsvWriter(const std::string& fieldname)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not runtime_csvwriters_.count(fieldname))
         dserror("no runtime csv writer for field '%s' stored!", fieldname.c_str());
 #endif

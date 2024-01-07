@@ -264,7 +264,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentTypes()
       DRT::ELEMENTS::Beam3Base* beamele =
           dynamic_cast<DRT::ELEMENTS::Beam3Base*>(currnode->Elements()[i]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (beamele == nullptr)
         dserror(" DESIGN LINE BEAM FILAMENT CONDITIONS only suitable for beam elements.");
 #endif
@@ -383,7 +383,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetAllPossibleBspotLinks(
               double const linkdistmin = mat->LinkingLength() - mat->LinkingLengthTolerance();
               double const linkdistmax = mat->LinkingLength() + mat->LinkingLengthTolerance();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
               if (linkdistmax > BinStrategy().BinSizeLowerBound())
                 dserror(
                     "The allowed binding distance of your linker material is greater than the "
@@ -747,7 +747,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
   {
     Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
 
     CROSSLINKING::CrosslinkerNode* cl_i =
         dynamic_cast<CROSSLINKING::CrosslinkerNode*>(BinDiscretPtr()->gNode(elepairptr->Id()));
@@ -979,7 +979,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreUpdateStepElement(bool
 {
   CheckInitSetup();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // safety check
   if (not dis_at_last_redistr_->Map().SameAs(*BinDiscret().DofRowMap()))
     dserror(
@@ -1366,7 +1366,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteRestart(
     Teuchos::RCP<BEAMINTERACTION::DATA::BeamData> beam_data_i =
         beam_data_[Discret().ElementColMap()->LID(beamgid)];
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (beam_data_i == Teuchos::null)
       dserror("beam data of row beam with gid %i not there", beamgid);
 #endif
@@ -1697,7 +1697,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
     CROSSLINKING::CrosslinkerNode* crosslinker_i =
         dynamic_cast<CROSSLINKING::CrosslinkerNode*>(BinDiscretPtr()->lRowNode(rowcli));
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (crosslinker_i->NumElement() != 1) dserror("More than one element for this crosslinker");
 #endif
 
@@ -1727,7 +1727,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         DRT::ELEMENTS::Beam3Base* ele =
             dynamic_cast<DRT::ELEMENTS::Beam3Base*>(DiscretPtr()->gElement(elegid));
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // safety check
         const int colelelid = DiscretPtr()->ElementColMap()->LID(elegid);
         if (colelelid < 0)
@@ -1767,7 +1767,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         // -----------------------------------------------------------------
         int elegid = cldata_i->GetBSpots()[0].first;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (elegid < 0 or cldata_i->GetBSpots()[0].second < 0)
           dserror(
               " double bonded crosslinker has stored beam partner gid or loc bsponum of -1, "
@@ -1784,7 +1784,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         DRT::ELEMENTS::Beam3Base* ele =
             dynamic_cast<DRT::ELEMENTS::Beam3Base*>(DiscretPtr()->gElement(elegid));
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // safety check
         if (ele == nullptr)
           dserror("Dynamic cast of ele with gid %i failed on proc ", elegid, GState().GetMyRank());
@@ -1803,7 +1803,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         // -----------------------------------------------------------------
         elegid = cldata_i->GetBSpots()[1].first;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // safety check
         if (elegid < 0 or cldata_i->GetBSpots()[1].second < 0)
           dserror(
@@ -1819,7 +1819,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
         ele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(DiscretPtr()->gElement(elegid));
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // safety check
         if (ele == nullptr)
           dserror("Dynamic cast of ele with gid %i failed on proc ", elegid, GState().GetMyRank());
@@ -1862,7 +1862,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
   CROSSLINKING::CrosslinkerNode* crosslinker =
       dynamic_cast<CROSSLINKING::CrosslinkerNode*>(crosslinker_i);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (crosslinker == nullptr) dserror("Dynamic cast to CrosslinkerNode failed");
 #endif
 
@@ -1994,7 +1994,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetPositionOfNewlySingleB
   const int collidoccbeam =
       DiscretPtr()->ElementColMap()->LID(cldata->GetBSpots()[stayoccpotid].first);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // safety check
   if (collidoccbeam < 0)
     dserror("element with gid %i not ghosted on proc %i", cldata->GetBSpots()[stayoccpotid].first,
@@ -2138,7 +2138,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportBeamData(b
           dynamic_cast<DRT::ELEMENTS::Beam3Base*>(Discret().gElement(elegid));
 
       // go to next element in case the current one is not a beam element
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (beamele_i == nullptr) dserror("cast did not work");
 #endif
 
@@ -2285,7 +2285,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FindPotentialBindingEvent
   {
     DRT::Node* currcrosslinker = BinDiscretPtr()->lColNode(icl);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (currcrosslinker == nullptr) dserror("Node not there");
     if (currcrosslinker->NumElement() != 1) dserror("More than one element for this crosslinker");
 #endif
@@ -2293,7 +2293,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FindPotentialBindingEvent
     // get bin that contains this crosslinker (can only be one)
     DRT::Element* currentbin = currcrosslinker->Elements()[0];
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (currentbin->Id() < 0) dserror(" negative bin id number %i ", currentbin->Id());
 #endif
 
@@ -2559,7 +2559,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   double const linkdistmax = crosslinker_i->GetMaterial()->LinkingLength() +
                              crosslinker_i->GetMaterial()->LinkingLengthTolerance();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // safety check
   if (linkdistmax > BinStrategy().BinSizeLowerBound())
     dserror(
@@ -2653,7 +2653,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReturnFalseIfIdenticalBon
 
   int const elecollid = Discret().ElementColMap()->LID(elegid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // safety check
   if (elecollid < 0) dserror("element with gid %i not on proc %i", elegid, GState().GetMyRank());
 #endif
@@ -2673,7 +2673,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReturnFalseIfIdenticalBon
   {
     DRT::Node* bonded_crosslinker_i = BinDiscret().gNode(iter);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety check
     if (bonded_crosslinker_i == nullptr)
       dserror(" Linker with gid %i not on rank %i", iter, GState().GetMyRank());
@@ -2682,7 +2682,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReturnFalseIfIdenticalBon
     BEAMINTERACTION::DATA::CrosslinkerData const* bondedcl_data_i =
         crosslinker_data_[bonded_crosslinker_i->LID()].get();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety check
     if (bonded_crosslinker_i == nullptr)
       dserror("Data for crosslinker %i not there on rank %i", bonded_crosslinker_i->Id(),
@@ -2776,7 +2776,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetOccupiedClBSpotBeamTan
   const int elegid = cldata_i->GetBSpots()[occbspotid].first;
   const int elecollid = Discret().ElementColMap()->LID(elegid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (elecollid < 0)
     dserror(" Element with gid %i bonded to cl %i on rank %i not even ghosted", elegid, clgid,
         GState().GetMyRank());
@@ -2858,7 +2858,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyCrosslinkerBindin
     // get binding event data
     BEAMINTERACTION::DATA::BindEventData* binevdata = cliter.second.get();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (binevdata->GetPermission() != 1)
       dserror(
           " Rank %i wants to bind crosslinker %i without permission, "
@@ -2870,7 +2870,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyCrosslinkerBindin
     const int clcollid = BinDiscretPtr()->NodeColMap()->LID(cliter.first);
     const int colelelid = DiscretPtr()->ElementColMap()->LID(binevdata->GetEleId());
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety checks
     if (clcollid < 0) dserror("Crosslinker not even ghosted, should be owned here.");
     if (colelelid < 0) dserror("Element with gid %i not ghosted.", binevdata->GetEleId());
@@ -2884,7 +2884,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyCrosslinkerBindin
     DRT::Element* beamele_i = DiscretPtr()->lColElement(colelelid);
     BEAMINTERACTION::DATA::BeamData* beamdata_i = beam_data_[colelelid].get();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety checks
     if (cliter.first != binevdata->GetClId())
       dserror("Map key does not match crosslinker gid of current binding event.");
@@ -2934,7 +2934,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyCrosslinkerBindin
           beamdata_i->AddBondToBindingSpot(crosslinker_i->GetMaterial()->LinkerType(),
               binevdata->GetBSpotLocN(), binevdata->GetClId());
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // safety check
         if (not(cldata_i->GetBSpots()[1].first < 0))
           dserror("Numbond does not fit to clbspot vector.");
@@ -3058,7 +3058,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyElementBindingSta
         dynamic_cast<CROSSLINKING::CrosslinkerNode*>(BinDiscretPtr()->gNode(cliter.first));
     int const colelelid = DiscretPtr()->ElementColMap()->LID(binevdata->GetEleId());
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety checks
     if (linker == nullptr) dserror("Crosslinker needs to be ghosted, but this isn't the case.");
     if (colelelid < 0)
@@ -3072,7 +3072,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyElementBindingSta
 
     BEAMINTERACTION::DATA::BeamData* beamdata_i = beam_data_[colelelid].get();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety checks
     if (DiscretPtr()->lColElement(colelelid)->Owner() != GState().GetMyRank())
       dserror("Only row owner of element is allowed to change its status");
@@ -3139,7 +3139,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CreateNewDoubleBondedCros
     // add to my double bonds
     doublebondcl_[linkelepairptr->Id()] = linkelepairptr;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety check
     DRT::Node* crosslinker_i = BinDiscretPtr()->gNode(linkelepairptr->Id());
 
@@ -3406,7 +3406,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateBeamBindingStatusAf
     const int bspotlocn = iter->GetEleToUpdate().second;
     const int colelelid = Discret().ElementColMap()->LID(elegidtoupdate);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety check
     if (Discret().ElementRowMap()->LID(elegidtoupdate) < 0)
       dserror("element with gid %i not owned by proc %i", elegidtoupdate, GState().GetMyRank());
@@ -3446,7 +3446,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyDoubleBondsAfterR
     int owner = doublebondedcl_i->Owner();
     if (owner != GState().GetMyRank())
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not doublebondcl_.count(clgid))
         dserror("willing to delete double bond %i which is not existing", clgid);
 #endif
@@ -3541,7 +3541,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnbindCrosslinkerInBinsAn
       BEAMINTERACTION::DATA::CrosslinkerData* cldata_i =
           crosslinker_data_[crosslinker_i->LID()].get();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // safety checks
       if (crosslinker_i->Owner() != GState().GetMyRank())
         dserror(
@@ -3696,7 +3696,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DissolveBond(DRT::Node* l
 {
   CheckInitSetup();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // safety check
   if (numbondsold < 1) dserror("dissolution of free crosslinker does not make any sense");
 #endif
@@ -3743,7 +3743,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DissolveBond(DRT::Node* l
 
     SetPositionOfNewlySingleBondedCrosslinker(crosslinker, cldata, stayoccpotid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // safety check
     if (not doublebondcl_.count(linker->Id()))
       dserror("crosslinker %i with %i bonds is not in double bonded map of rank %i", linker->Id(),
@@ -3831,7 +3831,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DecideBindingInParallel(
       // without changes
       decidedbonds[cliter->second[0]->GetRequestProc()].push_back(cliter->second[0]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (cliter->second[0]->GetPermission() != 1)
         dserror(
             " something during communication went wrong, default true permission "
@@ -3886,7 +3886,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DecideBindingInParallel(
           // permission for this random proc
           decidedbonds[(*iter)->GetRequestProc()].push_back(*iter);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           if ((*iter)->GetPermission() != 1)
             dserror(
                 " something during communication went wrong, default true permission "
@@ -3984,7 +3984,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBeamLinkAfterR
           Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
       if (beamtobeamlink == Teuchos::null) dserror("Received object is not a beam to beam linkage");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // some safety checks
       if (BinDiscretPtr()->gNode(beamtobeamlink->Id())->Owner() != GStatePtr()->GetMyRank())
         dserror(

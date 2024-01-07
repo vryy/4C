@@ -159,7 +159,7 @@ namespace
   static inline void ReinitializeState(
       MIXTURE::FullConstrainedMixtureFiber<Number>& fiber, const Number lambda_f, const double time)
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     fiber.state_is_set_ = true;
 #endif
     fiber.current_state_.lambda_f = lambda_f;
@@ -749,7 +749,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
   history_.emplace_back();
   history_.back().timesteps.emplace_back(std::move(mass_increment));
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   state_is_set_ = false;
 #endif
 }
@@ -923,7 +923,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
   }
 
   current_time_shift_ = 0.0;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   state_is_set_ = false;
 #endif
 }

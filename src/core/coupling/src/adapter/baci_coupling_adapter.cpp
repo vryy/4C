@@ -659,7 +659,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::Coupling::SlaveToMaster(
 void CORE::ADAPTER::Coupling::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not mv->Map().PointSameAs(*masterdofmap_)) dserror("master dof map vector expected");
   if (not sv->Map().PointSameAs(*slavedofmap_)) dserror("slave dof map vector expected");
   if (sv->NumVectors() != mv->NumVectors())
@@ -691,7 +691,7 @@ void CORE::ADAPTER::Coupling::MasterToSlave(const Epetra_IntVector& mv, Epetra_I
 void CORE::ADAPTER::Coupling::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not mv->Map().PointSameAs(*masterdofmap_)) dserror("master dof map vector expected");
   if (not sv->Map().PointSameAs(*slavedofmap_))
   {
@@ -818,7 +818,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::MasterToPermMa
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::SlaveToPermSlave(
     const CORE::LINALG::SparseMatrix& sm) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not sm.RowMap().PointSameAs(*slavedofmap_)) dserror("slave dof map vector expected");
   if (not sm.Filled()) dserror("matrix must be filled");
 #endif

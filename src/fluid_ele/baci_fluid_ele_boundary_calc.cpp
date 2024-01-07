@@ -941,7 +941,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
     // will contribute to the interpolated mean curvature value.
     int contr_elements = 0;
     DRT::Node* thisNode = (ele->Nodes())[inode];
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (thisNode == nullptr) dserror("No node!\n");
 #endif
     int NumElement = thisNode->NumElement();
@@ -984,7 +984,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
         }
       }
     }
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (!contr_elements) dserror("No contributing elements found!\n");
 #endif
 

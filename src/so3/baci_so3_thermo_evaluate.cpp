@@ -2104,7 +2104,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Materialize(
     Teuchos::ParameterList& params                  // parameter
 )
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!couplstress) dserror("No stress vector supplied");
 #endif
 

@@ -662,7 +662,7 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(double val, int r
 inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(
     double val, int lrow, int rgid, int rblock, int lcol, int cgid, int cblock)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (rblock == -1) dserror("no block entry found for row gid=%d", rgid);
 #endif
 

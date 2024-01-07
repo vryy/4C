@@ -504,7 +504,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::DoImmersedDirichletCond(
   {
     int gid = dbcmap->GID(i);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     int err = -2;
     int lid = dirichvals->Map().LID(gid);
     err = statevector->ReplaceGlobalValue(gid, 0, myvals[lid]);
@@ -671,7 +671,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     boundingboxcenter(1) = structBox(1, 0) + (structBox(1, 1) - structBox(1, 0)) * 0.5;
     boundingboxcenter(2) = structBox(2, 0) + (structBox(2, 1) - structBox(2, 0)) * 0.5;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     std::cout << "Bounding Box of Structure: " << structBox << " on PROC " << myrank_ << std::endl;
     std::cout << "Bounding Box Center of Structure: " << boundingboxcenter << " on PROC " << myrank_
               << std::endl;

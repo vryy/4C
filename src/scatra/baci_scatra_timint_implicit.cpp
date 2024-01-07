@@ -1259,7 +1259,7 @@ void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(Teuchos::RCP<const Epetra_Ve
 {
   if (wss == Teuchos::null) dserror("WSS state is Teuchos::null");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // We rely on the fact, that the nodal distribution of both fields is the same.
   // Although Scatra discretization was constructed as a clone of the fluid or
   // structure mesh, respectively, at the beginning, the nodal distribution may
@@ -1287,7 +1287,7 @@ void SCATRA::ScaTraTimIntImpl::SetPressureField(Teuchos::RCP<const Epetra_Vector
 {
   if (pressure == Teuchos::null) dserror("Pressure state is Teuchos::null");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // We rely on the fact, that the nodal distribution of both fields is the same.
   // Although Scatra discretization was constructed as a clone of the fluid or
   // structure mesh, respectively, at the beginning, the nodal distribution may
@@ -1308,7 +1308,7 @@ void SCATRA::ScaTraTimIntImpl::SetMembraneConcentration(
 {
   if (MembraneConc == Teuchos::null) dserror("MeanConc state is Teuchos::null");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // We rely on the fact, that the nodal distribution of both fields is the same.
   // Although Scatra discretization was constructed as a clone of the fluid or
   // structure mesh, respectively, at the beginning, the nodal distribution may
@@ -1331,7 +1331,7 @@ void SCATRA::ScaTraTimIntImpl::SetMeanConcentration(Teuchos::RCP<const Epetra_Ve
 {
   if (MeanConc == Teuchos::null) dserror("MeanConc state is Teuchos::null");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // We rely on the fact, that the nodal distribution of both fields is the same.
   // Although Scatra discretization was constructed as a clone of the fluid or
   // structure mesh, respectively, at the beginning, the nodal distribution may
@@ -3386,7 +3386,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
           std::copy(nodedofs.begin(), nodedofs.end(), std::inserter(dofs, dofs.end()));
         }
       }
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       std::unordered_set<int> dof_set(dofs.begin(), dofs.end());
       dsassert(dof_set.size() == dofs.size(), "The dofs are not unique");
 #endif

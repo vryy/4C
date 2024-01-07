@@ -665,7 +665,7 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
 void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool assigndegreesoffreedom,
     bool initelements, bool doboundaryconditions, bool checkghosting)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (Filled())
   {
     const Epetra_Map* oldelecolmap = ElementColMap();

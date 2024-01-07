@@ -1065,7 +1065,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
 {
   if (moEle.MoData().ParentTemp().size() == 0)
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     std::cout << "***************************************************************\n"
                  "WARNING: we are skipping the evaluation of the cauchy heat flux\n"
                  "         because parent temperatures are not set. This can\n"

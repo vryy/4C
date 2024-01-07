@@ -106,7 +106,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::BlockSparseMatrixBase::Me
 void CORE::LINALG::BlockSparseMatrixBase::Assign(
     int r, int c, DataAccess access, const SparseMatrix& mat)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not Matrix(r, c).RowMap().SameAs(mat.RowMap())) dserror("cannot assign nonmatching matrices");
 #endif
   Matrix(r, c).Assign(access, mat);

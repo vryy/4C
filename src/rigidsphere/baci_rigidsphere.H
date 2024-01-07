@@ -395,7 +395,7 @@ namespace DRT
        *  \date 06/17 */
       void DissolveBond(int id)
       {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (mybondstobeams_.find(id) == mybondstobeams_.end())
           dserror(" You want to dissolve not existing bond. Something went wrong.");
 #endif

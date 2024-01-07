@@ -1505,7 +1505,7 @@ void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
       bindis_, bincolmap, assigndegreesoffreedom, false, true);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether each proc has only particles that are within bins on this proc
   for (int k = 0; k < bindis_->NumMyColElements(); ++k)
   {
@@ -1608,7 +1608,7 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
     CORE::LINALG::Export(*old, *disnp);
   }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // print distribution after standard ghosting
   // some output after standard ghosting
   if (myrank_ == 0) std::cout << "parallel distribution with standard ghosting" << std::endl;

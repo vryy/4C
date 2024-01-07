@@ -73,7 +73,7 @@ void CORE::LINALG::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map&
 /*----------------------------------------------------------------------*/
 void CORE::LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
 #endif
 
@@ -93,7 +93,7 @@ void CORE::LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& e
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
@@ -122,7 +122,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap, con
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;

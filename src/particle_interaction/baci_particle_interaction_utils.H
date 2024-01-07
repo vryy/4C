@@ -190,7 +190,7 @@ namespace PARTICLEINTERACTION
     template <class T>
     inline void UnitSurfaceTangents(const T* n, T* t1, T* t2)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (std::abs(1.0 - VecNormTwo(n)) > 1.0e-14)
         dserror("given unit surface normal not normalized!");
 #endif
@@ -229,7 +229,7 @@ namespace PARTICLEINTERACTION
      */
     inline double LinTrans(const double x, const double x1, const double x2)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (not(std::abs(x2 - x1) > 1.0e-14)) dserror("danger of division by zero!");
 #endif
 
