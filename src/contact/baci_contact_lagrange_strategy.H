@@ -21,11 +21,11 @@ namespace CONTACT
 {
   /*! \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
-   This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstractStrategy.
+   This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   For a more general documentation of the involved functions refer to AbstractStrategy.
   */
 
-  class CoLagrangeStrategy : public CoAbstractStrategy
+  class LagrangeStrategy : public AbstractStrategy
   {
    public:
     /*!
@@ -43,9 +43,9 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    CoLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    LagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
         Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof);
 
 
@@ -462,10 +462,10 @@ namespace CONTACT
 
    protected:
     //! derived
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() override { return interface_; }
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() override { return interface_; }
 
     //! derived
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const override
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override
     {
       return interface_;
     }
@@ -524,8 +524,8 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     // don't want = operator and cctor
-    CoLagrangeStrategy operator=(const CoLagrangeStrategy& old) = delete;
-    CoLagrangeStrategy(const CoLagrangeStrategy& old) = delete;
+    LagrangeStrategy operator=(const LagrangeStrategy& old) = delete;
+    LagrangeStrategy(const LagrangeStrategy& old) = delete;
 
     // Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
     virtual void SaveCouplingMatrices(Teuchos::RCP<CORE::LINALG::SparseMatrix> dhat,
@@ -535,7 +535,7 @@ namespace CONTACT
       return;
     }
 
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface_;
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interface_;
 
     bool evalForceCalled_;  //< flag for evaluate force call
     bool activesetssconv_;  //< convergence flag for semi-smooth active set search
@@ -595,7 +595,7 @@ namespace CONTACT
     Teuchos::RCP<CORE::LINALG::SparseMatrix>
         nonsmooth_Penalty_stiff_;  //< tangent to penalty forces of non-smooth contact
 
-  };  // class CoLagrangeStrategy
+  };  // class LagrangeStrategy
 }  // namespace CONTACT
 
 

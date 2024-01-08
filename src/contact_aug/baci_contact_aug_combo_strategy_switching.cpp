@@ -61,7 +61,7 @@ void CONTACT::AUG::ComboStrategy::Switching::GetStrategyTypes(
 {
   for (plain_strategy_set::const_iterator cit = strategies.begin(); cit != strategies.end(); ++cit)
   {
-    const CONTACT::CoAbstractStrategy& s = (**cit);
+    const CONTACT::AbstractStrategy& s = (**cit);
 
     switch (s.Type())
     {
@@ -361,7 +361,7 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetGlobalSlMaActiveFor
 
   Teuchos::RCP<Epetra_Map> imap = Teuchos::null;
 
-  for (const Teuchos::RCP<CONTACT::CoInterface>& cit : combo_.Get().Interfaces())
+  for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.Get().Interfaces())
   {
     const CONTACT::AUG::Interface& interface = dynamic_cast<AUG::Interface&>(*cit);
 
@@ -436,7 +436,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckPenetration(std::
 double CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetPenetrationBound() const
 {
   double penbound = 1.0e12;
-  for (const Teuchos::RCP<CONTACT::CoInterface>& cit : combo_.Interfaces())
+  for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.Interfaces())
   {
     const CONTACT::AUG::Interface& interface = dynamic_cast<CONTACT::AUG::Interface&>(*cit);
     penbound = std::min(penbound, interface.PenetrationBound());

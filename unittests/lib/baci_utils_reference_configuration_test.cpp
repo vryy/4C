@@ -47,8 +47,8 @@ namespace
       testdis_->AddElement(testhex8ele);
 
       // create corresponding quad4 surface contact element and store it
-      Teuchos::RCP<CONTACT::CoElement> testcontactquad4ele =
-          Teuchos::rcp(new CONTACT::CoElement(testhex8ele->Id() + 1, testhex8ele->Owner(),
+      Teuchos::RCP<CONTACT::Element> testcontactquad4ele =
+          Teuchos::rcp(new CONTACT::Element(testhex8ele->Id() + 1, testhex8ele->Owner(),
               testhex8ele->Shape(), testhex8ele->NumNode(), testhex8ele->NodeIds(), false, false));
       testdis_->AddElement(testcontactquad4ele);
 
@@ -66,8 +66,8 @@ namespace
       testdis_->AddElement(testtet4ele);
 
       // create corresponding tri3 surface contact element and store it
-      Teuchos::RCP<CONTACT::CoElement> testcontacttri3ele =
-          Teuchos::rcp(new CONTACT::CoElement(testtet4ele->Id() + 1, testtet4ele->Owner(),
+      Teuchos::RCP<CONTACT::Element> testcontacttri3ele =
+          Teuchos::rcp(new CONTACT::Element(testtet4ele->Id() + 1, testtet4ele->Owner(),
               testtet4ele->Shape(), testtet4ele->NumNode(), testtet4ele->NodeIds(), false, false));
       testdis_->AddElement(testcontacttri3ele);
       testdis_->FillComplete(false, false, false);

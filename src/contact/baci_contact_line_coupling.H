@@ -26,7 +26,7 @@ namespace MORTAR
 
 namespace CONTACT
 {
-  class CoElement;
+  class Element;
 
   /*----------------------------------------------------------------------*
    |  LTS / STL coupling                                       farah 07/16|
@@ -50,8 +50,8 @@ namespace CONTACT
 
      */
     LineToSurfaceCoupling3d(DRT::Discretization& idiscret, int dim, Teuchos::ParameterList& params,
-        CoElement& pEle, Teuchos::RCP<MORTAR::MortarElement>& lEle,
-        std::vector<CoElement*> surfEles, LineToSurfaceCoupling3d::intType itype);
+        Element& pEle, Teuchos::RCP<MORTAR::MortarElement>& lEle, std::vector<Element*> surfEles,
+        LineToSurfaceCoupling3d::intType itype);
 
     /*!
      \brief Destructor
@@ -172,7 +172,7 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual CoElement& ParentElement() const { return pEle_; }
+    virtual Element& ParentElement() const { return pEle_; }
 
     /*!
      \brief Get coupling slave element
@@ -184,13 +184,13 @@ namespace CONTACT
      \brief Get coupling master elements
 
      */
-    virtual std::vector<CoElement*> SurfaceElements() const { return surfEles_; }
+    virtual std::vector<Element*> SurfaceElements() const { return surfEles_; }
 
     /*!
      \brief Get coupling master elements
 
      */
-    virtual CoElement& SurfaceElement() const
+    virtual Element& SurfaceElement() const
     {
       if (currEle_ < 0 or currEle_ > ((int)surfEles_.size() - 1)) dserror("currEle invalid!");
 
@@ -359,9 +359,9 @@ namespace CONTACT
     DRT::Discretization& idiscret_;  //< discretization of the contact interface
     int dim_;                        //< problem dimension (here: 3D)
 
-    CoElement& pEle_;                            //< parent element connected to line element
+    Element& pEle_;                              //< parent element connected to line element
     Teuchos::RCP<MORTAR::MortarElement>& lEle_;  //< line element to perform coupling for
-    std::vector<CoElement*> surfEles_;           //< surface elements to perform coupling for
+    std::vector<Element*> surfEles_;             //< surface elements to perform coupling for
     int currEle_;                                //< number of current element
 
     Teuchos::ParameterList& imortar_;        //< containing contact input parameters

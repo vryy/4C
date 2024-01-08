@@ -22,23 +22,23 @@ BACI_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  class CoElement;
+  class Element;
 
   /*!
    \brief Contact solving strategy with Nitsche's method.
 
-   This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
 
    */
-  class CoNitscheStrategyFsi : public CoNitscheStrategy
+  class NitscheStrategyFsi : public NitscheStrategy
   {
    public:
     //! Standard constructor
-    CoNitscheStrategyFsi(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface,
+    NitscheStrategyFsi(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
         int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(
+        : NitscheStrategy(
               DofRowMap, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
           weighting_(
@@ -46,23 +46,23 @@ namespace CONTACT
     {
       if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-        dserror("CoNitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
+        dserror("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
 
     //! Shared data constructor
-    CoNitscheStrategyFsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategyFsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
-              comm, alphaf, maxdof),
+        : NitscheStrategy(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim, comm,
+              alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
           weighting_(
               INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params, "NITSCHE_WEIGHTING"))
     {
       if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-        dserror("CoNitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
+        dserror("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
     //! Evaluate and apply RHS and Stiffness Matrix for Contact
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
@@ -72,9 +72,9 @@ namespace CONTACT
     //! Set Contact State and update search tree and normals
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
-    //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
+    //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
-    bool CheckNitscheContactState(CONTACT::CoElement* cele,
+    bool CheckNitscheContactState(CONTACT::Element* cele,
         const CORE::LINALG::Matrix<2, 1>& xsi,  ///< local coord on the ele element
         const double& full_fsi_traction,        ///< stressfluid + penalty
         double& gap                             ///< gap
@@ -93,12 +93,12 @@ namespace CONTACT
 
   namespace UTILS
   {
-    //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
+    //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
-    bool CheckNitscheContactState(CONTACT::CoInterface& contactinterface,  ///< Contact interface
+    bool CheckNitscheContactState(CONTACT::Interface& contactinterface,  ///< Contact interface
         const double& pen_n,                         ///< Nitsche normal penalty parameter
         INPAR::CONTACT::NitscheWeighting weighting,  ///< Nitsche interface stress weighting
-        CONTACT::CoElement* cele,                    ///< the contact element
+        CONTACT::Element* cele,                      ///< the contact element
         const CORE::LINALG::Matrix<2, 1>& xsi,       ///< local coord on the ele element
         const double& full_fsi_traction,             ///< stressfluid + penalty
         double& gap                                  ///< gap

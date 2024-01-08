@@ -34,11 +34,11 @@ namespace CONTACT
      *  switching strategy, which can be chosen by the user.
      *
      *  \author hiermeier */
-    class ComboStrategy : public CoAbstractStrategy
+    class ComboStrategy : public AbstractStrategy
     {
      public:
       /// create a new combo strategy object
-      static Teuchos::RCP<CoAbstractStrategy> Create(
+      static Teuchos::RCP<AbstractStrategy> Create(
           const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data,
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map,
           const Teuchos::ParameterList& params, const plain_interface_set& ref_interfaces,
@@ -51,7 +51,7 @@ namespace CONTACT
           const plain_interface_set& ref_interfaces, plain_interface_set& strat_interfaces);
 
       /// create the linear solver objects for the different combined contact strategies
-      static void CreateStrategyLinearSolvers(const CONTACT::CoAbstractStrategy& strategy,
+      static void CreateStrategyLinearSolvers(const CONTACT::AbstractStrategy& strategy,
           const std::string& lin_solver_id_str, const Teuchos::ParameterList& params,
           CONTACT::ParamsInterface* cparams_interface, plain_lin_solver_set& strat_lin_solvers);
 
@@ -66,7 +66,7 @@ namespace CONTACT
       /* Hide the public derived methods as well, since we do not want to access
        * any of these methods directly.                         hiermeier 03/17 */
      protected:
-      /// @name Derived public methods from the base class ( a.k.a. CoAbstractStrategy )
+      /// @name Derived public methods from the base class ( a.k.a. AbstractStrategy )
       /// @{
 
       /// return the type of currently active wrapped contact strategy
@@ -197,14 +197,14 @@ namespace CONTACT
       /// @}
 
      protected:
-      /// @name Derived protected methods from the base class ( a.k.a. CoAbstractStrategy )
+      /// @name Derived protected methods from the base class ( a.k.a. AbstractStrategy )
       /// @{
 
       /// Get the set of currently active interfaces
-      std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() override;
+      std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() override;
 
       /// Get the set of currently active interfaces
-      const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const override;
+      const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override;
 
       /// function wrapper
       void ComputeContactStresses() final;

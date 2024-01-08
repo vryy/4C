@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  class CoAbstractStrategy;
+  class AbstractStrategy;
 
   class NoxInterface : public NOX::NLN::CONSTRAINT::Interface::Required
   {
@@ -31,7 +31,7 @@ namespace CONTACT
     NoxInterface();
 
     /// initialize important member variables
-    void Init(const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr);
+    void Init(const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -105,7 +105,7 @@ namespace CONTACT
     };
 
     /// Access the underlying strategy
-    const CONTACT::CoAbstractStrategy& Strategy() const
+    const CONTACT::AbstractStrategy& Strategy() const
     {
       CheckInit();
       return *strategy_ptr_;
@@ -119,7 +119,7 @@ namespace CONTACT
     bool issetup_;
 
    private:
-    Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr_;
+    Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr_;
 
     std::vector<Teuchos::RCP<Epetra_Map>> cycling_maps_;
   };

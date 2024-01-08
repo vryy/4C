@@ -18,7 +18,7 @@ BACI_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  class CoNitscheStrategySsi;
+  class NitscheStrategySsi;
 }
 
 namespace CORE::LINALG
@@ -46,8 +46,7 @@ namespace SSI
     virtual ~ContactStrategyBase() = default;
 
     //! constructor
-    explicit ContactStrategyBase(
-        Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
+    explicit ContactStrategyBase(Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     //! apply contact contributions to the scatra residual
@@ -67,7 +66,7 @@ namespace SSI
 
    protected:
     //! return contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::CoNitscheStrategySsi> CoNitscheStrategySsi() const
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> NitscheStrategySsi() const
     {
       return contact_strategy_nitsche_;
     }
@@ -77,7 +76,7 @@ namespace SSI
 
    private:
     //! store contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_strategy_nitsche_;
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps_;
@@ -89,7 +88,7 @@ namespace SSI
    public:
     //! constructor
     explicit ContactStrategySparse(
-        Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
+        Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     void ApplyContactToScatraScatra(
@@ -108,7 +107,7 @@ namespace SSI
    public:
     //! constructor
     explicit ContactStrategyBlock(
-        Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
+        Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     void ApplyContactToScatraScatra(
@@ -123,7 +122,7 @@ namespace SSI
 
   //! build specific contact strategy
   Teuchos::RCP<SSI::ContactStrategyBase> BuildContactStrategy(
-      Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
+      Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
       Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, CORE::LINALG::MatrixType matrixtype_scatra);
 }  // namespace SSI
 BACI_NAMESPACE_CLOSE

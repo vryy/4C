@@ -29,19 +29,19 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            seitz 08/15|
  *----------------------------------------------------------------------*/
-CONTACT::CoTSIInterface::CoTSIInterface(
+CONTACT::TSIInterface::TSIInterface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact)
-    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
+    : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
   return;
 }
-void CONTACT::CoTSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
+void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
     CORE::LINALG::SparseMatrix& linstickDISglobal, CORE::LINALG::SparseMatrix& linstickTEMPglobal,
     Epetra_Vector& linstickRHSglobal)
 {
-  CONTACT::CoInterface::AssembleLinStick(linstickLMglobal, linstickDISglobal, linstickRHSglobal);
+  CONTACT::Interface::AssembleLinStick(linstickLMglobal, linstickDISglobal, linstickRHSglobal);
 
 #ifdef CONSISTENTSTICK
 
@@ -91,9 +91,9 @@ void CONTACT::CoTSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linst
     const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
     const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = n.Dot(lm);
-    const double wgap = cnode->CoData().Getg();
-    CORE::LINALG::Matrix<3, 1> txi(cnode->CoData().txi(), true);
-    CORE::LINALG::Matrix<3, 1> teta(cnode->CoData().teta(), true);
+    const double wgap = cnode->Data().Getg();
+    CORE::LINALG::Matrix<3, 1> txi(cnode->Data().txi(), true);
+    CORE::LINALG::Matrix<3, 1> teta(cnode->Data().teta(), true);
     CORE::LINALG::Matrix<3, 1> jump(cnode->FriData().jump(), true);
     double jump_txi = jump.Dot(txi);
     double jump_teta = jump.Dot(teta);
@@ -155,11 +155,11 @@ void CONTACT::CoTSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linst
 
   return;
 }
-void CONTACT::CoTSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
+void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
     CORE::LINALG::SparseMatrix& linslipDISglobal, CORE::LINALG::SparseMatrix& linslipTEMPglobal,
     Epetra_Vector& linslipRHSglobal)
 {
-  CONTACT::CoInterface::AssembleLinSlip(linslipLMglobal, linslipDISglobal, linslipRHSglobal);
+  CONTACT::Interface::AssembleLinSlip(linslipLMglobal, linslipDISglobal, linslipRHSglobal);
 
   // do the additional thermal linearizations
   // be aware, that there is another contribution to the linDIS part, since the temperature used
@@ -214,9 +214,9 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linsli
     const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
     const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = n.Dot(lm);
-    const double wgap = cnode->CoData().Getg();
-    CORE::LINALG::Matrix<3, 1> txi(cnode->CoData().txi(), true);
-    CORE::LINALG::Matrix<3, 1> teta(cnode->CoData().teta(), true);
+    const double wgap = cnode->Data().Getg();
+    CORE::LINALG::Matrix<3, 1> txi(cnode->Data().txi(), true);
+    CORE::LINALG::Matrix<3, 1> teta(cnode->Data().teta(), true);
     CORE::LINALG::Matrix<3, 1> jump(cnode->FriData().jump(), true);
     const double jump_txi = jump.Dot(txi);
     const double jump_teta = jump.Dot(teta);
@@ -282,7 +282,7 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linsli
 }
 
 
-void CONTACT::CoTSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& linConductDISglobal,
+void CONTACT::TSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& linConductDISglobal,
     CORE::LINALG::SparseMatrix& linConductTEMPglobal,
     CORE::LINALG::SparseMatrix& linConductThermoLMglobal,
     CORE::LINALG::SparseMatrix& linConductContactLMglobal)
@@ -309,7 +309,7 @@ void CONTACT::CoTSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& lin
 }
 
 
-void CONTACT::CoTSIInterface::AssembleDualMassLumped(
+void CONTACT::TSIInterface::AssembleDualMassLumped(
     CORE::LINALG::SparseMatrix& dualMassGlobal, CORE::LINALG::SparseMatrix& linDualMassGlobal)
 {
   // loop over proc's slave nodes of the interface for assembly
@@ -319,13 +319,13 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* conode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* conode = dynamic_cast<CONTACT::Node*>(node);
 
     if (conode->Owner() != Comm().MyPID())
       dserror("AssembleDualMass: Node ownership inconsistency!");
 
-    double thermo_lm = conode->CoTSIData().ThermoLM();
-    std::map<int, std::map<int, double>>& derivDualMass = conode->CoData().GetDerivD();
+    double thermo_lm = conode->TSIData().ThermoLM();
+    std::map<int, std::map<int, double>>& derivDualMass = conode->Data().GetDerivD();
 
     if (INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD") !=
         INPAR::MORTAR::lagmult_const)
@@ -340,7 +340,7 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
         {
           DRT::Node* knode = Discret().gNode(colcurr->first);
           if (!knode) dserror("node not found");
-          CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+          Node* kcnode = dynamic_cast<Node*>(knode);
           if (!kcnode) dserror("node not found");
 
           // create the mass matrix
@@ -354,7 +354,7 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
         int sgid = a->first;
         DRT::Node* snode = idiscret_->gNode(sgid);
         if (!snode) dserror("Cannot find node with gid %", sgid);
-        CoNode* csnode = dynamic_cast<CoNode*>(snode);
+        Node* csnode = dynamic_cast<Node*>(snode);
 
         for (std::map<int, double>::const_iterator b = a->second.begin(); b != a->second.end(); ++b)
           // val               row                col
@@ -369,7 +369,7 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
             "some inconsistency: for lagmult_const every slave node may only have one element "
             "attached (it's the center-node!)");
 
-      CONTACT::CoElement* coele = dynamic_cast<CONTACT::CoElement*>(conode->Elements()[0]);
+      CONTACT::Element* coele = dynamic_cast<CONTACT::Element*>(conode->Elements()[0]);
       if (!coele) dserror("this should be a contact element");
 
       CORE::GEN::pairedvector<int, double> derivArea(coele->NumNode() * Dim());
@@ -385,7 +385,7 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
   return;
 }
 
-void CONTACT::CoTSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
+void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
     CORE::LINALG::SparseMatrix* linM_X, const double fac, const LinDM_X_mode mode,
     const Teuchos::RCP<Epetra_Map> node_rowmap)
 {
@@ -403,18 +403,18 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X
     int gid = node_rowmap->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     // Mortar matrix D and M derivatives
-    std::map<int, std::map<int, double>>& dderiv = cnode->CoData().GetDerivD();
-    std::map<int, std::map<int, double>>& mderiv = cnode->CoData().GetDerivM();
+    std::map<int, std::map<int, double>>& dderiv = cnode->Data().GetDerivD();
+    std::map<int, std::map<int, double>>& mderiv = cnode->Data().GetDerivM();
 
     // current Lagrange multipliers
     double lm = 0.;
     switch (mode)
     {
       case LinDM_ThermoLM:
-        lm = cnode->CoTSIData().ThermoLM();
+        lm = cnode->TSIData().ThermoLM();
         break;
       case LinDM_Diss:
       {
@@ -465,10 +465,10 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X
 
         DRT::Node* snode = idiscret_->gNode(sgid);
         if (!snode) dserror("Cannot find node with gid %", sgid);
-        CoNode* csnode = dynamic_cast<CoNode*>(snode);
+        Node* csnode = dynamic_cast<Node*>(snode);
 
         // Mortar matrix D derivatives
-        std::map<int, double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+        std::map<int, double>& thisdderiv = cnode->Data().GetDerivD()[sgid];
         int mapsize = (int)(thisdderiv.size());
 
         // inner product D_{jk,c} * z_j for index j
@@ -510,10 +510,10 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X
 
         DRT::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) dserror("Cannot find node with gid %", mgid);
-        CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
+        Node* cmnode = dynamic_cast<Node*>(mnode);
 
         // Mortar matrix M derivatives
-        std::map<int, double>& thismderiv = cnode->CoData().GetDerivM()[mgid];
+        std::map<int, double>& thismderiv = cnode->Data().GetDerivM()[mgid];
         int mapsize = (int)(thismderiv.size());
 
         int row = cmnode->Dofs()[0];
@@ -547,7 +547,7 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X
   return;
 }
 
-void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_LinDissDISP,
+void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_LinDissDISP,
     CORE::LINALG::SparseMatrix* m_LinDissDISP, CORE::LINALG::SparseMatrix* d_LinDissContactLM,
     CORE::LINALG::SparseMatrix* m_LinDissContactLM, const double fac)
 {
@@ -570,7 +570,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
     int gid = activenodes_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
     FriNode* fnode = dynamic_cast<FriNode*>(cnode);
     // if this is not a friction node, there is no dissipation so go to the next one
     if (fnode == nullptr) continue;
@@ -586,7 +586,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
     // get D entry of this node
     // remember: D is diagonal
     int id = cnode->Id();
-    const std::map<int, double>& derivD = cnode->CoData().GetDerivD(id);
+    const std::map<int, double>& derivD = cnode->Data().GetDerivD(id);
     const double dval = cnode->MoData().GetD()[cnode->Id()];
 
     // get nodal values
@@ -605,7 +605,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
     {
       // get nodal jump and deriv
       const std::vector<std::map<int, double>>& derivJump = fnode->FriData().GetDerivJump();
-      const std::vector<CORE::GEN::pairedvector<int, double>>& derivN = cnode->CoData().GetDerivN();
+      const std::vector<CORE::GEN::pairedvector<int, double>>& derivN = cnode->Data().GetDerivN();
 
       // calculate derivative of Dissipation *******************************
       std::map<int, double> derivDiss;
@@ -628,7 +628,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
           {
             DRT::Node* knode = Discret().gNode(k->first);
             if (!knode) dserror("node not found");
-            CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+            CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
             for (_cim currDeriv = derivDiss.begin(); currDeriv != derivDiss.end(); ++currDeriv)
               d_LinDissDISP->FEAssemble(
                   fac * k->second * currDeriv->second, kcnode->Dofs()[0], currDeriv->first);
@@ -640,7 +640,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
           {
             DRT::Node* knode = Discret().gNode(k->first);
             if (!knode) dserror("node not found");
-            CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+            CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
             for (_cim currDeriv = derivDiss.begin(); currDeriv != derivDiss.end(); ++currDeriv)
               m_LinDissDISP->FEAssemble(
                   fac * k->second * currDeriv->second, kcnode->Dofs()[0], currDeriv->first);
@@ -656,7 +656,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
         {
           DRT::Node* knode = Discret().gNode(k->first);
           if (!knode) dserror("node not found");
-          CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+          CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
           for (int d = 0; d < 3; ++d)
             d_LinDissContactLM->FEAssemble(
                 -fac * k->second * jump_tan(d) / (dt * dval), kcnode->Dofs()[0], cnode->Dofs()[d]);
@@ -669,7 +669,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
         {
           DRT::Node* knode = Discret().gNode(k->first);
           if (!knode) dserror("node not found");
-          CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+          CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
           for (int d = 0; d < 3; ++d)
             m_LinDissContactLM->FEAssemble(
                 -fac * k->second * jump_tan(d) / (dt * dval), kcnode->Dofs()[0], cnode->Dofs()[d]);
@@ -677,7 +677,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
   }  // loop over all active LM slave nodes (row map)
 }
 
-void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
+void CONTACT::TSIInterface::AssembleLinLMnDM_Temp(
     const double fac, CORE::LINALG::SparseMatrix* lin_disp, CORE::LINALG::SparseMatrix* lin_lm)
 {
   // get out if there's nothing to do
@@ -693,26 +693,26 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
     int gid = activenodes_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
     const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = lm.Dot(n);
 
-    for (_cimm k = cnode->CoData().GetDerivD().begin(); k != cnode->CoData().GetDerivD().end(); ++k)
+    for (_cimm k = cnode->Data().GetDerivD().begin(); k != cnode->Data().GetDerivD().end(); ++k)
     {
       DRT::Node* knode = Discret().gNode(k->first);
       if (!knode) dserror("Cannot find node with gid %", gid);
-      double temp_k = dynamic_cast<CoNode*>(knode)->CoTSIData().Temp();
+      double temp_k = dynamic_cast<Node*>(knode)->TSIData().Temp();
       for (_cim l = k->second.begin(); l != k->second.end(); ++l)
         if (abs(l->second) > 1.e-12)
           lin_disp->FEAssemble(fac * lm_n * temp_k * l->second, cnode->Dofs()[0], l->first);
     }
-    for (_cimm k = cnode->CoData().GetDerivM().begin(); k != cnode->CoData().GetDerivM().end(); ++k)
+    for (_cimm k = cnode->Data().GetDerivM().begin(); k != cnode->Data().GetDerivM().end(); ++k)
     {
       DRT::Node* knode = Discret().gNode(k->first);
       if (!knode) dserror("Cannot find node with gid %", gid);
-      double temp_k = dynamic_cast<CoNode*>(knode)->CoTSIData().Temp();
+      double temp_k = dynamic_cast<Node*>(knode)->TSIData().Temp();
       for (_cim l = k->second.begin(); l != k->second.end(); ++l)
         if (abs(l->second) > 1.e-12)
           lin_disp->FEAssemble(-fac * lm_n * temp_k * l->second, cnode->Dofs()[0], l->first);
@@ -722,11 +722,11 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
     {
       DRT::Node* knode = Discret().gNode(k->first);
       if (!knode) dserror("Cannot find node with gid %", gid);
-      CoNode* cnodek = dynamic_cast<CoNode*>(knode);
-      double temp_k = cnodek->CoTSIData().Temp();
+      Node* cnodek = dynamic_cast<Node*>(knode);
+      double temp_k = cnodek->TSIData().Temp();
       for (int d = 0; d < 3; ++d)
-        for (_cip l = cnode->CoData().GetDerivN()[d].begin();
-             l != cnode->CoData().GetDerivN()[d].end(); ++l)
+        for (_cip l = cnode->Data().GetDerivN()[d].begin(); l != cnode->Data().GetDerivN()[d].end();
+             ++l)
           if (abs(l->second) > 1.e-12)
             lin_disp->FEAssemble(
                 lm(d) * k->second * l->second * fac * temp_k, cnode->Dofs()[0], l->first);
@@ -739,11 +739,11 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
     {
       DRT::Node* knode = Discret().gNode(k->first);
       if (!knode) dserror("Cannot find node with gid %", gid);
-      CoNode* cnodek = dynamic_cast<CoNode*>(knode);
-      double temp_k = cnodek->CoTSIData().Temp();
+      Node* cnodek = dynamic_cast<Node*>(knode);
+      double temp_k = cnodek->TSIData().Temp();
       for (int d = 0; d < 3; ++d)
-        for (_cip l = cnode->CoData().GetDerivN()[d].begin();
-             l != cnode->CoData().GetDerivN()[d].end(); ++l)
+        for (_cip l = cnode->Data().GetDerivN()[d].begin(); l != cnode->Data().GetDerivN()[d].end();
+             ++l)
           if (abs(l->second) > 1.e-12)
             lin_disp->FEAssemble(
                 -lm(d) * k->second * l->second * fac * temp_k, cnode->Dofs()[0], l->first);
@@ -756,7 +756,7 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
   return;
 }
 
-void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::SparseMatrix* DM_LMn)
+void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::SparseMatrix* DM_LMn)
 {
   // get out if there's nothing to do
   if (DM_LMn == nullptr) dserror("called to assemble something but didn't provide a matrix");
@@ -770,7 +770,7 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spa
     int gid = activenodes_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
     const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
@@ -781,7 +781,7 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spa
       {
         DRT::Node* knode = Discret().gNode(k->first);
         if (!knode) dserror("node not found");
-        CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+        CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
         DM_LMn->FEAssemble(fac * lm_n * k->second, cnode->Dofs()[0], kcnode->Dofs()[0]);
       }
 
@@ -790,7 +790,7 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spa
       {
         DRT::Node* knode = Discret().gNode(k->first);
         if (!knode) dserror("node not found");
-        CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+        CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
         DM_LMn->FEAssemble(-fac * lm_n * k->second, cnode->Dofs()[0], kcnode->Dofs()[0]);
       }
   }
@@ -798,7 +798,7 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spa
 }
 
 
-void CONTACT::CoTSIInterface::AssembleInactive(CORE::LINALG::SparseMatrix* linConductThermoLM)
+void CONTACT::TSIInterface::AssembleInactive(CORE::LINALG::SparseMatrix* linConductThermoLM)
 {
   // get out if there's nothing to do
   if (linConductThermoLM == nullptr)
@@ -813,7 +813,7 @@ void CONTACT::CoTSIInterface::AssembleInactive(CORE::LINALG::SparseMatrix* linCo
     int gid = inactivenodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Active()) dserror("something with active and inactive maps is not in order");
 
@@ -823,19 +823,19 @@ void CONTACT::CoTSIInterface::AssembleInactive(CORE::LINALG::SparseMatrix* linCo
 /*----------------------------------------------------------------------*
  |  initialize / reset interface for tsi                     seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoTSIInterface::Initialize()
+void CONTACT::TSIInterface::Initialize()
 {
-  CONTACT::CoInterface::Initialize();
+  CONTACT::Interface::Initialize();
 
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
 
   for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
   {
-    CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
+    CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->lColNode(i));
     node->InitializeTSIDataContainer(
         imortar_.get<double>("TEMP_REF"), imortar_.get<double>("TEMP_DAMAGE"));
-    node->CoTSIData().Clear();
+    node->TSIData().Clear();
   }
   return;
 }

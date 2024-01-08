@@ -95,7 +95,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
     std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
     std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
-    Teuchos::RCP<CONTACT::CoInterface>& interface, int numcoupleddof)
+    Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
 {
   bool isnurbs = input.get<bool>("NURBS");
 
@@ -121,7 +121,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
-    Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(
+    Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, isnurbs));
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
@@ -180,7 +180,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       cele->NormalFac() = normalfac;
     }
 
-    interface->AddCoElement(cele);
+    interface->AddElement(cele);
   }
 
   // feeding slave elements to the interface
@@ -188,7 +188,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
 
-    Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(
+    Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true, isnurbs));
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
@@ -247,7 +247,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       cele->NormalFac() = normalfac;
     }
 
-    interface->AddCoElement(cele);
+    interface->AddElement(cele);
   }
 
   return;
@@ -341,7 +341,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
   {
     theta = 1.0;
   }
-  std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces;
+  std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
   interfaces.push_back(interface_);
   double alphaf = 1.0 - theta;
 
@@ -350,7 +350,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
   // create contact poro lagrange strategy for mesh tying
   porolagstrategy_ = Teuchos::rcp(
-      new CONTACT::PoroLagrangeStrategy(data_ptr, masterdis->DofRowMap(), masterdis->NodeRowMap(),
+      new CONTACT::LagrangeStrategyPoro(data_ptr, masterdis->DofRowMap(), masterdis->NodeRowMap(),
           input, interfaces, dim, comm_, alphaf, numcoupleddof, poroslave, poromaster));
 
   porolagstrategy_->Setup(false, true);
@@ -366,7 +366,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
  |  complete interface (also print and parallel redist.)      Ager 02/16|
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingPoroMortar::CompleteInterface(
-    Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::CoInterface>& interface)
+    Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   // finalize the contact interface construction
   int maxdof = masterdis->DofRowMap()->MaxAllGID();

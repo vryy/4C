@@ -36,12 +36,12 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
+CONTACT::LagrangeStrategy::LagrangeStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
     Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof)
-    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
+    : AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       evalForceCalled_(false),
       activesetssconv_(false),
@@ -60,7 +60,7 @@ CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
 /*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::Initialize()
+void CONTACT::LagrangeStrategy::Initialize()
 {
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
@@ -153,7 +153,7 @@ void CONTACT::CoLagrangeStrategy::Initialize()
 /*----------------------------------------------------------------------*
  | evaluate frictional contact (public)                   gitterle 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::EvaluateFriction(
+void CONTACT::LagrangeStrategy::EvaluateFriction(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
@@ -1384,11 +1384,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
 /*----------------------------------------------------------------------*
  |  pp stresses                                              farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::ComputeContactStresses()
+void CONTACT::LagrangeStrategy::ComputeContactStresses()
 {
   static int step = 0;
   // call abstract function
-  CONTACT::CoAbstractStrategy::ComputeContactStresses();
+  CONTACT::AbstractStrategy::ComputeContactStresses();
 
   // further scaling for nonsmooth contact
   if (nonSmoothContact_)
@@ -1432,7 +1432,7 @@ void CONTACT::CoLagrangeStrategy::ComputeContactStresses()
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
-        CoNode* cnode = dynamic_cast<CoNode*>(node);
+        Node* cnode = dynamic_cast<Node*>(node);
 
         std::vector<int> locindex(Dim());
 
@@ -1496,7 +1496,7 @@ void CONTACT::CoLagrangeStrategy::ComputeContactStresses()
 /*----------------------------------------------------------------------*
  |  add penalty terms for ltl contact                        farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (!nonSmoothContact_) return;
 
@@ -1521,8 +1521,8 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
-      cnode->CoData().Kappa() = 0.0;
+      Node* cnode = dynamic_cast<Node*>(node);
+      cnode->Data().Kappa() = 0.0;
     }
 
     // loop over proc's slave elements of the interface for integration
@@ -1532,7 +1532,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
       int gid1 = interface_[i]->MasterColElements()->GID(j);
       DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
       if (!ele1) dserror("Cannot find slave element with gid %", gid1);
-      CoElement* selement = dynamic_cast<CoElement*>(ele1);
+      Element* selement = dynamic_cast<Element*>(ele1);
 
       // loop over slave edges -> match node number for tri3/quad4
       for (int k = 0; k < selement->NumNode(); ++k)
@@ -1643,7 +1643,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
           lineEle->InitializeDataContainer();
 
           // create integrator
-          CONTACT::CoIntegrator integrator(Params(), lineEle->Shape(), Comm());
+          CONTACT::Integrator integrator(Params(), lineEle->Shape(), Comm());
 
           // integrate kappe penalty
           integrator.IntegrateKappaPenaltyLTS(*lineEle);
@@ -1657,14 +1657,14 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
+      Node* cnode = dynamic_cast<Node*>(node);
 
       // only for edge nodes!
       if (cnode->IsOnEdge() and !cnode->IsOnCorner())
       {
         // get nodal weighted gap
         // (this is where we stored the shape function integrals)
-        double kappainv = cnode->CoData().Kappa();
+        double kappainv = cnode->Data().Kappa();
 
         // safety
         if (abs(kappainv) < 1e-12)
@@ -1675,7 +1675,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
         else
         {
           // store kappa
-          cnode->CoData().Kappa() = 1.0 / kappainv;
+          cnode->Data().Kappa() = 1.0 / kappainv;
         }
       }
     }
@@ -1686,7 +1686,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
 /*----------------------------------------------------------------------*
  |  add penalty terms for ltl contact                        farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AddMasterContributions(
+void CONTACT::LagrangeStrategy::AddMasterContributions(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     bool add_time_integration)
 {
@@ -1741,7 +1741,7 @@ void CONTACT::CoLagrangeStrategy::AddMasterContributions(
 /*----------------------------------------------------------------------*
  |  add penalty terms for ltl contact                        farah 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AddLineToLinContributions(
+void CONTACT::LagrangeStrategy::AddLineToLinContributions(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     bool add_time_integration)
 {
@@ -1796,7 +1796,7 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributions(
 /*----------------------------------------------------------------------*
  |  add frictional penalty terms for ltl contact             farah 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AddLineToLinContributionsFriction(
+void CONTACT::LagrangeStrategy::AddLineToLinContributionsFriction(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     bool add_time_integration)
 {
@@ -1867,7 +1867,7 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributionsFriction(
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 04/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::EvaluateContact(
+void CONTACT::LagrangeStrategy::EvaluateContact(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // shape function type and type of LM interpolation for quadratic elements
@@ -2945,7 +2945,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(
+void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
     Teuchos::RCP<CORE::LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd,
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
@@ -3197,7 +3197,7 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::UpdateDisplacementsAndLMincrements(
+void CONTACT::LagrangeStrategy::UpdateDisplacementsAndLMincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
   // Extract results for displacement and LM increments
@@ -3249,7 +3249,7 @@ void CONTACT::CoLagrangeStrategy::UpdateDisplacementsAndLMincrements(
 /*----------------------------------------------------------------------*
  | calculate constraint RHS entries                      hiermeier 08/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::EvalConstrRHS()
+void CONTACT::LagrangeStrategy::EvalConstrRHS()
 {
   if (SystemType() == INPAR::CONTACT::system_condensed) return;
 
@@ -3341,7 +3341,7 @@ void CONTACT::CoLagrangeStrategy::EvalConstrRHS()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
+void CONTACT::LagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 {
   //---------------------------------------------------------------
   // For selfcontact the master/slave sets are updated within the -
@@ -3414,7 +3414,7 @@ void CONTACT::CoLagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AssembleAllContactTerms()
+void CONTACT::LagrangeStrategy::AssembleAllContactTerms()
 {
   if (nonSmoothContact_)
   {
@@ -3454,7 +3454,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTerms()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
+void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
 {
   /**********************************************************************/
   /* build global matrix t with tangent vectors of active nodes         */
@@ -3705,7 +3705,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
+void CONTACT::LagrangeStrategy::AssembleAllContactTermsFrictionless()
 {
   /**********************************************************************/
   /* calculate                                                          */
@@ -3966,7 +3966,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AssembleContactRHS()
+void CONTACT::LagrangeStrategy::AssembleContactRHS()
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -3987,7 +3987,7 @@ void CONTACT::CoLagrangeStrategy::AssembleContactRHS()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::EvalStrContactRHS()
+void CONTACT::LagrangeStrategy::EvalStrContactRHS()
 {
   if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
   {
@@ -4047,7 +4047,7 @@ void CONTACT::CoLagrangeStrategy::EvalStrContactRHS()
 /*----------------------------------------------------------------------*
  | set force evaluation flag before evaluation step          farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::LagrangeStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
 {
   const enum MORTAR::ActionType& act = cparams.GetActionType();
 
@@ -4077,7 +4077,7 @@ void CONTACT::CoLagrangeStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
 /*----------------------------------------------------------------------*
  | set force evaluation flag after evaluation                farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::LagrangeStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
 {
   const enum MORTAR::ActionType& act = cparams.GetActionType();
 
@@ -4114,7 +4114,7 @@ void CONTACT::CoLagrangeStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::LagrangeStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
 {
   // call the evaluate force routine if not done before
   if (!evalForceCalled_) EvalForce(cparams);
@@ -4126,7 +4126,7 @@ void CONTACT::CoLagrangeStrategy::EvalForceStiff(CONTACT::ParamsInterface& cpara
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active LM contact contributions
@@ -4301,7 +4301,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixB
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
+void CONTACT::LagrangeStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   if (SystemType() != INPAR::CONTACT::system_condensed)
@@ -4327,7 +4327,7 @@ void CONTACT::CoLagrangeStrategy::RunPostComputeX(const CONTACT::ParamsInterface
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
   // if there are no active LM contact contributions
@@ -4392,7 +4392,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::ResetLagrangeMultipliers(
+void CONTACT::LagrangeStrategy::ResetLagrangeMultipliers(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
 {
   if (SystemType() != INPAR::CONTACT::system_condensed)
@@ -4420,9 +4420,9 @@ void CONTACT::CoLagrangeStrategy::ResetLagrangeMultipliers(
 /*----------------------------------------------------------------------*
  | Recovery method                                            popp 04/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
+void CONTACT::LagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::CoLagrangeStrategy::Recover");
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::LagrangeStrategy::Recover");
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -4583,7 +4583,7 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence               popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
+void CONTACT::LagrangeStrategy::UpdateActiveSet()
 {
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
@@ -4601,7 +4601,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
+      Node* cnode = dynamic_cast<Node*>(node);
 
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
@@ -4624,15 +4624,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
         FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
         // compute tangential part of Lagrange multiplier
-        tz = frinode->CoData().txi()[0] * frinode->MoData().lm()[0] +
-             frinode->CoData().txi()[1] * frinode->MoData().lm()[1];
+        tz = frinode->Data().txi()[0] * frinode->MoData().lm()[0] +
+             frinode->Data().txi()[1] * frinode->MoData().lm()[1];
 
         // compute tangential part of jump FIXME -- also the teta component should be considered
         if (INPUT::IntegralValue<int>(Params(), "GP_SLIP_INCR") == true)
           tjump = frinode->FriData().jump_var()[0];
         else
-          tjump = frinode->CoData().txi()[0] * frinode->FriData().jump()[0] +
-                  frinode->CoData().txi()[1] * frinode->FriData().jump()[1];
+          tjump = frinode->Data().txi()[0] * frinode->FriData().jump()[0] +
+                  frinode->Data().txi()[1] * frinode->FriData().jump()[1];
       }
 
       // check nodes of inactive set *************************************
@@ -4887,7 +4887,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
+void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
   // FIXME: Here we do not consider zig-zagging yet!
   //  PrintActiveSet();
@@ -4906,7 +4906,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStep
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
-        CoNode* cnode = dynamic_cast<CoNode*>(node);
+        Node* cnode = dynamic_cast<Node*>(node);
 
         // The nested active set strategy cannot deal with the case of
         // active nodes that have no integration segments/cells attached,
@@ -5104,7 +5104,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStep
 /*----------------------------------------------------------------------*
  |  update routine for ltl forces                            farah 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::LagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (fLTL_ != Teuchos::null)
   {
@@ -5114,7 +5114,7 @@ void CONTACT::CoLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   }
 
   // abstract routine
-  CONTACT::CoAbstractStrategy::Update(dis);
+  CONTACT::AbstractStrategy::Update(dis);
 
   if (fconservation_ == Teuchos::null) return;
 
@@ -5197,7 +5197,7 @@ void CONTACT::CoLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 /*----------------------------------------------------------------------*
  |  Check conservation laws                              hiermeier 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::CheckConservationLaws(
+void CONTACT::LagrangeStrategy::CheckConservationLaws(
     const Epetra_Vector& fs, const Epetra_Vector& fm)
 {
   // change sign (adapt sign convention from the augmented Lagrange formulation)
@@ -5256,7 +5256,7 @@ void CONTACT::CoLagrangeStrategy::CheckConservationLaws(
 /*-----------------------------------------------------------------------------*
  | do additional matrix manipulations for regularization scaling     ager 07/15|
  *----------------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::DoRegularizationScaling(bool aset, bool iset,
+void CONTACT::LagrangeStrategy::DoRegularizationScaling(bool aset, bool iset,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& invda, Teuchos::RCP<CORE::LINALG::SparseMatrix>& kan,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& kam, Teuchos::RCP<CORE::LINALG::SparseMatrix>& kai,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& kaa, Teuchos::RCP<Epetra_Vector>& fa,
@@ -5347,7 +5347,7 @@ void CONTACT::CoLagrangeStrategy::DoRegularizationScaling(bool aset, bool iset,
 /*----------------------------------------------------------------------*
  | calculate regularization scaling and apply it to matrixes   ager 06/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epetra_Vector> gact)
+void CONTACT::LagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epetra_Vector> gact)
 {
   /********************************************************************/
   /* (0) Get Nodal Gap Scaling                                        */
@@ -5387,7 +5387,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epe
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
 
-        CoNode* cnode = dynamic_cast<CoNode*>(node);
+        Node* cnode = dynamic_cast<Node*>(node);
 
         if (cnode->Active())
         {
@@ -5398,22 +5398,22 @@ void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epe
           double alpha;
           double alphaderiv;
 
-          std::cout << "cnode->CoData().Getg(): " << cnode->CoData().Getg() << "( eps = " << epsilon
+          std::cout << "cnode->Data().Getg(): " << cnode->Data().Getg() << "( eps = " << epsilon
                     << ", scal = " << scaling << " ) / lambdan: " << lmval << std::endl;
 
 
-          if (cnode->CoData().Getg() >= 0)
+          if (cnode->Data().Getg() >= 0)
           {
             alpha = 0.0;
             alphaderiv = 0.0;
           }
           else
           {
-            double scaledgsum = (5 * cnode->CoData().Getg() / epsilon + 0.5);
+            double scaledgsum = (5 * cnode->Data().Getg() / epsilon + 0.5);
             alpha = 0.5 * (1 - tanh(scaledgsum));
             alphaderiv = -0.5 * 5 / (cosh(scaledgsum) * cosh(scaledgsum) * epsilon);
 
-            alphaderiv = alphaderiv * (scaling * cnode->CoData().Getg() - sign * lmval);
+            alphaderiv = alphaderiv * (scaling * cnode->Data().Getg() - sign * lmval);
           }
 
           int lid = gactiven_->LID(cnode->Dofs()[0]);
@@ -5427,7 +5427,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epe
             dserror("lid = -1!");
           }
 
-          std::cout << std::setprecision(32) << "cnode->CoPoroData().GetnScale() for node "
+          std::cout << std::setprecision(32) << "cnode->PoroData().GetnScale() for node "
                     << cnode->Id() << " is: " << alpha << std::endl;
         }
       }  // loop over all slave nodes
@@ -5461,7 +5461,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epe
   return;
 }
 
-void CONTACT::CoLagrangeStrategy::CondenseFriction(
+void CONTACT::LagrangeStrategy::CondenseFriction(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
   Teuchos::RCP<Epetra_Vector> feff = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
@@ -6283,7 +6283,7 @@ void CONTACT::CoLagrangeStrategy::CondenseFriction(
   return;
 }
 
-void CONTACT::CoLagrangeStrategy::CondenseFrictionless(
+void CONTACT::LagrangeStrategy::CondenseFrictionless(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
   Teuchos::RCP<Epetra_Vector> feff = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
@@ -6870,7 +6870,7 @@ void CONTACT::CoLagrangeStrategy::CondenseFrictionless(
   feff->Scale(-1.);
 }
 
-void CONTACT::CoLagrangeStrategy::RunPreApplyJacobianInverse(
+void CONTACT::LagrangeStrategy::RunPreApplyJacobianInverse(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
   // check if contact contributions are present,
@@ -6903,9 +6903,9 @@ void CONTACT::CoLagrangeStrategy::RunPreApplyJacobianInverse(
   return;
 }
 
-void CONTACT::CoLagrangeStrategy::RunPostApplyJacobianInverse(
-    const CONTACT::ParamsInterface& cparams, const Epetra_Vector& rhs, Epetra_Vector& result,
-    const Epetra_Vector& xold, const NOX::NLN::Group& grp)
+void CONTACT::LagrangeStrategy::RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
+    const NOX::NLN::Group& grp)
 {
   if (SystemType() != INPAR::CONTACT::system_condensed) return;
 

@@ -123,7 +123,7 @@ bool BEAMINTERACTION::SolidContactElement(const DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
-  if (ele_type == CONTACT::CoElementType::Instance())
+  if (ele_type == CONTACT::ElementType::Instance())
     return true;
   else
     return false;

@@ -172,7 +172,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = static_cast<CoNode&>(*snodes[i]);
+    Node& cnode = static_cast<Node&>(*snodes[i]);
     Deriv2ndMap& dd_a = cnode.AugData().GetDeriv2nd_A();
 
     const double tmp = wgt * lmval(i, 0);
@@ -208,7 +208,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_kap
   double val = 0.0;
   for (unsigned j = 0; j < my::SLAVENUMNODE; ++j)
   {
-    CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+    CONTACT::Node* cnode = static_cast<CONTACT::Node*>(snodes[j]);
 
     val = lmval(j, 0) * jac * wgt;
 
@@ -232,7 +232,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = static_cast<CONTACT::CoNode&>(*snodes[i]);
+    Node& cnode = static_cast<CONTACT::Node&>(*snodes[i]);
     Deriv1stMap& d_kappa = cnode.AugData().GetDeriv1st_Kappa();
 
     for (auto& d_jac_var : d_jac)
@@ -256,7 +256,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    const CoNode& snode = static_cast<const CoNode&>(*snodes[i]);
+    const Node& snode = static_cast<const Node&>(*snodes[i]);
     const double* nodal_smooth_unit_normal = snode.MoData().n();
 
     for (unsigned j = 0; j < probdim; ++j)
@@ -284,7 +284,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    const CoNode& snode = static_cast<const CoNode&>(*snodes[i]);
+    const Node& snode = static_cast<const Node&>(*snodes[i]);
     const double* nodal_smooth_unit_normal = snode.MoData().n();
 
     const Deriv1stVecMap& nodal_d_sun = snode.AugData().GetDeriv1st_N();
@@ -353,7 +353,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Aug
 
   for (unsigned it = 0; it < my::SLAVENUMNODE; ++it)
   {
-    CoNode* cnode = static_cast<CoNode*>(snodes[it]);
+    Node* cnode = static_cast<Node*>(snodes[it]);
     double& augA = cnode->AugData().GetAugA();
 
     augA += lmval(it, 0) * jac * wgt;
@@ -378,7 +378,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[i]);
+    CONTACT::Node* cnode = static_cast<CONTACT::Node*>(snodes[i]);
     Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_A();
 
     double val = wgt * lmval(i);
@@ -402,7 +402,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = static_cast<CoNode&>(*snodes[i]);
+    Node& cnode = static_cast<Node&>(*snodes[i]);
     Deriv2ndMap& dd_kappa = cnode.AugData().GetDeriv2nd_Kappa();
 
     const double tmp = wgt * lmval(i, 0);
@@ -436,7 +436,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GapN(
   gapn_sl = 0.0;
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    const CoNode& snode = static_cast<const CoNode&>(*snodes[i]);
+    const Node& snode = static_cast<const Node&>(*snodes[i]);
     const double* xs = snode.xspatial();
 
     for (unsigned k = 0; k < probdim; ++k) gapn_sl += sval(i, 0) * gpn[k] * xs[k];
@@ -446,7 +446,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GapN(
   gapn_ma = 0.0;
   for (unsigned i = 0; i < my::MASTERNUMNODE; ++i)
   {
-    const CoNode& mnode = static_cast<const CoNode&>(*mnodes[i]);
+    const Node& mnode = static_cast<const Node&>(*mnodes[i]);
     const double* xm = mnode.xspatial();
 
     for (unsigned k = 0; k < probdim; ++k) gapn_ma += mval(i, 0) * gpn[k] * xm[k];
@@ -465,7 +465,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_WGa
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    CoNode& cnode = static_cast<CoNode&>(*snodes[i]);
+    Node& cnode = static_cast<Node&>(*snodes[i]);
 
     const double val = lmval(i, 0) * scale * (gapn_ma - gapn_sl);
 

@@ -306,9 +306,9 @@ namespace CONTACT
     // step after Upadte() is called.
     std::vector<Teuchos::RCP<Beam3tosolidcontactinterface>> oldbtsolpairs_;
     //! total vector of solid contact elements
-    std::vector<Teuchos::RCP<CONTACT::CoElement>> solcontacteles_;
+    std::vector<Teuchos::RCP<CONTACT::Element>> solcontacteles_;
     //! total vector of solid contact nodes
-    std::vector<Teuchos::RCP<CONTACT::CoNode>> solcontactnodes_;
+    std::vector<Teuchos::RCP<CONTACT::Node>> solcontactnodes_;
 
     //! total vector of solid meshtying elements
     std::vector<Teuchos::RCP<MORTAR::MortarElement>> solmeshtyingeles_;

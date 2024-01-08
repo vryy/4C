@@ -105,10 +105,10 @@ void CONTACT::AUG::Potential::Compute()
 
   std::array<double, 4> lterms = {0.0, 0.0, 0.0, 0.0};
 
-  const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& co_interfaces =
+  const std::vector<Teuchos::RCP<CONTACT::Interface>>& co_interfaces =
       strategy_.ContactInterfaces();
 
-  for (const Teuchos::RCP<CONTACT::CoInterface>& cit : co_interfaces)
+  for (const Teuchos::RCP<CONTACT::Interface>& cit : co_interfaces)
   {
     const CONTACT::AUG::Interface& interface = static_cast<const CONTACT::AUG::Interface&>(*cit);
 

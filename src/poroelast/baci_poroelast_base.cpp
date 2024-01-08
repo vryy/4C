@@ -15,8 +15,8 @@
 #include "baci_adapter_str_factory.H"
 #include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_adapter_str_structure_new.H"
+#include "baci_contact_lagrange_strategy_poro.H"
 #include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_contact_poro_lagrange_strategy.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_io_control.H"
@@ -308,7 +308,7 @@ void POROELAST::PoroBase::Update()
     {
       if (StructureField()->MeshtyingContactBridge()->HaveContact() && !nit_contact_)
       {
-        (static_cast<CONTACT::PoroLagrangeStrategy&>(
+        (static_cast<CONTACT::LagrangeStrategyPoro&>(
              StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy()))
             .UpdatePoroContact();
       }

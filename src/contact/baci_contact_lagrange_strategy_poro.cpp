@@ -9,7 +9,7 @@ interface
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_poro.H"
 
 #include "baci_contact_defines.H"
 #include "baci_contact_friction_node.H"
@@ -33,10 +33,10 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 08/14|
  *----------------------------------------------------------------------*/
-CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(
+CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
     Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof, bool poroslave, bool poromaster)
     : MonoCoupledLagrangeStrategy(
           data_ptr, DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
@@ -55,7 +55,7 @@ CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(
 /*----------------------------------------------------------------------*
  |  read restart information for contact                      ager 12/16|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::LagrangeStrategyPoro::DoReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   Teuchos::RCP<DRT::Discretization> discret = DRT::Problem::Instance()->GetDis("structure");
@@ -68,17 +68,17 @@ void CONTACT::PoroLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
   SetParentState("displacement", global, discret);
 
   // Call (nearly absolute)Base Class
-  CONTACT::CoAbstractStrategy::DoReadRestart(reader, dis, cparams_ptr);
+  CONTACT::AbstractStrategy::DoReadRestart(reader, dis, cparams_ptr);
   return;
 }
 
 /*----------------------------------------------------------------------*
  | setup this strategy object                                ager 12/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::Setup(bool redistributed, bool init)
+void CONTACT::LagrangeStrategyPoro::Setup(bool redistributed, bool init)
 {
   // Call Base Class
-  CONTACT::CoAbstractStrategy::Setup(redistributed, init);
+  CONTACT::AbstractStrategy::Setup(redistributed, init);
 
   if (no_penetration_) SetupNoPenetrationCondition();
 }
@@ -86,7 +86,7 @@ void CONTACT::PoroLagrangeStrategy::Setup(bool redistributed, bool init)
 /*----------------------------------------------------------------------*
  | Activate No-Penetration for the contact surface (public)   ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::SetupNoPenetrationCondition()
+void CONTACT::LagrangeStrategyPoro::SetupNoPenetrationCondition()
 {
   lambda_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
   lambdaold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
@@ -121,7 +121,7 @@ void CONTACT::PoroLagrangeStrategy::SetupNoPenetrationCondition()
  | initialize global poro contact variables                             |
  |                            for next Newton step (public)   ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::PoroInitialize(
+void CONTACT::LagrangeStrategyPoro::PoroInitialize(
     CORE::ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit)
 {
   if (fullinit)  // fullinit is true by default, but needed when this method is called for
@@ -395,13 +395,13 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(
     }
   }
   return;
-}  // CONTACT::PoroLagrangeStrategy::PoroInitialize
+}  // CONTACT::LagrangeStrategyPoro::PoroInitialize
 
 /*-------------------------------------------------------------------------*
  |  evaluate poro coupling contact matrices for no penetration             |
  |  condition on contact surface (pure porous problem)(public)   ager 07/15|
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(
+void CONTACT::LagrangeStrategyPoro::EvaluatePoroNoPenContact(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& k_fseff,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& Feff, Teuchos::RCP<Epetra_Vector>& feff)
 {
@@ -414,7 +414,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(
  |  evaluate poro coupling contact matrices for no penetration             |
  |  condition on contact surface(public)                         ager 07/15|
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(
+void CONTACT::LagrangeStrategyPoro::EvaluatePoroNoPenContact(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& k_fseff,
     std::map<int, Teuchos::RCP<CORE::LINALG::SparseMatrix>*>& Feff,
     Teuchos::RCP<Epetra_Vector>& feff)
@@ -433,7 +433,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(
  |  evaluate poro coupling contact matrices for no penetration          |
  |  condition on contact surface (public)                     ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(
+void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& k_fseff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // check if contact contributions are present,
@@ -973,13 +973,13 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(
   k_fseff = k_fs_effnew;
   feff = feffnew;
   return;
-}  // CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPen
+}  // CONTACT::LagrangeStrategyPoro::EvaluatePoroNoPen
 
 /*----------------------------------------------------------------------*
  |  evaluate poro coupling contact matrices for no penetration          |
  |  condition on contact surface (public)                     ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(
+void CONTACT::LagrangeStrategyPoro::EvaluateOtherMatPoroNoPen(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& Feff, int Column_Block_Id)
 {
   // check if contact contributions are present,
@@ -1203,12 +1203,12 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(
   // finally do the replacement
   Feff = F_effnew;
   return;
-}  // CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen
+}  // CONTACT::LagrangeStrategyPoro::EvaluateOtherMatPoroNoPen
 
 /*----------------------------------------------------------------------------*
  | Poro Recovery method for no penetration LM (pure porous problem) ager 08/14|
  *---------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(
+void CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen(
     Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> inc)
 {
   std::map<int, Teuchos::RCP<Epetra_Vector>> incm;
@@ -1221,7 +1221,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(
 /*----------------------------------------------------------------------*
  | Poro Recovery method for no penetration LM                 ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(
+void CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen(
     Teuchos::RCP<Epetra_Vector> disi, std::map<int, Teuchos::RCP<Epetra_Vector>> inc)
 {
   // check if contact contributions are present,
@@ -1292,7 +1292,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(
         inciter = inc.find(matiter->first);
         if (inciter == inc.end())
           dserror(
-              "CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen: Couldn't find increment block %d "
+              "CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen: Couldn't find increment block %d "
               "for recovery of the lagrange multiplier!",
               matiter->first);
 
@@ -1325,7 +1325,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(
 /*------------------------------------------------------------------------------*
  |  Additional update and output poro contact at end of time step     ager 08/14|
  *-----------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::UpdatePoroContact()
+void CONTACT::LagrangeStrategyPoro::UpdatePoroContact()
 {
   if (no_penetration_)
   {
@@ -1338,7 +1338,7 @@ void CONTACT::PoroLagrangeStrategy::UpdatePoroContact()
 /*------------------------------------------------------------------------*
  | Assign generell poro contact state!                          ager 08/14|
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::SetState(
+void CONTACT::LagrangeStrategyPoro::SetState(
     const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
 {
   switch (statetype)
@@ -1369,7 +1369,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(
             // (use fully overlapping column map)
             for (int i = 0; i < idiscret_.NumMyColNodes(); ++i)
             {
-              CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+              CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_.lColNode(i));
               const int numdof = node->NumDof();
               std::vector<double> myvel(numdof);
               std::vector<int> lm(numdof);
@@ -1383,9 +1383,9 @@ void CONTACT::PoroLagrangeStrategy::SetState(
               for (int j = 0; j < 3; ++j)
               {
                 if (statetype == MORTAR::state_fvelocity)
-                  node->CoPoroData().fvel()[j] = myvel[j];
+                  node->PoroData().fvel()[j] = myvel[j];
                 else
-                  node->CoPoroData().svel()[j] = myvel[j];
+                  node->PoroData().svel()[j] = myvel[j];
               }
             }
             break;
@@ -1401,7 +1401,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(
             // (use fully overlapping column map)
             for (int i = 0; i < idiscret_.NumMyColNodes(); ++i)
             {
-              CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+              CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_.lColNode(i));
 
               const int numdof = node->NumDof();
               std::vector<double> mylm(numdof);
@@ -1418,7 +1418,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(
               {
                 for (int j = 0; j < 3; ++j)
                 {
-                  node->CoPoroData().poroLM()[j] = mylm[j];
+                  node->PoroData().poroLM()[j] = mylm[j];
                 }
               }
             }
@@ -1435,7 +1435,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(
             // (use fully overlapping column map)
             for (int i = 0; i < idiscret_.NumMyColNodes(); ++i)
             {
-              CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+              CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_.lColNode(i));
 
               double myfpres;
               int fpres;
@@ -1444,7 +1444,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(
 
               myfpres = global->Values()[global->Map().LID(fpres)];
 
-              *node->CoPoroData().fpres() = myfpres;
+              *node->PoroData().fpres() = myfpres;
             }
             break;
           }
@@ -1459,7 +1459,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(
     }
     default:
     {
-      CONTACT::CoAbstractStrategy::SetState(statetype, vec);
+      CONTACT::AbstractStrategy::SetState(statetype, vec);
       break;
     }
   }  // end outer switch statement
@@ -1473,7 +1473,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(
 /*------------------------------------------------------------------------*
  | Assign generell poro contact state!                          ager 10/14|
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::SetParentState(const std::string& statename,
+void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<DRT::Discretization> dis)
 {
   if (statename == "displacement")
@@ -1542,7 +1542,7 @@ void CONTACT::PoroLagrangeStrategy::SetParentState(const std::string& statename,
 /*------------------------------------------------------------------------*
  | Initialize poro meshtying matrices with corresponding maps  h.Willmann |
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::PoroMtInitialize()
+void CONTACT::LagrangeStrategyPoro::PoroMtInitialize()
 {
   // (re)setup global lin of D & M * lambda - Matrix
   porolindmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
@@ -1561,12 +1561,12 @@ void CONTACT::PoroLagrangeStrategy::PoroMtInitialize()
   wasincontact_ = true;     // as meshtying interfaces stay the same and are fully in contact
   wasincontactlts_ = true;  // this is necessary for other methods in this strategy
   return;
-}  // CONTACT::PoroLagrangeStrategy::PoroLinkDM
+}  // CONTACT::LagrangeStrategyPoro::PoroLinkDM
 
 /*------------------------------------------------------------------------*
  | assemble porofluid meshtying matrices                       h.Willmann |
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::PoroMtPrepareFluidCoupling()
+void CONTACT::LagrangeStrategyPoro::PoroMtPrepareFluidCoupling()
 {
   // reset D and M matrices for new Newton iteration
 
@@ -1588,12 +1588,12 @@ void CONTACT::PoroLagrangeStrategy::PoroMtPrepareFluidCoupling()
   PoroMtSetCouplingMatrices();
 
   return;
-}  // CONTACT::PoroLagrangeStrategy::PoroAssembleFluidCoupling()
+}  // CONTACT::LagrangeStrategyPoro::PoroAssembleFluidCoupling()
 
 /*------------------------------------------------------------------------*
  | assemble porofluid meshtying matrices                       h.Willmann |
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::PoroMtSetCouplingMatrices()
+void CONTACT::LagrangeStrategyPoro::PoroMtSetCouplingMatrices()
 {
   // some temporary Teuchos::RCPs
   Teuchos::RCP<Epetra_Map> tempmap;
@@ -1662,12 +1662,12 @@ void CONTACT::PoroLagrangeStrategy::PoroMtSetCouplingMatrices()
   SaveCouplingMatrices(dhat, mhataam, invda);
 
   return;
-}  // CONTACT::PoroLagrangeStrategy::PoroMtPrepareFluidCoupling
+}  // CONTACT::LagrangeStrategyPoro::PoroMtPrepareFluidCoupling
 
 /*------------------------------------------------------------------------*
  | update old meshtying matrices and LMP                       h.Willmann |
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::PoroMtUpdate()
+void CONTACT::LagrangeStrategyPoro::PoroMtUpdate()
 {
   // set dold_ mold_ and lambdaold_ after every time step
   dold_ = Teuchos::rcp<CORE::LINALG::SparseMatrix>(new CORE::LINALG::SparseMatrix(*dmatrix_));
@@ -1676,6 +1676,6 @@ void CONTACT::PoroLagrangeStrategy::PoroMtUpdate()
   mold_->Complete(mmatrix_->DomainMap(), mmatrix_->RangeMap());
   UpdatePoroContact();
   return;
-}  // CONTACT::PoroLagrangeStrategy::PoroMtUpdate()
+}  // CONTACT::LagrangeStrategyPoro::PoroMtUpdate()
 
 BACI_NAMESPACE_CLOSE

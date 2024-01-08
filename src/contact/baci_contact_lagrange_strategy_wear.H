@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 09/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_WEAR_LAGRANGE_STRATEGY_H
-#define BACI_CONTACT_WEAR_LAGRANGE_STRATEGY_H
+#ifndef BACI_CONTACT_LAGRANGE_STRATEGY_WEAR_H
+#define BACI_CONTACT_LAGRANGE_STRATEGY_WEAR_H
 
 /*----------------------------------------------------------------------*
  | header                                                   farah 09/13 |
@@ -30,16 +30,16 @@ namespace WEAR
   class WearInterface;
 
 
-  class WearLagrangeStrategy : public CONTACT::CoLagrangeStrategy
+  class LagrangeStrategyWear : public CONTACT::LagrangeStrategy
   {
    public:
     /*!
     \brief Standard Constructor
 
     */
-    WearLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    LagrangeStrategyWear(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
 
@@ -338,8 +338,8 @@ namespace WEAR
 
    private:
     // don't want = operator and cctor
-    WearLagrangeStrategy operator=(const WearLagrangeStrategy& old) = delete;
-    WearLagrangeStrategy(const WearLagrangeStrategy& old) = delete;
+    LagrangeStrategyWear operator=(const LagrangeStrategyWear& old) = delete;
+    LagrangeStrategyWear(const LagrangeStrategyWear& old) = delete;
 
     std::vector<Teuchos::RCP<WEAR::WearInterface>> interface_;
 
@@ -443,4 +443,4 @@ namespace WEAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_WEAR_LAGRANGE_STRATEGY_H
+#endif  // BACI_CONTACT_LAGRANGE_STRATEGY_WEAR_H

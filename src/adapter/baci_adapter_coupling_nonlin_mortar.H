@@ -41,7 +41,7 @@ namespace DRT
 
 namespace CONTACT
 {
-  class CoInterface;
+  class Interface;
 }
 
 namespace CORE::LINALG
@@ -128,7 +128,7 @@ namespace ADAPTER
     };
 
     /// the mortar interface itself
-    Teuchos::RCP<CONTACT::CoInterface> Interface() const { return interface_; }
+    Teuchos::RCP<CONTACT::Interface> Interface() const { return interface_; }
 
    protected:
     /*!
@@ -152,7 +152,7 @@ namespace ADAPTER
         std::map<int, DRT::Node*>& slavegnodes,
         std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
         std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
-        Teuchos::RCP<CONTACT::CoInterface>& interface, int numcoupleddof);
+        Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof);
 
     /*!
     \brief Add Mortar Elements
@@ -162,7 +162,7 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
         std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
         std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
-        Teuchos::RCP<CONTACT::CoInterface>& interface, int numcoupleddof);
+        Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof);
 
     /*!
     \brief complete interface, store as internal variable
@@ -170,7 +170,7 @@ namespace ADAPTER
 
     */
     virtual void CompleteInterface(
-        Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::CoInterface>& interface);
+        Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface);
 
     /*!
     \brief initialize matrices (interla variables)
@@ -225,7 +225,7 @@ namespace ADAPTER
                                        ///< with respect to master and slave dofs
     Teuchos::RCP<Epetra_Vector> gap_;  ///< gap vector
 
-    Teuchos::RCP<CONTACT::CoInterface> interface_;  ///< interface
+    Teuchos::RCP<CONTACT::Interface> interface_;  ///< interface
   };
 }  // namespace ADAPTER
 

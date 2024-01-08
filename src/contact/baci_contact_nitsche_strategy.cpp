@@ -27,7 +27,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
@@ -70,7 +70,7 @@ void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> 
 /*----------------------------------------------------------------------*
  |  read restart information for contact                     seitz 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::NitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   // check whether this is a restart with contact of a previously
@@ -101,7 +101,7 @@ void CONTACT::CoNitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   if (INPUT::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE")) UpdateTraceIneqEtimates();
 }
 
-void CONTACT::CoNitscheStrategy::SetState(
+void CONTACT::NitscheStrategy::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   if (statename == MORTAR::state_new_displacement)
@@ -124,21 +124,21 @@ void CONTACT::CoNitscheStrategy::SetState(
     {
       curr_state_eval_ = false;
       (*curr_state_) = vec;
-      CoAbstractStrategy::SetState(statename, vec);
+      AbstractStrategy::SetState(statename, vec);
       SetParentState(statename, vec);
     }
   }
   else
   {
     curr_state_eval_ = false;
-    CoAbstractStrategy::SetState(statename, vec);
+    AbstractStrategy::SetState(statename, vec);
   }
 }
 
 /*------------------------------------------------------------------------*
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategy::SetParentState(
+void CONTACT::NitscheStrategy::SetParentState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   Teuchos::RCP<DRT::Discretization> dis = DRT::Problem::Instance()->GetDis("structure");
@@ -190,29 +190,26 @@ void CONTACT::CoNitscheStrategy::SetParentState(
   }
 }
 
-void CONTACT::CoNitscheStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategy::EvalForce(CONTACT::ParamsInterface& cparams) { Integrate(cparams); }
+
+void CONTACT::NitscheStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
 {
   Integrate(cparams);
 }
 
-void CONTACT::CoNitscheStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
-{
-  Integrate(cparams);
-}
-
-void CONTACT::CoNitscheStrategy::Reset(
+void CONTACT::NitscheStrategy::Reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   SetState(MORTAR::state_new_displacement, dispnp);
 }
 
-void CONTACT::CoNitscheStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
+void CONTACT::NitscheStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   // do nothing
 }
 
-void CONTACT::CoNitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams)
 {
   // we already did this displacement state
   if (curr_state_eval_) return;
@@ -242,7 +239,7 @@ void CONTACT::CoNitscheStrategy::Integrate(const CONTACT::ParamsInterface& cpara
   kc_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::SetupRhsBlockVec(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::SetupRhsBlockVec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
@@ -257,7 +254,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::SetupRhsBlockVec(
   return Teuchos::null;
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::CreateRhsBlockPtr(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::CreateRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -278,7 +275,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::CreateRhsBlockPtr(
   return fc;
 }
 
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -296,7 +293,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
   return Teuchos::null;
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::SetupMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
@@ -313,7 +310,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::SetupMatrix
   return Teuchos::null;
 }
 
-void CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(
+void CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
@@ -327,7 +324,7 @@ void CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::CreateMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt)
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -349,7 +346,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatri
   return kc;
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -362,9 +359,9 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBl
   return Teuchos::null;
 }
 
-void CONTACT::CoNitscheStrategy::Setup(bool redistributed, bool init)
+void CONTACT::NitscheStrategy::Setup(bool redistributed, bool init)
 {
-  // we need to init the isselfcontact_ flag here, as we do not want to call the CoAbstractStrategy
+  // we need to init the isselfcontact_ flag here, as we do not want to call the AbstractStrategy
   if (init)
   {
     // set potential global self contact status
@@ -380,7 +377,7 @@ void CONTACT::CoNitscheStrategy::Setup(bool redistributed, bool init)
   curr_state_eval_ = false;
 }
 
-void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
+void CONTACT::NitscheStrategy::UpdateTraceIneqEtimates()
 {
   auto NitWgt =
       INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
@@ -397,7 +394,7 @@ void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
   }
 }
 
-void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::NitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (INPUT::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE")) UpdateTraceIneqEtimates();
   if (friction_)
@@ -407,7 +404,7 @@ void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   }
 }
 
-void CONTACT::CoNitscheStrategy::EvaluateReferenceState()
+void CONTACT::NitscheStrategy::EvaluateReferenceState()
 {
   if (friction_)
   {
@@ -426,7 +423,7 @@ void CONTACT::CoNitscheStrategy::EvaluateReferenceState()
 /*----------------------------------------------------------------------------------------------*
  |  Reconnect Contact Element -- Parent Element Pointers (required for restart)       ager 04/16|
  *---------------------------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategy::ReconnectParentElements()
+void CONTACT::NitscheStrategy::ReconnectParentElements()
 {
   Teuchos::RCP<DRT::Discretization> voldis = DRT::Problem::Instance()->GetDis("structure");
 
@@ -447,7 +444,7 @@ void CONTACT::CoNitscheStrategy::ReconnectParentElements()
       const int volgid = faceele->ParentElementId();
       if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
         dserror(
-            "CoManager::ReconnectParentElements: Element %d does not exist on this Proc!", volgid);
+            "Manager::ReconnectParentElements: Element %d does not exist on this Proc!", volgid);
 
       DRT::Element* vele = voldis->gElement(volgid);
       if (!vele) dserror("Cannot find element with gid %", volgid);

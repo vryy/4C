@@ -26,19 +26,19 @@ namespace CONTACT
   /*!
    \brief Contact solving strategy with Nitsche's method.
 
-   This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
 
    */
-  class CoNitscheStrategy : public CoAbstractStrategy
+  class NitscheStrategy : public AbstractStrategy
   {
    public:
     //! Standard constructor
-    CoNitscheStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    NitscheStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<Epetra_Comm>& comm, double alphaf, int maxdof)
-        : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
+        : AbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
               NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)
@@ -46,20 +46,20 @@ namespace CONTACT
     }
 
     //! Shared data constructor
-    CoNitscheStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-        : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+        : AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)
     { /* empty */
     }
 
     // don't want = operator and cctor
-    CoNitscheStrategy operator=(const CoNitscheStrategy& old) = delete;
-    CoNitscheStrategy(const CoNitscheStrategy& old) = delete;
+    NitscheStrategy operator=(const NitscheStrategy& old) = delete;
+    NitscheStrategy(const NitscheStrategy& old) = delete;
 
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, int step,
@@ -96,7 +96,7 @@ namespace CONTACT
 
     virtual void UpdateTraceIneqEtimates();
 
-    /*! \brief Get dirichlet B.C. status and store into CoNodes
+    /*! \brief Get dirichlet B.C. status and store into Nodes
 
      This is called once at the beginning of the simulation
      to set the D.B.C. status in each CNode.
@@ -192,9 +192,9 @@ namespace CONTACT
     bool IsPenalty() const override { return false; }
 
    protected:
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() override { return interface_; }
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() override { return interface_; }
 
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const override
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override
     {
       return interface_;
     }
@@ -254,7 +254,7 @@ namespace CONTACT
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> CreateMatrixBlockPtr(
         const enum MatBlockType& bt);
 
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface_;
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interface_;
 
     Teuchos::RCP<Epetra_Vector> curr_state_;
     bool curr_state_eval_;

@@ -33,7 +33,7 @@ CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
     const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact, const int contactconstitutivelawid)
-    : CoInterface(interfaceData, id, comm, dim, icontact, selfcontact)
+    : Interface(interfaceData, id, comm, dim, icontact, selfcontact)
 {
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
       CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(contactconstitutivelawid);
@@ -52,12 +52,12 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     int dim = cnode->NumDof();
-    double gap = cnode->CoData().Getg();
+    double gap = cnode->Data().Getg();
 
-    double kappa = cnode->CoData().Kappa();
+    double kappa = cnode->Data().Kappa();
 
     double lmuzawan = 0.0;
     for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
@@ -68,7 +68,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
 
     for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = i * j;
 
-    cnode->CoData().GetDerivZ().clear();
+    cnode->Data().GetDerivZ().clear();
 
     continue;
 #endif
@@ -105,12 +105,12 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
 
       // compute derivatives of lagrange multipliers and store into node
       // contribution of derivative of weighted gap
-      std::map<int, double>& derivg = cnode->CoData().GetDerivG();
+      std::map<int, double>& derivg = cnode->Data().GetDerivG();
       std::map<int, double>::iterator gcurr;
       // printf("lm=%f\n", -coconstlaw_->Evaluate(kappa * gap));
 
       // contribution of derivative of normal
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
       CORE::GEN::pairedvector<int, double>::iterator ncurr;
 
       for (int j = 0; j < dim; ++j)
@@ -133,7 +133,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
       for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = 0.0;
 
       // clear derivz
-      cnode->CoData().GetDerivZ().clear();
+      cnode->Data().GetDerivZ().clear();
 
     }  // Macauley-Bracket
   }    // loop over slave nodes

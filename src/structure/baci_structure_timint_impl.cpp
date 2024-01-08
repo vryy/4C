@@ -1031,7 +1031,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(
           dis, stiff, fresm, stepn_, iter_, predict);
     if (cmtbridge_->HaveContact())
     {
-      dynamic_cast<CONTACT::CoAbstractStrategy&>(cmtbridge_->ContactManager()->GetStrategy())
+      dynamic_cast<CONTACT::AbstractStrategy&>(cmtbridge_->ContactManager()->GetStrategy())
           .SetParentState("displacement", dis, discret_);
       cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(
           dis, stiff, fresm, stepn_, iter_, predict);
@@ -3128,8 +3128,8 @@ void STR::TimIntImpl::CmtLinearSolve()
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", slaveDofMap);
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", innerDofMap);
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", activeDofMap);
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat =
-          Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
+          Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
         linSystemProps.set<std::string>("ProblemType", "contact");
       else
@@ -4535,8 +4535,8 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", slaveDofMap);
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", innerDofMap);
       linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", activeDofMap);
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat =
-          Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
+          Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
         linSystemProps.set<std::string>("ProblemType", "contact");
       else

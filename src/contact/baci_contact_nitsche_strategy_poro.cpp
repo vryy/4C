@@ -24,13 +24,13 @@
 
 BACI_NAMESPACE_OPEN
 
-void CONTACT::CoNitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+void CONTACT::NitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
   if (predictor) return;
 
-  CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
+  CONTACT::NitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
 
   // Evaluation for all interfaces
   fp_ = CreateRhsBlockPtr(CONTACT::VecBlockType::porofluid);
@@ -49,7 +49,7 @@ void CONTACT::CoNitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vect
   //    }
 }
 
-void CONTACT::CoNitscheStrategyPoro::SetState(
+void CONTACT::NitscheStrategyPoro::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   if (statename == MORTAR::state_svelocity)
@@ -57,10 +57,10 @@ void CONTACT::CoNitscheStrategyPoro::SetState(
     SetParentState(statename, vec);
   }
   else
-    CONTACT::CoNitscheStrategy::SetState(statename, vec);
+    CONTACT::NitscheStrategy::SetState(statename, vec);
 }
 
-void CONTACT::CoNitscheStrategyPoro::SetParentState(
+void CONTACT::NitscheStrategyPoro::SetParentState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   //
@@ -116,10 +116,10 @@ void CONTACT::CoNitscheStrategyPoro::SetParentState(
     }
   }
   else
-    CONTACT::CoNitscheStrategy::SetParentState(statename, vec);
+    CONTACT::NitscheStrategy::SetParentState(statename, vec);
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyPoro::SetupRhsBlockVec(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::SetupRhsBlockVec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
@@ -128,11 +128,11 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyPoro::SetupRhsBlockVec(
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap()));
     default:
-      return CONTACT::CoNitscheStrategy::SetupRhsBlockVec(bt);
+      return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
   }
 }
 
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyPoro::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyPoro::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -142,11 +142,11 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyPoro::GetRhsBlockPtr
     case CONTACT::VecBlockType::porofluid:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fp_), 0));
     default:
-      return CONTACT::CoNitscheStrategy::GetRhsBlockPtr(bp);
+      return CONTACT::NitscheStrategy::GetRhsBlockPtr(bp);
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::SetupMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
@@ -163,11 +163,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::SetupMa
               *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
-      return CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(bt);
+      return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
   }
 }
 
-void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
+void CONTACT::NitscheStrategyPoro::CompleteMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
@@ -193,12 +193,12 @@ void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
         dserror("GlobalAssemble(...) failed");
       break;
     default:
-      CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
+      CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
       break;
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -212,7 +212,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::GetMatr
     case CONTACT::MatBlockType::displ_porofluid:
       return kdp_;
     default:
-      return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
+      return CONTACT::NitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
   }
 }
 

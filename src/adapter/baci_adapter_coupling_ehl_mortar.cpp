@@ -13,7 +13,7 @@
 
 #include "baci_contact_friction_node.H"
 #include "baci_contact_interface.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_tsi.H"
 #include "baci_io.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_multiply.H"
@@ -586,9 +586,9 @@ void ADAPTER::CouplingEhlMortar::EvaluateRelMov()
     // write it to nodes
     for (int dim = 0; dim < interface_->Dim(); dim++)
     {
-      cnode->FriData().jump()[dim] = cnode->CoEhlData().GetWeightedRelTangVel()(dim);
-      for (auto p = cnode->CoEhlData().GetWeightedRelTangVelDeriv().begin();
-           p != cnode->CoEhlData().GetWeightedRelTangVelDeriv().end(); ++p)
+      cnode->FriData().jump()[dim] = cnode->EhlData().GetWeightedRelTangVel()(dim);
+      for (auto p = cnode->EhlData().GetWeightedRelTangVelDeriv().begin();
+           p != cnode->EhlData().GetWeightedRelTangVelDeriv().end(); ++p)
         cnode->FriData().GetDerivJump()[dim][p->first] = p->second(dim);
     }
   }
@@ -636,7 +636,7 @@ void ADAPTER::CouplingEhlMortar::RecoverCoupled(
   // store updated LM into nodes
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(interface_->Discret().lRowNode(i));
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(interface_->Discret().lRowNode(i));
     for (int dof = 0; dof < interface_->Dim(); ++dof)
       cnode->MoData().lm()[dof] = z_->operator[](z_->Map().LID(cnode->Dofs()[dof]));
   }
@@ -658,7 +658,7 @@ void ADAPTER::CouplingEhlMortar::StoreDirichletStatus(
     int gid = interface_->SlaveRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // check if this node's dofs are in dbcmap
     for (int k = 0; k < cnode->NumDof(); ++k)
@@ -743,7 +743,7 @@ void ADAPTER::CouplingEhlMortar::AssembleNormals()
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("not a contact node");
 
     for (int d = 0; d < interface_->Dim(); ++d)
@@ -759,12 +759,12 @@ void ADAPTER::CouplingEhlMortar::AssembleNormalsDeriv()
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("not a contact node");
 
     for (int d = 0; d < Interface()->Dim(); ++d)
-      for (auto p = cnode->CoData().GetDerivN()[d].begin();
-           p != cnode->CoData().GetDerivN()[d].end(); ++p)
+      for (auto p = cnode->Data().GetDerivN()[d].begin(); p != cnode->Data().GetDerivN()[d].end();
+           ++p)
         Nderiv_->Assemble(p->second, cnode->Dofs()[d], p->first);
   }
   Nderiv_->Complete();
@@ -778,9 +778,9 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGap()
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("not a contact node");
-    double real_gap = cnode->CoData().Getg();
+    double real_gap = cnode->Data().Getg();
     switch (cnode->MoData().GetD().size())
     {
       case 0:
@@ -812,20 +812,20 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGapDeriv()
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("not a contact node");
 
-    if (cnode->CoData().GetDerivD().size() != cnode->MoData().GetD().size())
+    if (cnode->Data().GetDerivD().size() != cnode->MoData().GetD().size())
       dserror("size inconsistency");
 
-    const double w_gap = cnode->CoData().Getg();
+    const double w_gap = cnode->Data().Getg();
     double d = -1.;
-    switch (cnode->CoData().GetDerivD().size())
+    switch (cnode->Data().GetDerivD().size())
     {
       case 0:
         break;
       case 1:
-        if (cnode->CoData().GetDerivD().begin()->first != cnode->Id())
+        if (cnode->Data().GetDerivD().begin()->first != cnode->Id())
           dserror("something is wrong. Here should by my own Id");
         d = cnode->MoData().GetD().at(cnode->Id());
         break;
@@ -835,20 +835,19 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGapDeriv()
             "duals?");
     }
 
-    if (cnode->CoData().GetDerivD().size())
-      for (auto p = cnode->CoData().GetDerivD().at(cnode->Id()).begin();
-           p != cnode->CoData().GetDerivD().at(cnode->Id()).end(); ++p)
+    if (cnode->Data().GetDerivD().size())
+      for (auto p = cnode->Data().GetDerivD().at(cnode->Id()).begin();
+           p != cnode->Data().GetDerivD().at(cnode->Id()).end(); ++p)
       {
         const double val = -w_gap / (d * d) * p->second;
         for (int d = 0; d < interface_->Dim(); ++d)
           deriv_nodal_gap_->Assemble(val, cnode->Dofs()[d], p->first);
       }
 
-    if (d == -1 && cnode->CoData().GetDerivG().size() != 0) dserror("inconsistency");
+    if (d == -1 && cnode->Data().GetDerivG().size() != 0) dserror("inconsistency");
 
-    if (cnode->CoData().GetDerivG().size())
-      for (auto p = cnode->CoData().GetDerivG().begin(); p != cnode->CoData().GetDerivG().end();
-           ++p)
+    if (cnode->Data().GetDerivG().size())
+      for (auto p = cnode->Data().GetDerivG().begin(); p != cnode->Data().GetDerivG().end(); ++p)
       {
         const double val = p->second / d;
         for (int d = 0; d < interface_->Dim(); ++d)
@@ -871,7 +870,7 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("not a contact node");
 
 
@@ -896,28 +895,28 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
     for (int d = 0; d < Interface()->Dim(); ++d)
     {
       relTangVel_->ReplaceGlobalValue(
-          cnode->Dofs()[d], 0, cnode->CoEhlData().GetWeightedRelTangVel()(d) / d_val);
+          cnode->Dofs()[d], 0, cnode->EhlData().GetWeightedRelTangVel()(d) / d_val);
       avTangVel_->ReplaceGlobalValue(
-          cnode->Dofs()[d], 0, cnode->CoEhlData().GetWeightedAvTangVel()(d) / d_val);
+          cnode->Dofs()[d], 0, cnode->EhlData().GetWeightedAvTangVel()(d) / d_val);
     }
 
-    for (auto p = cnode->CoData().GetDerivD().at(cnode->Id()).begin();
-         p != cnode->CoData().GetDerivD().at(cnode->Id()).end(); ++p)
+    for (auto p = cnode->Data().GetDerivD().at(cnode->Id()).begin();
+         p != cnode->Data().GetDerivD().at(cnode->Id()).end(); ++p)
     {
       const int col = p->first;
       for (int d = 0; d < Interface()->Dim(); ++d)
       {
         const int row = cnode->Dofs()[d];
         const double rel_val =
-            -cnode->CoEhlData().GetWeightedRelTangVel()(d) / (d_val * d_val) * p->second;
+            -cnode->EhlData().GetWeightedRelTangVel()(d) / (d_val * d_val) * p->second;
         const double av_val =
-            -cnode->CoEhlData().GetWeightedAvTangVel()(d) / (d_val * d_val) * p->second;
+            -cnode->EhlData().GetWeightedAvTangVel()(d) / (d_val * d_val) * p->second;
         relTangVel_deriv_->Assemble(rel_val, row, col);
         avTangVel_deriv_->Assemble(av_val, row, col);
       }
     }
-    for (auto p = cnode->CoEhlData().GetWeightedAvTangVelDeriv().begin();
-         p != cnode->CoEhlData().GetWeightedAvTangVelDeriv().end(); ++p)
+    for (auto p = cnode->EhlData().GetWeightedAvTangVelDeriv().begin();
+         p != cnode->EhlData().GetWeightedAvTangVelDeriv().end(); ++p)
     {
       const int col = p->first;
       for (int d = 0; d < Interface()->Dim(); ++d)
@@ -927,8 +926,8 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
         avTangVel_deriv_->Assemble(val, row, col);
       }
     }
-    for (auto p = cnode->CoEhlData().GetWeightedRelTangVelDeriv().begin();
-         p != cnode->CoEhlData().GetWeightedRelTangVelDeriv().end(); ++p)
+    for (auto p = cnode->EhlData().GetWeightedRelTangVelDeriv().begin();
+         p != cnode->EhlData().GetWeightedRelTangVelDeriv().end(); ++p)
     {
       const int col = p->first;
       for (int d = 0; d < Interface()->Dim(); ++d)
@@ -957,7 +956,7 @@ void ADAPTER::CouplingEhlMortar::AssembleSurfGrad()
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("ERROR: Cannot find node");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("this is not a contact node");
 
     double dval = 1.;
@@ -977,8 +976,8 @@ void ADAPTER::CouplingEhlMortar::AssembleSurfGrad()
             "duals?");
     }
 
-    for (auto p = cnode->CoEhlData().GetSurfGrad().begin();
-         p != cnode->CoEhlData().GetSurfGrad().end(); ++p)
+    for (auto p = cnode->EhlData().GetSurfGrad().begin(); p != cnode->EhlData().GetSurfGrad().end();
+         ++p)
       for (int d = 0; d < Interface()->Dim(); ++d)
         SurfGrad_->Assemble(p->second(d) / dval, cnode->Dofs()[d], p->first);
   }
@@ -997,7 +996,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSur
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("ERROR: Cannot find node");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("this is not a contact node");
 
     double dval = 1.;
@@ -1017,8 +1016,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSur
             "duals?");
     }
 
-    for (auto p = cnode->CoEhlData().GetSurfGradDeriv().begin();
-         p != cnode->CoEhlData().GetSurfGradDeriv().end(); ++p)
+    for (auto p = cnode->EhlData().GetSurfGradDeriv().begin();
+         p != cnode->EhlData().GetSurfGradDeriv().end(); ++p)
     {
       const int col = p->first;
       for (auto q = p->second.begin(); q != p->second.end(); ++q)
@@ -1034,14 +1033,14 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSur
       }
     }
 
-    if (cnode->CoData().GetDerivD().size())
-      for (auto p = cnode->CoData().GetDerivD().at(cnode->Id()).begin();
-           p != cnode->CoData().GetDerivD().at(cnode->Id()).end(); ++p)
+    if (cnode->Data().GetDerivD().size())
+      for (auto p = cnode->Data().GetDerivD().at(cnode->Id()).begin();
+           p != cnode->Data().GetDerivD().at(cnode->Id()).end(); ++p)
       {
         const int col = p->first;
 
-        for (auto q = cnode->CoEhlData().GetSurfGrad().begin();
-             q != cnode->CoEhlData().GetSurfGrad().end(); ++q)
+        for (auto q = cnode->EhlData().GetSurfGrad().begin();
+             q != cnode->EhlData().GetSurfGrad().end(); ++q)
           for (int d = 0; d < Interface()->Dim(); ++d)
           {
             const int row = cnode->Dofs()[d];
@@ -1106,7 +1105,7 @@ void ADAPTER::CouplingEhlMortar::CreateActiveSlipToggle(Teuchos::RCP<Epetra_Vect
 
     if (active_old != nullptr)
     {
-      if (cnode->CoData().ActiveOld())
+      if (cnode->Data().ActiveOld())
         (*active_old)->operator[](i) = 1.;
       else
         (*active_old)->operator[](i) = 0.;
@@ -1152,7 +1151,7 @@ void ADAPTER::CouplingEhlMortar::ReadRestart(IO::DiscretizationReader& reader)
     if (!cnode) dserror("cast failed");
     cnode->Active() = active_toggle->operator[](i);
     cnode->FriData().Slip() = slip_toggle->operator[](i);
-    cnode->CoData().ActiveOld() = active_old_toggle->operator[](i);
+    cnode->Data().ActiveOld() = active_old_toggle->operator[](i);
     for (int d = 0; d < interface_->Dim(); ++d)
       cnode->MoData().lm()[d] = z_->operator[](z_->Map().LID(cnode->Dofs()[d]));
   }

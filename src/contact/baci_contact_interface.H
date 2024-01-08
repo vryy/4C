@@ -45,9 +45,9 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
-  class CoInterface;
-  class CoNode;
-  class CoElement;
+  class Interface;
+  class Node;
+  class Element;
   class SelfBinaryTree;
 
   /*----------------------------------------------------------------------------*/
@@ -296,11 +296,11 @@ namespace CONTACT
   \brief One contact interface
 
   */
-  class CoInterface : public MORTAR::MortarInterface
+  class Interface : public MORTAR::MortarInterface
   {
    protected:
     /// constructor ( only for derived classes )
-    CoInterface(const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData_ptr);
+    Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData_ptr);
 
    public:
     /** \brief Create a new contact interface object
@@ -315,7 +315,7 @@ namespace CONTACT
      *  \param selfcontact (in): Boolean flag to indicate self-contact
      *
      *  \author hiermeier \date 03/17 */
-    static Teuchos::RCP<CoInterface> Create(const int id, const Epetra_Comm& comm,
+    static Teuchos::RCP<Interface> Create(const int id, const Epetra_Comm& comm,
         const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact);
 
     /*!
@@ -333,13 +333,13 @@ namespace CONTACT
     \param selfcontact (in): Flag for self contact status
 
     */
-    CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
+    Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
         bool selfcontact);
 
     // don't want = operator and cctor
-    CoInterface operator=(const CoInterface& old) = delete;
-    CoInterface(const CoInterface& old) = delete;
+    Interface operator=(const Interface& old) = delete;
+    Interface(const Interface& old) = delete;
 
     /*!
     \brief Print this Interface
@@ -597,17 +597,17 @@ namespace CONTACT
     //! @name Evlauation methods
 
     /*!
-    \brief Add a CONTACT::CoNode to the interface (Filled()==true NOT prerequisite)
+    \brief Add a CONTACT::Node to the interface (Filled()==true NOT prerequisite)
 
     \param cnode (in): Teuchos::rcp to a contact node
 
     \return Filled()==false
 
     */
-    virtual void AddCoNode(Teuchos::RCP<CONTACT::CoNode> cnode);
+    virtual void AddNode(Teuchos::RCP<CONTACT::Node> cnode);
 
     /*!
-    \brief Add a CONTACT::CoElement to the interface
+    \brief Add a CONTACT::Element to the interface
 
     \pre Filled() == true is prerequisite
 
@@ -616,7 +616,7 @@ namespace CONTACT
     \return Filled()==false
 
     */
-    virtual void AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele);
+    virtual void AddElement(Teuchos::RCP<CONTACT::Element> cele);
 
     //! @name Parallel distribution and ghosting
     /* References
@@ -819,7 +819,7 @@ namespace CONTACT
     TODO: maybe update kappa each time step?
 
     */
-    virtual bool IntegrateKappaPenalty(CONTACT::CoElement& sele);
+    virtual bool IntegrateKappaPenalty(CONTACT::Element& sele);
     /*!
     \brief Evaluate relative movement (jump) of slave nodes
 
@@ -970,7 +970,7 @@ namespace CONTACT
     (frictionless) we are only interested in the normal part, which makes
     g a scalar quantity here. Compare also the different definitions of g_
     in CONTACT::MtAbstractStrategy::MortarCoupling() -> gsdofrowmap_ and
-    in CONTACT::CoAbstractStrategy::InitMortar()/AssembleMortar() -> gsnoderowmap_!!!
+    in CONTACT::AbstractStrategy::InitMortar()/AssembleMortar() -> gsnoderowmap_!!!
 
     */
     virtual void AssembleG(Epetra_Vector& gglobal);
@@ -1326,7 +1326,7 @@ namespace CONTACT
 
     inline bool IsFriction() const { return friction_; }
 
-    const CoInterface& GetMaSharingRefInterface() const;
+    const Interface& GetMaSharingRefInterface() const;
 
     //! @name Output
     //! @{
@@ -1607,7 +1607,7 @@ namespace CONTACT
      *
      * @param[in/out] cnode A single contact node
      */
-    virtual void SetNodeInitiallyActive(CONTACT::CoNode& cnode) const;
+    virtual void SetNodeInitiallyActive(CONTACT::Node& cnode) const;
 
     /*! \brief Check if node \c cnode is set active by gap on input
      *
@@ -1616,7 +1616,7 @@ namespace CONTACT
      *
      * @param[in/out] cnode A single contact node
      */
-    void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
+    void SetNodeInitiallyActiveByGap(Node& cnode) const;
 
     /*!
      * \brief Set condition specific parameters such that the correct parameters are available for
@@ -1684,12 +1684,12 @@ namespace CONTACT
     /// @}
    private:
     static bool abs_compare(int a, int b) { return (std::abs(a) < std::abs(b)); }
-  };  // class CoInterface
+  };  // class Interface
 }  // namespace CONTACT
 
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const CONTACT::CoInterface& interface);
+std::ostream& operator<<(std::ostream& os, const CONTACT::Interface& interface);
 
 
 BACI_NAMESPACE_CLOSE

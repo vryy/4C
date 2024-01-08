@@ -34,7 +34,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegrator::CoIntegrator(
+CONTACT::Integrator::Integrator(
     Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : imortar_(params),
       Comm_(comm),
@@ -94,7 +94,7 @@ CONTACT::CoIntegrator::CoIntegrator(
 /*----------------------------------------------------------------------*
  |  check for boundary elements                              farah 02/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoIntegrator::BoundarySegmCheck2D(
+bool CONTACT::Integrator::BoundarySegmCheck2D(
     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles)
 {
   double sxi_test[2] = {0.0, 0.0};
@@ -202,7 +202,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::InitializeGP(CORE::FE::CellType eletype)
+void CONTACT::Integrator::InitializeGP(CORE::FE::CellType eletype)
 {
   //**********************************************************************
   // Create integration points according to eletype!
@@ -581,7 +581,7 @@ void CONTACT::CoIntegrator::InitializeGP(CORE::FE::CellType eletype)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia,
+void CONTACT::Integrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia,
     double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
@@ -602,7 +602,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
  |  IntegrateM, IntegrateG, DerivM and DerivG!)                         |
  |  Also wear is integrated.                                            |
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia,
+void CONTACT::Integrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia,
     double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -698,7 +698,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+    Node* cnode = dynamic_cast<Node*>(mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -792,7 +792,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
 
     // evaluate the derivative dxdsxidsxi = Jac,xi
     double djacdxi[2] = {0.0, 0.0};
-    dynamic_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi, sxi, ssecderiv);
+    dynamic_cast<CONTACT::Element&>(sele).DJacDXi(djacdxi, sxi, ssecderiv);
     double dxdsxidsxi = djacdxi[0];  // only 2D here
 
     // evalute the GP slave coordinate derivatives
@@ -862,7 +862,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  check for boundary elements                              farah 07/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
+bool CONTACT::Integrator::BoundarySegmCheck3D(
     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles)
 {
   double sxi_test[2] = {0.0, 0.0};
@@ -1438,7 +1438,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
     std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
     const Epetra_Comm& comm, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
@@ -1453,7 +1453,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Integrate and linearize for lin and quad elements        farah 01/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
     std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -1526,7 +1526,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+    Node* cnode = dynamic_cast<Node*>(mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -1655,7 +1655,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
                 dgapgp, dnmap_unit);
 
           if (algo_ == INPAR::MORTAR::algorithm_mortar)
-            dynamic_cast<CONTACT::CoElement&>(sele).PrepareMderiv(meles, nummaster);
+            dynamic_cast<CONTACT::Element&>(sele).PrepareMderiv(meles, nummaster);
 
           IntegrateGP_3D(sele, *meles[nummaster], sval, lmval, mval, sderiv, mderiv, lmderiv,
               dualmap, wgt, jacslave, jacslavemap, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp,
@@ -1663,7 +1663,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
 
           // assemble m-matrix for this slave/master pair
           if (algo_ == INPAR::MORTAR::algorithm_mortar)
-            dynamic_cast<CONTACT::CoElement&>(sele).AssembleMderivToNodes(*meles[nummaster]);
+            dynamic_cast<CONTACT::Element&>(sele).AssembleMderivToNodes(*meles[nummaster]);
 
         }  // is_on_mele
         if (is_on_mele == true) break;
@@ -1677,7 +1677,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
         DRT::Node** snodes = sele.Nodes();
         for (int e = 0; e < sele.NumNode(); ++e)
         {
-          CoNode* cnode = dynamic_cast<CoNode*>(snodes[e]);
+          Node* cnode = dynamic_cast<Node*>(snodes[e]);
           std::cout << "#eID " << sele.Id() << " | #nID " << cnode->Id() << ": " << cnode->X()[0]
                     << ", " << cnode->X()[1] << ", " << cnode->X()[2] << std::endl;
         }
@@ -1693,7 +1693,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
     const Epetra_Comm& comm, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
@@ -1714,7 +1714,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
  |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
  |  This is the auxiliary plane coupling version!!!                     |
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -1764,7 +1764,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
   {
     for (int i = 0; i < ncol; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mele.Nodes()[i]);
+      Node* cnode = dynamic_cast<Node*>(mele.Nodes()[i]);
       linsize += cnode->GetLinsize();
     }
     linsize += 1 + mele.NumNode();
@@ -1773,7 +1773,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
   {
     for (int i = 0; i < nrow; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+      Node* cnode = dynamic_cast<Node*>(mynodes[i]);
       linsize += cnode->GetLinsize();
     }
   }
@@ -1921,7 +1921,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
     // integrate for area scaling:
     for (int i = 0; i < sele.NumNode(); ++i)
     {
-      dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i])->MoData().GetDscale() +=
+      dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->MoData().GetDscale() +=
           wgt * jac * sval[i] * lmvalScale[i];
     }
 
@@ -1948,7 +1948,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
 /*----------------------------------------------------------------------*
  |  Integrate and linearize a 1D slave / master cell (2D)    farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElement& mele,
+void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElement& mele,
     MORTAR::MortarElement& lele, MORTAR::MortarElement& sele, Teuchos::RCP<MORTAR::IntCell> cell,
     double* auxn, const Epetra_Comm& comm)
 {
@@ -2006,7 +2006,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+    Node* cnode = dynamic_cast<Node*>(mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -2224,7 +2224,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     int linsize = 0;
     for (int i = 0; i < nrow; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+      Node* cnode = dynamic_cast<Node*>(mynodes[i]);
       linsize += 10 * cnode->GetLinsize();
     }
 
@@ -2235,11 +2235,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
     for (int i = 0; i < nrow; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+      Node* cnode = dynamic_cast<Node*>(mynodes[i]);
 
-      CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
-      CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
-      CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->CoData().GetDerivN()[2];
+      CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->Data().GetDerivN()[0];
+      CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->Data().GetDerivN()[1];
+      CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->Data().GetDerivN()[2];
 
       for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
         dmap_nxsl_gp[p->first] += sval[i] * (p->second);
@@ -2316,7 +2316,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     // lin slave nodes
     for (int z = 0; z < nrow; ++z)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mynodes[z]);
+      Node* cnode = dynamic_cast<Node*>(mynodes[z]);
       for (int k = 0; k < 3; ++k) dgapgp[cnode->Dofs()[k]] -= sval[z] * gpn[k];
     }
 
@@ -2326,7 +2326,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       const double& ps = p->second;
       for (int z = 0; z < nrow; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(mynodes[z]);
+        Node* cnode = dynamic_cast<Node*>(mynodes[z]);
         for (int k = 0; k < 3; ++k) dg -= gpn[k] * sderiv(z, 0) * cnode->xspatial()[k] * ps;
       }
     }
@@ -2336,7 +2336,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       const double& ps = p->second;
       for (int z = 0; z < nrow; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(mynodes[z]);
+        Node* cnode = dynamic_cast<Node*>(mynodes[z]);
         for (int k = 0; k < 3; ++k) dg -= gpn[k] * sderiv(z, 1) * cnode->xspatial()[k] * ps;
       }
     }
@@ -2345,7 +2345,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     // lin master nodes
     for (int z = 0; z < ncolL; ++z)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+      Node* cnode = dynamic_cast<Node*>(mnodes[z]);
       for (int k = 0; k < 3; ++k) dgapgp[cnode->Dofs()[k]] += mval[z] * gpn[k];
     }
 
@@ -2355,7 +2355,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       const double& ps = p->second;
       for (int z = 0; z < ncolL; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+        Node* cnode = dynamic_cast<Node*>(mnodes[z]);
         for (int k = 0; k < 3; ++k) dg += gpn[k] * mderiv(z, 0) * cnode->xspatial()[k] * ps;
       }
     }
@@ -2365,7 +2365,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     // weighted gap
     for (int j = 0; j < nrow; ++j)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
@@ -2394,7 +2394,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
       // get the corresponding map as a reference
       std::map<int, double>& dgmap =
-          dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGlts();
+          dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivGlts();
 
       // switch if Petrov-Galerkin approach for LM is applied
       if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
@@ -2451,12 +2451,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     {
       for (int j = 0; j < nrow; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
 
         // integrate mseg
         for (int k = 0; k < ncolL; ++k)
         {
-          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+          CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[k]);
 
           // multiply the two shape functions
           double prod = lmval[j] * mval[k] * jac * wgt;
@@ -2473,12 +2473,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     {
       for (int j = 0; j < nrow; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
 
         // integrate dseg
         for (int k = 0; k < nrow; ++k)
         {
-          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+          CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mynodes[k]);
 
           // multiply the two shape functions
           double prod = lmval[j] * sval[k] * jac * wgt;
@@ -2490,7 +2490,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
         // integrate mseg
         for (int k = 0; k < ncolL; ++k)
         {
-          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+          CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[k]);
 
           // multiply the two shape functions
           double prod = lmval[j] * mval[k] * jac * wgt;
@@ -2512,7 +2512,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
         int sgid = mymrtrnode->Id();
         std::map<int, double>& ddmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[sgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivDlts()[sgid];
 
 
         // integrate LinM
@@ -2524,7 +2524,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
           // get the correct map as a reference
           std::map<int, double>& dmmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[mgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivMlts()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -2587,7 +2587,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
           // get the correct map as a reference
           std::map<int, double>& ddmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[mgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivDlts()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -2642,7 +2642,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
           // get the correct map as a reference
           std::map<int, double>& dmmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[mgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivMlts()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -2695,7 +2695,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 /*----------------------------------------------------------------------*
  |  Integrate and linearize a 1D slave / master cell (2D)    farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& lsele, MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell,
     double* auxn, const Epetra_Comm& comm)
 {
@@ -2755,7 +2755,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
   int linsize = 0;
   for (int i = 0; i < nrowL; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+    Node* cnode = dynamic_cast<Node*>(mynodes[i]);
     linsize += cnode->GetLinsize();
   }
   linsize *= 100;  // TODO: remove this safety scaling
@@ -2999,7 +2999,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     int linsize = 0;
     for (int i = 0; i < nrowL; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+      Node* cnode = dynamic_cast<Node*>(mynodes[i]);
       linsize += 10 * cnode->GetLinsize();
     }
 
@@ -3010,11 +3010,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
     for (int i = 0; i < nrowL; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+      Node* cnode = dynamic_cast<Node*>(mynodes[i]);
 
-      CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
-      CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
-      CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->CoData().GetDerivN()[2];
+      CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->Data().GetDerivN()[0];
+      CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->Data().GetDerivN()[1];
+      CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->Data().GetDerivN()[2];
 
       for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
         dmap_nxsl_gp[p->first] += sval[i] * (p->second);
@@ -3081,7 +3081,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     // lin slave nodes
     for (int z = 0; z < nrowL; ++z)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mynodes[z]);
+      Node* cnode = dynamic_cast<Node*>(mynodes[z]);
       for (int k = 0; k < 3; ++k) dgapgp[cnode->Dofs()[k]] -= sval[z] * gpn[k];
     }
 
@@ -3091,7 +3091,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       const double& ps = p->second;
       for (int z = 0; z < nrowL; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(mynodes[z]);
+        Node* cnode = dynamic_cast<Node*>(mynodes[z]);
         for (int k = 0; k < 3; ++k) dg -= gpn[k] * sderiv(z, 0) * cnode->xspatial()[k] * ps;
       }
     }
@@ -3099,7 +3099,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     // lin master nodes
     for (int z = 0; z < ncol; ++z)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+      Node* cnode = dynamic_cast<Node*>(mnodes[z]);
       for (int k = 0; k < 3; ++k) dgapgp[cnode->Dofs()[k]] += mval[z] * gpn[k];
     }
 
@@ -3109,7 +3109,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       const double& ps = p->second;
       for (int z = 0; z < ncol; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+        Node* cnode = dynamic_cast<Node*>(mnodes[z]);
         for (int k = 0; k < 3; ++k) dg += gpn[k] * mderiv(z, 0) * cnode->xspatial()[k] * ps;
       }
     }
@@ -3120,7 +3120,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       const double& ps = p->second;
       for (int z = 0; z < ncol; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+        Node* cnode = dynamic_cast<Node*>(mnodes[z]);
         for (int k = 0; k < 3; ++k) dg += gpn[k] * mderiv(z, 1) * cnode->xspatial()[k] * ps;
       }
     }
@@ -3128,7 +3128,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     // weighted gap
     for (int j = 0; j < nrowL; ++j)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
@@ -3159,7 +3159,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
       // get the corresponding map as a reference
       std::map<int, double>& dgmap =
-          dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGlts();
+          dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivGlts();
 
       // switch if Petrov-Galerkin approach for LM is applied
       if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
@@ -3217,19 +3217,19 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       bool bound = false;
       for (int j = 0; j < nrowL; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
         if (cnode->IsOnCorner()) bound = true;
       }
 
       for (int j = 0; j < nrowL; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
         if (cnode->IsOnCorner()) continue;
 
         // integrate mseg
         for (int k = 0; k < ncol; ++k)
         {
-          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+          CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[k]);
 
           // multiply the two shape functions
           double prod = lmval[j] * mval[k] * jac * wgt;
@@ -3251,7 +3251,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
           for (int k = 0; k < nrowL; ++k)
           {
-            CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+            CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mynodes[k]);
             //          bool k_boundnode = mnode->IsOnBoundorCE();
 
             // do not assemble off-diagonal terms if j,k are both non-boundary nodes
@@ -3281,14 +3281,14 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       // OLD DM DUAL IMPLEMENTATION
       //      for (int j=0;j<nrowL;++j)
       //      {
-      //        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+      //        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
       //        if (cnode->IsOnCorner())
       //          continue;
       //
       //        // integrate mseg
       //        for (int k=0; k<ncol; ++k)
       //        {
-      //          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+      //          CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[k]);
       //
       //          // multiply the two shape functions
       //          double prod = lmval[j]*mval[k]*jac*wgt;
@@ -3306,14 +3306,14 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     {
       for (int j = 0; j < nrowL; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
 
         if (cnode->IsOnCorner()) continue;
 
         // integrate mseg
         for (int k = 0; k < ncol; ++k)
         {
-          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+          CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[k]);
 
           // multiply the two shape functions
           double prod = lmval[j] * mval[k] * jac * wgt;
@@ -3325,7 +3325,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         // integrate dseg
         for (int k = 0; k < nrowL; ++k)
         {
-          CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+          CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(mynodes[k]);
 
           if (snode->IsOnCorner())
           {
@@ -3354,7 +3354,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       bool bound = false;
       for (int j = 0; j < nrowL; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
         if (cnode->IsOnCorner()) bound = true;
       }
 
@@ -3378,7 +3378,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
             // get the correct map as a reference
             std::map<int, double>& dmmap_jk =
-                dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[mgid];
+                dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivMlts()[mgid];
 
             // (1) Lin(Phi) - dual shape functions
             //          if (dualmap.size()>0)
@@ -3434,7 +3434,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
               // move entry to derivM (with minus sign)
               // get the correct map as a reference
               std::map<int, double>& dmmap_jk =
-                  dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[sgid];
+                  dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivDlts()[sgid];
 
               // (1) Lin(Phi) - dual shape functions
               //            if (dualmap.size()>0)
@@ -3478,9 +3478,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
             else
             {
               // get the correct map as a reference
-              std::map<int, double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)
-                                                    ->CoData()
-                                                    .GetDerivDlts()[mymrtrnode->Id()];
+              std::map<int, double>& ddmap_jk =
+                  dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivDlts()[mymrtrnode->Id()];
 
               // (1) Lin(Phi) - dual shape functions
               //            if (dualmap.size()>0)
@@ -3533,7 +3532,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
           int sgid = mymrtrnode->Id();
           std::map<int, double>& ddmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[sgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivDlts()[sgid];
 
           // integrate LinM
           for (int k = 0; k < ncol; ++k)
@@ -3544,7 +3543,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
             // get the correct map as a reference
             std::map<int, double>& dmmap_jk =
-                dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[mgid];
+                dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivMlts()[mgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -3603,7 +3602,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
           // get the correct map as a reference
           std::map<int, double>& dmmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[mgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivMlts()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -3643,11 +3642,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
           int mgid = mynodes[k]->Id();
           static double fac = 0.0;
 
-          if (dynamic_cast<CoNode*>(mynodes[k])->IsOnCorner())
+          if (dynamic_cast<Node*>(mynodes[k])->IsOnCorner())
           {
             // get the correct map as a reference
             std::map<int, double>& dmmap_jk =
-                dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[mgid];
+                dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivDlts()[mgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -3677,7 +3676,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
           {
             // get the correct map as a reference
             std::map<int, double>& dmmap_jk =
-                dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[mgid];
+                dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivDlts()[mgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -3724,7 +3723,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
  |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
  |  This is the QUADRATIC auxiliary plane coupling version!!!           |
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn)
 {
@@ -3858,7 +3857,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+    Node* cnode = dynamic_cast<Node*>(mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -4192,7 +4191,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
     std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
@@ -4207,7 +4206,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Integrate and linearize mortar terms                     farah 01/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
     std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -4317,7 +4316,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+    Node* cnode = dynamic_cast<Node*>(mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -4448,8 +4447,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Integrate D                                              farah 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateD(
-    MORTAR::MortarElement& sele, const Epetra_Comm& comm, bool lin)
+void CONTACT::Integrator::IntegrateD(MORTAR::MortarElement& sele, const Epetra_Comm& comm, bool lin)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -4482,7 +4480,7 @@ void CONTACT::CoIntegrator::IntegrateD(
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
+    Node* cnode = dynamic_cast<Node*>(mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -4548,7 +4546,7 @@ void CONTACT::CoIntegrator::IntegrateD(
     // integrate D and M
     for (int j = 0; j < nrow; ++j)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
 
       // integrate dseg (boundary modification)
       if (bound)
@@ -4557,7 +4555,7 @@ void CONTACT::CoIntegrator::IntegrateD(
 
         for (int k = 0; k < nrow; ++k)
         {
-          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+          CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mynodes[k]);
           bool k_boundnode = mnode->IsOnBound();
 
           // do not assemble off-diagonal terms if j,k are both non-boundary nodes
@@ -4586,7 +4584,7 @@ void CONTACT::CoIntegrator::IntegrateD(
         // integrate dseg
         for (int k = 0; k < nrow; ++k)
         {
-          CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+          CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(mynodes[k]);
 
           // multiply the two shape functions
           double prod = lmval[j] * sval[k] * dxdsxi * wgt;
@@ -4657,7 +4655,7 @@ void CONTACT::CoIntegrator::IntegrateD(
 /*----------------------------------------------------------------------*
  |  Compute penalty scaling factor kappa                     farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateKappaPenaltyLTS(MORTAR::MortarElement& ele)
+void CONTACT::Integrator::IntegrateKappaPenaltyLTS(MORTAR::MortarElement& ele)
 {
   // number of nodes (slave)
   int nrow = ele.NumNode();
@@ -4690,12 +4688,12 @@ void CONTACT::CoIntegrator::IntegrateKappaPenaltyLTS(MORTAR::MortarElement& ele)
     // nrow represents the slave side dofs !!!  */
     for (int j = 0; j < nrow; ++j)
     {
-      CoNode* mymrtrnode = dynamic_cast<CoNode*>(mynodes[j]);
+      Node* mymrtrnode = dynamic_cast<Node*>(mynodes[j]);
 
       if (mymrtrnode->IsOnCorner()) continue;
 
       // add current Gauss point's contribution to kappa
-      mymrtrnode->CoData().Kappa() += val[j] * jac * wgt;
+      mymrtrnode->Data().Kappa() += val[j] * jac * wgt;
     }
   }
   //**********************************************************************
@@ -4707,7 +4705,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenaltyLTS(MORTAR::MortarElement& ele)
 /*----------------------------------------------------------------------*
  |  Compute penalty scaling factor kappa                      popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele, double* sxia,
+void CONTACT::Integrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele, double* sxia,
     double* sxib, Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg)
 {
   // explicitly defined shape function type needed
@@ -4780,7 +4778,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele, d
 /*----------------------------------------------------------------------*
  |  Compute penalty scaling factor kappa (3D piecewise lin)   popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
     MORTAR::IntElement& sintele, double* sxia, double* sxib,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg)
 {
@@ -4861,7 +4859,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiAB (2D)               popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
+void CONTACT::Integrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
     MORTAR::MortarElement& mele, double& mxia, double& mxib,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivxi, bool& startslave, bool& endslave,
     int& linsize)
@@ -4932,7 +4930,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     double normal[3] = {0., 0., 0.};
     sele.ComputeUnitNormalAtXi(psxia, normal);
     std::vector<CORE::GEN::pairedvector<int, double>> derivN;
-    dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxia, derivN);
+    dynamic_cast<CONTACT::Element*>(&sele)->DerivUnitNormalAtXi(psxia, derivN);
 
     CORE::LINALG::SerialDenseVector* mval = nullptr;
     CORE::LINALG::SerialDenseMatrix* mderiv = nullptr;
@@ -5011,7 +5009,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     double normal[3] = {0., 0., 0.};
     sele.ComputeUnitNormalAtXi(psxib, normal);
     std::vector<CORE::GEN::pairedvector<int, double>> derivN;
-    dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxib, derivN);
+    dynamic_cast<CONTACT::Element*>(&sele)->DerivUnitNormalAtXi(psxib, derivN);
 
     CORE::LINALG::SerialDenseVector* mval = nullptr;
     CORE::LINALG::SerialDenseMatrix* mderiv = nullptr;
@@ -5140,9 +5138,9 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     for (int i = 0; i < numsnode; ++i)
     {
       CORE::GEN::pairedvector<int, double>& nxmap_curr =
-          static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+          static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[0];
       CORE::GEN::pairedvector<int, double>& nymap_curr =
-          static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+          static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[1];
 
       for (_CI p = nxmap_curr.begin(); p != nxmap_curr.end(); ++p)
         dmap_sxia[p->first] -= valsxia[i] * fac_yslm_a * (p->second);
@@ -5220,9 +5218,9 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     for (int i = 0; i < numsnode; ++i)
     {
       CORE::GEN::pairedvector<int, double>& nxmap_curr =
-          static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+          static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[0];
       CORE::GEN::pairedvector<int, double>& nymap_curr =
-          static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+          static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[1];
 
       for (_CI p = nxmap_curr.begin(); p != nxmap_curr.end(); ++p)
         dmap_sxib[p->first] -= valsxib[i] * fac_yslm_b * (p->second);
@@ -5244,7 +5242,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (2D)        popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+void CONTACT::Integrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     double sxigp, double mxigp, const CORE::GEN::pairedvector<int, double>& derivsxi,
     CORE::GEN::pairedvector<int, double>& derivmxi, int& linsize)
 {
@@ -5371,9 +5369,9 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
   for (int i = 0; i < numsnode; ++i)
   {
     CORE::GEN::pairedvector<int, double>& dmap_nxsl_i =
-        static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+        static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[0];
     CORE::GEN::pairedvector<int, double>& dmap_nysl_i =
-        static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+        static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[1];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp_mod[p->first] += valsxigp[i] * (p->second);
@@ -5442,7 +5440,7 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (3D)        popp 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+void CONTACT::Integrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     const double* sxigp, const double* mxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi, const double alpha)
@@ -5510,7 +5508,7 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
   int linsize = 0;
   for (int i = 0; i < numsnode; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(snodes[i]);
+    Node* cnode = dynamic_cast<Node*>(snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -5521,11 +5519,11 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
   for (int i = 0; i < numsnode; ++i)
   {
     CORE::GEN::pairedvector<int, double>& dmap_nxsl_i =
-        static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+        static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[0];
     CORE::GEN::pairedvector<int, double>& dmap_nysl_i =
-        static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+        static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[1];
     CORE::GEN::pairedvector<int, double>& dmap_nzsl_i =
-        static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
+        static_cast<CONTACT::Node*>(smrtrnodes[i])->Data().GetDerivN()[2];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp[p->first] += valsxigp[i] * (p->second);
@@ -5627,7 +5625,7 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
 /*----------------------------------------------------------------------*
  |  Compute deriv. of XiGP slave / master AuxPlane (3D)       popp 03/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double* xigp,
+void CONTACT::Integrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double* xigp,
     double* auxn, std::vector<CORE::GEN::pairedvector<int, double>>& derivxi, double& alpha,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivauxn,
     CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>>& derivgp)
@@ -5744,7 +5742,7 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, doub
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+void CONTACT::Integrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -5772,7 +5770,7 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
       // check bound
       bool bound = false;
       for (int i = 0; i < sele.NumNode(); ++i)
-        if (dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i])->IsOnBoundorCE()) bound = true;
+        if (dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->IsOnBoundorCE()) bound = true;
 
       // integrate D and M matrix
       GP_DM(sele, mele, lmval, sval, mval, jac, wgt, bound);
@@ -5794,7 +5792,7 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
       {
         int linsize = 0;
         for (int i = 0; i < sele.NumNode(); ++i)
-          linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
+          linsize += dynamic_cast<Node*>(sele.Nodes()[i])->GetLinsize();
 
         double jumpvalv[2] = {0.0, 0.0};  // jump for slipincr --> equal to jumpval
         std::vector<CORE::GEN::pairedvector<int, double>> dslipgp(
@@ -5817,7 +5815,7 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
       {
         int linsize = 0;
         for (int i = 0; i < sele.NumNode(); ++i)
-          linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
+          linsize += dynamic_cast<Node*>(sele.Nodes()[i])->GetLinsize();
 
         double jumpval[2] = {0.0, 0.0};  // jump for wear
         double wearval = 0.0;            // wear value
@@ -5923,7 +5921,7 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+void CONTACT::Integrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -5992,7 +5990,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
       {
         int linsize = 0;
         for (int i = 0; i < sele.NumNode(); ++i)
-          linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
+          linsize += dynamic_cast<Node*>(sele.Nodes()[i])->GetLinsize();
         linsize = linsize * 2;
 
         double jumpvalv = 0.0;  // jump for slipincr --> equal to jumpval
@@ -6017,7 +6015,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
 
         int linsize = 0;
         for (int i = 0; i < sele.NumNode(); ++i)
-          linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
+          linsize += dynamic_cast<Node*>(sele.Nodes()[i])->GetLinsize();
         linsize = linsize * 2;
 
         double jumpval = 0.0;  // jump for wear
@@ -6122,7 +6120,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP                 farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+void CONTACT::Integrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, double& jac, double& wgt, bool& bound)
 {
@@ -6156,14 +6154,14 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
   {
     for (int j = 0; j < nrow; ++j)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[j]);
 
       if (cnode->IsOnBoundorCE()) continue;
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+        CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * mval[k] * jac * wgt;
@@ -6186,7 +6184,7 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
 
         for (int k = 0; k < nrow; ++k)
         {
-          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
+          CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(snodes[k]);
 
           //          bool k_boundnode = mnode->IsOnBoundorCE();
 
@@ -6234,7 +6232,7 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
   {
     for (int j = 0; j < nrow; ++j)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[j]);
 
       if ((shapefcn_ == INPAR::MORTAR::shape_standard && cnode->IsOnBoundorCE()) ||
           ((shapefcn_ == INPAR::MORTAR::shape_dual ||
@@ -6245,7 +6243,7 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+        CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * mval[k] * jac * wgt;
@@ -6259,7 +6257,7 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
+        CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * sval[k] * jac * wgt;
@@ -6313,7 +6311,7 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& lmintval,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval, const double& jac,
@@ -6341,12 +6339,12 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nrow; ++j)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(snodes[j]);
+      Node* cnode = dynamic_cast<Node*>(snodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
+        Node* mnode = dynamic_cast<Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * mval[k] * jac * wgt;
@@ -6360,7 +6358,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
+        Node* snode = dynamic_cast<Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * sval[k] * jac * wgt;
@@ -6388,12 +6386,12 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nintrow; ++j)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(sintnodes[j]);
+      Node* cnode = dynamic_cast<Node*>(sintnodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
+        Node* mnode = dynamic_cast<Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmintval[j] * mval[k] * jac * wgt;
@@ -6407,7 +6405,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
+        Node* snode = dynamic_cast<Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmintval[j] * sval[k] * jac * wgt;
@@ -6438,12 +6436,12 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nrow; ++j)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(snodes[j]);
+      Node* cnode = dynamic_cast<Node*>(snodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
+        Node* mnode = dynamic_cast<Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * mval[k] * jac * wgt;
@@ -6470,7 +6468,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_wGap(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_2D_wGap(MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval, double* gap,
     double& jac, double& wgt)
 {
@@ -6484,7 +6482,7 @@ void inline CONTACT::CoIntegrator::GP_2D_wGap(MORTAR::MortarElement& sele,
   // **************************
   for (int j = 0; j < nrow; ++j)
   {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(mynodes[j]);
 
     double prod = 0.0;
     // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
@@ -6508,7 +6506,7 @@ void inline CONTACT::CoIntegrator::GP_2D_wGap(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::GP_3D_wGap(MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval, double* gap,
     double& jac, double& wgt, bool quadratic, int nintrow)
 {
@@ -6526,7 +6524,7 @@ void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele,
   {
     for (int j = 0; j < nrow; ++j)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[j]);
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
@@ -6554,7 +6552,7 @@ void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele,
     {
       for (int j = 0; j < nrow; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[j]);
 
         double prod = 0.0;
         prod = lmval[j] * gap[0] * jac * wgt;
@@ -6575,7 +6573,7 @@ void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele,
 
       for (int j = 0; j < nintrow; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[j]);
 
         double prod = 0.0;
         prod = lmval[j] * gap[0] * jac * wgt;
@@ -6596,7 +6594,7 @@ void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele,
     {
       for (int j = 0; j < nrow; ++j)
       {
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[j]);
 
         if (cnode->IsOnBound()) continue;
 
@@ -6622,7 +6620,7 @@ void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele,
   return;
 }
 
-void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+void CONTACT::Integrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* gap,
     double* gpn, std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
@@ -6710,7 +6708,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   {
     for (int i = 0; i < ncol; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mnodes[i]);
+      Node* cnode = dynamic_cast<Node*>(mnodes[i]);
       linsize += cnode->GetLinsize();
     }
     linsize += 1 + mele.NumNode();
@@ -6719,7 +6717,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   {
     for (int i = 0; i < nrow; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(snodes[i]);
+      Node* cnode = dynamic_cast<Node*>(snodes[i]);
       linsize += cnode->GetLinsize();
     }
   }
@@ -6732,11 +6730,11 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
 
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(snodes[i]);
+    Node* cnode = dynamic_cast<Node*>(snodes[i]);
 
-    CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
-    CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
-    CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->CoData().GetDerivN()[2];
+    CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->Data().GetDerivN()[0];
+    CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->Data().GetDerivN()[1];
+    CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->Data().GetDerivN()[2];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp[p->first] += sval[i] * (p->second);
@@ -6834,8 +6832,8 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
               (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0]) *
               (p->second);
 
-        for (_CI p = frinode->CoData().GetDerivN()[k].begin();
-             p != frinode->CoData().GetDerivN()[k].end(); ++p)
+        for (_CI p = frinode->Data().GetDerivN()[k].begin();
+             p != frinode->Data().GetDerivN()[k].end(); ++p)
           dgapgp[p->first] += gpn[k] * sval[z] * frinode->WearData().wcurr()[0] * (p->second);
       }
     }
@@ -6844,7 +6842,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   {
     for (int z = 0; z < nrow; ++z)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(snodes[z]);
+      Node* cnode = dynamic_cast<Node*>(snodes[z]);
       for (int k = 0; k < 3; ++k) dgapgp[cnode->Dofs()[k]] -= sval[z] * gpn[k];
     }
 
@@ -6854,7 +6852,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
       const double& ps = p->second;
       for (int z = 0; z < nrow; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(snodes[z]);
+        Node* cnode = dynamic_cast<Node*>(snodes[z]);
         for (int k = 0; k < 3; ++k) dg -= gpn[k] * sderiv(z, 0) * cnode->xspatial()[k] * ps;
       }
     }
@@ -6865,7 +6863,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
       const double& ps = p->second;
       for (int z = 0; z < nrow; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(snodes[z]);
+        Node* cnode = dynamic_cast<Node*>(snodes[z]);
         for (int k = 0; k < 3; ++k) dg -= gpn[k] * sderiv(z, 1) * cnode->xspatial()[k] * ps;
       }
     }
@@ -6894,8 +6892,8 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
               (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0]) *
               (p->second);
 
-        for (_CI p = frinode->CoData().GetDerivN()[k].begin();
-             p != frinode->CoData().GetDerivN()[k].end(); ++p)
+        for (_CI p = frinode->Data().GetDerivN()[k].begin();
+             p != frinode->Data().GetDerivN()[k].end(); ++p)
           dgapgp[p->first] -= gpn[k] * mval[z] * frinode->WearData().wcurr()[0] * (p->second);
       }
     }
@@ -6905,7 +6903,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
     // lin master nodes
     for (int z = 0; z < ncol; ++z)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+      Node* cnode = dynamic_cast<Node*>(mnodes[z]);
       for (int k = 0; k < 3; ++k) dgapgp[cnode->Dofs()[k]] += mval[z] * gpn[k];
     }
 
@@ -6915,7 +6913,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
       const double& ps = p->second;
       for (int z = 0; z < ncol; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+        Node* cnode = dynamic_cast<Node*>(mnodes[z]);
         for (int k = 0; k < 3; ++k) dg += gpn[k] * mderiv(z, 0) * cnode->xspatial()[k] * ps;
       }
     }
@@ -6926,7 +6924,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
       const double& ps = p->second;
       for (int z = 0; z < ncol; ++z)
       {
-        CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+        Node* cnode = dynamic_cast<Node*>(mnodes[z]);
         for (int k = 0; k < 3; ++k) dg += gpn[k] * mderiv(z, 1) * cnode->xspatial()[k] * ps;
       }
     }
@@ -6935,7 +6933,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   return;
 }
 
-void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+void CONTACT::Integrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* gap,
     double* gpn, std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
@@ -6953,7 +6951,7 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   int ncol = mele.NumNode();
 
   int linsize = 0;
-  for (int i = 0; i < nrow; ++i) linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
+  for (int i = 0; i < nrow; ++i) linsize += dynamic_cast<Node*>(sele.Nodes()[i])->GetLinsize();
   // safety
   linsize = linsize * 2;
 
@@ -7032,9 +7030,9 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
     MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
 
     CORE::GEN::pairedvector<int, double>& dmap_nxsl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[0];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivN()[0];
     CORE::GEN::pairedvector<int, double>& dmap_nysl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[1];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivN()[1];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp[p->first] += sval[i] * (p->second);
@@ -7098,8 +7096,8 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
           dgapgp[p->first] -= gpn[k] * sderiv(z, 0) *
                               (frinode->xspatial()[k] - frinode->MoData().n()[k] * w) * (p->second);
 
-        for (_CI p = frinode->CoData().GetDerivN()[k].begin();
-             p != frinode->CoData().GetDerivN()[k].end(); ++p)
+        for (_CI p = frinode->Data().GetDerivN()[k].begin();
+             p != frinode->Data().GetDerivN()[k].end(); ++p)
           dgapgp[p->first] += gpn[k] * sval[z] * w * (p->second);
       }
     }
@@ -7137,8 +7135,8 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
           dgapgp[p->first] += gpn[k] * mderiv(z, 0) *
                               (frinode->xspatial()[k] - frinode->MoData().n()[k] * w) * (p->second);
 
-        for (_CI p = frinode->CoData().GetDerivN()[k].begin();
-             p != frinode->CoData().GetDerivN()[k].end(); ++p)
+        for (_CI p = frinode->Data().GetDerivN()[k].begin();
+             p != frinode->Data().GetDerivN()[k].end(); ++p)
           dgapgp[p->first] -= gpn[k] * mval[z] * w * (p->second);
       }
     }
@@ -7167,7 +7165,7 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 12/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sele,
     MORTAR::IntElement& sintele, MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmintval,
     CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
@@ -7262,7 +7260,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
   {
     for (int j = 0; j < nintrow; ++j)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(sintnodes[j]);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(sintnodes[j]);
 
       double prod = 0.0;
       prod = lmintval[j] * gap[0] * jac * wgt;
@@ -7285,7 +7283,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(snodes[i]);
+    Node* cnode = dynamic_cast<Node*>(snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -7296,11 +7294,11 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
 
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(snodes[i]);
+    Node* cnode = dynamic_cast<Node*>(snodes[i]);
 
-    CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
-    CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
-    CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->CoData().GetDerivN()[2];
+    CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->Data().GetDerivN()[0];
+    CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->Data().GetDerivN()[1];
+    CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->Data().GetDerivN()[2];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp[p->first] += sval[i] * (p->second);
@@ -7398,8 +7396,8 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
               (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0]) *
               (p->second);
 
-        for (_CI p = frinode->CoData().GetDerivN()[k].begin();
-             p != frinode->CoData().GetDerivN()[k].end(); ++p)
+        for (_CI p = frinode->Data().GetDerivN()[k].begin();
+             p != frinode->Data().GetDerivN()[k].end(); ++p)
           dgapgp[p->first] += gpn[k] * sval[z] * frinode->WearData().wcurr()[0] * (p->second);
       }
     }
@@ -7408,7 +7406,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
   {
     for (int z = 0; z < nrow; ++z)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(snodes[z]);
+      Node* cnode = dynamic_cast<Node*>(snodes[z]);
 
       for (int k = 0; k < 3; ++k)
       {
@@ -7446,8 +7444,8 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
               (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0]) *
               (p->second);
 
-        for (_CI p = frinode->CoData().GetDerivN()[k].begin();
-             p != frinode->CoData().GetDerivN()[k].end(); ++p)
+        for (_CI p = frinode->Data().GetDerivN()[k].begin();
+             p != frinode->Data().GetDerivN()[k].end(); ++p)
           dgapgp[p->first] -= gpn[k] * mval[z] * frinode->WearData().wcurr()[0] * (p->second);
       }
     }
@@ -7457,7 +7455,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
     // lin master nodes
     for (int z = 0; z < ncol; ++z)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(mnodes[z]);
+      Node* cnode = dynamic_cast<Node*>(mnodes[z]);
 
       for (int k = 0; k < 3; ++k)
       {
@@ -7479,7 +7477,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
 /*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap,
@@ -7503,7 +7501,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement&
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // get the corresponding map as a reference
-  std::map<int, double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+  std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
 
   // switch if Petrov-Galerkin approach for LM is applied
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
@@ -7564,8 +7562,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement&
     const int ncol = mele.NumNode();
     DRT::Node** mnodes = mele.Nodes();
 
-    std::map<int, double>& dgwmmap =
-        dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGW();
+    std::map<int, double>& dgwmmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivGW();
 
     for (int bl = 0; bl < nrow; ++bl)
     {
@@ -7593,7 +7590,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement&
 /*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 12/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::IntElement& sintele,
+void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::IntElement& sintele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmintval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmintderiv,
     double& gap, double* gpn, double& jac, double& wgt,
@@ -7616,7 +7613,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::Int
   if (ShapeFcn() == INPAR::MORTAR::shape_standard && LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
   {
     // get the corresponding map as a reference
-    std::map<int, double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+    std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -7647,7 +7644,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::Int
 /*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 12/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& svalmod, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap,
@@ -7676,7 +7673,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarEle
       (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin))
   {
     // get the corresponding map as a reference
-    std::map<int, double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+    std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -7707,7 +7704,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarEle
                LagMultQuad() == INPAR::MORTAR::lagmult_lin))
   {
     // get the corresponding map as a reference
-    std::map<int, double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+    std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
 
     if (ShapeFcn() == INPAR::MORTAR::shape_dual)
     {
@@ -7776,7 +7773,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarEle
 /*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
+void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap,
@@ -7803,7 +7800,7 @@ void CONTACT::CoIntegrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
   static double fac = 0.0;
 
   // get the corresponding map as a reference
-  std::map<int, double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+  std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
 
   // switch if Petrov-Galerkin approach for LM is applied
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
@@ -7865,8 +7862,7 @@ void CONTACT::CoIntegrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
   //****************************************************************
   if (WearType() == INPAR::WEAR::wear_primvar)
   {
-    std::map<int, double>& dgwmmap =
-        dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGW();
+    std::map<int, double>& dgwmmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivGW();
 
     for (int bl = 0; bl < nrow; ++bl)
     {
@@ -7895,7 +7891,7 @@ void CONTACT::CoIntegrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for bound DM                             farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
+void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -7934,7 +7930,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
 
         // get the correct map as a reference
         std::map<int, double>& dmmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -7983,7 +7979,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
           // carry a LM-dof
           if (mymrtrnode2->IsOnBound())
           {
-            dmmap_jk = &(dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid]);
+            dmmap_jk = &(dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[sgid]);
             sign = -1.;
           }
           // for corners/edges, we assemble to D-matrix, since the corresponding nodes
@@ -7991,7 +7987,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
           // integration.
           else if (mymrtrnode2->IsOnCornerEdge())
           {
-            dmmap_jk = &(dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid]);
+            dmmap_jk = &(dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid]);
             sign = +1.;
           }
           else
@@ -8029,7 +8025,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
         {
           // get the correct map as a reference
           std::map<int, double>& ddmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -8082,7 +8078,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
 
         // get the correct map as a reference
         std::map<int, double>& dmmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         if (dualmap.size() > 0)
@@ -8142,7 +8138,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
           // carry a LM-dof
           if (mymrtrnode2->IsOnBound())
           {
-            dmmap_jk = &(dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid]);
+            dmmap_jk = &(dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[sgid]);
             sign = -1.;
           }
           // for corners/edges, we assemble to D-matrix, since the corresponding nodes
@@ -8150,7 +8146,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
           // integration.
           else if (mymrtrnode2->IsOnCornerEdge())
           {
-            dmmap_jk = &(dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid]);
+            dmmap_jk = &(dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid]);
             sign = +1.;
           }
           else
@@ -8198,7 +8194,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
         {
           // get the correct map as a reference
           std::map<int, double>& ddmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[mymrtrnode->Id()];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[mymrtrnode->Id()];
 
           // (1) Lin(Phi) - dual shape functions
           if (dualmap.size() > 0)
@@ -8248,7 +8244,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 07/16|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -8287,7 +8283,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
 
         // get the correct map as a reference
         std::map<int, double>& dmmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -8331,7 +8327,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
           // move entry to derivM (with minus sign)
           // get the correct map as a reference
           std::map<int, double>& dmmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -8365,7 +8361,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
         {
           // get the correct map as a reference
           std::map<int, double>& ddmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -8418,7 +8414,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
 
         // get the correct map as a reference
         std::map<int, double>& dmmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         if (dualmap.size() > 0)
@@ -8473,7 +8469,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
           // move entry to derivM (with minus sign)
           // get the correct map as a reference
           std::map<int, double>& dmmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           if (dualmap.size() > 0)
@@ -8517,7 +8513,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
         {
           // get the correct map as a reference
           std::map<int, double>& ddmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[mymrtrnode->Id()];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[mymrtrnode->Id()];
 
           // (1) Lin(Phi) - dual shape functions
           if (dualmap.size() > 0)
@@ -8568,7 +8564,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
+void inline CONTACT::Integrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& mderiv, double& dxdsxi, double& wgt,
@@ -8606,7 +8602,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
 
       // get the correct map as a reference
       std::map<int, double>& dmmap_jk =
-          dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+          dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions    --> 0
 
@@ -8635,7 +8631,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
 
       // get the correct map as a reference
       std::map<int, double>& ddmap_jk =
-          dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+          dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
       // (1) Lin(Phi) - dual shape functions --> 0
 
@@ -8660,7 +8656,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
   {
     // get the D-map as a reference
     std::map<int, double>& ddmap_jk =
-        dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+        dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
     // integrate LinM and LinD (NO boundary modification)
     for (int k = 0; k < ncol; ++k)
@@ -8671,7 +8667,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
 
       // get the correct map as a reference
       std::map<int, double>& dmmap_jk =
-          dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+          dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m = 0; m < nrow; ++m)
@@ -8716,7 +8712,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linlm,
+void inline CONTACT::Integrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linlm,
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -8763,7 +8759,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
 
         // get the correct map as a reference
         std::map<int, double>& dmmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -8801,7 +8797,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
           // move entry to derivM (with minus sign)
           // get the correct map as a reference
           std::map<int, double>& dmmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -8827,7 +8823,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
         {
           // get the correct map as a reference
           std::map<int, double>& ddmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -8870,7 +8866,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
 
         // get the correct map as a reference
         std::map<int, double>& dmmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -8900,7 +8896,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
 
         // get the correct map as a reference
         std::map<int, double>& ddmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -8928,7 +8924,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
     {
       // get the D-map as a reference
       std::map<int, double>& ddmap_jk =
-          dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+          dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
       // integrate LinM and LinD (NO boundary modification)
       for (int k = 0; k < ncol; ++k)
@@ -8939,7 +8935,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
 
         // get the correct map as a reference
         std::map<int, double>& dmmap_jk =
-            dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+            dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         for (int m = 0; m < nrow; ++m)
@@ -8990,7 +8986,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP - pwlin                 farah 12/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& sintele, MORTAR::MortarElement& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::SerialDenseMatrix& sderiv,
@@ -9024,7 +9020,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::Mo
 
     // get the correct map as a reference
     std::map<int, double>& dmmap_jk =
-        dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+        dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -9062,7 +9058,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::Mo
 
     // get the correct map as a reference
     std::map<int, double>& ddmap_jk =
-        dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+        dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -9097,7 +9093,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::Mo
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& svalmod, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
@@ -9137,7 +9133,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
       for (_CI p = dpsxigp[d].begin(); p != dpsxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < nrow; ++k)
           {
@@ -9150,7 +9146,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
     for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
     {
       CORE::LINALG::SerialDenseMatrix& dMderiv =
-          dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+          dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
       for (int j = 0; j < nrow; ++j)
         for (int k = 0; k < nrow; ++k) dMderiv(j, k) += wgt * lmval[j] * sval[k] * (p->second);
     }
@@ -9163,7 +9159,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
       for (_CI p = dpsxigp[d].begin(); p != dpsxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& mMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
             mMderiv(j, k) += wgt * lmderiv(j, d) * mval[k] * jac * (p->second);
@@ -9174,7 +9170,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
       for (_CI p = dpmxigp[d].begin(); p != dpmxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& mMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
             mMderiv(j, k) += wgt * lmval[j] * mderiv(k, d) * jac * (p->second);
@@ -9184,7 +9180,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
     for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
     {
       CORE::LINALG::SerialDenseMatrix& mMderiv =
-          dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+          dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
       for (int j = 0; j < nrow; ++j)
         for (int k = 0; k < ncol; ++k) mMderiv(j, k) += wgt * lmval[j] * mval[k] * (p->second);
     }
@@ -9222,7 +9218,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
 
           // get the correct map as a reference
           std::map<int, double>& dmmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+              dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           if (duallin)
@@ -9277,7 +9273,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
             // move entry to derivM (with minus sign)
             // get the correct map as a reference
             std::map<int, double>& dmmap_jk =
-                dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+                dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivM()[sgid];
 
             // (1) Lin(Phi) - dual shape functions
             if (duallin)
@@ -9327,7 +9323,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
           {
             // get the correct map as a reference
             std::map<int, double>& ddmap_jk =
-                dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+                dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivD()[sgid];
 
             // (1) Lin(Phi) - dual shape functions
             if (duallin)
@@ -9389,9 +9385,9 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
            p != dualmap.end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dDderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int m = 0; m < nrow; ++m)
           for (int k = 0; k < ncol; ++k)
           {
@@ -9413,9 +9409,9 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
       for (_CI p = dpsxigp[d].begin(); p != dpsxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dDderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
           {
@@ -9430,9 +9426,9 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
       for (_CI p = dpmxigp[d].begin(); p != dpmxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dDderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
           {
@@ -9446,9 +9442,9 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
     for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
     {
       CORE::LINALG::SerialDenseMatrix& dDderiv =
-          dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+          dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
       CORE::LINALG::SerialDenseMatrix& dMderiv =
-          dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+          dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
       for (int j = 0; j < nrow; ++j)
         for (int k = 0; k < ncol; ++k)
         {
@@ -9465,7 +9461,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -9493,7 +9489,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
       for (_CI p = dsxigp[d].begin(); p != dsxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
             dMderiv(j, k) += wgt * lmderiv(j, d) * mval[k] * jac * (p->second);
@@ -9504,7 +9500,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
       for (_CI p = dmxigp[d].begin(); p != dmxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
             dMderiv(j, k) += wgt * lmval[j] * mderiv(k, d) * jac * (p->second);
@@ -9514,7 +9510,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
     for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
     {
       CORE::LINALG::SerialDenseMatrix& dMderiv =
-          dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+          dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
       for (int j = 0; j < nrow; ++j)
         for (int k = 0; k < ncol; ++k) dMderiv(j, k) += wgt * lmval[j] * mval[k] * (p->second);
     }
@@ -9529,7 +9525,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
       for (_CI p = dsxigp[d].begin(); p != dsxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dDderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < nrow; ++k)
             dDderiv(j, k) +=
@@ -9541,7 +9537,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
     for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
     {
       CORE::LINALG::SerialDenseMatrix& dDderiv =
-          dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+          dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
       for (int j = 0; j < nrow; ++j)
         for (int k = 0; k < nrow; ++k) dDderiv(j, k) += wgt * lmval[j] * sval[k] * (p->second);
     }
@@ -9560,9 +9556,9 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
            p != dualmap.end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dDderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
             for (int m = 0; m < nrow; ++m)
@@ -9578,9 +9574,9 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
       for (_CI p = dsxigp[d].begin(); p != dsxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dDderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
           {
@@ -9595,9 +9591,9 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
       for (_CI p = dmxigp[d].begin(); p != dmxigp[d].end(); ++p)
       {
         CORE::LINALG::SerialDenseMatrix& dDderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
         CORE::LINALG::SerialDenseMatrix& dMderiv =
-            dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+            dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
         for (int j = 0; j < nrow; ++j)
           for (int k = 0; k < ncol; ++k)
           {
@@ -9611,9 +9607,9 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
     for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
     {
       CORE::LINALG::SerialDenseMatrix& dDderiv =
-          dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+          dynamic_cast<CONTACT::Element&>(sele).GetDderiv()[p->first];
       CORE::LINALG::SerialDenseMatrix& dMderiv =
-          dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
+          dynamic_cast<CONTACT::Element&>(sele).GetMderiv()[p->first];
       for (int j = 0; j < nrow; ++j)
         for (int k = 0; k < ncol; ++k)
         {
@@ -9630,7 +9626,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for D2 matrix at GP                      farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_D2(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+void inline CONTACT::Integrator::GP_D2(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     CORE::LINALG::SerialDenseVector& lm2val, CORE::LINALG::SerialDenseVector& m2val, double& jac,
     double& wgt, const Epetra_Comm& comm)
 {
@@ -9687,7 +9683,7 @@ void inline CONTACT::CoIntegrator::GP_D2(MORTAR::MortarElement& sele, MORTAR::Mo
 /*----------------------------------------------------------------------*
  |  Compute wear at GP (for expl/impl algor.)                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_2D_Wear(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseVector& lmval,
@@ -9710,7 +9706,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
 
   int linsize = 0;
   for (int i = 0; i < sele.NumNode(); ++i)
-    linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
+    linsize += dynamic_cast<Node*>(sele.Nodes()[i])->GetLinsize();
   linsize = linsize * 2;
 
   // map iterator
@@ -9736,11 +9732,11 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
 
   for (int i = 0; i < nrow; ++i)
   {
-    CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*>(snodes[i]);
+    CONTACT::Node* myconode = dynamic_cast<CONTACT::Node*>(snodes[i]);
 
     // nodal tangent interpolation
-    gpt[0] += sval[i] * myconode->CoData().txi()[0];
-    gpt[1] += sval[i] * myconode->CoData().txi()[1];
+    gpt[0] += sval[i] * myconode->Data().txi()[0];
+    gpt[1] += sval[i] * myconode->Data().txi()[1];
 
     // delta D
     sgpjump[0] += sval[i] * (sele.GetNodalCoords(0, i) - (sele.GetNodalCoordsOld(0, i)));
@@ -9876,12 +9872,12 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
 
     for (int i = 0; i < nrow; ++i)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[i]);
+      CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[i]);
 
       CORE::GEN::pairedvector<int, double>& dmap_txsl_i =
-          dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().GetDerivTxi()[0];
+          dynamic_cast<CONTACT::Node*>(cnode)->Data().GetDerivTxi()[0];
       CORE::GEN::pairedvector<int, double>& dmap_tysl_i =
-          dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().GetDerivTxi()[1];
+          dynamic_cast<CONTACT::Node*>(cnode)->Data().GetDerivTxi()[1];
 
       for (_CI p = dmap_txsl_i.begin(); p != dmap_txsl_i.end(); ++p)
         dmap_txsl_gp[p->first] += sval[i] * (p->second);
@@ -9890,9 +9886,9 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
 
       for (_CI p = dsxigp[0].begin(); p != dsxigp[0].end(); ++p)
       {
-        double valx = sderiv(i, 0) * dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().txi()[0];
+        double valx = sderiv(i, 0) * dynamic_cast<CONTACT::Node*>(cnode)->Data().txi()[0];
         dmap_txsl_gp[p->first] += valx * (p->second);
-        double valy = sderiv(i, 0) * dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().txi()[1];
+        double valy = sderiv(i, 0) * dynamic_cast<CONTACT::Node*>(cnode)->Data().txi()[1];
         dmap_tysl_gp[p->first] += valy * (p->second);
       }
     }
@@ -9974,7 +9970,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
     // deriv slave x-coords
     for (int i = 0; i < nrow; ++i)
     {
-      CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[i]);
+      CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[i]);
 
       dmap_slcoord_gp_x[snode->Dofs()[0]] += sval[i];
       dmap_slcoord_gp_y[snode->Dofs()[1]] += sval[i];
@@ -9982,7 +9978,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
     // deriv master x-coords
     for (int i = 0; i < ncol; ++i)
     {
-      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[i]);
+      CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[i]);
 
       dmap_mcoord_gp_x[mnode->Dofs()[0]] += mval[i];
       dmap_mcoord_gp_y[mnode->Dofs()[1]] += mval[i];
@@ -10021,7 +10017,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute wear at GP (for expl/impl algor.)                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_Wear(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseVector& lmval,
@@ -10158,7 +10154,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
     int linsize = 0;
     for (int i = 0; i < nrow; ++i)
     {
-      CoNode* cnode = dynamic_cast<CoNode*>(snodes[i]);
+      Node* cnode = dynamic_cast<Node*>(snodes[i]);
       linsize += cnode->GetLinsize();
     }
 
@@ -10384,7 +10380,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
     // deriv slave x-coords
     for (int i = 0; i < nrow; ++i)
     {
-      CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[i]);
+      CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[i]);
 
       dmap_slcoord_gp_x[snode->Dofs()[0]] += sval[i];
       dmap_slcoord_gp_y[snode->Dofs()[1]] += sval[i];
@@ -10393,7 +10389,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
     // deriv master x-coords
     for (int i = 0; i < ncol; ++i)
     {
-      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[i]);
+      CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(mnodes[i]);
 
       dmap_mcoord_gp_x[mnode->Dofs()[0]] += mval[i];
       dmap_mcoord_gp_y[mnode->Dofs()[1]] += mval[i];
@@ -10472,7 +10468,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for E and T matrix at GP (Slave)         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_TE(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_TE(MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& sval, double& jac,
     double& wgt, double* jumpval)
 {
@@ -10539,7 +10535,7 @@ void inline CONTACT::CoIntegrator::GP_TE(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for E and T matrix at GP (Master)        farah 11/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_TE_Master(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_TE_Master(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& lm2val, CORE::LINALG::SerialDenseVector& mval, double& jac,
     double& wgt, double* jumpval, const Epetra_Comm& comm)
@@ -10627,7 +10623,7 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute lin for T and E matrix -- discr. wear            farah 11/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(int& iter,  // like k
+void inline CONTACT::Integrator::GP_2D_TE_Master_Lin(int& iter,  // like k
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -10765,7 +10761,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(int& iter,  // like k
 /*----------------------------------------------------------------------*
  |  Compute lin for T and E matrix -- discr. wear            farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_2D_TE_Lin(int& iter, MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double& wgt, double* jumpval, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
@@ -10966,7 +10962,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(int& iter, MORTAR::MortarElement
 /*----------------------------------------------------------------------*
  |  Compute lin for T and E matrix -- discr. wear            farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_TE_Lin(int& iter, MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double& wgt, double* jumpval, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
@@ -11212,7 +11208,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(int& iter, MORTAR::MortarElement
 /*----------------------------------------------------------------------*
  |  Compute lin for T and E matrix -- discr. wear (master)   farah 11/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& lm2val, CORE::LINALG::SerialDenseMatrix& sderiv,
@@ -11453,7 +11449,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::Mortar
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted slip increment at GP        farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double& jac,
@@ -11488,11 +11484,11 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
   double tanlength = 0.0;
   for (int i = 0; i < nrow; ++i)
   {
-    CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*>(snodes[i]);
+    CONTACT::Node* myconode = dynamic_cast<CONTACT::Node*>(snodes[i]);
 
     // nodal tangent interpolation
-    tanv[0] += sval[i] * myconode->CoData().txi()[0];
-    tanv[1] += sval[i] * myconode->CoData().txi()[1];
+    tanv[0] += sval[i] * myconode->Data().txi()[0];
+    tanv[1] += sval[i] * myconode->Data().txi()[1];
 
     // delta D
     sjumpv[0] += sval[i] * (sele.GetNodalCoords(0, i) - sele.GetNodalCoordsOld(0, i));
@@ -11526,9 +11522,9 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
   for (int i = 0; i < nrow; ++i)
   {
     CORE::GEN::pairedvector<int, double>& dmap_txsl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[0];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivTxi()[0];
     CORE::GEN::pairedvector<int, double>& dmap_tysl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[1];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivTxi()[1];
 
     for (_CI p = dmap_txsl_i.begin(); p != dmap_txsl_i.end(); ++p)
       dmap_txsl_gp[p->first] += sval[i] * (p->second);
@@ -11537,9 +11533,9 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
 
     for (_CI p = dsxigp[0].begin(); p != dsxigp[0].end(); ++p)
     {
-      double valx = sderiv(i, 0) * dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[0];
+      double valx = sderiv(i, 0) * dynamic_cast<CONTACT::Node*>(snodes[i])->Data().txi()[0];
       dmap_txsl_gp[p->first] += valx * (p->second);
-      double valy = sderiv(i, 0) * dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[1];
+      double valy = sderiv(i, 0) * dynamic_cast<CONTACT::Node*>(snodes[i])->Data().txi()[1];
       dmap_tysl_gp[p->first] += valy * (p->second);
     }
   }
@@ -11624,7 +11620,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for slip increment at GP                 farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double& jac,
@@ -11649,7 +11645,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(snodes[i]);
+    Node* cnode = dynamic_cast<Node*>(snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -11671,16 +11667,16 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
 
   for (int i = 0; i < nrow; ++i)
   {
-    CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*>(snodes[i]);
+    CONTACT::Node* myconode = dynamic_cast<CONTACT::Node*>(snodes[i]);
 
     // nodal tangent interpolation
-    tanv1[0] += sval[i] * myconode->CoData().txi()[0];
-    tanv1[1] += sval[i] * myconode->CoData().txi()[1];
-    tanv1[2] += sval[i] * myconode->CoData().txi()[2];
+    tanv1[0] += sval[i] * myconode->Data().txi()[0];
+    tanv1[1] += sval[i] * myconode->Data().txi()[1];
+    tanv1[2] += sval[i] * myconode->Data().txi()[2];
 
-    tanv2[0] += sval[i] * myconode->CoData().teta()[0];
-    tanv2[1] += sval[i] * myconode->CoData().teta()[1];
-    tanv2[2] += sval[i] * myconode->CoData().teta()[2];
+    tanv2[0] += sval[i] * myconode->Data().teta()[0];
+    tanv2[1] += sval[i] * myconode->Data().teta()[1];
+    tanv2[2] += sval[i] * myconode->Data().teta()[2];
     // delta D
     sjumpv[0] += sval[i] * (sele.GetNodalCoords(0, i) - sele.GetNodalCoordsOld(0, i));
     sjumpv[1] += sval[i] * (sele.GetNodalCoords(1, i) - sele.GetNodalCoordsOld(1, i));
@@ -11753,11 +11749,11 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
   for (int i = 0; i < nrow; ++i)
   {
     CORE::GEN::pairedvector<int, double>& dmap_txsl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[0];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivTxi()[0];
     CORE::GEN::pairedvector<int, double>& dmap_tysl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[1];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivTxi()[1];
     CORE::GEN::pairedvector<int, double>& dmap_tzsl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[2];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivTxi()[2];
 
     for (_CI p = dmap_txsl_i.begin(); p != dmap_txsl_i.end(); ++p)
       dmap_txix_gp[p->first] += sval[i] * (p->second);
@@ -11766,9 +11762,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
     for (_CI p = dmap_tzsl_i.begin(); p != dmap_tzsl_i.end(); ++p)
       dmap_txiz_gp[p->first] += sval[i] * (p->second);
 
-    const double txi_x = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[0];
-    const double txi_y = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[1];
-    const double txi_z = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[2];
+    const double txi_x = dynamic_cast<CONTACT::Node*>(snodes[i])->Data().txi()[0];
+    const double txi_y = dynamic_cast<CONTACT::Node*>(snodes[i])->Data().txi()[1];
+    const double txi_z = dynamic_cast<CONTACT::Node*>(snodes[i])->Data().txi()[2];
 
     for (_CI p = dsxigp[0].begin(); p != dsxigp[0].end(); ++p)
     {
@@ -11841,11 +11837,11 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
   for (int i = 0; i < nrow; ++i)
   {
     CORE::GEN::pairedvector<int, double>& dmap_txsl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[0];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivTeta()[0];
     CORE::GEN::pairedvector<int, double>& dmap_tysl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[1];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivTeta()[1];
     CORE::GEN::pairedvector<int, double>& dmap_tzsl_i =
-        dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[2];
+        dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivTeta()[2];
 
     for (_CI p = dmap_txsl_i.begin(); p != dmap_txsl_i.end(); ++p)
       dmap_tetax_gp[p->first] += sval[i] * (p->second);
@@ -11854,9 +11850,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
     for (_CI p = dmap_tzsl_i.begin(); p != dmap_tzsl_i.end(); ++p)
       dmap_tetaz_gp[p->first] += sval[i] * (p->second);
 
-    const double teta_x = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[0];
-    const double teta_y = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[1];
-    const double teta_z = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[2];
+    const double teta_x = dynamic_cast<CONTACT::Node*>(snodes[i])->Data().teta()[0];
+    const double teta_y = dynamic_cast<CONTACT::Node*>(snodes[i])->Data().teta()[1];
+    const double teta_z = dynamic_cast<CONTACT::Node*>(snodes[i])->Data().teta()[2];
 
     for (_CI p = dsxigp[0].begin(); p != dsxigp[0].end(); ++p)
     {
@@ -12003,7 +11999,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute slipincr lin at GP                               farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double& wgt, double* jumpvalv, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
@@ -12057,7 +12053,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::MortarE
 /*----------------------------------------------------------------------*
  |  Compute slipincr lin at   GP                             farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_SlipIncr_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_SlipIncr_Lin(int& iter, MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double& wgt, double* jumpvalv, const CORE::GEN::pairedvector<int, double>& jacintcellmap,
@@ -12140,7 +12136,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr_Lin(int& iter, MORTAR::MortarE
 /*----------------------------------------------------------------------*
  |  Lin wear for impl. algor.                                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_2D_Wear_Lin(int& iter, MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double* gpn, double& wgt, double& wearval, double* jumpval,
@@ -12160,9 +12156,9 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(int& iter, MORTAR::MortarEleme
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // get the corresponding map as a reference
-  CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
+  CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[iter]);
 
-  std::map<int, double>& dwmap = cnode->CoData().GetDerivW();
+  std::map<int, double>& dwmap = cnode->Data().GetDerivW();
 
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
@@ -12214,7 +12210,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(int& iter, MORTAR::MortarEleme
   //****************************************************************
   // LIN WEAR W.R.T. LM
   //****************************************************************
-  std::map<int, double>& dwlmmap = cnode->CoData().GetDerivWlm();
+  std::map<int, double>& dwlmmap = cnode->Data().GetDerivWlm();
 
   for (int bl = 0; bl < nrow; ++bl)
   {
@@ -12242,7 +12238,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(int& iter, MORTAR::MortarEleme
 /*----------------------------------------------------------------------*
  |  Lin wear for impl. algor.                                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_3D_Wear_Lin(int& iter, MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double* gpn, double& wgt, double& wearval, double* jumpval,
@@ -12260,10 +12256,10 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(int& iter, MORTAR::MortarEleme
   typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
   // get the corresponding map as a reference
-  CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
+  CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[iter]);
 
   // get the corresponding map as a reference
-  std::map<int, double>& dwmap = cnode->CoData().GetDerivW();
+  std::map<int, double>& dwmap = cnode->Data().GetDerivW();
 
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
@@ -12322,7 +12318,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(int& iter, MORTAR::MortarEleme
   //****************************************************************
   // LIN WEAR W.R.T. LM
   //****************************************************************
-  std::map<int, double>& dwlmmap = cnode->CoData().GetDerivWlm();
+  std::map<int, double>& dwlmmap = cnode->Data().GetDerivWlm();
 
   for (int bl = 0; bl < nrow; ++bl)
   {
@@ -12355,7 +12351,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(int& iter, MORTAR::MortarEleme
 /*----------------------------------------------------------------------*
  |  Compute entries for poro normal coupling condition      07/14 ager  |
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* ncoup,
@@ -12376,17 +12372,17 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // bool to decide if fluid quantities and structural velocities
-  // exist for slave side on CoNode level and contribute to porofluid meshtying
+  // exist for slave side on Node level and contribute to porofluid meshtying
   bool slaveporo = (sele.PhysType() == MORTAR::MortarElement::poro);
   // bool to decide if fluid quantities and structural velocities
-  // exist for master side on CoNode level and contribute to porofluid meshtying
+  // exist for master side on Node level and contribute to porofluid meshtying
   bool masterporo = (mele.PhysType() == MORTAR::MortarElement::poro);
 
   if (!slaveporo and masterporo)
     dserror(
         "poroelastic mesh tying method needs the slave side to be poroelastic (invert master/slave "
         "definition)");
-  // see CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy for comment
+  // see CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro for comment
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
@@ -12406,18 +12402,18 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
     if (slaveporo)
       for (int i = 0; i < nrow; ++i)
       {
-        CoNode* mymrtrnode = dynamic_cast<CoNode*>(snodes[i]);
-        sgpfvel[k] += sval[i] * mymrtrnode->CoPoroData().fvel()[k];
-        sgpsvel[k] += sval[i] * mymrtrnode->CoPoroData().svel()[k];
+        Node* mymrtrnode = dynamic_cast<Node*>(snodes[i]);
+        sgpfvel[k] += sval[i] * mymrtrnode->PoroData().fvel()[k];
+        sgpsvel[k] += sval[i] * mymrtrnode->PoroData().svel()[k];
       }
 
     if (masterporo)
     {
       for (int i = 0; i < ncol; ++i)
       {
-        CoNode* mymrtrnode = dynamic_cast<CoNode*>(mnodes[i]);
-        mgpfvel[k] += mval[i] * mymrtrnode->CoPoroData().fvel()[k];
-        mgpsvel[k] += mval[i] * mymrtrnode->CoPoroData().svel()[k];
+        Node* mymrtrnode = dynamic_cast<Node*>(mnodes[i]);
+        mgpfvel[k] += mval[i] * mymrtrnode->PoroData().fvel()[k];
+        mgpsvel[k] += mval[i] * mymrtrnode->PoroData().svel()[k];
       }
     }
   }
@@ -12439,8 +12435,8 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
 
     for (int i = 0; i < nrow; ++i)
     {
-      CoNode* mymrtrnode = dynamic_cast<CoNode*>(snodes[i]);
-      sgpfpres += sval[i] * mymrtrnode->CoPoroData().fpres()[0];
+      Node* mymrtrnode = dynamic_cast<Node*>(snodes[i]);
+      sgpfpres += sval[i] * mymrtrnode->PoroData().fpres()[0];
     }
     Teuchos::ParameterList sparams;  // empty parameter list;
 
@@ -12478,8 +12474,8 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
 
     for (int i = 0; i < ncol; ++i)
     {
-      CoNode* mymrtrnode = dynamic_cast<CoNode*>(mnodes[i]);
-      mgpfpres += mval[i] * mymrtrnode->CoPoroData().fpres()[0];
+      Node* mymrtrnode = dynamic_cast<Node*>(mnodes[i]);
+      mgpfpres += mval[i] * mymrtrnode->PoroData().fpres()[0];
     }
     Teuchos::ParameterList mparams;  // empty parameter list;
 
@@ -12514,7 +12510,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   {
     for (int j = 0; j < nrow; ++j)
     {
-      CONTACT::CoNode* mrtrnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+      CONTACT::Node* mrtrnode = dynamic_cast<CONTACT::Node*>(snodes[j]);
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for normal coupling)
@@ -12543,7 +12539,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   //    {
   //      for (int j=0;j<nrow;++j)
   //      {
-  //        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+  //        CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(snodes[j]);
   //
   //        double prod = 0.0;
   //        prod = lmval[j]*gap[0]*jac*wgt;
@@ -12588,7 +12584,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   {
     for (int i = 0; i < nrow; ++i)
     {
-      CoNode* mrtrnode = dynamic_cast<CoNode*>(snodes[i]);
+      Node* mrtrnode = dynamic_cast<Node*>(snodes[i]);
 
       for (int k = 0; k < Dim(); ++k)
       {
@@ -12600,9 +12596,9 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
                ++p)  // linearization of shape function N
           {
             dncoupgp[p->first] -=
-                sporosity * gpn[k] * sderiv(i, d) * mrtrnode->CoPoroData().fvel()[k] * (p->second);
+                sporosity * gpn[k] * sderiv(i, d) * mrtrnode->PoroData().fvel()[k] * (p->second);
             dncoupgp[p->first] +=
-                sporosity * gpn[k] * sderiv(i, d) * mrtrnode->CoPoroData().svel()[k] * (p->second);
+                sporosity * gpn[k] * sderiv(i, d) * mrtrnode->PoroData().svel()[k] * (p->second);
           }
         }
       }
@@ -12616,7 +12612,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
     // lin master nodes
     for (int i = 0; i < ncol; ++i)
     {
-      CoNode* mrtrnode = dynamic_cast<CoNode*>(mnodes[i]);
+      Node* mrtrnode = dynamic_cast<Node*>(mnodes[i]);
 
       for (int k = 0; k < Dim(); ++k)
       {
@@ -12626,9 +12622,9 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
           for (_CI p = dmxigp[d].begin(); p != dmxigp[d].end(); ++p)
           {
             dncoupgp[p->first] +=
-                mporosity * gpn[k] * mderiv(i, d) * mrtrnode->CoPoroData().fvel()[k] * (p->second);
+                mporosity * gpn[k] * mderiv(i, d) * mrtrnode->PoroData().fvel()[k] * (p->second);
             dncoupgp[p->first] -=
-                mporosity * gpn[k] * mderiv(i, d) * mrtrnode->CoPoroData().svel()[k] * (p->second);
+                mporosity * gpn[k] * mderiv(i, d) * mrtrnode->PoroData().svel()[k] * (p->second);
           }
         }
       }
@@ -12667,7 +12663,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   {
     for (int z = 0; z < nrow; ++z)
     {
-      CoNode* mrtrnode = dynamic_cast<CoNode*>(snodes[z]);
+      Node* mrtrnode = dynamic_cast<Node*>(snodes[z]);
 
       for (int k = 0; k < Dim(); ++k)
       {
@@ -12687,7 +12683,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   {
     for (int z = 0; z < ncol; ++z)
     {
-      CoNode* mrtrnode = dynamic_cast<CoNode*>(mnodes[z]);
+      Node* mrtrnode = dynamic_cast<Node*>(mnodes[z]);
 
       for (int k = 0; k < Dim(); ++k)
       {
@@ -12707,7 +12703,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
  |  Do lin. entries for weighted normal coupling condition at GP     ager 06/14|
  |  modified by h.Willmann 2015                                                |
  *----------------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement& sele,
+void inline CONTACT::Integrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -12730,13 +12726,13 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement
   DRT::Node** snodes = sele.Nodes();
   // DRT::Node** mnodes = mele.Nodes();
 
-  CONTACT::CoNode* mymrtrnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("CONTACT::CoIntegrator::GP_NCOUP_LIN: mymrtnode: Null pointer!");
+  CONTACT::Node* mymrtrnode = dynamic_cast<CONTACT::Node*>(snodes[iter]);
+  if (!mymrtrnode) dserror("CONTACT::Integrator::GP_NCOUP_LIN: mymrtnode: Null pointer!");
 
   double fac = 0.0;
 
   // get the corresponding map as a reference
-  std::map<int, double>& dgmap = mymrtrnode->CoPoroData().GetDerivnCoup();
+  std::map<int, double>& dgmap = mymrtrnode->PoroData().GetDerivnCoup();
   // switch if Petrov-Galerkin approach for LM is applied
   // for meshtying shape_dual is the only allowed case as long as porofluid and skeleton
   // meshtying conditions share the same input lines
@@ -12806,7 +12802,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement
 
   // velocity linearisation of the ncoupling condition!
   // get the corresponding map as a reference
-  std::map<int, double>& dvelncoupmap = mymrtrnode->CoPoroData().GetVelDerivnCoup();
+  std::map<int, double>& dvelncoupmap = mymrtrnode->PoroData().GetVelDerivnCoup();
   // switch if Petrov-Galerkin approach for LM is applied
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
@@ -12829,7 +12825,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement
   // h.Willmann
   // pressure linearisation of the ncoupling condition!
   // get the corresponding map as a reference
-  std::map<int, double>& dpresncoupmap = mymrtrnode->CoPoroData().GetPresDerivnCoup();
+  std::map<int, double>& dpresncoupmap = mymrtrnode->PoroData().GetPresDerivnCoup();
   // switch if Petrov-Galerkin approach for LM is applied
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
@@ -12854,7 +12850,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement
 /*-----------------------------------------------------------------------------*
  |  Calculate Determinate of the Deformation Gradient at GP          ager 10/14|
  *----------------------------------------------------------------------------*/
-double CONTACT::CoIntegrator::DetDeformationGradient(
+double CONTACT::Integrator::DetDeformationGradient(
     MORTAR::MortarElement& sele, double& wgt, double* gpcoord, std::map<int, double>& JLin)
 {
   double J;
@@ -12880,7 +12876,7 @@ double CONTACT::CoIntegrator::DetDeformationGradient(
  |  modified by h.Willmann 2015                                                  |
  *-------------------------------------------------------------------------------*/
 template <CORE::FE::CellType parentdistype, int dim>
-double CONTACT::CoIntegrator::TDetDeformationGradient(
+double CONTACT::Integrator::TDetDeformationGradient(
     MORTAR::MortarElement& sele, double& wgt, double* gpcoord, std::map<int, double>& JLin)
 {
   //! nen_: number of element nodes (T. Hughes: The Finite Element Method)

@@ -705,8 +705,8 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
 
       if (!node) dserror("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
-          new CONTACT::CoNode(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
+      Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(
+          new CONTACT::Node(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
               false,    // all solid elements are master elements
               false));  // no "initially active" decision necessary for beam to solid contact
 
@@ -751,8 +751,8 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
       // have to add the additional offset maxproblemid, which is identical to the maximal element
       // ID in the problem discretization.
       Teuchos::RCP<DRT::Element> ele = fool->second;
-      Teuchos::RCP<CONTACT::CoElement> cele =
-          Teuchos::rcp(new CONTACT::CoElement(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
+      Teuchos::RCP<CONTACT::Element> cele =
+          Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
               ele->Shape(), ele->NumNode(), ele->NodeIds(),
               false,    // all solid elements are master elements
               false));  // no nurbs allowed up to now

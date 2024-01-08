@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_TSI_LAGRANGE_STRATEGY_H
-#define BACI_CONTACT_TSI_LAGRANGE_STRATEGY_H
+#ifndef BACI_CONTACT_LAGRANGE_STRATEGY_TSI_H
+#define BACI_CONTACT_LAGRANGE_STRATEGY_TSI_H
 
 #include "baci_config.H"
 
@@ -50,20 +50,20 @@ namespace CONTACT
   /*!
    \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
-   This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
 
    */
-  class CoTSILagrangeStrategy : public CoLagrangeStrategy
+  class LagrangeStrategyTsi : public LagrangeStrategy
   {
    public:
     /*!
       \brief Standard Constructor
 
      */
-    CoTSILagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    LagrangeStrategyTsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
 
@@ -88,14 +88,14 @@ namespace CONTACT
      */
     void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
 
-    // Overload CONTACT::CoAbstractStrategy::ApplyForceStiffCmt as this is called in the structure
+    // Overload CONTACT::AbstractStrategy::ApplyForceStiffCmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       // structure single-field predictors (e.g.TangDis) may evaluate the structural contact part
-      if (predictor) CoAbstractStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
+      if (predictor) AbstractStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
     }
 
     /*!
@@ -116,7 +116,7 @@ namespace CONTACT
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp);
 
     /*!
-    \brief Overload CONTACT::CoLagrangeStrategy::Recover as this is called in the structure
+    \brief Overload CONTACT::LagrangeStrategy::Recover as this is called in the structure
 
     --> not enough information available for monolithically coupled algorithms!
     */
@@ -177,8 +177,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoTSILagrangeStrategy operator=(const CoTSILagrangeStrategy& old) = delete;
-    CoTSILagrangeStrategy(const CoTSILagrangeStrategy& old) = delete;
+    LagrangeStrategyTsi operator=(const LagrangeStrategyTsi& old) = delete;
+    LagrangeStrategyTsi(const LagrangeStrategyTsi& old) = delete;
 
     // time integration
     double tsi_alpha_;
@@ -216,7 +216,7 @@ namespace CONTACT
 
     // pointer to TSI coupling object
     Teuchos::RCP<CORE::ADAPTER::Coupling> coupST_;
-  };  // class CoTSILagrangeStrategy
+  };  // class LagrangeStrategyTsi
 
   namespace UTILS
   {
@@ -228,4 +228,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_TSI_LAGRANGE_STRATEGY_H
+#endif  // BACI_CONTACT_LAGRANGE_STRATEGY_TSI_H

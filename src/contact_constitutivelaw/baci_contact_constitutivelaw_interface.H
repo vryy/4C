@@ -30,7 +30,7 @@ namespace CONTACT
     class ConstitutiveLaw;
   }
 
-  class ConstitutivelawInterface : public CoInterface
+  class ConstitutivelawInterface : public Interface
   {
    public:
     /*!
@@ -97,7 +97,7 @@ namespace CONTACT
      i.e. on the micro roughness
      */
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
-  };  // class CoInterface
+  };  // class Interface
 }  // namespace CONTACT
 
 BACI_NAMESPACE_CLOSE

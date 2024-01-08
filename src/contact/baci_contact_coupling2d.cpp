@@ -30,7 +30,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling2d::CoCoupling2d(DRT::Discretization& idiscret, int dim, bool quad,
+CONTACT::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
     : MORTAR::Coupling2d(idiscret, dim, quad, params, sele, mele),
       stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
@@ -44,8 +44,7 @@ CONTACT::CoCoupling2d::CoCoupling2d(DRT::Discretization& idiscret, int dim, bool
 /*----------------------------------------------------------------------*
  |  Integrate slave / master overlap (public)                 popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling2d::IntegrateOverlap(
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -81,7 +80,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(
   double mxib = xiproj_[3];
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  Teuchos::RCP<CONTACT::CoIntegrator> integrator =
+  Teuchos::RCP<CONTACT::Integrator> integrator =
       CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, SlaveElement().Shape(), Comm());
   // *******************************************************************
   // different options for mortar integration
@@ -144,7 +143,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
+CONTACT::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
     std::vector<MORTAR::MortarElement*> mele)
     : MORTAR::Coupling2dManager(idiscret, dim, quad, params, sele, mele),
@@ -158,12 +157,12 @@ CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                               farah 01/13|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::CoCoupling2dManager::Comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& CONTACT::Coupling2dManager::Comm() const { return idiscret_.Comm(); }
 
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling2dManager::EvaluateCoupling(
+bool CONTACT::Coupling2dManager::EvaluateCoupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   if (MasterElements().size() == 0) return false;
@@ -191,7 +190,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling(
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs                           Popp 03/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling2dManager::IntegrateCoupling(
+void CONTACT::Coupling2dManager::IntegrateCoupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   //**********************************************************************
@@ -204,7 +203,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
     {
       // create Coupling2d object and push back
       Coupling().push_back(Teuchos::rcp(
-          new CoCoupling2d(idiscret_, dim_, quad_, imortar_, SlaveElement(), MasterElement(m))));
+          new Coupling2d(idiscret_, dim_, quad_, imortar_, SlaveElement(), MasterElement(m))));
 
       // project the element pair
       Coupling()[m]->Project();
@@ -233,7 +232,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
     if ((int)MasterElements().size() == 0) return;
 
     // create an integrator instance with correct NumGP and Dim
-    Teuchos::RCP<CONTACT::CoIntegrator> integrator =
+    Teuchos::RCP<CONTACT::Integrator> integrator =
         CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, SlaveElement().Shape(), Comm());
 
     // *******************************************************************
@@ -257,9 +256,9 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
       // Contact_interface.cpp --> AssembleG
       for (unsigned m = 0; m < MasterElements().size(); ++m)
       {
-        // create CoCoupling2d object and push back
+        // create Coupling2d object and push back
         Coupling().push_back(Teuchos::rcp(
-            new CoCoupling2d(idiscret_, dim_, quad_, imortar_, SlaveElement(), MasterElement(m))));
+            new Coupling2d(idiscret_, dim_, quad_, imortar_, SlaveElement(), MasterElement(m))));
 
         // project the element pair
         Coupling()[m]->Project();
@@ -287,7 +286,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
           for (int m = 0; m < (int)MasterElements().size(); ++m)
           {
             // create Coupling2d object and push back
-            Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
+            Coupling().push_back(Teuchos::rcp(new Coupling2d(
                 idiscret_, dim_, quad_, imortar_, SlaveElement(), MasterElement(m))));
 
             // project the element pair
@@ -315,8 +314,8 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
           // loop over all master elements associated with this slave element
           for (int m = 0; m < (int)MasterElements().size(); ++m)
           {
-            // create CoCoupling2d object and push back
-            Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
+            // create Coupling2d object and push back
+            Coupling().push_back(Teuchos::rcp(new Coupling2d(
                 idiscret_, dim_, quad_, imortar_, SlaveElement(), MasterElement(m))));
 
             // project the element pair
@@ -375,7 +374,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
 /*----------------------------------------------------------------------*
  |  Calculate dual shape functions                           seitz 07/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling2dManager::ConsistDualShape()
+void CONTACT::Coupling2dManager::ConsistDualShape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
@@ -398,7 +397,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   int linsize = 0;
   for (int i = 0; i < nnodes; ++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*>(SlaveElement().Nodes()[i]);
+    Node* cnode = dynamic_cast<Node*>(SlaveElement().Nodes()[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -436,7 +435,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
       endslave = false;
 
     // create an integrator for this segment
-    CONTACT::CoIntegrator integrator(imortar_, SlaveElement().Shape(), Comm());
+    CONTACT::Integrator integrator(imortar_, SlaveElement().Shape(), Comm());
 
     std::vector<CORE::GEN::pairedvector<int, double>> ximaps(4, linsize + ndof * mnodes);
     // get directional derivatives of sxia, sxib, mxia, mxib
@@ -521,7 +520,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
     // evaluate linearizations *******************************************
     // evaluate the derivative dxdsxidsxi = Jac,xi
     double djacdxi[2] = {0.0, 0.0};
-    dynamic_cast<CONTACT::CoElement&>(SlaveElement()).DJacDXi(djacdxi, sxi, ssecderiv);
+    dynamic_cast<CONTACT::Element&>(SlaveElement()).DJacDXi(djacdxi, sxi, ssecderiv);
     double dxdsxidsxi = djacdxi[0];  // only 2D here
 
     // evalute the GP slave coordinate derivatives

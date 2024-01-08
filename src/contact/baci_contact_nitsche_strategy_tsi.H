@@ -28,32 +28,32 @@ namespace CONTACT
   /*!
    \brief Contact solving strategy with Nitsche's method.
 
-   This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
 
    */
-  class CoNitscheStrategyTsi : public CoNitscheStrategy
+  class NitscheStrategyTsi : public NitscheStrategy
   {
    public:
     //! Standard constructor
-    CoNitscheStrategyTsi(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    NitscheStrategyTsi(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(
+        : NitscheStrategy(
               DofRowMap, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           fix_redistribution_(true)
     {
     }
 
     //! Shared data constructor
-    CoNitscheStrategyTsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategyTsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
-              comm, alphaf, maxdof),
+        : NitscheStrategy(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim, comm,
+              alphaf, maxdof),
           fix_redistribution_(true)
     {
     }
@@ -90,14 +90,14 @@ namespace CONTACT
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) override
     {
       if (fix_redistribution_) return false;
-      return CONTACT::CoAbstractStrategy::RedistributeContact(dis, vel);
+      return CONTACT::AbstractStrategy::RedistributeContact(dis, vel);
     }
 
     void EnableRedistribution() { fix_redistribution_ = false; }
 
     // don't want = operator and cctor
-    CoNitscheStrategyTsi operator=(const CoNitscheStrategyTsi& old) = delete;
-    CoNitscheStrategyTsi(const CoNitscheStrategyTsi& old) = delete;
+    NitscheStrategyTsi operator=(const NitscheStrategyTsi& old) = delete;
+    NitscheStrategyTsi(const NitscheStrategyTsi& old) = delete;
 
    protected:
     // create an appropriate vector for the RHS

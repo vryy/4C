@@ -51,10 +51,10 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // store gap-values into refG
-    refG[i] = cnode->CoData().Getg();
+    refG[i] = cnode->Data().Getg();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -70,7 +70,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
@@ -111,15 +111,15 @@ void WEAR::WearInterface::FDCheckGapDeriv()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("Cannot find node with gid %", kgid);
-      CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+      CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
 
       // store gap-values into newG
-      newG[k] = kcnode->CoData().Getg();
+      newG[k] = kcnode->Data().Getg();
 
       if (abs(newG[k] - refG[k]) > 1e-12 && newG[k] != 1.0e12 && refG[k] != 1.0e12)
       {
         double finit = (newG[k] - refG[k]) / delta;
-        double analy = kcnode->CoData().GetDerivG()[snode->Dofs()[fd % dim]];
+        double analy = kcnode->Data().GetDerivG()[snode->Dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
@@ -174,7 +174,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find master node with gid %", gid);
-    CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
@@ -215,7 +215,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("Cannot find node with gid %", kgid);
-      CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+      CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
 
       if (kcnode->Active())
       {
@@ -234,7 +234,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
           int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("Cannot find node with gid %", gid);
-          CONTACT::CoNode* cmnode = dynamic_cast<CONTACT::CoNode*>(mnode);
+          CONTACT::Node* cmnode = dynamic_cast<CONTACT::Node*>(mnode);
           bool hasentry = false;
 
           // look for this master node in M-map of the active slave node
@@ -254,17 +254,17 @@ void WEAR::WearInterface::FDCheckGapDeriv()
           for (int j = 0; j < dim; ++j) defgap += (kcnode->MoData().n()[j]) * mik * mxi[j];
         }
 
-        // std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << "
-        // DefGap: " << defgap << std::endl; kcnode->CoData().Getg = defgap;
+        // std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->Data().Getg << "
+        // DefGap: " << defgap << std::endl; kcnode->Data().Getg = defgap;
       }
 
       // store gap-values into newG
-      newG[k] = kcnode->CoData().Getg();
+      newG[k] = kcnode->Data().Getg();
 
       if (abs(newG[k] - refG[k]) > 1e-12 && newG[k] != 1.0e12 && refG[k] != 1.0e12)
       {
         double finit = (newG[k] - refG[k]) / delta;
-        double analy = kcnode->CoData().GetDerivG()[mnode->Dofs()[fd % dim]];
+        double analy = kcnode->Data().GetDerivG()[mnode->Dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
@@ -337,10 +337,10 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // store gap-values into refG
-    refG[i] = cnode->CoData().Getg();
+    refG[i] = cnode->Data().Getg();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -379,15 +379,15 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("Cannot find node with gid %", kgid);
-      CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+      CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
 
       // store gap-values into newG
-      newG[k] = kcnode->CoData().Getg();
+      newG[k] = kcnode->Data().Getg();
 
       if (abs(newG[k] - refG[k]) > 1e-12 && newG[k] != 1.0e12 && refG[k] != 1.0e12)
       {
         double finit = (newG[k] - refG[k]) / delta;
-        double analy = kcnode->CoData().GetDerivGW()[snode->Dofs()[0]];
+        double analy = kcnode->Data().GetDerivGW()[snode->Dofs()[0]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
@@ -1490,10 +1490,10 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
       for (int dim = 0; dim < cnode->NumDof(); ++dim)
       {
-        jumptxi -= (cnode->CoData().txi()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
-        jumpteta -= (cnode->CoData().teta()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
-        ztxi += (cnode->CoData().txi()[dim]) * (cnode->MoData().lm()[dim]);
-        zteta += (cnode->CoData().teta()[dim]) * (cnode->MoData().lm()[dim]);
+        jumptxi -= (cnode->Data().txi()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
+        jumpteta -= (cnode->Data().teta()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
+        ztxi += (cnode->Data().txi()[dim]) * (cnode->MoData().lm()[dim]);
+        zteta += (cnode->Data().teta()[dim]) * (cnode->MoData().lm()[dim]);
         znor += (cnode->MoData().n()[dim]) * (cnode->MoData().lm()[dim]);
       }
 
@@ -1525,8 +1525,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
         for (int dim = 0; dim < cnode->NumDof(); ++dim)
         {
-          jumptxi += (cnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-          jumpteta += (cnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+          jumptxi += (cnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+          jumpteta += (cnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
         }
       }  //  loop over master nodes
 
@@ -1562,9 +1562,9 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
       dserror("Friction law is neiter Tresca nor Coulomb");
 
     refCtxi[i] =
-        euclidean * ztxi - (frcoeff * (znor - cn * cnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+        euclidean * ztxi - (frcoeff * (znor - cn * cnode->Data().Getg())) * (ztxi + ct * jumptxi);
     refCteta[i] = euclidean * zteta -
-                  (frcoeff * (znor - cn * cnode->CoData().Getg())) * (zteta + ct * jumpteta);
+                  (frcoeff * (znor - cn * cnode->Data().Getg())) * (zteta + ct * jumpteta);
 
   }  // loop over procs slave nodes
 
@@ -1620,10 +1620,10 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
         for (int dim = 0; dim < kcnode->NumDof(); ++dim)
         {
-          jumptxi -= (kcnode->CoData().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->CoData().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          ztxi += (kcnode->CoData().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->CoData().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
+          zteta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
           znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
         }
 
@@ -1655,8 +1655,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
           for (int dim = 0; dim < kcnode->NumDof(); ++dim)
           {
-            jumptxi += (kcnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
 
@@ -1692,9 +1692,9 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         dserror("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
-                   (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+                   (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
       newCteta[k] = euclidean * zteta -
-                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (zteta + ct * jumpteta);
+                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (zteta + ct * jumpteta);
 
       // ************************************************************************
       // Extract linearizations from sparse matrix !!!
@@ -1855,10 +1855,10 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
         for (int dim = 0; dim < kcnode->NumDof(); ++dim)
         {
-          jumptxi -= (kcnode->CoData().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->CoData().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          ztxi += (kcnode->CoData().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->CoData().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
+          zteta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
           znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
         }
 
@@ -1891,8 +1891,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
           for (int dim = 0; dim < kcnode->NumDof(); ++dim)
           {
-            jumptxi += (kcnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
 
@@ -1929,9 +1929,9 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         dserror("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
-                   (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+                   (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
       newCteta[k] = euclidean * zteta -
-                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (zteta + ct * jumpteta);
+                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (zteta + ct * jumpteta);
 
 
 
@@ -2094,10 +2094,10 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
         for (int dim = 0; dim < kcnode->NumDof(); ++dim)
         {
-          jumptxi -= (kcnode->CoData().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->CoData().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          ztxi += (kcnode->CoData().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->CoData().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
+          zteta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
           znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
         }
 
@@ -2130,8 +2130,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
           for (int dim = 0; dim < kcnode->NumDof(); ++dim)
           {
-            jumptxi += (kcnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
 
@@ -2168,9 +2168,9 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         dserror("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
-                   (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+                   (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
       newCteta[k] = euclidean * zteta -
-                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (zteta + ct * jumpteta);
+                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (zteta + ct * jumpteta);
 
 
 
@@ -2322,10 +2322,10 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
         for (int dim = 0; dim < kcnode->NumDof(); ++dim)
         {
-          jumptxi -= (kcnode->CoData().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->CoData().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          ztxi += (kcnode->CoData().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->CoData().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
+          zteta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
           znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
         }
 
@@ -2358,8 +2358,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
           for (int dim = 0; dim < kcnode->NumDof(); ++dim)
           {
-            jumptxi += (kcnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
 
@@ -2396,9 +2396,9 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         dserror("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
-                   (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+                   (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
       newCteta[k] = euclidean * zteta -
-                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (zteta + ct * jumpteta);
+                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (zteta + ct * jumpteta);
 
 
       // ************************************************************************
@@ -2552,7 +2552,7 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
 
@@ -2722,7 +2722,7 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
 
@@ -2836,7 +2836,7 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
 
@@ -3006,7 +3006,7 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
 
@@ -3176,7 +3176,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
 
@@ -3291,7 +3291,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
 
@@ -3451,7 +3451,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -3491,7 +3491,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
       //      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
       //      {
       double finit = (newW[k] - refW[k]) / delta;
-      double analy = kcnode->CoData().GetDerivWlm()[snode->Dofs()[fd % dim]];
+      double analy = kcnode->Data().GetDerivWlm()[snode->Dofs()[fd % dim]];
       double dev = finit - analy;
 
       // kgid: id of currently tested slave node
@@ -3602,7 +3602,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find slave node with gid %", gid);
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
@@ -3645,7 +3645,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
       if (abs(newW[k] - refW[k]) > 1e-12 && newW[k] != 1.0e12 && refW[k] != 1.0e12)
       {
         double finit = (newW[k] - refW[k]) / delta;
-        double analy = kcnode->CoData().GetDerivW()[snode->Dofs()[fd % dim]];
+        double analy = kcnode->Data().GetDerivW()[snode->Dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
@@ -3744,7 +3744,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
       if (abs(newW[k] - refW[k]) > 1e-12 && newW[k] != 1.0e12 && refW[k] != 1.0e12)
       {
         double finit = (newW[k] - refW[k]) / delta;
-        double analy = kcnode->CoData().GetDerivW()[mnode->Dofs()[fd % dim]];
+        double analy = kcnode->Data().GetDerivW()[mnode->Dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node

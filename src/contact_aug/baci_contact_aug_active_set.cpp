@@ -49,7 +49,7 @@ bool CONTACT::AUG::ActiveSet::SkipUpdate() const
     for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end();
          ++cit)
     {
-      const CoInterface& interface = **cit;
+      const CONTACT::Interface& interface = **cit;
 
       // loop over all slave nodes on the current interface
       for (int j = 0; j < interface.SlaveRowNodes()->NumMyElements(); ++j)
@@ -57,7 +57,7 @@ bool CONTACT::AUG::ActiveSet::SkipUpdate() const
         int gid = interface.SlaveRowNodes()->GID(j);
         DRT::Node* node = interface.Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
+        Node* cnode = static_cast<Node*>(node);
 
         /* The nested active set strategy cannot deal with the case of
          * active nodes that have no integration segments/cells attached,
@@ -123,7 +123,7 @@ void CONTACT::AUG::ActiveSet::PostUpdate(
   //  for ( plain_interface_set::const_iterator cit = interface_.begin();
   //        cit != interface_.end(); ++cit, ++icount )
   //  {
-  //    CoInterface& interface = **cit;
+  //    Interface& interface = **cit;
   //    interface.WriteNodalCoordinatesToFile( icount, *Data().GActiveNodeRowMapPtr(),
   //        "../o/half_sphere/aug_nurbs_complete_active_slave_node_coordinates.data");
   //  }
@@ -155,7 +155,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateStatus(
     for (int j = 0; j < num_my_slave_row_nodes; ++j)
     {
       const int gid = my_slave_row_node_gids[j];
-      CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(gid));
+      Node* cnode = dynamic_cast<Node*>(interface.Discret().gNode(gid));
       if (!cnode) dserror("Cannot find node with gid %", gid);
 
       /* read weighting factor cn
@@ -257,7 +257,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
       for (int j = 0; j < num_my_slave_row_nodes; ++j)
       {
         const int sgid = my_slave_gids[j];
-        CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(sgid));
+        Node* cnode = dynamic_cast<Node*>(interface.Discret().gNode(sgid));
         if (!cnode) dserror("Cannot find node with gid %", sgid);
 
         const std::pair<int, bool>& active_pair = my_active_node_list[j];
@@ -275,7 +275,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
       for (int j = 0; j < num_my_slave_row_nodes; ++j)
       {
         const int sgid = my_slave_gids[j];
-        CoNode& cnode = static_cast<CoNode&>(*interface.Discret().gNode(sgid));
+        Node& cnode = static_cast<Node&>(*interface.Discret().gNode(sgid));
         std::pair<int, bool>& active_pair = my_active_node_list[j];
         active_pair = std::make_pair(cnode.Id(), cnode.Active());
       }
@@ -289,7 +289,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
     for (int j = 0; j < num_my_slave_row_nodes; ++j)
     {
       const int sgid = my_slave_gids[j];
-      CoNode& cnode = static_cast<CoNode&>(*interface.Discret().gNode(sgid));
+      Node& cnode = static_cast<Node&>(*interface.Discret().gNode(sgid));
 
       // skip nodes which are already active
       if (cnode.Active()) continue;
@@ -364,7 +364,7 @@ void CONTACT::AUG::ActiveSet::Print(std::ostream& os) const
     for (int j = 0; j < num_my_slave_row_nodes; ++j)
     {
       const int gid = my_slave_row_node_gids[j];
-      CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(gid));
+      Node* cnode = dynamic_cast<Node*>(interface.Discret().gNode(gid));
       if (!cnode) dserror("Cannot find node with gid %", gid);
 
       // compute averaged weighted gap
@@ -415,7 +415,7 @@ void CONTACT::AUG::ActiveSet::UpdateMaps(const CONTACT::ParamsInterface& cparams
   // loop over all interfaces
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
   {
-    CoInterface& interface = **cit;
+    CONTACT::Interface& interface = **cit;
 
     // update active set Epetra_Maps
     interface.BuildActiveSet();

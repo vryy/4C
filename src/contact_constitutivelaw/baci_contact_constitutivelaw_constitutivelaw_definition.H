@@ -45,7 +45,7 @@ namespace INPAR
 
 namespace CONTACT
 {
-  class CoInterface;
+  class Interface;
   namespace CONSTITUTIVELAW
   {
     class Container;

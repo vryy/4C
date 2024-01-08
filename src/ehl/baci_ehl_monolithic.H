@@ -66,7 +66,7 @@ namespace MORTAR
 
 namespace CONTACT
 {
-  class CoElement;
+  class Element;
 }
 
 namespace EHL

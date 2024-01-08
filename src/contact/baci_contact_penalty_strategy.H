@@ -27,13 +27,13 @@ namespace CONTACT
    also known as Penalty Method or regularization. An Augmented Lagrangian version
    based on the Uzawa algorithm is included, too.
 
-   This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
 
    Refer also to the Semesterarbeit of Bernd Budich, 2009
 
    */
-  class CoPenaltyStrategy : public CoAbstractStrategy
+  class PenaltyStrategy : public AbstractStrategy
   {
    public:
     /*!
@@ -48,8 +48,8 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    CoPenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface,
+    PenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
@@ -66,9 +66,9 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    CoPenaltyStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    PenaltyStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
 
@@ -327,19 +327,19 @@ namespace CONTACT
 
    protected:
     //! derived
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() override { return interface_; }
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() override { return interface_; }
 
     //! derived
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const override
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override
     {
       return interface_;
     }
 
     // don't want = operator and cctor
-    CoPenaltyStrategy operator=(const CoPenaltyStrategy& old) = delete;
-    CoPenaltyStrategy(const CoPenaltyStrategy& old) = delete;
+    PenaltyStrategy operator=(const PenaltyStrategy& old) = delete;
+    PenaltyStrategy(const PenaltyStrategy& old) = delete;
 
-    std::vector<Teuchos::RCP<CoInterface>> interface_;  // contact interfaces
+    std::vector<Teuchos::RCP<Interface>> interface_;  // contact interfaces
     Teuchos::RCP<CORE::LINALG::SparseMatrix>
         linzmatrix_;            // global matrix LinZ with derivatives of LM
     double constrnorm_;         // L2-norm of normal contact constraints
@@ -351,7 +351,7 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> fc_;               //< contact penalty force
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kc_;  //< contact penalty stiffness
 
-  };  // class CoPenaltyStrategy
+  };  // class PenaltyStrategy
 }  // namespace CONTACT
 
 BACI_NAMESPACE_CLOSE

@@ -55,7 +55,7 @@ namespace MORTAR
 
 namespace CONTACT
 {
-  class CoInterface;
+  class Interface;
 }
 
 /*----------------------------------------------------------------------*
@@ -98,9 +98,9 @@ namespace WEAR
     int dim_;  //! problem dimension
     //@}
 
-    Teuchos::RCP<MORTAR::ManagerBase> cmtman_;                       // contact manager
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces_;     // contact/wear interfaces
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfacesMat_;  // contact interfaces in Mat.
+    Teuchos::RCP<MORTAR::ManagerBase> cmtman_;                     // contact manager
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces_;     // contact/wear interfaces
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interfacesMat_;  // contact interfaces in Mat.
 
   };  // Algorithm
 }  // namespace WEAR

@@ -34,10 +34,10 @@ namespace MORTAR
 }
 namespace CONTACT
 {
-  class CoElement;
-  class CoNitscheStrategyFsi;
-  class CoNitscheStrategyFpi;
-  class CoNitscheStrategy;
+  class Element;
+  class NitscheStrategyFsi;
+  class NitscheStrategyFpi;
+  class NitscheStrategy;
 }  // namespace CONTACT
 
 namespace DRT
@@ -74,7 +74,7 @@ namespace XFEM
   {
    public:
     //! constructor
-    explicit XFluid_Contact_Comm(CONTACT::CoNitscheStrategy& contact_strategy)
+    explicit XFluid_Contact_Comm(CONTACT::NitscheStrategy& contact_strategy)
         : fluid_init_(false),
           ele_ptrs_already_setup_(false),
           cutwizard_(Teuchos::null),
@@ -95,7 +95,7 @@ namespace XFEM
           parallel_(false),
           min_surf_id_(-1),
           min_mortar_id_(-1),
-          soSurfId_to_mortar_ele_(std::vector<CONTACT::CoElement*>()),
+          soSurfId_to_mortar_ele_(std::vector<CONTACT::Element*>()),
           mortarId_to_soSurf_ele_(std::vector<DRT::ELEMENTS::StructuralSurface*>()),
           mortarId_to_somc_(std::vector<int>()),
           mortarId_to_sosid_(std::vector<int>()),
@@ -161,7 +161,7 @@ namespace XFEM
     }
 
     /// Get the contact element for this solid surface id
-    CONTACT::CoElement* GetContactEle(const int soSurfId)
+    CONTACT::Element* GetContactEle(const int soSurfId)
     {
       return soSurfId_to_mortar_ele_.at(soSurfId - min_surf_id_);
     }
@@ -233,9 +233,9 @@ namespace XFEM
     double Get_fpi_pcontact_fullfraction();
 
    private:
-    //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
+    //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
-    bool CheckNitscheContactState(CONTACT::CoElement* cele,
+    bool CheckNitscheContactState(CONTACT::Element* cele,
         const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
         const double& full_fsi_traction,        // stressfluid + penalty
         double& gap                             // gap
@@ -287,7 +287,7 @@ namespace XFEM
         std::set<CORE::GEO::CUT::Element*>& performed_elements, int& lastid);
 
     /// access to contact/meshtying bridge
-    CONTACT::CoNitscheStrategy& GetContactStrategy() { return contact_strategy_; }
+    CONTACT::NitscheStrategy& GetContactStrategy() { return contact_strategy_; }
 
     /// fluid state members initialized
     bool fluid_init_;
@@ -333,7 +333,7 @@ namespace XFEM
     /// Min Mortar Element Id
     int min_mortar_id_;
     /// Vector for translation of Structural Surface Id to Contact Element
-    std::vector<CONTACT::CoElement*> soSurfId_to_mortar_ele_;
+    std::vector<CONTACT::Element*> soSurfId_to_mortar_ele_;
     /// Vector for translation of Mortar Element Id to Structural Surface
     std::vector<DRT::ELEMENTS::StructuralSurface*> mortarId_to_soSurf_ele_;
     /// Vector for translation of Mortar Element Id to Mesh Coupling Object Id
@@ -350,13 +350,13 @@ namespace XFEM
     Teuchos::RCP<Epetra_Map> contact_ele_rowmap_fluidownerbased_;
 
     /// The Contact Strategy
-    CONTACT::CoNitscheStrategy& contact_strategy_;
+    CONTACT::NitscheStrategy& contact_strategy_;
 
     /// The Contact Strategy casted to fsi
-    CONTACT::CoNitscheStrategyFsi* contact_strategy_fsi_;
+    CONTACT::NitscheStrategyFsi* contact_strategy_fsi_;
 
     /// The Contact Strategy casted to fpi
-    CONTACT::CoNitscheStrategyFpi* contact_strategy_fpi_;
+    CONTACT::NitscheStrategyFpi* contact_strategy_fpi_;
 
     /// Contact Elements with increased number of GPs
     std::set<int> higher_contact_elements_;

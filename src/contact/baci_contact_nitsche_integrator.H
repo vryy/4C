@@ -28,7 +28,7 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
-  class CoIntegratorNitsche : public CONTACT::CoIntegrator
+  class IntegratorNitsche : public CONTACT::Integrator
   {
    public:
     /*!
@@ -44,9 +44,9 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param [in] comm    contact interface communicator
      */
-    CoIntegratorNitsche(
+    IntegratorNitsche(
         Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
-        : CoIntegrator(params, eletype, comm),
+        : Integrator(params, eletype, comm),
           theta_(params.get<double>("NITSCHE_THETA")),
           theta_2_(params.get<double>("NITSCHE_THETA_2")),
           nit_wgt_(

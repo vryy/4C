@@ -23,7 +23,7 @@ electrochemistry
 BACI_NAMESPACE_OPEN
 
 template <int dim>
-struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
+struct CONTACT::IntegratorNitscheSsiElch::ElementDataBundle
 {
   MORTAR::MortarElement* element;
   double* xi;
@@ -35,16 +35,16 @@ struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegratorNitscheSsiElch::CoIntegratorNitscheSsiElch(
+CONTACT::IntegratorNitscheSsiElch::IntegratorNitscheSsiElch(
     Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
-    : CoIntegratorNitscheSsi(params, eletype, comm)
+    : IntegratorNitscheSsi(params, eletype, comm)
 {
   if (std::abs(theta_) > 1.0e-16) dserror("SSI Elch Contact just implemented Adjoint free ...");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegratorNitscheSsiElch::IntegrateGP_3D(MORTAR::MortarElement& sele,
+void CONTACT::IntegratorNitscheSsiElch::IntegrateGP_3D(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -63,7 +63,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateGP_3D(MORTAR::MortarElement& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::GPTSForces(MORTAR::MortarElement& slave_ele,
+void CONTACT::IntegratorNitscheSsiElch::GPTSForces(MORTAR::MortarElement& slave_ele,
     MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& slave_shape,
     const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
@@ -156,8 +156,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::GPTSForces(MORTAR::MortarElement& slav
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::IntegrateTest(const double fac,
-    MORTAR::MortarElement& ele, const CORE::LINALG::SerialDenseVector& shape,
+void CONTACT::IntegratorNitscheSsiElch::IntegrateTest(const double fac, MORTAR::MortarElement& ele,
+    const CORE::LINALG::SerialDenseVector& shape,
     const CORE::LINALG::SerialDenseMatrix& shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, const double jac,
     const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt, const double test_val,
@@ -168,7 +168,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateTest(const double fac,
 {
   if (std::abs(fac) < 1.0e-16) return;
 
-  CONTACT::CoIntegratorNitsche::IntegrateTest<dim>(fac, ele, shape, shape_deriv, d_xi_dd, jac,
+  CONTACT::IntegratorNitsche::IntegrateTest<dim>(fac, ele, shape, shape_deriv, d_xi_dd, jac,
       d_jac_dd, wgt, test_val, d_test_val_dd, normal, d_normal_dd);
 
   for (const auto& d_testval_ds : d_test_val_ds)
@@ -190,7 +190,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateTest(const double fac,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double CONTACT::CoIntegratorNitscheSsiElch::CalculateDetFOfParentElement(
+double CONTACT::IntegratorNitscheSsiElch::CalculateDetFOfParentElement(
     const ElementDataBundle<dim>& electrode_quantities)
 {
   auto electrode_ele = electrode_quantities.element;
@@ -228,7 +228,7 @@ double CONTACT::CoIntegratorNitscheSsiElch::CalculateDetFOfParentElement(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
+void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
     const ElementDataBundle<dim>& electrode_quantities,
     CORE::GEN::pairedvector<int, double>& d_detF_dd)
 {
@@ -258,7 +258,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
+void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
     const ElementDataBundle<dim>& electrode_quantities,
     CORE::GEN::pairedvector<int, double>& d_detF_dd)
 {
@@ -304,7 +304,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
+void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
     const bool slave_is_electrode, const double jac,
     const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt,
     const ElementDataBundle<dim>& electrode_quantities,
@@ -471,7 +471,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::IntegrateElchTest(const double fac,
+void CONTACT::IntegratorNitscheSsiElch::IntegrateElchTest(const double fac,
     const ElementDataBundle<dim>& ele_data_bundle, const double jac,
     const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt, const double test_val,
     const CORE::GEN::pairedvector<int, double>& d_test_val_dd,
@@ -544,7 +544,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateElchTest(const double fac,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
+void CONTACT::IntegratorNitscheSsiElch::SetupGpElchProperties(
     const ElementDataBundle<dim>& ele_data_bundle, double& gp_conc, double& gp_pot,
     CORE::GEN::pairedvector<int, double>& d_conc_dc,
     CORE::GEN::pairedvector<int, double>& d_conc_dd,
@@ -608,7 +608,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::SoEleCauchy(MORTAR::MortarElement& mortar_ele,
+void CONTACT::IntegratorNitscheSsiElch::SoEleCauchy(MORTAR::MortarElement& mortar_ele,
     double* gp_coord, const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd,
     const double gp_wgt, const CORE::LINALG::Matrix<dim, 1>& gp_normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_normal_dd,
@@ -634,7 +634,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::SoEleCauchy(MORTAR::MortarElement& mor
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantities(
+void CONTACT::IntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantities(
     MORTAR::MortarElement& slave_ele, double* slave_xi,
     const CORE::LINALG::SerialDenseVector& slave_shape,
     const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,

@@ -20,7 +20,7 @@
 #include "baci_config.H"
 
 #include "baci_adapter_coupling_nonlin_mortar.H"
-#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_poro.H"
 #include "baci_coupling_adapter.H"
 
 #include <Epetra_Comm.h>
@@ -40,7 +40,7 @@ namespace DRT
 
 namespace CONTACT
 {
-  class CoInterface;
+  class Interface;
 }
 
 namespace CORE::LINALG
@@ -74,7 +74,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> veli);  // h.Willmann
 
     // return the used poro lagrange strategy
-    Teuchos::RCP<CONTACT::PoroLagrangeStrategy> GetPoroStrategy()
+    Teuchos::RCP<CONTACT::LagrangeStrategyPoro> GetPoroStrategy()
     {
       if (porolagstrategy_ == Teuchos::null) dserror("GetPoroStrategy(): No strategy set!");
       return porolagstrategy_;
@@ -100,7 +100,7 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
         std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
         std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
-        Teuchos::RCP<CONTACT::CoInterface>& interface, int numcoupleddof) override;
+        Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof) override;
 
     /*!
     \brief complete interface, store as internal variable
@@ -108,7 +108,7 @@ namespace ADAPTER
 
     */
     void CompleteInterface(Teuchos::RCP<DRT::Discretization> masterdis,
-        Teuchos::RCP<CONTACT::CoInterface>& interface) override;
+        Teuchos::RCP<CONTACT::Interface>& interface) override;
 
     /*!
     \brief create strategy object if required
@@ -120,7 +120,7 @@ namespace ADAPTER
 
    private:
     // poro lagrange strategy
-    Teuchos::RCP<CONTACT::PoroLagrangeStrategy> porolagstrategy_;
+    Teuchos::RCP<CONTACT::LagrangeStrategyPoro> porolagstrategy_;
 
     // firstinit
     bool firstinit_;

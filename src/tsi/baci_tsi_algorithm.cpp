@@ -20,10 +20,10 @@
 #include "baci_adapter_str_wrapper.H"
 #include "baci_adapter_thermo.H"
 #include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_tsi.H"
 #include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_contact_nitsche_strategy_tsi.H"
 #include "baci_contact_strategy_factory.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_coupling_adapter_volmortar.H"
@@ -444,7 +444,7 @@ void TSI::Algorithm::GetContactStrategy()
     STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
         StructureField()->ModelEvaluator(INPAR::STR::model_contact));
     contact_strategy_nitsche_ =
-        Teuchos::rcp_dynamic_cast<CONTACT::CoNitscheStrategyTsi>(a.StrategyPtr(), false);
+        Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategyTsi>(a.StrategyPtr(), false);
     contact_strategy_nitsche_->EnableRedistribution();
 
     thermo_->SetNitscheContactStrategy(contact_strategy_nitsche_);
@@ -474,7 +474,7 @@ void TSI::Algorithm::GetContactStrategy()
     factory.CheckDimension();
 
     // create some local variables (later to be stored in strategy)
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces;
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
     Teuchos::ParameterList cparams;
 
     // read and check contact input parameters
@@ -491,7 +491,7 @@ void TSI::Algorithm::GetContactStrategy()
     // ---------------------------------------------------------------------
     // build the solver strategy object
     // ---------------------------------------------------------------------
-    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::CoTSILagrangeStrategy>(
+    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::LagrangeStrategyTsi>(
         factory.BuildStrategy(cparams, poroslave, poromaster, 1e8, interfaces), true);
 
     // build the search tree

@@ -24,7 +24,7 @@
 
 BACI_NAMESPACE_OPEN
 
-void CONTACT::CoNitscheStrategyTsi::SetState(
+void CONTACT::NitscheStrategyTsi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   if (statename == MORTAR::state_temperature)
@@ -51,13 +51,13 @@ void CONTACT::CoNitscheStrategyTsi::SetState(
     }
   }
   else
-    CONTACT::CoNitscheStrategy::SetState(statename, vec);
+    CONTACT::NitscheStrategy::SetState(statename, vec);
 }
 
 /*------------------------------------------------------------------------*
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategyTsi::SetParentState(
+void CONTACT::NitscheStrategyTsi::SetParentState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   if (statename == MORTAR::state_temperature)
@@ -95,17 +95,17 @@ void CONTACT::CoNitscheStrategyTsi::SetParentState(
     }
   }
   else
-    CONTACT::CoNitscheStrategy::SetParentState(statename, vec);
+    CONTACT::NitscheStrategy::SetParentState(statename, vec);
 }
 
-void CONTACT::CoNitscheStrategyTsi::Setup(bool redistributed, bool init)
+void CONTACT::NitscheStrategyTsi::Setup(bool redistributed, bool init)
 {
-  CONTACT::CoNitscheStrategy::Setup(redistributed, init);
+  CONTACT::NitscheStrategy::Setup(redistributed, init);
 
   curr_state_temp_ = Teuchos::null;
 }
 
-void CONTACT::CoNitscheStrategyTsi::UpdateTraceIneqEtimates()
+void CONTACT::NitscheStrategyTsi::UpdateTraceIneqEtimates()
 {
   auto NitWgt =
       INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
@@ -122,7 +122,7 @@ void CONTACT::CoNitscheStrategyTsi::UpdateTraceIneqEtimates()
   }
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyTsi::SetupRhsBlockVec(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::SetupRhsBlockVec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
@@ -131,11 +131,11 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyTsi::SetupRhsBlockVec(
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()));
     default:
-      return CONTACT::CoNitscheStrategy::SetupRhsBlockVec(bt);
+      return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
   }
 }
 
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyTsi::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -145,11 +145,11 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
     case CONTACT::VecBlockType::temp:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(ft_), 0));
     default:
-      return CONTACT::CoNitscheStrategy::GetRhsBlockPtr(bt);
+      return CONTACT::NitscheStrategy::GetRhsBlockPtr(bt);
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::SetupMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
@@ -166,11 +166,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::SetupMat
               *DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
-      return CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(bt);
+      return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
   }
 }
 
-void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
+void CONTACT::NitscheStrategyTsi::CompleteMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
@@ -195,12 +195,12 @@ void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
         dserror("GlobalAssemble(...) failed");
       break;
     default:
-      CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
+      CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
       break;
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -214,14 +214,14 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatri
     case CONTACT::MatBlockType::displ_temp:
       return kdt_;
     default:
-      return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bt, cparams);
+      return CONTACT::NitscheStrategy::GetMatrixBlockPtr(bt, cparams);
   }
 }
 
 
-void CONTACT::CoNitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cparams)
 {
-  CONTACT::CoNitscheStrategy::Integrate(cparams);
+  CONTACT::NitscheStrategy::Integrate(cparams);
 
   ft_ = CreateRhsBlockPtr(CONTACT::VecBlockType::temp);
   ktt_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::temp_temp);

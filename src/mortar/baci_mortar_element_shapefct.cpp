@@ -2878,7 +2878,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        {
        // apply FD
        DRT::Node** mynodes = Nodes();
-       CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
+       Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        mycnode->xspatial()[dim] += delta;
 
        CORE::LINALG::SerialDenseVector val1(nnodes);
@@ -3216,7 +3216,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        {
        // apply FD
        DRT::Node** mynodes = Nodes();
-       CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
+       Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        mycnode->xspatial()[dim] += delta;
 
        CORE::LINALG::SerialDenseVector val1(nnodes);
@@ -3823,7 +3823,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
 
        DRT::Node** mynodes = Nodes();
-       CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
+       Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        int col= mycnode->Dofs()[dim];
 
        std::cout << "A-Derivative: " << col << std::endl;
@@ -4012,7 +4012,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
 
        DRT::Node** mynodes = Nodes();
-       CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
+       Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        int col= mycnode->Dofs()[dim];
 
        std::cout << "A-Derivative: " << col << std::endl;

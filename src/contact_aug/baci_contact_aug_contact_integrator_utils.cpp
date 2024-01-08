@@ -27,7 +27,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele,
-    const std::vector<MORTAR::MortarElement*>& meles, bool boundary_ele, CoIntegrator& wrapper,
+    const std::vector<MORTAR::MortarElement*>& meles, bool boundary_ele, Integrator& wrapper,
     UniqueProjInfoPair& projInfo)
 {
   TEUCHOS_FUNC_TIME_MONITOR(AUG::CONTACT_FUNC_NAME);
@@ -362,7 +362,7 @@ double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::MortarElement& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
+void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::Node& cnode,
     const std::vector<ElementNormal>& adj_ele_normals, const double avg_normal_length,
     Deriv1stVecMap& d_nodal_avg_normal)
 {
@@ -577,7 +577,7 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
+void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::Node& cnode,
     const std::vector<ElementNormal>& adj_ele_normals, const double avg_normal_length,
     const Deriv1stVecMap& d_nodal_avg_normal)
 {

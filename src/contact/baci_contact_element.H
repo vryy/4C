@@ -21,12 +21,12 @@ namespace CONTACT
 {
   // forward declarations
 
-  class CoElementType : public DRT::ElementType
+  class ElementType : public DRT::ElementType
   {
    public:
-    std::string Name() const override { return "CoElementType"; }
+    std::string Name() const override { return "CONTACT::ElementType"; }
 
-    static CoElementType& Instance();
+    static ElementType& Instance();
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -39,7 +39,7 @@ namespace CONTACT
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
-    static CoElementType instance_;
+    static ElementType instance_;
   };
 
   /*!
@@ -47,7 +47,7 @@ namespace CONTACT
 
 
    */
-  class CoElement : public MORTAR::MortarElement
+  class Element : public MORTAR::MortarElement
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -63,7 +63,7 @@ namespace CONTACT
      \param isslave (in): flag indicating whether element is slave or master side
      \param isnurbs (in): flag indicating whether element is nurbs element or not
      */
-    CoElement(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+    Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
         const int* nodeids, const bool isslave, bool isnurbs = false);
 
     /*!
@@ -72,7 +72,7 @@ namespace CONTACT
      Makes a deep copy of this class
 
      */
-    CoElement(const CONTACT::CoElement& old);
+    Element(const CONTACT::Element& old);
 
 
 
@@ -89,7 +89,7 @@ namespace CONTACT
      top of parobject.H
 
      */
-    int UniqueParObjectId() const override { return CoElementType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return ElementType::Instance().UniqueParObjectId(); }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -107,7 +107,7 @@ namespace CONTACT
      */
     void Unpack(const std::vector<char>& data) override;
 
-    CoElementType& ElementType() const override { return CoElementType::Instance(); }
+    CONTACT::ElementType& ElementType() const override { return ElementType::Instance(); }
 
     //@}
 
@@ -116,7 +116,7 @@ namespace CONTACT
     /*!
      \brief Get number of degrees of freedom of a certain node
 
-     This CoElement is picky: It cooperates only with CNodes, not with
+     This Element is picky: It cooperates only with CNodes, not with
      standard Node objects!
 
      */
@@ -268,11 +268,11 @@ namespace CONTACT
     Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
         mMatrixDeriv_;  //< temporary matrix for M linearization during integration
   };
-  // class CoElement
+  // class Element
 }  // namespace CONTACT
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CONTACT::CoElement& ele);
+std::ostream& operator<<(std::ostream& os, const CONTACT::Element& ele);
 
 BACI_NAMESPACE_CLOSE
 

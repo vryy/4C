@@ -20,6 +20,8 @@
 #include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
 #include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy_tsi.H"
+#include "baci_contact_lagrange_strategy_wear.H"
 #include "baci_contact_nitsche_strategy.H"
 #include "baci_contact_nitsche_strategy_ssi.H"
 #include "baci_contact_nitsche_strategy_ssi_elch.H"
@@ -27,10 +29,8 @@
 #include "baci_contact_paramsinterface.H"
 #include "baci_contact_penalty_strategy.H"
 #include "baci_contact_tsi_interface.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
 #include "baci_contact_utils.H"
 #include "baci_contact_wear_interface.H"
-#include "baci_contact_wear_lagrange_strategy.H"
 #include "baci_inpar_s2i.H"
 #include "baci_inpar_ssi.H"
 #include "baci_inpar_validparameters.H"
@@ -668,7 +668,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces, bool& poroslave,
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, bool& poroslave,
     bool& poromaster) const
 {
   // start building interfaces
@@ -828,12 +828,12 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // ------------------------------------------------------------------------
     const auto& discret = Teuchos::rcp<const DRT::Discretization>(&Discret(), false);
 
-    Teuchos::RCP<CONTACT::CoInterface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
+    Teuchos::RCP<CONTACT::Interface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
         icparams, isself[0], discret, Teuchos::null, contactconstitutivelaw_id);
     interfaces.push_back(newinterface);
 
     // get it again
-    const Teuchos::RCP<CONTACT::CoInterface>& interface = interfaces.back();
+    const Teuchos::RCP<CONTACT::Interface>& interface = interfaces.back();
 
     /* note that the nodal ids are unique because they come from
      * one global problem discretization containing all nodes of the
@@ -899,7 +899,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
         }
 
-        /* create CoNode object or FriNode object in the frictional case
+        /* create Node object or FriNode object in the frictional case
          * for the boolean variable initactive we use isactive[j]+foundinitialactive,
          * as this is true for BOTH initial active nodes found for the first time
          * and found for the second, third, ... time! */
@@ -962,13 +962,12 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
            * the only problem would have occurred for the initial active nodes,
            * as their status could have been overwritten, but is prevented
            * by the "foundinitialactive" block above! */
-          interface->AddCoNode(cnode);
+          interface->AddNode(cnode);
         }
         else
         {
-          Teuchos::RCP<CONTACT::CoNode> cnode =
-              Teuchos::rcp(new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
-                  Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
+          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(),
+              node->Owner(), Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
           if (nurbs)
@@ -1028,7 +1027,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
            * the only problem would have occurred for the initial active nodes,
            * as their status could have been overwritten, but is prevented
            * by the "foundinitialactive" block above! */
-          interface->AddCoNode(cnode);
+          interface->AddNode(cnode);
         }
       }
     }
@@ -1079,9 +1078,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         // the slave condition )
         if (dbc_slave_eles.find(ele.get()) != dbc_slave_eles.end()) continue;
 
-        Teuchos::RCP<CONTACT::CoElement> cele =
-            Teuchos::rcp(new CONTACT::CoElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
-                ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
+        Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize,
+            ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
 
         if (isporo) SetPoroParentElement(slavetype, mastertype, cele, ele, Discret());
 
@@ -1105,7 +1103,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           PrepareNURBSElement(Discret(), ele, cele);
         }
 
-        interface->AddCoElement(cele);
+        interface->AddElement(cele);
       }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
       ggsize += gsize;  // update global element counter
@@ -1129,19 +1127,19 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::FullyOverlappingInterfaces(
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const
 {
   int ocount = 0;
   for (auto it = interfaces.begin(); it != interfaces.end(); ++it, ++ocount)
   {
-    CoInterface& interface = **it;
+    Interface& interface = **it;
 
     const Epetra_Map& srownodes_i = *interface.SlaveRowNodes();
     const Epetra_Map& mrownodes_i = *interface.MasterRowNodes();
 
     for (auto iit = (it + 1); iit != interfaces.end(); ++iit)
     {
-      CoInterface& iinterface = **iit;
+      Interface& iinterface = **iit;
 
       const Epetra_Map& srownodes_ii = *iinterface.SlaveRowNodes();
       const Epetra_Map& mrownodes_ii = *iinterface.MasterRowNodes();
@@ -1251,7 +1249,7 @@ int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(const int id,
+Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::CreateInterface(const int id,
     const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
     const bool selfcontact, const Teuchos::RCP<const DRT::Discretization>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
@@ -1265,14 +1263,14 @@ Teuchos::RCP<CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
+Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::CreateInterface(
     const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
     const Teuchos::RCP<const DRT::Discretization>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
     const int contactconstitutivelaw_id)
 {
-  Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
+  Teuchos::RCP<CONTACT::Interface> newinterface = Teuchos::null;
 
   auto wlaw = INPUT::IntegralValue<INPAR::WEAR::WearLaw>(icparams, "WEARLAW");
 
@@ -1388,11 +1386,11 @@ Teuchos::RCP<CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
                stype == INPAR::CONTACT::solution_lagmult)
       {
         newinterface = Teuchos::rcp(
-            new CONTACT::CoTSIInterface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
+            new CONTACT::TSIInterface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
         newinterface = Teuchos::rcp(
-            new CONTACT::CoInterface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
+            new CONTACT::Interface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
       break;
     }
   }
@@ -1404,7 +1402,7 @@ Teuchos::RCP<CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::SetPoroParentElement(
     enum MORTAR::MortarElement::PhysicalType& slavetype,
-    enum MORTAR::MortarElement::PhysicalType& mastertype, Teuchos::RCP<CONTACT::CoElement>& cele,
+    enum MORTAR::MortarElement::PhysicalType& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
     Teuchos::RCP<DRT::Element>& ele, const DRT::Discretization& discret) const
 {
   // ints to communicate decision over poro bools between processors on every interface
@@ -1588,9 +1586,9 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
+Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
     const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
-    const int& dof_offset, std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
+    const int& dof_offset, std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
     CONTACT::ParamsInterface* cparams_interface) const
 {
   const auto stype = INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
@@ -1602,10 +1600,10 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
+Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
     const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces, const Epetra_Map* dof_row_map,
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const int dim, const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
     Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr,
     CONTACT::ParamsInterface* cparams_interface)
@@ -1615,7 +1613,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     std::cout << "Building contact strategy object............";
     fflush(stdout);
   }
-  Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr = Teuchos::null;
+  Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr = Teuchos::null;
 
   // get input par.
   auto wlaw = INPUT::IntegralValue<INPAR::WEAR::WearLaw>(params, "WEARLAW");
@@ -1627,12 +1625,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   // time integration.
   double dummy = -1.0;
 
-  // create WearLagrangeStrategy for wear as non-distinct quantity
+  // create LagrangeStrategyWear for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wlaw != INPAR::WEAR::wear_none &&
       (wtype == INPAR::WEAR::wear_intstate || wtype == INPAR::WEAR::wear_primvar))
   {
     data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-    strategy_ptr = Teuchos::rcp(new WEAR::WearLagrangeStrategy(
+    strategy_ptr = Teuchos::rcp(new WEAR::LagrangeStrategyWear(
         data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
@@ -1641,7 +1639,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
         params.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
     {
       dserror("This contact strategy is not yet considered!");
-      //      strategy_ptr = Teuchos::rcp(new PoroLagrangeStrategy(
+      //      strategy_ptr = Teuchos::rcp(new LagrangeStrategyPoro(
       //          dof_row_map,
       //          node_row_map,
       //          params,
@@ -1655,14 +1653,14 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     else if (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::rcp(new CoTSILagrangeStrategy(data_ptr, dof_row_map, node_row_map,
+      strategy_ptr = Teuchos::rcp(new LagrangeStrategyTsi(data_ptr, dof_row_map, node_row_map,
           params, interfaces, dim, comm_ptr, dummy, dof_offset));
     }
     else
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::rcp(new CoLagrangeStrategy(data_ptr, dof_row_map, node_row_map,
-          params, interfaces, dim, comm_ptr, dummy, dof_offset));
+      strategy_ptr = Teuchos::rcp(new LagrangeStrategy(data_ptr, dof_row_map, node_row_map, params,
+          interfaces, dim, comm_ptr, dummy, dof_offset));
     }
   }
   else if (((stype == INPAR::CONTACT::solution_penalty or
@@ -1670,13 +1668,13 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
                algo != INPAR::MORTAR::algorithm_gpts) &&
            stype != INPAR::CONTACT::solution_uzawa)
   {
-    strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
+    strategy_ptr = Teuchos::rcp(new PenaltyStrategy(
         dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_uzawa)
   {
     dserror("This contact strategy is not yet considered!");
-    //    strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
+    //    strategy_ptr = Teuchos::rcp(new PenaltyStrategy(
     //        dof_row_map,
     //        node_row_map,
     //        params,
@@ -1726,25 +1724,25 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     if (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::rcp(new CoNitscheStrategyTsi(
+      strategy_ptr = Teuchos::rcp(new NitscheStrategyTsi(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
     }
     else if (params.get<int>("PROBTYPE") == INPAR::CONTACT::ssi)
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::rcp(new CoNitscheStrategySsi(
+      strategy_ptr = Teuchos::rcp(new NitscheStrategySsi(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
     }
     else if (params.get<int>("PROBTYPE") == INPAR::CONTACT::ssi_elch)
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::rcp(new CoNitscheStrategySsiElch(
+      strategy_ptr = Teuchos::rcp(new NitscheStrategySsiElch(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
     }
     else
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::rcp(new CoNitscheStrategy(
+      strategy_ptr = Teuchos::rcp(new NitscheStrategy(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
     }
   }
@@ -1764,7 +1762,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::BuildSearchTree(
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const
 {
   // create binary search tree
   for (const auto& interface : interfaces) interface->CreateSearchTree();
@@ -1773,8 +1771,8 @@ void CONTACT::STRATEGY::Factory::BuildSearchTree(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::Print(
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
-    const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
+    const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr,
     const Teuchos::ParameterList& params) const
 {
   // print friction information of interfaces

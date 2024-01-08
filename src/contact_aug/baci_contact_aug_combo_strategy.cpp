@@ -25,7 +25,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
+Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const Teuchos::ParameterList& params,
     const plain_interface_set& ref_interfaces, const int dim,
@@ -76,7 +76,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyInterfaces(
   strat_interfaces.clear();
   strat_interfaces.reserve(ref_interfaces.size());
 
-  Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
+  Teuchos::RCP<CONTACT::Interface> newinterface = Teuchos::null;
 
   for (plain_interface_set::const_iterator cit = ref_interfaces.begin();
        cit != ref_interfaces.end(); ++cit)
@@ -101,7 +101,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyInterfaces(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::CreateStrategyLinearSolvers(
-    const CONTACT::CoAbstractStrategy& strategy, const std::string& lin_solver_id_str,
+    const CONTACT::AbstractStrategy& strategy, const std::string& lin_solver_id_str,
     const Teuchos::ParameterList& params, CONTACT::ParamsInterface* cparams_interface,
     plain_lin_solver_set& strat_lin_solvers)
 {
@@ -134,7 +134,7 @@ CONTACT::AUG::ComboStrategy::ComboStrategy(
     const Epetra_Map* node_row_map, const Teuchos::ParameterList& params,
     const plain_strategy_set& strategies, const plain_lin_solver_set& lin_solvers, const int dim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof)
-    : CONTACT::CoAbstractStrategy(data, dof_row_map, node_row_map, params, dim, comm, 0.0, maxdof),
+    : CONTACT::AbstractStrategy(data, dof_row_map, node_row_map, params, dim, comm, 0.0, maxdof),
       strategies_(strategies),
       lin_solvers_(lin_solvers),
       interface_sets_(0),
@@ -145,7 +145,7 @@ CONTACT::AUG::ComboStrategy::ComboStrategy(
   for (plain_strategy_set::const_iterator cit = strategies_.begin(); cit != strategies_.end();
        ++cit)
   {
-    const CONTACT::CoAbstractStrategy& s = **cit;
+    const CONTACT::AbstractStrategy& s = **cit;
     const plain_interface_set& sinterfaces = s.ContactInterfaces();
     const unsigned num_interfaces = sinterfaces.size();
 
@@ -600,15 +600,14 @@ void CONTACT::AUG::ComboStrategy::ResetLagrangeMultipliers(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CONTACT::CoInterface>>& CONTACT::AUG::ComboStrategy::Interfaces()
+std::vector<Teuchos::RCP<CONTACT::Interface>>& CONTACT::AUG::ComboStrategy::Interfaces()
 {
   return interface_sets_[switch_->Id()];
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& CONTACT::AUG::ComboStrategy::Interfaces()
-    const
+const std::vector<Teuchos::RCP<CONTACT::Interface>>& CONTACT::AUG::ComboStrategy::Interfaces() const
 {
   return interface_sets_[switch_->Id()];
 }

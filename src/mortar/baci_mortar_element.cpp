@@ -1087,7 +1087,7 @@ void MORTAR::MortarElement::DerivJacobian(
       break;
     }
     default:
-      dserror("Jac. derivative not implemented for this type of CoElement");
+      dserror("Jac. derivative not implemented for this type of Element");
       exit(EXIT_FAILURE);
   }
 

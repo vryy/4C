@@ -18,9 +18,9 @@ BACI_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategySsi::Integrate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategySsi::Integrate(const CONTACT::ParamsInterface& cparams)
 {
-  CONTACT::CoNitscheStrategy::Integrate(cparams);
+  CONTACT::NitscheStrategy::Integrate(cparams);
 
   fs_ = CreateRhsBlockPtr(CONTACT::VecBlockType::scatra);
   kss_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::scatra_scatra);
@@ -30,7 +30,7 @@ void CONTACT::CoNitscheStrategySsi::Integrate(const CONTACT::ParamsInterface& cp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategySsi::EvaluateReferenceState()
+void CONTACT::NitscheStrategySsi::EvaluateReferenceState()
 {
   // initialize an estimate of TraceHE
   InitTraceHE();
@@ -38,7 +38,7 @@ void CONTACT::CoNitscheStrategySsi::EvaluateReferenceState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategySsi::InitTraceHE()
+void CONTACT::NitscheStrategySsi::InitTraceHE()
 {
   for (const auto& interface : interface_)
   {
@@ -54,7 +54,7 @@ void CONTACT::CoNitscheStrategySsi::InitTraceHE()
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategySsi::SetState(
+void CONTACT::NitscheStrategySsi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   switch (statename)
@@ -86,7 +86,7 @@ void CONTACT::CoNitscheStrategySsi::SetState(
     }
     default:
     {
-      CONTACT::CoNitscheStrategy::SetState(statename, vec);
+      CONTACT::NitscheStrategy::SetState(statename, vec);
       break;
     }
   }
@@ -94,7 +94,7 @@ void CONTACT::CoNitscheStrategySsi::SetState(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategySsi::SetParentState(
+void CONTACT::NitscheStrategySsi::SetParentState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   switch (statename)
@@ -145,7 +145,7 @@ void CONTACT::CoNitscheStrategySsi::SetParentState(
     }
     default:
     {
-      CONTACT::CoNitscheStrategy::SetParentState(statename, vec);
+      CONTACT::NitscheStrategy::SetParentState(statename, vec);
       break;
     }
   }
@@ -153,7 +153,7 @@ void CONTACT::CoNitscheStrategySsi::SetParentState(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategySsi::SetupRhsBlockVec(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::SetupRhsBlockVec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
@@ -163,13 +163,13 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategySsi::SetupRhsBlockVec(
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()));
     default:
-      return CONTACT::CoNitscheStrategy::SetupRhsBlockVec(bt);
+      return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
   }
 }
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategySsi::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -180,13 +180,13 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategySsi::GetRhsBlockPtr(
     case CONTACT::VecBlockType::scatra:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fs_), 0));
     default:
-      return CONTACT::CoNitscheStrategy::GetRhsBlockPtr(bp);
+      return CONTACT::NitscheStrategy::GetRhsBlockPtr(bp);
   }
 }
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::SetupMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
@@ -206,13 +206,13 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::SetupMat
               *DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
-      return CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(bt);
+      return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
   }
 }
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
+void CONTACT::NitscheStrategySsi::CompleteMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
@@ -240,14 +240,14 @@ void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
         dserror("GlobalAssemble(...) failed");
       break;
     default:
-      CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
+      CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
       break;
   }
 }
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
@@ -264,7 +264,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::GetMatri
     case CONTACT::MatBlockType::displ_scatra:
       return kds_;
     default:
-      return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
+      return CONTACT::NitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
   }
 }
 BACI_NAMESPACE_CLOSE

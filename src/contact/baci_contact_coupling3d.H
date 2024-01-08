@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 namespace CONTACT
 {
   // forward declarations
-  class CoIntegrator;
+  class Integrator;
 
   /*!
    \brief A class representing the framework for mortar coupling of ONE
@@ -40,7 +40,7 @@ namespace CONTACT
 
    */
 
-  class CoCoupling3d : public MORTAR::Coupling3d
+  class Coupling3d : public MORTAR::Coupling3d
   {
    public:
     /*!
@@ -51,7 +51,7 @@ namespace CONTACT
      performed in parallel by individual processes.
 
      */
-    CoCoupling3d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
+    Coupling3d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
         MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
     //! @name Evlauation methods
@@ -72,7 +72,7 @@ namespace CONTACT
      \brief Integrate the integration cells (3D)
 
      Derived version! Most importantly, in this derived version
-     a CONTACT::CoIntegrator instance is created, which also
+     a CONTACT::Integrator instance is created, which also
      does integration of the mortar quantity linearizations
 
      This method creates an integrator object for the cell triangles,
@@ -163,14 +163,14 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling3d operator=(const CoCoupling3d& old) = delete;
-    CoCoupling3d(const CoCoupling3d& old) = delete;
+    Coupling3d operator=(const Coupling3d& old) = delete;
+    Coupling3d(const Coupling3d& old) = delete;
 
 
     // new variables as compared to base class
     INPAR::CONTACT::SolvingStrategy stype_;
 
-  };  // class CoCoupling3d
+  };  // class Coupling3d
 
 
   /*!
@@ -187,14 +187,14 @@ namespace CONTACT
    CMAME, 197, 2008, pp. 555-566". For this type of formulation, a
    quadratic MortarElement is split into several linear IntElements,
    on which the geometrical coupling is performed. Thus, we additionally
-   hand in in two IntElements to CoCoupling3dQuad.
+   hand in in two IntElements to Coupling3dQuad.
 
-   This is a derived class from MORTAR::CoCoupling3d which does the
+   This is a derived class from MORTAR::Coupling3d which does the
    contact-specific stuff for 3d quadratic mortar coupling.
 
    */
 
-  class CoCoupling3dQuad : public CoCoupling3d
+  class Coupling3dQuad : public Coupling3d
   {
    public:
     /*!
@@ -205,7 +205,7 @@ namespace CONTACT
      performed in parallel by individual processes.
 
      */
-    CoCoupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
+    Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
 
@@ -237,22 +237,22 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling3dQuad operator=(const CoCoupling3dQuad& old) = delete;
-    CoCoupling3dQuad(const CoCoupling3dQuad& old) = delete;
+    Coupling3dQuad operator=(const Coupling3dQuad& old) = delete;
+    Coupling3dQuad(const Coupling3dQuad& old) = delete;
 
     MORTAR::IntElement& sintele_;  // slave sub-integration element
     MORTAR::IntElement& mintele_;  // slave sub-integration element
   };
-  // class CoCoupling3dQuad
+  // class Coupling3dQuad
 
   /*!
    \brief A class representing the framework for mortar coupling of ONE
    slave element and SEVERAL master elements of a contact interface in
-   3D. Concretely, this class simply stores several CoCoupling3d objects.
+   3D. Concretely, this class simply stores several Coupling3d objects.
 
    */
 
-  class CoCoupling3dManager
+  class Coupling3dManager
   {
    public:
     /*!
@@ -262,13 +262,13 @@ namespace CONTACT
      Note that this is \b not a collective call as coupling is
      performed in parallel by individual processes.
 
-     Note: This version of the constructor creates an CoCoupling3dManager instance with undefined
+     Note: This version of the constructor creates an Coupling3dManager instance with undefined
      type of shape functions. As a result, no calls to functions relying on the evaluation of shape
-     functions is allowed. To be able to evaluate them, the CoCoupling3dManager have to be created
+     functions is allowed. To be able to evaluate them, the Coupling3dManager have to be created
      with the alternative constructor (see below).
 
      */
-    CoCoupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
+    Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
         std::vector<MORTAR::MortarElement*> mele);
 
@@ -276,7 +276,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoCoupling3dManager() = default;
+    virtual ~Coupling3dManager() = default;
     /*!
      \brief Get coupling slave element
 
@@ -299,7 +299,7 @@ namespace CONTACT
      \brief Get coupling pairs
 
      */
-    virtual std::vector<Teuchos::RCP<CONTACT::CoCoupling3d>>& Coupling() { return coup_; }
+    virtual std::vector<Teuchos::RCP<CONTACT::Coupling3d>>& Coupling() { return coup_; }
 
     /*!
      \brief Get number of integration cells
@@ -381,8 +381,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling3dManager operator=(const CoCoupling3dManager& old) = delete;
-    CoCoupling3dManager(const CoCoupling3dManager& old) = delete;
+    Coupling3dManager operator=(const Coupling3dManager& old) = delete;
+    Coupling3dManager(const Coupling3dManager& old) = delete;
 
     DRT::Discretization& idiscret_;             // discretization of the contact interface
     int dim_;                                   // problem dimension (here: 3D)
@@ -390,17 +390,17 @@ namespace CONTACT
     Teuchos::ParameterList& imortar_;           // containing contact input parameters
     MORTAR::MortarElement* sele_;               // slave element
     std::vector<MORTAR::MortarElement*> mele_;  // master elements
-    std::vector<Teuchos::RCP<CoCoupling3d>> coup_;  // coupling pairs
-    int ncells_;                                    // total number of integration cells
-    INPAR::CONTACT::SolvingStrategy stype_;         // solving strategy
+    std::vector<Teuchos::RCP<Coupling3d>> coup_;  // coupling pairs
+    int ncells_;                                  // total number of integration cells
+    INPAR::CONTACT::SolvingStrategy stype_;       // solving strategy
   };
-  // class CoCoupling3dManager
+  // class Coupling3dManager
 
-  class CoCoupling3dQuadManager : public MORTAR::Coupling3dQuadManager, public CoCoupling3dManager
+  class Coupling3dQuadManager : public MORTAR::Coupling3dQuadManager, public Coupling3dManager
   {
     // resolve ambiguity of multiple inheritance
-    using CoCoupling3dManager::ConsistDualShape;
-    using CoCoupling3dManager::Coupling;
+    using CONTACT::Coupling3dManager::ConsistDualShape;
+    using CONTACT::Coupling3dManager::Coupling;
     using MORTAR::Coupling3dQuadManager::Comm;
     using MORTAR::Coupling3dQuadManager::IntType;
     using MORTAR::Coupling3dQuadManager::LagMultQuad;
@@ -415,7 +415,7 @@ namespace CONTACT
      \brief Constructor
 
      */
-    CoCoupling3dQuadManager(DRT::Discretization& idiscret, int dim, bool quad,
+    Coupling3dQuadManager(DRT::Discretization& idiscret, int dim, bool quad,
         Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
         std::vector<MORTAR::MortarElement*> mele);
 
@@ -468,8 +468,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling3dQuadManager operator=(const CoCoupling3dQuadManager& old) = delete;
-    CoCoupling3dQuadManager(const CoCoupling3dQuadManager& old) = delete;
+    Coupling3dQuadManager operator=(const Coupling3dQuadManager& old) = delete;
+    Coupling3dQuadManager(const Coupling3dQuadManager& old) = delete;
 
     // new variables as compared to the base class:
     int smintpairs_;  // proc local number of slave/master integration pairs

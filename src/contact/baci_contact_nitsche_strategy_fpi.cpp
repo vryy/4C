@@ -17,17 +17,17 @@
 BACI_NAMESPACE_OPEN
 
 
-void CONTACT::CoNitscheStrategyFpi::SetState(
+void CONTACT::NitscheStrategyFpi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
-  CONTACT::CoNitscheStrategyPoro::SetState(statename, vec);
+  CONTACT::NitscheStrategyPoro::SetState(statename, vec);
   if (statename == MORTAR::state_new_displacement)
   {
     DoContactSearch();
   }
 }
 
-void CONTACT::CoNitscheStrategyFpi::DoContactSearch()
+void CONTACT::NitscheStrategyFpi::DoContactSearch()
 {
   for (auto& interface : interface_)
   {
@@ -38,8 +38,8 @@ void CONTACT::CoNitscheStrategyFpi::DoContactSearch()
   }
 }
 
-bool CONTACT::CoNitscheStrategyFpi::CheckNitscheContactState(
-    CONTACT::CoElement* cele,               // the contact element
+bool CONTACT::NitscheStrategyFpi::CheckNitscheContactState(
+    CONTACT::Element* cele,                 // the contact element
     const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
     const double& full_fsi_traction,        // stressfluid + penalty
     double& gap                             // gap

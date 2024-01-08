@@ -31,7 +31,7 @@ CONTACT::INTEGRATOR::UniqueProjInfoPair CONTACT::AUG::IntegrationWrapper::projIn
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IntegrationWrapper::IntegrationWrapper(
     Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
-    : CONTACT::CoIntegrator::CoIntegrator(params, eletype, comm), integrator_(nullptr)
+    : CONTACT::Integrator::Integrator(params, eletype, comm), integrator_(nullptr)
 
 {
   // empty constructor body
@@ -285,7 +285,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create(int probdim,
     CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper)
+    CONTACT::Integrator* wrapper)
 {
   switch (probdim)
   {
@@ -303,7 +303,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create(int pro
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
     CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper)
+    CONTACT::Integrator* wrapper)
 {
   switch (slavetype)
   {
@@ -324,8 +324,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType slavetype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper)
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
   switch (mastertype)
   {
@@ -346,7 +345,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper)
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
   const enum INPAR::CONTACT::VariationalApproach var_type = cparams.GetVariationalApproachType();
 
@@ -375,7 +374,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
     CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper)
+    CONTACT::Integrator* wrapper)
 {
   switch (slavetype)
   {
@@ -398,8 +397,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType slavetype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
-    CONTACT::CoIntegrator* wrapper)
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
   switch (mastertype)
   {
@@ -422,7 +420,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper)
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
   const enum INPAR::CONTACT::VariationalApproach var_type = cparams.GetVariationalApproachType();
 
@@ -453,7 +451,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
     class IntPolicy>
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>*
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
-    CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper)
+    CONTACT::ParamsInterface* cparams, CONTACT::Integrator* wrapper)
 {
   static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
@@ -485,7 +483,7 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator& wrapper)
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator& wrapper)
     : IntegratorGeneric(cparams, wrapper), IntPolicy()
 {
   /* empty */
@@ -972,7 +970,7 @@ int CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GetLinS
   const DRT::Node* const* mynodes = sele.Nodes();
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
-    const CoNode& cnode = static_cast<const CoNode&>(*mynodes[i]);
+    const Node& cnode = static_cast<const Node&>(*mynodes[i]);
     linsize += cnode.GetLinsize();
   }
 
@@ -1048,95 +1046,95 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::WeakRe
 
 /*----------------------------------------------------------------------------*/
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::line2>(CORE::FE::CellType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::line2>(
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::line2, CORE::FE::CellType::line2>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs2>(CORE::FE::CellType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs2>(
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs3>(CORE::FE::CellType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs3>(
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create2D<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4>(CORE::FE::CellType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4>(
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs9>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3>(CORE::FE::CellType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3>(
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs9>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4>(CORE::FE::CellType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4>(
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4, CORE::FE::CellType::quad4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4, CORE::FE::CellType::tri3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs9>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9>(CORE::FE::CellType mastertype,
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9>(
+    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs9>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::quad4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::tri3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
 BACI_NAMESPACE_CLOSE
 

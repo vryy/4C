@@ -23,7 +23,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                 gitterle 10/09|
  *----------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
+void CONTACT::Interface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
 {
   // loop over all slave nodes
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
@@ -55,8 +55,7 @@ void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod
 /*----------------------------------------------------------------------*
  |  Evaluate regularized normal forces (nodes)                popp 05/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleRegNormalForces(
-    bool& localisincontact, bool& localactivesetchange)
+void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange)
 {
   // penalty parameter
   double pp = InterfaceParams().get<double>("PENALTYPARAM");
@@ -67,17 +66,17 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     int dim = cnode->NumDof();
-    double gap = cnode->CoData().Getg();
+    double gap = cnode->Data().Getg();
 
     // modified gap for zero initial gap
     // (if gap is below zero, it is explicitly set to zero)
-    // double modgap = cnode->CoData().Getg();
+    // double modgap = cnode->Data().Getg();
     // if (abs(modgap) < 1.0e-10) modgap=0.0;
 
-    double kappa = cnode->CoData().Kappa();
+    double kappa = cnode->Data().Kappa();
 
     double lmuzawan = 0.0;
     for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
@@ -88,7 +87,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
 
     for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = i * j;
 
-    cnode->CoData().GetDerivZ().clear();
+    cnode->Data().GetDerivZ().clear();
 
     continue;
 #endif
@@ -154,11 +153,11 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
       // compute derivatives of lagrange multipliers and store into node
 
       // contribution of derivative of weighted gap
-      std::map<int, double>& derivg = cnode->CoData().GetDerivG();
+      std::map<int, double>& derivg = cnode->Data().GetDerivG();
       std::map<int, double>::iterator gcurr;
 
       // contribution of derivative of normal
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
       CORE::GEN::pairedvector<int, double>::iterator ncurr;
 
       for (int j = 0; j < dim; ++j)
@@ -179,7 +178,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
       for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = 0.0;
 
       // clear derivz
-      cnode->CoData().GetDerivZ().clear();
+      cnode->Data().GetDerivZ().clear();
 
     }  // Macauley-Bracket
   }    // loop over slave nodes
@@ -190,7 +189,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
 /*----------------------------------------------------------------------*
  |  Evaluate regularized tangential forces                gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
+void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 {
   // penalty parameter in tangential direction
   double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
@@ -209,9 +208,9 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->CoData().Getg();
+    double gap = cnode->Data().Getg();
     int numdof = cnode->NumDof();
-    double kappa = cnode->CoData().Kappa();
+    double kappa = cnode->Data().Kappa();
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
@@ -338,7 +337,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /**************************************** deriv(tanplane).jump  ***/
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -398,7 +397,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /******************** deriv(tanplane).jump.maxtantrac/magnitude ***/
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -432,7 +431,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
-      std::map<int, double>& derivg = cnode->CoData().GetDerivG();
+      std::map<int, double>& derivg = cnode->Data().GetDerivG();
       std::map<int, double>::iterator gcurr;
 
       for (int j = 0; j < numdof; ++j)
@@ -537,7 +536,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       // clear tractions
       for (int j = 0; j < numdof; ++j) cnode->MoData().lm()[j] = 0;
       // clear derivz
-      cnode->CoData().GetDerivZ().clear();
+      cnode->Data().GetDerivZ().clear();
     }
   }  // loop over active nodes
 }
@@ -546,7 +545,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
  |  Evaluate regularized tangential forces                gitterle 10/09|
  |  (Uzawa Aug. Lagr.)                                                  |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
+void CONTACT::Interface::AssembleRegTangentForcesUzawa()
 {
   // penalty parameter in tangential direction
   double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
@@ -565,9 +564,9 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->CoData().Getg();
+    double gap = cnode->Data().Getg();
     int dim = cnode->NumDof();
-    double kappa = cnode->CoData().Kappa();
+    double kappa = cnode->Data().Kappa();
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
@@ -685,7 +684,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -748,7 +747,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -787,7 +786,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
-      std::map<int, double>& derivg = cnode->CoData().GetDerivG();
+      std::map<int, double>& derivg = cnode->Data().GetDerivG();
       std::map<int, double>::iterator gcurr;
 
       for (int j = 0; j < numdof; ++j)
@@ -903,7 +902,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       // clear tractions
       for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = 0;
       // clear derivz
-      cnode->CoData().GetDerivZ().clear();
+      cnode->Data().GetDerivZ().clear();
     }
   }  // loop over active nodes
 }
@@ -911,7 +910,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
 /*----------------------------------------------------------------------*
  |  Assemble derivatives of lagrange multipliers              popp 05/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
+void CONTACT::Interface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
 {
   // loop over all slave nodes (row map)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -919,12 +918,12 @@ void CONTACT::CoInterface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleLinZ: Node ownership inconsistency!");
 
     // derivz is the std::vector<map> we want to assemble
-    std::vector<std::map<int, double>>& derivz = cnode->CoData().GetDerivZ();
+    std::vector<std::map<int, double>>& derivz = cnode->Data().GetDerivZ();
 
     if ((int)derivz.size() > 0)
     {
@@ -965,7 +964,7 @@ void CONTACT::CoInterface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix with nodal tangents or/and normals         popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tglobal,
+void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tglobal,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> nglobal)
 {
   // nothing to do if no active nodes
@@ -979,7 +978,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* cnode = dynamic_cast<CoNode*>(node);
+    auto* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleTN: Node ownership inconsistency!");
@@ -1003,7 +1002,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
             for (int j = 0; j < numdof; ++j)
             {
               lmcol[j] = cnode->Dofs()[j];
-              Tnode(i, j) = cnode->CoData().txi()[i] * cnode->CoData().txi()[j];
+              Tnode(i, j) = cnode->Data().txi()[i] * cnode->Data().txi()[j];
             }
           }
           tglobal->Assemble(-1, Tnode, lmrowT, lmrowownerT, lmcol);
@@ -1023,8 +1022,8 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
             for (int j = 0; j < numdof; ++j)
             {
               lmcol[j] = cnode->Dofs()[j];
-              Tnode(i, j) = cnode->CoData().txi()[i] * cnode->CoData().txi()[j] +
-                            cnode->CoData().teta()[i] * cnode->CoData().teta()[j];
+              Tnode(i, j) = cnode->Data().txi()[i] * cnode->Data().txi()[j] +
+                            cnode->Data().teta()[i] * cnode->Data().teta()[j];
             }
           }
           tglobal->Assemble(-1, Tnode, lmrowT, lmrowownerT, lmcol);
@@ -1051,7 +1050,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
           for (int j = 0; j < colsize; ++j)
           {
             lmcol[j] = cnode->Dofs()[j];
-            Tnode(0, j) = cnode->CoData().txi()[j];
+            Tnode(0, j) = cnode->Data().txi()[j];
           }
 
           // assemble into matrix of normal vectors T
@@ -1077,8 +1076,8 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
           for (int j = 0; j < colsize; ++j)
           {
             lmcol[j] = cnode->Dofs()[j];
-            Tnode(0, j) = cnode->CoData().txi()[j];
-            Tnode(1, j) = cnode->CoData().teta()[j];
+            Tnode(0, j) = cnode->Data().txi()[j];
+            Tnode(1, j) = cnode->Data().teta()[j];
           }
 
           // assemble into matrix of normal vectors T
@@ -1109,7 +1108,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
  |  PS: "AssembleS" is an outdated name which could make                |
  |  you confused.                                                       |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
+void CONTACT::Interface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -1120,12 +1119,12 @@ void CONTACT::CoInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* cnode = dynamic_cast<CoNode*>(node);
+    auto* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
-    std::map<int, double>& dgmap = cnode->CoData().GetDerivG();
+    std::map<int, double>& dgmap = cnode->Data().GetDerivG();
     std::map<int, double>::iterator colcurr;
     int row = activen_->GID(i);
 
@@ -1150,7 +1149,7 @@ void CONTACT::CoInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble tangent deriv or/and normal deriv matrix         popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix> tderivglobal,
+void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix> tderivglobal,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> nderivglobal, bool usePoroLM)
 {
   // nothing to do if no active nodes
@@ -1164,20 +1163,20 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatr
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID())  // move this check into debug?
       dserror("AssembleTNderiv: Node ownership inconsistency!");
 
     if (tderivglobal != Teuchos::null)  // assemble tangential derivs?
     {
-      std::vector<CORE::GEN::pairedvector<int, double>>& dtmap = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>>& dtmap = cnode->Data().GetDerivTxi();
       CORE::GEN::pairedvector<int, double>::iterator colcurr;
 
       for (int dim = 0; dim < Dim() - 1; ++dim)  // for both tangents
       {
         if (dim == 1)  // just for 3d case, 2nd tangent
-          dtmap = cnode->CoData().GetDerivTeta();
+          dtmap = cnode->Data().GetDerivTeta();
         int colsize = (int)dtmap[0].size();
         int mapsize = (int)dtmap.size();
 
@@ -1209,7 +1208,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatr
             if (!usePoroLM)
               val = cnode->MoData().lm()[j] * (colcurr->second);
             else
-              val = cnode->CoPoroData().poroLM()[j] * (colcurr->second);
+              val = cnode->PoroData().poroLM()[j] * (colcurr->second);
             // std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" <<
             // colcurr->second << std::endl; std::cout << "Assemble P: " << row << " " << col << " "
             // << val << std::endl;
@@ -1223,9 +1222,9 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatr
                 {
                   double t;
                   if (dim == 0)
-                    t = cnode->CoData().txi()[i];
+                    t = cnode->Data().txi()[i];
                   else
-                    t = cnode->CoData().teta()[i];
+                    t = cnode->Data().teta()[i];
                   tderivglobal->Assemble(val * t, cnode->Dofs()[i], col);
                 }
               }
@@ -1242,7 +1241,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatr
 
     if (nderivglobal != Teuchos::null)  // assemble normal derivs?
     {
-      std::vector<CORE::GEN::pairedvector<int, double>>& dnmap = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& dnmap = cnode->Data().GetDerivN();
       CORE::GEN::pairedvector<int, double>::iterator colcurr;
 
       int colsize = (int)dnmap[0].size();
@@ -1269,7 +1268,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatr
           if (!usePoroLM)
             val = cnode->MoData().lm()[j] * (colcurr->second);
           else
-            val = cnode->CoPoroData().poroLM()[j] * (colcurr->second);
+            val = cnode->PoroData().poroLM()[j] * (colcurr->second);
 
           // do not assemble zeros into P matrix
 
@@ -1296,7 +1295,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatr
 /*----------------------------------------------------------------------*
  |  Assemble matrices LinD containing fc derivatives          popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bool usePoroLM)
+void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bool usePoroLM)
 {
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
@@ -1313,18 +1312,18 @@ void CONTACT::CoInterface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, 
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
     int dim = cnode->NumDof();
 
     // Mortar matrix D and M derivatives
-    std::map<int, std::map<int, double>>& dderiv = cnode->CoData().GetDerivD();
+    std::map<int, std::map<int, double>>& dderiv = cnode->Data().GetDerivD();
 
     // current Lagrange multipliers
     double* lm;
     if (!usePoroLM)
       lm = cnode->MoData().lm();
     else
-      lm = cnode->CoPoroData().poroLM();
+      lm = cnode->PoroData().poroLM();
 
     // get sizes and iterator start
     int slavesize = (int)dderiv.size();
@@ -1339,10 +1338,10 @@ void CONTACT::CoInterface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, 
 
       DRT::Node* snode = idiscret_->gNode(sgid);
       if (!snode) dserror("Cannot find node with gid %", sgid);
-      CoNode* csnode = dynamic_cast<CoNode*>(snode);
+      Node* csnode = dynamic_cast<Node*>(snode);
 
       // Mortar matrix D derivatives
-      std::map<int, double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+      std::map<int, double>& thisdderiv = cnode->Data().GetDerivD()[sgid];
       int mapsize = (int)(thisdderiv.size());
 
       // inner product D_{jk,c} * z_j for index j
@@ -1384,7 +1383,7 @@ void CONTACT::CoInterface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, 
 /*----------------------------------------------------------------------*
  |  Assemble matrices LinM containing fc derivatives          popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM)
+void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM)
 {
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
@@ -1401,18 +1400,18 @@ void CONTACT::CoInterface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, 
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
     int dim = cnode->NumDof();
 
     // Mortar matrix D and M derivatives
-    std::map<int, std::map<int, double>>& mderiv = cnode->CoData().GetDerivM();
+    std::map<int, std::map<int, double>>& mderiv = cnode->Data().GetDerivM();
 
     // current Lagrange multipliers
     double* lm;
     if (!usePoroLM)
       lm = cnode->MoData().lm();
     else
-      lm = cnode->CoPoroData().poroLM();
+      lm = cnode->PoroData().poroLM();
 
     // get sizes and iterator start
     int mastersize = (int)mderiv.size();
@@ -1427,10 +1426,10 @@ void CONTACT::CoInterface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, 
 
       DRT::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) dserror("Cannot find node with gid %", mgid);
-      CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
+      Node* cmnode = dynamic_cast<Node*>(mnode);
 
       // Mortar matrix M derivatives
-      std::map<int, double>& thismderiv = cnode->CoData().GetDerivM()[mgid];
+      std::map<int, double>& thismderiv = cnode->Data().GetDerivM()[mgid];
       int mapsize = (int)(thismderiv.size());
 
       // inner product M_{jl,c} * z_j for index j
@@ -1472,7 +1471,7 @@ void CONTACT::CoInterface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, 
 /*----------------------------------------------------------------------*
  |  Assemble matrices LinDM containing fc derivatives        farah 02/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinDM(
+void CONTACT::Interface::AssembleLinDM(
     CORE::LINALG::SparseMatrix& lindglobal, CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM)
 {
   // call both sub functions
@@ -1486,7 +1485,7 @@ void CONTACT::CoInterface::AssembleLinDM(
 /*----------------------------------------------------------------------*
  |  Assemble normal weighted gap                              popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
+void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -1495,14 +1494,14 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleG: Node ownership inconsistency!");
 
     /**************************************************** g-vector ******/
-    if (cnode->CoData().Getg() != 0.0)
+    if (cnode->Data().Getg() != 0.0)
     {
-      double gap = cnode->CoData().Getg();
+      double gap = cnode->Data().Getg();
 
       // std::cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
       //      << " IsActive: " << cnode->Active() << " Gap: " << gap << std::endl;
@@ -1538,7 +1537,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
         if (!cnode->HasProj() && !cnode->Active() && node_has_quad_element)
         {
           gap = 1.0e12;
-          cnode->CoData().Getg() = gap;
+          cnode->Data().Getg() = gap;
         }
       }
 
@@ -1575,7 +1574,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
 /*----------------------------------------------------------------------*
  |  Assemble inactive right hand side                    hiermeier 08/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
+void CONTACT::Interface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
 {
   // FIXME It's possible to improve the performance, if only recently active nodes of the inactive
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
@@ -1593,7 +1592,7 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
     int gid = inactivenodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("AssembleInactiverhs: Node ownership inconsistency!");
@@ -1630,7 +1629,7 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
 /*----------------------------------------------------------------------*
  |  Assemble tangential right-hand side                  hiermeier 08/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
+void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
 {
   static std::vector<int> lm_gid(Dim() - 1);
   static std::vector<int> lm_owner(Dim() - 1);
@@ -1641,7 +1640,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleTangrhs: Node ownership inconsistency!");
     if (constr_direction_ == INPAR::CONTACT::constr_xyz)
@@ -1658,8 +1657,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
           lm_t[i] = 0.;
           for (int j = 0; j < Dim(); ++j)
           {
-            lm_t[i] -=
-                cnode->CoData().txi()[i] * cnode->CoData().txi()[j] * cnode->MoData().lm()[j];
+            lm_t[i] -= cnode->Data().txi()[i] * cnode->Data().txi()[j] * cnode->MoData().lm()[j];
           }
         }
         CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
@@ -1677,10 +1675,8 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
           lm_t[i] = 0.;
           for (int j = 0; j < Dim(); ++j)
           {
-            lm_t[i] -=
-                cnode->CoData().txi()[i] * cnode->CoData().txi()[j] * cnode->MoData().lm()[j];
-            lm_t[i] -=
-                cnode->CoData().teta()[i] * cnode->CoData().teta()[j] * cnode->MoData().lm()[j];
+            lm_t[i] -= cnode->Data().txi()[i] * cnode->Data().txi()[j] * cnode->MoData().lm()[j];
+            lm_t[i] -= cnode->Data().teta()[i] * cnode->Data().teta()[j] * cnode->MoData().lm()[j];
           }
         }
         CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
@@ -1695,7 +1691,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
 
         lm_t[0] = 0.0;
         for (int j = 0; j < Dim(); ++j)
-          lm_t[0] -= cnode->CoData().txi()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
+          lm_t[0] -= cnode->Data().txi()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
 
         CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
@@ -1711,9 +1707,8 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
         lm_t[1] = 0.0;
         for (int j = 0; j < Dim(); ++j)
         {
-          lm_t[0] -= cnode->CoData().txi()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
-          lm_t[1] -=
-              cnode->CoData().teta()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
+          lm_t[0] -= cnode->Data().txi()[j] * cnode->MoData().lm()[j];   // already negative rhs!!!
+          lm_t[1] -= cnode->Data().teta()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
         }
         CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
@@ -1724,7 +1719,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinStick with tangential+D+M derivatives  mgit 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
+void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
     CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
 {
   // FIXGIT: Assemble LinStick is containing a matrix for the de-
@@ -1782,8 +1777,8 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
 
     // more information from node
     double* n = cnode->MoData().n();
-    double* txi = cnode->CoData().txi();
-    double* teta = cnode->CoData().teta();
+    double* txi = cnode->Data().txi();
+    double* teta = cnode->Data().teta();
     double* z = cnode->MoData().lm();
 
     // evaluation of specific components of entries to assemble
@@ -1799,9 +1794,9 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
     }
 
     // prepare assembly, get information from node
-    std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-    std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-    std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+    std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+    std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+    std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
     std::map<int, double> dscmap;
 
     // iterator for maps
@@ -1843,7 +1838,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
     // in contact are initialized as stick or slip
     //
     //****************************************************************
-    if (frcoeff * znor == 0.0 || (cnode->CoData().ActiveOld() == false && frilessfirst))
+    if (frcoeff * znor == 0.0 || (cnode->Data().ActiveOld() == false && frilessfirst))
     {
       //**************************************************************
       // calculation of matrix entries of linearized slip condition
@@ -1963,7 +1958,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
     }
     else if (consistent && ftype == INPAR::CONTACT::friction_coulomb)
     {
-      std::map<int, double>& dgmap = cnode->CoData().GetDerivG();
+      std::map<int, double>& dgmap = cnode->Data().GetDerivG();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -1984,7 +1979,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
       double cn = cn_input;
       double ct = ct_input;
 
-      double& wgap = cnode->CoData().Getg();
+      double& wgap = cnode->Data().Getg();
 
       // evaluation of specific components of entries to assemble
       double jumptxi = 0;
@@ -2554,7 +2549,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
 /*---------------------------------------------------------------------*
  | Assemble matrix LinSlip with tangential+D+M derivatives  mgit 02/09 |
  *---------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
+void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
     CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
 {
   // nothing to do if no slip nodes
@@ -2600,9 +2595,9 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
       double ct_input = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       double cn = cn_input;
       double ct = ct_input;
@@ -2625,10 +2620,10 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
 
       // more information from node
       double* n = cnode->MoData().n();
-      double* txi = cnode->CoData().txi();
-      double* teta = cnode->CoData().teta();
+      double* txi = cnode->Data().txi();
+      double* teta = cnode->Data().teta();
       double* z = cnode->MoData().lm();
-      double wgap = cnode->CoData().Getg();
+      double wgap = cnode->Data().Getg();
 
       // iterator for maps
       CORE::GEN::pairedvector<int, double>::iterator colcurr;
@@ -2711,7 +2706,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
       // are treated as frictionless as well.
       //
       //****************************************************************
-      if (frcoeff == 0.0 || (cnode->CoData().ActiveOld() == false && frilessfirst) ||
+      if (frcoeff == 0.0 || (cnode->Data().ActiveOld() == false && frilessfirst) ||
           euclidean == 0.0)
       {
         //**************************************************************
@@ -3128,7 +3123,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
 #ifdef CONSISTENTSLIP
         /*** Additional Terms ***/
         // wgap derivative
-        std::map<int, double>& dgmap = cnode->CoData().GetDerivG();
+        std::map<int, double>& dgmap = cnode->Data().GetDerivG();
 
         for (colcurr = dgmap.begin(); colcurr != dgmap.end(); ++colcurr)
         {
@@ -3574,7 +3569,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
 
         /*** 7 ****************** frcoeff*cn*deriv (g).(ztan+ct*utan) ***/
         // prepare assembly
-        std::map<int, double>& dgmap = cnode->CoData().GetDerivG();
+        std::map<int, double>& dgmap = cnode->Data().GetDerivG();
 
         // loop over all entries of the current derivative map
         for (_colcurr = dgmap.begin(); _colcurr != dgmap.end(); ++_colcurr)
@@ -3634,7 +3629,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
 
       // iterator
       CORE::GEN::pairedvector<int, double>::iterator _colcurr;
@@ -3650,7 +3645,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
 
       // get more information from node
       double* jump = cnode->FriData().jump();
-      double* txi = cnode->CoData().txi();
+      double* txi = cnode->Data().txi();
       double* xi = cnode->xspatial();
       double* z = cnode->MoData().lm();
       int row = slipt_->GID(i);
@@ -3696,7 +3691,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
       // taken care of by a special treatment as can be seen below
       //
       //****************************************************************
-      if (frbound == 0.0 || (cnode->CoData().ActiveOld() == false && frilessfirst))
+      if (frbound == 0.0 || (cnode->Data().ActiveOld() == false && frilessfirst))
       {
         //**************************************************************
         // calculation of matrix entries of linearized slip condition
@@ -4044,7 +4039,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
         for (int dim = 0; dim < cnode->NumDof(); ++dim) tdotx += txi[dim] * xi[dim];
 
         // prepare assembly
-        std::map<int, double>& ddmap = cnode->CoData().GetDerivD()[gid];
+        std::map<int, double>& ddmap = cnode->Data().GetDerivD()[gid];
 
         // loop over all entries of the current derivative map
         for (colcurr = ddmap.begin(); colcurr != ddmap.end(); ++colcurr)
@@ -4068,7 +4063,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
         /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
 
         // we need the Lin(M-matrix) entries of this node
-        std::map<int, std::map<int, double>>& dmmap = cnode->CoData().GetDerivM();
+        std::map<int, std::map<int, double>>& dmmap = cnode->Data().GetDerivM();
         std::map<int, std::map<int, double>>::iterator dmcurr;
 
         // loop over all master nodes in the DerivM-map of the active slave node
@@ -4085,7 +4080,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
           for (int dim = 0; dim < cnode->NumDof(); ++dim) tdotx += txi[dim] * mxi[dim];
 
           // compute entry of the current active node / master node pair
-          std::map<int, double>& thisdmmap = cnode->CoData().GetDerivM(gid);
+          std::map<int, double>& thisdmmap = cnode->Data().GetDerivM(gid);
 
           // loop over all entries of the current derivative map
           for (colcurr = thisdmmap.begin(); colcurr != thisdmmap.end(); ++colcurr)
@@ -4210,7 +4205,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
           for (int dim = 0; dim < cnode->NumDof(); ++dim) tdotx += txi[dim] * mxi[dim];
 
           // compute entry of the current active node / master node pair
-          std::map<int, double>& thisdmmap = cnode->CoData().GetDerivM(gid);
+          std::map<int, double>& thisdmmap = cnode->Data().GetDerivM(gid);
 
           // loop over all entries of the current derivative map
           for (colcurr = thisdmmap.begin(); colcurr != thisdmmap.end(); ++colcurr)
@@ -4239,7 +4234,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
   return;
 }
 
-void CONTACT::CoInterface::AssembleNormalContactRegularization(
+void CONTACT::Interface::AssembleNormalContactRegularization(
     CORE::LINALG::SparseMatrix& d_disp, CORE::LINALG::SparseMatrix& d_lm, Epetra_Vector& f)
 {
   const bool regularization =
@@ -4256,7 +4251,7 @@ void CONTACT::CoInterface::AssembleNormalContactRegularization(
   {
     DRT::Node* node = Discret().gNode(ActiveNodes()->GID(i));
     if (!node) dserror("node not found");
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) dserror("not a contact node");
 
     CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
@@ -4286,8 +4281,8 @@ void CONTACT::CoInterface::AssembleNormalContactRegularization(
         d_lm.Assemble(dval * d_gLM * n(l), cnode->Dofs()[0], cnode->Dofs()[l]);
     }
 
-    for (auto p = cnode->CoData().GetDerivD().at(cnode->Id()).begin();
-         p != cnode->CoData().GetDerivD().at(cnode->Id()).end(); ++p)
+    for (auto p = cnode->Data().GetDerivD().at(cnode->Id()).begin();
+         p != cnode->Data().GetDerivD().at(cnode->Id()).end(); ++p)
     {
       const int col = p->first;
       const double val = gLM * p->second;
@@ -4298,8 +4293,8 @@ void CONTACT::CoInterface::AssembleNormalContactRegularization(
     }
 
     for (int l = 0; l < dim; ++l)
-      for (auto p = cnode->CoData().GetDerivN().at(l).begin();
-           p != cnode->CoData().GetDerivN().at(l).end(); ++p)
+      for (auto p = cnode->Data().GetDerivN().at(l).begin();
+           p != cnode->Data().GetDerivN().at(l).end(); ++p)
       {
         const int col = p->first;
         const double val = dval * d_gLM * lm(l) * p->second;
@@ -4313,7 +4308,7 @@ void CONTACT::CoInterface::AssembleNormalContactRegularization(
   return;
 }
 
-void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
+void CONTACT::Interface::AssembleLinSlipNormalRegularization(
     CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal,
     Epetra_Vector& linslipRHSglobal)
 {
@@ -4360,9 +4355,9 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
       double ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -4382,10 +4377,10 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
 
       // more information from node
       double* n = cnode->MoData().n();
-      double* txi = cnode->CoData().txi();
-      double* teta = cnode->CoData().teta();
+      double* txi = cnode->Data().txi();
+      double* teta = cnode->Data().teta();
       double* z = cnode->MoData().lm();
-      double wgap = cnode->CoData().Getg();
+      double wgap = cnode->Data().Getg();
 
       // iterator for maps
       CORE::GEN::pairedvector<int, double>::iterator colcurr;
@@ -4470,7 +4465,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
       // are treated as frictionless as well.
       //
       //****************************************************************
-      if (frbound == 0.0 || (cnode->CoData().ActiveOld() == false && frilessfirst) ||
+      if (frbound == 0.0 || (cnode->Data().ActiveOld() == false && frilessfirst) ||
           euclidean == 0.0)
       {
         //**************************************************************
@@ -5061,7 +5056,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
 
         /*** 7 ****************** deriv (g) ***/
         // prepare assembly
-        std::map<int, double>& dgmap = cnode->CoData().GetDerivG();
+        std::map<int, double>& dgmap = cnode->Data().GetDerivG();
 
         // loop over all entries of the current derivative map
         for (_colcurr = dgmap.begin(); _colcurr != dgmap.end(); ++_colcurr)
@@ -5087,7 +5082,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
           }
         }
 
-        std::map<int, double>& dd = cnode->CoData().GetDerivD()[cnode->Id()];
+        std::map<int, double>& dd = cnode->Data().GetDerivD()[cnode->Id()];
         for (auto p = dd.begin(); p != dd.end(); ++p)
         {
           int col = p->first;
@@ -5125,7 +5120,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
 /*---------------------------------------------------------------------------*
  |  Assemble normal coupling weighted condition for poro contact   ager 07/14|
  *--------------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
+void CONTACT::Interface::AssembleNCoup(Epetra_Vector& gglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -5134,14 +5129,14 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* mrtnode = dynamic_cast<CoNode*>(node);
+    Node* mrtnode = dynamic_cast<Node*>(node);
 
     if (mrtnode->Owner() != Comm().MyPID()) dserror("AssembleDMG: Node ownership inconsistency!");
 
     /**************************************************** nCoup-vector ******/
-    if (mrtnode->CoPoroData().GetnCoup() != 0.0)
+    if (mrtnode->PoroData().GetnCoup() != 0.0)
     {
-      double nCoup = mrtnode->CoPoroData().GetnCoup();
+      double nCoup = mrtnode->PoroData().GetnCoup();
 
       CORE::LINALG::SerialDenseVector gnode(1);
       std::vector<int> lm(1);
@@ -5163,7 +5158,7 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
  |  Assemble linearisation of normal coupling                          |
  |          weighted condition for poro contact              ager 07/14|
  *--------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleNCoupLin(
+void CONTACT::Interface::AssembleNCoupLin(
     CORE::LINALG::SparseMatrix& sglobal, CORE::ADAPTER::Coupling& coupfs, bool AssembleVelocityLin)
 {
   // nothing to do if no active nodes
@@ -5184,18 +5179,18 @@ void CONTACT::CoInterface::AssembleNCoupLin(
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
 
     std::map<int, double>::iterator colcurr;
     int row = activen_->GID(i);
 
-    std::map<int, double>& dgmap = cnode->CoPoroData().GetDerivnCoup();
+    std::map<int, double>& dgmap = cnode->PoroData().GetDerivnCoup();
     if (AssembleVelocityLin)
     {  // Assign fluid velocity linearization to matrix
 
-      dgmap = cnode->CoPoroData().GetVelDerivnCoup();
+      dgmap = cnode->PoroData().GetVelDerivnCoup();
       for (colcurr = dgmap.begin(); colcurr != dgmap.end(); ++colcurr)
       {
         int col = PermSlaveDofMap_full->GID(MasterDofMap_full->LID(colcurr->first));
@@ -5205,7 +5200,7 @@ void CONTACT::CoInterface::AssembleNCoupLin(
         if (abs(val) > 1.0e-12) sglobal.Assemble(val, row, col);
       }
       // Assign pressure linearization to matrix
-      dgmap = cnode->CoPoroData().GetPresDerivnCoup();
+      dgmap = cnode->PoroData().GetPresDerivnCoup();
       for (colcurr = dgmap.begin(); colcurr != dgmap.end(); ++colcurr)
       {
         int col = PermSlaveDofMap_full->GID(MasterDofMap_full->LID(colcurr->first)) + Dim();
@@ -5233,7 +5228,7 @@ void CONTACT::CoInterface::AssembleNCoupLin(
 /*------------------------------------------------------------------------*
  | Derivative of D-matrix multiplied with a slave dof vector              |
  *------------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleCoupLinD(
+void CONTACT::Interface::AssembleCoupLinD(
     CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
   // we have: D_jk,c with j = Slave dof
@@ -5246,10 +5241,10 @@ void CONTACT::CoInterface::AssembleCoupLinD(
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     // Mortar matrix D derivatives
-    std::map<int, std::map<int, double>>& dderiv = cnode->CoData().GetDerivD();
+    std::map<int, std::map<int, double>>& dderiv = cnode->Data().GetDerivD();
 
     // get sizes and iterator start
     int slavesize = (int)dderiv.size();
@@ -5264,10 +5259,10 @@ void CONTACT::CoInterface::AssembleCoupLinD(
 
       DRT::Node* snode = idiscret_->gNode(sgid);
       if (!snode) dserror("Cannot find node with gid %", sgid);
-      CoNode* csnode = dynamic_cast<CoNode*>(snode);  // current slave node
+      Node* csnode = dynamic_cast<Node*>(snode);  // current slave node
 
       // Mortar matrix D derivatives
-      std::map<int, double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+      std::map<int, double>& thisdderiv = cnode->Data().GetDerivD()[sgid];
       int mapsize = (int)(thisdderiv.size());
 
       if (cnode->NumDof() != csnode->NumDof())
@@ -5311,7 +5306,7 @@ void CONTACT::CoInterface::AssembleCoupLinD(
 /*-----------------------------------------------------------------------------------*
  | Derivative of transposed M-matrix multiplied with a slave dof vector  seitz 01/18 |
  *-----------------------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleCoupLinM(
+void CONTACT::Interface::AssembleCoupLinM(
     CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
   // we have: M_jl,c with j = Slave dof
@@ -5325,10 +5320,10 @@ void CONTACT::CoInterface::AssembleCoupLinM(
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     // Mortar matrix M derivatives
-    std::map<int, std::map<int, double>>& mderiv = cnode->CoData().GetDerivM();
+    std::map<int, std::map<int, double>>& mderiv = cnode->Data().GetDerivM();
 
     // get sizes and iterator start
     int mastersize = (int)mderiv.size();
@@ -5343,10 +5338,10 @@ void CONTACT::CoInterface::AssembleCoupLinM(
 
       DRT::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) dserror("Cannot find node with gid %", mgid);
-      CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
+      Node* cmnode = dynamic_cast<Node*>(mnode);
 
       // Mortar matrix M derivatives
-      std::map<int, double>& thismderiv = cnode->CoData().GetDerivM()[mgid];
+      std::map<int, double>& thismderiv = cnode->Data().GetDerivM()[mgid];
       int mapsize = (int)(thismderiv.size());
 
       if (cnode->NumDof() != cmnode->NumDof())

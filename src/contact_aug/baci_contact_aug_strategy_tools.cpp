@@ -307,7 +307,7 @@ void CONTACT::AUG::Strategy::FD_Debug::DoPerturbation(const int gid, const int d
 {
   DRT::Node* node = FindINode(gid);
 
-  CoNode* cnode = dynamic_cast<CoNode*>(node);
+  Node* cnode = dynamic_cast<Node*>(node);
 
   // store current position
   CORE::LINALG::Matrix<3, 1>& x = ref_x_[gid];
@@ -337,7 +337,7 @@ void CONTACT::AUG::Strategy::FD_Debug::UndoPerturbation(const int gid, const int
 {
   DRT::Node* node = FindINode(gid);
 
-  CoNode* cnode = dynamic_cast<CoNode*>(node);
+  Node* cnode = dynamic_cast<Node*>(node);
 
   // get stored position
   const CORE::LINALG::Matrix<3, 1>& x = ref_x_.at(gid);

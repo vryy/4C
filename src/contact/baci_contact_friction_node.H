@@ -365,12 +365,12 @@ namespace CONTACT
   // class FriNodeWearDataContainer
 
   /*!
-   \brief A class for a frictional contact node derived from CONTACT::CoNode
+   \brief A class for a frictional contact node derived from CONTACT::Node
 
    This class represents a finite element node capable of frictional contact.
 
    */
-  class FriNode : public CoNode
+  class FriNode : public Node
   {
    public:
     //! @name Enums and Friends

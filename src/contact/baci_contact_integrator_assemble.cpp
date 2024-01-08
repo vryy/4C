@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
  |  This method assembles the contribution of a 1D/2D slave and master  |
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
-bool CONTACT::CoIntegrator::AssembleG(
+bool CONTACT::Integrator::AssembleG(
     const Epetra_Comm& comm, MORTAR::MortarElement& sele, CORE::LINALG::SerialDenseVector& gseg)
 {
   // get adjacent slave nodes to assemble to
@@ -41,7 +41,7 @@ bool CONTACT::CoIntegrator::AssembleG(
   // loop over all slave nodes
   for (int slave = 0; slave < sele.NumNode(); ++slave)
   {
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;
@@ -69,7 +69,7 @@ bool CONTACT::CoIntegrator::AssembleG(
  |  Assemble g~ contribution (2D / 3D)                        popp 02/10|
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
-bool CONTACT::CoIntegrator::AssembleG(
+bool CONTACT::Integrator::AssembleG(
     const Epetra_Comm& comm, MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& gseg)
 {
   // get adjacent slave int nodes to assemble to
@@ -79,7 +79,7 @@ bool CONTACT::CoIntegrator::AssembleG(
   // loop over all slave nodes
   for (int slave = 0; slave < sintele.NumNode(); ++slave)
   {
-    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;

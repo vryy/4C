@@ -28,15 +28,15 @@ namespace CORE::LINALG
 }  // namespace CORE::LINALG
 namespace CONTACT
 {
-  class CoInterface;
-  class CoAbstractStrategy;
+  class Interface;
+  class AbstractStrategy;
   namespace AUG
   {
     typedef std::map<int, double> plain_double_map;
     typedef std::map<int, plain_double_map> plain_map_map;
 
-    typedef std::vector<Teuchos::RCP<CONTACT::CoAbstractStrategy>> plain_strategy_set;
-    typedef std::vector<Teuchos::RCP<CONTACT::CoInterface>> plain_interface_set;
+    typedef std::vector<Teuchos::RCP<CONTACT::AbstractStrategy>> plain_strategy_set;
+    typedef std::vector<Teuchos::RCP<CONTACT::Interface>> plain_interface_set;
     typedef std::vector<Teuchos::RCP<CORE::LINALG::Solver>> plain_lin_solver_set;
     typedef std::vector<plain_interface_set> plain_interface_sets;
     typedef std::vector<BACI::INPAR::CONTACT::SolvingStrategy> plain_strattype_set;

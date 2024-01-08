@@ -100,7 +100,7 @@ contact/                   @baci/team_contact
 contact/baci_contact_meshtying_poro_*          @baci/team_poro @baci/team_contact
 contact/baci_contact_nitsche_integrator_poro*  @baci/team_poro @baci/team_contact
 contact/baci_contact_nitsche_strategy_poro*    @baci/team_poro @baci/team_contact
-contact/baci_contact_poro_*                    @baci/team_poro @baci/team_contact
+contact/baci_contact_lagrange_strategy_poro*   @baci/team_poro @baci/team_contact
 
 contact_aug/               @baci/team_contact
 

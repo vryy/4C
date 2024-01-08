@@ -32,11 +32,11 @@ namespace CONTACT
   /*!
    \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
-   This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+   For a more general documentation of the involved functions refer to CONTACT::AbstractStrategy.
 
    */
-  class MonoCoupledLagrangeStrategy : public CoLagrangeStrategy
+  class MonoCoupledLagrangeStrategy : public LagrangeStrategy
   {
    public:
     /*!
@@ -45,11 +45,11 @@ namespace CONTACT
     */
     MonoCoupledLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
 
-    // Overload CONTACT::CoAbstractStrategy::ApplyForceStiffCmt as this is called in the structure
+    // Overload CONTACT::AbstractStrategy::ApplyForceStiffCmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
@@ -63,7 +63,7 @@ namespace CONTACT
       return;
     };
 
-    // Overload CONTACT::CoLagrangeStrategy::Recover as this is called in the structure --> no
+    // Overload CONTACT::LagrangeStrategy::Recover as this is called in the structure --> no
     // enought information available for monolithically coupled algorithms!
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override
     {
@@ -80,21 +80,21 @@ namespace CONTACT
 
     //! @name Evaluation methods
 
-    // Alternative Method to CONTACT::CoAbstractStrategy::ApplyForceStiffCmt for monolithically
+    // Alternative Method to CONTACT::AbstractStrategy::ApplyForceStiffCmt for monolithically
     // coupled algorithms
     virtual void ApplyForceStiffCmtCoupled(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& k_ss,
         std::map<int, Teuchos::RCP<CORE::LINALG::SparseOperator>*> k_sx,
         Teuchos::RCP<Epetra_Vector>& rhs_s, const int step, const int iter, bool predictor);
 
-    // Alternative Method to CONTACT::CoAbstractStrategy::ApplyForceStiffCmt for monolithically
+    // Alternative Method to CONTACT::AbstractStrategy::ApplyForceStiffCmt for monolithically
     // coupled algorithms
     virtual void ApplyForceStiffCmtCoupled(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& k_ss,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& k_sx, Teuchos::RCP<Epetra_Vector>& rhs_s,
         const int step, const int iter, bool predictor);
 
-    // Alternative Method to CONTACT::CoLagrangeStrategy::Recover as this is called in the structure
+    // Alternative Method to CONTACT::LagrangeStrategy::Recover as this is called in the structure
     // --> no enought information available for monolithically coupled algorithms!
     /*!
     \brief Recovery method
