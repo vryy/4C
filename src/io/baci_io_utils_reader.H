@@ -26,52 +26,56 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT
+
+namespace DRT::UTILS
 {
-  namespace UTILS
-  {
-    /*----------------------------------------------------------------------*/
-    /*!
-      \brief remove all leading and trailing whitespaces from a string.
+  /*!
+   * @brief Remove all leading and trailing whitespaces from a string.
+   *
+   * Note: consecutive whitespaces inside the std::string will be reduced to a single space.
+   */
+  std::string Trim(const std::string& line);
 
-      Note: consecutive whitespaces inside the std::string will be reduced to a
-      single space.
+  /*!
+   * @brief Split the @p input string into multiple substrings between the @p delimiter.
+   */
+  std::vector<std::string> Split(const std::string& input, const std::string& delimiter);
 
-      \author u.kue
-      \date 03/07
-    */
-    /*----------------------------------------------------------------------*/
-    std::string Trim(const std::string& line);
+  /*!
+   * @brief Remove comments, trailing and leading whitespaces
+   *
+   * @param[in] line arbitrary string
+   * @result same string stripped
+   */
+  std::string StripComment(const std::string& line);
 
+  /*!
+   * @brief Convert all characters in a string into lower case (wrapper to the corresponding routine
+   * in boost::algorithm)
+   *
+   *  @param[in] line arbitrary string
+   *  @result same string in all lower case
+   */
+  std::string ToLower(const std::string& line);
 
-    /**
-     * Split the @p input string into multiple substrings between the @p delimiter.
-     */
-    std::vector<std::string> Split(const std::string& input, const std::string& delimiter);
+  /*!
+   * @brief Split a string into a vector of strings by a given separator
+   *
+   *  @param[in] str input string
+   *  @param[in] separator separator string the string is split by
+   *  @result vector of strings
+   */
+  std::vector<std::string> SplitStringList(const std::string& str, const std::string& separator);
 
-    /*----------------------------------------------------------------------*/
-    /*!
-      remove comments, trailing and leading whitespaces
-
-      @param[in] line arbitrary string
-      @result same string stripped
-    */
-    /*----------------------------------------------------------------------*/
-    std::string StripComment(const std::string& line);
-
-    /*----------------------------------------------------------------------*/
-    /*!
-      convert all characters in a string into lower case
-      (wrapper to the corresponding routine in boost::algorithm)
-
-      @param[in] line arbitrary string
-      @result same string in all lower case
-    */
-    /*----------------------------------------------------------------------*/
-    std::string ToLower(const std::string& line);
-  }  // namespace UTILS
-}  // namespace DRT
-
+  /*!
+   * @brief Split a string into a vector of strings by a given separator
+   *
+   *  @param[in] str input string
+   *  @param[in] separator separator character the string is split by
+   *  @result vector of strings
+   */
+  std::vector<std::string> SplitStringList(const std::string& str, const char separator);
+}  // namespace DRT::UTILS
 
 BACI_NAMESPACE_CLOSE
 
