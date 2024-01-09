@@ -543,7 +543,7 @@ void MORTAR::MortarInterface::FillComplete(
   // Our special dofset class will not assign new dofs but will assign the
   // dofs stored in the nodes.
   {
-    Teuchos::RCP<MORTAR::MortarDofSet> mrtrdofset = Teuchos::rcp(new MORTAR::MortarDofSet());
+    Teuchos::RCP<MORTAR::DofSet> mrtrdofset = Teuchos::rcp(new MORTAR::DofSet());
     Discret().ReplaceDofSet(mrtrdofset);
     // do not assign dofs yet, we'll do this below after
     // shuffling around of nodes and elements (saves time)

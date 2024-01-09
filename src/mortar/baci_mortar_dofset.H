@@ -27,7 +27,7 @@ namespace MORTAR
   \brief A set of degrees of freedom special for mortar coupling
 
   */
-  class MortarDofSet : public DRT::DofSet
+  class DofSet : public DRT::DofSet
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -37,12 +37,12 @@ namespace MORTAR
     \brief Standard Constructor
 
     */
-    MortarDofSet();
+    DofSet();
 
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new MortarDofSet(*this)); }
+    Teuchos::RCP<DRT::DofSet> Clone() override { return Teuchos::rcp(new MORTAR::DofSet(*this)); }
 
     //! @}
 
@@ -67,7 +67,7 @@ namespace MORTAR
     //! @}
 
    protected:
-  };  // class MortarDofSet
+  };  // class DofSet
 }  // namespace MORTAR
 
 BACI_NAMESPACE_CLOSE

@@ -454,12 +454,12 @@ void CONTACT::Interface::FillCompleteNew(const bool isFinalParallelDistribution,
 
   /* We'd like to call idiscret_.FillComplete(true,false,false) but this will assign all nodes new
    * degrees of freedom which we don't want. We would like to use the degrees of freedom that were
-   * stored in the mortar nodes. To do so, we have to create and set our own version of a DofSet
-   * class before we call FillComplete on the interface discretization. The specialized MortarDofSet
-   * class will not assign new dofs but will assign the dofs stored in the nodes.
+   * stored in the mortar nodes. To do so, we have to create and set our own version of a
+   * MORTAR::DofSet class before we call FillComplete on the interface discretization. The
+   * specialized DofSet class will not assign new dofs but will assign the dofs stored in the nodes.
    */
   {
-    Teuchos::RCP<MORTAR::MortarDofSet> mrtrdofset = Teuchos::rcp(new MORTAR::MortarDofSet());
+    Teuchos::RCP<MORTAR::DofSet> mrtrdofset = Teuchos::rcp(new MORTAR::DofSet());
     Discret().ReplaceDofSet(mrtrdofset);
   }
 

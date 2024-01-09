@@ -17,17 +17,17 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-MORTAR::MortarDofSet::MortarDofSet() : DRT::DofSet() { return; }
+MORTAR::DofSet::DofSet() : DRT::DofSet() {}
 
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
+int MORTAR::DofSet::AssignDegreesOfFreedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
   const int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
-  if (pccdofhandling_) dserror("Point coupling conditions not yet implemented for MortarDofSet");
+  if (pccdofhandling_) dserror("Point coupling conditions not yet implemented for MORTAR::DofSet");
 
   // we'll get ourselves the row and column dof maps from the base class
   // and later replace them with our own version of them
