@@ -913,7 +913,7 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
   dataglobalstate_->GetStepN() = stepn;
   dataglobalstate_->GetStepNp() = stepn + 1;
   dataglobalstate_->GetMultiTime() =
-      Teuchos::rcp(new BACI::TIMINT::TimIntMStep<double>(0, 0, ioreader.ReadDouble("time")));
+      Teuchos::rcp(new TIMESTEPPING::TimIntMStep<double>(0, 0, ioreader.ReadDouble("time")));
   const double& timen = dataglobalstate_->GetTimeN();
   const double& dt = (*dataglobalstate_->GetDeltaTime())[0];
   dataglobalstate_->GetTimeNp() = timen + dt;

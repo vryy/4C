@@ -104,7 +104,7 @@ DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
         DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5 + 1));
   return;
 }

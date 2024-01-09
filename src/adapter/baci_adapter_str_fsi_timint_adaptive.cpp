@@ -86,14 +86,14 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrors(double& err, double& errcond
       Teuchos::rcp(new Epetra_Vector(*interface_->ExtractFSICondVector(error)));
 
   // calculate L2-norms of different subsets of local discretization error vector
-  err = STR::AUX::CalculateVectorNorm(errnorm_, error, numdbcdofs_);
-  errcond = STR::AUX::CalculateVectorNorm(errnorm_, errorcond, numdbcfsidofs_);
-  errother = STR::AUX::CalculateVectorNorm(errnorm_, errorother, numdbcinnerdofs_);
+  err = STR::CalculateVectorNorm(errnorm_, error, numdbcdofs_);
+  errcond = STR::CalculateVectorNorm(errnorm_, errorcond, numdbcfsidofs_);
+  errother = STR::CalculateVectorNorm(errnorm_, errorother, numdbcinnerdofs_);
 
   // calculate L-inf-norms of different subsets of local discretization error vector
-  errinf = STR::AUX::CalculateVectorNorm(INPAR::STR::norm_inf, error);
-  errinfcond = STR::AUX::CalculateVectorNorm(INPAR::STR::norm_inf, errorcond);
-  errinfother = STR::AUX::CalculateVectorNorm(INPAR::STR::norm_inf, errorother);
+  errinf = STR::CalculateVectorNorm(INPAR::STR::norm_inf, error);
+  errinfcond = STR::CalculateVectorNorm(INPAR::STR::norm_inf, errorcond);
+  errinfother = STR::CalculateVectorNorm(INPAR::STR::norm_inf, errorother);
 
   return;
 }

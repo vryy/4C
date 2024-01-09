@@ -342,7 +342,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
-  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresn_);
+  normfres_ = STR::CalculateVectorNorm(iternorm_, fresn_);
 
   return;
 }  // STRUMULTI::MicroStatic::Predictor()
@@ -439,7 +439,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   solver_->Reset();
 
   // store norm of displacement increments
-  normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+  normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
 
   //---------------------------------- update mid configuration values
   // set Dirichlet increments in displacement increments
@@ -501,7 +501,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
-  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresn_);
+  normfres_ = STR::CalculateVectorNorm(iternorm_, fresn_);
 
   return;
 }
@@ -594,9 +594,9 @@ void STRUMULTI::MicroStatic::FullNewton()
     fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
     //---------------------------------------------- build residual norm
-    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
 
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresn_);
+    normfres_ = STR::CalculateVectorNorm(iternorm_, fresn_);
 
     //--------------------------------- increment equilibrium loop index
     ++numiter_;

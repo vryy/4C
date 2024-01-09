@@ -748,7 +748,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
     // build structure based on new structural time integration
     if (structparams.get<std::string>("INT_STRATEGY") == "Standard")
     {
-      struct_adapterbase_ptr_ = ADAPTER::STR::BuildStructureAlgorithm(structparams);
+      struct_adapterbase_ptr_ = ADAPTER::BuildStructureAlgorithm(structparams);
 
       // initialize structure base algorithm
       struct_adapterbase_ptr_->Init(

@@ -133,9 +133,9 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
   // --------------------------------------
   {
     timen_ = Teuchos::rcp(
-        new BACI::TIMINT::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMEINIT")));
+        new TIMESTEPPING::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMEINIT")));
     dt_ = Teuchos::rcp(
-        new BACI::TIMINT::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
+        new TIMESTEPPING::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
 
     // initialize target time to initial time plus step size
     timenp_ = (*timen_)[0] + (*dt_)[0];
@@ -167,11 +167,11 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // vectors
   // --------------------------------------
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new BACI::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new BACI::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new BACI::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);

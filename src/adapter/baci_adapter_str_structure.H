@@ -214,7 +214,7 @@ namespace ADAPTER
     }
 
     /// return model evaluator
-    virtual BACI::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) = 0;
+    virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) = 0;
 
     // access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;

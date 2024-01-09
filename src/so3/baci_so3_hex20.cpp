@@ -105,13 +105,13 @@ DRT::ELEMENTS::So_hex20::So_hex20(int id, int owner)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    pstype_ = BACI::UTILS::PRESTRESS::GetType();
-    pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
+    pstype_ = PRESTRESS::GetType();
+    pstime_ = PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
         DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
 
   return;
@@ -137,7 +137,7 @@ DRT::ELEMENTS::So_hex20::So_hex20(const DRT::ELEMENTS::So_hex20& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::So_hex20::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
   {
     CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::So_hex20::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);

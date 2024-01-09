@@ -678,26 +678,26 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintm_);
+  fintnorm = STR::CalculateVectorNorm(iternorm_, fintm_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = STR::AUX::CalculateVectorNorm(iternorm_, fextm_);
+  fextnorm = STR::CalculateVectorNorm(iternorm_, fextm_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertnorm = STR::AUX::CalculateVectorNorm(iternorm_, finertm_);
+  finertnorm = STR::CalculateVectorNorm(iternorm_, finertm_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
-    fviscnorm = STR::AUX::CalculateVectorNorm(iternorm_, fviscm_);
+    fviscnorm = STR::CalculateVectorNorm(iternorm_, fviscm_);
   }
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
+  freactnorm = STR::CalculateVectorNorm(iternorm_, freact_);
 
   // determine worst value ==> charactersitic norm
   return std::max(

@@ -73,7 +73,7 @@ namespace NOX
   }  // namespace FSI
 }  // namespace NOX
 
-namespace TIMINT
+namespace TIMESTEPPING
 {
   template <typename>
   class TimIntMStep;
@@ -881,7 +881,7 @@ namespace FSI
      *  The algorithm's marching time step size is still the one from
      *  ADAPTER::AlgorithmBase.
      */
-    Teuchos::RCP<TIMINT::TimIntMStep<double>> dt_;
+    Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> dt_;
 
     int adaptstep_;  ///< current number of adaption steps, i.e. repetitions of this time step
 

@@ -327,15 +327,15 @@ double STR::TimIntStatics::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
+  fintnorm = STR::CalculateVectorNorm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = STR::AUX::CalculateVectorNorm(iternorm_, fextn_);
+  fextnorm = STR::CalculateVectorNorm(iternorm_, fextn_);
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
+  freactnorm = STR::CalculateVectorNorm(iternorm_, freact_);
 
   // return char norm
   return std::max(fintnorm, std::max(fextnorm, freactnorm));

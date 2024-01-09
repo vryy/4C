@@ -89,7 +89,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   else
   {
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-        ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+        ADAPTER::BuildStructureAlgorithm(sdyn);
     adapterbase_ptr->Init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr->Setup();
     structure_ =

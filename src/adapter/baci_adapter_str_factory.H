@@ -27,26 +27,23 @@ BACI_NAMESPACE_OPEN
 namespace ADAPTER
 {
   class StructureBaseAlgorithmNew;
-  namespace STR
+  class StructureFactory
   {
-    class Factory
-    {
-     public:
-      //! constructor
-      Factory();
+   public:
+    //! constructor
+    StructureFactory();
 
-      //! destructor
-      virtual ~Factory() = default;
+    //! destructor
+    virtual ~StructureFactory() = default;
 
-      //! Build the structural adapter object
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(
-          const Teuchos::ParameterList& sdyn) const;
-    };  // class Factory
-
-    // non-member function
+    //! Build the structural adapter object
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(
-        const Teuchos::ParameterList& sdyn);
-  }  // namespace STR
+        const Teuchos::ParameterList& sdyn) const;
+  };  // class Factory
+
+  // non-member function
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(
+      const Teuchos::ParameterList& sdyn);
 }  // namespace ADAPTER
 
 

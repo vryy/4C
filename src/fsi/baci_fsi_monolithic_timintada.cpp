@@ -94,7 +94,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
     }
   }
 
-  dt_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(-avgweights_.size(), 1, 0.0));
+  dt_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<double>(-avgweights_.size(), 1, 0.0));
   dt_->SetStep(1, Dt());
 
   //----------------------------------------------------------------------------

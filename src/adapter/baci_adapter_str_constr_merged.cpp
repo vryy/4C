@@ -55,7 +55,7 @@ void ADAPTER::StructureConstrMerged::Setup()
       *dofrowmap_, structure_->DofRowMap(), structure_->GetConstraintManager()->GetConstraintMap());
 
   // setup fsi-Interface
-  interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
+  interface_ = Teuchos::rcp(new STR::MapExtractor);
   interface_->Setup(*Discretization(), *dofrowmap_);
 
   issetup_ = true;

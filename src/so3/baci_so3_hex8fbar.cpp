@@ -93,7 +93,7 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) : DRT::ELEMENTS::So_hex8(id, owner)
 {
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8 + 1));
 
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();

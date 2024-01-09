@@ -162,7 +162,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
 
       // The true spatial configuration is the material configuration for mulf
-      if (BACI::UTILS::PRESTRESS::IsMulfActive(time))
+      if (PRESTRESS::IsMulfActive(time))
       {
         // no linearization needed for mulf
         loadlin = false;

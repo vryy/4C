@@ -374,7 +374,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   }
   fres_->Update(1.0, *finertt_, 1.0);
 
-  // std::cout << STR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << std::endl;
+  // std::cout << STR::CalculateVectorNorm(vectornorm_l2, fextn_) << std::endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = 1/(theta*dt^2) M
@@ -529,26 +529,26 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
+  fintnorm = STR::CalculateVectorNorm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = STR::AUX::CalculateVectorNorm(iternorm_, fextn_);
+  fextnorm = STR::CalculateVectorNorm(iternorm_, fextn_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertnorm = STR::AUX::CalculateVectorNorm(iternorm_, finertt_);
+  finertnorm = STR::CalculateVectorNorm(iternorm_, finertt_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
-    fviscnorm = STR::AUX::CalculateVectorNorm(iternorm_, fvisct_);
+    fviscnorm = STR::CalculateVectorNorm(iternorm_, fvisct_);
   }
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
+  freactnorm = STR::CalculateVectorNorm(iternorm_, freact_);
 
   // return char norm
   return std::max(

@@ -348,7 +348,7 @@ namespace STR
       };
 
       /// Return time vector \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<const BACI::TIMINT::TimIntMStep<double>> GetMultiTime() const
+      Teuchos::RCP<const TIMESTEPPING::TimIntMStep<double>> GetMultiTime() const
       {
         CheckInit();
         return timen_;
@@ -396,7 +396,7 @@ namespace STR
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<const BACI::TIMINT::TimIntMStep<double>> GetDeltaTime() const
+      Teuchos::RCP<const TIMESTEPPING::TimIntMStep<double>> GetDeltaTime() const
       {
         CheckInit();
         return dt_;
@@ -660,7 +660,7 @@ namespace STR
       };
 
       /// Return time \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>>& GetMultiTime()
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>& GetMultiTime()
       {
         CheckInit();
         return timen_;
@@ -698,7 +698,7 @@ namespace STR
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>>& GetDeltaTime()
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>& GetDeltaTime()
       {
         CheckInit();
         return dt_;
@@ -737,7 +737,7 @@ namespace STR
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiDis()
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiDis()
       {
         CheckInitSetup();
         return dis_;
@@ -758,14 +758,14 @@ namespace STR
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiVel()
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiVel()
       {
         CheckInitSetup();
         return vel_;
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      const Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiVel() const
+      const Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiVel() const
       {
         CheckInitSetup();
         return vel_;
@@ -786,14 +786,14 @@ namespace STR
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
       {
         CheckInitSetup();
         return acc_;
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      const Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc() const
+      const Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiAcc() const
       {
         CheckInitSetup();
         return acc_;
@@ -952,10 +952,10 @@ namespace STR
       double timenp_;
 
       /// time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>> timen_;
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> timen_;
 
       /// time step size \f$\Delta t\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>> dt_;
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> dt_;
 
       /// time step index \f$n\f$
       int stepn_;
@@ -978,13 +978,13 @@ namespace STR
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> dis_;
 
       /// global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> vel_;
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> vel_;
 
       /// global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> acc_;
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> acc_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> disnp_;
