@@ -25,8 +25,8 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 CONTACT::PoroMtLagrangeStrategy::PoroMtLagrangeStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    std::vector<Teuchos::RCP<MORTAR::Interface>> interface, int dim, Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf, int maxdof)
     : MtLagrangeStrategy(DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
 {
   return;

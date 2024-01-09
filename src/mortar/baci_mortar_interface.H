@@ -48,7 +48,7 @@ namespace CORE::LINALG
 namespace MORTAR
 {
   // forward declarations
-  class MortarInterface;
+  class Interface;
   class Node;
   class Element;
   class IntElement;
@@ -349,14 +349,14 @@ namespace MORTAR
       return *sl_exporter_;
     }
 
-    void SetMaSharingRefInterfacePtr(const MortarInterface* interface_ptr)
+    void SetMaSharingRefInterfacePtr(const Interface* interface_ptr)
     {
       masharingrefinterface_ = interface_ptr;
     }
 
-    const MortarInterface* GetMaSharingRefInterfacePtr() const { return masharingrefinterface_; }
+    const Interface* GetMaSharingRefInterfacePtr() const { return masharingrefinterface_; }
 
-    const MortarInterface& GetMaSharingRefInterface() const
+    const Interface& GetMaSharingRefInterface() const
     {
       if (masharingrefinterface_ == nullptr) dserror("nullpointer");
       return *masharingrefinterface_;
@@ -396,7 +396,7 @@ namespace MORTAR
     bool redistributed_;
 
     //! master sharing reference interface ptr
-    const MortarInterface* masharingrefinterface_ = nullptr;
+    const Interface* masharingrefinterface_ = nullptr;
 
     //! the discretization of the mortar interface
     Teuchos::RCP<DRT::Discretization> idiscret_;
@@ -541,7 +541,7 @@ namespace MORTAR
   \brief One mortar coupling interface
 
   */
-  class MortarInterface
+  class Interface
   {
    protected:
     /*!
@@ -549,13 +549,13 @@ namespace MORTAR
 
     @param[in] interfaceData_ptr Interface data container
     */
-    MortarInterface(Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr);
+    Interface(Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr);
 
    public:
     /**
      * Virtual destructor.
      */
-    virtual ~MortarInterface() = default;
+    virtual ~Interface() = default;
 
     /** \brief Create a new Mortar interface object
      *
@@ -568,7 +568,7 @@ namespace MORTAR
      *  \param imortar (in) : global contact/mesh-tying parameter-list
      *
      *  \author hiermeier \date 03/17 */
-    static Teuchos::RCP<MortarInterface> Create(const int id, const Epetra_Comm& comm,
+    static Teuchos::RCP<Interface> Create(const int id, const Epetra_Comm& comm,
         const int spatialDim, const Teuchos::ParameterList& imortar);
 
     /*!
@@ -580,14 +580,14 @@ namespace MORTAR
     \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
     */
-    MortarInterface(Teuchos::RCP<InterfaceDataContainer> interfaceData_ptr, const int id,
+    Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar);
 
     //! don't want = operator
-    MortarInterface operator=(const MortarInterface& old) = delete;
+    Interface operator=(const Interface& old) = delete;
 
     //! don't want copy constructor
-    MortarInterface(const MortarInterface& old) = delete;
+    Interface(const Interface& old) = delete;
 
     /*!
     \brief Get unique ID of this interface
@@ -682,7 +682,7 @@ namespace MORTAR
       if (Filled())
         return oldnodecolmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -694,7 +694,7 @@ namespace MORTAR
       if (Filled())
         return oldelecolmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -706,7 +706,7 @@ namespace MORTAR
       if (Filled())
         return snoderowmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -717,7 +717,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PSlaveRowNodes() const
     {
-      if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
+      if (not Filled()) dserror("MORTAR::Interface::FillComplete was not called");
 
       return interfaceData_->PSNodeRowMap();
     }
@@ -730,7 +730,7 @@ namespace MORTAR
       if (Filled())
         return mnoderowmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -741,7 +741,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PMasterRowNodes() const
     {
-      if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
+      if (not Filled()) dserror("MORTAR::Interface::FillComplete was not called");
 
       return interfaceData_->PMNodeRowMap();
     }
@@ -754,7 +754,7 @@ namespace MORTAR
       if (Filled())
         return snodecolmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -766,7 +766,7 @@ namespace MORTAR
       if (Filled())
         return mnodecolmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -778,7 +778,7 @@ namespace MORTAR
       if (Filled())
         return snoderowmapbound_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -790,7 +790,7 @@ namespace MORTAR
       if (Filled())
         return snodecolmapbound_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -802,7 +802,7 @@ namespace MORTAR
       if (Filled())
         return mnoderowmapnobound_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -814,7 +814,7 @@ namespace MORTAR
       if (Filled())
         return mnodecolmapnobound_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -826,7 +826,7 @@ namespace MORTAR
       if (Filled())
         return selerowmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -838,7 +838,7 @@ namespace MORTAR
       if (Filled())
         return melerowmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -850,7 +850,7 @@ namespace MORTAR
       if (Filled())
         return selecolmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -862,7 +862,7 @@ namespace MORTAR
       if (Filled())
         return melecolmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -874,7 +874,7 @@ namespace MORTAR
       if (Filled())
         return sdofrowmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -886,7 +886,7 @@ namespace MORTAR
       if (Filled())
         return sdofcolmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -897,7 +897,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PSlaveRowDofs() const
     {
-      if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
+      if (not Filled()) dserror("MORTAR::Interface::FillComplete was not called");
 
       return interfaceData_->PSDofRowMap();
     }
@@ -910,7 +910,7 @@ namespace MORTAR
       if (Filled())
         return mdofrowmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -922,7 +922,7 @@ namespace MORTAR
       if (Filled())
         return mdofcolmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -933,7 +933,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PMasterRowDofs() const
     {
-      if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
+      if (not Filled()) dserror("MORTAR::Interface::FillComplete was not called");
 
       return interfaceData_->PMDofRowMap();
     }
@@ -946,7 +946,7 @@ namespace MORTAR
       if (Filled())
         return lmdofmap_;
       else
-        dserror("MORTAR::MortarInterface::FillComplete was not called");
+        dserror("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -1132,7 +1132,7 @@ namespace MORTAR
 
     /*! @name Evaluate mortar interface
      *
-     * This is the main routine of the MortarInterface class, where nodal normals
+     * This is the main routine of the MORTAR::Interface class, where nodal normals
      * are computed, search is performed, mortar segments are set up and the entries
      * of the mortar matrices D and M are integrated. If the boolean flag "nonlinear"
      * is set to true (only for contact), then nonlinear mortar coupling is performed
@@ -1319,7 +1319,7 @@ namespace MORTAR
     //@}
 
     bool HasMaSharingRefInterface() const;
-    void AddMaSharingRefInterface(const MortarInterface* ref_interface);
+    void AddMaSharingRefInterface(const Interface* ref_interface);
 
     //! @name Output
     //! @{
@@ -1364,7 +1364,7 @@ namespace MORTAR
 
     //! @}
 
-    const MortarInterface* GetMaSharingRefInterfacePtr() const;
+    const Interface* GetMaSharingRefInterfacePtr() const;
 
     //! @name Parallel distribution and ghosting
     //! @{
@@ -1799,12 +1799,12 @@ namespace MORTAR
     bool& ehl_;    ///< ref. to flag if ehl contact problem!
 
     /// @}
-  };  // class MortarInterface
+  };  // class Interface
 }  // namespace MORTAR
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const MORTAR::MortarInterface& interface);
+std::ostream& operator<<(std::ostream& os, const MORTAR::Interface& interface);
 
 
 BACI_NAMESPACE_CLOSE

@@ -39,7 +39,7 @@ namespace DRT
 
 namespace MORTAR
 {
-  class MortarInterface;
+  class Interface;
   class IntCell;
 }  // namespace MORTAR
 
@@ -52,7 +52,7 @@ applications in BACI encompass FSI coupling algorithms (i.e. to
 interpolate between fluid and structure fields at the interface)
 and fluid mesh tying algorithms (i.e. to couple non-matching
 Eulerian fluid meshes). All the hard work is actually done by
-the MORTAR::MortarInterface class (thus we use the mortar method).
+the MORTAR::Interface class (thus we use the mortar method).
 
 The major part of this code is the Setup() method that gets the
 non-matching interface meshes on input, initializes the mortar
@@ -144,7 +144,7 @@ feel free to write your own tailored Setup() method.
     );
 
     //! Get the mortar interface itself
-    Teuchos::RCP<MORTAR::MortarInterface> Interface() const { return interface_; }
+    Teuchos::RCP<MORTAR::Interface> Interface() const { return interface_; }
 
     //! Access to slave side mortar matrix \f$D\f$
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixD() const
@@ -344,7 +344,7 @@ feel free to write your own tailored Setup() method.
     bool issetup_;
 
     /// Interface
-    Teuchos::RCP<MORTAR::MortarInterface> interface_;
+    Teuchos::RCP<MORTAR::Interface> interface_;
 
     /// Map of master row dofs (after parallel redist.)
     Teuchos::RCP<const Epetra_Map> masterdofrowmap_;

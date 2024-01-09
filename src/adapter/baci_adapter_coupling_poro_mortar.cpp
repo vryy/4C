@@ -99,7 +99,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
 {
   bool isnurbs = input.get<bool>("NURBS");
 
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // get problem dimension (2D or 3D) and create (MORTAR::Interface)
   const int dim = DRT::Problem::Instance()->NDim();
 
   // We need to determine an element offset to start the numbering of the slave
@@ -262,7 +262,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
 {
   // poro lagrange strategy:
 
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // get problem dimension (2D or 3D) and create (MORTAR::Interface)
   const int dim = DRT::Problem::Instance()->NDim();
 
   // bools to decide which side is structural and which side is poroelastic to manage all 4

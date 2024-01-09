@@ -296,7 +296,7 @@ namespace CONTACT
   \brief One contact interface
 
   */
-  class Interface : public MORTAR::MortarInterface
+  class Interface : public MORTAR::Interface
   {
    protected:
     /// constructor ( only for derived classes )

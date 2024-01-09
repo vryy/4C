@@ -301,7 +301,7 @@ void CONTACT::AUG::Interface::Initialize()
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::UpdateMasterSlaveSets()
 {
-  MORTAR::MortarInterface::UpdateMasterSlaveSets();
+  MORTAR::Interface::UpdateMasterSlaveSets();
   SplitSlaveDofs();
 }
 

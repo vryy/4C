@@ -2200,7 +2200,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             scatratimint_->Discretization()->Comm());
 
         // extract mortar interface
-        MORTAR::MortarInterface& interface = *icoupmortar.Interface();
+        MORTAR::Interface& interface = *icoupmortar.Interface();
 
         // extract mortar discretization
         const DRT::Discretization& idiscret = interface.Discret();

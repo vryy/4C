@@ -78,7 +78,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   factory.CheckDimension();
 
   // create some local variables (later to be stored in strategy)
-  std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interfaces;
+  std::vector<Teuchos::RCP<MORTAR::Interface>> interfaces;
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters

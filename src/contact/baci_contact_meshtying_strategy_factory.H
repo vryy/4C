@@ -33,7 +33,7 @@ namespace MORTAR
   class InterfaceDataContainer;
   class MortarAbstractStrategy;
   class Element;
-  class MortarInterface;
+  class Interface;
   class StratDataContainer;
 
   namespace STRATEGY
@@ -75,7 +75,7 @@ namespace MORTAR
        * \author Popp
        */
       void BuildInterfaces(const Teuchos::ParameterList& params,
-          std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces, bool& poroslave,
+          std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces, bool& poroslave,
           bool& poromaster) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
@@ -91,7 +91,7 @@ namespace MORTAR
        * \author Popp */
       Teuchos::RCP<CONTACT::MtAbstractStrategy> BuildStrategy(const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const;
+          std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
@@ -115,8 +115,8 @@ namespace MORTAR
       static Teuchos::RCP<CONTACT::MtAbstractStrategy> BuildStrategy(
           const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces,
-          const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
+          std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces, const Epetra_Map* dof_row_map,
+          const Epetra_Map* node_row_map, const int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
           Teuchos::RCP<MORTAR::StratDataContainer> data_ptr);
 

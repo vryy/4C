@@ -895,7 +895,7 @@ void WEAR::WearInterface::AssembleLinT_LM_Master(CORE::LINALG::SparseMatrix& lin
 void WEAR::WearInterface::EvaluateNodalNormals() const
 {
   // call mortar function
-  MORTAR::MortarInterface::EvaluateNodalNormals();
+  MORTAR::Interface::EvaluateNodalNormals();
 
   // for both-sided discrete wear
   if (wearboth_ == true and wearpv_ == true)
@@ -4170,7 +4170,7 @@ void WEAR::WearInterface::SetElementAreas()
   else
   {
     // refer call back to base class version
-    MORTAR::MortarInterface::SetElementAreas();
+    MORTAR::Interface::SetElementAreas();
   }
 
   return;

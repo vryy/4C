@@ -45,7 +45,7 @@ namespace STR
 namespace MORTAR
 {
   class Element;
-  class MortarInterface;
+  class Interface;
   class Node;
   class StrategyBase;
 
@@ -88,8 +88,7 @@ namespace MORTAR
        *
        * @param[in] interfaces All meshtying interfaces
        */
-      void BuildSearchTree(
-          const std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const;
+      void BuildSearchTree(const std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces) const;
 
       /*! \brief Check the problem dimension
        *

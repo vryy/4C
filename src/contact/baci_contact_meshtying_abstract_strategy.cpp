@@ -36,7 +36,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
+    std::vector<Teuchos::RCP<MORTAR::Interface>> interface, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
     : MORTAR::StrategyBase(Teuchos::rcp(new MORTAR::StratDataContainer()), DofRowMap, NodeRowMap,
           params, spatialDim, comm, alphaf, maxdof),
@@ -1391,7 +1391,7 @@ void CONTACT::MtAbstractStrategy::PostprocessQuantitiesPerInterface(
   outputParams->set<RCP<const Epetra_Vector>>("slave forces", fcslave);
   outputParams->set<RCP<const Epetra_Vector>>("master forces", fcmaster);
 
-  for (std::vector<Teuchos::RCP<MORTAR::MortarInterface>>::iterator it = interface_.begin();
+  for (std::vector<Teuchos::RCP<MORTAR::Interface>>::iterator it = interface_.begin();
        it < interface_.end(); ++it)
     (*it)->PostprocessQuantities(*outputParams);
 }

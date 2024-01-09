@@ -40,7 +40,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   const int spatialDim = DRT::Problem::Instance()->NDim();
   if (spatialDim != 2 && spatialDim != 3) dserror("Meshtying problem must be 2D or 3D.");
 
-  std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interfaces;
+  std::vector<Teuchos::RCP<MORTAR::Interface>> interfaces;
   Teuchos::ParameterList mtparams;
 
   // read and check meshtying input parameters
@@ -187,10 +187,10 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     }
 
     // create an empty meshtying interface and store it in this Manager
-    interfaces.push_back(MORTAR::MortarInterface::Create(groupid1, Comm(), spatialDim, mtparams));
+    interfaces.push_back(MORTAR::Interface::Create(groupid1, Comm(), spatialDim, mtparams));
 
     // get it again
-    Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces.back();
+    Teuchos::RCP<MORTAR::Interface> interface = interfaces.back();
 
     // note that the nodal IDs are unique because they come from
     // one global problem discretization containing all nodes of the

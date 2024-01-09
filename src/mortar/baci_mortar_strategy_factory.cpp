@@ -212,7 +212,7 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSNode(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::BuildSearchTree(
-    const std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const
+    const std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces) const
 {
   for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
 

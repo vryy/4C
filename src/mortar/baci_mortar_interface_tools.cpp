@@ -23,7 +23,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Visualize mortar stuff with gmsh                          popp 08/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
+void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
 {
   //**********************************************************************
   // GMSH output of all interface elements

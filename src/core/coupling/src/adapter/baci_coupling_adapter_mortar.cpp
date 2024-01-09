@@ -293,7 +293,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   input.set<int>("DIMENSION", spatial_dimension_);
 
   // create an empty mortar interface
-  interface_ = MORTAR::MortarInterface::Create(0, comm, spatial_dimension_, input);
+  interface_ = MORTAR::Interface::Create(0, comm, spatial_dimension_, input);
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();

@@ -28,7 +28,7 @@ namespace DRT
 
 namespace MORTAR
 {
-  class MortarInterface;
+  class Interface;
 }
 
 namespace CORE::LINALG
@@ -77,7 +77,7 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     MtAbstractStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
@@ -649,7 +649,7 @@ namespace CONTACT
     MtAbstractStrategy(const MtAbstractStrategy& old) = delete;
 
     //! Vector with all meshtying interfaces
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface_;
+    std::vector<Teuchos::RCP<MORTAR::Interface>> interface_;
 
     //! Global Lagrange multiplier dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> glmdofrowmap_;

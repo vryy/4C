@@ -89,7 +89,7 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::Interface::Create(const int id, const 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::Interface::Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData)
-    : MORTAR::MortarInterface(interfaceData),
+    : MORTAR::Interface(interfaceData),
       interfaceData_(interfaceData),
       selfcontact_(interfaceData_->IsSelfContact()),
       friction_(interfaceData_->IsFriction()),
@@ -131,7 +131,7 @@ CONTACT::Interface::Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer
 CONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
     const int id, const Epetra_Comm& comm, const int spatialDim,
     const Teuchos::ParameterList& icontact, bool selfcontact)
-    : MORTAR::MortarInterface(interfaceData, id, comm, spatialDim, icontact),
+    : MORTAR::Interface(interfaceData, id, comm, spatialDim, icontact),
       interfaceData_(
           Teuchos::rcp_dynamic_cast<CONTACT::InterfaceDataContainer>(interfaceData, true)),
       selfcontact_(interfaceData_->IsSelfContact()),
@@ -218,7 +218,7 @@ CONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>
 void CONTACT::Interface::UpdateMasterSlaveSets()
 {
   // call mortar function
-  MORTAR::MortarInterface::UpdateMasterSlaveSets();
+  MORTAR::Interface::UpdateMasterSlaveSets();
 
   //********************************************************************
   // DOFS
@@ -374,7 +374,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Interface& interface)
 void CONTACT::Interface::Print(std::ostream& os) const
 {
   if (Comm().MyPID() == 0) os << "Contact ";
-  MORTAR::MortarInterface::Print(os);
+  MORTAR::Interface::Print(os);
 
   return;
 }
@@ -787,7 +787,7 @@ void CONTACT::Interface::Redistribute()
   // (return value TRUE, because redistribution performed)
   if (slaveCloseRowEles->NumGlobalElements() == 0 || slaveNonCloseRowEles->NumGlobalElements() == 0)
   {
-    MORTAR::MortarInterface::Redistribute();
+    MORTAR::Interface::Redistribute();
     return;
   }
 
@@ -1212,7 +1212,7 @@ void CONTACT::Interface::CreateSearchTree()
 void CONTACT::Interface::InitializeDataContainer()
 {
   // call base class functionality
-  MORTAR::MortarInterface::InitializeDataContainer();
+  MORTAR::Interface::InitializeDataContainer();
 
   // ==================
   // non-smooth contact:
@@ -1482,7 +1482,7 @@ void CONTACT::Interface::SetElementAreas()
   else
   {
     // refer call back to base class version
-    MORTAR::MortarInterface::SetElementAreas();
+    MORTAR::Interface::SetElementAreas();
   }
 
   return;
@@ -3722,7 +3722,7 @@ void CONTACT::Interface::ScaleTermsLTL()
 void CONTACT::Interface::EvaluateSTS(
     const Epetra_Map& selecolmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  MORTAR::MortarInterface::EvaluateSTS(selecolmap, mparams_ptr);
+  MORTAR::Interface::EvaluateSTS(selecolmap, mparams_ptr);
   return;
   //  // loop over all slave col elements
   //  for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
@@ -3878,7 +3878,7 @@ void CONTACT::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
     //********************************************************************
     // call base routine for standard mortar/nts evaluation
     //********************************************************************
-    MORTAR::MortarInterface::EvaluateCoupling(selecolmap, snoderowmap, mparams_ptr);
+    MORTAR::Interface::EvaluateCoupling(selecolmap, snoderowmap, mparams_ptr);
   }
 
   return;
@@ -3893,7 +3893,7 @@ void CONTACT::Interface::InitializeCornerEdge()
   if (nonSmoothContact_) return;
 
   // call base function
-  MORTAR::MortarInterface::InitializeCornerEdge();
+  MORTAR::Interface::InitializeCornerEdge();
 
   return;
 }
@@ -6743,7 +6743,7 @@ bool CONTACT::Interface::EvaluateSearchBinarytree()
   else
   {
     // call mortar routine
-    MORTAR::MortarInterface::EvaluateSearchBinarytree();
+    MORTAR::Interface::EvaluateSearchBinarytree();
   }
 
   return true;
