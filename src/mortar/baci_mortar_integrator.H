@@ -39,21 +39,21 @@ namespace MORTAR
 
 
   /*!
-  \brief A class to implement MortarIntegratorCalc
+  \brief A class to implement MORTAR::IntegratorCalc
 
   */
-  class MortarIntegrator
+  class Integrator
   {
    public:
-    MortarIntegrator(){};
+    Integrator(){};
 
-    virtual ~MortarIntegrator() = default;
+    virtual ~Integrator() = default;
     //! @name Access methods
     /// Internal implementation class
-    static MortarIntegrator* Impl(
+    static Integrator* Impl(
         MORTAR::Element& sele, MORTAR::Element& mele, Teuchos::ParameterList& params);
 
-    //! @ pure virtual functions --> access per MortarIntegratorCalc
+    //! @ pure virtual functions --> access per MORTAR::IntegratorCalc
     virtual void IntegrateEleBased2D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) = 0;
 
@@ -89,7 +89,7 @@ namespace MORTAR
 
   */
   template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-  class MortarIntegratorCalc : public MortarIntegrator
+  class IntegratorCalc : public Integrator
   {
    public:
     /*!
@@ -103,11 +103,11 @@ namespace MORTAR
     and corresponding weights.
 
     */
-    MortarIntegratorCalc(const Teuchos::ParameterList& params);
+    IntegratorCalc(const Teuchos::ParameterList& params);
 
 
     /// Singleton access method
-    static MortarIntegratorCalc<distypeS, distypeM>* Instance(
+    static IntegratorCalc<distypeS, distypeM>* Instance(
         CORE::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
@@ -177,7 +177,7 @@ namespace MORTAR
 
     // protected:
     /*!
-    \brief Initialize Gauss rule (points, weights) for this MortarIntegrator
+    \brief Initialize Gauss rule (points, weights) for this MORTAR::Integrator
 
     */
     void InitializeGP();
@@ -229,7 +229,7 @@ namespace MORTAR
     int ngp_;                                 // number of Gauss points
     CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
     std::vector<double> weights_;             // Gauss point weights
-  };                                          // class MortarIntegrator
+  };                                          // class MORTAR::Integrator
 }  // namespace MORTAR
 
 

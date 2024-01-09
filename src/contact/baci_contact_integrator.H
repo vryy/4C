@@ -39,7 +39,7 @@ namespace CONTACT
    in 1D (which is equivalent to a 2D coupling problem) and in 2D
    (which is equivalent to a 3D coupling problem).
 
-   This is a derived class from MORTAR::MortarIntegrator which does
+   This is a derived class from MORTAR::Integrator which does
    the contact-specific stuff for 3d mortar coupling.
 
    */
@@ -282,7 +282,7 @@ namespace CONTACT
 
    protected:
     /*!
-     \brief Initialize Gauss rule (points, weights) for this MortarIntegrator
+     \brief Initialize Gauss rule (points, weights) for this MORTAR::Integrator
 
      */
     void InitializeGP(CORE::FE::CellType eletype);

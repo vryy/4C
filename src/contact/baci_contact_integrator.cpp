@@ -571,7 +571,7 @@ void CONTACT::Integrator::InitializeGP(CORE::FE::CellType eletype)
     }
     default:
     {
-      dserror("MortarIntegrator: This contact element type is not implemented!");
+      dserror("MORTAR::Integrator: This contact element type is not implemented!");
       break;
     }
   }  // switch(eletype)

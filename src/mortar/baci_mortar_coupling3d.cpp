@@ -3400,7 +3400,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     if (!Quad())
     {
       // call integrator
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlane(SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
     }
 
@@ -3415,7 +3415,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlaneQuad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
@@ -3435,7 +3435,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlaneQuad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
@@ -3998,7 +3998,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
       bool boundary_ele = false;
 
       // integrate D and M -- 2 Cells
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(0), imortar_)
           ->IntegrateEleBased3D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
 
       if (IntType() == INPAR::MORTAR::inttype_elements_BS)
@@ -4132,7 +4132,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
     bool boundary_ele = false;
 
     // integrate D and M -- 2 Cells
-    MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)
+    MORTAR::Integrator::Impl(SlaveElement(), MasterElement(0), imortar_)
         ->IntegrateEleBased3D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
 
     if (IntType() == INPAR::MORTAR::inttype_elements_BS)
@@ -4300,16 +4300,15 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 
       // create an integrator for this cell
       for (int gp = 0;
-           gp < MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)->nGP();
-           ++gp)
+           gp < MORTAR::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->nGP(); ++gp)
       {
         // coordinates and weight
-        double eta[2] = {MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)
-                             ->Coordinate(gp, 0),
-            MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)
+        double eta[2] = {
+            MORTAR::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Coordinate(gp, 0),
+            MORTAR::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)
                 ->Coordinate(gp, 1)};
         double wgt =
-            MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Weight(gp);
+            MORTAR::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Weight(gp);
 
         // get global Gauss point coordinates
         double globgp[3] = {0.0, 0.0, 0.0};

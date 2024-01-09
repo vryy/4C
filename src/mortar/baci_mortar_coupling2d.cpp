@@ -860,7 +860,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
       (Quad() && lmtype == INPAR::MORTAR::lagmult_const))
   {
     // do the overlap integration (integrate and linearize both M and gap)
-    MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+    MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
         ->IntegrateSegment2D(SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, Comm());
   }
 
@@ -971,7 +971,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling(
     if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad) ||
         (Quad() && lmtype == INPAR::MORTAR::lagmult_lin))
     {
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(0), imortar_)
           ->IntegrateEleBased2D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
 
       // Perform Boundary Segmentation if required
