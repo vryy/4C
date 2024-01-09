@@ -1292,7 +1292,7 @@ void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discre
             new_master_gid = dbc_node;
             break;
           }
-#ifndef DEBUG
+#ifndef BACI_DEBUG
           break;  // in release version, we can break here and subsequently skip the safety check
 #endif
         }
@@ -1312,7 +1312,7 @@ void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discre
   master_gids = DRT::UTILS::BroadcastVector(my_master_gids, comm_);
   slave_master_pair = DRT::UTILS::BroadcastMap(my_slave_master_pair, comm_);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check if everything worked fine
   std::set<int> unique_master_gids;
   for (const int& master_gid : master_gids) unique_master_gids.insert(master_gid);

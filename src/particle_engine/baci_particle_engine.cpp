@@ -219,7 +219,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     // get position of particle
     const std::vector<double>& pos = states[Position];
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // get type of particles
     ParticleType type = particlestocheck[i]->ReturnParticleType();
 
@@ -239,7 +239,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
         // insert particle into set
         particlesoutsideboundingbox.insert(i);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (particlestocheck[i]->ReturnParticleGlobalID() < 0)
           dserror("no global id assigned to particle!");
 #endif
@@ -751,7 +751,7 @@ void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* posi
   if ((not validownedparticles_) or (not validghostedparticles_))
     dserror("invalid relation of particles to bins!");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // bin size safety check
   if (radius > minbinsize_)
     dserror("the given radius is larger than the minimal bin size (%f > %f)!", radius, minbinsize_);
@@ -760,7 +760,7 @@ void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* posi
   // get global id of bin
   const int gidofbin = binstrategy_->ConvertPosToGid(position);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // position outside computational domain
   if (gidofbin == -1) dserror("position outside of computational domain!");
 
@@ -1325,7 +1325,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
         // get global id of particle
         const int* currglobalid = container->GetPtrToGlobalID(ownedindex);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (currglobalid[0] < 0) dserror("no global id assigned to particle!");
 #endif
 
@@ -1387,7 +1387,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     // get position of particle
     const std::vector<double>& pos = states[Position];
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // get type of particles
     ParticleType type = particlestodistribute[i]->ReturnParticleType();
 
@@ -1442,7 +1442,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     {
       ++numparticlesoutside;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (particlestodistribute[i]->ReturnParticleGlobalID() < 0)
         dserror("no global id assigned to particle!");
 #endif
@@ -1515,7 +1515,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       // particle left computational domain
       if (gidofbin == -1)
       {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (not particlestoremove[type].count(ownedindex))
           dserror(
               "on processor %d a particle left the computational domain without being detected!",
@@ -1841,7 +1841,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
       // get states of particle
       const ParticleStates& states = particleobject->ReturnParticleStates();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (globalid < 0) dserror("no global id assigned to particle!");
 
       // get bin of particle
@@ -2060,7 +2060,7 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(&(lasttransferpos[statedim * index]));
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (gidofbin < 0) dserror("particle out of bounding box but not removed from container!");
 
       if (binrowmap_->LID(gidofbin) < 0)

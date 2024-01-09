@@ -277,7 +277,7 @@ namespace XFEM
     {
       UpdateConfigurationMap_GP(kappa_m, visc_m, visc_s, density_m, visc_stab_tang, full_stab, x,
           cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // Do some safety checks, every combination which is not handled correct by the element level
       // should be caught here ... As this check is done for every Gausspoint, just do this in DEBUG
       // Version ... Feel free the add more checks ...

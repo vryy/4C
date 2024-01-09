@@ -165,7 +165,7 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::Update()
 
   // predictor: start from previous solution
   states_.back() = states_[states_.size() - 2];
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   state_is_set_ = false;
 #endif
 }
@@ -189,7 +189,7 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::SetState
 {
   states_.back().lambda_f = lambda_f;
   states_.back().lambda_ext = lambda_ext;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   state_is_set_ = true;
 #endif
 }

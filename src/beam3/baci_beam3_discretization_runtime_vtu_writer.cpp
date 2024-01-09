@@ -454,7 +454,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
     const DRT::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele == nullptr)
@@ -486,7 +486,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
     const DRT::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele == nullptr)
@@ -530,7 +530,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementInternalEnergy()
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
       dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
@@ -567,7 +567,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementKineticEnergy()
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
       dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");

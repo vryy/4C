@@ -282,7 +282,7 @@ void PASI::PASI_PartTwoWayCoup::ClearInterfaceForces()
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (walldatastate->GetForceCol() == Teuchos::null) dserror("wall forces not initialized!");
 #endif
 
@@ -302,7 +302,7 @@ void PASI::PASI_PartTwoWayCoup::GetInterfaceForces()
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (walldatastate->GetForceCol() == Teuchos::null) dserror("wall forces not initialized!");
 #endif
 

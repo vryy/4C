@@ -192,7 +192,7 @@ void CORE::LINALG::ANA::LC_Operator_times_lcsv::Set(
        << endl;
   fflush(stdout);
 #endif
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!v.Map().SameAs(op_->OperatorRangeMap())) dserror("Range maps don't match - fatal");
   if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap()))
     dserror("Domain maps don't match - fatal");
@@ -210,7 +210,7 @@ void CORE::LINALG::ANA::LC_Operator_times_lcsv::Update(
        << endl;
   fflush(stdout);
 #endif
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!v.Map().SameAs(op_->OperatorRangeMap())) dserror("Range maps don't match - fatal");
   if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap()))
     dserror("Domain maps don't match - fatal");
@@ -232,7 +232,7 @@ void CORE::LINALG::ANA::LC_Operator_times_lc::Set(
        << endl;
   fflush(stdout);
 #endif
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!v.Map().SameAs(op_->OperatorRangeMap())) dserror("Range maps don't match - fatal");
   if (!right_.RangeMap().SameAs(op_->OperatorDomainMap()))
     dserror("Domain maps don't match - fatal");
@@ -251,7 +251,7 @@ void CORE::LINALG::ANA::LC_Operator_times_lc::Update(
        << endl;
   fflush(stdout);
 #endif
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!v.Map().SameAs(op_->OperatorRangeMap())) dserror("Range maps don't match - fatal");
   if (!right_.RangeMap().SameAs(op_->OperatorDomainMap()))
     dserror("Domain maps don't match - fatal");

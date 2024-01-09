@@ -106,7 +106,7 @@ namespace IO
         // write to file
         if (writetofile_)
         {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           if (!outfile_) dserror("outputfile does not exist - file handle lost");
 #endif
           (*outfile_) << str;

@@ -151,7 +151,7 @@ namespace SCATRA
             // the current row belongs to the transport equation of species 'scalarid'
             rlid0 = rowmap00.LID(rgid);
             rlid1 = rowmap01.LID(rgid);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
             if (rlid0 < 0) dserror("Sparse matrix A00 does not have global row %d", rgid);
             if (rlid1 < 0) dserror("Sparse matrix A01 does not have global row %d", rgid);
 #endif
@@ -183,7 +183,7 @@ namespace SCATRA
             // the current row belongs to the equation for the electric potential
             rlid0 = rowmap10.LID(rgid);
             rlid1 = rowmap11.LID(rgid);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
             if (rlid0 < 0) dserror("Sparse matrix A10 does not have global row %d", rgid);
             if (rlid1 < 0) dserror("Sparse matrix A11 does not have global row %d", rgid);
 #endif

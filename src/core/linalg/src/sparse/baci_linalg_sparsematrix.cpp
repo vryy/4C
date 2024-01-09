@@ -375,7 +375,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
   auto& A = (CORE::LINALG::SerialDenseMatrix&)Aele;
   if (sysmat_->Filled())  // assembly in local indices
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // There is the case of nodes without dofs (XFEM).
     // If no row dofs are present on this proc, there is nothing to assemble.
     // However, the subsequent check for coldofs (in DEBUG mode) would incorrectly fail.
@@ -394,7 +394,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
     {
       const int cgid = lmcol[lcol];
       localcol[lcol] = colmap.LID(cgid);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (localcol[lcol] < 0) dserror("Sparse matrix A does not have global column %d", cgid);
 #endif
     }
@@ -413,17 +413,17 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
 
       const int rlid = rowmap.LID(rgid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (rlid < 0) dserror("Sparse matrix A does not have global row %d", rgid);
 #endif
       int length;
       double* valview;
       int* indices;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       int err =
 #endif
           sysmat_->ExtractMyRowView(rlid, length, valview, indices);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (err) dserror("Epetra_CrsMatrix::ExtractMyRowView returned error code %d", err);
 #endif
       const int numnode = (int)lmstride.size();
@@ -435,7 +435,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
         if (pos >= length || indices[pos] != localcol[dofcount])
         {
           int* loc = std::lower_bound(indices, indices + length, localcol[dofcount]);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           if (*loc != localcol[dofcount])
             dserror("Cannot find local column entry %d", localcol[dofcount]);
 #endif
@@ -477,11 +477,11 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
         {
           for (int j = 0; j < stride; ++j)
           {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
             const int errone =
 #endif
                 sysmat_->SumIntoMyValues(rlid, 1, &A(lrow, dofcount), &localcol[dofcount]);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
             if (errone)
             {
               printf("Dimensions of A: %d x %d\n", A.numRows(), A.numCols());
@@ -517,7 +517,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
 
       // check whether I have that global row
       const int rgid = lmrow[lrow];
-      // #ifdef DEBUG
+      // #ifdef BACI_DEBUG
       if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d", myrank, rgid);
       // #endif
 
@@ -562,7 +562,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const CORE::LINALG::SerialDen
 
   if (sysmat_->Filled())
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     // There is the case of nodes without dofs (XFEM).
     // If no row dofs are present on this proc, their is nothing to assemble.
     // However, the subsequent check for coldofs (in DEBUG mode) would incorrectly fail.
@@ -582,7 +582,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const CORE::LINALG::SerialDen
     {
       const int cgid = lmcol[lcol];
       localcol[lcol] = colmap.LID(cgid);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (localcol[lcol] < 0) dserror("Sparse matrix A does not have global column %d", cgid);
 #endif
     }
@@ -600,7 +600,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const CORE::LINALG::SerialDen
       if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid)) continue;
 
       const int rlid = rowmap.LID(rgid);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (rlid < 0) dserror("Sparse matrix A does not have global row %d", rgid);
 #endif
 
@@ -622,7 +622,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const CORE::LINALG::SerialDen
 
       // check whether I have that global row
       const int rgid = lmrow[lrow];
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d", myrank, rgid);
 #endif
 
@@ -926,7 +926,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Vector& dbctoggle, 
       if (dbctoggle[i] != 1.0)
       {
         int numentries;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         int err = sysmat_->ExtractGlobalRowCopy(
             row, maxnumentries, numentries, values.data(), indices.data());
         if (err < 0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", err);
@@ -936,7 +936,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Vector& dbctoggle, 
 #endif
           // this is also ok for FE matrices, because fill complete was called on sysmat and the
           // globalAssemble method was called already
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         err = Anew->InsertGlobalValues(row, numentries, values.data(), indices.data());
         if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
@@ -950,7 +950,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Vector& dbctoggle, 
           v = 1.0;
         else
           v = 0.0;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         int err = Anew->InsertGlobalValues(row, 1, &v, &row);
         if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
@@ -971,7 +971,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Vector& dbctoggle, 
         int* indexOffset;
         int* indices;
         double* values;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
         if (err < 0) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d", err);
 #else
@@ -983,7 +983,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Vector& dbctoggle, 
         if (diagonalblock)
         {
           double one = 1.0;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           int err = sysmat_->SumIntoMyValues(i, 1, &one, &i);
           if (err < 0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d", err);
 #else
@@ -1005,7 +1005,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, boo
 
   if (dbcmaps_ != Teuchos::null)
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (not dbctoggle.SameAs(*dbcmaps_->Map(1)))
     {
       dserror("Dirichlet maps mismatch");
@@ -1061,7 +1061,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, boo
       if (not dbctoggle.MyGID(row))
       {
         int numentries;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         int err = sysmat_->ExtractGlobalRowCopy(
             row, maxnumentries, numentries, values.data(), indices.data());
         if (err < 0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", err);
@@ -1071,7 +1071,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, boo
 #endif
           // this is also ok for FE matrices, because fill complete was called on sysmat and the
           // globalAssemble method was called already
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         err = Anew->InsertGlobalValues(row, numentries, values.data(), indices.data());
         if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
@@ -1083,7 +1083,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, boo
         if (diagonalblock)
         {
           double v = 1.0;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           int err = Anew->InsertGlobalValues(row, 1, &v, &row);
           if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
@@ -1108,7 +1108,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, boo
         int* indexOffset;
         int* indices;
         double* values;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
         if (err < 0) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d", err);
 #else
@@ -1120,7 +1120,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, boo
         if (diagonalblock)
         {
           double one = 1.0;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           err = sysmat_->SumIntoMyValues(i, 1, &one, &i);
           if (err < 0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d", err);
 #else
@@ -1181,7 +1181,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::Spa
       if (not dbctoggle.MyGID(row))  // dof is not a Dirichlet dof
       {
         int numentries;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         int err = sysmat_->ExtractGlobalRowCopy(
             row, maxnumentries, numentries, values.data(), indices.data());
         if (err < 0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", err);
@@ -1190,7 +1190,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::Spa
             row, maxnumentries, numentries, values.data(), indices.data());
 #endif
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         err = Anew->InsertGlobalValues(row, numentries, values.data(), indices.data());
         if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
@@ -1203,7 +1203,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::Spa
         if (diagonalblock)
         {
           // extract values of trafo at the inclined dbc dof
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           int err = trafo.EpetraMatrix()->ExtractGlobalRowCopy(
               row, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
           if (err < 0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", err);
@@ -1221,7 +1221,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::Spa
           trafoindices[0] = row;
         }
         // insert all these entries in transformed sysmat, i.e. in Anew
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         {
           int err = Anew->InsertGlobalValues(
               row, trafonumentries, trafovalues.data(), trafoindices.data());
@@ -1261,7 +1261,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::Spa
         int* indexOffset;
         int* indices;
         double* values;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
         if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d", err);
 #else
@@ -1272,7 +1272,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::Spa
 
         if (diagonalblock)
         {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           err = trafo.EpetraMatrix()->ExtractMyRowCopy(
               i, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
           if (err < 0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", err);
@@ -1281,7 +1281,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::Spa
               i, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
 #endif
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           err =
               sysmat_->SumIntoMyValues(i, trafonumentries, trafovalues.data(), trafoindices.data());
           if (err < 0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d", err);
@@ -1710,7 +1710,7 @@ void CORE::LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
       if (count1) err1 = A21->InsertGlobalValues(grid, count1, gvalues1.data(), gcindices1.data());
       if (count2) err2 = A22->InsertGlobalValues(grid, count2, gvalues2.data(), gcindices2.data());
     }
-    // #ifdef DEBUG
+    // #ifdef BACI_DEBUG
     if (err1 < 0 || err2 < 0)
     {
       dserror(

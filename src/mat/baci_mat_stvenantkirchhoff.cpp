@@ -211,7 +211,7 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3
     const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
     const int gp, const int eleGID)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!stress) dserror("No stress vector supplied");
   if (!cmat) dserror("No material tangent matrix supplied");
   if (!glstrain_m) dserror("No GL strains supplied");

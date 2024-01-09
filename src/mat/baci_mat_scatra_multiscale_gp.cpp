@@ -571,7 +571,7 @@ void MAT::ScatraMultiScaleGP::CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneSte
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::SetTimeStepping(const double dt, const double time, const int step)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   dsassert(dt > 0.0, "Time step for micro scale must be positive.");
   dsassert(time >= 0.0, "Time for micro scale must be positive.");
   dsassert(step >= 0, "Number of step for micro scale must be positive.");

@@ -796,7 +796,7 @@ namespace DRT
         Teuchos::ParameterList& params                      ///< parameter list
     )
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (cond_manager == Teuchos::null) dserror("set the condition manager!");
 #endif
 
@@ -968,7 +968,7 @@ namespace DRT
 
         Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (is_ls_coupling_side and is_mesh_coupling_side)
           dserror(
               "side cannot be a levelset-coupling side and a mesh coupling side at once: side %i",
@@ -1296,7 +1296,7 @@ namespace DRT
         const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
     )
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (cond_manager == Teuchos::null) dserror("set the condition manager!");
 #endif
 
@@ -1602,7 +1602,7 @@ namespace DRT
 
         Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (is_ls_coupling_side and is_mesh_coupling_side)
           dserror(
               "side cannot be a levelset-coupling side and a mesh coupling side at once: side %i",
@@ -1923,7 +1923,7 @@ namespace DRT
             double kappa_m = 0.0;
             double kappa_s = 0.0;
             double visc_m = 0.0;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
             // Only Navier Slip used kappa_m,kappa_s and visc_m defined just before!
             // To use Navier Slip specify them correct!
             if (cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP ||
@@ -2463,7 +2463,7 @@ namespace DRT
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator cc =
               side_coupling_extra.find(coup_sid);
           std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = cc->second;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           if (side_matrices.size() != 3)
             dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
           if (side_matrices_extra.size() != 4)
@@ -2473,7 +2473,7 @@ namespace DRT
 
           for (int i = 0; i < 3; ++i)
           {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
             if (side_matrices[i].numRows() != side_matrices_extra[i].numRows() ||
                 side_matrices[i].numCols() != side_matrices_extra[i].numCols())
               dserror(
@@ -2497,7 +2497,7 @@ namespace DRT
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator cc =
               side_coupling_extra.find(coup_sid);
           std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = cc->second;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           if (side_matrices.size() != 3)
             dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
           if (side_matrices_extra.size() != 4)
@@ -3193,7 +3193,7 @@ namespace DRT
         std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>& side_coupling,
         CORE::LINALG::SerialDenseMatrix& Cuiui, bool evaluated_cut)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (cond_manager == Teuchos::null) dserror("set the condition manager!");
 #endif
 
@@ -3408,7 +3408,7 @@ namespace DRT
 
         Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (is_ls_coupling_side and is_mesh_coupling_side)
           dserror(
               "side cannot be a levelset-coupling side and a mesh coupling side at once: side %i",

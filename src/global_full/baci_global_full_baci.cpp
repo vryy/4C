@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
         "*  %s  *\n"
         "*                                            *\n"
         "*              parallel version              *\n"
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         "*               debug version                *\n"
 #else
         "*                fast version                *\n"

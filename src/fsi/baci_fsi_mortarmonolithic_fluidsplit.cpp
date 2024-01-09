@@ -176,7 +176,7 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(
   fggprev_ = Teuchos::null;
   fggcur_ = Teuchos::null;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (coupsfm_ == Teuchos::null)
   {
     dserror("Allocation of 'coupsfm_' failed.");
@@ -497,7 +497,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase> blocka =
       AleField()->BlockSystemMatrix();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
   if (blockf == Teuchos::null) dserror("Expected Teuchos::rcp to fluid block matrix.");
   if (blocka == Teuchos::null) dserror("Expected Teuchos::rcp to ale block matrix.");
@@ -767,7 +767,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> f = FluidField()->BlockSystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether allocation was successful
   if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
   if (s == Teuchos::null)
@@ -1349,7 +1349,7 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ExtractFieldVectors");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (ddgpred_ == Teuchos::null) dserror("Vector 'ddgpred_' has not been initialized properly.");
 #endif
 
@@ -1593,7 +1593,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   // get the inverted Mortar matrix D^{-1}
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortardinv = coupsfm_->GetMortarMatrixDinv();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
   if (mortardinv == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix D^{-1}.");
 #endif
@@ -1803,7 +1803,7 @@ void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortard = coupsfm_->GetMortarMatrixD();
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (mortarm == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix M.");
   if (mortard == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix D.");
 #endif
@@ -1863,7 +1863,7 @@ void FSI::MortarMonolithicFluidSplit::CheckDynamicEquilibrium()
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortard = coupsfm_->GetMortarMatrixD();
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (mortarm == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix M.");
   if (mortard == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix D.");
 #endif

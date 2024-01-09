@@ -101,7 +101,7 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
     }
   }  // end while loop
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (myrank_ == 0)
   {
     std::cout << "number of round Robin loops to check finished procs:\t" << counter << std::endl;
@@ -1198,7 +1198,7 @@ void CORE::GEO::CUT::Parallel::sendData(
   lengthSend[0] = dataSend().size();
   int size_one = 1;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   std::cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank_ << " to proc "
             << dest << std::endl;
 #endif
@@ -1229,7 +1229,7 @@ void CORE::GEO::CUT::Parallel::sendData(
   exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
   exporter.Wait(req_data);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   std::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc "
             << source << std::endl;
 #endif

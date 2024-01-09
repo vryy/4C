@@ -169,7 +169,7 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(
   sgiprev_ = Teuchos::null;
   sggprev_ = Teuchos::null;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (coupsfm_ == Teuchos::null)
   {
     dserror("Allocation of 'coupsfm_' failed.");
@@ -514,7 +514,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase> blocka =
       AleField()->BlockSystemMatrix();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
   if (blocks == Teuchos::null) dserror("Expected Teuchos::rcp to structure block matrix.");
   if (blocka == Teuchos::null) dserror("Expected Teuchos::rcp to ALE block matrix.");
@@ -751,7 +751,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether allocation was successful
   if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
   if (s == Teuchos::null)
@@ -1287,7 +1287,7 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicStructureSplit::ExtractFieldVectors");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (ddgpred_ == Teuchos::null) dserror("Vector 'ddgpred_' has not been initialized properly.");
 #endif
 
@@ -1469,7 +1469,7 @@ void FSI::MortarMonolithicStructureSplit::RecoverLagrangeMultiplier()
   // get the inverted Mortar matrix D^{-1}
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortardinv = coupsfm_->GetMortarMatrixDinv();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
   if (mortardinv == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix D^{-1}.");
 #endif
@@ -1673,7 +1673,7 @@ void FSI::MortarMonolithicStructureSplit::CheckDynamicEquilibrium()
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortard = coupsfm_->GetMortarMatrixD();
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (mortarm == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix M.");
   if (mortard == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix D.");
 #endif

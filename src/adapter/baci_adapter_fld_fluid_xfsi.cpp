@@ -187,7 +187,7 @@ void ADAPTER::XFluidFSI::DisplacementToVelocity(
   const Teuchos::RCP<const Epetra_Vector> veln =
       structinterface_->ExtractFSICondVector(mesh_coupling_fsi_->IVeln());
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check, whether maps are the same
   if (!fcx->Map().PointSameAs(veln->Map()))
   {

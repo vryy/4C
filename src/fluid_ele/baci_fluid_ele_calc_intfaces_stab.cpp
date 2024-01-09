@@ -663,7 +663,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   const int slave_numdof = lm_slaveToPatch.size();
   const int face_numdof = lm_faceToPatch.size();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (master_numdof != numdofpernode_ * piel)
     dserror("wrong number of master dofs %i", master_numdof);
   if (slave_numdof != numdofpernode_ * niel) dserror("wrong number of slave dofs %i", slave_numdof);

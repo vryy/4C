@@ -265,7 +265,7 @@ void ELEMAG::ElemagTimeInt::ElementsInit()
 void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField init, int startfuncno)
 {
 // time measurement: SetInitialField just in the debug phase
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::SetInitialField");
 #endif
 

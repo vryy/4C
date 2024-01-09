@@ -82,7 +82,7 @@ void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
   // set size of particle container (at least one)
   containersize_ = (newsize > 0) ? newsize : 1;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (particlestored_ > containersize_)
     dserror(
         "decreasing size of container not possible: particles stored %d > new container size %d!",
@@ -122,7 +122,7 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
     // state handed over
     else
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (static_cast<int>(states[state].size()) != statedim_[state])
         dserror("can not add particle: dimensions of state '%s' do not match!",
             EnumToStateName(state).c_str());
@@ -144,7 +144,7 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
 void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     int index, int globalid, const ParticleStates& states)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not replace particle as index %d out of bounds!", index);
 #endif
@@ -163,7 +163,7 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     // state handed over
     else
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (static_cast<int>(states[state].size()) != statedim_[state])
         dserror("can not replace particle: dimensions of state '%s' do not match!",
             EnumToStateName(state).c_str());
@@ -179,7 +179,7 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
 void PARTICLEENGINE::ParticleContainer::GetParticle(
     int index, int& globalid, ParticleStates& states) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not return particle as index %d out of bounds!", index);
 #endif
@@ -203,7 +203,7 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
 
 void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not remove particle as index %d out of bounds!", index);
 #endif
@@ -226,7 +226,7 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 
 double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(ParticleState state) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not storedstates_.count(state))
     dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
@@ -243,7 +243,7 @@ double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(ParticleState state
 
 double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(ParticleState state) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (not storedstates_.count(state))
     dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif

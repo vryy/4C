@@ -134,7 +134,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // overpotential based on opencircuit potential
       const double eta = epd - ocp;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // some safety checks/ user warnings
       if ((alphaa * frt * eta) > 100.0)
         std::cout << "WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if ((conint[k] / refcon) < 1e-13)
       {
         pow_conint_gamma_k = std::pow(1e-13, gamma);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         std::cout << "WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
         std::cout << "-> Replacement value: pow(EPS,gamma) = " << pow_conint_gamma_k << std::endl;
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // concentration-dependent Tafel law
       double pow_conint_gamma_k(0.0);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // some safety checks/ user warnings
       if (((-alpha) * frt * eta) > 100.0)
         std::cout << "WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if ((conint[k] / refcon) < 1e-13)
       {
         pow_conint_gamma_k = std::pow(1e-13, gamma);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         std::cout << "WARNING: Rel. Conc. in Tafel formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
         std::cout << "-> Replacement value: pow(EPS,gamma) = " << pow_conint_gamma_k << std::endl;
@@ -359,7 +359,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if ((conint[k] / refcon) < 1e-13)
       {
         pow_conint_gamma_k = std::pow(1e-13, gamma);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         std::cout << "WARNING: Rel. Conc. in Tafel formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
         std::cout << "-> Replacement value: pow(EPS,gamma) = " << pow_conint_gamma_k << std::endl;
@@ -446,7 +446,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         }
       }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // some safety checks/ user warnings
       if (((1 - beta) * frt * epd) > 100.0)
         std::cout << "WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
@@ -470,7 +470,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         {
           pow_conint_p *= std::pow(1e-13, p[kk]);
           pow_conint_q *= std::pow(1e-13, q[kk]);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           std::cout << "WARNING: Rel. Conc. of species" << k
                     << " in Butler-Volmer formula is zero/negative: " << (conint[k]) << std::endl;
           std::cout << "-> Replacement value: pow(1.0E-16,p[ispec]) = " << pow(1e-13, p[k])
@@ -616,7 +616,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         }
       }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // some safety checks/ user warnings
       if (((1 - beta) * (frt * nume) * eta_equilpot) > 100.0)
         std::cout << "WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
@@ -1059,7 +1059,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
         {
           pow_conint_p *= std::pow(1e-13, p[kk]);
           pow_conint_q *= std::pow(1e-13, q[kk]);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           std::cout << "WARNING: Rel. Conc. of species" << kk
                     << " in Butler-Volmer formula is zero/negative: " << (conint[kk]) << std::endl;
           std::cout << "-> Replacement value: pow(EPS,p[ispec]) = " << pow(1e-13, p[kk])

@@ -193,7 +193,7 @@ void FSI::Monolithic::TimeloopAdaDt(
   // resize MStep objects of structure needed for AB2 structural extrapolation of displacements
   StructureField()->ResizeMStepTimAda();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether all fields have the same time step size
   CheckIfDtsSame();
 #endif
@@ -270,7 +270,7 @@ void FSI::Monolithic::TimeloopAdaDt(
         }
       }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // check whether all fields have the same time step size
       CheckIfDtsSame();
 #endif

@@ -755,7 +755,7 @@ void XFLUIDLEVELSET::Algorithm::GetOuterLoopIncFluid(
   fsvelincnorm = fsvelnormL2 / velnormL2;
   fspressincnorm = fspressnormL2 / pressnormL2;
 
-#if DEBUG
+#ifdef BACI_DEBUG
   //-------------------------
   std::cout << "fsvelnormL2: " << fsvelnormL2 << std::endl;
   std::cout << "velnormL2: " << velnormL2 << std::endl << std::endl;
@@ -787,7 +787,7 @@ void XFLUIDLEVELSET::Algorithm::GetOuterLoopIncScaTra(double& fsphiincnorm, int 
 
   fsphiincnorm = fsphinormL2 / phinormL2;
 
-#if DEBUG
+#ifdef BACI_DEBUG
   //-------------------------
   std::cout << "fsphinormL2: " << fsphinormL2 << std::endl;
   std::cout << "phinormL2: " << phinormL2 << std::endl << std::endl;

@@ -100,7 +100,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DrawRequestedNumberOfGlobalIds(
   std::map<int, std::vector<int>> preparedglobalids;
   PrepareRequestedGlobalIdsForAllProcs(numberofrequestedgids, preparedglobalids);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (myrank_ != masterrank_ and (not preparedglobalids.empty()))
     dserror("generated global ids on processor %d", myrank_);
 #endif
@@ -111,7 +111,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DrawRequestedNumberOfGlobalIds(
   // distribute requested global ids from master processor to all processors
   DistributeRequestedGlobalIdsFromMasterProcToAllProcs(preparedglobalids, requesteduniqueglobalids);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (numberofrequestedgids != static_cast<int>(requesteduniqueglobalids.size()))
     dserror("requested %d global ids on processor %d but received only %d global ids!",
         numberofrequestedgids, myrank_, requesteduniqueglobalids.size());
@@ -145,7 +145,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
   // communicate data via non-buffered send from proc to proc
   COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (myrank_ != masterrank_)
   {
     for (const auto& p : rdata)
@@ -188,7 +188,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
   // sort reusable global ids
   std::sort(reusableglobalids_.begin(), reusableglobalids_.end());
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   auto it = std::unique(reusableglobalids_.begin(), reusableglobalids_.end());
   if (it != reusableglobalids_.end()) dserror("duplicate entries in reusable global ids!");
 #endif
@@ -305,7 +305,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
   // communicate data via non-buffered send from proc to proc
   COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   for (const auto& p : rdata)
   {
     const int msgsource = p.first;

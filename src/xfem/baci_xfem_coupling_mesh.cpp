@@ -355,7 +355,7 @@ void XFEM::MeshVolCoupling::GetCouplingEleLocationVector(const int sid, std::vec
  *--------------------------------------------------------------------------*/
 void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
 {
-  // #ifdef DEBUG
+  // #ifdef BACI_DEBUG
   //   // collect conditioned nodes and compare to the overall number of nodes in
   //   // the surface discretization
   //   std::vector<DRT::Condition*> cnd;
@@ -1274,7 +1274,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matr
           ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
 // Safety checks
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if ((conditionsmap_robin_dirch_.find(robin_id_dirch)) == conditionsmap_robin_dirch_.end())
     {
       dserror("Key was not found in this instance!! Fatal error! (conditionsmap_robin_dirch_)");
@@ -1321,7 +1321,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matr
   }
 
 // Safety checks
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!std::signbit(static_cast<double>(robin_id_dirch)))
   {
     if ((conditionsmap_robin_neumann_.find(robin_id_dirch)) == conditionsmap_robin_neumann_.end())
@@ -2123,7 +2123,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if ((kappa_m != 1 && GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) ||
       (kappa_m != 0 && GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided))
     dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %f", kappa_m);
@@ -2232,7 +2232,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP_Contact(
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   dsassert(xf_c_comm_ != Teuchos::null,
       "UpdateConfigurationMap_GP_Contact but no Xfluid Contact Communicator assigned!");
 #endif
@@ -2574,7 +2574,7 @@ void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!(GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided ||
           GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
           GetAveragingStrategy() == INPAR::XFEM::Mean))

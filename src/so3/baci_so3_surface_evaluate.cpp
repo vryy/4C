@@ -1332,7 +1332,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       const Teuchos::RCP<DRT::Discretization> backgrddis = globalproblem->GetDis(backgrddisname);
       const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (backgrddis == Teuchos::null)
         dserror("Pointer to background dis empty. Correct disname in parameter list 'params'?");
       if (immerseddis == Teuchos::null)
@@ -1356,7 +1356,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
       // get structural state and element displacements (parent element)
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (dispnp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
 #endif
       std::vector<double> parenteledisp(lm.size());

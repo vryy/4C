@@ -230,7 +230,7 @@ void DRT::DiscretizationXFEM::SetInitialState(
   }
   else  // if it's not in column map export and allocate
   {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (not InitialDofRowMap(nds)->SameAs(state->Map()))
     {
       dserror("row map of discretization and state vector %s are different. This is a fatal bug!",

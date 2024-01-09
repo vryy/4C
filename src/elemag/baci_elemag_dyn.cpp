@@ -59,7 +59,7 @@ void electromagnetics_drt()
   if (elemagdishdg == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   elemagdishdg->PrintFaces(std::cout);
 #endif
 

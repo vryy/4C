@@ -174,7 +174,7 @@ void BEAMINTERACTION::GetMortarGID(const BeamToSolidMortarManager* mortar_manage
   std::vector<int> lambda_total;
   mortar_manager->LocationVector(contact_pair, lambda_total);
 
-#if DEBUG
+#ifdef BACI_DEBUG
   if (lambda_total.size() != n_mortar_pos + n_mortar_rot)
     dserror("BEAMINTERACTION::GetMortarGID the local and global GID sizes do not match.");
 #endif

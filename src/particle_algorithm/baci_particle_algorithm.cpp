@@ -664,7 +664,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check number of unique global ids
   particleengine_->CheckNumberOfUniqueGlobalIds();
 #endif

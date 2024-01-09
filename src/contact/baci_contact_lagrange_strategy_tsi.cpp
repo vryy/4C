@@ -792,7 +792,7 @@ void CONTACT::UTILS::AddVector(Epetra_Vector& src, Epetra_Vector& dst)
   // return if src has no elements
   if (src.GlobalLength() == 0) return;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   for (int i = 0; i < src.Map().NumMyElements(); ++i)
     if ((dst.Map().LID(src.Map().GID(i))) < 0) dserror("src is not a vector on a sub-map of dst");
 #endif

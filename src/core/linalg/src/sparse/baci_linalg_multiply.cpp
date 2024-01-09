@@ -180,11 +180,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
     for (int j = 0; j < rowlength; ++j)
     {
       gcid[j] = gcmap.GID(bindx[j]);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (gcid[j] < 0) dserror("This is really bad... cannot find gcid");
 #endif
     }
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     int err = result->InsertGlobalValues(grid, rowlength, val, gcid.data());
     if (err != 0 && err != 1) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else

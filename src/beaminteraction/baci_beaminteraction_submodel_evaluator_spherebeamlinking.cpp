@@ -122,7 +122,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
       Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // get elements
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (sphere != dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(
                         Discret().gElement(elepairptr->GetEleGid(0))))
         dserror(" Rigid Sphere element has stored wrong linker. ");
@@ -785,7 +785,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
     DRT::ELEMENTS::Beam3Base const* beamele =
         dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(neighbors[eiter]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (sphere == nullptr or beamele == nullptr)
       dserror(" First element should be a sphere, second element a beam.");
 #endif
@@ -820,7 +820,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
         if (DRT::Problem::Instance()->Random()->Uni() > plink) continue;
       }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       // todo: do only in debug mode as soon tested enough
       // safety check
       if ((sphere->GetNumberOfBonds() + numnewbondsthisstep) >

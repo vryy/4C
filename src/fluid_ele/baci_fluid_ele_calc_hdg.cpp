@@ -923,7 +923,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   CORE::LINALG::SerialDenseMatrix locations;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -953,7 +953,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
 
   CORE::FE::PolynomialSpaceTensor<nsd_, CORE::FE::LagrangePolynomial> poly(poly1d);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check if we have the right number of polynomials
   if (poly.Size() != 125) dserror("wrong number of polynomials");
 #endif
@@ -986,7 +986,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
           sum += values(k) * elevec2(6 * k + d);
         f(d) = sum;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // check plausibility via comparison of quadrature coordinates
         sum = 0.0;
         for (unsigned int k = 0; k < numsamppoints * numsamppoints * numsamppoints; ++k)
@@ -1039,7 +1039,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   CORE::LINALG::SerialDenseMatrix locations;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -1097,7 +1097,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
           sum += values(k) * elevec2(6 * k + d);
         f(d) = sum;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // check plausibility via comparison of quadrature coordinates
         sum = 0.0;
         for (unsigned int k = 0; k < numsamppoints * numsamppoints * numsamppoints; ++k)

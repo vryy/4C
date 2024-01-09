@@ -2942,7 +2942,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> state = discretization.GetState("velnp");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (state == Teuchos::null) dserror("Cannot get state vector %s", "velnp");
 #endif
 
@@ -3302,7 +3302,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
       immersedele->ConstructElementRCP(num_gp_fluid_bound);
 
       // DEBUG test
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (immersedele->GetRCPProjectedIntPointDivergence() == Teuchos::null)
         dserror("construction of ProjectedIntPointDivergence failed");
       if ((int)(immersedele->GetRCPProjectedIntPointDivergence()->size()) != num_gp_fluid_bound)
@@ -4113,7 +4113,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
           dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
         }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         // check whether this gausspoint is really inside the desired plane
         {
           double x[3];

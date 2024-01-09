@@ -430,7 +430,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
   int source = myrank - 1;
   if (myrank == 0) source = numproc - 1;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()
            << " elements available before export" << IO::endl;
 #endif
@@ -455,7 +455,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     std::vector<int> lengthSend(1, 0);
     lengthSend[0] = dataSend.size();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     IO::cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank << " to proc "
              << dest << IO::endl;
 #endif
@@ -478,7 +478,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
     exporter.Wait(req_data);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     IO::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank << " from proc "
              << source << IO::endl;
 #endif
@@ -506,7 +506,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     // processors wait for each other
     comm.Barrier();
   }
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()
            << " elements available after export" << IO::endl;
 #endif

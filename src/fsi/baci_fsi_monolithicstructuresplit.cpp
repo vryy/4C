@@ -172,7 +172,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
   sgiprev_ = Teuchos::null;
   sggprev_ = Teuchos::null;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether allocation was successful
   if (sggtransform_ == Teuchos::null)
   {
@@ -457,7 +457,7 @@ void FSI::MonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase> blocka =
       AleField()->BlockSystemMatrix();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (blocks == Teuchos::null)
   {
     dserror("Expected Teuchos::rcp to structure block matrix.");
@@ -670,7 +670,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether allocation was successful
   if (s == Teuchos::null)
   {
@@ -1155,7 +1155,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::ExtractFieldVectors");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (ddgpred_ == Teuchos::null)
   {
     dserror("Vector 'ddgpred_' has not been initialized properly.");

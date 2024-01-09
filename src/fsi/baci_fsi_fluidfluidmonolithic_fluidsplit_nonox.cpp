@@ -165,7 +165,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystem()
  *----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (FluidField()->RHS() == Teuchos::null) dserror("empty fluid residual");
 #endif
 
@@ -423,7 +423,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> f = FluidField()->BlockSystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether allocation was successful
   if (s == Teuchos::null)
   {

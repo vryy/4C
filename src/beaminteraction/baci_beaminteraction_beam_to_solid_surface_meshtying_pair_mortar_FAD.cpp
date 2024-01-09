@@ -419,7 +419,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const CORE::LINALG::Matrix<3, 
   CORE::LARGEROTATIONS::triadtoquaternion(surface_triad_current_with_offset, rot_quat);
   CORE::LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   CORE::LINALG::Matrix<3, 1, scalar_type_rot_vec> current_normal;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     current_normal(i_dim) = surface_basis_current(i_dim, 2);

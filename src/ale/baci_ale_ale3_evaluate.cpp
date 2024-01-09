@@ -338,7 +338,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(int i, int j,
   dz = xyze(2, j) - xyze(2, i);
   /*------------------------------- determine distance between i and j ---*/
   length = sqrt(dx * dx + dy * dy + dz * dz);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (length < (1.0E-14)) dserror("edge or diagonal of element has zero length");
 #endif
 }
@@ -544,7 +544,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int 
     const double area_double_sqare = area_double * area_double;
 
 
-#ifdef DEBUG /*---------------------------------- check edge lengths ---*/
+#ifdef BACI_DEBUG /*---------------------------------- check edge lengths ---*/
     if (l_ij_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
     if (l_jk_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
     if (l_ki_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");

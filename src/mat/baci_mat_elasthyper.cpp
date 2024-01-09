@@ -352,7 +352,7 @@ void MAT::ElastHyper::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* 
     const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
     const int gp, const int eleGID)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (stress == nullptr) dserror("No stress vector supplied");
   if (cmat == nullptr) dserror("No material tangent matrix supplied");
   if (glstrain_m == nullptr) dserror("No GL strains supplied");

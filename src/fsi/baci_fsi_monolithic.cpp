@@ -817,7 +817,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether all fields have the same time step size
   CheckIfDtsSame();
 #endif

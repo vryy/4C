@@ -1315,7 +1315,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
       // yes, we have a dirichlet boundary condition
       if (dbccond.size() > 0)
       {
-#if DEBUG
+#ifdef BACI_DEBUG
         if ((lnode->X()[0] != fluidlnode->X()[0]) or (lnode->X()[1] != fluidlnode->X()[1]) or
             (lnode->X()[2] != fluidlnode->X()[2]))
           dserror("Nodes do not match.");

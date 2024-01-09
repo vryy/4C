@@ -263,7 +263,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
 
     if (!have_values.at(ni))
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (targetdis_->Comm().MyPID() == 0)
         IO::cout << "WARNING: Found no parent for node: " << node_id << IO::endl;
 #endif
@@ -534,7 +534,7 @@ void XFEM::MeshProjector::ReceiveBlock(
   // receive from predecessor
   exporter.ReceiveAny(frompid, tag, rblock, length);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // IO::cout << "----receiving " << rblock.size() <<  " bytes: to proc " << myrank << " from proc "
   // << frompid << IO::endl;
 #endif
@@ -564,7 +564,7 @@ void XFEM::MeshProjector::SendBlock(
   int frompid = myrank;
   int topid = (myrank + 1) % numproc;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // IO::cout << "----sending " << sblock.size() <<  " bytes: from proc " << myrank << " to proc "
   // << topid << IO::endl;
 #endif

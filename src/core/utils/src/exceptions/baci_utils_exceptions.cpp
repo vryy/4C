@@ -34,7 +34,7 @@ static int err_count = 0;
 extern "C" void cpp_dsassert_func(
     const char* file, const int line, const int test, const char* text)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!test)
   {
     latest_file = file;

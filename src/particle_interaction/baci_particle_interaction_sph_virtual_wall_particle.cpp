@@ -219,7 +219,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     std::vector<PARTICLEENGINE::LocalIndexTuple> neighboringparticles;
     particleengineinterface_->GetParticlesWithinRadius(pos_j, rad_j[0], neighboringparticles);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (not(neighboringparticles.size() > 0))
       dserror("expected at least one neighboring particle for wall contact point!");
 #endif
@@ -272,7 +272,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
       UTILS::VecAddScale(sumk_vel_k_Wjk, Wjk, vel_k);
     }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (sumk_Wjk < (1.0e-10 * rad_j[0]))
       dserror("expected at least one neighboring particle for wall contact point!");
 #endif

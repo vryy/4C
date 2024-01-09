@@ -21,7 +21,7 @@ mesh
 
 #include <list>
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
 
 #include "baci_cut_edge.H"
 #include "baci_cut_node.H"

@@ -81,7 +81,7 @@ FPSI::Monolithic_Plain::Monolithic_Plain(const Epetra_Comm& comm,
   fggprev_ = Teuchos::null;
   fggcur_ = Teuchos::null;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether allocation was successful
   if (fggtransform_ == Teuchos::null)
   {
@@ -661,7 +661,7 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
   // get ale matrix
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocka = AleField()->BlockSystemMatrix();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (blockf == Teuchos::null)
   {
     dserror("Expected Teuchos::rcp to fluid block matrix.");

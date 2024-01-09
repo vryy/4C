@@ -355,7 +355,7 @@ namespace DRT
               matmap  ///< map of material IDs (source element -> target element)
       )
       {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (!(sourcedis->HaveGlobalNode(sourcedis->NodeRowMap()->GID(0))))
           dserror("Cloning not possible since node with GID %d is not stored on this proc!",
               sourcedis->NodeRowMap()->GID(0));

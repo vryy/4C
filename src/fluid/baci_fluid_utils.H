@@ -156,7 +156,7 @@ namespace FLD
               rlid0 = rowmap10.LID(rgid);
               rlid1 = rowmap11.LID(rgid);
             }
-#ifdef DEBUG
+#ifdef BACI_DEBUG
             if (rlid0 < 0) dserror("Sparse matrix A does not have global row %d", rgid);
             if (rlid1 < 0) dserror("Sparse matrix A does not have global row %d", rgid);
 #endif

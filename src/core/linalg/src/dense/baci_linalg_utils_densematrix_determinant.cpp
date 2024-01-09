@@ -19,7 +19,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 double CORE::LINALG::DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (A.numRows() != A.numCols()) dserror("Matrix is not square");
 #endif
   CORE::LINALG::SerialDenseMatrix tmp(A);

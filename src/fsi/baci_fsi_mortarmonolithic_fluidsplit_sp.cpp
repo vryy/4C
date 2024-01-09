@@ -158,7 +158,7 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
   CreateLagrangeMultiplierDofRowMap();
   SetLagMult();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (coupling_solid_fluid_mortar_ == Teuchos::null)
   {
     dserror("Allocation of 'coupling_solid_fluid_mortar_' failed.");
@@ -970,7 +970,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check whether all fields have the same time step size
   CheckIfDtsSame();
 #endif
@@ -1039,7 +1039,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::ExtractFieldVectors(
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::ExtractFieldVectors");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (ddgpred_ == Teuchos::null) dserror("Vector 'ddgpred_' has not been initialized properly.");
 #endif
 

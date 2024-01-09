@@ -427,7 +427,7 @@ namespace BEAMINTERACTION
           DRT::ELEMENTS::Beam3Base* currbeamele =
               dynamic_cast<DRT::ELEMENTS::Beam3Base*>(node->Elements()[j]);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
           if (currbeamele == nullptr)
             dserror("DESIGN LINE BEAM FILAMENT CONDITIONS only applicable to beam elements.");
 #endif
@@ -498,7 +498,7 @@ namespace BEAMINTERACTION
       // cast to beambase element
       DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (beamele == nullptr) dserror("Dynamic cast to beam3base failed");
 #endif
 
@@ -1214,7 +1214,7 @@ namespace BEAMINTERACTION
     {
       long long z = 0.5 * (pair.first + pair.second) * (pair.first + pair.second + 1) + pair.second;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (z > std::numeric_limits<long long>::max())
         dserror(" Your cantor paired value exceeds limit of data type int.");
       if (pair != CantorDePairing(z))
@@ -1229,7 +1229,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     std::pair<int, int> CantorDePairing(long long z)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (8.0 * z > std::numeric_limits<long long>::max())
         dserror(" Your cantor paired value exceeds limit of data type int.");
 #endif

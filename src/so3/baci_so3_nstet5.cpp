@@ -96,7 +96,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
     if (!nstet) continue;
     const double* x = nstet->MidX();
     std::vector<int> dofs = dis.Dof(0, ele);
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (dofs.size() != 3) dserror("Wrong number of dofs");
 #endif
     for (unsigned j = 0; j < dofs.size(); ++j)

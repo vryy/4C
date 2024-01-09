@@ -67,7 +67,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndicesForDis
     const std::set<PARTICLEENGINE::TypeEnum>& types_a,
     const std::set<PARTICLEENGINE::TypeEnum>& types_b, std::vector<int>& relindices) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (relindices.size() != 0) dserror("vector of relevant particle pair indices not cleared!");
 
   for (const auto& type_i : types_a)
@@ -87,7 +87,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndicesForDis
 void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndicesForEqualCombination(
     const std::set<PARTICLEENGINE::TypeEnum>& types_a, std::vector<int>& relindices) const
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (relindices.size() != 0) dserror("vector of relevant particle pair indices not cleared!");
 #endif
 
@@ -170,7 +170,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs()
     // absolute distance between particles
     const double absdist = UTILS::VecNormTwo(r_ji);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
       dserror("absolute distance %f between particles close to zero!", absdist);
 #endif
@@ -295,7 +295,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticleWallPairs()
     // absolute distance between particle and wall contact point
     const double absdist = UTILS::VecNormTwo(r_ji);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (absdist < (1.0e-10 * rad_i[0]))
       dserror("absolute distance %f between particle and wall close to zero!", absdist);
 #endif

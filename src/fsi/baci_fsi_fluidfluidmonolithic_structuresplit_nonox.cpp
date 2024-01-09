@@ -97,7 +97,7 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
     dserror(errormsg.str());
   }
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check if removing Dirichlet conditions was successful
   intersectionmaps.resize(0);
   intersectionmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
@@ -622,7 +622,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(
     Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& sx,
     Teuchos::RCP<const Epetra_Vector>& fx, Teuchos::RCP<const Epetra_Vector>& ax)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (ddgpred_ == Teuchos::null)
   {
     dserror("Vector 'ddgpred_' has not been initialized properly.");

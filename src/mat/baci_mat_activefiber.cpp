@@ -448,7 +448,7 @@ void MAT::ActiveFiber::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // Get time algorithmic parameters
   double dt = params.get<double>("delta time", -1.0);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (dt == -1.0) dserror("no time step size provided in material");
 #endif
 
@@ -916,7 +916,7 @@ void MAT::ActiveFiber::CauchytoPK2(CORE::LINALG::Matrix<6, 1>& Sactive,
   S.MultiplyNT(temp, invdefgrd);
   S.Scale(detF);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (abs(S(1, 2) - S(2, 1)) > 1e-13 or abs(S(0, 2) - S(2, 0)) > 1e-13 or
       abs(S(0, 1) - S(1, 0)) > 1e-13)
   {

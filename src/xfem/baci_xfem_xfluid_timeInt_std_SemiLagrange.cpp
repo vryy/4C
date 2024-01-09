@@ -466,7 +466,7 @@ void XFEM::XFLUID_SemiLagrange::compute(
   // now
   setFinalData();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (counter > 8 * numproc_)  // too much loops shouldnt be if all this works
     std::cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << std::endl;
 #endif

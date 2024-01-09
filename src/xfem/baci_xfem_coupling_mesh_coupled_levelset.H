@@ -79,7 +79,7 @@ namespace XFEM
               ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
           // Safety checks
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if ((conditionsmap_robin_dirch_.find(robin_id_dirch)) == conditionsmap_robin_dirch_.end())
         {
           dserror("Key was not found in this instance!! Fatal error! (conditionsmap_robin_dirch_)");
@@ -127,7 +127,7 @@ namespace XFEM
       }
 
 // Safety checks
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (!std::signbit(static_cast<double>(robin_id_dirch)))
       {
         if ((conditionsmap_robin_neumann_.find(robin_id_dirch)) ==

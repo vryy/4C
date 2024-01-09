@@ -296,7 +296,7 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
   // get interface velocity at t(n)
   const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check, whether maps are the same
   if (!fcx->Map().PointSameAs(veln->Map()))
   {
@@ -322,7 +322,7 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
   // get interface velocity at t(n)
   const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   // check, whether maps are the same
   if (!fcx->Map().PointSameAs(veln->Map()))
   {

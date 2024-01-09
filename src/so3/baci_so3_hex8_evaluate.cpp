@@ -1139,7 +1139,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velocity");
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (dispnp == Teuchos::null) dserror("Cannot get state displacement vector");
       if (velnp == Teuchos::null) dserror("Cannot get state velocity vector");
 #endif

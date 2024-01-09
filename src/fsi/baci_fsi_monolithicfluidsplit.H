@@ -239,7 +239,7 @@ namespace FSI
     //! set the Lagrange multiplier (e.g. after restart, to be called from subclass)
     virtual void SetLambda(Teuchos::RCP<Epetra_Vector> lambdanew)
     {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (lambdanew == Teuchos::null || !lambdanew->Map().PointSameAs(lambda_->Map()))
         dserror("Map failure! Attempting to assign invalid vector to lambda_.");
 #endif

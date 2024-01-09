@@ -122,7 +122,7 @@ void IMMERSED::ImmersedBase::DoDirichletCond(const Teuchos::RCP<Epetra_Vector>& 
   {
     int gid = dbcmap_new->GID(i);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (mynumvals == 0) dserror("dbcmap empty!");
     int err = -2;
     int lid = dirichvals->Map().LID(gid);
@@ -156,7 +156,7 @@ void IMMERSED::ImmersedBase::DoDirichletCond(const Teuchos::RCP<Epetra_Vector>& 
   {
     int gid = dbcmap_new->GID(i);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
     if (mynumvals == 0) dserror("dbcmap empty!");
     int err = -2;
     int lid = dirichvals->Map().LID(gid);
@@ -423,7 +423,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
     Teuchos::RCP<DRT::Discretization> evaldis, Teuchos::ParameterList& params,
     DRT::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
   if (!(evaldis->Filled())) dserror("FillComplete() was not called");
   if (!(evaldis->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 #endif
@@ -494,7 +494,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
         evaldis->Comm().MaxAll(&mygeometrysize, &maxgeometrysize, 1);
         curr = geom.begin();
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         std::cout << "PROC " << evaldis->Comm().MyPID() << ": mygeometrysize = " << mygeometrysize
                   << " maxgeometrysize = " << maxgeometrysize << std::endl;
 #endif

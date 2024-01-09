@@ -828,7 +828,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // pre-calculated consistent dual shape functions
       else
       {
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (MoData().DualShape()->numCols() != 2 && MoData().DualShape()->numRows() != 2)
           dserror("Dual shape functions coefficient matrix calculated in the wrong size");
 #endif
@@ -940,7 +940,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
     {
       const int nnodes = 4;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1024,7 +1024,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       double detg = 0.0;
       const int nnodes = 3;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1100,7 +1100,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       double detg = 0.0;
       const int nnodes = 3;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1194,7 +1194,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       double detg = 0.0;
       const int nnodes = 6;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1269,7 +1269,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       double detg = 0.0;
       const int nnodes = 8;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1343,7 +1343,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       double detg = 0.0;
       const int nnodes = 9;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1417,7 +1417,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       double detg = 0.0;
       const int nnodes = 6;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1507,7 +1507,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       double detg = 0.0;
       const int nnodes = 8;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1598,7 +1598,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       double detg = 0.0;
       const int nnodes = 9;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (nnodes != NumNode())
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -2040,7 +2040,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
       CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
           val, auxderiv, uv, Knots(), weights, CORE::FE::CellType::nurbs9);
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
       if (deriv.numCols() != 2 || deriv.numRows() != NumNode())
         dserror("Inconsistency in EvaluateShape");
 #endif
@@ -2639,7 +2639,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // establish fundamental data
         double detg = 0.0;
         static const int nnodes = 4;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (nnodes != NumNode())
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -2753,7 +2753,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 3;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (nnodes != NumNode())
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -2861,7 +2861,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
 
       /*
-       #ifdef DEBUG
+       #ifdef BACI_DEBUG
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -2927,7 +2927,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        }
        }
        // *******************************************************************
-       #endif // #ifdef DEBUG
+       #endif // #ifdef BACI_DEBUG
        */
 
       break;
@@ -2947,7 +2947,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         double detg = 0.0;
         const int nnodes = 3;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (nnodes != NumNode())
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -3087,7 +3087,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 9;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (nnodes != NumNode())
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -3199,7 +3199,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
 
       /*
-       #ifdef DEBUG
+       #ifdef BACI_DEBUG
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -3265,7 +3265,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        }
        }
        // *******************************************************************
-       #endif // #ifdef DEBUG
+       #endif // #ifdef BACI_DEBUG
        */
 
       break;
@@ -3286,7 +3286,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 6;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (nnodes != NumNode())
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -3397,7 +3397,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
       /*
-       #ifdef DEBUG
+       #ifdef BACI_DEBUG
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -3462,7 +3462,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        }
        }
        // *******************************************************************
-       #endif // #ifdef DEBUG
+       #endif // #ifdef BACI_DEBUG
        */
       break;
     }
@@ -3482,7 +3482,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 8;
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (nnodes != NumNode())
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -3764,7 +3764,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
       /*
-       #ifdef DEBUG
+       #ifdef BACI_DEBUG
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -3841,7 +3841,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        }
        }
        // *******************************************************************
-       #endif // #ifdef DEBUG
+       #endif // #ifdef BACI_DEBUG
        */
       break;
     }
@@ -3953,7 +3953,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
       /*
-       #ifdef DEBUG
+       #ifdef BACI_DEBUG
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -4030,7 +4030,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        }
        }
        // *******************************************************************
-       #endif // #ifdef DEBUG
+       #endif // #ifdef BACI_DEBUG
        */
       break;
     }
@@ -4050,7 +4050,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         double detg = 0.0;
         const int nnodes = 6;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (nnodes != NumNode())
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
@@ -4191,7 +4191,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         double detg = 0.0;
         const int nnodes = 8;
 
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (nnodes != NumNode())
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif

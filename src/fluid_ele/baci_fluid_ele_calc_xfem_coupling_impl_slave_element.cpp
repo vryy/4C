@@ -421,7 +421,7 @@ namespace DRT
         //  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::ProjectOnSide" );
 
         // check, if called on a 3D-element
-#ifdef DEBUG
+#ifdef BACI_DEBUG
         if (slave_nsd_ == nsd_)
         {
           dserror(
