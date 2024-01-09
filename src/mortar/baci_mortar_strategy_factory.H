@@ -46,7 +46,7 @@ namespace MORTAR
 {
   class MortarElement;
   class MortarInterface;
-  class MortarNode;
+  class Node;
   class StrategyBase;
 
   namespace STRATEGY
@@ -133,7 +133,7 @@ namespace MORTAR
        *  Stores control point weight
        *
        *  \author Farah */
-      void PrepareNURBSNode(const DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode) const;
+      void PrepareNURBSNode(const DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const;
 
       //!@}
 

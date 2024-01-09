@@ -577,7 +577,7 @@ void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity
         int gid = noderowmap->GID(i);
         DRT::Node* node = Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
-        MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+        MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
         if (!mrtrnode->IsSlave()) sdata.push_back(gid);
       }
 
@@ -592,7 +592,7 @@ void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity
         int gid = nodecolmap->GID(i);
         DRT::Node* node = Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
-        MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+        MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
         if (mrtrnode->IsSlave()) rdata.push_back(gid);
       }
 
@@ -3977,9 +3977,8 @@ void CONTACT::Interface::DetectNonSmoothGeometries()
 /*----------------------------------------------------------------------*
  |  cpp to edge + Lin                                       farah 11/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
-    MORTAR::MortarElement& mele, double* normal,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin)
+double CONTACT::Interface::ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::MortarElement& mele,
+    double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin)
 {
   // define tolerance
   const double tol = 1e-8;
@@ -4335,9 +4334,8 @@ double CONTACT::Interface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
 /*----------------------------------------------------------------------*
  |  cpp to node + Lin                                       farah 01/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeNormalNodeToNode(MORTAR::MortarNode& snode,
-    MORTAR::MortarNode& mnode, double* normal,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin)
+double CONTACT::Interface::ComputeNormalNodeToNode(MORTAR::Node& snode, MORTAR::Node& mnode,
+    double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin)
 {
   const int dim = Dim();
 
@@ -4491,13 +4489,13 @@ void CONTACT::Interface::EvaluateCPPNormals()
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
 
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     // vector with possible contacting master eles/nodes
     std::vector<MORTAR::MortarElement*> meles;
-    std::vector<MORTAR::MortarNode*> mnodes;
+    std::vector<MORTAR::Node*> mnodes;
 
     // fill vector with possibly contacting meles
     FindMEles(*mrtrnode, meles);
@@ -4892,10 +4890,8 @@ void CONTACT::Interface::ComputeScalingLTL()
         }
 
         // check if both nodes on edge geometry
-        bool node0Edge =
-            dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
-        bool node1Edge =
-            dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+        bool node0Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -4990,10 +4986,8 @@ void CONTACT::Interface::ComputeScalingLTL()
           }
 
           // check if both nodes on edge geometry
-          bool node0Edge =
-              dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
-          bool node1Edge =
-              dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
+          bool node0Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
+          bool node1Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
           if (!node0Edge or !node1Edge) continue;
 
@@ -5516,7 +5510,7 @@ void CONTACT::Interface::ScaleNormals3D() { dserror("not yet implemented!"); }
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
+double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
     std::vector<MORTAR::MortarElement*> meles, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
@@ -5715,7 +5709,7 @@ double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
+double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
     std::vector<MORTAR::MortarElement*> meles, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
@@ -5879,9 +5873,9 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
 
         // check if both nodes on edge geometry
         bool node0Edge =
-            dynamic_cast<MORTAR::MortarNode*>(meles[ele]->Nodes()[nodeLIds[0]])->IsOnCornerEdge();
+            dynamic_cast<MORTAR::Node*>(meles[ele]->Nodes()[nodeLIds[0]])->IsOnCornerEdge();
         bool node1Edge =
-            dynamic_cast<MORTAR::MortarNode*>(meles[ele]->Nodes()[nodeLIds[1]])->IsOnCornerEdge();
+            dynamic_cast<MORTAR::Node*>(meles[ele]->Nodes()[nodeLIds[1]])->IsOnCornerEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -6029,7 +6023,7 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 05/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeCPPNormal(MORTAR::MortarNode& mrtrnode,
+double CONTACT::Interface::ComputeCPPNormal(MORTAR::Node& mrtrnode,
     std::vector<MORTAR::MortarElement*> meles, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
@@ -6071,7 +6065,7 @@ double CONTACT::Interface::ComputeCPPNormal(MORTAR::MortarNode& mrtrnode,
 /*----------------------------------------------------------------------*
  |  set cpp normal                                           farah 01/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::SetCPPNormal(MORTAR::MortarNode& snode, double* normal,
+void CONTACT::Interface::SetCPPNormal(MORTAR::Node& snode, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& normallin)
 {
   Node& cnode = dynamic_cast<Node&>(snode);
@@ -6736,7 +6730,7 @@ bool CONTACT::Interface::EvaluateSearchBinarytree()
       int gid = SlaveColNodesBound()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %i", gid);
-      MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(node);
 
       // initialize container if not yet initialized before
       mnode->InitializeDataContainer();
@@ -6914,7 +6908,7 @@ void CONTACT::Interface::EvaluateNTSMaster()
 
       for (int n = 0; n < (int)melement->NumNode(); ++n)
       {
-        MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[n]);
+        MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(melement->Nodes()[n]);
 
         std::set<int>::iterator iter = donebefore.find(cnode->Id());
 
@@ -7115,9 +7109,9 @@ void CONTACT::Interface::EvaluateLTSMaster()
 
         // check if both nodes on edge geometry
         bool node0Edge =
-            dynamic_cast<MORTAR::MortarNode*>(meleElements[m]->Nodes()[nodeLIds[0]])->IsOnEdge();
+            dynamic_cast<MORTAR::Node*>(meleElements[m]->Nodes()[nodeLIds[0]])->IsOnEdge();
         bool node1Edge =
-            dynamic_cast<MORTAR::MortarNode*>(meleElements[m]->Nodes()[nodeLIds[1]])->IsOnEdge();
+            dynamic_cast<MORTAR::Node*>(meleElements[m]->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (nonSmoothContact_ and (!node0Edge or !node1Edge)) continue;
 
@@ -7364,10 +7358,8 @@ void CONTACT::Interface::EvaluateLTS()
       }
 
       // check if both nodes on edge geometry
-      bool node0Edge =
-          dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
-      bool node1Edge =
-          dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+      bool node0Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+      bool node1Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
       if (nonSmoothContact_ and (!node0Edge or !node1Edge)) continue;
 
@@ -7485,10 +7477,8 @@ void CONTACT::Interface::EvaluateLTL()
         }
 
         // check if both nodes on edge geometry
-        bool node0Edge =
-            dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
-        bool node1Edge =
-            dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+        bool node0Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -7557,10 +7547,8 @@ void CONTACT::Interface::EvaluateLTL()
         }
 
         // check if both nodes on edge geometry
-        bool node0Edge =
-            dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
-        bool node1Edge =
-            dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+        bool node0Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -7655,10 +7643,8 @@ void CONTACT::Interface::EvaluateLTL()
           }
 
           // check if both nodes on edge geometry
-          bool node0Edge =
-              dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
-          bool node1Edge =
-              dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
+          bool node0Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
+          bool node1Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
           if (!node0Edge or !node1Edge) continue;
 
@@ -7727,10 +7713,8 @@ void CONTACT::Interface::EvaluateLTL()
           }
 
           // check if both nodes on edge geometry
-          bool node0Edge =
-              dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
-          bool node1Edge =
-              dynamic_cast<MORTAR::MortarNode*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
+          bool node0Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
+          bool node1Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
           if (!node0Edge or !node1Edge) continue;
 
@@ -7806,7 +7790,7 @@ void CONTACT::Interface::EvaluateNTS()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
 
     if (!mrtrnode->IsOnCorner() and nonSmoothContact_) continue;
 

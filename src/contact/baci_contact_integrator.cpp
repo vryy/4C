@@ -128,7 +128,7 @@ bool CONTACT::Integrator::BoundarySegmCheck2D(
           sele.LocalToGlobal(sxi_test, glob_test, 0);
           for (int ii = 0; ii < sele.NumNode(); ++ii)
           {
-            MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+            MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
             if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
             if (glob_test[0] == mycnode_test->xspatial()[0] &&
@@ -171,7 +171,7 @@ bool CONTACT::Integrator::BoundarySegmCheck2D(
           sele.LocalToGlobal(sxi_test, glob_test, 0);
           for (int ii = 0; ii < sele.NumNode(); ++ii)
           {
-            MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+            MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
             if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
             if (glob_test[0] == mycnode_test->xspatial()[0] &&
@@ -650,7 +650,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele, d
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -920,8 +920,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -949,8 +948,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1045,8 +1043,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1074,8 +1071,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1166,8 +1162,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1195,8 +1190,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1261,8 +1255,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1290,8 +1283,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1371,8 +1363,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1400,8 +1391,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
             sele.LocalToGlobal(sxi_test, glob_test, 0);
             for (int ii = 0; ii < sele.NumNode(); ++ii)
             {
-              MORTAR::MortarNode* mycnode_test =
-                  dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
+              MORTAR::Node* mycnode_test = dynamic_cast<MORTAR::Node*>(mynodes_test[ii]);
               if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
@@ -1482,7 +1472,7 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
 
   int msize = meles.size();
   int nrow = sele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::SerialDenseVector sval(nrow);
@@ -2191,7 +2181,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElement&
 
     for (int i = 0; i < nrow; ++i)
     {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[i]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[i]);
       gpn[0] += sval[i] * mymrtrnode->MoData().n()[0];
       gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
       gpn[2] += sval[i] * mymrtrnode->MoData().n()[2];
@@ -2387,7 +2377,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElement&
       // map iterator
       typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[iter]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[iter]);
       if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       static double fac = 0.0;
@@ -2507,7 +2497,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElement&
       // integrate LinD
       for (int j = 0; j < nrow; ++j)
       {
-        MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
+        MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[j]);
         if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         int sgid = mymrtrnode->Id();
@@ -2574,7 +2564,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElement&
       // integrate LinD
       for (int j = 0; j < nrow; ++j)
       {
-        MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
+        MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[j]);
         if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
 
@@ -2966,7 +2956,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElement&
 
     for (int i = 0; i < nrowL; ++i)
     {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[i]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[i]);
       gpn[0] += sval[i] * mymrtrnode->MoData().n()[0];
       gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
       gpn[2] += sval[i] * mymrtrnode->MoData().n()[2];
@@ -3150,7 +3140,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElement&
       // map iterator
       typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[iter]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[iter]);
       if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       if (mymrtrnode->IsOnCorner()) continue;
@@ -3363,7 +3353,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElement&
         // integrate LinD
         for (int j = 0; j < nrowL; ++j)
         {
-          MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
+          MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[j]);
           if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
           // node j is boundary node
@@ -3421,7 +3411,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElement&
           // loop over slave nodes
           for (int k = 0; k < nrowL; ++k)
           {
-            MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+            MORTAR::Node* mymrtrnode2 = dynamic_cast<MORTAR::Node*>(mynodes[k]);
             if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
             // global master node ID
@@ -3527,7 +3517,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElement&
         // integrate LinD
         for (int j = 0; j < nrowL; ++j)
         {
-          MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
+          MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[j]);
           if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
           int sgid = mymrtrnode->Id();
@@ -3588,7 +3578,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElement&
       // integrate LinD
       for (int j = 0; j < nrowL; ++j)
       {
-        MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
+        MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[j]);
         if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         if (mymrtrnode->IsOnCorner()) continue;
@@ -3832,7 +3822,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarElement
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -4286,7 +4276,7 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -4489,7 +4479,7 @@ void CONTACT::Integrator::IntegrateD(MORTAR::MortarElement& sele, const Epetra_C
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -4736,7 +4726,7 @@ void CONTACT::Integrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele, dou
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateKappaPenalty: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -4878,18 +4868,18 @@ void CONTACT::Integrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxia,
   snodes = sele.Nodes();
   mnodes = mele.Nodes();
 
-  std::vector<MORTAR::MortarNode*> smrtrnodes(numsnode);
-  std::vector<MORTAR::MortarNode*> mmrtrnodes(nummnode);
+  std::vector<MORTAR::Node*> smrtrnodes(numsnode);
+  std::vector<MORTAR::Node*> mmrtrnodes(nummnode);
 
   for (int i = 0; i < numsnode; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
-    mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<MORTAR::Node*>(mnodes[i]);
     if (!mmrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
@@ -5260,18 +5250,18 @@ void CONTACT::Integrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Morta
   snodes = sele.Nodes();
   mnodes = mele.Nodes();
 
-  std::vector<MORTAR::MortarNode*> smrtrnodes(numsnode);
-  std::vector<MORTAR::MortarNode*> mmrtrnodes(nummnode);
+  std::vector<MORTAR::Node*> smrtrnodes(numsnode);
+  std::vector<MORTAR::Node*> mmrtrnodes(nummnode);
 
   for (int i = 0; i < numsnode; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
-    mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<MORTAR::Node*>(mnodes[i]);
     if (!mmrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
@@ -5451,20 +5441,20 @@ void CONTACT::Integrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Morta
   // we need the participating slave and master nodes
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(sele.NumNode());
-  std::vector<MORTAR::MortarNode*> mmrtrnodes(mele.NumNode());
+  std::vector<MORTAR::Node*> smrtrnodes(sele.NumNode());
+  std::vector<MORTAR::Node*> mmrtrnodes(mele.NumNode());
   const int numsnode = sele.NumNode();
   const int nummnode = mele.NumNode();
 
   for (int i = 0; i < numsnode; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("DerivXiGP3D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
-    mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<MORTAR::Node*>(mnodes[i]);
     if (!mmrtrnodes[i]) dserror("DerivXiGP3D: Null pointer!");
   }
 
@@ -5635,12 +5625,12 @@ void CONTACT::Integrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double
 
   // we need the participating element nodes
   DRT::Node** nodes = ele.Nodes();
-  std::vector<MORTAR::MortarNode*> mrtrnodes(ele.NumNode());
+  std::vector<MORTAR::Node*> mrtrnodes(ele.NumNode());
   const int numnode = ele.NumNode();
 
   for (int i = 0; i < numnode; ++i)
   {
-    mrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(nodes[i]);
+    mrtrnodes[i] = dynamic_cast<MORTAR::Node*>(nodes[i]);
     if (!mrtrnodes[i]) dserror("DerivXiGP3DAuxPlane: Null pointer!");
   }
 
@@ -5942,7 +5932,7 @@ void CONTACT::Integrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::Mo
       bool bound = false;
       for (int k = 0; k < sele.NumNode(); ++k)
       {
-        MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[k]);
+        MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(sele.Nodes()[k]);
         if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
 
         if (mymrtrnode->IsOnBoundorCE())
@@ -6646,7 +6636,7 @@ void CONTACT::Integrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarElem
 
   for (int i = 0; i < nrow; ++i)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[i]);
     gpn[0] += sval[i] * mymrtrnode->MoData().n()[0];
     gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
     gpn[2] += sval[i] * mymrtrnode->MoData().n()[2];
@@ -6973,7 +6963,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarElem
 
   for (int i = 0; i < nrow; ++i)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[i]);
     gpn[0] += sval[i] * mymrtrnode->MoData().n()[0];
     gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
 
@@ -7027,7 +7017,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarElem
 
   for (int i = 0; i < nrow; ++i)
   {
-    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    MORTAR::Node* snode = dynamic_cast<MORTAR::Node*>(snodes[i]);
 
     CORE::GEN::pairedvector<int, double>& dmap_nxsl_i =
         dynamic_cast<CONTACT::Node*>(snodes[i])->Data().GetDerivN()[0];
@@ -7106,7 +7096,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarElem
   {
     for (int z = 0; z < nrow; ++z)
     {
-      MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[z]);
+      MORTAR::Node* snode = dynamic_cast<MORTAR::Node*>(snodes[z]);
 
       for (int k = 0; k < Dim(); ++k)
       {
@@ -7145,7 +7135,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarElem
   {
     for (int z = 0; z < ncol; ++z)
     {
-      MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[z]);
+      MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[z]);
 
       for (int k = 0; k < Dim(); ++k)
       {
@@ -7197,7 +7187,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sele,
 
   for (int i = 0; i < nrow; ++i)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[i]);
     gpn[0] += sval[i] * mymrtrnode->MoData().n()[0];
     gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
     gpn[2] += sval[i] * mymrtrnode->MoData().n()[2];
@@ -7491,7 +7481,7 @@ void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement& s
   int nrow = sele.NumNode();
   snodes = sele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
   if (mymrtrnode->IsOnBoundorCE()) return;
 
@@ -7566,7 +7556,7 @@ void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement& s
 
     for (int bl = 0; bl < nrow; ++bl)
     {
-      MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
+      MORTAR::Node* wearnode = dynamic_cast<MORTAR::Node*>(snodes[bl]);
       for (int z = 0; z < Dim(); ++z)
         dgwmmap[wearnode->Dofs()[0]] +=
             jac * wgt * lmval[iter] * (gpn[z] * sval[bl] * wearnode->MoData().n()[z]);
@@ -7576,7 +7566,7 @@ void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement& s
     {
       for (int bl = 0; bl < ncol; ++bl)
       {
-        MORTAR::MortarNode* wearnodeM = dynamic_cast<MORTAR::MortarNode*>(mnodes[bl]);
+        MORTAR::Node* wearnodeM = dynamic_cast<MORTAR::Node*>(mnodes[bl]);
         for (int z = 0; z < Dim(); ++z)
           dgwmmap[wearnodeM->Dofs()[0]] -=
               jac * wgt * lmval[iter] * (gpn[z] * mval[bl] * wearnodeM->MoData().n()[z]);
@@ -7604,7 +7594,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::IntEl
   // get slave element nodes themselves
   DRT::Node** sintnodes = sintele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(sintnodes[iter]);
   if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   double fac = 0.0;
@@ -7662,7 +7652,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarEleme
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   double fac = 0.0;
@@ -7792,7 +7782,7 @@ void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   if (mymrtrnode->IsOnBoundorCE()) return;
@@ -7866,7 +7856,7 @@ void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
 
     for (int bl = 0; bl < nrow; ++bl)
     {
-      MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
+      MORTAR::Node* wearnode = dynamic_cast<MORTAR::Node*>(snodes[bl]);
       for (int z = 0; z < Dim(); ++z)
         dgwmmap[wearnode->Dofs()[0]] +=
             jac * wgt * lmval[iter] * (gpn[z] * sval[bl] * wearnode->MoData().n()[z]);
@@ -7876,7 +7866,7 @@ void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
     {
       for (int bl = 0; bl < ncol; ++bl)
       {
-        MORTAR::MortarNode* wearnodeM = dynamic_cast<MORTAR::MortarNode*>(mnodes[bl]);
+        MORTAR::Node* wearnodeM = dynamic_cast<MORTAR::Node*>(mnodes[bl]);
         for (int z = 0; z < Dim(); ++z)
           dgwmmap[wearnodeM->Dofs()[0]] -=
               jac * wgt * lmval[iter] * (gpn[z] * mval[bl] * wearnodeM->MoData().n()[z]);
@@ -7915,7 +7905,7 @@ void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
       if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
@@ -7961,7 +7951,7 @@ void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
 
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* mymrtrnode2 = dynamic_cast<MORTAR::Node*>(snodes[k]);
         if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         // global master node ID
@@ -8063,7 +8053,7 @@ void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
       if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
@@ -8120,7 +8110,7 @@ void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
       // loop over slave nodes
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* mymrtrnode2 = dynamic_cast<MORTAR::Node*>(snodes[k]);
         if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         // global master node ID
@@ -8268,7 +8258,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sele,
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
       if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
@@ -8314,7 +8304,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sele,
 
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* mymrtrnode2 = dynamic_cast<MORTAR::Node*>(snodes[k]);
         if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         // global master node ID
@@ -8399,7 +8389,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sele,
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
       if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
@@ -8456,7 +8446,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sele,
       // loop over slave nodes
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* mymrtrnode2 = dynamic_cast<MORTAR::Node*>(snodes[k]);
         if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         // global master node ID
@@ -8584,7 +8574,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
   // map iterator
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   const int sgid = mymrtrnode->Id();
@@ -8738,7 +8728,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linl
   // check for linear LM interpolation in quadratic FE
   if (linlm)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
     if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
     bool jbound = mymrtrnode->IsOnBound();
 
@@ -8783,7 +8773,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linl
       // integrate LinD
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* mymrtrnode2 = dynamic_cast<MORTAR::Node*>(snodes[k]);
         if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
         bool kbound = mymrtrnode2->IsOnBound();
 
@@ -8849,7 +8839,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linl
   // no linear LM interpolation for quadratic FE
   else
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
     if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
     int sgid = mymrtrnode->Id();
@@ -9008,7 +8998,7 @@ void inline CONTACT::Integrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::Mort
   // **************** no edge modification *****************************
   // (and LinM also for edge node modification case)
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(sintnodes[iter]);
   if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   // integrate LinM
@@ -9109,8 +9099,8 @@ void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mortar
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
 
-  std::vector<MORTAR::MortarNode*> smnodes(nrow);
-  for (int i = 0; i < nrow; ++i) smnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+  std::vector<MORTAR::Node*> smnodes(nrow);
+  for (int i = 0; i < nrow; ++i) smnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
 
   // map iterator
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
@@ -9197,7 +9187,7 @@ void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mortar
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
       if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
@@ -9260,7 +9250,7 @@ void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mortar
 
         for (int k = 0; k < nrow; ++k)
         {
-          MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+          MORTAR::Node* mymrtrnode2 = dynamic_cast<MORTAR::Node*>(snodes[k]);
           if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
           // global master node ID
@@ -10652,7 +10642,7 @@ void inline CONTACT::Integrator::GP_2D_TE_Master_Lin(int& iter,  // like k
   // map iterator
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mnodes[iter]);
   if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
@@ -10778,7 +10768,7 @@ void inline CONTACT::Integrator::GP_2D_TE_Lin(int& iter, MORTAR::MortarElement& 
   // map iterator
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
@@ -10979,7 +10969,7 @@ void inline CONTACT::Integrator::GP_3D_TE_Lin(int& iter, MORTAR::MortarElement& 
   // map iterator
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
@@ -11234,7 +11224,7 @@ void inline CONTACT::Integrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::MortarEl
   // map iterator
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[iter]);
+  MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mnodes[iter]);
   if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
@@ -12214,7 +12204,7 @@ void inline CONTACT::Integrator::GP_2D_Wear_Lin(int& iter, MORTAR::MortarElement
 
   for (int bl = 0; bl < nrow; ++bl)
   {
-    MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
+    MORTAR::Node* wearnode = dynamic_cast<MORTAR::Node*>(snodes[bl]);
 
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
@@ -12322,7 +12312,7 @@ void inline CONTACT::Integrator::GP_3D_Wear_Lin(int& iter, MORTAR::MortarElement
 
   for (int bl = 0; bl < nrow; ++bl)
   {
-    MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
+    MORTAR::Node* wearnode = dynamic_cast<MORTAR::Node*>(snodes[bl]);
 
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {

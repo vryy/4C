@@ -249,7 +249,7 @@ bool CONTACT::INTEGRATOR::WithinBounds(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
-    std::vector<ElementNormal>& adj_ele_normals, MORTAR::MortarNode& slavenode)
+    std::vector<ElementNormal>& adj_ele_normals, MORTAR::Node& slavenode)
 {
   // access the averaged nodal normal
   CORE::LINALG::Matrix<3, 1> avg_nodal_normal(slavenode.MoData().n(), true);
@@ -809,7 +809,7 @@ void CONTACT::INTEGRATOR::GetElementNodalDofs(
 
   for (unsigned i = 0; i < numnode; ++i)
   {
-    const auto& mynode = dynamic_cast<const MORTAR::MortarNode&>(*mynodes[i]);
+    const auto& mynode = dynamic_cast<const MORTAR::Node&>(*mynodes[i]);
 
     std::copy(mynode.Dofs().data(), mynode.Dofs().data() + probdim, &nodal_dofs(0, i));
   }

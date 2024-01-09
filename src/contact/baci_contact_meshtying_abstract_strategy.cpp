@@ -482,8 +482,8 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   // ONLY, and there is still the underlying problem discretization
   // dealing with the classical finite element evaluation. Thus, it is
   // very important that we apply the nodal relocation to BOTH the
-  // MortarNodes in the meshtying interface discretization AND to the
-  // DRT:Nodes in the underlying problem discretization. However, the
+  // MORTAR::Node(s) in the meshtying interface discretization AND to the
+  // DRT::Node(s) in the underlying problem discretization. However, the
   // second aspect needs to be done by the respective control routine,
   // i.e. in the case of BACI in strtimint.cpp and NOT here.
   //**********************************************************************
@@ -504,7 +504,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
       // get the mortar node
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
       // new nodal position and problem dimension
       std::vector<double> Xnew(3, 0.0);
@@ -596,7 +596,7 @@ void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<CORE::LINALG::SparseOper
 }
 
 /*----------------------------------------------------------------------*
- |  Store Lagrange multipliers into MortarNode                popp 06/08|
+ |  Store Lagrange multipliers into MORTAR::Node                popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
 {
@@ -649,7 +649,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
@@ -707,7 +707,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 }
 
 /*----------------------------------------------------------------------*
- |  Store dirichlet B.C. status into MortarNode               popp 06/09|
+ |  Store dirichlet B.C. status into MORTAR::Node               popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::StoreDirichletStatus(
     Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps)
@@ -721,7 +721,7 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
       // check if this node's dofs are in dbcmap
       for (int k = 0; k < mtnode->NumDof(); ++k)
@@ -857,7 +857,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
       std::vector<double> nodeforce(3);
       std::vector<double> position(3);
@@ -898,7 +898,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
       std::vector<double> nodeforce(3);
       std::vector<double> position(3);
@@ -953,7 +953,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
       std::vector<double> lm(3);
       std::vector<double> nodegaps(3);
@@ -1111,8 +1111,8 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet() const
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
 
-      // cast to MortarNode
-      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      // cast to MORTAR::Node
+      MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
       // store node id
       lnid.push_back(gid);
@@ -1255,7 +1255,7 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(
       }
     }
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
     // prepare assembly
     CORE::LINALG::SerialDenseVector val(Dim());

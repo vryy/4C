@@ -23,7 +23,7 @@ BACI_NAMESPACE_OPEN
 namespace MORTAR
 {
   class MortarElement;
-  class MortarNode;
+  class Node;
 }  // namespace MORTAR
 
 namespace CONTACT
@@ -44,7 +44,7 @@ namespace CONTACT
     typedef CONTACT::AUG::Deriv2ndVecMap Deriv2ndVecMap;
 
     double BuildAveragedNormalAtSlaveNode(
-        std::vector<ElementNormal>& adj_ele_normals, MORTAR::MortarNode& slavenode);
+        std::vector<ElementNormal>& adj_ele_normals, MORTAR::Node& slavenode);
 
     double UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
         const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal);

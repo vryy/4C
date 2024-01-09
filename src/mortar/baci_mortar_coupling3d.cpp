@@ -167,7 +167,7 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mycnode) dserror("RoughCheckNodes: Null pointer!");
 
     // first build difference of point and element center
@@ -269,7 +269,7 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   //  // interpolate between nodal normals
   //  for(int i=0;i<SlaveIntElement().NumNode();++i)
   //  {
-  //    MortarNode* snode = dynamic_cast<MortarNode*>(SlaveIntElement().Nodes()[i]);
+  //    Node* snode = dynamic_cast<Node*>(SlaveIntElement().Nodes()[i]);
   //    Auxn()[0] += val[i]*snode->MoData().n()[0];
   //    Auxn()[1] += val[i]*snode->MoData().n()[1];
   //    Auxn()[2] += val[i]*snode->MoData().n()[2];
@@ -308,7 +308,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mycnode) dserror("ProjectSlave: Null pointer!");
 
     // first build difference of point and element center
@@ -353,7 +353,7 @@ bool MORTAR::Coupling3d::ProjectMaster()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mycnode) dserror("ProjectMaster: Null pointer!");
 
     // first build difference of point and element center
@@ -1697,13 +1697,13 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         int nsnodes = SlaveIntElement().NumNode();
         DRT::Node** mysnodes = SlaveIntElement().Nodes();
         if (!mysnodes) dserror("Null pointer!");
-        std::vector<MortarNode*> mycsnodes(nsnodes);
-        for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<MortarNode*>(mysnodes[i]);
+        std::vector<Node*> mycsnodes(nsnodes);
+        for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<Node*>(mysnodes[i]);
         int nmnodes = MasterIntElement().NumNode();
         DRT::Node** mymnodes = MasterIntElement().Nodes();
         if (!mymnodes) dserror("Null pointer!");
-        std::vector<MortarNode*> mycmnodes(nmnodes);
-        for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<MortarNode*>(mymnodes[i]);
+        std::vector<Node*> mycmnodes(nmnodes);
+        for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<Node*>(mymnodes[i]);
 
         // get node coordinates
         CORE::LINALG::SerialDenseMatrix scoord(3, nsnodes);
@@ -2665,7 +2665,7 @@ bool MORTAR::Coupling3d::HasProjStatus()
   // loop over all slave nodes
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mycnode) dserror("HasProjStatus: Null pointer!");
 
     // loop over all vertices of clip polygon
@@ -3379,7 +3379,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     if (!mynodes) dserror("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
-      MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+      MORTAR::Node* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
       if (!mycnode) dserror("Null pointer!");
       mycnode->HasSegment() = true;
     }
@@ -3851,10 +3851,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
       ele.EvaluateShape(xi, sval, sderiv, 9, true);
       for (int dim = 0; dim < dim_; ++dim)
         for (int n = 0; n < ele.NumNode(); ++n)
-          xspatial[dim] +=
-              sval(n) * dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[n])->xspatial()[dim];
-      pseudo_nodes.push_back(
-          MORTAR::MortarNode(-1, xspatial, ele.Owner(), empty_dofs, ele.IsSlave()));
+          xspatial[dim] += sval(n) * dynamic_cast<MORTAR::Node*>(ele.Nodes()[n])->xspatial()[dim];
+      pseudo_nodes.push_back(MORTAR::Node(-1, xspatial, ele.Owner(), empty_dofs, ele.IsSlave()));
     }
 
     for (int i = 0; i < 4; ++i) pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));

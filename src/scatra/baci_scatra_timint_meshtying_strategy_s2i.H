@@ -66,7 +66,7 @@ namespace MORTAR
 {
   class IntCell;
   class MortarElement;
-  class MortarNode;
+  class Node;
 }  // namespace MORTAR
 
 namespace SCATRA
@@ -525,7 +525,7 @@ namespace SCATRA
      * @param ntsvector1     node-to-segment vector 1
      * @param ntsvector2     node-to-segment vector 2
      */
-    void EvaluateSlaveNode(const DRT::Discretization& idiscret, const MORTAR::MortarNode& slavenode,
+    void EvaluateSlaveNode(const DRT::Discretization& idiscret, const MORTAR::Node& slavenode,
         const double& lumpedarea, const INPAR::SCATRA::ImplType& impltype,
         MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
         DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
@@ -730,7 +730,7 @@ namespace SCATRA
 
     //! evaluate single slave-side node for node-to-segment coupling
     virtual void EvaluateNTS(const DRT::Discretization& idiscret,  //!< interface discretization
-        const MORTAR::MortarNode& slavenode,                       //!< slave-side node
+        const MORTAR::Node& slavenode,                             //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         MORTAR::MortarElement& slaveelement,          //!< slave-side mortar element
@@ -817,7 +817,7 @@ namespace SCATRA
 
     //! evaluate single slave-side node for node-to-segment coupling
     void EvaluateNTS(const DRT::Discretization& idiscret,  //!< interface discretization
-        const MORTAR::MortarNode& slavenode,               //!< slave-side node
+        const MORTAR::Node& slavenode,                     //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         MORTAR::MortarElement& slaveelement,          //!< slave-side mortar element
@@ -899,8 +899,8 @@ namespace SCATRA
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
     virtual void EvaluateConditionNTS(
-        DRT::Condition& condition,            //!< scatra-scatra interface coupling condition
-        const MORTAR::MortarNode& slavenode,  //!< slave-side node
+        DRT::Condition& condition,      //!< scatra-scatra interface coupling condition
+        const MORTAR::Node& slavenode,  //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
@@ -985,9 +985,9 @@ namespace SCATRA
     );
 
     //! evaluate shape functions at position of slave-side node
-    void EvalShapeFuncAtSlaveNode(const MORTAR::MortarNode& slavenode,  //!< slave-side node
-        MORTAR::MortarElement& slaveelement,                            //!< slave-side element
-        MORTAR::MortarElement& masterelement                            //!< master-side element
+    void EvalShapeFuncAtSlaveNode(const MORTAR::Node& slavenode,  //!< slave-side node
+        MORTAR::MortarElement& slaveelement,                      //!< slave-side element
+        MORTAR::MortarElement& masterelement                      //!< master-side element
     );
 
     //! pointer to scatra boundary parameter list

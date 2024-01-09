@@ -246,7 +246,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
 
     if (ftype == INPAR::CONTACT::friction_none)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(node);
       cnode->Pack(datanodes);
     }
     else
@@ -271,7 +271,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
 
     if (ftype == INPAR::CONTACT::friction_none)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(node);
       cnode->Pack(datanodes);
 
       if (cnode->Owner() == myrank)
@@ -303,7 +303,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
 
     if (ftype == INPAR::CONTACT::friction_none)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(node);
       if (cnode->Owner() == myrank) idiscret_->DeleteNode(cnode->Id());
     }
     else
@@ -344,8 +344,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
 
       if (ftype == INPAR::CONTACT::friction_none)
       {
-        Teuchos::RCP<MORTAR::MortarNode> node =
-            Teuchos::rcp_dynamic_cast<MORTAR::MortarNode>(object);
+        Teuchos::RCP<MORTAR::Node> node = Teuchos::rcp_dynamic_cast<MORTAR::Node>(object);
         if (node == Teuchos::null) dserror("Received object is not a node");
 
         if (ghost == 1)

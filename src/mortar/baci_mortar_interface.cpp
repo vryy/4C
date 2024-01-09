@@ -487,7 +487,7 @@ void MORTAR::MortarInterface::PrintParallelDistribution() const
 /*----------------------------------------------------------------------*
  |  add mortar node (public)                                 mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrtrnode)
+void MORTAR::MortarInterface::AddMortarNode(Teuchos::RCP<MORTAR::Node> mrtrnode)
 {
   idiscret_->AddNode(mrtrnode);
 }
@@ -627,7 +627,7 @@ void MORTAR::MortarInterface::InitializeCornerEdge()
     // or element would be enough in all places
     // performance loss is negligible when using a dynamic_cast instead
     // but safety is increased enormously
-    auto* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+    auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->lRowNode(i));
 
     // remove bound/corner/edge flag for master nodes!
     if (!node->IsSlave() && node->IsOnCorner()) node->SetOnCorner() = false;
@@ -665,7 +665,7 @@ void MORTAR::MortarInterface::InitializeCrossPoints()
       // or element would be enough in all places
       // performance loss is negligible when using a dynamic_cast instead
       // but safety is increased enormously
-      auto* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+      auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->lRowNode(i));
 
       // candidates are slave nodes with only 1 adjacent MortarElement
       if (node->IsSlave() && node->NumElement() == 1)
@@ -709,7 +709,7 @@ void MORTAR::MortarInterface::InitializeLagMultLin()
     for (int i = 0; i < Discret().NodeRowMap()->NumMyElements(); ++i)
     {
       // get node and cast to cnode
-      auto* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+      auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->lRowNode(i));
 
       // candidates are slave nodes with shape line3 (2D), tri6 and quad8/9 (3D)
       if (node->IsSlave())
@@ -814,7 +814,7 @@ void MORTAR::MortarInterface::InitializeLagMultConst()
     for (int i = 0; i < Discret().NodeRowMap()->NumMyElements(); ++i)
     {
       // get node and cast to cnode
-      auto* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+      auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->lRowNode(i));
 
       // candidates are slave nodes with shape line3 (2D), tri6 and quad8/9 (3D)
       if (node->IsSlave())
@@ -882,7 +882,7 @@ void MORTAR::MortarInterface::InitializeDataContainer()
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %i", gid);
-    auto* mnode = dynamic_cast<MortarNode*>(node);
+    auto* mnode = dynamic_cast<Node*>(node);
 
     //********************************************************
     // NOTE: depending on which kind of node this really is,
@@ -907,7 +907,7 @@ void MORTAR::MortarInterface::InitializeDataContainer()
       int gid = masternodes()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %i", gid);
-      auto* mnode = dynamic_cast<MortarNode*>(node);
+      auto* mnode = dynamic_cast<Node*>(node);
 
       // ATM just implemented for ContactNode ... otherwise error!!!
 
@@ -979,7 +979,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
     if (!node)
       dserror(
           "Cannot find node with gid %i in discretization '%s'.", gid, Discret().Name().c_str());
-    auto* mtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+    auto* mtrnode = dynamic_cast<MORTAR::Node*>(node);
 
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
@@ -1330,7 +1330,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
       int gid = noderowmap->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+      auto* mrtrnode = dynamic_cast<Node*>(node);
       if (!mrtrnode->IsSlave()) sdata.push_back(gid);
     }
 
@@ -1345,7 +1345,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
       int gid = nodecolmap->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+      auto* mrtrnode = dynamic_cast<Node*>(node);
       if (mrtrnode->IsSlave()) rdata.push_back(gid);
     }
 
@@ -1603,7 +1603,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveDofMaps()
     int gid = Discret().NodeColMap()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
     bool isslave = mrtrnode->IsSlave();
     const int numdof = mrtrnode->NumDof();
 
@@ -1697,8 +1697,8 @@ void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps(
   for (int i = 0; i < numMyColumnNodes; ++i)
   {
     int gid = nodeColumnMap.GID(i);
-    bool isslave = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
-    bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBoundorCE();
+    bool isslave = dynamic_cast<MORTAR::Node*>(Discret().gNode(gid))->IsSlave();
+    bool isonbound = dynamic_cast<MORTAR::Node*>(Discret().gNode(gid))->IsOnBoundorCE();
 
     if (isslave || isonbound)
       scb.push_back(gid);
@@ -1759,7 +1759,7 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
       int gid = snodecolmap_->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+      auto* mrtrnode = dynamic_cast<Node*>(node);
       int istied = (int)mrtrnode->IsTiedSlave();
 
       if (istied && snodecolmap_->MyGID(gid)) sc.push_back(gid);
@@ -1791,7 +1791,7 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
       int gid = snodecolmap_->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+      auto* mrtrnode = dynamic_cast<Node*>(node);
       const bool istied = mrtrnode->IsTiedSlave();
       const int numdof = mrtrnode->NumDof();
 
@@ -1935,7 +1935,7 @@ void MORTAR::MortarInterface::Initialize()
   // loop over all nodes to reset stuff (fully overlapping column map)
   for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
   {
-    auto* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
+    auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->lColNode(i));
 
     // reset feasible projection and segmentation status
     node->HasProj() = false;
@@ -1949,7 +1949,7 @@ void MORTAR::MortarInterface::Initialize()
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* monode = dynamic_cast<MORTAR::MortarNode*>(node);
+    auto* monode = dynamic_cast<MORTAR::Node*>(node);
 
     // reset nodal normal
     for (int j = 0; j < 3; ++j) monode->MoData().n()[j] = 0.0;
@@ -1995,7 +1995,7 @@ void MORTAR::MortarInterface::SetState(const enum StateType& statetype, const Ep
       // (use fully overlapping column map)
       for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
       {
-        auto* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
+        auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->lColNode(i));
         const int numdof = node->NumDof();
         std::vector<double> mydisp(numdof);
         std::vector<int> lm(numdof);
@@ -2026,7 +2026,7 @@ void MORTAR::MortarInterface::SetState(const enum StateType& statetype, const Ep
       // (use fully overlapping column map)
       for (int i = 0; i < SlaveColNodes()->NumMyElements(); ++i)
       {
-        auto* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->gNode(SlaveColNodes()->GID(i)));
+        auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->gNode(SlaveColNodes()->GID(i)));
         const int numdof = node->NumDof();
         std::vector<double> mydisp(numdof);
         std::vector<int> lm(numdof);
@@ -2057,7 +2057,7 @@ void MORTAR::MortarInterface::SetState(const enum StateType& statetype, const Ep
       // (use fully overlapping column map)
       for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
       {
-        auto* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
+        auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->lColNode(i));
         const int numdof = node->NumDof();
         std::vector<double> myolddisp(numdof);
         std::vector<int> lm(numdof);
@@ -2401,7 +2401,7 @@ void MORTAR::MortarInterface::EvaluateNTS()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
 
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
@@ -2457,7 +2457,7 @@ void MORTAR::MortarInterface::EvaluateNodalNormals() const
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // build averaged normal at each slave node
     mrtrnode->BuildAveragedNormal();
@@ -2553,8 +2553,7 @@ void MORTAR::MortarInterface::PostEvaluate(const int step, const int iter)
 /*----------------------------------------------------------------------*
  |  find meles to snode                                     farah 01/16 |
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FindMEles(
-    MortarNode& mrtrnode, std::vector<MortarElement*>& meles) const
+void MORTAR::MortarInterface::FindMEles(Node& mrtrnode, std::vector<MortarElement*>& meles) const
 {
   // clear vector
   meles.clear();
@@ -2601,7 +2600,7 @@ void MORTAR::MortarInterface::FindMEles(
  |  find mnodes to snode                                    farah 01/16 |
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::FindMNodes(
-    MortarNode& mrtrnode, std::vector<MortarElement*>& meles, std::vector<MortarNode*>& mnodes)
+    Node& mrtrnode, std::vector<MortarElement*>& meles, std::vector<Node*>& mnodes)
 {
   // clear vector
   mnodes.clear();
@@ -2623,7 +2622,7 @@ void MORTAR::MortarInterface::FindMNodes(
     {
       DRT::Node* node = mele->Nodes()[k];
       if (!node) dserror("Cannot find master node");
-      auto* mnode = dynamic_cast<MortarNode*>(node);
+      auto* mnode = dynamic_cast<Node*>(node);
 
       // check uniqueness
       auto iter = donebefore.find(mnode->Id());
@@ -2651,7 +2650,7 @@ void MORTAR::MortarInterface::EvaluateNodalNormals(std::map<int, std::vector<dou
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // build averaged normal at each slave node
     mrtrnode->BuildAveragedNormal();
@@ -2680,7 +2679,7 @@ void MORTAR::MortarInterface::ExportNodalNormals() const
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // fill nodal matrix
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
@@ -2705,7 +2704,7 @@ void MORTAR::MortarInterface::ExportNodalNormals() const
 
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // extract info
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc = triad[gid];
@@ -2868,7 +2867,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
     DRT::Element* element = idiscret_->gElement(sgid);
     if (!element) dserror("Cannot find element with gid %\n", sgid);
     DRT::Node** node = element->Nodes();
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node[0]);
+    auto* mrtrnode = dynamic_cast<Node*>(node[0]);
     const double* posnode = mrtrnode->xspatial();
 
     // calculate slabs initialization
@@ -2885,7 +2884,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
     // for int j=1, because of initialization done before
     for (int j = 1; j < element->NumNode(); j++)
     {
-      auto* mrtrnode = dynamic_cast<MortarNode*>(node[j]);
+      auto* mrtrnode = dynamic_cast<Node*>(node[j]);
       posnode = mrtrnode->xspatial();
 
       for (int k = 0; k < kdop / 2; k++)
@@ -2908,7 +2907,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
       for (int j = 0; j < element->NumNode(); j++)
       {
         // get pointer to slave node
-        auto* mrtrnode = dynamic_cast<MortarNode*>(node[j]);
+        auto* mrtrnode = dynamic_cast<Node*>(node[j]);
 
         std::array<double, 3> auxpos = {0.0, 0.0, 0.0};
         double scalar = 0.0;
@@ -2950,7 +2949,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
       DRT::Element* element = idiscret_->gElement(mgid);
       if (!element) dserror("Cannot find element with gid %\n", mgid);
       DRT::Node** node = element->Nodes();
-      auto* mrtrnode = dynamic_cast<MortarNode*>(node[0]);
+      auto* mrtrnode = dynamic_cast<Node*>(node[0]);
       const double* posnode = mrtrnode->xspatial();
 
       // calculate slabs initialization
@@ -2968,7 +2967,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
       // for int k=1, because of initialization done before
       for (int k = 1; k < element->NumNode(); k++)
       {
-        auto* mrtrnode = dynamic_cast<MortarNode*>(node[k]);
+        auto* mrtrnode = dynamic_cast<Node*>(node[k]);
         posnode = mrtrnode->xspatial();
 
         for (int l = 0; l < kdop / 2; l++)
@@ -3356,7 +3355,7 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     int dim = mrtrnode->NumDof();
     double* lm = mrtrnode->MoData().lm();
@@ -3394,7 +3393,7 @@ void MORTAR::MortarInterface::AssembleD(CORE::LINALG::SparseMatrix& dglobal)
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
@@ -3412,7 +3411,7 @@ void MORTAR::MortarInterface::AssembleD(CORE::LINALG::SparseMatrix& dglobal)
 
         DRT::Node* knode = Discret().gNode(colcurr->first);
         if (!knode) dserror("node not found");
-        auto* kcnode = dynamic_cast<MortarNode*>(knode);
+        auto* kcnode = dynamic_cast<Node*>(knode);
         if (!kcnode) dserror("node not found");
 
         for (int j = 0; j < rowsize; ++j)
@@ -3467,7 +3466,7 @@ void MORTAR::MortarInterface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
@@ -3483,7 +3482,7 @@ void MORTAR::MortarInterface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
       {
         DRT::Node* knode = Discret().gNode(colcurr->first);
         if (!knode) dserror("node not found");
-        auto* kcnode = dynamic_cast<MortarNode*>(knode);
+        auto* kcnode = dynamic_cast<Node*>(knode);
         if (!kcnode) dserror("node not found");
 
         double val = colcurr->second;
@@ -3518,7 +3517,7 @@ void MORTAR::MortarInterface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
       {
         DRT::Node* knode = Discret().gNode(colcurr->first);
         if (!knode) dserror("node not found");
-        auto* kcnode = dynamic_cast<MortarNode*>(knode);
+        auto* kcnode = dynamic_cast<Node*>(knode);
         if (!kcnode) dserror("node not found");
 
         for (int j = 0; j < rowsize; ++j)
@@ -3570,7 +3569,7 @@ void MORTAR::MortarInterface::AssembleNormals(CORE::LINALG::SparseMatrix& ngloba
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
@@ -3609,7 +3608,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
@@ -3802,10 +3801,10 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
         // std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << std::endl;
         DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
         if (!adjnode1) dserror("Cannot find node with gid %", gindex1);
-        auto* adjmrtrnode1 = dynamic_cast<MortarNode*>(adjnode1);
+        auto* adjmrtrnode1 = dynamic_cast<Node*>(adjnode1);
         DRT::Node* adjnode2 = idiscret_->gNode(gindex2);
         if (!adjnode2) dserror("Cannot find node with gid %", gindex2);
-        auto* adjmrtrnode2 = dynamic_cast<MortarNode*>(adjnode2);
+        auto* adjmrtrnode2 = dynamic_cast<Node*>(adjnode2);
 
         // add transformation matrix block
         for (int k = 0; k < mrtrnode->NumDof(); ++k)
@@ -3849,7 +3848,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
       int gid = mnoderowmap_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+      auto* mrtrnode = dynamic_cast<Node*>(node);
 
       if (mrtrnode->Owner() != Comm().MyPID())
         dserror("AssembleTrafo: Node ownership inconsistency!");
@@ -3987,10 +3986,10 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           // std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << std::endl;
           DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
           if (!adjnode1) dserror("Cannot find node with gid %", gindex1);
-          auto* adjmrtrnode1 = dynamic_cast<MortarNode*>(adjnode1);
+          auto* adjmrtrnode1 = dynamic_cast<Node*>(adjnode1);
           DRT::Node* adjnode2 = idiscret_->gNode(gindex2);
           if (!adjnode2) dserror("Cannot find node with gid %", gindex2);
-          auto* adjmrtrnode2 = dynamic_cast<MortarNode*>(adjnode2);
+          auto* adjmrtrnode2 = dynamic_cast<Node*>(adjnode2);
 
           // add transformation matrix block
           for (int k = 0; k < mrtrnode->NumDof(); ++k)
@@ -4033,16 +4032,16 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           // std::cout << "-> adjacent corner nodes: " << gindex3 << " " << gindex4 << std::endl;
           DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
           if (!adjnode1) dserror("Cannot find node with gid %", gindex1);
-          auto* adjmrtrnode1 = dynamic_cast<MortarNode*>(adjnode1);
+          auto* adjmrtrnode1 = dynamic_cast<Node*>(adjnode1);
           DRT::Node* adjnode2 = idiscret_->gNode(gindex2);
           if (!adjnode2) dserror("Cannot find node with gid %", gindex2);
-          auto* adjmrtrnode2 = dynamic_cast<MortarNode*>(adjnode2);
+          auto* adjmrtrnode2 = dynamic_cast<Node*>(adjnode2);
           DRT::Node* adjnode3 = idiscret_->gNode(gindex3);
           if (!adjnode3) dserror("Cannot find node with gid %", gindex3);
-          auto* adjmrtrnode3 = dynamic_cast<MortarNode*>(adjnode3);
+          auto* adjmrtrnode3 = dynamic_cast<Node*>(adjnode3);
           DRT::Node* adjnode4 = idiscret_->gNode(gindex4);
           if (!adjnode4) dserror("Cannot find node with gid %", gindex4);
-          auto* adjmrtrnode4 = dynamic_cast<MortarNode*>(adjnode4);
+          auto* adjmrtrnode4 = dynamic_cast<Node*>(adjnode4);
 
           // add transformation matrix block
           for (int k = 0; k < mrtrnode->NumDof(); ++k)
@@ -4090,7 +4089,7 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // perform detection
     const CORE::GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
@@ -4140,7 +4139,7 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
     int gid = snodecolmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // check if this node is untied
     if ((*coltied)[i] == 1.0) mrtrnode->SetTiedSlave() = false;

@@ -42,7 +42,7 @@ namespace MORTAR
 {
   // forward declarations
   class StrategyBase;
-  class MortarNode;
+  class Node;
   class MortarElement;
 
   /*!

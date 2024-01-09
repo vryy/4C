@@ -32,7 +32,7 @@ BACI_NAMESPACE_OPEN
 namespace MORTAR
 {
   class MortarElement;
-  class MortarNode;
+  class Node;
 }  // namespace MORTAR
 
 namespace CORE::LINALG
@@ -67,7 +67,7 @@ namespace NTS
      \brief Interpolate for nts algorithm
 
      */
-    bool Interpolate(MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles);
+    bool Interpolate(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles);
 
     /*!
      \brief Interpolate temperature of master side at a slave node
@@ -98,13 +98,13 @@ namespace NTS
      \brief Interpolate for 2D problems
 
      */
-    void Interpolate2D(MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles);
+    void Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles);
 
     /*!
      \brief Interpolate for 3D problems
 
      */
-    bool Interpolate3D(MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles);
+    bool Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles);
 
     /*!
      \brief lin 2D projection
@@ -215,8 +215,7 @@ namespace NTS
      \brief Interpolate for nts algorithm
 
      */
-    virtual void Interpolate(
-        MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles) = 0;
+    virtual void Interpolate(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles) = 0;
   };
 
 
@@ -242,22 +241,20 @@ namespace NTS
      \brief Interpolate for nts problems
 
      */
-    void Interpolate(MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles) override;
+    void Interpolate(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles) override;
 
    private:
     /*!
      \brief Interpolate for 2D problems
 
      */
-    virtual void Interpolate2D(
-        MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles);
+    virtual void Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles);
 
     /*!
      \brief Interpolate for 3D problems
 
      */
-    virtual void Interpolate3D(
-        MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles);
+    virtual void Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles);
   };
 
 }  // namespace NTS

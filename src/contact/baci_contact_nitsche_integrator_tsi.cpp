@@ -92,7 +92,7 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::MortarElement& sele,
   CORE::LINALG::Matrix<dim, 1> xgp;
   for (int n = 0; n < sele.NumNode(); ++n)
     for (int d = 0; d < dim; ++d)
-      xgp(d) += sval(n) * dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[n])->xspatial()[d];
+      xgp(d) += sval(n) * dynamic_cast<MORTAR::Node*>(sele.Nodes()[n])->xspatial()[d];
 
   if (frtype_ != INPAR::CONTACT::friction_none && dim != 3) dserror("only 3D friction");
   if (frtype_ != INPAR::CONTACT::friction_none && frtype_ != INPAR::CONTACT::friction_coulomb &&

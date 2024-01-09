@@ -46,7 +46,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::MortarElement
   std::vector<int> empty_dofs(3, -2);
 
   for (int i = 0; i < numnode; ++i)
-    nodes_.push_back(MortarNode(nodeids[i], nodes[i]->X(), nodes[i]->Owner(), empty_dofs, isslave));
+    nodes_.push_back(Node(nodeids[i], nodes[i]->X(), nodes[i]->Owner(), empty_dofs, isslave));
   for (int i = 0; i < numnode; ++i) nodes_ptr_.push_back(&(nodes_[i]));
 
   if (numnode > 0) BuildNodalPointers(nodes.data());
@@ -497,7 +497,7 @@ void MORTAR::IntElement::NodeLinearization(
       // loop over all intEle nodes
       for (int in = 0; in < NumNode(); ++in)
       {
-        MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(Nodes()[in]);
+        MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(Nodes()[in]);
         for (int dim = 0; dim < 3; ++dim) nodelin[in][dim][mrtrnode->Dofs()[dim]] += 1.;
       }
       break;
@@ -547,7 +547,7 @@ void MORTAR::IntElement::NodeLinearization(
         // loop over all parent element control points
         for (int cp = 0; cp < parele_->NumNode(); ++cp)
         {
-          MORTAR::MortarNode* mrtrcp = dynamic_cast<MORTAR::MortarNode*>(parele_->Nodes()[cp]);
+          MORTAR::Node* mrtrcp = dynamic_cast<MORTAR::Node*>(parele_->Nodes()[cp]);
 
           // loop over all dimensions
           for (int dim = 0; dim < 3; ++dim) nodelin.at(pn).at(dim)[mrtrcp->Dofs()[dim]] += sval(cp);

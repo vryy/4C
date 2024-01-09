@@ -313,7 +313,7 @@ namespace CONTACT
     //! total vector of solid meshtying elements
     std::vector<Teuchos::RCP<MORTAR::MortarElement>> solmeshtyingeles_;
     //! total vector of solid meyhtying nodes
-    std::vector<Teuchos::RCP<MORTAR::MortarNode>> solmeshtyingnodes_;
+    std::vector<Teuchos::RCP<MORTAR::Node>> solmeshtyingnodes_;
 
     //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair
     //! directly by the two element-iD's of the pair.

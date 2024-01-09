@@ -905,7 +905,7 @@ void WEAR::WearInterface::EvaluateNodalNormals() const
       int gid = mnoderowmap_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
 
       // build averaged normal at each master node
       mrtrnode->BuildAveragedNormal();
@@ -3234,14 +3234,14 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
               if (frinode->Active())
               {
                 wa.push_back(celement->Nodes()[p]->Id());
-                wad.push_back(dynamic_cast<MORTAR::MortarNode*>(celement->Nodes()[p])->Dofs()[0]);
+                wad.push_back(dynamic_cast<MORTAR::Node*>(celement->Nodes()[p])->Dofs()[0]);
               }
 
               // slip master nodes!
               if (frinode->FriData().Slip())
               {
                 wsl.push_back(celement->Nodes()[p]->Id());
-                wsln.push_back(dynamic_cast<MORTAR::MortarNode*>(celement->Nodes()[p])->Dofs()[0]);
+                wsln.push_back(dynamic_cast<MORTAR::Node*>(celement->Nodes()[p])->Dofs()[0]);
               }
 
               // set detection status
@@ -3457,7 +3457,7 @@ void WEAR::WearInterface::InitializeDataContainer()
       int gid = masternodes->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %i", gid);
-      MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(node);
+      MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(node);
 
       //********************************************************
       // NOTE: depending on which kind of node this really is,

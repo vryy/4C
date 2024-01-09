@@ -1381,7 +1381,7 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void SetCPPNormal(MORTAR::MortarNode& snode, double* normal,
+    virtual void SetCPPNormal(MORTAR::Node& snode, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normallin);
 
     /*!
@@ -1435,7 +1435,7 @@ namespace CONTACT
     \brief Compute cpp normal based on averaged nodal normal field on master side.
 
     */
-    virtual double ComputeCPPNormal(MORTAR::MortarNode& mrtrnode,
+    virtual double ComputeCPPNormal(MORTAR::Node& mrtrnode,
         std::vector<MORTAR::MortarElement*> meles, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
@@ -1443,7 +1443,7 @@ namespace CONTACT
     \brief 2D routine for cpp normal
 
     */
-    virtual double ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
+    virtual double ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
         std::vector<MORTAR::MortarElement*> meles, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
@@ -1451,7 +1451,7 @@ namespace CONTACT
     \brief 3D routine for cpp normal
 
     */
-    virtual double ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
+    virtual double ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
         std::vector<MORTAR::MortarElement*> meles, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
@@ -1459,14 +1459,14 @@ namespace CONTACT
     \brief Compute normal between slave and master node
 
     */
-    virtual double ComputeNormalNodeToNode(MORTAR::MortarNode& snode, MORTAR::MortarNode& mnode,
-        double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin);
+    virtual double ComputeNormalNodeToNode(MORTAR::Node& snode, MORTAR::Node& mnode, double* normal,
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin);
 
     /*!
     \brief Compute normal between slave node and master edge ele
 
     */
-    virtual double ComputeNormalNodeToEdge(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
+    virtual double ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::MortarElement& mele,
         double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin);
 
     /*!

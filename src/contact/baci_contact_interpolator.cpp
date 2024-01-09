@@ -73,8 +73,7 @@ NTS::Interpolator::Interpolator(Teuchos::ParameterList& params, const int& dim)
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 02/16|
  *----------------------------------------------------------------------*/
-bool NTS::Interpolator::Interpolate(
-    MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
+bool NTS::Interpolator::Interpolate(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
 {
   // call sub functions for 2 and 3 dimensions
   if (dim_ == 2)
@@ -92,7 +91,7 @@ bool NTS::Interpolator::Interpolate(
  |  interpolate (public)                                     farah 09/14|
  *----------------------------------------------------------------------*/
 void NTS::Interpolator::Interpolate2D(
-    MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -247,7 +246,7 @@ void NTS::Interpolator::Interpolate2D(
  |  interpolate (public)                                     farah 09/14|
  *----------------------------------------------------------------------*/
 bool NTS::Interpolator::Interpolate3D(
-    MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
 {
   bool success = false;
 
@@ -1002,7 +1001,7 @@ void NTS::Interpolator::nwWear2D(CONTACT::Node& mynode, MORTAR::MortarElement& m
     // deriv master x-coords
     for (int i = 0; i < ncol; ++i)
     {
-      MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mele.Nodes()[i]);
+      MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mele.Nodes()[i]);
 
       dmap_mcoord_gp_x[mnode->Dofs()[0]] += mval[i];
       dmap_mcoord_gp_y[mnode->Dofs()[1]] += mval[i];
@@ -1105,7 +1104,7 @@ void NTS::Interpolator::nwGap2D(CONTACT::Node& mynode, MORTAR::MortarElement& se
 
   for (int z = 0; z < ncol; ++z)
   {
-    MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mele.Nodes()[z]);
+    MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mele.Nodes()[z]);
 
     for (int k = 0; k < 2; ++k)
     {
@@ -1196,7 +1195,7 @@ void NTS::Interpolator::nwGap3D(CONTACT::Node& mynode, MORTAR::MortarElement& me
 
   for (int z = 0; z < ncol; ++z)
   {
-    MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mele.Nodes()[z]);
+    MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mele.Nodes()[z]);
 
     for (int k = 0; k < 3; ++k)
     {
@@ -1246,7 +1245,7 @@ void NTS::Interpolator::nwMasterTemp(CONTACT::Node& mynode, MORTAR::MortarElemen
   std::map<int, double>& dTpdT = mynode.TSIData().DerivTempMasterTemp();
   dTpdT.clear();
   for (int i = 0; i < mele.NumNode(); ++i)
-    dTpdT[dynamic_cast<MORTAR::MortarNode*>(mele.Nodes()[i])->Dofs()[0]] = mval[i];
+    dTpdT[dynamic_cast<MORTAR::Node*>(mele.Nodes()[i])->Dofs()[0]] = mval[i];
 
   std::map<int, double>& dTpdd = mynode.TSIData().DerivTempMasterDisp();
   dTpdd.clear();
@@ -1379,18 +1378,18 @@ void NTS::Interpolator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarE
   snodes = sele.Nodes();
   mnodes = mele.Nodes();
 
-  std::vector<MORTAR::MortarNode*> smrtrnodes(numsnode);
-  std::vector<MORTAR::MortarNode*> mmrtrnodes(nummnode);
+  std::vector<MORTAR::Node*> smrtrnodes(numsnode);
+  std::vector<MORTAR::Node*> mmrtrnodes(nummnode);
 
   for (int i = 0; i < numsnode; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
-    mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<MORTAR::Node*>(mnodes[i]);
     if (!mmrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
@@ -1559,20 +1558,20 @@ void NTS::Interpolator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarE
   // we need the participating slave and master nodes
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(sele.NumNode());
-  std::vector<MORTAR::MortarNode*> mmrtrnodes(mele.NumNode());
+  std::vector<MORTAR::Node*> smrtrnodes(sele.NumNode());
+  std::vector<MORTAR::Node*> mmrtrnodes(mele.NumNode());
   const int numsnode = sele.NumNode();
   const int nummnode = mele.NumNode();
 
   for (int i = 0; i < numsnode; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("DerivXiGP3D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
-    mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<MORTAR::Node*>(mnodes[i]);
     if (!mmrtrnodes[i]) dserror("DerivXiGP3D: Null pointer!");
   }
 
@@ -1805,7 +1804,7 @@ NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
-    MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
 {
   if (ndim_ == 2)
     Interpolate2D(snode, meles);
@@ -1823,7 +1822,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
-    MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -1860,7 +1859,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
       // node-wise M value
       for (int k = 0; k < nm_; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(meles[nummaster]->Nodes()[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(meles[nummaster]->Nodes()[k]);
 
         // multiply the two shape functions
         double prod = mval(k);
@@ -1886,7 +1885,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
-    MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -2049,7 +2048,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
       // node-wise M value
       for (int k = 0; k < nm_; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(meles[nummaster]->Nodes()[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(meles[nummaster]->Nodes()[k]);
 
         // multiply the two shape functions
         double prod = mval(k);

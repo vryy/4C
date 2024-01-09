@@ -16,14 +16,14 @@
 BACI_NAMESPACE_OPEN
 
 
-MORTAR::MortarNodeType MORTAR::MortarNodeType::instance_;
+MORTAR::NodeType MORTAR::NodeType::instance_;
 
 
-CORE::COMM::ParObject* MORTAR::MortarNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MORTAR::NodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
-  auto* node = new MORTAR::MortarNode(0, x, 0, dofs, false);
+  auto* node = new MORTAR::Node(0, x, 0, dofs, false);
   node->Unpack(data);
   return node;
 }
@@ -31,7 +31,7 @@ CORE::COMM::ParObject* MORTAR::MortarNodeType::Create(const std::vector<char>& d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
+MORTAR::NodeDataContainer::NodeDataContainer()
     : drows_(0), drows_nts_(0), drows_lts_(0), drows_ltl_(0)
 {
   for (int i = 0; i < 3; ++i)
@@ -48,7 +48,7 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void MORTAR::NodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add n_
   CORE::COMM::ParObject::AddtoPack(data, n_, 3 * sizeof(double));
@@ -68,7 +68,7 @@ void MORTAR::MortarNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNodeDataContainer::Unpack(
+void MORTAR::NodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // n_
@@ -86,7 +86,7 @@ void MORTAR::MortarNodeDataContainer::Unpack(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MORTAR::MortarNode::MortarNode(int id, const std::vector<double>& coords, const int owner,
+MORTAR::Node::Node(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave)
     : DRT::Node(id, coords, owner),
       isslave_(isslave),
@@ -114,7 +114,7 @@ MORTAR::MortarNode::MortarNode(int id, const std::vector<double>& coords, const 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MORTAR::MortarNode::MortarNode(const MORTAR::MortarNode& old)
+MORTAR::Node::Node(const MORTAR::Node& old)
     : DRT::Node(old),
       isslave_(old.isslave_),
       istiedslave_(old.istiedslave_),
@@ -136,16 +136,16 @@ MORTAR::MortarNode::MortarNode(const MORTAR::MortarNode& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MORTAR::MortarNode* MORTAR::MortarNode::Clone() const
+MORTAR::Node* MORTAR::Node::Clone() const
 {
-  auto* newnode = new MORTAR::MortarNode(*this);
+  auto* newnode = new MORTAR::Node(*this);
   return newnode;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& mrtrnode)
+std::ostream& operator<<(std::ostream& os, const MORTAR::Node& mrtrnode)
 {
   mrtrnode.Print(os);
   return os;
@@ -154,7 +154,7 @@ std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& mrtrnode)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::Print(std::ostream& os) const
+void MORTAR::Node::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Mortar ";
@@ -174,7 +174,7 @@ void MORTAR::MortarNode::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::Pack(CORE::COMM::PackBuffer& data) const
+void MORTAR::Node::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -224,7 +224,7 @@ void MORTAR::MortarNode::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
+void MORTAR::Node::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -269,7 +269,7 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
   bool hasdata = ExtractInt(position, data);
   if (hasdata)
   {
-    modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
+    modata_ = Teuchos::rcp(new MORTAR::NodeDataContainer());
     modata_->Unpack(position, data);
   }
   else
@@ -284,7 +284,7 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddDValue(const int& colnode, const double& val)
+void MORTAR::Node::AddDValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
   if (not IsSlave()) dserror("AddDValue: function called for master node %i", Id());
@@ -300,7 +300,7 @@ void MORTAR::MortarNode::AddDValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddDntsValue(const int& colnode, const double& val)
+void MORTAR::Node::AddDntsValue(const int& colnode, const double& val)
 {
   // check if this has been called before
   if ((int)MoData().GetDnts().size() == 0) MoData().GetDnts().resize(dentries_);
@@ -312,7 +312,7 @@ void MORTAR::MortarNode::AddDntsValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddDltsValue(const int& colnode, const double& val)
+void MORTAR::Node::AddDltsValue(const int& colnode, const double& val)
 {
   // check if this has been called before
   if ((int)MoData().GetDlts().size() == 0) MoData().GetDlts().resize(dentries_);
@@ -324,7 +324,7 @@ void MORTAR::MortarNode::AddDltsValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddDltlValue(const int& colnode, const double& val)
+void MORTAR::Node::AddDltlValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
   if (not IsSlave()) dserror("AddDValue: function called for master node %i", Id());
@@ -340,7 +340,7 @@ void MORTAR::MortarNode::AddDltlValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddMValue(const int& colnode, const double& val)
+void MORTAR::Node::AddMValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
   if (not IsSlave()) dserror("AddMValue: function called for master node %i", Id());
@@ -353,7 +353,7 @@ void MORTAR::MortarNode::AddMValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddMntsValue(const int& colnode, const double& val)
+void MORTAR::Node::AddMntsValue(const int& colnode, const double& val)
 {
   // add the pair (col,val) to the given row
   MoData().GetMnts()[colnode] += val;
@@ -362,7 +362,7 @@ void MORTAR::MortarNode::AddMntsValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddMltsValue(const int& colnode, const double& val)
+void MORTAR::Node::AddMltsValue(const int& colnode, const double& val)
 {
   // add the pair (col,val) to the given row
   MoData().GetMlts()[colnode] += val;
@@ -371,7 +371,7 @@ void MORTAR::MortarNode::AddMltsValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddMltlValue(const int& colnode, const double& val)
+void MORTAR::Node::AddMltlValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
   if (not IsSlave()) dserror("AddMValue: function called for master node %i", Id());
@@ -384,7 +384,7 @@ void MORTAR::MortarNode::AddMltlValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddMmodValue(const int& colnode, const double& val)
+void MORTAR::Node::AddMmodValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
   if (not IsSlave()) dserror("AddMmodValue: function called for master node %i", Id());
@@ -397,7 +397,7 @@ void MORTAR::MortarNode::AddMmodValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::InitializeDataContainer()
+void MORTAR::Node::InitializeDataContainer()
 {
   // get maximum size of nodal D-entries
   dentries_ = 0;
@@ -414,13 +414,13 @@ void MORTAR::MortarNode::InitializeDataContainer()
   }
 
   // only initialize if not yet done
-  if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
+  if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new MORTAR::NodeDataContainer());
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::ResetDataContainer()
+void MORTAR::Node::ResetDataContainer()
 {
   // reset to Teuchos::null
   modata_ = Teuchos::null;
@@ -429,7 +429,7 @@ void MORTAR::MortarNode::ResetDataContainer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::BuildAveragedNormal()
+void MORTAR::Node::BuildAveragedNormal()
 {
   // reset normal and tangents when this method is called
   for (int j = 0; j < 3; ++j) MoData().n()[j] = 0.0;
@@ -474,11 +474,10 @@ void MORTAR::MortarNode::BuildAveragedNormal()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
-    const Teuchos::RCP<DRT::Discretization> intdis, const Teuchos::RCP<Epetra_Map> nodesearchmap,
-    double& mindist)
+MORTAR::Node* MORTAR::Node::FindClosestNode(const Teuchos::RCP<DRT::Discretization> intdis,
+    const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist)
 {
-  MortarNode* closestnode = nullptr;
+  Node* closestnode = nullptr;
 
   // loop over all nodes of the DRT::Discretization that are
   // included in the given Epetra_Map ("brute force" search)
@@ -487,7 +486,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
     int gid = nodesearchmap->GID(i);
     DRT::Node* node = intdis->gNode(gid);
     if (!node) dserror("FindClosestNode: Cannot find node with gid %", gid);
-    auto* mrtrnode = dynamic_cast<MortarNode*>(node);
+    auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // build distance between the two nodes
     double dist = 0.0;
@@ -513,7 +512,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, const double& limit)
+bool MORTAR::Node::CheckMeshDistortion(double& relocation, const double& limit)
 {
   // initialize return parameter
   bool ok = true;

@@ -637,8 +637,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
-    const MORTAR::MortarNode& slavenode, const double& lumpedarea,
-    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+    const MORTAR::Node& slavenode, const double& lumpedarea, MORTAR::MortarElement& slaveelement,
+    MORTAR::MortarElement& masterelement,
     const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
     const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& ephinp_master,
     CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,

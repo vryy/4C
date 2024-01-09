@@ -911,7 +911,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(const DRT::Discretizatio
       int ijk[3];
       {
         DRT::Node* node = nodes[0];
-        const double* coords = dynamic_cast<MORTAR::MortarNode*>(node)->xspatial();
+        const double* coords = dynamic_cast<MORTAR::Node*>(node)->xspatial();
         ConvertPosToijk(coords, ijk);
       }
 
@@ -922,7 +922,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(const DRT::Discretizatio
       for (int j = 1; j < numnode; ++j)
       {
         DRT::Node* node = nodes[j];
-        const double* coords = dynamic_cast<MORTAR::MortarNode*>(node)->xspatial();
+        const double* coords = dynamic_cast<MORTAR::Node*>(node)->xspatial();
         int ijk[3];
         ConvertPosToijk(coords, ijk);
 

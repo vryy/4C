@@ -719,7 +719,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
   int nodemaster = meles[0]->NumNode();
 
   // create empty vectors for shape fct. evaluation
@@ -736,7 +736,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -860,7 +860,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   static CORE::LINALG::Matrix<ns_, 1> sval;
@@ -882,7 +882,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   std::vector<int> ids;
   for (int i = 0; i < nrow; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(sele.Nodes()[i]);
     if (mymrtrnode->IsOnBoundorCE())
     {
       // get local bound id
@@ -900,7 +900,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   // row loop
   for (int i = 0; i < nrow; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(sele.Nodes()[i]);
     if (!mymrtrnode->IsOnBoundorCE())
     {
       trafo(i, i) = 1.0;
@@ -1013,7 +1013,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
   {
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
 
       if (cnode->Owner() != comm.MyPID()) continue;
       if (cnode->IsOnBoundorCE()) continue;
@@ -1021,7 +1021,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval(j) * mval(k) * jac * wgt;
@@ -1039,7 +1039,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
 
         for (int k = 0; k < nrow; ++k)
         {
-          MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+          MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(snodes[k]);
 
           bool k_boundnode = mnode->IsOnBoundorCE();
 
@@ -1067,7 +1067,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
   {
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
 
       if (cnode->Owner() != comm.MyPID()) continue;
       if ((shapefcn_ == INPAR::MORTAR::shape_standard && cnode->IsOnBoundorCE()) ||
@@ -1079,7 +1079,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval(j) * mval(k) * jac * wgt;
@@ -1089,7 +1089,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* snode = dynamic_cast<MORTAR::Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmval(j) * sval(k) * jac * wgt;
@@ -1143,12 +1143,12 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * mval(k) * jac * wgt;
@@ -1158,7 +1158,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* snode = dynamic_cast<MORTAR::Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * sval(k) * jac * wgt;
@@ -1183,12 +1183,12 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nintrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(sintnodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmintval[j] * mval(k) * jac * wgt;
@@ -1198,7 +1198,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* snode = dynamic_cast<MORTAR::Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmintval[j] * sval(k) * jac * wgt;
@@ -1221,12 +1221,12 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * mval(k) * jac * wgt;
@@ -1344,8 +1344,8 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
   }  // for (int gp=0;gp<nGP();++gp)
 
   // prepare computation of purely geometric part of Mmod entries
-  MortarNode* snode0 = dynamic_cast<MortarNode*>(sele.Nodes()[0]);
-  MortarNode* snode1 = dynamic_cast<MortarNode*>(sele.Nodes()[1]);
+  Node* snode0 = dynamic_cast<Node*>(sele.Nodes()[0]);
+  Node* snode1 = dynamic_cast<Node*>(sele.Nodes()[1]);
 
   // normals
   double n[2][2];
@@ -1407,7 +1407,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
   int msize = meles.size();
   int nrow = sele.NumNode();
   int nmnode = meles[0]->NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   static CORE::LINALG::Matrix<ns_, 1> sval;
@@ -1535,7 +1535,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   static CORE::LINALG::Matrix<ns_, 1> sval;
@@ -1551,7 +1551,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   std::vector<int> ids;
   for (int i = 0; i < nrow; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(sele.Nodes()[i]);
     if (mymrtrnode->IsOnBoundorCE())
     {
       // get local bound id
@@ -1569,7 +1569,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   // row loop
   for (int i = 0; i < nrow; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(sele.Nodes()[i]);
     if (!mymrtrnode->IsOnBoundorCE())
     {
       trafo(i, i) = 1.0;
@@ -1723,7 +1723,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
   int nintrow = sintele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval;
@@ -1742,7 +1742,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBoundorCE();
   }

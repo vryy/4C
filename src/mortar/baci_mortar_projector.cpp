@@ -500,7 +500,7 @@ MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectNodalNormal(
-    MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi)
+    MORTAR::Node& node, MORTAR::MortarElement& ele, double* xi)
 {
   bool ok = true;
   if (ndim_ == 2)
@@ -562,7 +562,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectNodalNormal(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectElementNormal(
-    MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi)
+    MORTAR::Node& node, MORTAR::MortarElement& ele, double* xi)
 {
   bool ok = true;
   if (ndim_ == 2)
@@ -659,7 +659,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     for (int i = 0; i < ns_; ++i)
     {
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+      Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
 
       for (int j = 0; j < ndim_; ++j)
       {
@@ -739,44 +739,44 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4A
   double length_n = 0.0;
   double a1 = 0.0;
   bool all_negative = true;
-  MortarNode* mycnode_0 = nullptr;
-  MortarNode* mycnode_1 = nullptr;
-  MortarNode* mycnode_2 = nullptr;
+  Node* mycnode_0 = nullptr;
+  Node* mycnode_1 = nullptr;
+  Node* mycnode_2 = nullptr;
 
   // project gp onto auxn
   for (int i = 0; i < nnode; ++i)  // loop over edges
   {
     if (i == 0)
     {
-      mycnode_1 = dynamic_cast<MortarNode*>(mynodes[0]);
+      mycnode_1 = dynamic_cast<Node*>(mynodes[0]);
       if (!mycnode_1) dserror("Project: Null pointer!");
 
-      mycnode_0 = dynamic_cast<MortarNode*>(mynodes[3]);
+      mycnode_0 = dynamic_cast<Node*>(mynodes[3]);
       if (!mycnode_0) dserror("Project: Null pointer!");
 
-      mycnode_2 = dynamic_cast<MortarNode*>(mynodes[1]);
+      mycnode_2 = dynamic_cast<Node*>(mynodes[1]);
       if (!mycnode_2) dserror("Project: Null pointer!");
     }
     if (i == 3)
     {
-      mycnode_1 = dynamic_cast<MortarNode*>(mynodes[3]);
+      mycnode_1 = dynamic_cast<Node*>(mynodes[3]);
       if (!mycnode_1) dserror("Project: Null pointer!");
 
-      mycnode_0 = dynamic_cast<MortarNode*>(mynodes[2]);
+      mycnode_0 = dynamic_cast<Node*>(mynodes[2]);
       if (!mycnode_0) dserror("Project: Null pointer!");
 
-      mycnode_2 = dynamic_cast<MortarNode*>(mynodes[0]);
+      mycnode_2 = dynamic_cast<Node*>(mynodes[0]);
       if (!mycnode_2) dserror("Project: Null pointer!");
     }
     if (i == 1 || i == 2)
     {
-      mycnode_1 = dynamic_cast<MortarNode*>(mynodes[i]);
+      mycnode_1 = dynamic_cast<Node*>(mynodes[i]);
       if (!mycnode_1) dserror("Project: Null pointer!");
 
-      mycnode_0 = dynamic_cast<MortarNode*>(mynodes[i - 1]);
+      mycnode_0 = dynamic_cast<Node*>(mynodes[i - 1]);
       if (!mycnode_0) dserror("Project: Null pointer!");
 
-      mycnode_2 = dynamic_cast<MortarNode*>(mynodes[i + 1]);
+      mycnode_2 = dynamic_cast<Node*>(mynodes[i + 1]);
       if (!mycnode_2) dserror("Project: Null pointer!");
     }
 
@@ -909,7 +909,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     for (int i = 0; i < ns_; ++i)
     {
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mypoints[i]);
+      Node* mymrtrnode = dynamic_cast<Node*>(mypoints[i]);
 
       for (int j = 0; j < ndim_; ++j)
       {
@@ -921,7 +921,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     for (int i = 0; i < gpele.NumNode(); ++i)
     {
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+      Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
       for (int j = 0; j < ndim_; ++j)
       {
         gpn[j] += val(i) * mymrtrnode->MoData().n()[j];
@@ -1104,8 +1104,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::MortarNode& snode,
-    MORTAR::MortarElement& mele, double* xi, double* normal, double& dist)
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(
+    MORTAR::Node& snode, MORTAR::MortarElement& mele, double* xi, double* normal, double& dist)
 {
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3D is only for 3D problems!");
 
@@ -1188,7 +1188,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
 
     for (int i = 0; i < n_; ++i)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[i]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[i]);
       if (!mymnode) dserror("Null pointer!");
       for (int d = 0; d < 3; ++d)
       {
@@ -1273,7 +1273,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::MortarNode& snode,
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Node& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
@@ -1351,7 +1351,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
 
     for (int i = 0; i < n_; ++i)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[i]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[i]);
       if (!mymnode) dserror("Null pointer!");
       for (int d = 0; d < 3; ++d)
       {
@@ -1436,9 +1436,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
  |  Project snode onto melement with master normal           farah 08/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
-    MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi, double* normal,
-    double& dist, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(MORTAR::Node& snode,
+    MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3DLin is only for 3D problems!");
 
@@ -1479,7 +1479,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     // calc xmaster
     for (int j = 0; j < n_; ++j)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
       if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
@@ -1493,7 +1493,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     // calc normal part
     for (int j = 0; j < n_; ++j)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
       if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
@@ -1521,7 +1521,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     // calc xmaster
     for (int j = 0; j < n_; ++j)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
       if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
@@ -1536,7 +1536,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     // calc normal part
     for (int j = 0; j < n_; ++j)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
       if (!mymnode) dserror("Null pointer!");
 
       for (int i = 0; i < 3; ++i)
@@ -1594,7 +1594,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   normal[2] = 0.0;
   for (int j = 0; j < n_; ++j)
   {
-    MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+    Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
     if (!mymnode) dserror("Null pointer!");
 
     for (int i = 0; i < 3; ++i)
@@ -1638,7 +1638,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     // get master node
     DRT::Node* node = mele.Nodes()[i];
     if (!node) dserror("Cannot find master node");
-    MortarNode* mnode = dynamic_cast<MortarNode*>(node);
+    Node* mnode = dynamic_cast<Node*>(node);
 
     for (int k = 0; k < 3; ++k) (xmLin[k])[mnode->Dofs()[k]] += mval(i);
   }
@@ -1751,9 +1751,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
  |  Project snode onto melement with master normal           farah 05/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
-    MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi, double* normal,
-    double& dist, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(MORTAR::Node& snode,
+    MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) dserror("ProjectSNodeByMNormal2DLin is only for 2D problems!");
 
@@ -1794,7 +1794,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     // calc xmaster
     for (int j = 0; j < n_; ++j)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
       if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
@@ -1808,7 +1808,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     // calc normal part
     for (int j = 0; j < n_; ++j)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
       if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
@@ -1835,7 +1835,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     // calc xmaster
     for (int j = 0; j < n_; ++j)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
       if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
@@ -1848,7 +1848,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     // calc normal part
     for (int j = 0; j < n_; ++j)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
       if (!mymnode) dserror("Null pointer!");
 
       for (int i = 0; i < 2; ++i)
@@ -1903,7 +1903,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   normal[2] = 0.0;
   for (int j = 0; j < n_; ++j)
   {
-    MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
+    Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
     if (!mymnode) dserror("Null pointer!");
 
     for (int i = 0; i < 2; ++i)
@@ -1931,7 +1931,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     // get master node
     DRT::Node* node = mele.Nodes()[i];
     if (!node) dserror("Cannot find master node");
-    MortarNode* mnode = dynamic_cast<MortarNode*>(node);
+    Node* mnode = dynamic_cast<Node*>(node);
 
     for (int k = 0; k < 2; ++k) (xmLin[k])[mnode->Dofs()[k]] += mval(i);
   }
@@ -2039,8 +2039,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::MortarNode& snode,
-    MORTAR::MortarElement& mele, double* xi, double* normal, double& dist)
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(
+    MORTAR::Node& snode, MORTAR::MortarElement& mele, double* xi, double* normal, double& dist)
 {
   if (ndim_ != 2) dserror("ProjectSNodeByMNormal2D is only for 2D problems!");
 
@@ -2111,7 +2111,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
 
     for (int i = 0; i < n_; ++i)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[i]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[i]);
       if (!mymnode) dserror("Null pointer!");
       for (int d = 0; d < 3; ++d) meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
     }
@@ -2189,7 +2189,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
  |  Project snode onto melement with master normal + Lin     farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::MortarNode& snode,
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
@@ -2262,7 +2262,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
 
     for (int i = 0; i < n_; ++i)
     {
-      MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[i]);
+      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[i]);
       if (!mymnode) dserror("Null pointer!");
       for (int d = 0; d < 3; ++d) meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
     }
@@ -2358,7 +2358,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     // get master node
     DRT::Node* node = mele.Nodes()[i];
     if (!node) dserror("Cannot find master node");
-    MortarNode* mnode = dynamic_cast<MortarNode*>(node);
+    Node* mnode = dynamic_cast<Node*>(node);
 
     for (int k = 0; k < 2; ++k) (xmLin[k])[mnode->Dofs()[k]] += val(i);
   }
@@ -2376,7 +2376,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     // get master node
     DRT::Node* node = mele.Nodes()[i];
     if (!node) dserror("Cannot find master node");
-    MortarNode* mnode = dynamic_cast<MortarNode*>(node);
+    Node* mnode = dynamic_cast<Node*>(node);
 
     for (int k = 0; k < 2; ++k) (x_0Lin[k])[mnode->Dofs()[k]] += deriv1(i);
   }
@@ -2467,7 +2467,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     // get master node
     DRT::Node* node = mele.Nodes()[i];
     if (!node) dserror("Cannot find master node");
-    MortarNode* mnode = dynamic_cast<MortarNode*>(node);
+    Node* mnode = dynamic_cast<Node*>(node);
 
     for (int k = 0; k < 2; ++k) (x_0Linnew[k])[mnode->Dofs()[k]] += deriv(i);
 
@@ -2518,8 +2518,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal(MORTAR::MortarNode& snode,
-    MORTAR::MortarElement& mele, double* xi, double* normal, double& dist)
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal(
+    MORTAR::Node& snode, MORTAR::MortarElement& mele, double* xi, double* normal, double& dist)
 {
   if (ndim_ == 2)
   {
@@ -2542,7 +2542,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal(MORTAR::MortarN
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode,
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
@@ -2568,7 +2568,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR:
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::Node& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
@@ -2593,7 +2593,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::Mort
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 double MORTAR::MortarProjectorCalc<distype>::EvaluateFNodalNormal(
-    MORTAR::MortarNode& node, MORTAR::MortarElement& ele, const double* eta)
+    MORTAR::Node& node, MORTAR::MortarElement& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - xs ) x ns,
    or to be more precise the third component of this vector function!
@@ -2622,7 +2622,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFNodalNormal(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFNodalNormal(
-    MORTAR::MortarNode& node, MORTAR::MortarElement& ele, const double* eta)
+    MORTAR::Node& node, MORTAR::MortarElement& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)
    = Ni,eta * xim * nys - Ni,eta * yim * nxs,
@@ -2649,7 +2649,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFNodalNormal(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
-    MORTAR::MortarNode& node, MORTAR::MortarElement& ele, const double* eta)
+    MORTAR::Node& node, MORTAR::MortarElement& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xis - xm ) x ( Nj * njs),
    or to be more precise the third component of this vector function!
@@ -2691,7 +2691,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
 
   for (int i = 0; i < n_; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
 
     for (int j = 0; j < ndim_; ++j)
     {
@@ -2717,7 +2717,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
-    MORTAR::MortarNode& node, MORTAR::MortarElement& ele, const double* eta)
+    MORTAR::Node& node, MORTAR::MortarElement& ele, const double* eta)
 {
   if (ndim_ == 3) dserror("This Projector is only for 2D Problems!");
 
@@ -2776,7 +2776,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
 
   for (int i = 0; i < n_; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
 
     for (int j = 0; j < ndim_; ++j)
     {

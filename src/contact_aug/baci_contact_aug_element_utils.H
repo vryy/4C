@@ -169,7 +169,7 @@ namespace CONTACT
       dsassert(static_cast<int>(weights.M()) == ele.NumNode(), "Size mismatch!");
 
       for (unsigned nlid = 0; nlid < static_cast<unsigned>(weights.M()); ++nlid)
-        weights(nlid, 0) = static_cast<const MORTAR::MortarNode*>(nodes[nlid])->NurbsW();
+        weights(nlid, 0) = static_cast<const MORTAR::Node*>(nodes[nlid])->NurbsW();
     }
 
     /** \brief Evaluate the shape function values at a local position xi

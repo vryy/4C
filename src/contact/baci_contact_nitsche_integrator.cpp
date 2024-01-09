@@ -713,8 +713,7 @@ void CONTACT::UTILS::RelVel(MORTAR::MortarElement& ele,
     for (int d = 0; d < dim; ++d)
     {
       relVel(d) += fac * shape(n) * (ele.GetNodalCoords(d, n) - ele.GetNodalCoordsOld(d, n));
-      relVel_deriv[d][dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[n])->Dofs()[d]] +=
-          fac * shape(n);
+      relVel_deriv[d][dynamic_cast<MORTAR::Node*>(ele.Nodes()[n])->Dofs()[d]] += fac * shape(n);
 
       for (int sd = 0; sd < dim - 1; ++sd)
       {

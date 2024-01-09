@@ -2013,11 +2013,11 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
 
   // we need all participating slave nodes
   DRT::Node** snodes = SurfaceElement().Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(nrow);
+  std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("MasterVertexLinearization: Null pointer!");
   }
 
@@ -2055,8 +2055,8 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
   // loop over all intEle nodes
   for (int in = 0; in < LineElement()->NumNode(); ++in)
   {
-    MORTAR::MortarNode* mrtrmnode =
-        dynamic_cast<MORTAR::MortarNode*>(idiscret_.gNode(LineElement()->NodeIds()[in]));
+    MORTAR::Node* mrtrmnode =
+        dynamic_cast<MORTAR::Node*>(idiscret_.gNode(LineElement()->NodeIds()[in]));
     if (mrtrmnode == nullptr) dserror("dynamic cast to mortar node went wrong");
 
     for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->Dofs()[dim]] += 1.;
@@ -2066,8 +2066,8 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
   // loop over all vertices
   for (int i = 0; i < LineElement()->NumNode(); ++i)
   {
-    MORTAR::MortarNode* mrtrmnode =
-        dynamic_cast<MORTAR::MortarNode*>(idiscret_.gNode(LineElement()->NodeIds()[i]));
+    MORTAR::Node* mrtrmnode =
+        dynamic_cast<MORTAR::Node*>(idiscret_.gNode(LineElement()->NodeIds()[i]));
     if (!mrtrmnode) dserror("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -2208,11 +2208,11 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
 
   // we need all participating slave nodes
   DRT::Node** snodes = SurfaceElement().Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(nrow);
+  std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("SlaveVertexLinearization: Null pointer!");
   }
 
@@ -2244,7 +2244,7 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
   // loop over all vertices
   for (int i = 0; i < SurfaceElement().NumNode(); ++i)
   {
-    MORTAR::MortarNode* mrtrsnode = dynamic_cast<MORTAR::MortarNode*>(SurfaceElement().Nodes()[i]);
+    MORTAR::Node* mrtrsnode = dynamic_cast<MORTAR::Node*>(SurfaceElement().Nodes()[i]);
     if (!mrtrsnode) dserror("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -2433,7 +2433,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 
   for (int i = 0; i < nrow; ++i)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[i]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[i]);
     gpn[0] += sval[i] * mymrtrnode->MoData().n()[0];
     gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
     gpn[2] += sval[i] * mymrtrnode->MoData().n()[2];

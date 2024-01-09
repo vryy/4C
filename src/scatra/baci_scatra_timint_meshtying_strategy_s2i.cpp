@@ -1508,7 +1508,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarCell(const DRT::Discretization&
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::EvaluateSlaveNode(const DRT::Discretization& idiscret,
-    const MORTAR::MortarNode& slavenode, const double& lumpedarea,
+    const MORTAR::Node& slavenode, const double& lumpedarea,
     const INPAR::SCATRA::ImplType& impltype, MORTAR::MortarElement& slaveelement,
     MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
     DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
@@ -1666,7 +1666,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateNTS(const Epetra_IntVector& islavenod
   {
     // extract slave-side node
     auto* const slavenode =
-        dynamic_cast<MORTAR::MortarNode* const>(idiscret.gNode(noderowmap_slave.GID(inode)));
+        dynamic_cast<MORTAR::Node* const>(idiscret.gNode(noderowmap_slave.GID(inode)));
     if (slavenode == nullptr) dserror("Couldn't extract slave-side node from discretization!");
 
     // extract first slave-side element associated with current slave-side node
@@ -2317,7 +2317,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           {
             // extract slave-side node
             auto* const slavenode =
-                dynamic_cast<MORTAR::MortarNode*>(idiscret.gNode(noderowmap_slave.GID(inode)));
+                dynamic_cast<MORTAR::Node*>(idiscret.gNode(noderowmap_slave.GID(inode)));
             if (!slavenode)
               dserror("Couldn't extract slave-side mortar node from mortar discretization!");
 
@@ -4059,13 +4059,12 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretizat
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discretization& idiscret,
-    const MORTAR::MortarNode& slavenode, const double& lumpedarea,
-    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
-    DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
-    const Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& ntsmatrix1,
-    CORE::LINALG::SerialDenseMatrix& ntsmatrix2, CORE::LINALG::SerialDenseMatrix& ntsmatrix3,
-    CORE::LINALG::SerialDenseMatrix& ntsmatrix4, CORE::LINALG::SerialDenseVector& ntsvector1,
-    CORE::LINALG::SerialDenseVector& ntsvector2)
+    const MORTAR::Node& slavenode, const double& lumpedarea, MORTAR::MortarElement& slaveelement,
+    MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
+    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseMatrix& ntsmatrix1, CORE::LINALG::SerialDenseMatrix& ntsmatrix2,
+    CORE::LINALG::SerialDenseMatrix& ntsmatrix3, CORE::LINALG::SerialDenseMatrix& ntsmatrix4,
+    CORE::LINALG::SerialDenseVector& ntsvector1, CORE::LINALG::SerialDenseVector& ntsvector2)
 {
   // extract and evaluate action
   switch (INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
@@ -4342,7 +4341,7 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
-    const MORTAR::MortarNode& slavenode, MORTAR::MortarElement& slaveelement,
+    const MORTAR::Node& slavenode, MORTAR::MortarElement& slaveelement,
     MORTAR::MortarElement& masterelement)
 {
   // safety check
@@ -4548,8 +4547,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
-    const MORTAR::MortarNode& slavenode, const double& lumpedarea,
-    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+    const MORTAR::Node& slavenode, const double& lumpedarea, MORTAR::MortarElement& slaveelement,
+    MORTAR::MortarElement& masterelement,
     const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
     const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& ephinp_master,
     CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,

@@ -68,7 +68,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
   if (!mynodes) dserror("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {
-    MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mycnode) dserror("Null pointer!");
     mycnode->HasSegment() = true;
   }

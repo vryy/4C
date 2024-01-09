@@ -93,7 +93,7 @@ bool MORTAR::Coupling2d::Project()
   // project slave nodes onto master element
   for (int i = 0; i < SlaveElement().NumNode(); ++i)
   {
-    auto* snode = dynamic_cast<MORTAR::MortarNode*>(mysnodes[i]);
+    auto* snode = dynamic_cast<MORTAR::Node*>(mysnodes[i]);
     std::array<double, 2> xi = {0.0, 0.0};
 
     if (SlaveElement().Shape() == CORE::FE::CellType::nurbs3)
@@ -139,7 +139,7 @@ bool MORTAR::Coupling2d::Project()
   // project master nodes onto slave element
   for (int i = 0; i < 2; ++i)
   {
-    auto* mnode = dynamic_cast<MORTAR::MortarNode*>(mymnodes[i]);
+    auto* mnode = dynamic_cast<MORTAR::Node*>(mymnodes[i]);
     std::array<double, 2> xi = {0.0, 0.0};
 
     if (MasterElement().Shape() == CORE::FE::CellType::nurbs3)
@@ -163,11 +163,11 @@ bool MORTAR::Coupling2d::Project()
 
       for (int mn = 0; mn < MasterElement().NumNode(); mn++)
       {
-        auto* mnode2 = dynamic_cast<MORTAR::MortarNode*>(mymnodes[mn]);
+        auto* mnode2 = dynamic_cast<MORTAR::Node*>(mymnodes[mn]);
         for (int dim = 0; dim < 2; ++dim) xm[dim] += mval(mn) * mnode2->xspatial()[dim];
       }
       std::vector<int> mdofs(2);
-      MORTAR::MortarNode tmp_node(mnode->Id(), xm, mnode->Owner(), mdofs, false);
+      MORTAR::Node tmp_node(mnode->Id(), xm, mnode->Owner(), mdofs, false);
       MORTAR::MortarProjector::Impl(SlaveElement())
           ->ProjectElementNormal(tmp_node, SlaveElement(), xi.data());
     }
@@ -831,7 +831,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
   if (!mynodes) dserror("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {
-    auto* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    auto* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mycnode) dserror("Null pointer!");
     mycnode->HasSegment() = true;
   }

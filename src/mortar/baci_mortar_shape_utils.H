@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 namespace MORTAR
 {
-  class MortarNode;
+  class Node;
 
   namespace UTILS
   {
@@ -137,7 +137,7 @@ namespace MORTAR
       bool bound = false;
       for (int i = 0; i < nnode; ++i)
       {
-        MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+        Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) dserror("EvaluateShapeLagMult: Null pointer!");
         bound += mymrtrnode->IsOnBound();
       }
@@ -449,7 +449,7 @@ namespace MORTAR
       bool bound = false;
       for (int i = 0; i < ele.NumNode(); ++i)
       {
-        MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+        Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) dserror("EvaluateShapeLagMult: Null pointer!");
         bound += mymrtrnode->IsOnBound();
       }
@@ -1907,7 +1907,7 @@ namespace MORTAR
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
-            weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
           CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
           CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
@@ -1921,7 +1921,7 @@ namespace MORTAR
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
-            weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
           CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
           CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
@@ -1967,7 +1967,7 @@ namespace MORTAR
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
-            weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
           CORE::LINALG::SerialDenseVector uv(2);
           uv(0) = xi0;

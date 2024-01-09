@@ -267,7 +267,7 @@ namespace CONTACT
     //! @name Quantity control methods
 
     /*!
-    \brief Get some nodal quantity globally and store into MortarNodes
+    \brief Get some nodal quantity globally and store into MORTAR::Node(s)
 
     The enum input parameter defines, which quantity has to be updated.
     Currently, the possibilities "lmold", "lmcurrent", "lmupdate" and
@@ -279,16 +279,16 @@ namespace CONTACT
     problems. Finally, "lmuzawa" addresses the LM update within an Uzawa
     augmented Lagrangian scheme.
 
-    \param type (in): enum defining which quantity to store into MortarNodes
+    \param type (in): enum defining which quantity to store into MORTAR::Node(s)
 
     */
     void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) override;
 
     /*!
-    \brief Get dirichlet B.C. status and store into MortarNodes
+    \brief Get dirichlet B.C. status and store into MORTAR::Node(s)
 
     This is called once at the beginning of the simulation
-    to set the D.B.C. status in each MortarNodes.
+    to set the D.B.C. status in each MORTAR::Node.
 
     \param dbcmaps (in): MapExtractor carrying global dbc map
 

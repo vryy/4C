@@ -200,7 +200,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 
       for (int k = 0; k < element->NumPoint(); ++k)
       {
-        MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
+        Node* mrtrnode = dynamic_cast<Node*>(nodes[k]);
         if (!mrtrnode) dserror("Null pointer!");
         const auto& posnode = mrtrnode->X();
 

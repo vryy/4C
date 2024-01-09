@@ -49,7 +49,7 @@ namespace MORTAR
 {
   // forward declarations
   class MortarInterface;
-  class MortarNode;
+  class Node;
   class MortarElement;
   class IntElement;
   class BinaryTree;
@@ -964,13 +964,13 @@ namespace MORTAR
     //! @name Evlauation methods
 
     /*!
-    \brief Add a MORTAR::MortarNode to the interface (Filled()==true NOT prerequisite)
+    \brief Add a MORTAR::Node to the interface (Filled()==true NOT prerequisite)
 
     \param mrtrnode (in): Teuchos::rcp to a mortar node
 
     \return Filled()==false
     */
-    void AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrtrnode);
+    void AddMortarNode(Teuchos::RCP<MORTAR::Node> mrtrnode);
 
     /*!
     \brief Add a MORTAR::MortarElement to the interface (Filled()==true is prerequisite)
@@ -1287,7 +1287,7 @@ namespace MORTAR
     /*!
     \brief find meles for one snode
     */
-    void FindMEles(MortarNode& mrtrnode, std::vector<MortarElement*>& meles) const;
+    void FindMEles(Node& mrtrnode, std::vector<MortarElement*>& meles) const;
 
     /*!
     \brief return integration time for current interface
@@ -1494,8 +1494,7 @@ namespace MORTAR
     \brief find master nodes for one snode
 
     */
-    void FindMNodes(
-        MortarNode& mrtrnode, std::vector<MortarElement*>& meles, std::vector<MortarNode*>& mnodes);
+    void FindMNodes(Node& mrtrnode, std::vector<MortarElement*>& meles, std::vector<Node*>& mnodes);
 
     /*!
     \brief Initialize data container for nodes and elements

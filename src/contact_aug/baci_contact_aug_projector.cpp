@@ -174,7 +174,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 
   for (unsigned i = 0; i < REF_NUMNODES; ++i)
   {
-    const MORTAR::MortarNode& mnode = static_cast<const MORTAR::MortarNode&>(*ref_nodes[i]);
+    const MORTAR::Node& mnode = static_cast<const MORTAR::Node&>(*ref_nodes[i]);
     const double* x_ref_node = mnode.xspatial();
     const double* n_ref_node = mnode.MoData().n();
 
@@ -190,7 +190,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 
   for (unsigned i = 0; i < TAR_NUMNODES; ++i)
   {
-    const MORTAR::MortarNode& mnode = static_cast<const MORTAR::MortarNode&>(*tnodes[i]);
+    const MORTAR::Node& mnode = static_cast<const MORTAR::Node&>(*tnodes[i]);
     const double* tar_x = mnode.xspatial();
 
     std::copy(tar_x, tar_x + probdim, &tar_coords_(0, i));

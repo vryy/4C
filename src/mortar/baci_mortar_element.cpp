@@ -303,8 +303,8 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 int MORTAR::MortarElement::NumDofPerNode(const DRT::Node& node) const
 {
-  const MORTAR::MortarNode* mnode = dynamic_cast<const MORTAR::MortarNode*>(&node);
-  if (!mnode) dserror("Node is not a MortarNode");
+  const MORTAR::Node* mnode = dynamic_cast<const MORTAR::Node*>(&node);
+  if (!mnode) dserror("Node is not a Node");
   return mnode->NumDof();
 }
 
@@ -701,7 +701,7 @@ double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(const double* xi, do
   // loop over all nodes of this element
   for (int i = 0; i < NumNode(); ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(Nodes()[i]);
     n[0] = val[i] * mymrtrnode->MoData().n()[0];
     n[1] = val[i] * mymrtrnode->MoData().n()[1];
     n[2] = val[i] * mymrtrnode->MoData().n()[2];
@@ -767,7 +767,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
   // now the derivative
   for (int n = 0; n < nnodes; ++n)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[n]);
+    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[n]);
     if (!mymrtrnode) dserror("DerivUnitNormalAtXi: Null pointer!");
     int ndof = mymrtrnode->NumDof();
 
@@ -839,7 +839,7 @@ void MORTAR::MortarElement::GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coor
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
 
     const double* x = mymrtrnode->xspatial();
@@ -861,7 +861,7 @@ void MORTAR::MortarElement::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& c
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mymrtrnode) dserror("GetNodalCoordsOld: Null pointer!");
 
     coord(0, i) = mymrtrnode->X()[0] + mymrtrnode->uold()[0];
@@ -885,7 +885,7 @@ void MORTAR::MortarElement::GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lag
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
 
     lagmult(0, i) = mymrtrnode->MoData().lm()[0];
@@ -1102,7 +1102,7 @@ void MORTAR::MortarElement::DerivJacobian(
   // *********************************************************************
   for (int i = 0; i < nnodes; ++i)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[i]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[i]);
     if (!mymrtrnode) dserror("DerivJacobian: Null pointer!");
 
     derivjac[mymrtrnode->Dofs()[0]] +=
@@ -1661,7 +1661,7 @@ void MORTAR::MortarElement::NodeLinearization(
   // loop over all intEle nodes
   for (int in = 0; in < NumNode(); ++in)
   {
-    MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(Nodes()[in]);
+    MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(Nodes()[in]);
     for (int dim = 0; dim < Dim(); ++dim) nodelin[in][dim][mrtrnode->Dofs()[dim]] += 1.;
   }
 }

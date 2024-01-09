@@ -127,7 +127,7 @@ namespace MORTAR
     // that this Id is now used twice: once for the control point (as a part
     // of the discretization) and once for the pseudo-node, which is only
     // stored here temporarily.
-    std::vector<MORTAR::MortarNode> nodes_;
+    std::vector<MORTAR::Node> nodes_;
     std::vector<DRT::Node*> nodes_ptr_;
     const bool rewind_;  // if the parameter space of the int element has been rewinded
 

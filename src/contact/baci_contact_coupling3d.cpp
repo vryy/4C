@@ -123,7 +123,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     if (!mynodes) dserror("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
-      MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+      MORTAR::Node* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
       if (!mycnode) dserror("Null pointer!");
       mycnode->HasSegment() = true;
     }
@@ -367,11 +367,11 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
 
   // we need all participating slave nodes
   DRT::Node** snodes = SlaveIntElement().Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(nrow);
+  std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("SlaveVertexLinearization: Null pointer!");
   }
 
@@ -409,7 +409,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
   // loop over all vertices
   for (int i = 0; i < SlaveIntElement().NumNode(); ++i)
   {
-    MORTAR::MortarNode* mrtrsnode = dynamic_cast<MORTAR::MortarNode*>(SlaveIntElement().Nodes()[i]);
+    MORTAR::Node* mrtrsnode = dynamic_cast<MORTAR::Node*>(SlaveIntElement().Nodes()[i]);
     if (!mrtrsnode) dserror("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -506,11 +506,11 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
 
   // we need all participating slave nodes
   DRT::Node** snodes = SlaveIntElement().Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(nrow);
+  std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("MasterVertexLinearization: Null pointer!");
   }
 
@@ -557,8 +557,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
     // loop over all intEle nodes
     for (int in = 0; in < MasterIntElement().NumNode(); ++in)
     {
-      MORTAR::MortarNode* mrtrmnode =
-          dynamic_cast<MORTAR::MortarNode*>(MasterIntElement().Nodes()[in]);
+      MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[in]);
       if (mrtrmnode == nullptr) dserror("dynamic cast to mortar node went wrong");
 
       for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->Dofs()[dim]] += 1.;
@@ -571,8 +570,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
   // loop over all vertices
   for (int i = 0; i < MasterIntElement().NumNode(); ++i)
   {
-    MORTAR::MortarNode* mrtrmnode =
-        dynamic_cast<MORTAR::MortarNode*>(MasterIntElement().Nodes()[i]);
+    MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[i]);
     if (!mrtrmnode) dserror("cast to mortar node failed");
 
     // (1) slave node coordinates part

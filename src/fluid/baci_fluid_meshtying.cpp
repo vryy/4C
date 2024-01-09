@@ -327,7 +327,7 @@ void FLD::Meshtying::CheckOverlappingBC(Teuchos::RCP<Epetra_Map> map)
     int gid = adaptermeshtying_->Interface()->SlaveRowNodes()->GID(j);
     DRT::Node* node = adaptermeshtying_->Interface()->Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-    auto* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    auto* mtnode = static_cast<MORTAR::Node*>(node);
 
     // check if this node's dofs are in given map
     for (int k = 0; k < mtnode->NumDof(); ++k)

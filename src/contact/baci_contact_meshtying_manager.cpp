@@ -212,8 +212,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         DRT::Node* node = discret.gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
 
-        // create MortarNode object
-        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(
+        // create Node object
+        Teuchos::RCP<MORTAR::Node> mtnode = Teuchos::rcp(new MORTAR::Node(
             node->Id(), node->X(), node->Owner(), discret.Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!

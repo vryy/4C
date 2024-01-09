@@ -158,7 +158,7 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
     // calculate slabs for every node on every element
     for (int k = 0; k < mrtrelement->NumPoint(); ++k)
     {
-      MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
+      Node* mrtrnode = dynamic_cast<Node*>(nodes[k]);
       if (!mrtrnode) dserror("ERROR: Null pointer!");
 
       // get current node position

@@ -872,7 +872,7 @@ void MORTAR::UTILS::PrepareNURBSElement(DRT::Discretization& discret,
 /*----------------------------------------------------------------------*
  |  Prepare mortar node for nurbs-case                       farah 11/14|
  *----------------------------------------------------------------------*/
-void MORTAR::UTILS::PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode)
+void MORTAR::UTILS::PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode)
 {
   DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(node);
 

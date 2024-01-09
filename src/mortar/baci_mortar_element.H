@@ -470,7 +470,7 @@ namespace MORTAR
     /*!
     \brief Get number of degrees of freedom of a certain node
 
-    This MortarElement is picky: It cooperates only with MortarNodes,
+    This MortarElement is picky: It cooperates only with MORTAR::Node(s),
     not with standard Node objects!
 
     */
@@ -730,11 +730,11 @@ namespace MORTAR
     double inline GetNodalCoords(const int direction, const int node)
     {
 #ifdef BACI_DEBUG
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(Points()[node]);
+      Node* mymrtrnode = dynamic_cast<Node*>(Points()[node]);
       if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
       return mymrtrnode->xspatial()[direction];
 #else
-      return static_cast<MortarNode*>(Points()[node])->xspatial()[direction];
+      return static_cast<Node*>(Points()[node])->xspatial()[direction];
 #endif
     }
 
@@ -748,12 +748,12 @@ namespace MORTAR
     double inline GetNodalCoordsOld(const int direction, const int node)
     {
 #ifdef BACI_DEBUG
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(Points()[node]);
+      Node* mymrtrnode = dynamic_cast<Node*>(Points()[node]);
       if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
       return mymrtrnode->X()[direction] + mymrtrnode->uold()[direction];
 #else
-      return (static_cast<MortarNode*>(Points()[node])->X()[direction] +
-              static_cast<MortarNode*>(Points()[node])->uold()[direction]);
+      return (static_cast<Node*>(Points()[node])->X()[direction] +
+              static_cast<Node*>(Points()[node])->uold()[direction]);
 #endif
     }
 
