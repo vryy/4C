@@ -549,13 +549,14 @@ namespace THR
     //! @name General control parameters
     //@{
 
-    Teuchos::RCP<TIMINT::TimIntMStep<double>> time_;  //!< time \f$t_{n}\f$ of last converged step
-    double timen_;                                    //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<double>> dt_;    //!< time step size \f$\Delta t\f$
-    double timemax_;                                  //!< final time \f$t_\text{fin}\f$
-    int stepmax_;                                     //!< final step \f$N\f$
-    int step_;                                        //!< time step index \f$n\f$
-    int stepn_;                                       //!< time step index \f$n+1\f$
+    Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>
+        time_;      //!< time \f$t_{n}\f$ of last converged step
+    double timen_;  //!< target time \f$t_{n+1}\f$
+    Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
+    double timemax_;                                      //!< final time \f$t_\text{fin}\f$
+    int stepmax_;                                         //!< final step \f$N\f$
+    int step_;                                            //!< time step index \f$n\f$
+    int stepn_;                                           //!< time step index \f$n+1\f$
     bool firstoutputofrun_;  //!< flag whether this output step is the first one (restarted or not)
     bool lumpcapa_;          //!< flag for lumping the capacity matrix, default: false
 
@@ -573,9 +574,9 @@ namespace THR
     //@{
 
     //! global temperatures \f${T}_{n}, T_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> temp_;
+    Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> temp_;
     //! global temperature rates \f${R}_{n}, R_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> rate_;
+    Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> rate_;
     Teuchos::RCP<Epetra_Vector> tempn_;  //!< global temperatures
                                          //!< \f${T}_{n+1}\f$
                                          //!< at \f$t_{n+1}\f$

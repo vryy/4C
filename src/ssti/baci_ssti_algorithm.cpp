@@ -76,7 +76,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   if (structparams.get<std::string>("INT_STRATEGY") == "Old")
     dserror("Old structural time integration is not supported");
 
-  struct_adapterbase_ptr_ = ADAPTER::STR::BuildStructureAlgorithm(structparams);
+  struct_adapterbase_ptr_ = ADAPTER::BuildStructureAlgorithm(structparams);
 
   // initialize structure base algorithm
   struct_adapterbase_ptr_->Init(

@@ -388,7 +388,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOH8 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_SOH8 + 2];
 
-        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (PRESTRESS::IsMulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_SOH8 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_SOH8 + 1];
@@ -414,7 +414,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         N_XYZ_0.Multiply(invJ_0, N_rst_0);
       }
 
-      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (PRESTRESS::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         // centroid is 9th Gaussian point in storage
@@ -478,7 +478,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           CORE::LINALG::Matrix<3, 3> invJdef;
@@ -601,13 +601,13 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
   // init the centroid invJ
-  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     if (!(prestress_->IsInit()))
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
@@ -619,7 +619,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
     }
 
 
-  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 
   return;
 }
@@ -774,7 +774,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (PRESTRESS::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -800,7 +800,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     N_XYZ_0.Multiply(invJ_0, N_rst_0);
   }
 
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
   {
     // get Jacobian mapping wrt to the stored configuration
     // centroid is 9th Gaussian point in storage
@@ -857,7 +857,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1621,7 +1621,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
       xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (PRESTRESS::IsMulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
         xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -1648,7 +1648,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
       N_XYZ_0.Multiply(invJ_0, N_rst_0);
     }
 
-    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       // centroid is 9th Gaussian point in storage
@@ -1716,7 +1716,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (PRESTRESS::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         CORE::LINALG::Matrix<3, 3> invJdef;

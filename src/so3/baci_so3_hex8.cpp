@@ -134,11 +134,11 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-    pstype_ = BACI::UTILS::PRESTRESS::GetType();
-    pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
+    pstype_ = PRESTRESS::GetType();
+    pstime_ = PRESTRESS::GetPrestressTime();
     if (INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
   }
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
@@ -179,7 +179,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
@@ -239,7 +239,7 @@ void DRT::ELEMENTS::So_hex8::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
   {
     CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);

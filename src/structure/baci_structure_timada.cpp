@@ -267,7 +267,7 @@ void STR::TimAda::Indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = sti_->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
-  const double norm = STR::AUX::CalculateVectorNorm(errnorm_, locerrdisn_, numneglect);
+  const double norm = STR::CalculateVectorNorm(errnorm_, locerrdisn_, numneglect);
 
   // check if acceptable
   accepted = (norm < errtol_);

@@ -263,11 +263,11 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
   // the chosen tolerances. Simply testing against 0 only works for
   // the displacements, but not for the residual!
 
-  normchardis_ = STR::AUX::CalculateVectorNorm(iternorm_, dis_);
+  normchardis_ = STR::CalculateVectorNorm(iternorm_, dis_);
   if (normchardis_ < toldisi_) normchardis_ = 1.0;
 
-  double fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
-  double freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freactn_);
+  double fintnorm = STR::CalculateVectorNorm(iternorm_, fintn_);
+  double freactnorm = STR::CalculateVectorNorm(iternorm_, freactn_);
   normcharforce_ = std::max(fintnorm, freactnorm);
   if (normcharforce_ < tolfres_) normcharforce_ = 1.0;
 }

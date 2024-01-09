@@ -95,7 +95,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     //  time integrator
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-        ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+        ADAPTER::BuildStructureAlgorithm(sdyn);
     adapterbase_ptr->Init(DRT::Problem::Instance()->TSIDynamicParams(),
         const_cast<Teuchos::ParameterList&>(sdyn), structdis);
 

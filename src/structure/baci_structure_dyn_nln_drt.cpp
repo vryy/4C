@@ -110,7 +110,7 @@ void dyn_nlnstructural_drt()
     default:
     {
       Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-          ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+          ADAPTER::BuildStructureAlgorithm(sdyn);
       adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
       adapterbase_ptr->Setup();
       structadapter = adapterbase_ptr->StructureField();

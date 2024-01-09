@@ -27,7 +27,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* A collection of time integration utilities */
-namespace TIMINT
+namespace TIMESTEPPING
 {
   /*====================================================================*/
   /*!
@@ -385,7 +385,7 @@ namespace TIMINT
     //@}
 
   };  // class TimIntMStep<Epetra_Vector>
-}  // namespace TIMINT
+}  // namespace TIMESTEPPING
 
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE

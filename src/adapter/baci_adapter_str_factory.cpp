@@ -19,14 +19,14 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-ADAPTER::STR::Factory::Factory()
+ADAPTER::StructureFactory::StructureFactory()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::Factory::BuildStructureAlgorithm(
+Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::StructureFactory::BuildStructureAlgorithm(
     const Teuchos::ParameterList& sdyn) const
 {
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
@@ -49,10 +49,10 @@ Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::Factory::BuildStr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::BuildStructureAlgorithm(
+Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::BuildStructureAlgorithm(
     const Teuchos::ParameterList& sdyn)
 {
-  STR::Factory factory;
+  StructureFactory factory;
   return factory.BuildStructureAlgorithm(sdyn);
 }
 

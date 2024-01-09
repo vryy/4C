@@ -53,7 +53,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
 
   // build structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase =
-      ADAPTER::STR::BuildStructureAlgorithm(structparams);
+      ADAPTER::BuildStructureAlgorithm(structparams);
   adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
   adapterbase->Setup();
   structure_ = adapterbase->StructureField();

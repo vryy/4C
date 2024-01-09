@@ -346,7 +346,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
         // surface deformation gradient in 3 dimensions in local coordinates
-        BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+        CORE::LINALG::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
         /*===============================================================================*
          | right cauchygreen tensor in local coordinates                                 |
@@ -716,7 +716,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
     // surface deformation gradient in 3 dimensions in local coordinates
-    BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+    CORE::LINALG::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
     /*===============================================================================*
      | right cauchygreen tensor in local coordinates                                 |
@@ -762,7 +762,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
       // update surface deformation gradient in 3 dimensions in local coordinates
-      BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+      CORE::LINALG::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       // update three dimensional right cauchy-green strain tensor in orthonormal base
       cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
@@ -785,11 +785,11 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
       // Transform stress and elasticity into the local membrane coordinate system
       CORE::LINALG::Matrix<3, 3> pk2M_loc(true);
-      BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
+      CORE::LINALG::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
       MEMBRANE::LocalPlaneStressToStressLikeVoigt(pk2M_loc, pk2red_loc);
 
       CORE::LINALG::Matrix<6, 6> cmat_loc(true);
-      BACI::UTILS::TENSOR::InverseFourthTensorRotation(Q_localToGlobal, cmat_glob, cmat_loc);
+      CORE::LINALG::TENSOR::InverseFourthTensorRotation(Q_localToGlobal, cmat_glob, cmat_loc);
       MEMBRANE::LocalFourthTensorPlaneStressToStressLikeVoigt(cmat_loc, cmatred_loc);
     }
     else
@@ -931,7 +931,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        CORE::LINALG::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
@@ -960,7 +960,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        CORE::LINALG::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
@@ -1000,7 +1000,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        CORE::LINALG::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // eigenvalue decomposition (from elasthyper.cpp)
         CORE::LINALG::Matrix<noddof_, noddof_> prstr2(true);  // squared principal stretches
@@ -1112,7 +1112,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
-        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_local, pkstress_glob);
+        CORE::LINALG::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_local, pkstress_glob);
 
         (*elestress)(gp, 0) = pkstress_glob(0, 0);
         (*elestress)(gp, 1) = pkstress_glob(1, 1);
@@ -1137,7 +1137,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
-        BACI::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
+        CORE::LINALG::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
 
         CORE::LINALG::Matrix<noddof_, noddof_> cauchy_glob(true);
         mem_PK2toCauchy(pkstress_glob, defgrd_glob, cauchy_glob);
@@ -1541,7 +1541,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
       // surface deformation gradient in 3 dimensions in global coordinates
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
-      BACI::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+      CORE::LINALG::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       auto material_local_coordinates =
           Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialLocalCoordinates>(

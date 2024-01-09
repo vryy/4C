@@ -40,10 +40,7 @@ namespace PARTICLEALGORITHM
 
 namespace STR
 {
-  namespace AUX
-  {
-    class MapExtractor;
-  }
+  class MapExtractor;
 }  // namespace STR
 
 /*---------------------------------------------------------------------------*
@@ -215,7 +212,7 @@ namespace PASI
     Teuchos::RCP<PARTICLEALGORITHM::ParticleAlgorithm> particlealgorithm_;
 
     //! communication object at the interface
-    Teuchos::RCP<const STR::AUX::MapExtractor> interface_;
+    Teuchos::RCP<const STR::MapExtractor> interface_;
 
     //! interface displacement
     Teuchos::RCP<Epetra_Vector> intfdispnp_;

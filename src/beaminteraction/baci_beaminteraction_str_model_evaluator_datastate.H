@@ -246,7 +246,7 @@ namespace STR
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> GetMultiDis()
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> GetMultiDis()
       {
         CheckInitSetup();
         return dis_;
@@ -329,7 +329,7 @@ namespace STR
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
+      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> dis_;
 
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$
       Teuchos::RCP<Epetra_Vector> dis_restart_;

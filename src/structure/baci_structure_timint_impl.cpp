@@ -452,14 +452,14 @@ void STR::TimIntImpl::Predict()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> fres = pressure_->ExtractOtherVector(fres_);
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres);
+    normfres_ = STR::CalculateVectorNorm(iternorm_, fres);
     Teuchos::RCP<Epetra_Vector> fpres = pressure_->ExtractCondVector(fres_);
-    normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fpres);
+    normpfres_ = STR::CalculateVectorNorm(iternorm_, fpres);
   }
   else
   {
     // build residual force norm
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+    normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
   }
 
   // determine characteristic norms
@@ -514,14 +514,14 @@ void STR::TimIntImpl::PreparePartitionStep()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> fres = pressure_->ExtractOtherVector(fres_);
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres);
+    normfres_ = STR::CalculateVectorNorm(iternorm_, fres);
     Teuchos::RCP<Epetra_Vector> fpres = pressure_->ExtractCondVector(fres_);
-    normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fpres);
+    normpfres_ = STR::CalculateVectorNorm(iternorm_, fpres);
   }
   else
   {
     // build residual force norm
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+    normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
   }
 
   // determine characteristic norms
@@ -693,14 +693,14 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   if (bPressure == false && bContactSP == false)
   {
     // build residual displacement norm
-    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
   }
   if (bPressure)
   {
     Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(disi_);
     Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(disi_);
-    normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+    normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
+    normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
   }
   if (bContactSP)
   {
@@ -708,10 +708,10 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
     Teuchos::RCP<Epetra_Vector> lagrincr = cmtbridge_->GetStrategy().LagrMultSolveIncr();
 
     // build residual displacement norm
-    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
     // build lagrange multiplier increment norm
     if (lagrincr != Teuchos::null)
-      normlagr_ = STR::AUX::CalculateVectorNorm(iternorm_, lagrincr);
+      normlagr_ = STR::CalculateVectorNorm(iternorm_, lagrincr);
     else
       normlagr_ = -1.0;
   }
@@ -1142,10 +1142,10 @@ double STR::TimIntImpl::CalcRefNormDisplacement()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector((*dis_)(0));
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+    charnormdis = STR::CalculateVectorNorm(iternorm_, disp);
   }
   else
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
+    charnormdis = STR::CalculateVectorNorm(iternorm_, (*dis_)(0));
 
   // rise your hat
   return charnormdis;
@@ -1616,21 +1616,21 @@ int STR::TimIntImpl::NewtonFull()
     if (bPressure == false && bContactSP == false)
     {
       // build residual force norm
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
       // build residual displacement norm
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
     }
     if (bPressure)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
       Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-      normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      normpfres_ = STR::CalculateVectorNorm(iternorm_, pres);
+      normfres_ = STR::CalculateVectorNorm(iternorm_, disp);
 
       pres = pressure_->ExtractCondVector(disi_);
       disp = pressure_->ExtractOtherVector(disi_);
-      normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
+      normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
     }
     if (bContactSP)
     {
@@ -1639,18 +1639,18 @@ int STR::TimIntImpl::NewtonFull()
       Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().ConstrRhs();
 
       // build residual force norm
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
       // build residual displacement norm
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
       // build residual constraint norm
       if (constrrhs != Teuchos::null)
-        normcontconstr_ = STR::AUX::CalculateVectorNorm(iternorm_, constrrhs);
+        normcontconstr_ = STR::CalculateVectorNorm(iternorm_, constrrhs);
       else
         normcontconstr_ = -1.0;
 
       // build lagrange multiplier increment norm
       if (lagrincr != Teuchos::null)
-        normlagr_ = STR::AUX::CalculateVectorNorm(iternorm_, lagrincr);
+        normlagr_ = STR::CalculateVectorNorm(iternorm_, lagrincr);
       else
         normlagr_ = -1.0;
 
@@ -1666,12 +1666,12 @@ int STR::TimIntImpl::NewtonFull()
         Teuchos::RCP<Epetra_Vector> wearrhs = cmtbridge_->GetStrategy().WearRhs();
 
         if (wearrhs != Teuchos::null)
-          normwrhs_ = STR::AUX::CalculateVectorNorm(iternorm_, wearrhs);
+          normwrhs_ = STR::CalculateVectorNorm(iternorm_, wearrhs);
         else
           normwrhs_ = -1.0;
 
         if (wincr != Teuchos::null)
-          normw_ = STR::AUX::CalculateVectorNorm(iternorm_, wincr);
+          normw_ = STR::CalculateVectorNorm(iternorm_, wincr);
         else
           normw_ = -1.0;
 
@@ -1681,12 +1681,12 @@ int STR::TimIntImpl::NewtonFull()
           Teuchos::RCP<Epetra_Vector> wearmrhs = cmtbridge_->GetStrategy().WearMRhs();
 
           if (wearmrhs != Teuchos::null)
-            normwmrhs_ = STR::AUX::CalculateVectorNorm(iternorm_, wearmrhs);
+            normwmrhs_ = STR::CalculateVectorNorm(iternorm_, wearmrhs);
           else
             normwmrhs_ = -1.0;
 
           if (wmincr != Teuchos::null)
-            normwm_ = STR::AUX::CalculateVectorNorm(iternorm_, wmincr);
+            normwm_ = STR::CalculateVectorNorm(iternorm_, wmincr);
           else
             normwm_ = -1.0;
         }
@@ -2038,9 +2038,9 @@ int STR::TimIntImpl::NewtonLS()
     ***************************************************************/
 
     // build residual force norm
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+    normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
     // build residual displacement norm
-    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
 
     PrintNewtonIter();
 
@@ -2263,7 +2263,7 @@ int STR::TimIntImpl::LsEvalMeritFct(double& merit_fct)
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::LsPrintLineSearchIter(double* mf_value, int iter_ls, double step_red)
 {
-  normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+  normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
   // print to standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0) and printiter_)
   {
@@ -2595,9 +2595,9 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // why was this here? part of else statement below!!! (mhv 01/2015)
       //      // build residual force norm
-      //      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      //      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
       //      // build residual displacement norm
-      //      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      //      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
       //      // build residual Lagrange multiplier norm
       //      normcon_ = conman_->GetErrorNorm();
 
@@ -2605,20 +2605,20 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       {
         Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
         Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-        normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+        normpfres_ = STR::CalculateVectorNorm(iternorm_, pres);
+        normfres_ = STR::CalculateVectorNorm(iternorm_, disp);
 
         pres = pressure_->ExtractCondVector(disi_);
         disp = pressure_->ExtractOtherVector(disi_);
-        normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+        normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
+        normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
       }
       else
       {
         // build residual force norm
-        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+        normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
         // build residual displacement norm
-        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+        normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
         // build residual Lagrange multiplier norm
         normcon_ = conman_->GetErrorNorm();
       }
@@ -2773,13 +2773,13 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       {
         Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
         Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-        normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+        normpfres_ = STR::CalculateVectorNorm(iternorm_, pres);
+        normfres_ = STR::CalculateVectorNorm(iternorm_, disp);
 
         pres = pressure_->ExtractCondVector(disi_);
         disp = pressure_->ExtractOtherVector(disi_);
-        normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+        normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
+        normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
       }
       else
       {
@@ -2787,17 +2787,17 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         {
           // build residual force norm with reduced force residual
           Teuchos::RCP<Epetra_Vector> fres_r = mor_->ReduceResidual(fres_);
-          normfresr_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_r);
+          normfresr_ = STR::CalculateVectorNorm(iternorm_, fres_r);
 
           // build residual displacement norm with reduced residual displacements
           Teuchos::RCP<Epetra_Vector> disi_r = mor_->ReduceResidual(disi_);
-          normdisir_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_r);
+          normdisir_ = STR::CalculateVectorNorm(iternorm_, disi_r);
         }
 
         // build residual force norm
-        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+        normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
         // build residual displacement norm
-        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+        normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
         // build residual 0D cardiovascular residual norm
         normcardvasc0d_ = cardvasc0dman_->GetCardiovascular0DRHSNorm();
         // build residual 0D cardiovascular residual dof increment norm
@@ -3454,21 +3454,21 @@ int STR::TimIntImpl::PTC()
     if (bPressure == false && bContactSP == false)
     {
       // build residual force norm
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
       // build residual displacement norm
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
     }
     if (bPressure)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
       Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-      normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      normpfres_ = STR::CalculateVectorNorm(iternorm_, pres);
+      normfres_ = STR::CalculateVectorNorm(iternorm_, disp);
 
       pres = pressure_->ExtractCondVector(disi_);
       disp = pressure_->ExtractOtherVector(disi_);
-      normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
+      normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
     }
     if (bContactSP)
     {
@@ -3477,17 +3477,17 @@ int STR::TimIntImpl::PTC()
       Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().ConstrRhs();
 
       // build residual force norm
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
       // build residual displacement norm
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
       // build residual constraint norm
       if (constrrhs != Teuchos::null)
-        normcontconstr_ = STR::AUX::CalculateVectorNorm(iternorm_, constrrhs);
+        normcontconstr_ = STR::CalculateVectorNorm(iternorm_, constrrhs);
       else
         normcontconstr_ = -1.0;
       // build lagrange multiplier increment norm
       if (lagrincr != Teuchos::null)
-        normlagr_ = STR::AUX::CalculateVectorNorm(iternorm_, lagrincr);
+        normlagr_ = STR::CalculateVectorNorm(iternorm_, lagrincr);
       else
         normlagr_ = -1.0;
     }

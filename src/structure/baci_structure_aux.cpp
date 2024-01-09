@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double STR::AUX::CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,
+double STR::CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,
     const Teuchos::RCP<Epetra_Vector> vect, const int numneglect)
 {
   // L1 norm
@@ -61,7 +61,7 @@ double STR::AUX::CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::AUX::MapExtractor::Setup(
+void STR::MapExtractor::Setup(
     const DRT::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
@@ -86,7 +86,7 @@ void STR::AUX::MapExtractor::Setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> STR::AUX::MapExtractor::ConditionedElementMap(
+Teuchos::RCP<std::set<int>> STR::MapExtractor::ConditionedElementMap(
     const DRT::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements = DRT::UTILS::ConditionedElementMap(dis, "FSICoupling");

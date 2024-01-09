@@ -507,7 +507,7 @@ namespace ADAPTER
     bool HaveModel(INPAR::STR::ModelType model) override { return structure_->HaveModel(model); }
 
     /// return model evaluator
-    BACI::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override
+    STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override
     {
       return structure_->ModelEvaluator(mtype);
     }

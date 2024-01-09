@@ -409,7 +409,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ * gpweights[gp];
 
-        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (PRESTRESS::IsMulf(pstype_))
         {
           // get derivatives wrt to last spatial configuration
           CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
@@ -516,7 +516,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (BACI::UTILS::PRESTRESS::IsAny(pstype_))
+      if (PRESTRESS::IsAny(pstype_))
       {
       }
 
@@ -535,7 +535,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (BACI::UTILS::PRESTRESS::IsAny(pstype_))
+      if (PRESTRESS::IsAny(pstype_))
       {
       }
 
@@ -1111,14 +1111,14 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     **             [    dX       dY       dZ    ]
     */
 
-    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     {
       if (!(prestress_->IsInit())) prestress_->MatrixtoStorage(gp, nxyz_, prestress_->JHistory());
     }
 
   }  // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
 
-  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 }
 
 
@@ -2115,7 +2115,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
       // size is 3x3
       CORE::LINALG::Matrix<3, 3> defgrd(false);
 
-      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (PRESTRESS::IsMulf(pstype_))
       {
         // get derivatives wrt to last spatial configuration
         CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;

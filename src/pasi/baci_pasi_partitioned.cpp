@@ -248,7 +248,7 @@ void PASI::PartitionedAlgo::InitStructureField()
   if (params.get<std::string>("INT_STRATEGY") == "Standard")
   {
     // create and init structure base algorithm
-    struct_adapterbase_ptr_ = ADAPTER::STR::BuildStructureAlgorithm(params);
+    struct_adapterbase_ptr_ = ADAPTER::BuildStructureAlgorithm(params);
     struct_adapterbase_ptr_->Init(params, const_cast<Teuchos::ParameterList&>(params), structdis);
   }
   else if (params.get<std::string>("INT_STRATEGY") == "Old")

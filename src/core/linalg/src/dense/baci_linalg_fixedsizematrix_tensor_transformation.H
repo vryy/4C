@@ -12,7 +12,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace UTILS::TENSOR
+namespace CORE::LINALG::TENSOR
 {
   /*!
    * @brief Rotation of all basis vectors of 2-Tensor Tin by the rotation Matrix Q
@@ -120,7 +120,7 @@ namespace UTILS::TENSOR
     Tout.MultiplyNN(1.0, temp, Qfourth);
   }
 
-}  // namespace UTILS::TENSOR
+}  // namespace CORE::LINALG::TENSOR
 
 
 BACI_NAMESPACE_CLOSE

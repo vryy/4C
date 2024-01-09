@@ -71,7 +71,7 @@ void FSI::Algorithm::Setup()
   // build structure
   if (sdyn.get<std::string>("INT_STRATEGY") == "Standard")
   {
-    adapterbase_ptr_ = ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+    adapterbase_ptr_ = ADAPTER::BuildStructureAlgorithm(sdyn);
     adapterbase_ptr_->Init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr_->RegisterModelEvaluator("Partitioned Coupling Model", fsi_model_ptr);
     adapterbase_ptr_->Setup();
