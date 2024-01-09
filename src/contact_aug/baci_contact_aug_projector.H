@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 
 namespace MORTAR
 {
-  class MortarElement;
+  class Element;
 }
 
 namespace CONTACT
@@ -71,8 +71,8 @@ namespace CONTACT
        *  \return TRUE if the local Newton scheme did converge.
        *
        *  \author hiermeier \date 08/17 */
-      virtual bool operator()(MORTAR::MortarElement& ref_ele, const double* ref_xi,
-          MORTAR::MortarElement& target_ele, double* target_xi, double& alpha) = 0;
+      virtual bool operator()(MORTAR::Element& ref_ele, const double* ref_xi,
+          MORTAR::Element& target_ele, double* target_xi, double& alpha) = 0;
 
       /// return the relative solution tolerance, i.e. the maximal deviation of
       /// the calculated solution point to the analytical solution
@@ -96,8 +96,8 @@ namespace CONTACT
 
      protected:
       /// derived
-      bool operator()(MORTAR::MortarElement& ref_ele, const double* ref_xi,
-          MORTAR::MortarElement& target_ele, double* target_xi, double& alpha) override;
+      bool operator()(MORTAR::Element& ref_ele, const double* ref_xi, MORTAR::Element& target_ele,
+          double* target_xi, double& alpha) override;
 
       /// derived
       inline double getRelativeSolutionTolerance() const override { return rel_sol_tolerance_; }
@@ -122,7 +122,7 @@ namespace CONTACT
        *
        *  \author hiermeier \date 07/17 */
       void LMatGP(CORE::LINALG::Matrix<probdim, probdim>& lmat,
-          CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::MortarElement& tar_ele,
+          CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::Element& tar_ele,
           const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
           const CORE::LINALG::Matrix<probdim, 1>& n_ref) const;
 
@@ -142,7 +142,7 @@ namespace CONTACT
        *  \author  hiermeier \date 07/17 */
       bool RhsGP(CORE::LINALG::Matrix<probdim, 1>& rhs,
           const CORE::LINALG::Matrix<probdim, 1>& x_ref,
-          const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::MortarElement& target_ele,
+          const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::Element& target_ele,
           const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
           const double& alpha) const;
 
@@ -157,7 +157,7 @@ namespace CONTACT
        *
        *  \author  hiermeier \date 07/17 */
       template <CORE::FE::CellType type, unsigned numnodes = CORE::FE::num_nodes<type>>
-      bool GetGlobalPosition(MORTAR::MortarElement& ele,
+      bool GetGlobalPosition(MORTAR::Element& ele,
           const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
           CORE::LINALG::Matrix<probdim, 1>& pos) const;
 

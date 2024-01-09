@@ -29,7 +29,7 @@ namespace CORE::LINALG
 }  // namespace CORE::LINALG
 namespace MORTAR
 {
-  class MortarElementNitscheContainer;
+  class ElementNitscheContainer;
 };
 
 namespace MORTAR
@@ -38,12 +38,12 @@ namespace MORTAR
   \brief A subclass of DRT::ElementType that adds mortar element type specific methods
 
   */
-  class MortarElementType : public DRT::ElementType
+  class ElementType : public DRT::ElementType
   {
    public:
-    std::string Name() const override { return "MortarElementType"; }
+    std::string Name() const override { return "MORTAR::ElementType"; }
 
-    static MortarElementType& Instance();
+    static ElementType& Instance();
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -56,7 +56,7 @@ namespace MORTAR
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
-    static MortarElementType instance_;
+    static ElementType instance_;
   };
 
   /*!
@@ -289,13 +289,13 @@ namespace MORTAR
   \brief A mortar coupling element
 
   */
-  class MortarElement : public DRT::FaceElement
+  class Element : public DRT::FaceElement
   {
    public:
     //! @name Enums and Friends
 
     /*!
-    \brief Enum for shape function types recognized by MortarElements
+    \brief Enum for shape function types recognized by Elements
 
     */
     enum ShapeType
@@ -376,7 +376,7 @@ namespace MORTAR
     \param isslave (in): flag indicating whether element is slave or master side
     \param isnurbs (in): flag indicating whether element is nurbs element or not
     */
-    MortarElement(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+    Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
         const int* nodeids, const bool isslave, bool isnurbs = false);
 
     /*!
@@ -385,7 +385,7 @@ namespace MORTAR
     Makes a deep copy of this class
 
     */
-    MortarElement(const MORTAR::MortarElement& old);
+    Element(const MORTAR::Element& old);
 
 
 
@@ -402,10 +402,7 @@ namespace MORTAR
     top of parobject.H
 
     */
-    int UniqueParObjectId() const override
-    {
-      return MortarElementType::Instance().UniqueParObjectId();
-    }
+    int UniqueParObjectId() const override { return ElementType::Instance().UniqueParObjectId(); }
 
     /*!
     \brief Pack this class so it can be communicated
@@ -423,7 +420,7 @@ namespace MORTAR
     */
     void Unpack(const std::vector<char>& data) override;
 
-    DRT::ElementType& ElementType() const override { return MortarElementType::Instance(); }
+    DRT::ElementType& ElementType() const override { return ElementType::Instance(); }
 
     //@}
 
@@ -470,7 +467,7 @@ namespace MORTAR
     /*!
     \brief Get number of degrees of freedom of a certain node
 
-    This MortarElement is picky: It cooperates only with MORTAR::Node(s),
+    This MORTAR::Element is picky: It cooperates only with MORTAR::Node(s),
     not with standard Node objects!
 
     */
@@ -792,7 +789,7 @@ namespace MORTAR
     /*!
     \brief A repository for all kinds of 1D/2D shape functions
     */
-    virtual void ShapeFunctions(MortarElement::ShapeType shape, const double* xi,
+    virtual void ShapeFunctions(Element::ShapeType shape, const double* xi,
         CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv);
 
     /*!
@@ -801,7 +798,7 @@ namespace MORTAR
     \param derivdual (in): derivative maps to be filled
                            (= derivatives of the dual coefficient matrix Ae)
     */
-    void ShapeFunctionLinearizations(MortarElement::ShapeType shape,
+    void ShapeFunctionLinearizations(Element::ShapeType shape,
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
 
     /*!
@@ -934,11 +931,11 @@ namespace MORTAR
     virtual double MaxEdgeSize();
 
     /*!
-    \brief Add one MortarElement to this MortarElement's potential contact partners
+    \brief Add one MORTAR::Element to this MORTAR::Element's potential contact partners
 
     This is for the element-based brute-force search and for the new
     binary search tree. We do NOT have to additionally check, if the
-    given MortarElement has already been added to this MortarCElement's
+    given MORTAR::Element has already been added to this MortarCElement's
     potential contact partners before. This cannot happen by construction!
 
     */
@@ -1030,7 +1027,7 @@ namespace MORTAR
     /*!
     \brief Get Nitsche data container
       */
-    virtual MORTAR::MortarElementNitscheContainer& GetNitscheContainer();
+    virtual MORTAR::ElementNitscheContainer& GetNitscheContainer();
     //@}
 
    protected:
@@ -1055,7 +1052,7 @@ namespace MORTAR
     double traceHCond_;
 
     // data container for element matrices in Nitsche contact
-    Teuchos::RCP<MORTAR::MortarElementNitscheContainer> nitsche_container_;
+    Teuchos::RCP<MORTAR::ElementNitscheContainer> nitsche_container_;
 
     /*!
     \brief Protected constructor for use in derived classes that expect standard element
@@ -1064,9 +1061,9 @@ namespace MORTAR
     \param id    (in): A globally unique element id
     \param owner (in): owner processor of the element
     */
-    MortarElement(int id, int owner);
+    Element(int id, int owner);
 
-  };  // class MortarElement
+  };  // class Element
 
   /*!
   \brief A class to perform Gaussian integration on a mortar element
@@ -1122,7 +1119,7 @@ namespace MORTAR
 }  // namespace MORTAR
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const MORTAR::MortarElement& ele);
+std::ostream& operator<<(std::ostream& os, const MORTAR::Element& ele);
 
 BACI_NAMESPACE_CLOSE
 

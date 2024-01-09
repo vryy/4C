@@ -57,6 +57,6 @@ void DRT::MESHFREE::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
  *--------------------------------------------------------------------------*/
 template class DRT::MESHFREE::MeshfreeBin<DRT::Element>;
 template class DRT::MESHFREE::MeshfreeBin<DRT::FaceElement>;
-template class DRT::MESHFREE::MeshfreeBin<MORTAR::MortarElement>;
+template class DRT::MESHFREE::MeshfreeBin<MORTAR::Element>;
 
 BACI_NAMESPACE_CLOSE

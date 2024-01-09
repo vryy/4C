@@ -44,7 +44,7 @@ namespace STR
 
 namespace MORTAR
 {
-  class MortarElement;
+  class Element;
   class MortarInterface;
   class Node;
   class StrategyBase;
@@ -126,7 +126,7 @@ namespace MORTAR
        *
        *  \author Farah */
       void PrepareNURBSElement(const DRT::Discretization& discret, Teuchos::RCP<DRT::Element> ele,
-          Teuchos::RCP<MORTAR::MortarElement> cele) const;
+          Teuchos::RCP<MORTAR::Element> cele) const;
 
       /*! \brief Prepare mortar node for NURBS case
        *

@@ -33,7 +33,7 @@ BACI_NAMESPACE_OPEN
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
       stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
@@ -1041,7 +1041,7 @@ bool CONTACT::Coupling3d::CenterLinearization(
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele,
     MORTAR::IntElement& sintele, MORTAR::IntElement& mintele)
     : CONTACT::Coupling3d(idiscret, dim, quad, params, sele, mele),
       sintele_(sintele),
@@ -1062,8 +1062,7 @@ const Epetra_Comm& CONTACT::Coupling3dManager::Comm() const { return idiscret_.C
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
       quad_(quad),
@@ -1080,8 +1079,8 @@ CONTACT::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int
  |  ctor (public)                                            farah 01/13|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idiscret, int dim,
-    bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    bool quad, Teuchos::ParameterList& params, MORTAR::Element* sele,
+    std::vector<MORTAR::Element*> mele)
     : MORTAR::Coupling3dQuadManager(idiscret, dim, quad, params, sele, mele),
       CONTACT::Coupling3dManager(idiscret, dim, quad, params, sele, mele),
       smintpairs_(-1),
@@ -1163,7 +1162,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
 
       /* find all feasible master elements (this check is inherent in the
        * segment based integration)                    hiermeier 04/16 */
-      std::vector<MORTAR::MortarElement*> feasible_ma_eles(MasterElements().size());
+      std::vector<MORTAR::Element*> feasible_ma_eles(MasterElements().size());
       FindFeasibleMasterElements(feasible_ma_eles);
 
       // create an integrator instance with correct NumGP and Dim
@@ -1297,7 +1296,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
   {
     Coupling().resize(0);
 
-    // build linear integration elements from quadratic MortarElements
+    // build linear integration elements from quadratic MORTAR::Elements
     std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
     std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
         MasterElements().size());
@@ -1306,7 +1305,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int)MasterElements().size(); ++m)
     {
-      // build linear integration elements from quadratic MortarElements
+      // build linear integration elements from quadratic MORTAR::Elements
       mauxelements[m].resize(0);
       SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
@@ -1378,7 +1377,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
       {
         Coupling().resize(0);
 
-        // build linear integration elements from quadratic MortarElements
+        // build linear integration elements from quadratic MORTAR::Elements
         std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
         std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
             MasterElements().size());
@@ -1387,7 +1386,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
         // loop over all master elements associated with this slave element
         for (int m = 0; m < (int)MasterElements().size(); ++m)
         {
-          // build linear integration elements from quadratic MortarElements
+          // build linear integration elements from quadratic MORTAR::Elements
           mauxelements[m].resize(0);
           SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
@@ -1964,7 +1963,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dManager::FindFeasibleMasterElements(
-    std::vector<MORTAR::MortarElement*>& feasible_ma_eles) const
+    std::vector<MORTAR::Element*>& feasible_ma_eles) const
 {
   // feasibility counter
   std::size_t fcount = 0;

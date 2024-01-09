@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------------------*/
 /*! \file
 \brief A class to perform integrations of Mortar matrices on the overlap
-of two MortarElements in 1D and 2D
+of two MORTAR::Elements in 1D and 2D
 
 \level 1
 
@@ -30,7 +30,7 @@ BACI_NAMESPACE_OPEN
  |  impl...                                                  farah 01/14|
  *----------------------------------------------------------------------*/
 MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
-    MortarElement& sele, MortarElement& mele, Teuchos::ParameterList& params)
+    MORTAR::Element& sele, MORTAR::Element& mele, Teuchos::ParameterList& params)
 {
   switch (sele.Shape())
   {
@@ -710,9 +710,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
  | required                                                                             |
  *--------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
-    MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
-    const Epetra_Comm& comm)
+void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(MORTAR::Element& sele,
+    std::vector<MORTAR::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
 {
   // check for problem dimension
   if (ndim_ != 2) dserror("2D integration method called for non-2D problem");
@@ -835,9 +834,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
  |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
-    MORTAR::MortarElement& sele, double& sxia, double& sxib, MORTAR::MortarElement& mele,
-    double& mxia, double& mxib, const Epetra_Comm& comm)
+void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(MORTAR::Element& sele,
+    double& sxia, double& sxib, MORTAR::Element& mele, double& mxia, double& mxib,
+    const Epetra_Comm& comm)
 {
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = lmquadtype_;
@@ -851,7 +850,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+    dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
     dserror("IntegrateAndDerivSegment called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
@@ -927,7 +926,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
     double eta[2] = {Coordinate(gp, 0), 0.0};
     double wgt = Weight(gp);
 
-    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    // coordinate transformation sxi->eta (slave MORTAR::Element->Overlap)
     double sxi[2] = {0.0, 0.0};
     sxi[0] = 0.5 * (1 - eta[0]) * sxia + 0.5 * (1 + eta[0]) * sxib;
 
@@ -982,10 +981,10 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
  |  Compute entries for D and M matrix at GP                 farah 12/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::Matrix<ns_, 1>& lmval,
-    CORE::LINALG::Matrix<ns_, 1>& sval, CORE::LINALG::Matrix<nm_, 1>& mval, double& jac,
-    double& wgt, int& nrow, int& ncol, int& ndof, bool& bound, const Epetra_Comm& comm)
+void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Element& sele,
+    MORTAR::Element& mele, CORE::LINALG::Matrix<ns_, 1>& lmval, CORE::LINALG::Matrix<ns_, 1>& sval,
+    CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol, int& ndof,
+    bool& bound, const Epetra_Comm& comm)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -1114,11 +1113,11 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
-    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& lmintval,
-    CORE::LINALG::Matrix<ns_, 1>& sval, CORE::LINALG::Matrix<nm_, 1>& mval, double& jac,
-    double& wgt, int& nrow, int& nintrow, int& ncol, int& ndof, bool& bound)
+void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(MORTAR::Element& sele,
+    MORTAR::Element& mele, MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::Matrix<ns_, 1>& sval,
+    CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,
+    int& ncol, int& ndof, bool& bound)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -1256,8 +1255,8 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>
-MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::MortarElement& sele,
-    double& sxia, double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib)
+MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Element& sele,
+    double& sxia, double& sxib, MORTAR::Element& mele, double& mxia, double& mxib)
 {
   //**********************************************************************
   dserror("IntegrateMmod2D method is outdated!");
@@ -1268,7 +1267,7 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("IntegrateMmod2D called on a wrong type of MortarElement pair!");
+    dserror("IntegrateMmod2D called on a wrong type of MORTAR::Element pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
     dserror("IntegrateMmod2D called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
@@ -1299,7 +1298,7 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
     double sxi[2] = {0.0, 0.0};
     double mxi[2] = {0.0, 0.0};
 
-    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    // coordinate transformation sxi->eta (slave MORTAR::Element->Overlap)
     sxi[0] = 0.5 * (1 - eta[0]) * sxia + 0.5 * (1 + eta[0]) * sxib;
 
     // project Gauss point onto master element
@@ -1383,9 +1382,8 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
  |  Integrate and linearize without segmentation             farah 01/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
-    MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
-    const Epetra_Comm& comm)
+void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(MORTAR::Element& sele,
+    std::vector<MORTAR::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -1401,7 +1399,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
   for (int test = 0; test < (int)meles.size(); ++test)
   {
     if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
-      dserror("IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
+      dserror("IntegrateDerivCell3D called on a wrong type of MORTAR::Element pair!");
   }
 
   int msize = meles.size();
@@ -1512,8 +1510,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell,
-    double* auxn, const Epetra_Comm& comm)
+    MORTAR::Element& sele, MORTAR::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+    const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -1528,7 +1526,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
+    dserror("IntegrateDerivCell3DAuxPlane called on a wrong type of MORTAR::Element pair!");
   if (cell == Teuchos::null)
     dserror("IntegrateDerivCell3DAuxPlane called without integration cell");
 
@@ -1688,7 +1686,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQuad(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
+    MORTAR::Element& sele, MORTAR::Element& mele, MORTAR::IntElement& sintele,
     MORTAR::IntElement& mintele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn)
 {
   // get LMtype
@@ -1715,7 +1713,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror(
-        "ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
+        "ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MORTAR::Element pair!");
   if (cell == Teuchos::null)
     dserror("IntegrateDerivCell3DAuxPlaneQuad called without integration cell");
 

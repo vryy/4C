@@ -902,7 +902,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(const DRT::Discretizatio
   for (int lid = 0; lid < mortardis.NumMyColElements(); ++lid)
   {
     DRT::Element* ele = mortardis.lColElement(lid);
-    if (dynamic_cast<MORTAR::MortarElement*>(ele)->IsSlave() == isslave)
+    if (dynamic_cast<MORTAR::Element*>(ele)->IsSlave() == isslave)
     {
       DRT::Node** nodes = ele->Nodes();
       const int numnode = ele->NumNode();

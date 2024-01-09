@@ -30,11 +30,10 @@ CONTACT::IntegratorNitscheSsi::IntegratorNitscheSsi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheSsi::IntegrateGP_3D(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
-    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
-    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
-    CORE::LINALG::SerialDenseMatrix& lmderiv,
+void CONTACT::IntegratorNitscheSsi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
     double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -48,11 +47,10 @@ void CONTACT::IntegratorNitscheSsi::IntegrateGP_3D(MORTAR::MortarElement& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheSsi::IntegrateGP_2D(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
-    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
-    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
-    CORE::LINALG::SerialDenseMatrix& lmderiv,
+void CONTACT::IntegratorNitscheSsi::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
     double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -66,8 +64,8 @@ void CONTACT::IntegratorNitscheSsi::IntegrateGP_2D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::GPTSForces(MORTAR::MortarElement& slave_ele,
-    MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& slave_shape,
+void CONTACT::IntegratorNitscheSsi::GPTSForces(MORTAR::Element& slave_ele,
+    MORTAR::Element& master_ele, const CORE::LINALG::SerialDenseVector& slave_shape,
     const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
     const CORE::LINALG::SerialDenseVector& master_shape,
@@ -153,7 +151,7 @@ void CONTACT::IntegratorNitscheSsi::GPTSForces(MORTAR::MortarElement& slave_ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_ele, double* gp_coord,
+void CONTACT::IntegratorNitscheSsi::SoEleCauchy(MORTAR::Element& mortar_ele, double* gp_coord,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd, const double gp_wgt,
     const CORE::LINALG::Matrix<dim, 1>& gp_normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_normal_dd,
@@ -179,9 +177,9 @@ void CONTACT::IntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_el
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::MortarElement& mortar_ele,
-    double* gp_coord, const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd,
-    const double gp_wgt, const CORE::LINALG::Matrix<dim, 1>& gp_normal,
+void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::Element& mortar_ele, double* gp_coord,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd, const double gp_wgt,
+    const CORE::LINALG::Matrix<dim, 1>& gp_normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_normal_dd,
     const CORE::LINALG::Matrix<dim, 1>& test_dir,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
@@ -266,7 +264,7 @@ void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::MortarElement& mor
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::IntegrateTest(const double fac, MORTAR::MortarElement& ele,
+void CONTACT::IntegratorNitscheSsi::IntegrateTest(const double fac, MORTAR::Element& ele,
     const CORE::LINALG::SerialDenseVector& shape,
     const CORE::LINALG::SerialDenseMatrix& shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, const double jac,
@@ -300,7 +298,7 @@ void CONTACT::IntegratorNitscheSsi::IntegrateTest(const double fac, MORTAR::Mort
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::SetupGpConcentrations(MORTAR::MortarElement& ele,
+void CONTACT::IntegratorNitscheSsi::SetupGpConcentrations(MORTAR::Element& ele,
     const CORE::LINALG::SerialDenseVector& shape_func,
     const CORE::LINALG::SerialDenseMatrix& shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, double& gp_conc,
@@ -340,11 +338,11 @@ void CONTACT::IntegratorNitscheSsi::SetupGpConcentrations(MORTAR::MortarElement&
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::MortarElement& slave_ele,
+void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::Element& slave_ele,
     const CORE::LINALG::SerialDenseVector& slave_shape,
     const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-    MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
+    MORTAR::Element& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
     const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
     const double cauchy_nn_average_pen_gap,
@@ -452,8 +450,8 @@ void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::Morta
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
-    MORTAR::MortarElement& ele, const CORE::LINALG::SerialDenseVector& shape_func,
+void CONTACT::IntegratorNitscheSsi::IntegrateScaTraTest(const double fac, MORTAR::Element& ele,
+    const CORE::LINALG::SerialDenseVector& shape_func,
     const CORE::LINALG::SerialDenseMatrix& shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, const double jac,
     const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt, const double test_val,
@@ -510,7 +508,7 @@ void CONTACT::IntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
   }
 }
 
-template void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct<3>(MORTAR::MortarElement& mortar_ele,
+template void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct<3>(MORTAR::Element& mortar_ele,
     double* gp_coord, const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd,
     const double gp_wgt, const CORE::LINALG::Matrix<3, 1>& gp_normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_normal_dd,

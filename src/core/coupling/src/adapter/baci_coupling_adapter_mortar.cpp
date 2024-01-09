@@ -401,7 +401,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
-    Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(
+    Teuchos::RCP<MORTAR::Element> mrtrele = Teuchos::rcp(new MORTAR::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, nurbs));
 
     if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*masterdis, ele, mrtrele, spatial_dimension_);
@@ -418,8 +418,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
     // an element offset AND a node offset for the the slave mortar elements
     if (slidingale == false)
     {
-      Teuchos::RCP<MORTAR::MortarElement> mrtrele =
-          Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
+      Teuchos::RCP<MORTAR::Element> mrtrele =
+          Teuchos::rcp(new MORTAR::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
               ele->NumNode(), ele->NodeIds(), true, nurbs));
 
       if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*slavedis, ele, mrtrele, spatial_dimension_);
@@ -433,8 +433,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
         nidsoff.push_back(ele->NodeIds()[ele->NumNode() - 1 - i] + nodeoffset);
       }
 
-      Teuchos::RCP<MORTAR::MortarElement> mrtrele =
-          Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
+      Teuchos::RCP<MORTAR::Element> mrtrele =
+          Teuchos::rcp(new MORTAR::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
               ele->NumNode(), nidsoff.data(), true, nurbs));
 
       interface_->AddMortarElement(mrtrele);

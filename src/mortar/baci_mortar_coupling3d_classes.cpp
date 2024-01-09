@@ -24,10 +24,10 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|
  *----------------------------------------------------------------------*/
-MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::MortarElement* parele,
+MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::Element* parele,
     const CORE::FE::CellType& shape, const int numnode, const int* nodeids,
     std::vector<DRT::Node*> nodes, const bool isslave, const bool rewind)
-    : MORTAR::MortarElement(id, owner, shape, numnode, nodeids, isslave),
+    : MORTAR::Element(id, owner, shape, numnode, nodeids, isslave),
       lid_(lid),
       rewind_(rewind),
       parele_(parele)

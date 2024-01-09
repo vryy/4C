@@ -3171,7 +3171,7 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
     int gid = meleall->GID(j);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarElement* moele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* moele = dynamic_cast<MORTAR::Element*>(ele);
 
     if (moele->IsAttached() == true and moele->Owner() == Comm().MyPID())
       eleatt.push_back(moele->Id());
@@ -3186,7 +3186,7 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
     int gid = att->GID(j);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarElement* moele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* moele = dynamic_cast<MORTAR::Element*>(ele);
 
     if (moele->IsAttached() == false) moele->SetAttached() = true;
   }
@@ -3209,17 +3209,16 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
     for (int u = 0; u < (int)frinode->NumElement(); ++u)
     {
       // all found MASTER elements:
-      for (int k = 0; k < (int)dynamic_cast<MORTAR::MortarElement*>(frinode->Elements()[u])
+      for (int k = 0; k < (int)dynamic_cast<MORTAR::Element*>(frinode->Elements()[u])
                               ->MoData()
                               .NumSearchElements();
            ++k)
       {
-        int gid2 = dynamic_cast<MORTAR::MortarElement*>(frinode->Elements()[u])
-                       ->MoData()
-                       .SearchElements()[k];
+        int gid2 =
+            dynamic_cast<MORTAR::Element*>(frinode->Elements()[u])->MoData().SearchElements()[k];
         DRT::Element* ele2 = Discret().gElement(gid2);
         if (!ele2) dserror("Cannot find master element with gid %", gid2);
-        MORTAR::MortarElement* celement = dynamic_cast<MORTAR::MortarElement*>(ele2);
+        MORTAR::Element* celement = dynamic_cast<MORTAR::Element*>(ele2);
 
         // nodes cor. to this master element
         if (celement->IsAttached() == true)
@@ -3273,7 +3272,7 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
     int gid = mastereles->GID(j);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find element with gid %", gid);
-    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->SetAttached() = false;
   }
@@ -3993,7 +3992,7 @@ void WEAR::WearInterface::Initialize()
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
       DRT::Element* ele = idiscret_->lColElement(i);
-      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -4011,7 +4010,7 @@ void WEAR::WearInterface::Initialize()
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %i", gid);
-      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -4163,8 +4162,7 @@ void WEAR::WearInterface::SetElementAreas()
     // (use fully overlapping column map)
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
-      MORTAR::MortarElement* element =
-          dynamic_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+      MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lColElement(i));
       element->InitializeDataContainer();
       element->MoData().Area() = element->ComputeArea();
     }

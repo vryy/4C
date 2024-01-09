@@ -126,7 +126,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
     if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-    cele->PhysType() = MORTAR::MortarElement::other;
+    cele->PhysType() = MORTAR::Element::other;
 
     std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
     masterdis->GetCondition("PoroCoupling", porocondvec);
@@ -142,18 +142,18 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
             dserror(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
-          cele->PhysType() = MORTAR::MortarElement::poro;
+          cele->PhysType() = MORTAR::Element::poro;
           mastertype_ = 1;
           break;
         }
       }
     }
-    if (cele->PhysType() == MORTAR::MortarElement::other)
+    if (cele->PhysType() == MORTAR::Element::other)
     {
       if (mastertype_ == 1)
         dserror(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::structure;
+      cele->PhysType() = MORTAR::Element::structure;
       mastertype_ = 0;
     }
 
@@ -193,7 +193,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
     if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-    cele->PhysType() = MORTAR::MortarElement::other;
+    cele->PhysType() = MORTAR::Element::other;
 
     std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
     masterdis->GetCondition("PoroCoupling", porocondvec);
@@ -210,18 +210,18 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
             dserror(
                 "struct and poro slave elements on the same processor - no mixed interface "
                 "supported");
-          cele->PhysType() = MORTAR::MortarElement::poro;
+          cele->PhysType() = MORTAR::Element::poro;
           slavetype_ = 1;
           break;
         }
       }
     }
-    if (cele->PhysType() == MORTAR::MortarElement::other)
+    if (cele->PhysType() == MORTAR::Element::other)
     {
       if (slavetype_ == 1)
         dserror(
             "struct and poro slave elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::structure;
+      cele->PhysType() = MORTAR::Element::structure;
       slavetype_ = 0;
     }
     cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());

@@ -41,8 +41,8 @@ void CONTACT::NitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector
   //    {
   //      for (int e=0;e<interface_[i]->Discret().ElementColMap()->NumMyElements();++e)
   //      {
-  //        MORTAR::MortarElement* mele
-  //        =dynamic_cast<MORTAR::MortarElement*>(interface_[i]->Discret().gElement(
+  //        MORTAR::Element* mele
+  //        =dynamic_cast<MORTAR::Element*>(interface_[i]->Discret().gElement(
   //            interface_[i]->Discret().ElementColMap()->GID(e)));
   //        mele->GetNitscheContainer().ClearAll();
   //      }
@@ -82,7 +82,7 @@ void CONTACT::NitscheStrategyPoro::SetParentState(
       {
         const int gid = interface->Discret().ElementColMap()->GID(j);
 
-        auto* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret.gElement(gid));
+        auto* ele = dynamic_cast<MORTAR::Element*>(idiscret.gElement(gid));
 
         std::vector<int> lm;
         std::vector<int> lmowner;

@@ -80,7 +80,7 @@ void CONTACT::NitscheStrategyTsi::SetParentState(
         DRT::Element* e = idiscret.gElement(gid);
         if (e == nullptr) dserror("basic element not found");
 
-        auto* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret.gElement(gid));
+        auto* ele = dynamic_cast<MORTAR::Element*>(idiscret.gElement(gid));
         DRT::Element* ele_parentT = disT->gElement(ele->ParentElementId());
 
         std::vector<int> lm, lmowner, lmstride;
@@ -113,7 +113,7 @@ void CONTACT::NitscheStrategyTsi::UpdateTraceIneqEtimates()
   {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
-      auto* mele = dynamic_cast<MORTAR::MortarElement*>(
+      auto* mele = dynamic_cast<MORTAR::Element*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       if (NitWgt == INPAR::CONTACT::NitWgt_slave && !mele->IsSlave()) continue;
       if (NitWgt == INPAR::CONTACT::NitWgt_master && mele->IsSlave()) continue;

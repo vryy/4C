@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : MORTAR::Coupling2d(idiscret, dim, quad, params, sele, mele),
       stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
@@ -144,8 +144,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
     : MORTAR::Coupling2dManager(idiscret, dim, quad, params, sele, mele),
       stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
@@ -501,7 +500,7 @@ void CONTACT::Coupling2dManager::ConsistDualShape()
     std::array<double, 2> eta = {integrator.Coordinate(gp, 0), 0.0};
     double wgt = integrator.Weight(gp);
 
-    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    // coordinate transformation sxi->eta (slave MORTAR::Element->Overlap)
     double sxi[2] = {0.0, 0.0};
     sxi[0] = 0.5 * (1.0 - eta[0]) * ximin + 0.5 * (1.0 + eta[0]) * ximax;
 

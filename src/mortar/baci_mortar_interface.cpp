@@ -495,7 +495,7 @@ void MORTAR::MortarInterface::AddMortarNode(Teuchos::RCP<MORTAR::Node> mrtrnode)
 /*----------------------------------------------------------------------*
  |  add mortar element (public)                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele)
+void MORTAR::MortarInterface::AddMortarElement(Teuchos::RCP<MORTAR::Element> mrtrele)
 {
   // check for quadratic 2d slave elements to be modified
   if (mrtrele->IsSlave() && (mrtrele->Shape() == CORE::FE::CellType::line3 ||
@@ -633,7 +633,7 @@ void MORTAR::MortarInterface::InitializeCornerEdge()
     if (!node->IsSlave() && node->IsOnCorner()) node->SetOnCorner() = false;
     if (!node->IsSlave() && node->IsOnEdge()) node->SetOnEdge() = false;
 
-    // candidates are slave nodes with only 1 adjacent MortarElement
+    // candidates are slave nodes with only 1 adjacent MORTAR::Element
     if (node->IsSlave() && node->IsOnCornerEdge())
     {
       node->SetSlave() = false;
@@ -667,7 +667,7 @@ void MORTAR::MortarInterface::InitializeCrossPoints()
       // but safety is increased enormously
       auto* node = dynamic_cast<MORTAR::Node*>(idiscret_->lRowNode(i));
 
-      // candidates are slave nodes with only 1 adjacent MortarElement
+      // candidates are slave nodes with only 1 adjacent MORTAR::Element
       if (node->IsSlave() && node->NumElement() == 1)
       {
         // case1: linear shape functions, boundary nodes already found
@@ -923,7 +923,7 @@ void MORTAR::MortarInterface::InitializeDataContainer()
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    auto* mele = dynamic_cast<MortarElement*>(ele);
+    auto* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     // initialize container if not yet initialized before
     mele->InitializeDataContainer();
@@ -937,7 +937,7 @@ void MORTAR::MortarInterface::InitializeDataContainer()
       int gid = MasterColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %i", gid);
-      auto* mele = dynamic_cast<MortarElement*>(ele);
+      auto* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       // initialize container if not yet initialized before
       mele->InitializeDataContainer();
@@ -951,7 +951,7 @@ void MORTAR::MortarInterface::InitializeDataContainer()
     {
       const int numMyMasterColumnElements = MasterColElements()->NumMyElements();
       for (int i = 0; i < numMyMasterColumnElements; ++i)
-        dynamic_cast<MortarElement*>(Discret().gElement(MasterColElements()->GID(i)))
+        dynamic_cast<MORTAR::Element*>(Discret().gElement(MasterColElements()->GID(i)))
             ->InitializeDataContainer();
     }
   }
@@ -1009,7 +1009,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
     if (!ele)
       dserror(
           "Cannot find element with gid %i in discretization '%s'.", gid, Discret().Name().c_str());
-    auto* mtrele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    auto* mtrele = dynamic_cast<MORTAR::Element*>(ele);
 
     // to be thought about, whether this is enough (safety = 2??)
     double slave_max_edge_size = mtrele->MaxEdgeSize();
@@ -1363,7 +1363,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
       int gid = elerowmap->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find element with gid %", gid);
-      auto* mrtrele = dynamic_cast<MortarElement*>(ele);
+      auto* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
       if (!mrtrele->IsSlave()) sdata.push_back(gid);
     }
 
@@ -1378,7 +1378,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
       int gid = elecolmap->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find element with gid %", gid);
-      auto* mrtrele = dynamic_cast<MortarElement*>(ele);
+      auto* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
       if (mrtrele->IsSlave()) rdata.push_back(gid);
     }
 
@@ -1649,7 +1649,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveElementMaps(
   for (int i = 0; i < numMyColumnElements; ++i)
   {
     int gid = elementColumnMap.GID(i);
-    bool isslave = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(gid))->IsSlave();
+    bool isslave = dynamic_cast<MORTAR::Element*>(Discret().gElement(gid))->IsSlave();
 
     if (isslave)
       sc.push_back(gid);
@@ -1967,7 +1967,7 @@ void MORTAR::MortarInterface::Initialize()
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    auto* mele = dynamic_cast<MortarElement*>(ele);
+    auto* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->MoData().SearchElements().resize(0);
   }
@@ -2097,7 +2097,7 @@ void MORTAR::MortarInterface::SetElementAreas()
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    auto* mele = dynamic_cast<MortarElement*>(ele);
+    auto* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->MoData().Area() = mele->ComputeArea();
   }
@@ -2152,7 +2152,7 @@ void MORTAR::MortarInterface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("Cannot find slave element with gid %", gid1);
-    auto* selement = dynamic_cast<MortarElement*>(ele1);
+    auto* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
     // skip zero-sized nurbs elements (slave)
     if (selement->ZeroSized()) continue;
@@ -2164,7 +2164,7 @@ void MORTAR::MortarInterface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("Cannot find master element with gid %", gid2);
-      auto* melement = dynamic_cast<MortarElement*>(ele2);
+      auto* melement = dynamic_cast<MORTAR::Element*>(ele2);
 
       // skip zero-sized nurbs elements (master)
       if (melement->ZeroSized()) continue;
@@ -2361,13 +2361,13 @@ void MORTAR::MortarInterface::EvaluateSTS(
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("Cannot find slave element with gid %d", gid1);
 
-    auto* selement = dynamic_cast<MortarElement*>(ele1);
+    auto* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
     // skip zero-sized nurbs elements (slave)
     if (selement->ZeroSized()) continue;
 
     // empty vector of master element pointers
-    std::vector<MortarElement*> melements;
+    std::vector<MORTAR::Element*> melements;
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -2376,7 +2376,7 @@ void MORTAR::MortarInterface::EvaluateSTS(
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("Cannot find master element with gid %d", gid2);
-      auto* melement = dynamic_cast<MortarElement*>(ele2);
+      auto* melement = dynamic_cast<MORTAR::Element*>(ele2);
 
       // skip zero-sized nurbs elements (master)
       if (melement->ZeroSized()) continue;
@@ -2406,7 +2406,7 @@ void MORTAR::MortarInterface::EvaluateNTS()
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     // vector with possible contacting master eles
-    std::vector<MORTAR::MortarElement*> meles;
+    std::vector<MORTAR::Element*> meles;
 
     // fill vector with possibly contacting meles
     FindMEles(*mrtrnode, meles);
@@ -2553,7 +2553,7 @@ void MORTAR::MortarInterface::PostEvaluate(const int step, const int iter)
 /*----------------------------------------------------------------------*
  |  find meles to snode                                     farah 01/16 |
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FindMEles(Node& mrtrnode, std::vector<MortarElement*>& meles) const
+void MORTAR::MortarInterface::FindMEles(Node& mrtrnode, std::vector<MORTAR::Element*>& meles) const
 {
   // clear vector
   meles.clear();
@@ -2566,7 +2566,7 @@ void MORTAR::MortarInterface::FindMEles(Node& mrtrnode, std::vector<MortarElemen
 
   for (int j = 0; j < mrtrnode.NumElement(); ++j)
   {
-    auto* adjcele = dynamic_cast<MortarElement*>(adjeles[j]);
+    auto* adjcele = dynamic_cast<MORTAR::Element*>(adjeles[j]);
 
     // skip zero-sized nurbs elements (slave)
     if (adjcele->ZeroSized()) continue;
@@ -2578,7 +2578,7 @@ void MORTAR::MortarInterface::FindMEles(Node& mrtrnode, std::vector<MortarElemen
       int gid2 = adjcele->MoData().SearchElements()[k];
       DRT::Element* mele = idiscret_->gElement(gid2);
       if (!mele) dserror("Cannot find master element with gid %", gid2);
-      auto* melement = dynamic_cast<MortarElement*>(mele);
+      auto* melement = dynamic_cast<MORTAR::Element*>(mele);
 
       // skip zero-sized nurbs elements (master)
       if (melement->ZeroSized()) continue;
@@ -2600,7 +2600,7 @@ void MORTAR::MortarInterface::FindMEles(Node& mrtrnode, std::vector<MortarElemen
  |  find mnodes to snode                                    farah 01/16 |
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::FindMNodes(
-    Node& mrtrnode, std::vector<MortarElement*>& meles, std::vector<Node*>& mnodes)
+    Node& mrtrnode, std::vector<MORTAR::Element*>& meles, std::vector<Node*>& mnodes)
 {
   // clear vector
   mnodes.clear();
@@ -2770,7 +2770,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   {
     DRT::Element* element = idiscret_->gElement(selecolmap_->GID(i));
     if (!element) dserror("Cannot find element with gid %\n", selecolmap_->GID(i));
-    auto* mrtrelement = dynamic_cast<MortarElement*>(element);
+    auto* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     if (mrtrelement->MinEdgeSize() < lmin) lmin = mrtrelement->MinEdgeSize();
   }
 
@@ -2779,7 +2779,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   {
     DRT::Element* element = idiscret_->gElement(melefullmap->GID(i));
     if (!element) dserror("Cannot find element with gid %\n", melefullmap->GID(i));
-    auto* mrtrelement = dynamic_cast<MortarElement*>(element);
+    auto* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     if (mrtrelement->MinEdgeSize() < lmin) lmin = mrtrelement->MinEdgeSize();
   }
 
@@ -3011,7 +3011,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
         // std::cout << Comm().MyPID() << " Coupling found between slave element: " << sgid <<" and
         // master element: "<< mgid << std::endl;
         DRT::Element* element = idiscret_->gElement(sgid);
-        auto* selement = dynamic_cast<MORTAR::MortarElement*>(element);
+        auto* selement = dynamic_cast<MORTAR::Element*>(element);
         selement->AddSearchElements(mgid);
       }
     }  // for all master elements
@@ -3031,9 +3031,8 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
 /*----------------------------------------------------------------------*
  |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarInterface::MortarCoupling(MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele,
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+bool MORTAR::MortarInterface::MortarCoupling(MORTAR::Element* sele,
+    std::vector<MORTAR::Element*> mele, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   PreMortarCoupling(sele, mele, mparams_ptr);
 
@@ -3088,10 +3087,10 @@ bool MORTAR::MortarInterface::MortarCoupling(MORTAR::MortarElement* sele,
 }
 
 /*----------------------------------------------------------------------*
- | Split MortarElements->IntElements for 3D quad. coupling    popp 03/09|
+ | Split MORTAR::Elements->IntElements for 3D quad. coupling    popp 03/09|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarInterface::SplitIntElements(
-    MORTAR::MortarElement& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
+    MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
 {
   // *********************************************************************
   // do splitting for given element
@@ -3627,7 +3626,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
     double theta = 0.0;
 
     // search within the first adjacent element
-    auto* mrtrele = dynamic_cast<MortarElement*>(mrtrnode->Elements()[0]);
+    auto* mrtrele = dynamic_cast<MORTAR::Element*>(mrtrnode->Elements()[0]);
     CORE::FE::CellType shape = mrtrele->Shape();
 
     // which discretization type
@@ -3866,7 +3865,7 @@ void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
       NodeType nt = undefined;
 
       // search within the first adjacent element
-      auto* mrtrele = dynamic_cast<MortarElement*>(mrtrnode->Elements()[0]);
+      auto* mrtrele = dynamic_cast<MORTAR::Element*>(mrtrnode->Elements()[0]);
       CORE::FE::CellType shape = mrtrele->Shape();
 
       // real master nodes are easily identified

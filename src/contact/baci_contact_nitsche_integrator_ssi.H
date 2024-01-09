@@ -90,7 +90,7 @@ namespace CONTACT
      *                             \boldsymbol{t}}{\mathrm{d} s} \f]
      */
     template <int dim>
-    void SoEleCauchyStruct(MORTAR::MortarElement& mortar_ele, double* gp_coord,
+    void SoEleCauchyStruct(MORTAR::Element& mortar_ele, double* gp_coord,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& gp_normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_normal_dd,
@@ -100,7 +100,7 @@ namespace CONTACT
         CORE::LINALG::SerialDenseMatrix* d_sigma_nt_ds);
 
    private:
-    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -111,7 +111,7 @@ namespace CONTACT
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override;
 
-    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -145,7 +145,7 @@ namespace CONTACT
      * @param[in] master_xi       master side Gauss point coordinates
      */
     template <int dim>
-    void GPTSForces(MORTAR::MortarElement& slave_ele, MORTAR::MortarElement& master_ele,
+    void GPTSForces(MORTAR::Element& slave_ele, MORTAR::Element& master_ele,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
@@ -181,7 +181,7 @@ namespace CONTACT
      *                             \boldsymbol{t}}{\mathrm{d} s} \f]
      */
     template <int dim>
-    void SoEleCauchy(MORTAR::MortarElement& mortar_ele, double* gp_coord,
+    void SoEleCauchy(MORTAR::Element& mortar_ele, double* gp_coord,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& gp_normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_normal_dd,
@@ -210,7 +210,7 @@ namespace CONTACT
      * @param[in] d_normal_dd    directional derivative of normal
      */
     template <int dim>
-    void IntegrateTest(double fac, MORTAR::MortarElement& ele,
+    void IntegrateTest(double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape,
         const CORE::LINALG::SerialDenseMatrix& shape_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, double jac,
@@ -238,7 +238,7 @@ namespace CONTACT
      * @param[in] d_test_val_ds  derivative of test_val w.r.t. scalar
      */
     template <int dim>
-    void IntegrateScaTraTest(double fac, MORTAR::MortarElement& ele,
+    void IntegrateScaTraTest(double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape_func,
         const CORE::LINALG::SerialDenseMatrix& shape_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, double jac,
@@ -268,11 +268,11 @@ namespace CONTACT
      * @param[in] wgt                 Gauss point weight
      */
     template <int dim>
-    void IntegrateSSIInterfaceCondition(MORTAR::MortarElement& slave_ele,
+    void IntegrateSSIInterfaceCondition(MORTAR::Element& slave_ele,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-        MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
+        MORTAR::Element& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
         const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
         const double cauchy_nn_average_pen_gap,
@@ -293,7 +293,7 @@ namespace CONTACT
      * @param[out] d_conc_dd  directional derivative of concentration
      */
     template <int dim>
-    void SetupGpConcentrations(MORTAR::MortarElement& ele,
+    void SetupGpConcentrations(MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape_func,
         const CORE::LINALG::SerialDenseMatrix& shape_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, double& gp_conc,

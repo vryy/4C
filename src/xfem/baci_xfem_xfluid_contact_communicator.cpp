@@ -123,7 +123,7 @@ void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::Cut
   Create_New_Gmsh_files();
 }
 
-double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
+double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::Element* ele,
     const CORE::LINALG::Matrix<3, 1>& xsi_parent, const CORE::LINALG::Matrix<2, 1>& xsi_boundary,
     const CORE::LINALG::Matrix<3, 1>& normal, bool& FSI_integrated,
     bool& gp_on_this_proc,  // for serial run

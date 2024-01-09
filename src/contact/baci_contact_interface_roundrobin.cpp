@@ -128,7 +128,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->Pack(dataeles);
 
@@ -144,7 +144,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->Pack(dataeles);
 
@@ -165,7 +165,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     // check for ghosting
     if (mele->Owner() == myrank)
@@ -201,8 +201,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
 
       // this Teuchos::rcp holds the memory of the ele
       Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
-      Teuchos::RCP<MORTAR::MortarElement> ele =
-          Teuchos::rcp_dynamic_cast<MORTAR::MortarElement>(object);
+      Teuchos::RCP<MORTAR::Element> ele = Teuchos::rcp_dynamic_cast<MORTAR::Element>(object);
       if (ele == Teuchos::null) dserror("Received object is not an ele");
 
       // add whether its a row ele

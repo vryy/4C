@@ -40,7 +40,7 @@ namespace CONTACT
 
     */
     Coupling2d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
-        MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+        MORTAR::Element& sele, MORTAR::Element& mele);
 
     //! @name Evlauation methods
 
@@ -51,7 +51,7 @@ namespace CONTACT
     a CONTACT::Integrator instance is created, which also
     does integration of the mortar quantity linearizations
 
-    This method integrates the overlap of the current MortarElement
+    This method integrates the overlap of the current MORTAR::Element
     pair sele_ / mele_ based on the integration limits (xiproj). The
     integration includes the Mortar matrices D/M and the gap g.
 
@@ -108,8 +108,7 @@ namespace CONTACT
 
     */
     Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-        std::vector<MORTAR::MortarElement*> mele);
+        Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele);
 
 
     /*!

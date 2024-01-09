@@ -542,9 +542,8 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<DRT::Element> ele = fool->second;
-        Teuchos::RCP<MORTAR::MortarElement> mtele =
-            Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
-                ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
+        Teuchos::RCP<MORTAR::Element> mtele = Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize,
+            ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)

@@ -1528,7 +1528,7 @@ void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
         bool node_has_quad_element = false;
         for (int i = 0; i < cnode->NumElement(); i++)
         {
-          if (dynamic_cast<MORTAR::MortarElement*>(cnode->Elements()[i])->IsQuad() == true)
+          if (dynamic_cast<MORTAR::Element*>(cnode->Elements()[i])->IsQuad() == true)
           {
             node_has_quad_element = true;
             break;

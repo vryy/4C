@@ -18,11 +18,10 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorEhl::IntegrateGP_3D(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
-    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
-    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
-    CORE::LINALG::SerialDenseMatrix& lmderiv,
+void CONTACT::IntegratorEhl::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
     double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -67,11 +66,10 @@ void CONTACT::IntegratorEhl::IntegrateGP_3D(MORTAR::MortarElement& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorEhl::IntegrateGP_2D(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
-    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
-    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
-    CORE::LINALG::SerialDenseMatrix& lmderiv,
+void CONTACT::IntegratorEhl::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
     double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -83,8 +81,8 @@ void CONTACT::IntegratorEhl::IntegrateGP_2D(MORTAR::MortarElement& sele,
 }
 
 
-void CONTACT::IntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement& sele,
-    const double* xi, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+void CONTACT::IntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::Element& sele, const double* xi,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const CORE::LINALG::SerialDenseVector& lmval, const CORE::LINALG::SerialDenseMatrix& lmderiv,
     const CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap,
     const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
@@ -180,11 +178,10 @@ void CONTACT::IntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement& 
   return;
 }
 
-void CONTACT::IntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, const CORE::LINALG::SerialDenseVector& sval,
-    const CORE::LINALG::SerialDenseVector& lmval, const CORE::LINALG::SerialDenseVector& mval,
-    const CORE::LINALG::SerialDenseMatrix& sderiv, const CORE::LINALG::SerialDenseMatrix& mderiv,
-    const CORE::LINALG::SerialDenseMatrix& lmderiv,
+void CONTACT::IntegratorEhl::GP_WeightedAvRelVel(MORTAR::Element& sele, MORTAR::Element& mele,
+    const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseVector& lmval,
+    const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& sderiv,
+    const CORE::LINALG::SerialDenseMatrix& mderiv, const CORE::LINALG::SerialDenseMatrix& lmderiv,
     const CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, const double& wgt,
     const double& jac, const CORE::GEN::pairedvector<int, double>& derivjac, const double* normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, const double& gap,

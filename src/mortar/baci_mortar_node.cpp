@@ -451,7 +451,7 @@ void MORTAR::Node::BuildAveragedNormal()
   // loop over all adjacent elements
   for (int i = 0; i < nseg; ++i)
   {
-    auto* adjmrtrele = dynamic_cast<MortarElement*>(adjeles[i]);
+    auto* adjmrtrele = dynamic_cast<MORTAR::Element*>(adjeles[i]);
 
     // build element normal at current node
     // (we have to pass in the index i to be able to store the
@@ -523,7 +523,7 @@ bool MORTAR::Node::CheckMeshDistortion(double& relocation, const double& limit)
     // get the current element
     DRT::Element* ele = Elements()[i];
     if (!ele) dserror("Cannot find element with lid %", i);
-    auto* mrtrele = dynamic_cast<MortarElement*>(ele);
+    auto* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
 
     // minimal edge size of the current element
     const double minedgesize = mrtrele->MinEdgeSize();

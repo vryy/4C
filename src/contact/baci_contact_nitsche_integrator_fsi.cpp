@@ -36,9 +36,9 @@ CONTACT::IntegratorNitscheFsi::IntegratorNitscheFsi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
-    std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
-    const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::Element& sele,
+    std::vector<MORTAR::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   auto* csele = dynamic_cast<CONTACT::Element*>(&sele);
   if (!csele) dserror("Could cast to Contact Element!");
@@ -68,11 +68,10 @@ void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::MortarElement& s
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFsi::IntegrateGP_3D(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
-    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
-    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
-    CORE::LINALG::SerialDenseMatrix& lmderiv,
+void CONTACT::IntegratorNitscheFsi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
     double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -94,9 +93,8 @@ void CONTACT::IntegratorNitscheFsi::IntegrateGP_3D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, const CORE::LINALG::SerialDenseVector& sval,
-    const CORE::LINALG::SerialDenseMatrix& sderiv,
+void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
+    const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
@@ -245,7 +243,7 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::MortarElement& sele,
   xf_c_comm_->Inc_GP(0);
 }
 
-void CONTACT::IntegratorNitscheFsi::UpdateEleContactState(MORTAR::MortarElement& sele, int state)
+void CONTACT::IntegratorNitscheFsi::UpdateEleContactState(MORTAR::Element& sele, int state)
 {
   if (!state && ele_contact_state_)
   {
@@ -295,9 +293,8 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType parentdistype, int dim>
-void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wgt,
-    const double* gpcoord, CORE::LINALG::Matrix<dim, 1>& pxsi,
-    CORE::LINALG::Matrix<dim, dim>& derivtrafo)
+void inline CONTACT::UTILS::SoEleGP(MORTAR::Element& sele, const double wgt, const double* gpcoord,
+    CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo)
 {
   CORE::FE::CollectedGaussPoints intpoints =
       CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...

@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  1D/2D shape function repository                           popp 04/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const double* xi,
+void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const double* xi,
     CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv)
 {
   switch (shape)
@@ -31,7 +31,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
     // 1D standard linear shape functions (line2)
     // (used for interpolation of displacement field)
     // *********************************************************************
-    case MortarElement::lin1D:
+    case MORTAR::Element::lin1D:
     {
       val[0] = 0.5 * (1 - xi[0]);
       val[1] = 0.5 * (1 + xi[0]);
@@ -43,7 +43,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
     // 1D modified standard shape functions (const replacing linear, line2)
     // (used for interpolation of Lagrange mult. field near boundaries)
     // *********************************************************************
-    case MortarElement::lin1D_edge0:
+    case MORTAR::Element::lin1D_edge0:
     {
       dserror(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
@@ -58,7 +58,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
     // 1D modified standard shape functions (const replacing linear, line2)
     // (used for interpolation of Lagrange mult. field near boundaries)
     // *********************************************************************
-    case MortarElement::lin1D_edge1:
+    case MORTAR::Element::lin1D_edge1:
     {
       dserror(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
@@ -73,7 +73,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
     // 2D standard linear shape functions (tri3)
     // (used for interpolation of displacement field)
     // *********************************************************************
-    case MortarElement::lin2D:
+    case MORTAR::Element::lin2D:
     {
       val[0] = 1.0 - xi[0] - xi[1];
       val[1] = xi[0];
@@ -90,7 +90,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D standard bilinear shape functions (quad4)
       // (used for interpolation of displacement field)
       // *********************************************************************
-    case MortarElement::bilin2D:
+    case MORTAR::Element::bilin2D:
     {
       val[0] = 0.25 * (1.0 - xi[0]) * (1.0 - xi[1]);
       val[1] = 0.25 * (1.0 + xi[0]) * (1.0 - xi[1]);
@@ -110,7 +110,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D standard quadratic shape functions (line3)
       // (used for interpolation of displacement field)
       // *********************************************************************
-    case MortarElement::quad1D:
+    case MORTAR::Element::quad1D:
     {
       val[0] = 0.5 * xi[0] * (xi[0] - 1.0);
       val[1] = 0.5 * xi[0] * (xi[0] + 1.0);
@@ -124,7 +124,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D modified (hierarchical) quadratic shape functions (line3)
       // (used in combination with linear dual LM field in 2D quadratic mortar)
       // *********************************************************************
-    case MortarElement::quad1D_hierarchical:
+    case MORTAR::Element::quad1D_hierarchical:
     {
       val[0] = 0.5 * (1 - xi[0]);
       val[1] = 0.5 * (1 + xi[0]);
@@ -139,7 +139,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D modified quadratic shape functions (line3)
       // (used in combination with quadr dual LM field in 2D quadratic mortar)
       // *********************************************************************
-    case MortarElement::quad1D_modified:
+    case MORTAR::Element::quad1D_modified:
     {
       dserror("Quadratic LM for quadratic interpolation in 2D not available!");
       break;
@@ -148,7 +148,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D modified standard shape functions (linear replacing quad, line3)
       // (used for interpolation of Lagrange mult. field near boundaries)
       // *********************************************************************
-    case MortarElement::quad1D_edge0:
+    case MORTAR::Element::quad1D_edge0:
     {
       dserror(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
@@ -165,7 +165,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D modified standard shape functions (linear replacing quad, line3)
       // (used for interpolation of Lagrange mult. field near boundaries)
       // *********************************************************************
-    case MortarElement::quad1D_edge1:
+    case MORTAR::Element::quad1D_edge1:
     {
       dserror(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
@@ -182,7 +182,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D linear part of standard quadratic shape functions (line3)
       // (used for linear interpolation of std LM field in 2D quadratic mortar)
       // *********************************************************************
-    case MortarElement::quad1D_only_lin:
+    case MORTAR::Element::quad1D_only_lin:
     {
       val[0] = 0.5 * (1.0 - xi[0]);
       val[1] = 0.5 * (1.0 + xi[0]);
@@ -196,7 +196,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D standard quadratic shape functions (tri6)
       // (used for interpolation of displacement field)
       // *********************************************************************
-    case MortarElement::quad2D:
+    case MORTAR::Element::quad2D:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -230,7 +230,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D modified quadratic shape functions (tri6)
       // (used in combination with quadr dual LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::quad2D_modified:
+    case MORTAR::Element::quad2D_modified:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -294,7 +294,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D modified (hierarchical) quadratic shape functions (tri6)
       // (used in combination with linear dual LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::quad2D_hierarchical:
+    case MORTAR::Element::quad2D_hierarchical:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -328,7 +328,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D linear part of standard quadratic shape functions (tri6)
       // (used for linear interpolation of std LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::quad2D_only_lin:
+    case MORTAR::Element::quad2D_only_lin:
     {
       val[0] = 1.0 - xi[0] - xi[1];
       val[1] = xi[0];
@@ -356,7 +356,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D serendipity shape functions (quad8)
       // (used for interpolation of displacement field)
       // *********************************************************************
-    case MortarElement::serendipity2D:
+    case MORTAR::Element::serendipity2D:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -409,7 +409,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D modified serendipity shape functions (quad8)
       // (used in combination with quadr dual LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::serendipity2D_modified:
+    case MORTAR::Element::serendipity2D_modified:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -495,7 +495,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D modified (hierarchical) serendipity shape functions (quad8)
       // (used in combination with linear dual LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::serendipity2D_hierarchical:
+    case MORTAR::Element::serendipity2D_hierarchical:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -538,7 +538,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D bilinear part of serendipity quadratic shape functions (quad8)
       // (used for linear interpolation of std LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::serendipity2D_only_lin:
+    case MORTAR::Element::serendipity2D_only_lin:
     {
       val[0] = 0.25 * (1.0 - xi[0]) * (1.0 - xi[1]);
       val[1] = 0.25 * (1.0 + xi[0]) * (1.0 - xi[1]);
@@ -572,7 +572,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D standard biquadratic shape functions (quad9)
       // (used for interpolation of displacement field)
       // *********************************************************************
-    case MortarElement::biquad2D:
+    case MORTAR::Element::biquad2D:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -625,7 +625,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D standard biquadratic shape functions (quad9)
       // (used in combination with quadr dual LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::biquad2D_modified:
+    case MORTAR::Element::biquad2D_modified:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -723,7 +723,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D standard biquadratic shape functions (quad9)
       // (used in combination with linear dual LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::biquad2D_hierarchical:
+    case MORTAR::Element::biquad2D_hierarchical:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -775,7 +775,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D bilinear part of biquadratic quadratic shape functions (quad9)
       // (used for linear interpolation of std LM field in 3D quadratic mortar)
       // *********************************************************************
-    case MortarElement::biquad2D_only_lin:
+    case MORTAR::Element::biquad2D_only_lin:
     {
       val[0] = 0.25 * (1.0 - xi[0]) * (1.0 - xi[1]);
       val[1] = 0.25 * (1.0 + xi[0]) * (1.0 - xi[1]);
@@ -812,7 +812,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D dual linear shape functions (line2)
       // (used for interpolation of Lagrange mutliplier field)
       // *********************************************************************
-    case MortarElement::lindual1D:
+    case MORTAR::Element::lindual1D:
     {
       int dim = 1;
 
@@ -856,7 +856,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D modified dual shape functions (const replacing linear, line2)
       // (used for interpolation of Lagrange mult. field near boundaries)
       // *********************************************************************
-    case MortarElement::lindual1D_edge0:
+    case MORTAR::Element::lindual1D_edge0:
     {
       dserror(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
@@ -871,7 +871,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 1D modified dual shape functions (const replacing linear, line2)
       // (used for interpolation of Lagrange mult. field near boundaries)
       // *********************************************************************
-    case MortarElement::lindual1D_edge1:
+    case MORTAR::Element::lindual1D_edge1:
     {
       dserror(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
@@ -886,7 +886,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // 2D dual linear shape functions (tri3)
       // (used for interpolation of Lagrange mutliplier field)
       // *********************************************************************
-    case MortarElement::lindual2D:
+    case MORTAR::Element::lindual2D:
     {
       if (MoData().DualShape() == Teuchos::null)
       {
@@ -936,13 +936,13 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (used for interpolation of Lagrange mutliplier field)
       // (including adaption process for distorted elements)
       // *********************************************************************
-    case MortarElement::bilindual2D:
+    case MORTAR::Element::bilindual2D:
     {
       const int nnodes = 4;
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1018,7 +1018,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (used for interpolation of Lagrange mutliplier field)
       // (including adaption process for distorted elements)
       // *********************************************************************
-    case MortarElement::quaddual1D:
+    case MORTAR::Element::quaddual1D:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1026,7 +1026,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1094,7 +1094,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (used for LINEAR interpolation of Lagrange mutliplier field)
       // (including adaption process for distorted elements)
       // *********************************************************************
-    case MortarElement::quaddual1D_only_lin:
+    case MORTAR::Element::quaddual1D_only_lin:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1102,7 +1102,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1121,7 +1121,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          ShapeFunctions(MortarElement::quad1D_only_lin, gpc, valquad, derivquad);
+          ShapeFunctions(MORTAR::Element::quad1D_only_lin, gpc, valquad, derivquad);
           detg = Jacobian(gpc);
 
           for (int j = 0; j < nnodes; ++j)
@@ -1162,7 +1162,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       }
 
       // evaluate dual shape functions at loc. coord. xi
-      ShapeFunctions(MortarElement::quad1D_only_lin, xi, valquad, derivquad);
+      ShapeFunctions(MORTAR::Element::quad1D_only_lin, xi, valquad, derivquad);
       val.putScalar(0.0);
       deriv.putScalar(0.0);
 
@@ -1188,7 +1188,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MortarElement::quaddual2D:
+    case MORTAR::Element::quaddual2D:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1196,7 +1196,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1263,7 +1263,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
     // (including adaption process for distorted elements)
     // (including modification of displacement shape functions)
     // *********************************************************************
-    case MortarElement::serendipitydual2D:
+    case MORTAR::Element::serendipitydual2D:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1271,7 +1271,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1337,7 +1337,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MortarElement::biquaddual2D:
+    case MORTAR::Element::biquaddual2D:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1345,7 +1345,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1411,7 +1411,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MortarElement::quaddual2D_only_lin:
+    case MORTAR::Element::quaddual2D_only_lin:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1419,7 +1419,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1438,7 +1438,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          ShapeFunctions(MortarElement::quad2D_only_lin, gpc, valquad, derivquad);
+          ShapeFunctions(MORTAR::Element::quad2D_only_lin, gpc, valquad, derivquad);
           detg = Jacobian(gpc);
 
           for (int j = 0; j < nnodes; ++j)
@@ -1479,7 +1479,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       }
 
       // evaluate dual shape functions at loc. coord. xi
-      ShapeFunctions(MortarElement::quad2D_only_lin, xi, valquad, derivquad);
+      ShapeFunctions(MORTAR::Element::quad2D_only_lin, xi, valquad, derivquad);
       val.putScalar(0.0);
       deriv.putScalar(0.0);
 
@@ -1501,7 +1501,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MortarElement::serendipitydual2D_only_lin:
+    case MORTAR::Element::serendipitydual2D_only_lin:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1509,7 +1509,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1528,7 +1528,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          ShapeFunctions(MortarElement::serendipity2D_only_lin, gpc, valquad, derivquad);
+          ShapeFunctions(MORTAR::Element::serendipity2D_only_lin, gpc, valquad, derivquad);
 
           detg = Jacobian(gpc);
 
@@ -1570,7 +1570,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       }
 
       // evaluate dual shape functions at loc. coord. xi
-      ShapeFunctions(MortarElement::serendipity2D_only_lin, xi, valquad, derivquad);
+      ShapeFunctions(MORTAR::Element::serendipity2D_only_lin, xi, valquad, derivquad);
       val.putScalar(0.0);
       deriv.putScalar(0.0);
 
@@ -1592,7 +1592,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MortarElement::biquaddual2D_only_lin:
+    case MORTAR::Element::biquaddual2D_only_lin:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1600,7 +1600,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
 #ifdef BACI_DEBUG
       if (nnodes != NumNode())
-        dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1619,7 +1619,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          ShapeFunctions(MortarElement::biquad2D_only_lin, gpc, valquad, derivquad);
+          ShapeFunctions(MORTAR::Element::biquad2D_only_lin, gpc, valquad, derivquad);
           detg = Jacobian(gpc);
 
           for (int j = 0; j < nnodes; ++j)
@@ -1660,7 +1660,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       }
 
       // evaluate dual shape functions at loc. coord. xi
-      ShapeFunctions(MortarElement::biquad2D_only_lin, xi, valquad, derivquad);
+      ShapeFunctions(MORTAR::Element::biquad2D_only_lin, xi, valquad, derivquad);
       val.putScalar(0.0);
       deriv.putScalar(0.0);
 
@@ -1681,7 +1681,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (used for interpolation of Lagrange mult. field near boundaries)
       // (only form a basis and have to be adapted for distorted elements)
       // *********************************************************************
-    case MortarElement::dual1D_base_for_edge0:
+    case MORTAR::Element::dual1D_base_for_edge0:
     {
       val[0] = xi[0];
       val[1] = 1.0 - xi[0];
@@ -1694,7 +1694,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (used for interpolation of Lagrange mult. field near boundaries)
       // (only form a basis and have to be adapted for distorted elements)
       // *********************************************************************
-    case MortarElement::dual1D_base_for_edge1:
+    case MORTAR::Element::dual1D_base_for_edge1:
     {
       val[0] = -xi[0];
       val[1] = 1.0 + xi[0];
@@ -1707,7 +1707,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (used for interpolation of Lagrange mult. field near boundaries)
       // (including adaption process for distorted elements)
       // *********************************************************************
-    case MortarElement::quaddual1D_edge0:
+    case MORTAR::Element::quaddual1D_edge0:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1730,8 +1730,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       for (int i = 0; i < integrator.nGP(); ++i)
       {
         double gpc[2] = {integrator.Coordinate(i, 0), 0.0};
-        ShapeFunctions(MortarElement::quad1D, gpc, valquad, derivquad);
-        ShapeFunctions(MortarElement::dual1D_base_for_edge0, gpc, vallin, derivlin);
+        ShapeFunctions(MORTAR::Element::quad1D, gpc, valquad, derivquad);
+        ShapeFunctions(MORTAR::Element::dual1D_base_for_edge0, gpc, vallin, derivlin);
         detg = Jacobian(gpc);
 
         for (int j = 1; j < nnodes; ++j)
@@ -1757,7 +1757,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       CORE::LINALG::multiply(ae, de, me);
 
       // evaluate dual shape functions at loc. coord. xi
-      ShapeFunctions(MortarElement::dual1D_base_for_edge0, xi, vallin, derivlin);
+      ShapeFunctions(MORTAR::Element::dual1D_base_for_edge0, xi, vallin, derivlin);
       for (int i = 1; i < nnodes; ++i)
         for (int j = 1; j < nnodes; ++j)
         {
@@ -1779,7 +1779,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // (used for interpolation of Lagrange mult. field near boundaries)
       // (including adaption process for distorted elements)
       // *********************************************************************
-    case MortarElement::quaddual1D_edge1:
+    case MORTAR::Element::quaddual1D_edge1:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -1802,8 +1802,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       for (int i = 0; i < integrator.nGP(); ++i)
       {
         double gpc[2] = {integrator.Coordinate(i, 0), 0.0};
-        ShapeFunctions(MortarElement::quad1D, gpc, valquad, derivquad);
-        ShapeFunctions(MortarElement::dual1D_base_for_edge1, gpc, vallin, derivlin);
+        ShapeFunctions(MORTAR::Element::quad1D, gpc, valquad, derivquad);
+        ShapeFunctions(MORTAR::Element::dual1D_base_for_edge1, gpc, vallin, derivlin);
         detg = Jacobian(gpc);
 
         for (int j = 0; j < nnodes - 1; ++j)
@@ -1829,7 +1829,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       CORE::LINALG::multiply(ae, de, me);
 
       // evaluate dual shape functions at loc. coord. xi
-      ShapeFunctions(MortarElement::dual1D_base_for_edge1, xi, vallin, derivlin);
+      ShapeFunctions(MORTAR::Element::dual1D_base_for_edge1, xi, vallin, derivlin);
       for (int i = 0; i < nnodes - 1; ++i)
         for (int j = 0; j < nnodes - 1; ++j)
         {
@@ -1862,7 +1862,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 /*----------------------------------------------------------------------*
  |  Evaluate displacement shape functions                     popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseVector& val,
+bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseVector& val,
     CORE::LINALG::SerialDenseMatrix& deriv, const int valdim, bool dualquad)
 {
   if (!xi) dserror("EvaluateShape called with xi=nullptr");
@@ -1886,7 +1886,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     case CORE::FE::CellType::line2:
     {
       if (valdim != 2) dserror("Inconsistency in EvaluateShape");
-      ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
+      ShapeFunctions(MORTAR::Element::lin1D, xi, val, deriv);
       break;
     }
       // 2D quadratic case (3noded line element)
@@ -1899,23 +1899,23 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
             "There is no quadratic interpolation for dual shape functions for 2-D problems with "
             "quadratic elements available!");
       else if (dualquad && bound)
-        ShapeFunctions(MortarElement::quad1D_hierarchical, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::quad1D_hierarchical, xi, val, deriv);
       else
-        ShapeFunctions(MortarElement::quad1D, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::quad1D, xi, val, deriv);
       break;
     }
       // 3D linear case (3noded triangular element)
     case CORE::FE::CellType::tri3:
     {
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
-      ShapeFunctions(MortarElement::lin2D, xi, val, deriv);
+      ShapeFunctions(MORTAR::Element::lin2D, xi, val, deriv);
       break;
     }
       // 3D bilinear case (4noded quadrilateral element)
     case CORE::FE::CellType::quad4:
     {
       if (valdim != 4) dserror("Inconsistency in EvaluateShape");
-      ShapeFunctions(MortarElement::bilin2D, xi, val, deriv);
+      ShapeFunctions(MORTAR::Element::bilin2D, xi, val, deriv);
       break;
     }
       // 3D quadratic case (6noded triangular element)
@@ -1923,11 +1923,11 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     {
       if (valdim != 6) dserror("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
-        ShapeFunctions(MortarElement::quad2D_modified, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::quad2D_modified, xi, val, deriv);
       else if (dualquad && bound)
-        ShapeFunctions(MortarElement::quad2D_hierarchical, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::quad2D_hierarchical, xi, val, deriv);
       else
-        ShapeFunctions(MortarElement::quad2D, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::quad2D, xi, val, deriv);
       break;
     }
       // 3D serendipity case (8noded quadrilateral element)
@@ -1935,11 +1935,11 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     {
       if (valdim != 8) dserror("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
-        ShapeFunctions(MortarElement::serendipity2D_modified, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::serendipity2D_modified, xi, val, deriv);
       else if (dualquad && bound)
-        ShapeFunctions(MortarElement::serendipity2D_hierarchical, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::serendipity2D_hierarchical, xi, val, deriv);
       else
-        ShapeFunctions(MortarElement::serendipity2D, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::serendipity2D, xi, val, deriv);
       break;
     }
       // 3D biquadratic case (9noded quadrilateral element)
@@ -1947,11 +1947,11 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     {
       if (valdim != 9) dserror("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
-        ShapeFunctions(MortarElement::biquad2D_modified, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::biquad2D_modified, xi, val, deriv);
       else if (dualquad && bound)
-        ShapeFunctions(MortarElement::biquad2D_hierarchical, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::biquad2D_hierarchical, xi, val, deriv);
       else
-        ShapeFunctions(MortarElement::biquad2D, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::biquad2D, xi, val, deriv);
       break;
     }
 
@@ -2055,7 +2055,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
       // unknown case
     default:
     {
-      dserror("EvaluateShape called for unknown MortarElement type");
+      dserror("EvaluateShape called for unknown MORTAR::Element type");
       break;
     }
   }
@@ -2066,9 +2066,9 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
 /*----------------------------------------------------------------------*
  |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype,
-    const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
-    const int valdim, bool boundtrafo)
+bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
+    CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv, const int valdim,
+    bool boundtrafo)
 {
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none) return true;
@@ -2092,9 +2092,9 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
       if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
       if (dual)
-        ShapeFunctions(MortarElement::lindual1D, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::lindual1D, xi, val, deriv);
       else
-        ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::lin1D, xi, val, deriv);
       break;
     }
 
@@ -2104,9 +2104,9 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
       if (dual)
-        ShapeFunctions(MortarElement::quaddual1D, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::quaddual1D, xi, val, deriv);
       else
-        ShapeFunctions(MortarElement::quad1D, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::quad1D, xi, val, deriv);
 
       break;
     }
@@ -2122,30 +2122,30 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
       if (dual)
       {
         if (Shape() == CORE::FE::CellType::tri3)
-          ShapeFunctions(MortarElement::lindual2D, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::lindual2D, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::quad4)
-          ShapeFunctions(MortarElement::bilindual2D, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::bilindual2D, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::tri6)
-          ShapeFunctions(MortarElement::quaddual2D, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::quaddual2D, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::quad8)
-          ShapeFunctions(MortarElement::serendipitydual2D, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::serendipitydual2D, xi, val, deriv);
         else
-          /*Shape()==quad9*/ ShapeFunctions(MortarElement::biquaddual2D, xi, val, deriv);
+          /*Shape()==quad9*/ ShapeFunctions(MORTAR::Element::biquaddual2D, xi, val, deriv);
       }
 
       // standard Lagrange multipliers
       else
       {
         if (Shape() == CORE::FE::CellType::tri3)
-          ShapeFunctions(MortarElement::lin2D, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::lin2D, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::quad4)
-          ShapeFunctions(MortarElement::bilin2D, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::bilin2D, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::tri6)
-          ShapeFunctions(MortarElement::quad2D, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::quad2D, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::quad8)
-          ShapeFunctions(MortarElement::serendipity2D, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::serendipity2D, xi, val, deriv);
         else
-          /*Shape()==quad9*/ ShapeFunctions(MortarElement::biquad2D, xi, val, deriv);
+          /*Shape()==quad9*/ ShapeFunctions(MORTAR::Element::biquad2D, xi, val, deriv);
       }
 
       break;
@@ -2498,7 +2498,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
  |  Evaluate Lagrange multiplier shape functions             seitz 09/17|
  |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH CONST LM!    |
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::EvaluateShapeLagMultConst(const INPAR::MORTAR::ShapeFcn& lmtype,
+bool MORTAR::Element::EvaluateShapeLagMultConst(const INPAR::MORTAR::ShapeFcn& lmtype,
     const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
     const int valdim)
 {
@@ -2512,7 +2512,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultConst(const INPAR::MORTAR::Shape
  |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH LIN LM!      |
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
+bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
     const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
     const int valdim)
 {
@@ -2558,10 +2558,10 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
     {
       // the middle node is defined as slave boundary (=master)
       // dual Lagrange multipliers
-      if (dual) ShapeFunctions(MortarElement::quaddual1D_only_lin, xi, val, deriv);
+      if (dual) ShapeFunctions(MORTAR::Element::quaddual1D_only_lin, xi, val, deriv);
       // standard Lagrange multipliers
       else
-        ShapeFunctions(MortarElement::quad1D_only_lin, xi, val, deriv);
+        ShapeFunctions(MORTAR::Element::quad1D_only_lin, xi, val, deriv);
 
       break;
     }
@@ -2577,22 +2577,22 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
       {
         // dserror("Quad->Lin modification of dual LM shape functions not yet implemented");
         if (Shape() == CORE::FE::CellType::tri6)
-          ShapeFunctions(MortarElement::quaddual2D_only_lin, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::quaddual2D_only_lin, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::quad8)
-          ShapeFunctions(MortarElement::serendipitydual2D_only_lin, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::serendipitydual2D_only_lin, xi, val, deriv);
         else
-          /*Shape()==quad9*/ ShapeFunctions(MortarElement::biquaddual2D_only_lin, xi, val, deriv);
+          /*Shape()==quad9*/ ShapeFunctions(MORTAR::Element::biquaddual2D_only_lin, xi, val, deriv);
       }
 
       // standard Lagrange multipliers
       else
       {
         if (Shape() == CORE::FE::CellType::tri6)
-          ShapeFunctions(MortarElement::quad2D_only_lin, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::quad2D_only_lin, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::quad8)
-          ShapeFunctions(MortarElement::serendipity2D_only_lin, xi, val, deriv);
+          ShapeFunctions(MORTAR::Element::serendipity2D_only_lin, xi, val, deriv);
         else
-          /*Shape()==quad9*/ ShapeFunctions(MortarElement::biquad2D_only_lin, xi, val, deriv);
+          /*Shape()==quad9*/ ShapeFunctions(MORTAR::Element::biquad2D_only_lin, xi, val, deriv);
       }
 
       break;
@@ -2611,14 +2611,14 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
 /*----------------------------------------------------------------------*
  |  1D/2D shape function linearizations repository            popp 05/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::ShapeType shape,
+void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType shape,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual)
 {
   switch (shape)
   {
     // in case of consistent dual shape functions we have an entry here
-    case MORTAR::MortarElement::lindual1D:
-    case MORTAR::MortarElement::lindual2D:
+    case MORTAR::Element::lindual1D:
+    case MORTAR::Element::lindual2D:
     {
       if (MoData().DerivDualShape() != Teuchos::null) derivdual = *(MoData().DerivDualShape());
       break;
@@ -2629,7 +2629,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // (used for interpolation of Lagrange multiplier field)
       // (linearization necessary due to adaption for distorted elements !!!)
       // *********************************************************************
-    case MORTAR::MortarElement::bilindual2D:
+    case MORTAR::Element::bilindual2D:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -2641,7 +2641,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         static const int nnodes = 4;
 #ifdef BACI_DEBUG
         if (nnodes != NumNode())
-          dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+          dserror(
+              "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
         CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
@@ -2666,7 +2667,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          UTILS::mortar_shape_function_2D(val, gpc[0], gpc[1], MortarElement::bilin2D);
+          UTILS::mortar_shape_function_2D(val, gpc[0], gpc[1], MORTAR::Element::bilin2D);
           detg = Jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -2743,7 +2744,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // (used for interpolation of Lagrange multiplier field)
     // (linearization necessary due to adaption for distorted elements !!!)
     // *********************************************************************
-    case MORTAR::MortarElement::quaddual1D:
+    case MORTAR::Element::quaddual1D:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -2755,7 +2756,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         const int nnodes = 3;
 #ifdef BACI_DEBUG
         if (nnodes != NumNode())
-          dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+          dserror(
+              "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
         CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
@@ -2870,7 +2872,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        CORE::LINALG::SerialDenseMatrix aeref(ae);
        double delta = 1e-8;
        int thedim=3;
-       if (shape==MORTAR::MortarElement::quaddual1D) thedim=2;
+       if (shape==MORTAR::Element::quaddual1D) thedim=2;
 
        for (int dim=0;dim<thedim;++dim)
        {
@@ -2937,7 +2939,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // (used for linear interpolation of Lagrange multiplier field)
     // (linearization necessary due to adaption for distorted elements !!!)
     // *********************************************************************
-    case MORTAR::MortarElement::quaddual1D_only_lin:
+    case MORTAR::Element::quaddual1D_only_lin:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -2949,7 +2951,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
 #ifdef BACI_DEBUG
         if (nnodes != NumNode())
-          dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+          dserror(
+              "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
@@ -3077,7 +3080,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // (used for interpolation of Lagrange multiplier field)
     // (linearization necessary due to adaption for distorted elements !!!)
     // *********************************************************************
-    case MORTAR::MortarElement::biquaddual2D:
+    case MORTAR::Element::biquaddual2D:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -3089,7 +3092,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         const int nnodes = 9;
 #ifdef BACI_DEBUG
         if (nnodes != NumNode())
-          dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+          dserror(
+              "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
         MoData().DerivDualShape() =
@@ -3208,7 +3212,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        CORE::LINALG::SerialDenseMatrix aeref(ae);
        double delta = 1e-8;
        int thedim=3;
-       if (shape==MORTAR::MortarElement::quaddual1D) thedim=2;
+       if (shape==MORTAR::Element::quaddual1D) thedim=2;
 
        for (int dim=0;dim<thedim;++dim)
        {
@@ -3276,7 +3280,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // (linearization necessary due to adaption for distorted elements !!!)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MORTAR::MortarElement::quaddual2D:
+    case MORTAR::Element::quaddual2D:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -3288,7 +3292,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         const int nnodes = 6;
 #ifdef BACI_DEBUG
         if (nnodes != NumNode())
-          dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+          dserror(
+              "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
         MoData().DerivDualShape() =
@@ -3472,7 +3477,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // (linearization necessary due to adaption for distorted elements !!!)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MORTAR::MortarElement::serendipitydual2D:
+    case MORTAR::Element::serendipitydual2D:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -3484,7 +3489,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         const int nnodes = 8;
 #ifdef BACI_DEBUG
         if (nnodes != NumNode())
-          dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+          dserror(
+              "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
         MoData().DerivDualShape() =
@@ -3661,7 +3667,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // (used for interpolation of Lagrange mult. field near boundaries)
       // (linearization necessary due to adaption for distorted elements !!!)
       // *********************************************************************
-    case MORTAR::MortarElement::quaddual1D_edge0:
+    case MORTAR::Element::quaddual1D_edge0:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -3689,8 +3695,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       for (int i = 0; i < integrator.nGP(); ++i)
       {
         double gpc[2] = {integrator.Coordinate(i, 0), 0.0};
-        ShapeFunctions(MORTAR::MortarElement::quad1D, gpc, valquad, derivquad);
-        ShapeFunctions(MORTAR::MortarElement::dual1D_base_for_edge0, gpc, vallin, derivlin);
+        ShapeFunctions(MORTAR::Element::quad1D, gpc, valquad, derivquad);
+        ShapeFunctions(MORTAR::Element::dual1D_base_for_edge0, gpc, vallin, derivlin);
         detg = Jacobian(gpc);
 
         // directional derivative of Jacobian
@@ -3794,8 +3800,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        for (int i=0;i<integrator.nGP();++i)
        {
        double gpc1[2] = {integrator.Coordinate(i), 0.0};
-       ShapeFunctions(MORTAR::MortarElement::quad1D,gpc1,valquad1,derivquad1);
-       ShapeFunctions(MORTAR::MortarElement::dual1D_base_for_edge0,gpc1,vallin1,derivlin1);
+       ShapeFunctions(MORTAR::Element::quad1D,gpc1,valquad1,derivquad1);
+       ShapeFunctions(MORTAR::Element::dual1D_base_for_edge0,gpc1,vallin1,derivlin1);
        detg = Jacobian(valquad1,derivquad1,coord);
 
        for (int j=1;j<nnodes;++j)
@@ -3850,7 +3856,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // (used for interpolation of Lagrange mult. field near boundaries)
       // (linearization necessary due to adaption for distorted elements !!!)
       // *********************************************************************
-    case MORTAR::MortarElement::quaddual1D_edge1:
+    case MORTAR::Element::quaddual1D_edge1:
     {
       // establish fundamental data
       double detg = 0.0;
@@ -3878,8 +3884,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       for (int i = 0; i < integrator.nGP(); ++i)
       {
         double gpc[2] = {integrator.Coordinate(i, 0), 0.0};
-        ShapeFunctions(MORTAR::MortarElement::quad1D, gpc, valquad, derivquad);
-        ShapeFunctions(MORTAR::MortarElement::dual1D_base_for_edge1, gpc, vallin, derivlin);
+        ShapeFunctions(MORTAR::Element::quad1D, gpc, valquad, derivquad);
+        ShapeFunctions(MORTAR::Element::dual1D_base_for_edge1, gpc, vallin, derivlin);
         detg = Jacobian(gpc);
 
         // directional derivative of Jacobian
@@ -3983,8 +3989,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        for (int i=0;i<integrator.nGP();++i)
        {
        double gpc1[2] = {integrator.Coordinate(i), 0.0};
-       ShapeFunctions(MORTAR::MortarElement::quad1D,gpc1,valquad1,derivquad1);
-       ShapeFunctions(MORTAR::MortarElement::dual1D_base_for_edge1,gpc1,vallin1,derivlin1);
+       ShapeFunctions(MORTAR::Element::quad1D,gpc1,valquad1,derivquad1);
+       ShapeFunctions(MORTAR::Element::dual1D_base_for_edge1,gpc1,vallin1,derivlin1);
        detg = Jacobian(valquad1,derivquad1,coord);
 
        for (int j=0;j<nnodes-1;++j)
@@ -4040,7 +4046,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       //***********************************************************************
-    case MORTAR::MortarElement::quaddual2D_only_lin:
+    case MORTAR::Element::quaddual2D_only_lin:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -4052,7 +4058,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
 #ifdef BACI_DEBUG
         if (nnodes != NumNode())
-          dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+          dserror(
+              "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
         MoData().DerivDualShape() =
@@ -4181,7 +4188,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MORTAR::MortarElement::serendipitydual2D_only_lin:
+    case MORTAR::Element::serendipitydual2D_only_lin:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -4193,7 +4200,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
 #ifdef BACI_DEBUG
         if (nnodes != NumNode())
-          dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+          dserror(
+              "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
         MoData().DerivDualShape() =
@@ -4322,7 +4330,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
-    case MORTAR::MortarElement::biquaddual2D_only_lin:
+    case MORTAR::Element::biquaddual2D_only_lin:
     {
       dserror("biquaddual2D_only_lin not available!");
       break;
@@ -4343,7 +4351,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 /*----------------------------------------------------------------------*
  |  Evaluate 2nd derivative of shape functions                popp 05/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::Evaluate2ndDerivShape(
+bool MORTAR::Element::Evaluate2ndDerivShape(
     const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim)
 {
   if (!xi) dserror("Evaluate2ndDerivShape called with xi=nullptr");
@@ -4648,7 +4656,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of dual shape functions    popp 05/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::DerivShapeDual(
+bool MORTAR::Element::DerivShapeDual(
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual)
 {
   // get node number and node pointers
@@ -4686,11 +4694,10 @@ bool MORTAR::MortarElement::DerivShapeDual(
       bool isonbound2 = mycnode2->IsOnBound();
 
       // locally linear Lagrange multipliers
-      if (isonbound2)
-        ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D_only_lin, derivdual);
+      if (isonbound2) ShapeFunctionLinearizations(MORTAR::Element::quaddual1D_only_lin, derivdual);
       // use unmodified dual shape functions
       else
-        ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D, derivdual);
+        ShapeFunctionLinearizations(MORTAR::Element::quaddual1D, derivdual);
 
       break;
     }
@@ -4702,14 +4709,13 @@ bool MORTAR::MortarElement::DerivShapeDual(
     case CORE::FE::CellType::quad9:
     {
       if (Shape() == CORE::FE::CellType::quad4)
-        ShapeFunctionLinearizations(MORTAR::MortarElement::bilindual2D, derivdual);
+        ShapeFunctionLinearizations(MORTAR::Element::bilindual2D, derivdual);
       else if (Shape() == CORE::FE::CellType::tri6)
-        ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual2D, derivdual);
+        ShapeFunctionLinearizations(MORTAR::Element::quaddual2D, derivdual);
       else if (Shape() == CORE::FE::CellType::quad8)
-        ShapeFunctionLinearizations(MORTAR::MortarElement::serendipitydual2D, derivdual);
+        ShapeFunctionLinearizations(MORTAR::Element::serendipitydual2D, derivdual);
       else
-        /*Shape()==quad9*/ ShapeFunctionLinearizations(
-            MORTAR::MortarElement::biquaddual2D, derivdual);
+        /*Shape()==quad9*/ ShapeFunctionLinearizations(MORTAR::Element::biquaddual2D, derivdual);
 
       break;
     }
@@ -4719,12 +4725,12 @@ bool MORTAR::MortarElement::DerivShapeDual(
     //==================================================
     case CORE::FE::CellType::nurbs3:
     {
-      ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D, derivdual);
+      ShapeFunctionLinearizations(MORTAR::Element::quaddual1D, derivdual);
       break;
     }
     case CORE::FE::CellType::nurbs9:
     {
-      ShapeFunctionLinearizations(MORTAR::MortarElement::biquaddual2D, derivdual);
+      ShapeFunctionLinearizations(MORTAR::Element::biquaddual2D, derivdual);
       break;
     }
       // unknown case

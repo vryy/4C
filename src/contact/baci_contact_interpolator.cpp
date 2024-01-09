@@ -73,7 +73,7 @@ NTS::Interpolator::Interpolator(Teuchos::ParameterList& params, const int& dim)
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 02/16|
  *----------------------------------------------------------------------*/
-bool NTS::Interpolator::Interpolate(MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
+bool NTS::Interpolator::Interpolate(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles)
 {
   // call sub functions for 2 and 3 dimensions
   if (dim_ == 2)
@@ -90,8 +90,7 @@ bool NTS::Interpolator::Interpolate(MORTAR::Node& snode, std::vector<MORTAR::Mor
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 09/14|
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::Interpolate2D(
-    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
+void NTS::Interpolator::Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -100,7 +99,7 @@ void NTS::Interpolator::Interpolate2D(
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+      dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   }
 
   // contact with wear
@@ -118,7 +117,7 @@ void NTS::Interpolator::Interpolate2D(
   //  area=area/snode.NumElement();
 
   // get first element (this is a dummy to use established algorithms)
-  MORTAR::MortarElement* sele = dynamic_cast<MORTAR::MortarElement*>(snode.Elements()[0]);
+  MORTAR::Element* sele = dynamic_cast<MORTAR::Element*>(snode.Elements()[0]);
 
   CONTACT::Node& mynode = dynamic_cast<CONTACT::Node&>(snode);
 
@@ -245,8 +244,7 @@ void NTS::Interpolator::Interpolate2D(
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 09/14|
  *----------------------------------------------------------------------*/
-bool NTS::Interpolator::Interpolate3D(
-    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
+bool NTS::Interpolator::Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles)
 {
   bool success = false;
 
@@ -257,7 +255,7 @@ bool NTS::Interpolator::Interpolate3D(
   bool kink_projection = false;
 
   // get first element (this is a dummy to use established algorithms)
-  MORTAR::MortarElement* sele = dynamic_cast<MORTAR::MortarElement*>(snode.Elements()[0]);
+  MORTAR::Element* sele = dynamic_cast<MORTAR::Element*>(snode.Elements()[0]);
 
   CONTACT::Node& mynode = dynamic_cast<CONTACT::Node&>(snode);
 
@@ -457,7 +455,7 @@ bool NTS::Interpolator::Interpolate3D(
  |  interpolate (public)                                     seitz 08/15|
  *----------------------------------------------------------------------*/
 void NTS::Interpolator::InterpolateMasterTemp3D(
-    MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Element& sele, std::vector<MORTAR::Element*> meles)
 {
   // if it's not a TSI problem, there's nothing to do here
   if (dynamic_cast<CONTACT::Node*>(sele.Nodes()[0])->HasTSIData() == false) return;
@@ -469,7 +467,7 @@ void NTS::Interpolator::InterpolateMasterTemp3D(
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("InterpolateMasterTemp3D called on a wrong type of MortarElement pair!");
+      dserror("InterpolateMasterTemp3D called on a wrong type of MORTAR::Element pair!");
   }
 
   //**************************************************************
@@ -675,7 +673,7 @@ void NTS::Interpolator::nwTE2D(CONTACT::Node& mynode, double& area, double& jump
 /*----------------------------------------------------------------------*
  |  node-wise slip                                          farah 09/14 |
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::nwSlip2D(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
+void NTS::Interpolator::nwSlip2D(CONTACT::Node& mynode, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
@@ -816,7 +814,7 @@ void NTS::Interpolator::nwSlip2D(CONTACT::Node& mynode, MORTAR::MortarElement& m
 /*----------------------------------------------------------------------*
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::nwWear2D(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
+void NTS::Interpolator::nwWear2D(CONTACT::Node& mynode, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
@@ -1041,10 +1039,9 @@ void NTS::Interpolator::nwWear2D(CONTACT::Node& mynode, MORTAR::MortarElement& m
 /*----------------------------------------------------------------------*
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::nwGap2D(CONTACT::Node& mynode, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& mval,
-    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::GEN::pairedvector<int, double>& dmxi,
-    double* gpn)
+void NTS::Interpolator::nwGap2D(CONTACT::Node& mynode, MORTAR::Element& sele, MORTAR::Element& mele,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
+    CORE::GEN::pairedvector<int, double>& dmxi, double* gpn)
 {
   const int ncol = mele.NumNode();
   std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
@@ -1127,7 +1124,7 @@ void NTS::Interpolator::nwGap2D(CONTACT::Node& mynode, MORTAR::MortarElement& se
 /*----------------------------------------------------------------------*
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::nwGap3D(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
+void NTS::Interpolator::nwGap3D(CONTACT::Node& mynode, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
     std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, double* gpn)
 {
@@ -1222,7 +1219,7 @@ void NTS::Interpolator::nwGap3D(CONTACT::Node& mynode, MORTAR::MortarElement& me
 /*----------------------------------------------------------------------*
  |  projected master temperature at the slave node          seitz 08/15 |
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::nwMasterTemp(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
+void NTS::Interpolator::nwMasterTemp(CONTACT::Node& mynode, MORTAR::Element& mele,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi)
 {
@@ -1265,9 +1262,9 @@ void NTS::Interpolator::nwMasterTemp(CONTACT::Node& mynode, MORTAR::MortarElemen
 /*----------------------------------------------------------------------*
  |  node-wise D/M calculation                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::nwDM2D(CONTACT::Node& mynode, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& mval,
-    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::GEN::pairedvector<int, double>& dmxi)
+void NTS::Interpolator::nwDM2D(CONTACT::Node& mynode, MORTAR::Element& sele, MORTAR::Element& mele,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
+    CORE::GEN::pairedvector<int, double>& dmxi)
 {
   const int ncol = mele.NumNode();
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
@@ -1312,7 +1309,7 @@ void NTS::Interpolator::nwDM2D(CONTACT::Node& mynode, MORTAR::MortarElement& sel
 /*----------------------------------------------------------------------*
  |  node-wise D/M calculation                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::nwDM3D(CONTACT::Node& mynode, MORTAR::MortarElement& mele,
+void NTS::Interpolator::nwDM3D(CONTACT::Node& mynode, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
     std::vector<CORE::GEN::pairedvector<int, double>>& dmxi)
 {
@@ -1362,8 +1359,8 @@ void NTS::Interpolator::nwDM3D(CONTACT::Node& mynode, MORTAR::MortarElement& mel
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (2D)       popp 05/08 |
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    double& sxigp, double& mxigp, const CORE::GEN::pairedvector<int, double>& derivsxi,
+void NTS::Interpolator::DerivXiGP2D(MORTAR::Element& sele, MORTAR::Element& mele, double& sxigp,
+    double& mxigp, const CORE::GEN::pairedvector<int, double>& derivsxi,
     CORE::GEN::pairedvector<int, double>& derivmxi, int& linsize)
 {
   // check for problem dimension
@@ -1551,8 +1548,8 @@ void NTS::Interpolator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarE
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (3D)        popp 02/09|
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    double* sxigp, double* mxigp, const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+void NTS::Interpolator::DerivXiGP3D(MORTAR::Element& sele, MORTAR::Element& mele, double* sxigp,
+    double* mxigp, const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi, double& alpha)
 {
   // we need the participating slave and master nodes
@@ -1724,7 +1721,7 @@ void NTS::Interpolator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarE
 /*----------------------------------------------------------------------*
  |  Implementation for meshtying interpolator                farah 10/14|
  *----------------------------------------------------------------------*/
-NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<MORTAR::MortarElement*> meles)
+NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<MORTAR::Element*> meles)
 {
   // TODO: maybe this object should be crearted for one mele
   // and note for a vector of meles...
@@ -1804,7 +1801,7 @@ NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
-    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Node& snode, std::vector<MORTAR::Element*> meles)
 {
   if (ndim_ == 2)
     Interpolate2D(snode, meles);
@@ -1822,7 +1819,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
-    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Node& snode, std::vector<MORTAR::Element*> meles)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -1831,7 +1828,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+      dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   }
 
   // bool for projection onto a master node
@@ -1885,7 +1882,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeM>
 void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
-    MORTAR::Node& snode, std::vector<MORTAR::MortarElement*> meles)
+    MORTAR::Node& snode, std::vector<MORTAR::Element*> meles)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -1894,14 +1891,14 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+      dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   }
 
   bool kink_projection = false;
   double sxi[2] = {0.0, 0.0};
 
   // get local id
-  MORTAR::MortarElement* sele = dynamic_cast<MORTAR::MortarElement*>(snode.Elements()[0]);
+  MORTAR::Element* sele = dynamic_cast<MORTAR::Element*>(snode.Elements()[0]);
 
   int lid = -1;
   for (int i = 0; i < sele->NumNode(); ++i)

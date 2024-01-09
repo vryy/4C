@@ -122,8 +122,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
       //******************************************************************
       for (int i = 0; i < idiscret_->NumMyRowElements(); ++i)
       {
-        MORTAR::MortarElement* element =
-            dynamic_cast<MORTAR::MortarElement*>(idiscret_->lRowElement(i));
+        MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
         CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
         element->GetNodalCoords(coord);

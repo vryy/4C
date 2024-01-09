@@ -48,20 +48,20 @@ namespace CONTACT
 
     //! @name currently unsupported derived methods
     //! @{
-    void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
-        MORTAR::MortarElement& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
+    void IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
+        MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
       dserror("Segment based integration is currently unsupported!");
     }
 
-    void IntegrateDerivEle2D(MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+    void IntegrateDerivEle2D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
         bool* boundary_ele, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
       dserror("Element based integration in 2D is currently unsupported!");
     }
 
-    void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
@@ -74,7 +74,7 @@ namespace CONTACT
      Second, Build all integrals and linearizations without segmentation -- 3D
      (i.e. M, g, LinM, Ling and possibly D, LinD)
      */
-    void IntegrateDerivEle3D(MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+    void IntegrateDerivEle3D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
         bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
@@ -86,7 +86,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -102,7 +102,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -121,7 +121,7 @@ namespace CONTACT
     \brief evaluate GPTS forces and linearization at this gp
     */
     template <int dim>
-    void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -132,13 +132,13 @@ namespace CONTACT
 
 
     template <int dim>
-    double GetNormalContactTransition(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    double GetNormalContactTransition(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseVector& mval,
         const double* sxi, const CORE::LINALG::Matrix<dim, 1>& pxsi,
         const CORE::LINALG::Matrix<dim, 1>& normal, bool& FSI_integrated, bool& gp_on_this_proc);
 
     /// Update Element contact state -2...not_specified, -1...no_contact, 0...mixed, 1...contact
-    void UpdateEleContactState(MORTAR::MortarElement& sele, int state);
+    void UpdateEleContactState(MORTAR::Element& sele, int state);
 
     /// Element contact state -2...not_specified, -1...no_contact, 0...mixed, 1...contact
     int ele_contact_state_;

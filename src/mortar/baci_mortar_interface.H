@@ -50,7 +50,7 @@ namespace MORTAR
   // forward declarations
   class MortarInterface;
   class Node;
-  class MortarElement;
+  class Element;
   class IntElement;
   class BinaryTree;
   class IntCell;
@@ -973,14 +973,14 @@ namespace MORTAR
     void AddMortarNode(Teuchos::RCP<MORTAR::Node> mrtrnode);
 
     /*!
-    \brief Add a MORTAR::MortarElement to the interface (Filled()==true is prerequisite)
+    \brief Add a MORTAR::Element to the interface (Filled()==true is prerequisite)
 
     \param mrtrele (in): Teuchos::rcp to a mortar element
 
     \return Filled()==false
 
     */
-    void AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele);
+    void AddMortarElement(Teuchos::RCP<MORTAR::Element> mrtrele);
 
     //! @name Parallel distribution and ghosting
     //! @{
@@ -1213,8 +1213,7 @@ namespace MORTAR
     \brief Integrate Mortar matrices D and M and gap g on slave/master overlaps
 
     */
-    virtual bool MortarCoupling(MORTAR::MortarElement* sele,
-        std::vector<MORTAR::MortarElement*> mele,
+    virtual bool MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR::Element*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
     /*!
@@ -1287,7 +1286,7 @@ namespace MORTAR
     /*!
     \brief find meles for one snode
     */
-    void FindMEles(Node& mrtrnode, std::vector<MortarElement*>& meles) const;
+    void FindMEles(Node& mrtrnode, std::vector<MORTAR::Element*>& meles) const;
 
     /*!
     \brief return integration time for current interface
@@ -1406,8 +1405,8 @@ namespace MORTAR
      *
      *  \author hiermeier
      *  \date 11/16 */
-    virtual void PreMortarCoupling(const MORTAR::MortarElement* sele,
-        const std::vector<MORTAR::MortarElement*> mele,
+    virtual void PreMortarCoupling(const MORTAR::Element* sele,
+        const std::vector<MORTAR::Element*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const {
         /* does nothing in the default case */};
 
@@ -1419,8 +1418,8 @@ namespace MORTAR
      *
      *  \author hiermeier
      *  \date 11/16 */
-    virtual void PostMortarCoupling(const MORTAR::MortarElement* sele,
-        const std::vector<MORTAR::MortarElement*> mele,
+    virtual void PostMortarCoupling(const MORTAR::Element* sele,
+        const std::vector<MORTAR::Element*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const {
         /* does nothing in the default case */};
 
@@ -1494,7 +1493,8 @@ namespace MORTAR
     \brief find master nodes for one snode
 
     */
-    void FindMNodes(Node& mrtrnode, std::vector<MortarElement*>& meles, std::vector<Node*>& mnodes);
+    void FindMNodes(
+        Node& mrtrnode, std::vector<MORTAR::Element*>& meles, std::vector<Node*>& mnodes);
 
     /*!
     \brief Initialize data container for nodes and elements
@@ -1515,11 +1515,11 @@ namespace MORTAR
     virtual void SetElementAreas();
 
     /*!
-    \brief Split MortarElements into IntElements for 3D quadratic coupling
+    \brief Split MORTAR::Elements into IntElements for 3D quadratic coupling
 
     */
     bool SplitIntElements(
-        MORTAR::MortarElement& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele);
+        MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele);
 
     /*!
     \brief Update interface master and slave sets

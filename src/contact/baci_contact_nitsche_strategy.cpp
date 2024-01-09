@@ -47,7 +47,7 @@ void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> di
     interface->Evaluate(0, step_, iter_);
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
-      auto* mele = dynamic_cast<MORTAR::MortarElement*>(
+      auto* mele = dynamic_cast<MORTAR::Element*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleRHS(mele, CONTACT::VecBlockType::displ, fc);
       mele->GetNitscheContainer().AssembleMatrix(mele, CONTACT::MatBlockType::displ_displ, kc);
@@ -157,7 +157,7 @@ void CONTACT::NitscheStrategy::SetParentState(
       {
         const int gid = interface->Discret().ElementColMap()->GID(j);
 
-        auto* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret.gElement(gid));
+        auto* ele = dynamic_cast<MORTAR::Element*>(idiscret.gElement(gid));
 
         std::vector<int> lm;
         std::vector<int> lmowner;
@@ -265,7 +265,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::CreateRhsBlockPtr(
   {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
-      auto* mele = dynamic_cast<MORTAR::MortarElement*>(
+      auto* mele = dynamic_cast<MORTAR::Element*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleRHS(mele, bt, fc);
     }
@@ -335,7 +335,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::CreateMatrixB
   {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
-      auto* mele = dynamic_cast<MORTAR::MortarElement*>(
+      auto* mele = dynamic_cast<MORTAR::Element*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleMatrix(mele, bt, kc);
     }
@@ -385,7 +385,7 @@ void CONTACT::NitscheStrategy::UpdateTraceIneqEtimates()
   {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
-      auto* mele = dynamic_cast<MORTAR::MortarElement*>(
+      auto* mele = dynamic_cast<MORTAR::Element*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       if (NitWgt == INPAR::CONTACT::NitWgt_slave && !mele->IsSlave()) continue;
       if (NitWgt == INPAR::CONTACT::NitWgt_master && mele->IsSlave()) continue;

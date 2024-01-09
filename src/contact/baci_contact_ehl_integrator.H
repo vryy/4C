@@ -54,7 +54,7 @@ namespace CONTACT
     /*!
      \brief Perform integration at GP
      */
-    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -68,7 +68,7 @@ namespace CONTACT
     /*!
      \brief Perform integration at GP
      */
-    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -81,7 +81,7 @@ namespace CONTACT
 
    private:
     // integrate surface gradient
-    void GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement& sele, const double* xi,
+    void GP_WeightedSurfGradAndDeriv(MORTAR::Element& sele, const double* xi,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
         const CORE::LINALG::SerialDenseVector& lmval,
         const CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -91,7 +91,7 @@ namespace CONTACT
         const CORE::GEN::pairedvector<int, double>& jacintcellmap);
 
     // integrate relative and average tangential velocity
-    void GP_WeightedAvRelVel(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GP_WeightedAvRelVel(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseVector& lmval,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const CORE::LINALG::SerialDenseMatrix& mderiv,

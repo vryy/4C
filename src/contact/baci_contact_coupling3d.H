@@ -52,7 +52,7 @@ namespace CONTACT
 
      */
     Coupling3d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
-        MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+        MORTAR::Element& sele, MORTAR::Element& mele);
 
     //! @name Evlauation methods
 
@@ -185,7 +185,7 @@ namespace CONTACT
    "Puso, M.A., Laursen, T.A., Solberg, J., A segment-to-segment
    mortar contact method for quadratic elements and large deformations,
    CMAME, 197, 2008, pp. 555-566". For this type of formulation, a
-   quadratic MortarElement is split into several linear IntElements,
+   quadratic MORTAR::Element is split into several linear IntElements,
    on which the geometrical coupling is performed. Thus, we additionally
    hand in in two IntElements to Coupling3dQuad.
 
@@ -206,7 +206,7 @@ namespace CONTACT
 
      */
     Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+        Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele,
         MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
 
 
@@ -269,8 +269,7 @@ namespace CONTACT
 
      */
     Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-        std::vector<MORTAR::MortarElement*> mele);
+        Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele);
 
     /*!
      \brief Destructor
@@ -281,19 +280,19 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
+    virtual MORTAR::Element& SlaveElement() const { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    virtual MORTAR::MortarElement& MasterElement(int k) const { return *(mele_[k]); }
+    virtual MORTAR::Element& MasterElement(int k) const { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+    virtual std::vector<MORTAR::Element*> MasterElements() const { return mele_; }
 
     /*!
      \brief Get coupling pairs
@@ -377,19 +376,19 @@ namespace CONTACT
      *
      * \date 04/16
      * \author hiermeier */
-    void FindFeasibleMasterElements(std::vector<MORTAR::MortarElement*>& feasible_ma_eles) const;
+    void FindFeasibleMasterElements(std::vector<MORTAR::Element*>& feasible_ma_eles) const;
 
    protected:
     // don't want = operator and cctor
     Coupling3dManager operator=(const Coupling3dManager& old) = delete;
     Coupling3dManager(const Coupling3dManager& old) = delete;
 
-    DRT::Discretization& idiscret_;             // discretization of the contact interface
-    int dim_;                                   // problem dimension (here: 3D)
-    bool quad_;                                 // flag indicating coupling type (true = quadratic)
-    Teuchos::ParameterList& imortar_;           // containing contact input parameters
-    MORTAR::MortarElement* sele_;               // slave element
-    std::vector<MORTAR::MortarElement*> mele_;  // master elements
+    DRT::Discretization& idiscret_;       // discretization of the contact interface
+    int dim_;                             // problem dimension (here: 3D)
+    bool quad_;                           // flag indicating coupling type (true = quadratic)
+    Teuchos::ParameterList& imortar_;     // containing contact input parameters
+    MORTAR::Element* sele_;               // slave element
+    std::vector<MORTAR::Element*> mele_;  // master elements
     std::vector<Teuchos::RCP<Coupling3d>> coup_;  // coupling pairs
     int ncells_;                                  // total number of integration cells
     INPAR::CONTACT::SolvingStrategy stype_;       // solving strategy
@@ -416,8 +415,7 @@ namespace CONTACT
 
      */
     Coupling3dQuadManager(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-        std::vector<MORTAR::MortarElement*> mele);
+        Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele);
 
 
     /*!

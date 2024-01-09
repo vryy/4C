@@ -172,7 +172,7 @@ void MORTAR::STRATEGY::Factory::CheckDimension() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& discret,
-    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::MortarElement> cele) const
+    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::Element> cele) const
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discret));

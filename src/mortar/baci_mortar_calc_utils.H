@@ -30,7 +30,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 namespace MORTAR
 {
-  class MortarElement;
+  class Element;
   class Node;
 
   namespace UTILS
@@ -39,7 +39,7 @@ namespace MORTAR
      |  Get global coords for given local coords                 farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    bool LocalToGlobal(MORTAR::MortarElement& ele, const double* xi, double* globcoord, int inttype)
+    bool LocalToGlobal(MORTAR::Element& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");

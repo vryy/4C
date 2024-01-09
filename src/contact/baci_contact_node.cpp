@@ -850,7 +850,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
   //              CALCULATE EDGES
   //**************************************************
   // empty vector of slave element pointers
-  std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElementsS;
+  std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsS;
   std::set<std::pair<int, int>> donebefore;
 
   // loop over all surface elements
@@ -920,8 +920,8 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, cele->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(
+              new MORTAR::Element(j, cele->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT ::Node*, 2> nodes = {

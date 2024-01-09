@@ -26,8 +26,8 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele,
-    const std::vector<MORTAR::MortarElement*>& meles, bool boundary_ele, Integrator& wrapper,
+bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::Element& sele,
+    const std::vector<MORTAR::Element*>& meles, bool boundary_ele, Integrator& wrapper,
     UniqueProjInfoPair& projInfo)
 {
   TEUCHOS_FUNC_TIME_MONITOR(AUG::CONTACT_FUNC_NAME);
@@ -140,7 +140,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
       {
         const unsigned unique_id = unique_ids[i];
 
-        MORTAR::MortarElement* mele = meles[unique_id];
+        MORTAR::Element* mele = meles[unique_id];
         if (projInfo.find(mele) == projInfo.end())
         {
           projInfo[mele] = UniqueProjInfo(std::ceil(reserve_size));
@@ -265,7 +265,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
 
   for (unsigned e = 0; e < num_adj_eles; ++e)
   {
-    MORTAR::MortarElement& adj_ele = dynamic_cast<MORTAR::MortarElement&>(*(adj_eles[e]));
+    MORTAR::Element& adj_ele = dynamic_cast<MORTAR::Element&>(*(adj_eles[e]));
 
     adj_ele_normals[e].ele_ = &adj_ele;
 
@@ -300,7 +300,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
+double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::Element& sele,
     const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal)
 {
   const CORE::FE::CellType slavetype = sele.Shape();
@@ -375,7 +375,7 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::Node& cnode,
   CORE::FE::CellType eletype = CORE::FE::CellType::dis_none;
   for (const ElementNormal& adj_ele_n : adj_ele_normals)
   {
-    MORTAR::MortarElement& mo_ele = *adj_ele_n.ele_;
+    MORTAR::Element& mo_ele = *adj_ele_n.ele_;
 
     eletype = mo_ele.Shape();
 
@@ -498,7 +498,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
-    const double* xi, MORTAR::MortarElement& sele, Deriv1stVecMap& d_non_unit_normal)
+    const double* xi, MORTAR::Element& sele, Deriv1stVecMap& d_non_unit_normal)
 {
   const CORE::FE::CellType slavetype = sele.Shape();
   switch (slavetype)
@@ -551,7 +551,7 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType slavetype>
 void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
-    MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal)
+    MORTAR::Element& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal)
 {
   const unsigned slavenumnode = CORE::FE::num_nodes<slavetype>;
   const unsigned slavedim = CORE::FE::dim<slavetype>;
@@ -595,7 +595,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::Node& cnode,
   CORE::FE::CellType eletype = CORE::FE::CellType::dis_none;
   for (const ElementNormal& adj_ele_n : adj_ele_normals)
   {
-    MORTAR::MortarElement& mo_ele = *adj_ele_n.ele_;
+    MORTAR::Element& mo_ele = *adj_ele_n.ele_;
 
     eletype = mo_ele.Shape();
 
@@ -625,7 +625,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::Node& cnode,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
-    const double* xi, MORTAR::MortarElement& sele, Deriv2ndVecMap& dd_non_unit_normal)
+    const double* xi, MORTAR::Element& sele, Deriv2ndVecMap& dd_non_unit_normal)
 {
   const CORE::FE::CellType slavetype = sele.Shape();
   switch (slavetype)
@@ -678,7 +678,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType slavetype>
 void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
-    MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal)
+    MORTAR::Element& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal)
 {
   const unsigned slavenumnode = CORE::FE::num_nodes<slavetype>;
   const unsigned slavedim = CORE::FE::dim<slavetype>;
@@ -803,7 +803,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, unsigned numnode>
 void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs)
+    const MORTAR::Element& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs)
 {
   const DRT::Node* const* mynodes = ele.Nodes();
 
@@ -841,14 +841,14 @@ double CONTACT::INTEGRATOR::LeviCivitaSymbol(const int i, const int j, const int
 
 /*----------------------------------------------------------------------------*/
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<2, 2, int>& nodal_dofs);
+    const MORTAR::Element& ele, CORE::LINALG::Matrix<2, 2, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<2, 3, int>& nodal_dofs);
+    const MORTAR::Element& ele, CORE::LINALG::Matrix<2, 3, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<3, 3, int>& nodal_dofs);
+    const MORTAR::Element& ele, CORE::LINALG::Matrix<3, 3, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<3, 4, int>& nodal_dofs);
+    const MORTAR::Element& ele, CORE::LINALG::Matrix<3, 4, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<3, 9, int>& nodal_dofs);
+    const MORTAR::Element& ele, CORE::LINALG::Matrix<3, 9, int>& nodal_dofs);
 
 BACI_NAMESPACE_CLOSE

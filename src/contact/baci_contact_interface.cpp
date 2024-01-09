@@ -610,7 +610,7 @@ void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity
         int gid = elerowmap->GID(i);
         DRT::Element* ele = Discret().gElement(gid);
         if (!ele) dserror("Cannot find element with gid %", gid);
-        MORTAR::MortarElement* mrtrele = dynamic_cast<MORTAR::MortarElement*>(ele);
+        MORTAR::Element* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
         if (!mrtrele->IsSlave()) sdata.push_back(gid);
       }
 
@@ -625,7 +625,7 @@ void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity
         int gid = elecolmap->GID(i);
         DRT::Element* ele = Discret().gElement(gid);
         if (!ele) dserror("Cannot find element with gid %", gid);
-        MORTAR::MortarElement* mrtrele = dynamic_cast<MORTAR::MortarElement*>(ele);
+        MORTAR::Element* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
         if (mrtrele->IsSlave()) rdata.push_back(gid);
       }
 
@@ -749,7 +749,7 @@ void CONTACT::Interface::Redistribute()
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->MoData().SearchElements().resize(0);
   }
@@ -1048,7 +1048,7 @@ void CONTACT::Interface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
       int gid = SlaveRowElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find element with gid %", gid);
-      MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::Element* cele = dynamic_cast<MORTAR::Element*>(ele);
 
       // store element id and adjacent node ids
       int close = cele->MoData().NumSearchElements();
@@ -1073,7 +1073,7 @@ void CONTACT::Interface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
       int gid = SlaveRowElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find element with gid %", gid);
-      MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::Element* cele = dynamic_cast<MORTAR::Element*>(ele);
 
       // store element id and adjacent node ids
       noncloseele.push_back(gid);
@@ -1410,7 +1410,7 @@ void CONTACT::Interface::Initialize()
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
       DRT::Element* ele = idiscret_->lColElement(i);
-      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -1428,7 +1428,7 @@ void CONTACT::Interface::Initialize()
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %i", gid);
-      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -1442,7 +1442,7 @@ void CONTACT::Interface::Initialize()
   if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM") ==
       INPAR::MORTAR::algorithm_gpts)
     for (int e = 0; e < Discret().ElementColMap()->NumMyElements(); ++e)
-      dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(Discret().ElementColMap()->GID(e)))
+      dynamic_cast<MORTAR::Element*>(Discret().gElement(Discret().ElementColMap()->GID(e)))
           ->GetNitscheContainer()
           .Clear();
 
@@ -1474,8 +1474,7 @@ void CONTACT::Interface::SetElementAreas()
     // (use fully overlapping column map)
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
-      MORTAR::MortarElement* element =
-          dynamic_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+      MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lColElement(i));
       element->InitializeDataContainer();
       element->MoData().Area() = element->ComputeArea();
     }
@@ -3732,7 +3731,7 @@ void CONTACT::Interface::EvaluateSTS(
   //    DRT::Element* ele1 = idiscret_->gElement(gid1);
   //    if (!ele1)
   //      dserror("Cannot find slave element with gid %", gid1);
-  //    MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
+  //    MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
   //
   //    // loop over all slave nodes of this element to check for active nodes
   //    bool eval = true;
@@ -3750,7 +3749,7 @@ void CONTACT::Interface::EvaluateSTS(
   //      continue;
   //
   //    // empty vector of master element pointers
-  //    std::vector<MORTAR::MortarElement*> melements;
+  //    std::vector<MORTAR::Element*> melements;
   //
   //    // loop over the candidate master elements of sele_
   //    // use slave element's candidate list SearchElements !!!
@@ -3760,7 +3759,7 @@ void CONTACT::Interface::EvaluateSTS(
   //      DRT::Element* ele2 = idiscret_->gElement(gid2);
   //      if (!ele2)
   //        dserror("Cannot find master element with gid %", gid2);
-  //      MORTAR::MortarElement* melement = dynamic_cast<MORTAR::MortarElement*>(ele2);
+  //      MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
   //
   //      // skip zero-sized nurbs elements (master)
   //      if (melement->ZeroSized())
@@ -3977,7 +3976,7 @@ void CONTACT::Interface::DetectNonSmoothGeometries()
 /*----------------------------------------------------------------------*
  |  cpp to edge + Lin                                       farah 11/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::MortarElement& mele,
+double CONTACT::Interface::ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::Element& mele,
     double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin)
 {
   // define tolerance
@@ -4281,7 +4280,7 @@ double CONTACT::Interface::ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::
   // elens(5,i): length/area of element itself
   //**********************************************************************
   CORE::LINALG::SerialDenseMatrix elens(6, nseg);
-  MORTAR::MortarElement* adjmrtrele = dynamic_cast<MORTAR::MortarElement*>(adjeles[0]);
+  MORTAR::Element* adjmrtrele = dynamic_cast<MORTAR::Element*>(adjeles[0]);
 
   // build element normal at current node
   // (we have to pass in the index i to be able to store the
@@ -4408,7 +4407,7 @@ double CONTACT::Interface::ComputeNormalNodeToNode(MORTAR::Node& snode, MORTAR::
   // elens(5,i): length/area of element itself
   //**********************************************************************
   CORE::LINALG::SerialDenseMatrix elens(6, nseg);
-  MORTAR::MortarElement* adjmrtrele = dynamic_cast<MORTAR::MortarElement*>(adjeles[0]);
+  MORTAR::Element* adjmrtrele = dynamic_cast<MORTAR::Element*>(adjeles[0]);
 
   // build element normal at current node
   // (we have to pass in the index i to be able to store the
@@ -4494,7 +4493,7 @@ void CONTACT::Interface::EvaluateCPPNormals()
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     // vector with possible contacting master eles/nodes
-    std::vector<MORTAR::MortarElement*> meles;
+    std::vector<MORTAR::Element*> meles;
     std::vector<MORTAR::Node*> mnodes;
 
     // fill vector with possibly contacting meles
@@ -4847,7 +4846,7 @@ void CONTACT::Interface::ComputeScalingLTL()
     Element* selement = dynamic_cast<Element*>(ele1);
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElementsS;
+    std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsS;
 
     if (selement->Shape() == CORE::FE::CellType::quad4)
     {
@@ -4911,7 +4910,7 @@ void CONTACT::Interface::ComputeScalingLTL()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
               j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
@@ -4934,7 +4933,7 @@ void CONTACT::Interface::ComputeScalingLTL()
     std::set<std::pair<int, int>> donebeforeM;
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElementsM;
+    std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsM;
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -5007,7 +5006,7 @@ void CONTACT::Interface::ComputeScalingLTL()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+            Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
                 j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
@@ -5511,7 +5510,7 @@ void CONTACT::Interface::ScaleNormals3D() { dserror("not yet implemented!"); }
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
 double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
-    std::vector<MORTAR::MortarElement*> meles, double* normal,
+    std::vector<MORTAR::Element*> meles, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   // define tolerance
@@ -5710,7 +5709,7 @@ double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
 double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
-    std::vector<MORTAR::MortarElement*> meles, double* normal,
+    std::vector<MORTAR::Element*> meles, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   // define tolerance
@@ -5895,7 +5894,7 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
               j, meles[ele]->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
@@ -6024,7 +6023,7 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
  |  cpp to line based on averaged nodal normal field        farah 05/16 |
  *----------------------------------------------------------------------*/
 double CONTACT::Interface::ComputeCPPNormal(MORTAR::Node& mrtrnode,
-    std::vector<MORTAR::MortarElement*> meles, double* normal,
+    std::vector<MORTAR::Element*> meles, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   // define distance
@@ -6836,7 +6835,7 @@ void CONTACT::Interface::EvaluateSTL()
             donebefore.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+            Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
                 j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
@@ -6915,8 +6914,8 @@ void CONTACT::Interface::EvaluateNTSMaster()
         // if not evaluated before
         if (iter == donebefore.end())
         {
-          std::vector<MORTAR::MortarElement*> dummy;
-          MORTAR::MortarElement* sele = dynamic_cast<MORTAR::MortarElement*>(selement);
+          std::vector<MORTAR::Element*> dummy;
+          MORTAR::Element* sele = dynamic_cast<MORTAR::Element*>(selement);
           dummy.push_back(sele);
 
           // call interpolation functions
@@ -6960,7 +6959,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
       dserror("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
-    std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElements;
+    std::vector<Teuchos::RCP<MORTAR::Element>> lineElements;
     std::vector<Element*> meleElements;
 
     // compute slave normal
@@ -7131,7 +7130,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
               j, meleElements[m]->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
@@ -7212,7 +7211,7 @@ void CONTACT::Interface::EvaluateLTS()
       dserror("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
-    std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElements;
+    std::vector<Teuchos::RCP<MORTAR::Element>> lineElements;
     std::vector<Element*> meleElements;
 
     // compute slave normal
@@ -7379,7 +7378,7 @@ void CONTACT::Interface::EvaluateLTS()
         donebefore.insert(actIDstw);
 
         // create line ele:
-        Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+        Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
             j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
         // get nodes
@@ -7434,7 +7433,7 @@ void CONTACT::Interface::EvaluateLTL()
     Element* selement = dynamic_cast<Element*>(ele1);
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElementsS;
+    std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsS;
 
     if (selement->Shape() == CORE::FE::CellType::quad4)
     {
@@ -7498,7 +7497,7 @@ void CONTACT::Interface::EvaluateLTL()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
               j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
@@ -7568,7 +7567,7 @@ void CONTACT::Interface::EvaluateLTL()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
               j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
@@ -7591,7 +7590,7 @@ void CONTACT::Interface::EvaluateLTL()
     std::set<std::pair<int, int>> donebeforeM;
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElementsM;
+    std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsM;
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -7664,7 +7663,7 @@ void CONTACT::Interface::EvaluateLTL()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+            Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
                 j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
@@ -7734,7 +7733,7 @@ void CONTACT::Interface::EvaluateLTL()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
+            Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
                 j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
@@ -7797,7 +7796,7 @@ void CONTACT::Interface::EvaluateNTS()
     if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     // vector with possible contacting master eles
-    std::vector<MORTAR::MortarElement*> meles;
+    std::vector<MORTAR::Element*> meles;
 
     // fill vector with possibly contacting meles
     FindMEles(*mrtrnode, meles);
@@ -7816,8 +7815,7 @@ void CONTACT::Interface::EvaluateNTS()
 /*----------------------------------------------------------------------*
  |  Integrate matrix M and gap g on slave/master overlaps     popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::MortarCoupling(MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele,
+bool CONTACT::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR::Element*> mele,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // do stuff before the actual coupling is going to be evaluated

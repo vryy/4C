@@ -27,7 +27,7 @@ BACI_NAMESPACE_OPEN
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : idiscret_(idiscret),
       dim_(dim),
       shapefcn_(INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
@@ -3538,10 +3538,10 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
 
 
 /*----------------------------------------------------------------------*
- | Split MortarElements->IntElements for 3D quad. coupling    popp 03/09|
+ | Split MORTAR::Elements->IntElements for 3D quad. coupling    popp 03/09|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3dQuadManager::SplitIntElements(
-    MORTAR::MortarElement& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
+    MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
 {
   // *********************************************************************
   // do splitting for given element
@@ -3875,7 +3875,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele,
     MORTAR::IntElement& sintele, MORTAR::IntElement& mintele)
     : MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
       sintele_(sintele),
@@ -3898,8 +3898,7 @@ const Epetra_Comm& MORTAR::Coupling3dManager::Comm() const { return idiscret_.Co
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
       integrationtype_(INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")),
@@ -3919,8 +3918,8 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int 
  |  ctor (public) -- empty                                   farah 01/13|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idiscret, int dim,
-    bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    bool quad, Teuchos::ParameterList& params, MORTAR::Element* sele,
+    std::vector<MORTAR::Element*> mele)
     : Coupling3dManager(idiscret, dim, quad, params, sele, mele)
 {
   return;
@@ -4089,7 +4088,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
   //**********************************************************************
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
-    // build linear integration elements from quadratic MortarElements
+    // build linear integration elements from quadratic MORTAR::Elements
     std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
     std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
         MasterElements().size());
@@ -4098,7 +4097,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int)MasterElements().size(); ++m)
     {
-      // build linear integration elements from quadratic MortarElements
+      // build linear integration elements from quadratic MORTAR::Elements
       mauxelements[m].resize(0);
       SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
@@ -4143,7 +4142,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
         // loop over all master elements associated with this slave element
         for (int m = 0; m < (int)MasterElements().size(); ++m)
         {
-          // build linear integration elements from quadratic MortarElements
+          // build linear integration elements from quadratic MORTAR::Elements
           std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
           std::vector<Teuchos::RCP<MORTAR::IntElement>> mauxelements(0);
           SplitIntElements(SlaveElement(), sauxelements);

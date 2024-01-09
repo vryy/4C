@@ -134,8 +134,8 @@ namespace SCATRA
     //! evaluate and assemble interface linearizations and residuals
     void EvaluateCondition(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                                   //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,                     //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,                    //!< master-side mortar element
+        MORTAR::Element& slaveelement,                           //!< slave-side mortar element
+        MORTAR::Element& masterelement,                          //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
         DRT::Element::LocationArray& la_master,                  //!< master-side location array
         const Teuchos::ParameterList& params,                    //!< parameter list
@@ -157,8 +157,8 @@ namespace SCATRA
         const MORTAR::Node& slavenode,  //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-        MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,  //!< master-side mortar element
+        MORTAR::Element& slaveelement,   //!< slave-side mortar element
+        MORTAR::Element& masterelement,  //!< master-side mortar element
         const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>&
             ephinp_slave,  //!< state variables at slave-side nodes
         const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>&
@@ -199,8 +199,8 @@ namespace SCATRA
     //! discretization types
     void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                          //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,            //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,           //!< master-side mortar element
+        MORTAR::Element& slaveelement,                  //!< slave-side mortar element
+        MORTAR::Element& masterelement,                 //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,          //!< slave-side location array
         DRT::Element::LocationArray& la_master,         //!< master-side location array
         const Teuchos::ParameterList& params,           //!< parameter list
@@ -232,8 +232,8 @@ namespace SCATRA
     //! evaluate and assemble off-diagonal interface linearizations
     void EvaluateConditionOD(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                                     //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,                       //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,                      //!< master-side mortar element
+        MORTAR::Element& slaveelement,                             //!< slave-side mortar element
+        MORTAR::Element& masterelement,                            //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
         DRT::Element::LocationArray& la_master,                    //!< master-side location array
         const Teuchos::ParameterList& params,                      //!< parameter list
@@ -275,8 +275,8 @@ namespace SCATRA
     //! discretization types
     void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                          //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,            //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,           //!< master-side mortar element
+        MORTAR::Element& slaveelement,                  //!< slave-side mortar element
+        MORTAR::Element& masterelement,                 //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,          //!< slave-side location array
         DRT::Element::LocationArray& la_master,         //!< master-side location array
         const Teuchos::ParameterList& params,           //!< parameter list
@@ -307,8 +307,8 @@ namespace SCATRA
     //! evaluate and assemble interface linearizations and residuals
     void EvaluateCondition(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                                   //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,                     //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,                    //!< master-side mortar element
+        MORTAR::Element& slaveelement,                           //!< slave-side mortar element
+        MORTAR::Element& masterelement,                          //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
         DRT::Element::LocationArray& la_master,                  //!< master-side location array
         const Teuchos::ParameterList& params,                    //!< parameter list
@@ -320,8 +320,8 @@ namespace SCATRA
     //! evaluate and assemble off-diagonal interface linearizations
     void EvaluateConditionOD(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                                     //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,                       //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,                      //!< master-side mortar element
+        MORTAR::Element& slaveelement,                             //!< slave-side mortar element
+        MORTAR::Element& masterelement,                            //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
         DRT::Element::LocationArray& la_master,                    //!< master-side location array
         const Teuchos::ParameterList& params,                      //!< parameter list

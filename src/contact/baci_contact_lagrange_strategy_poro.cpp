@@ -1494,8 +1494,7 @@ void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
         {
           int gid = interface_[i]->SlaveColElements()->GID(j);
 
-          MORTAR::MortarElement* ele =
-              dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
+          MORTAR::Element* ele = dynamic_cast<MORTAR::Element*>(idiscret_.gElement(gid));
 
           std::vector<int> lm;
           std::vector<int> lmowner;
@@ -1517,8 +1516,7 @@ void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
         {
           int gid = interface_[i]->MasterColElements()->GID(j);
 
-          MORTAR::MortarElement* mele =
-              dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
+          MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(idiscret_.gElement(gid));
 
           std::vector<int> lm;
           std::vector<int> lmowner;

@@ -18,7 +18,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType parent_distype>
 template <int num_dof_per_node>
-void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::MortarElement* mele,
+void MORTAR::ElementNitscheData<parent_distype>::AssembleRHS(MORTAR::Element* mele,
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
     std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc)
 {
@@ -39,7 +39,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::Morta
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType parent_distype>
 template <int num_dof_per_node>
-void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
+void MORTAR::ElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Element* mele,
     const std::unordered_map<int,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
     std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
@@ -65,8 +65,8 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
 
 
 template <CORE::FE::CellType parent_distype>
-void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
-    MORTAR::MortarElement* mele, CONTACT::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc)
+void MORTAR::ElementNitscheData<parent_distype>::AssembleRHS(
+    MORTAR::Element* mele, CONTACT::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc)
 {
   switch (row)
   {
@@ -96,8 +96,8 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
 }
 
 template <CORE::FE::CellType parent_distype>
-void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
-    CONTACT::MatBlockType block, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
+void MORTAR::ElementNitscheData<parent_distype>::AssembleMatrix(
+    MORTAR::Element* mele, CONTACT::MatBlockType block, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (block)
   {
@@ -161,9 +161,9 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
 }
 
 
-template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::hex8>;
-template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::tet4>;
-template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::hex27>;
-template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::nurbs27>;
+template class MORTAR::ElementNitscheData<CORE::FE::CellType::hex8>;
+template class MORTAR::ElementNitscheData<CORE::FE::CellType::tet4>;
+template class MORTAR::ElementNitscheData<CORE::FE::CellType::hex27>;
+template class MORTAR::ElementNitscheData<CORE::FE::CellType::nurbs27>;
 
 BACI_NAMESPACE_CLOSE

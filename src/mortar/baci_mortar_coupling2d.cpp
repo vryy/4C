@@ -27,7 +27,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : idiscret_(idiscret),
       dim_(dim),
       quad_(quad),
@@ -898,8 +898,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
       quad_(quad),
@@ -1155,7 +1154,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
     std::array<double, 2> eta = {integrator.Coordinate(gp, 0), 0.0};
     double wgt = integrator.Weight(gp);
 
-    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    // coordinate transformation sxi->eta (slave MORTAR::Element->Overlap)
     std::array<double, 2> sxi = {0.0, 0.0};
     sxi[0] = 0.5 * (1.0 - eta[0]) * ximin + 0.5 * (1.0 + eta[0]) * ximax;
 

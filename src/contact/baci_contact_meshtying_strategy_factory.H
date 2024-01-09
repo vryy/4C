@@ -32,7 +32,7 @@ namespace MORTAR
 {
   class InterfaceDataContainer;
   class MortarAbstractStrategy;
-  class MortarElement;
+  class Element;
   class MortarInterface;
   class StratDataContainer;
 
