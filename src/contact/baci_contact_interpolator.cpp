@@ -138,8 +138,7 @@ void NTS::Interpolator::Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::E
   {
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector::Impl(*meles[nummaster])
-        ->ProjectNodalNormal(snode, *meles[nummaster], mxi);
+    MORTAR::Projector::Impl(*meles[nummaster])->ProjectNodalNormal(snode, *meles[nummaster], mxi);
 
     // node on mele?
     if ((mxi[0] >= -1.0) && (mxi[0] <= 1.0) && (kink_projection == false))
@@ -370,7 +369,7 @@ bool NTS::Interpolator::Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::E
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
     double projalpha = 0.0;
-    MORTAR::MortarProjector::Impl(*sele, *meles[nummaster])
+    MORTAR::Projector::Impl(*sele, *meles[nummaster])
         ->ProjectGaussPoint3D(*sele, sxi, *meles[nummaster], mxi, projalpha);
 
     bool is_on_mele = true;
@@ -578,7 +577,7 @@ void NTS::Interpolator::InterpolateMasterTemp3D(
       // project Gauss point onto master element
       double mxi[2] = {0.0, 0.0};
       double projalpha = 0.0;
-      MORTAR::MortarProjector::Impl(sele, *meles[nummaster])
+      MORTAR::Projector::Impl(sele, *meles[nummaster])
           ->ProjectGaussPoint3D(sele, sxi, *meles[nummaster], mxi, projalpha);
 
       bool is_on_mele = true;
@@ -1841,8 +1840,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
   {
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector::Impl(*meles[nummaster])
-        ->ProjectNodalNormal(snode, *meles[nummaster], mxi);
+    MORTAR::Projector::Impl(*meles[nummaster])->ProjectNodalNormal(snode, *meles[nummaster], mxi);
 
     // node on mele?
     if ((mxi[0] >= -1.0) && (mxi[0] <= 1.0) && (kink_projection == false))
@@ -2009,7 +2007,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
     double projalpha = 0.0;
-    MORTAR::MortarProjector::Impl(*sele, *meles[nummaster])
+    MORTAR::Projector::Impl(*sele, *meles[nummaster])
         ->ProjectGaussPoint3D(*sele, sxi, *meles[nummaster], mxi, projalpha);
 
     bool is_on_mele = true;

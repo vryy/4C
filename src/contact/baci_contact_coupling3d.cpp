@@ -1575,7 +1575,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         for (int bs_test = 0; bs_test < (int)Coupling().size(); ++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::MortarProjector::Impl(SlaveElement(), Coupling()[bs_test]->MasterIntElement())
+          MORTAR::Projector::Impl(SlaveElement(), Coupling()[bs_test]->MasterIntElement())
               ->ProjectGaussPoint3D(SlaveElement(), sxi_test,
                   Coupling()[bs_test]->MasterIntElement(), mxi_test, alpha_test);
 
@@ -1641,7 +1641,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         for (int bs_test = 0; bs_test < (int)Coupling().size(); ++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::MortarProjector::Impl(SlaveElement(), Coupling()[bs_test]->MasterElement())
+          MORTAR::Projector::Impl(SlaveElement(), Coupling()[bs_test]->MasterElement())
               ->ProjectGaussPoint3D(SlaveElement(), sxi_test, Coupling()[bs_test]->MasterElement(),
                   mxi_test, alpha_test);
 
@@ -1760,7 +1760,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         // project Gauss point onto slave integration element
         double sxi[2] = {0.0, 0.0};
         double sprojalpha = 0.0;
-        MORTAR::MortarProjector::Impl(Coupling()[m]->SlaveIntElement())
+        MORTAR::Projector::Impl(Coupling()[m]->SlaveIntElement())
             ->ProjectGaussPointAuxn3D(
                 globgp, Coupling()[m]->Auxn(), Coupling()[m]->SlaveIntElement(), sxi, sprojalpha);
 
@@ -1772,7 +1772,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
           MORTAR::IntElement* ie =
               dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
           if (ie == nullptr) dserror("nullptr pointer");
-          MORTAR::MortarProjector::Impl(SlaveElement())
+          MORTAR::Projector::Impl(SlaveElement())
               ->ProjectGaussPointAuxn3D(
                   globgp, Coupling()[m]->Auxn(), SlaveElement(), psxi, psprojalpha);
           // ie->MapToParent(sxi,psxi); // old way of doing it via affine map... wrong (popp

@@ -110,13 +110,13 @@ bool MORTAR::Coupling2d::Project()
 
       // for nurbs we need to use the Gauss point projector, since the actual spatial coords
       // of the point to be projected is calculated by N*X using shape functions N and CP coords X
-      MORTAR::MortarProjector::Impl(SlaveElement(), mele_)
+      MORTAR::Projector::Impl(SlaveElement(), mele_)
           ->ProjectGaussPoint2D(SlaveElement(), xinode.data(), mele_, xi.data());
     }
     else
     {
       // TODO random?
-      MORTAR::MortarProjector::Impl(SlaveElement())
+      MORTAR::Projector::Impl(SlaveElement())
           ->ProjectNodalNormal(*snode, MasterElement(), xi.data());
     }
 
@@ -168,13 +168,13 @@ bool MORTAR::Coupling2d::Project()
       }
       std::vector<int> mdofs(2);
       MORTAR::Node tmp_node(mnode->Id(), xm, mnode->Owner(), mdofs, false);
-      MORTAR::MortarProjector::Impl(SlaveElement())
+      MORTAR::Projector::Impl(SlaveElement())
           ->ProjectElementNormal(tmp_node, SlaveElement(), xi.data());
     }
     else
     {
       // TODO random?
-      MORTAR::MortarProjector::Impl(SlaveElement())
+      MORTAR::Projector::Impl(SlaveElement())
           ->ProjectElementNormal(*mnode, SlaveElement(), xi.data());
     }
 

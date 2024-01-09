@@ -30,19 +30,19 @@ namespace MORTAR
 
   */
 
-  class MortarProjector
+  class Projector
   {
    public:
-    MortarProjector(){};
+    Projector(){};
 
-    virtual ~MortarProjector() = default;
+    virtual ~Projector() = default;
     //! @name Access methods
 
     /// 1. Internal implementation class
-    static MortarProjector* Impl(MORTAR::Element& ele);
+    static Projector* Impl(MORTAR::Element& ele);
 
     /// 2. Internal implementation class
-    static MortarProjector* Impl(MORTAR::Element& sele, MORTAR::Element& mele);
+    static Projector* Impl(MORTAR::Element& sele, MORTAR::Element& mele);
 
     //! @name virtual functions
     virtual bool ProjectNodalNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) = 0;
@@ -69,21 +69,21 @@ namespace MORTAR
     virtual bool ProjectSNodeByMNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) = 0;
-  };  // class MortarProjector
+  };  // class Projector
 
   /*!
   \brief A class to perform projections of nodes onto opposing elements
 
   */
   template <CORE::FE::CellType distype>
-  class MortarProjectorCalc : public MortarProjector
+  class ProjectorCalc : public Projector
   {
    public:
     // constructor
-    MortarProjectorCalc();
+    ProjectorCalc();
 
     /// Singleton access method
-    static MortarProjectorCalc<distype>* Instance(
+    static ProjectorCalc<distype>* Instance(
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! n_: number of element nodes
@@ -275,14 +275,14 @@ namespace MORTAR
 
   */
   template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-  class MortarProjectorCalc_EleBased : public MortarProjector
+  class ProjectorCalc_EleBased : public Projector
   {
    public:
     // constructor
-    MortarProjectorCalc_EleBased();
+    ProjectorCalc_EleBased();
 
     /// Singleton access method
-    static MortarProjectorCalc_EleBased<distypeS, distypeM>* Instance(
+    static ProjectorCalc_EleBased<distypeS, distypeM>* Instance(
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes

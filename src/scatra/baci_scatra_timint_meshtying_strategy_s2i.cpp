@@ -2330,7 +2330,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               // project slave-side node onto master-side element
               std::array<double, 2> coordinates_master;
               double dummy(0.);
-              MORTAR::MortarProjector::Impl(*master_mortar_ele)
+              MORTAR::Projector::Impl(*master_mortar_ele)
                   ->ProjectGaussPointAuxn3D(slavenode->X().data(), slavenode->MoData().n(),
                       *master_mortar_ele, coordinates_master.data(), dummy);
 
@@ -4219,10 +4219,10 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
   std::array<double, nsd_slave_> coordinates_slave;
   std::array<double, nsd_master_> coordinates_master;
   double dummy(0.);
-  MORTAR::MortarProjector::Impl(slaveelement)
+  MORTAR::Projector::Impl(slaveelement)
       ->ProjectGaussPointAuxn3D(
           coordinates_global.data(), cell.Auxn(), slaveelement, coordinates_slave.data(), dummy);
-  MORTAR::MortarProjector::Impl(masterelement)
+  MORTAR::Projector::Impl(masterelement)
       ->ProjectGaussPointAuxn3D(
           coordinates_global.data(), cell.Auxn(), masterelement, coordinates_master.data(), dummy);
 
@@ -4366,7 +4366,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
   // project slave-side node onto master-side element
   std::array<double, 2> coordinates_master;
   double dummy(0.);
-  MORTAR::MortarProjector::Impl(masterelement)
+  MORTAR::Projector::Impl(masterelement)
       ->ProjectGaussPointAuxn3D(slavenode.X().data(), slavenode.MoData().n(), masterelement,
           coordinates_master.data(), dummy);
 

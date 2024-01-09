@@ -4243,7 +4243,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
       for (int nummaster = 0; nummaster < (int)Coupling().size(); ++nummaster)
       {
         // project Gauss point onto master element
-        MORTAR::MortarProjector::Impl(SlaveElement(), Coupling()[nummaster]->MasterElement())
+        MORTAR::Projector::Impl(SlaveElement(), Coupling()[nummaster]->MasterElement())
             ->ProjectGaussPoint3D(
                 SlaveElement(), sxi, Coupling()[nummaster]->MasterElement(), mxi, projalpha);
 
@@ -4319,7 +4319,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
         double sprojalpha = 0.0;
 
         // TODO random?
-        MORTAR::MortarProjector::Impl(SlaveElement())
+        MORTAR::Projector::Impl(SlaveElement())
             ->ProjectGaussPointAuxn3D(
                 globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
 

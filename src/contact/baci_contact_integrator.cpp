@@ -119,7 +119,7 @@ bool CONTACT::Integrator::BoundarySegmCheck2D(
       for (int bs_test = 0; bs_test < (int)meles.size(); ++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
+        MORTAR::Projector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint2D(sele, sxi_test, *meles[bs_test], mxi_test);
 
         if ((mxi_test[0] >= -1.0) && (mxi_test[0] <= 1.0))
@@ -162,7 +162,7 @@ bool CONTACT::Integrator::BoundarySegmCheck2D(
       for (int bs_test = 0; bs_test < (int)meles.size(); ++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
+        MORTAR::Projector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint2D(sele, sxi_test, *meles[bs_test], mxi_test);
 
         if ((mxi_test[0] >= -1.0) && (mxi_test[0] <= 1.0))
@@ -758,7 +758,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(MORTAR::Element& sele, double&
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint2D(sele, sxi, mele, mxi);
+    MORTAR::Projector::Impl(sele, mele)->ProjectGaussPoint2D(sele, sxi, mele, mxi);
 
     // check GP projection
     if ((mxi[0] < mxia - 1e-4) || (mxi[0] > mxib + 1e-4))
@@ -906,7 +906,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
       for (int bs_test = 0; bs_test < (int)meles.size(); ++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
+        MORTAR::Projector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
         CORE::FE::CellType dt = meles[bs_test]->Shape();
 
@@ -1029,7 +1029,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
       for (int bs_test = 0; bs_test < (int)meles.size(); ++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
+        MORTAR::Projector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
         CORE::FE::CellType dt = meles[bs_test]->Shape();
 
@@ -1148,7 +1148,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
       for (int bs_test = 0; bs_test < (int)meles.size(); ++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
+        MORTAR::Projector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
         CORE::FE::CellType dt = meles[bs_test]->Shape();
 
@@ -1241,7 +1241,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
       for (int bs_test = 0; bs_test < (int)meles.size(); ++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
+        MORTAR::Projector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
         CORE::FE::CellType dt = meles[bs_test]->Shape();
 
@@ -1349,7 +1349,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
       for (int bs_test = 0; bs_test < (int)meles.size(); ++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
+        MORTAR::Projector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
         CORE::FE::CellType dt = meles[bs_test]->Shape();
 
@@ -1578,7 +1578,7 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::Element& sele,
 
 
         // project Gauss point onto master element
-        MORTAR::MortarProjector::Impl(sele, *meles[nummaster])
+        MORTAR::Projector::Impl(sele, *meles[nummaster])
             ->ProjectGaussPoint3D(sele, sxi, *meles[nummaster], mxi, projalpha);
 
         // check GP projection
@@ -1812,10 +1812,8 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MO
     // project Gauss point onto master element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, sele, sxi, sprojalpha);
-    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, mele, mxi, mprojalpha);
+    MORTAR::Projector::Impl(sele)->ProjectGaussPointAuxn3D(globgp, auxn, sele, sxi, sprojalpha);
+    MORTAR::Projector::Impl(mele)->ProjectGaussPointAuxn3D(globgp, auxn, mele, mxi, mprojalpha);
 
     // check GP projection (SLAVE)
     double tol = 0.01;
@@ -2037,10 +2035,8 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::Element& mele,
     // project Gauss point onto slave/master surface element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, sele, sxi, sprojalpha);
-    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, mele, mxi, mprojalpha);
+    MORTAR::Projector::Impl(sele)->ProjectGaussPointAuxn3D(globgp, auxn, sele, sxi, sprojalpha);
+    MORTAR::Projector::Impl(mele)->ProjectGaussPointAuxn3D(globgp, auxn, mele, mxi, mprojalpha);
 
     // check GP projection (SLAVE)
     double tol = 0.01;
@@ -2787,16 +2783,16 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::Element& sele,
     // project Gauss point onto slave/master surface element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    bool success = MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, sele, sxi, sprojalpha);
+    bool success =
+        MORTAR::Projector::Impl(sele)->ProjectGaussPointAuxn3D(globgp, auxn, sele, sxi, sprojalpha);
     if (!success)
     {
       //      dserror("projection not possible!");
       return;
     }
 
-    success = MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, mele, mxi, mprojalpha);
+    success =
+        MORTAR::Projector::Impl(mele)->ProjectGaussPointAuxn3D(globgp, auxn, mele, mxi, mprojalpha);
     if (!success)
     {
       //      dserror("projection not possible!");
@@ -3883,9 +3879,9 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::Element& sele
     // project Gauss point onto master integration element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(sintele)->ProjectGaussPointAuxn3D(
+    MORTAR::Projector::Impl(sintele)->ProjectGaussPointAuxn3D(
         globgp, auxn, sintele, sxi, sprojalpha);
-    MORTAR::MortarProjector::Impl(mintele)->ProjectGaussPointAuxn3D(
+    MORTAR::Projector::Impl(mintele)->ProjectGaussPointAuxn3D(
         globgp, auxn, mintele, mxi, mprojalpha);
 
     // check GP projection (SLAVE)
@@ -3947,10 +3943,8 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::Element& sele
     double pmxi[2] = {0.0, 0.0};
     double psprojalpha = 0.0;
     double pmprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, sele, psxi, psprojalpha);
-    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, mele, pmxi, pmprojalpha);
+    MORTAR::Projector::Impl(sele)->ProjectGaussPointAuxn3D(globgp, auxn, sele, psxi, psprojalpha);
+    MORTAR::Projector::Impl(mele)->ProjectGaussPointAuxn3D(globgp, auxn, mele, pmxi, pmprojalpha);
     // sintele.MapToParent(sxi, psxi); // old way of doing it via affine map... wrong (popp 05/2016)
     // mintele.MapToParent(mxi, pmxi); // old way of doing it via affine map... wrong (popp 05/2016)
 
@@ -4348,7 +4342,7 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
       {
         // project Gauss point onto master element
         double mxi[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele, *meles[nummaster])
+        MORTAR::Projector::Impl(sele, *meles[nummaster])
             ->ProjectGaussPoint2D(sele, sxi, *meles[nummaster], mxi);
 
         // gp on mele?
@@ -4814,8 +4808,7 @@ void CONTACT::Integrator::IntegrateKappaPenalty(MORTAR::Element& sele, MORTAR::I
     // project Gauss point back to slave (parent) element
     double psxi[2] = {0.0, 0.0};
     double psprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, sele, psxi, psprojalpha);
+    MORTAR::Projector::Impl(sele)->ProjectGaussPointAuxn3D(globgp, auxn, sele, psxi, psprojalpha);
     // sintele.MapToParent(eta,psxi); //old way of doing it via affine map... wrong (popp 05/2016)
 
     // evaluate shape functions
@@ -5293,7 +5286,7 @@ void CONTACT::Integrator::DerivXiGP2D(MORTAR::Element& sele, MORTAR::Element& me
   // The reason for this is that we linearize the Gauss point
   // projection from slave to master side here and this condition
   // only includes the Gauss point normal in a cross product.
-  // When looking at MortarProjector::ProjectGaussPoint, one can see
+  // When looking at MORTAR::Projector::ProjectGaussPoint, one can see
   // that we do NOT use a unit normal there, either. Thus, why here?
   // First results suggest that it really makes no difference!
 

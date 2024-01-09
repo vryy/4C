@@ -5652,14 +5652,14 @@ double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
     if (cornerele and !nodeOnNode)
     {
       // perform CPP to find normals based on element normals
-      MORTAR::MortarProjector::Impl(*meles[ele])
+      MORTAR::Projector::Impl(*meles[ele])
           ->ProjectSNodeByMNormalLin(mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
     }
     // compute normal with averaged nodal normal field from master surface
     else
     {
       // perform CPP to find normals based on averaged nodal normal field
-      MORTAR::MortarProjector::Impl(*meles[ele])
+      MORTAR::Projector::Impl(*meles[ele])
           ->ProjectSNodeByMNodalNormalLin(mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
     }
 
@@ -5767,7 +5767,7 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
 
     // perform CPP to find normals
     bool success =
-        MORTAR::MortarProjector::Impl(*meles[ele])
+        MORTAR::Projector::Impl(*meles[ele])
             ->ProjectSNodeByMNodalNormalLin(mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
 
     // newton not converged
@@ -8503,7 +8503,7 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
         double mxi[2] = {0.0, 0.0};
         double projalpha = 0.0;
         bool is_projected =
-            MORTAR::MortarProjector::Impl(*selement, *melements[nummaster])
+            MORTAR::Projector::Impl(*selement, *melements[nummaster])
                 ->ProjectGaussPoint3D(*selement, sxi, *melements[nummaster], mxi, projalpha);
 
         bool is_on_mele = true;

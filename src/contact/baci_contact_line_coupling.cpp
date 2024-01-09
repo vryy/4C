@@ -284,7 +284,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
     // project Gauss point onto slave integration element
     double sxi[2] = {0.0, 0.0};
     double sprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(SurfaceElement())
+    MORTAR::Projector::Impl(SurfaceElement())
         ->ProjectGaussPointAuxn3D(globgp, Auxn(), SurfaceElement(), sxi, sprojalpha);
 
     // project Gauss point onto slave (parent) element
