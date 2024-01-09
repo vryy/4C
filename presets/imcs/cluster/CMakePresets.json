@@ -32,7 +32,8 @@
         "BACI_QHULL_ROOT": "$env{QHULL_ROOT}",
         "BACI_BOOST_ROOT": "$env{BOOST_ROOT}",
         "BOOST_EXCLUDE_SYSTEM_PATHS": "ON",
-        "BACI_CLN_ROOT": "$env{CLN_ROOT}"
+        "BACI_CLN_ROOT": "$env{CLN_ROOT}",
+        "BACI_WITH_FFTW": "OFF"
       }
     }
   ]
