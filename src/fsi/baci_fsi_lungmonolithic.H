@@ -227,7 +227,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector>
         IncLagrMultVec_;  ///< nonlinear iteration increment vector of lagrange multipliers
 
-    Teuchos::RCP<BACI::CONSTRAINTS::ConstraintDofSet>
+    Teuchos::RCP<CONSTRAINTS::ConstraintDofSet>
         ConstrDofSet_;                       ///< degrees of freedom of lagrange multipliers
     int OffsetID_;                           ///< smallest constraint boundary condition ID
     int NumConstrID_;                        ///< number of volume constraint boundary conditions

@@ -86,7 +86,7 @@ FSI::LungMonolithic::LungMonolithic(
 
   NumConstrID_ = FluidLungVolConIDs.size();
 
-  ConstrDofSet_ = Teuchos::rcp(new BACI::CONSTRAINTS::ConstraintDofSet());
+  ConstrDofSet_ = Teuchos::rcp(new CONSTRAINTS::ConstraintDofSet());
   ConstrDofSet_->AssignDegreesOfFreedom(FluidField()->Discretization(), NumConstrID_, 0);
 
   // The "OffsetID" is used during the evaluation of constraints on

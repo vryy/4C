@@ -196,7 +196,7 @@ namespace FSI
     /// @name information about constraints are taken from structure ConstraintManager
     //!@{
 
-    const Teuchos::RCP<BACI::CONSTRAINTS::ConstrManager> conman_;  ///< constraint manager
+    const Teuchos::RCP<CONSTRAINTS::ConstrManager> conman_;  ///< constraint manager
 
     //!@}
 
