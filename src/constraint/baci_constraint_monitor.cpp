@@ -20,8 +20,8 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname,
-    int& minID, int& maxID)
+CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr,
+    const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname, moncond_);
@@ -51,7 +51,7 @@ UTILS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr, const std::stri
 /*-----------------------------------------------------------------------*
 |(private)                                                       tk 07/08|
 *-----------------------------------------------------------------------*/
-UTILS::Monitor::MoniType UTILS::Monitor::GetMoniType(const std::string& name)
+CONSTRAINTS::Monitor::MoniType CONSTRAINTS::Monitor::GetMoniType(const std::string& name)
 {
   if (name == "VolumeMonitor_3D")
     return volmonitor3d;
@@ -67,7 +67,7 @@ UTILS::Monitor::MoniType UTILS::Monitor::GetMoniType(const std::string& name)
 |(public)                                                        tk 07/08|
 |Evaluate Monitors, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void UTILS::Monitor::Evaluate(
+void CONSTRAINTS::Monitor::Evaluate(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   switch (montype_)
@@ -96,7 +96,7 @@ void UTILS::Monitor::Evaluate(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::Monitor::EvaluateMonitor(
+void CONSTRAINTS::Monitor::EvaluateMonitor(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
@@ -157,8 +157,8 @@ void UTILS::Monitor::EvaluateMonitor(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Monitor::SetState(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Epetra_Vector> V                        ///< values to set
+void CONSTRAINTS::Monitor::SetState(const std::string& state,  ///< name of state to set
+    Teuchos::RCP<Epetra_Vector> V                              ///< values to set
 )
 {
   actdisc_->SetState(state, V);

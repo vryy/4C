@@ -206,7 +206,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
   if ((writeenergyevery_ != 0) and (myrank_ == 0)) AttachEnergyFile();
 
   // initialize constraint manager
-  conman_ = Teuchos::rcp(new UTILS::ConstrManager());
+  conman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
   conman_->Init(discret_, sdynparams_);
 
   // create stiffness, mass matrix and other fields
@@ -245,13 +245,14 @@ void STR::TimInt::Setup()
       sdynparams_, DRT::Problem::Instance()->Cardiovascular0DStructuralParams(), *solver_, mor_));
 
   // initialize spring dashpot manager
-  springman_ = Teuchos::rcp(new UTILS::SpringDashpotManager(discret_));
+  springman_ = Teuchos::rcp(new CONSTRAINTS::SpringDashpotManager(discret_));
 
 
   // initialize constraint solver if constraints are defined
   if (conman_->HaveConstraint())
   {
-    consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_, *solver_, dbcmaps_, sdynparams_));
+    consolv_ =
+        Teuchos::rcp(new CONSTRAINTS::ConstraintSolver(discret_, *solver_, dbcmaps_, sdynparams_));
   }
 
   // check for beam contact

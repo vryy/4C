@@ -130,7 +130,7 @@ namespace STR
       //! derived
       Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
 
-      const Teuchos::RCP<UTILS::ConstrManager>& StrategyPtr();
+      const Teuchos::RCP<CONSTRAINTS::ConstrManager>& StrategyPtr();
 
       //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
       const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>& NoxInterfacePtr();
@@ -140,12 +140,12 @@ namespace STR
 
      protected:
       //! Returns the underlying contact strategy object
-      UTILS::ConstrManager& Strategy();
-      const UTILS::ConstrManager& Strategy() const;
+      CONSTRAINTS::ConstrManager& Strategy();
+      const CONSTRAINTS::ConstrManager& Strategy() const;
 
      private:
       //! all constraint instances
-      Teuchos::RCP<UTILS::ConstrManager> constrman_;  //!< Constraint manager
+      Teuchos::RCP<CONSTRAINTS::ConstrManager> constrman_;  //!< Constraint manager
 
       //! structural displacement at \f$t_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> disnp_ptr_;

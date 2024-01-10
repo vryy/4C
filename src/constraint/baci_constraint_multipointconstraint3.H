@@ -17,13 +17,13 @@ BACI_NAMESPACE_OPEN
 
 
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   /*!
   \brief This pure virtual class can handle multi point constraints in 3D.
   It is derived from the basic multipointconstraint class.
   */
-  class MPConstraint3 : public UTILS::MPConstraint
+  class MPConstraint3 : public CONSTRAINTS::MPConstraint
   {
    public:
     /*!
@@ -120,7 +120,7 @@ namespace UTILS
         eletocondvecindex_;  ///< maps element ID to condition index in vector #constrcond_
 
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_MULTIPOINTCONSTRAINT3_H

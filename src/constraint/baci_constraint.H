@@ -32,7 +32,7 @@ namespace CORE::LINALG
   class SparseOperator;
 }
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   /*!
   \brief Basic constraint class, dealing with constraint and monitor boundary conditions.
@@ -162,7 +162,7 @@ namespace UTILS
                                                   ///< aasembly of element contributions
     );
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 
 BACI_NAMESPACE_CLOSE
 

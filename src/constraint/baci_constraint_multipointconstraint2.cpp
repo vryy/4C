@@ -29,7 +29,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> discr,
+CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : MPConstraint(discr, conditionname, minID, maxID)
 {
@@ -55,7 +55,7 @@ UTILS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> discr,
 |(public)                                                       tk 08/08  |
 |Initialization routine activates conditions (restart)                    |
 *------------------------------------------------------------------------*/
-void UTILS::MPConstraint2::Initialize(const double& time)
+void CONSTRAINTS::MPConstraint2::Initialize(const double& time)
 {
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
@@ -81,7 +81,7 @@ void UTILS::MPConstraint2::Initialize(const double& time)
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void UTILS::MPConstraint2::Initialize(
+void CONSTRAINTS::MPConstraint2::Initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   const double time = params.get("total time", -1.0);
@@ -126,7 +126,7 @@ void UTILS::MPConstraint2::Initialize(
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void UTILS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -153,9 +153,9 @@ void UTILS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
 std::map<int, Teuchos::RCP<DRT::Discretization>>
-UTILS::MPConstraint2::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discretization> actdisc,
-    std::vector<DRT::Condition*> constrcondvec, const std::string& discret_name,
-    const std::string& element_name, int& startID)
+CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
+    Teuchos::RCP<DRT::Discretization> actdisc, std::vector<DRT::Condition*> constrcondvec,
+    const std::string& discret_name, const std::string& element_name, int& startID)
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
 
@@ -242,7 +242,7 @@ UTILS::MPConstraint2::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
  |(private)                                                 tk 04/08    |
  |reorder MPC nodes based on condition input                            |
  *----------------------------------------------------------------------*/
-void UTILS::MPConstraint2::ReorderConstraintNodes(
+void CONSTRAINTS::MPConstraint2::ReorderConstraintNodes(
     std::vector<int>& nodeids, const DRT::Condition* cond)
 {
   // get this condition's nodes
@@ -265,7 +265,7 @@ void UTILS::MPConstraint2::ReorderConstraintNodes(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,
+void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

@@ -442,7 +442,7 @@ namespace ADAPTER
     bool HaveConstraint() override = 0;
 
     /// get constraint manager defined in the structure
-    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override = 0;
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
     INPAR::STR::STC_Scale GetSTCAlgo() override = 0;
@@ -478,7 +478,7 @@ namespace ADAPTER
     }
 
     /// get SpringDashpot manager defined in the structure
-    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       dserror("This function seems to be unused!");
       return Teuchos::null;

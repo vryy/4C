@@ -27,7 +27,7 @@ namespace CORE::LINALG
   class SparseOperator;
 }
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   /*!
    */
@@ -108,7 +108,7 @@ namespace UTILS
                                                   ///< aasembly of element contributions
     );
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 
 BACI_NAMESPACE_CLOSE
 

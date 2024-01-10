@@ -52,7 +52,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   // new instance of spring dashpot BC for each condition
   Teuchos::RCP<DRT::Discretization> discret_ptr = DiscretPtr();
   for (auto& springdashpot : springdashpots)
-    springs_.emplace_back(Teuchos::rcp(new UTILS::SpringDashpot(discret_ptr, springdashpot)));
+    springs_.emplace_back(Teuchos::rcp(new CONSTRAINTS::SpringDashpot(discret_ptr, springdashpot)));
 
   // setup the displacement pointer
   disnp_ptr_ = GState().GetDisNp();
@@ -96,15 +96,16 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForce()
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   for (const auto& spring : springs_)
   {
-    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
-    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::xyz or
+        stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
       spring->EvaluateRobin(
           Teuchos::null, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
-    if (stype == UTILS::SpringDashpot::cursurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
       springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
       spring->EvaluateForce(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
@@ -133,15 +134,16 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateStiff()
   // loop over all spring dashpot conditions and evaluate them
   for (const auto& spring : springs_)
   {
-    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
-    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::xyz or
+        stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
       spring->EvaluateRobin(
           stiff_spring_ptr_, Teuchos::null, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
-    if (stype == UTILS::SpringDashpot::cursurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
       springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
       spring->EvaluateForceStiff(
@@ -175,15 +177,16 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
   // loop over all spring dashpot conditions and evaluate them
   for (const auto& spring : springs_)
   {
-    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
-    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::xyz or
+        stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", GState().GetTimeNp());
       spring->EvaluateRobin(
           stiff_spring_ptr_, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
-    if (stype == UTILS::SpringDashpot::cursurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
       springdashpotparams.set("dt", (*GState().GetDeltaTime())[0]);
       spring->EvaluateForceStiff(
@@ -233,11 +236,12 @@ void STR::MODELEVALUATOR::SpringDashpot::WriteRestart(
   for (const auto& spring : springs_)
   {
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
-    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::xyz or
+        stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
       spring->OutputPrestrOffset(springoffsetprestr);
-    if (stype == UTILS::SpringDashpot::cursurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
       spring->OutputPrestrOffsetOld(springoffsetprestr_old);
   }
 
@@ -262,11 +266,12 @@ void STR::MODELEVALUATOR::SpringDashpot::ReadRestart(IO::DiscretizationReader& i
   for (const auto& spring : springs_)
   {
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
 
-    if (stype == UTILS::SpringDashpot::xyz or stype == UTILS::SpringDashpot::refsurfnormal)
+    if (stype == CONSTRAINTS::SpringDashpot::xyz or
+        stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
       spring->SetRestart(tempvec);
-    if (stype == UTILS::SpringDashpot::cursurfnormal) spring->SetRestartOld(tempvecold);
+    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal) spring->SetRestartOld(tempvecold);
   }
 }
 
@@ -316,8 +321,8 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWrite
     spring->OutputGapNormal(gap, normals, springstress);
 
     // get spring type from current condition
-    const UTILS::SpringDashpot::SpringType stype = spring->GetSpringType();
-    if (stype == UTILS::SpringDashpot::cursurfnormal) found_cursurfnormal = true;
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal) found_cursurfnormal = true;
   }
 
   // write vectors to output

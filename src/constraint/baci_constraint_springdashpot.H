@@ -50,7 +50,7 @@ namespace ADAPTER
   class CouplingNonLinMortar;
 }
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   class SpringDashpot
   {
@@ -229,7 +229,7 @@ namespace UTILS
     SpringType springtype_;
 
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 
 BACI_NAMESPACE_CLOSE
 

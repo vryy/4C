@@ -28,7 +28,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint3::MPConstraint3(Teuchos::RCP<DRT::Discretization> discr,
+CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<DRT::Discretization> discr,
     const std::string& conditionname, int& offsetID, int& maxID)
     : MPConstraint(discr, conditionname)
 {
@@ -77,7 +77,7 @@ UTILS::MPConstraint3::MPConstraint3(Teuchos::RCP<DRT::Discretization> discr,
 |(public)                                                       tk 08/08  |
 |Initialization routine activates conditions (restart)                    |
 *------------------------------------------------------------------------*/
-void UTILS::MPConstraint3::Initialize(const double& time)
+void CONSTRAINTS::MPConstraint3::Initialize(const double& time)
 {
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
@@ -103,7 +103,7 @@ void UTILS::MPConstraint3::Initialize(const double& time)
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void UTILS::MPConstraint3::Initialize(
+void CONSTRAINTS::MPConstraint3::Initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   const double time = params.get("total time", -1.0);
@@ -171,7 +171,7 @@ void UTILS::MPConstraint3::Initialize(
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void UTILS::MPConstraint3::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::MPConstraint3::Evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -201,9 +201,9 @@ void UTILS::MPConstraint3::Evaluate(Teuchos::ParameterList& params,
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
 std::map<int, Teuchos::RCP<DRT::Discretization>>
-UTILS::MPConstraint3::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discretization> actdisc,
-    std::vector<DRT::Condition*> constrcondvec, const std::string& discret_name,
-    const std::string& element_name, int& startID)
+CONSTRAINTS::MPConstraint3::CreateDiscretizationFromCondition(
+    Teuchos::RCP<DRT::Discretization> actdisc, std::vector<DRT::Condition*> constrcondvec,
+    const std::string& discret_name, const std::string& element_name, int& startID)
 {
   // start with empty map
   std::map<int, Teuchos::RCP<DRT::Discretization>> newdiscmap;
@@ -347,7 +347,7 @@ UTILS::MPConstraint3::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::MPConstraint3::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,
+void CONSTRAINTS::MPConstraint3::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -483,7 +483,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization> disc,
+void CONSTRAINTS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(disc->Filled())) dserror("FillComplete() was not called");

@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-UTILS::ConstraintPenalty::ConstraintPenalty(
+CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
     Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname)
     : Constraint(discr, conditionname)
 {
@@ -69,7 +69,7 @@ UTILS::ConstraintPenalty::ConstraintPenalty(
   return;
 }
 
-void UTILS::ConstraintPenalty::Initialize(
+void CONSTRAINTS::ConstraintPenalty::Initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   dserror("method not used for penalty formulation!");
@@ -77,7 +77,7 @@ void UTILS::ConstraintPenalty::Initialize(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void UTILS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
+void CONSTRAINTS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
 {
   // choose action
   switch (constrtype_)
@@ -103,7 +103,7 @@ void UTILS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void UTILS::ConstraintPenalty::Initialize(const double& time)
+void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
 {
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
@@ -127,7 +127,7 @@ void UTILS::ConstraintPenalty::Initialize(const double& time)
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -177,7 +177,7 @@ void UTILS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
 
 /*-----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void UTILS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params,
+void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -310,7 +310,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstraintPenalty::EvaluateError(
+void CONSTRAINTS::ConstraintPenalty::EvaluateError(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");

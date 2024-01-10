@@ -32,7 +32,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-UTILS::ConstrManager::ConstrManager()
+CONSTRAINTS::ConstrManager::ConstrManager()
     : offsetID_(-1),
       maxConstrID_(0),
       numConstrID_(-1),
@@ -52,7 +52,7 @@ UTILS::ConstrManager::ConstrManager()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void UTILS::ConstrManager::Init(
+void CONSTRAINTS::ConstrManager::Init(
     Teuchos::RCP<DRT::Discretization> discr, const Teuchos::ParameterList& params)
 {
   SetIsSetup(false);
@@ -104,7 +104,7 @@ void UTILS::ConstrManager::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void UTILS::ConstrManager::Setup(
+void CONSTRAINTS::ConstrManager::Setup(
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::ParameterList params)
 {
   CheckIsInit();
@@ -215,7 +215,7 @@ void UTILS::ConstrManager::Setup(
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::EvaluateForceStiff(const double time,
+void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
     Teuchos::RCP<const Epetra_Vector> displast, Teuchos::RCP<const Epetra_Vector> disp,
     Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,
     Teuchos::ParameterList scalelist)
@@ -295,7 +295,7 @@ void UTILS::ConstrManager::EvaluateForceStiff(const double time,
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector> disp)
+void CONSTRAINTS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector> disp)
 {
   CheckIsInit();
   CheckIsSetup();
@@ -337,7 +337,7 @@ void UTILS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector>
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ReadRestart(IO::DiscretizationReader& reader, const double& time)
+void CONSTRAINTS::ConstrManager::ReadRestart(IO::DiscretizationReader& reader, const double& time)
 {
   //  double uzawatemp = reader.ReadDouble("uzawaparameter");
   //  consolv_->SetUzawaParameter(uzawatemp);
@@ -351,7 +351,7 @@ void UTILS::ConstrManager::ReadRestart(IO::DiscretizationReader& reader, const d
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::SetRefBaseValues(
+void CONSTRAINTS::ConstrManager::SetRefBaseValues(
     Teuchos::RCP<Epetra_Vector> newrefval, const double& time)
 {
   volconstr3d_->Initialize(time);
@@ -366,7 +366,7 @@ void UTILS::ConstrManager::SetRefBaseValues(
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::UpdateLagrMult(double factor)
+void CONSTRAINTS::ConstrManager::UpdateLagrMult(double factor)
 {
   lagrMultVec_->Update(factor, *constrainterr_, 1.0);
   if (volconstr3d_->HaveConstraint())
@@ -383,23 +383,23 @@ void UTILS::ConstrManager::UpdateLagrMult(double factor)
   }
 }
 
-void UTILS::ConstrManager::Update() { lagrMultVecOld_->Update(1.0, *lagrMultVec_, 0.0); }
+void CONSTRAINTS::ConstrManager::Update() { lagrMultVecOld_->Update(1.0, *lagrMultVec_, 0.0); }
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::UpdateLagrMult(Teuchos::RCP<Epetra_Vector> vect)
+void CONSTRAINTS::ConstrManager::UpdateLagrMult(Teuchos::RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0, *vect, 1.0);
 }
 
-void UTILS::ConstrManager::UpdateTotLagrMult(Teuchos::RCP<Epetra_Vector> vect)
+void CONSTRAINTS::ConstrManager::UpdateTotLagrMult(Teuchos::RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0, *vect, 1.0, *lagrMultVecOld_, 0.0);
 }
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp)
+void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp)
 {
   std::vector<DRT::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
@@ -419,7 +419,7 @@ void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector> disp)
+void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector> disp)
 {
   std::vector<DRT::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
@@ -450,7 +450,7 @@ void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::PrintMonitorValues() const
+void CONSTRAINTS::ConstrManager::PrintMonitorValues() const
 {
   if (numMonitorID_ == 1)
     printf("Monitor value:\n");
@@ -472,7 +472,7 @@ void UTILS::ConstrManager::PrintMonitorValues() const
   }
 }
 
-void UTILS::ConstrManager::BuildMoniType()
+void CONSTRAINTS::ConstrManager::BuildMoniType()
 {
   Teuchos::ParameterList p1;
   // build distributed and redundant dummy monitor vector
@@ -520,7 +520,7 @@ void UTILS::ConstrManager::BuildMoniType()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void UTILS::ConstrManager::UseBlockMatrix(
+void CONSTRAINTS::ConstrManager::UseBlockMatrix(
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {

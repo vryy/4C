@@ -276,7 +276,7 @@ namespace STR
       }
 
       /// FixMe get constraint manager defined in the structure
-      Teuchos::RCP<BACI::UTILS::ConstrManager> GetConstraintManager() override
+      Teuchos::RCP<BACI::CONSTRAINTS::ConstrManager> GetConstraintManager() override
       {
         dserror("Not yet implemented!");
         return Teuchos::null;

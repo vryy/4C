@@ -54,10 +54,14 @@ namespace CONTACT
   class MeshtyingContactBridge;
 }
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   class ConstrManager;
   class SpringDashpotManager;
+}  // namespace CONSTRAINTS
+
+namespace UTILS
+{
   class Cardiovascular0DManager;
 }  // namespace UTILS
 
@@ -229,10 +233,10 @@ namespace ADAPTER
     virtual bool HaveSpringDashpot() = 0;
 
     /// get constraint manager defined in the structure
-    virtual Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+    virtual Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() = 0;
 
     /// get SpringDashpot manager defined in the structure
-    virtual Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
+    virtual Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;

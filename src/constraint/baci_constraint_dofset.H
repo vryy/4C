@@ -22,7 +22,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   /*!
   \note This is an internal class of the constraint manager that one
@@ -75,11 +75,11 @@ namespace UTILS
 
    protected:
   };  // class ConstraintDofSet
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const UTILS::ConstraintDofSet& dofset);
+std::ostream& operator<<(std::ostream& os, const CONSTRAINTS::ConstraintDofSet& dofset);
 
 
 BACI_NAMESPACE_CLOSE

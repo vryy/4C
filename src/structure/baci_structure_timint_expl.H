@@ -318,7 +318,7 @@ namespace STR
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
     {
       dserror("GetConstraintManager() has not been tested for explicit time integrators");
       return Teuchos::null;
@@ -332,7 +332,7 @@ namespace STR
     };
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       dserror("GetSpringDashpotManager() has not been tested for explicit time integrators");
       return Teuchos::null;

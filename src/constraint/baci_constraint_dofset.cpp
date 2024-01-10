@@ -16,7 +16,7 @@ BACI_NAMESPACE_OPEN
 
 
 
-int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(
+int CONSTRAINTS::ConstraintDofSet::AssignDegreesOfFreedom(
     const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start)
 {
   // A definite offset is currently not supported.
