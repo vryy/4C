@@ -182,8 +182,8 @@ namespace DRT::ELEMENTS
       std::vector<int> nodedofs;
       nodedofs.clear();
 
-      // local storage position of desired dof gid
-      discret.Dof(ele.Nodes()[numbering[inode]], nodedofs);
+      // local storage position of desired dof gid in dofset number 0
+      discret.Dof((unsigned)0, ele.Nodes()[numbering[inode]], nodedofs);
 
       // adjust resultdofs according to elements dof
       if (nodedofs.size() < result_num_dofs_per_node)

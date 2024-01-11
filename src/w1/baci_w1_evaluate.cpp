@@ -926,7 +926,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     default:
     {
-      dserror("Unknown type of action for Wall1 %d", act);
+      dserror("Unknown type of action for Wall1 element: %s", ActionType2String(act).c_str());
       break;
     }
   }

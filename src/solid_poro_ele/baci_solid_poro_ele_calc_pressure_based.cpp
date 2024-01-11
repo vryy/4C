@@ -237,7 +237,19 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(cons
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
-  dserror("coupling stress poroelast not yet implemented for pressure-based variant");
+  auto iocouplingstress =
+      INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
+
+  // check for output of coupling stress
+  if (iocouplingstress == INPAR::STR::stress_none)
+  {
+    // nothing to do for calculation of effective stress
+    return;
+  }
+  else
+  {
+    dserror("coupling stress poroelast not yet implemented for pressure-based variant");
+  }
 }
 
 // template classes
