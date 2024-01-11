@@ -259,7 +259,7 @@ void CORE::GEO::CUT::TetMeshIntersection::FindEdgeCuts()
             edges.insert(e);
             edges.insert(ce);
             CORE::GEO::CUT::OUTPUT::GmshEdgesOnly(edges);
-            run_time_error(err);
+            throw;
           }
         }
       }

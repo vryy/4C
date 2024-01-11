@@ -891,7 +891,7 @@ void CORE::GEO::CUT::Mesh::Cut(Side& side)
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -905,7 +905,7 @@ void CORE::GEO::CUT::Mesh::Cut(Side& side)
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1024,7 +1024,7 @@ void CORE::GEO::CUT::Mesh::MakeCutLines()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error("caught runtime_error during elements loop:", err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1042,7 +1042,7 @@ void CORE::GEO::CUT::Mesh::MakeCutLines()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error("caught runtime_error during shadow_elements loop:", err);
+      throw;
     }
   }
 }
@@ -1066,7 +1066,7 @@ void CORE::GEO::CUT::Mesh::MakeFacets()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error("caught runtime_error during elements loop:", err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1080,7 +1080,7 @@ void CORE::GEO::CUT::Mesh::MakeFacets()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error("caught runtime_error during shadow_elements loop:", err);
+      throw;
     }
   }
 }
@@ -1104,7 +1104,7 @@ void CORE::GEO::CUT::Mesh::MakeVolumeCells()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1118,7 +1118,7 @@ void CORE::GEO::CUT::Mesh::MakeVolumeCells()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1149,7 +1149,7 @@ void CORE::GEO::CUT::Mesh::FindNodePositions()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1163,7 +1163,7 @@ void CORE::GEO::CUT::Mesh::FindNodePositions()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   // find undecided nodes
@@ -1503,7 +1503,7 @@ void CORE::GEO::CUT::Mesh::CreateIntegrationCells(int count, bool tetcellsonly)
                    "[i.e. if count > 0 in a call from TetMeshIntersection]:";
 
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(error_msg.str(), err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1521,7 +1521,7 @@ void CORE::GEO::CUT::Mesh::CreateIntegrationCells(int count, bool tetcellsonly)
                   << std::endl;
 
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1544,7 +1544,7 @@ void CORE::GEO::CUT::Mesh::MomentFitGaussWeights(
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1558,7 +1558,7 @@ void CORE::GEO::CUT::Mesh::MomentFitGaussWeights(
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1581,7 +1581,7 @@ void CORE::GEO::CUT::Mesh::DirectDivergenceGaussRule(
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1595,7 +1595,7 @@ void CORE::GEO::CUT::Mesh::DirectDivergenceGaussRule(
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1617,7 +1617,7 @@ void CORE::GEO::CUT::Mesh::RemoveEmptyVolumeCells()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1631,7 +1631,7 @@ void CORE::GEO::CUT::Mesh::RemoveEmptyVolumeCells()
     catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
