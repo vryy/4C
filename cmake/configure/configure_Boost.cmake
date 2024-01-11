@@ -1,18 +1,17 @@
-# temporarily disable our own finders for module lookup
-list(REMOVE_ITEM CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
-
 # This is needed on kaiser to enforce the usage of the non-system boost libraries
 option(BOOST_EXCLUDE_SYSTEM_PATHS "Avoid boost libraries in system paths" OFF)
 if(BOOST_EXCLUDE_SYSTEM_PATHS)
   set(Boost_NO_SYSTEM_PATHS ON)
 endif(BOOST_EXCLUDE_SYSTEM_PATHS)
 
-# call the built-in finder with the specifications set outside
-find_package(Boost)
+find_package(
+  Boost
+  COMPONENTS graph system
+  REQUIRED
+  )
 
 # post-process found targets
 if(Boost_FOUND)
-  message(STATUS "Found Boost: ${Boost_INCLUDE_DIRS}")
   message(STATUS "Boost component libraries: ${Boost_LIBRARIES}")
   message(STATUS "Boost libraries directory: ${Boost_LIBRARY_DIRS}")
 
@@ -27,8 +26,5 @@ if(Boost_FOUND)
               "-DBOOST_MINOR_VERSION=${Boost_MINOR_VERSION}"
     )
 
-  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS Boost::system Boost::graph)
+  baci_add_dependency(baci_all_enabled_external_dependencies Boost::system Boost::graph)
 endif()
-
-# re-enable our own finders
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)

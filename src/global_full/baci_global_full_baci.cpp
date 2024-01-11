@@ -33,9 +33,9 @@
 #include <iostream>
 #include <stdexcept>
 
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
 #include <cfenv>
-#endif /* TRAP_FE */
+#endif /* BACI_TRAP_FE */
 
 namespace
 {
@@ -158,7 +158,7 @@ namespace
 #endif
   }
 
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
   /*!
    * \brief FPE signal handle
    *
@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
     /* Here we turn the NaN and INF numbers off. No need to calculate
      * those. If those appear, the calculation needs much (!) more
      * time. Better stop immediately if some illegal operation occurs. */
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
 
     /* This is a GNU extension thus it's only available on linux. But
      * it's exactly what we want: SIGFPE just for the given
@@ -326,10 +326,10 @@ int main(int argc, char *argv[])
     act.sa_flags = 0;
     sigaction(SIGFPE, &act, nullptr);
 
-#endif /* TRAP_FE */
+#endif /* BACI_TRAP_FE */
 
 /*----------------------------------------------- everything is in here */
-#ifdef DSERROR_DUMP
+#ifdef BACI_DSERROR_DUMP
     ntam(argc, argv);
 #else
     try

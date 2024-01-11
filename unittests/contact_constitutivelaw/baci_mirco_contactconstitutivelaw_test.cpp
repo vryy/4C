@@ -7,7 +7,6 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifdef BACI_WITH_MIRCO
 
 #include <gtest/gtest.h>
 
@@ -15,8 +14,9 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
-#include <omp.h>
+#ifdef BACI_WITH_MIRCO
 
+#include <omp.h>
 namespace
 {
   using namespace BACI;

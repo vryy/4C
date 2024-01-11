@@ -18,7 +18,7 @@
 
 extern "C"
 {
-#include <qhull_a.h>
+#include <libqhull/qhull_a.h>
 }
 
 BACI_NAMESPACE_OPEN

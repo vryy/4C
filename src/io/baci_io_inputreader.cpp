@@ -26,9 +26,9 @@
 #include <sstream>
 #include <utility>
 
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
 #include <cfenv>
-#endif /* TRAP_FE */
+#endif /* BACI_TRAP_FE */
 
 #ifdef TOL_N
 #undef TOL_N
@@ -860,7 +860,7 @@ namespace INPUT
       }
     }
 
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
     // somehow the following test whether we have a double or not
     // creates always an internal floating point exception (FE_INVALID). An alternative
     // implementation using boost::lexical_cast<double> does not solve this problem!
@@ -878,7 +878,7 @@ namespace INPUT
       ssd << value;
       ssd >> dv;
 
-#ifdef TRAP_FE
+#ifdef BACI_TRAP_FE
       feclearexcept(FE_INVALID);
       /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
       feenableexcept(FE_INVALID | FE_DIVBYZERO);

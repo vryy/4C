@@ -74,24 +74,28 @@ endforeach()
 
 ###------------------------------------------------------------------ External Libraries
 
-find_package(
-  HDF5
-  COMPONENTS C HL
-  REQUIRED
-  )
-find_package(MPI REQUIRED)
-find_package(Qhull REQUIRED)
-find_package(Trilinos REQUIRED)
-find_package(
-  Boost
-  COMPONENTS graph system
-  REQUIRED
-  )
-find_package(Netcdf REQUIRED)
-find_package(ArborX)
-find_package(FFTW)
-find_package(CLN REQUIRED)
-find_package(MIRCO)
+# Collect all external dependencies in a helper target
+add_library(baci_all_enabled_external_dependencies INTERFACE)
+
+baci_configure_dependency(HDF5 DEFAULT ON)
+baci_configure_dependency(MPI DEFAULT ON)
+baci_configure_dependency(Qhull DEFAULT ON)
+baci_configure_dependency(Trilinos DEFAULT ON)
+baci_configure_dependency(Boost DEFAULT ON)
+baci_configure_dependency(ArborX DEFAULT OFF)
+baci_configure_dependency(FFTW DEFAULT ON)
+baci_configure_dependency(CLN DEFAULT ON)
+baci_configure_dependency(MIRCO DEFAULT OFF)
+
+# Generate the macro definition for all dependencies automatically
+get_property(BACI_FLAGS_EXTERNAL_DEPENDENCIES GLOBAL PROPERTY BACI_FLAGS_EXTERNAL_DEPENDENCIES)
+foreach(_dependency ${BACI_FLAGS_EXTERNAL_DEPENDENCIES})
+  if(${_dependency})
+    string(APPEND BACI_DEFINES_FOR_EXTERNAL_DEPENDENCIES "#define ${_dependency}\n")
+  else()
+    string(APPEND BACI_DEFINES_FOR_EXTERNAL_DEPENDENCIES "/* #undef ${_dependency} */\n")
+  endif()
+endforeach()
 
 ### end of configuration and feature detection
 

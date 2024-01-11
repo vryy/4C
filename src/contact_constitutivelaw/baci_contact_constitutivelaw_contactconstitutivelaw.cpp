@@ -19,6 +19,7 @@
 #include "baci_contact_constitutivelaw_linear_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_power_contactconstitutivelaw.H"
 #include "baci_lib_globalproblem.H"
+
 #ifdef BACI_WITH_MIRCO
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
 #endif

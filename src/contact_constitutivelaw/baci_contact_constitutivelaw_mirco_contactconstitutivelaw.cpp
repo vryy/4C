@@ -5,7 +5,6 @@
 
 *----------------------------------------------------------------------*/
 
-#ifdef BACI_WITH_MIRCO
 
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
 
@@ -13,6 +12,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_par_bundle.H"
+
+#ifdef BACI_WITH_MIRCO
 
 #include <mirco_evaluate.h>
 #include <mirco_topology.h>

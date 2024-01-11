@@ -63,7 +63,7 @@ Such a local preset could look like this::
             "BACI_WITH_GOOGLETEST": "OFF",
             "BACI_BUILD_READTHEDOCS": "ON",
             "BACI_SPHINX_THEME": "sphinx_rtd_theme",
-            "BUILD_DOXYGEN": "ON",
+            "BACI_BUILD_DOXYGEN": "ON",
           }
         }
       ]
@@ -83,4 +83,37 @@ Here is a screenshot taken from VS Code:
    :width: 100%
 
 Hints for VS Code: You need to install the extensions "CMake Tools" from Microsoft.
+
+For CMake maintainers
+~~~~~~~~~~~~~~~~~~~~~
+
+Conventions
+...........
+
+- Every variable that is supposed to be set from outside has to start with `BACI_`.
+  Variables that toggle a dependency are named `BACI_WITH_<PACKAGE>`. Further options for a package
+  are specified by `BACI_<PACKAGE>_<OPTION>`.
+- The top-most install directory of a dependency is supplied by the `BACI_<PACKAGE>_ROOT` variable.
+  When possible we try to use CMake files exported by dependencies. For older
+  libraries we write our own `Find<package>.cmake` modules.
+- Every function that is supplied by this project starts with `baci_`.
+- CMake files are automatically formatted according to the style defined in
+  `./utilities/code_checks/.cmake-format.yaml`.
+
+General
+.......
+
+Prefer to write small CMake helpers that do the necessary steps as automatically
+as possible. CMake is a language that can be used in many ways. Not many
+developers know CMake details, so we try to make their life easier by providing
+a few simple functions that do what is necessary while hiding the details.
+
+Configuring dependencies
+........................
+
+We use a two-step process to configure dependencies. The dependencies are listed in the
+top-level CMakeLists.txt. A helper function takes care of basic checks that user input
+for a dependency is sensible and then calls the respective configuration script. From this
+script the package search is started via `find_package` which will either look for a
+packaged config file or use our own finders defined in `cmake/modules`.
 

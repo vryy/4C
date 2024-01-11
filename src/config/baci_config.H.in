@@ -8,23 +8,26 @@
 #ifndef BACI_CONFIG_H
 #define BACI_CONFIG_H
 
+// General definitions that are used throughout the project.
 #define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
 #define BACI_VERSION_MINOR @baci_VERSION_MINOR@
 
 // This flag guards assertions and special checks that are often expensive and should only run when debugging.
 #cmakedefine BACI_DEBUG
 
-#ifndef DSERROR_DUMP
-#cmakedefine DSERROR_DUMP
-#endif
+#cmakedefine BACI_DSERROR_DUMP
 
-#ifndef TRAP_FE
-#cmakedefine TRAP_FE
-#endif
+#cmakedefine BACI_TRAP_FE
 
+// The BACI namespace is added via the follwing two macros. This design allows
+// to treat the namespace as invisible within the BACI project.
 #define BACI_NAMESPACE_OPEN namespace BACI {
 #define BACI_NAMESPACE_CLOSE }
 
+/// Dependencies
+/// The following flags are set when configuring the project with CMake.
+
+@BACI_DEFINES_FOR_EXTERNAL_DEPENDENCIES@
 
 // Centrally include MPI which is a core dependency that needs configuration.
 // Disable the (deprecated) C++ bindings of OpenMPI. We are not using them, and they throw warnings

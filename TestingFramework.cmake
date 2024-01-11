@@ -72,7 +72,7 @@ macro(baci_test name_of_input_file num_proc restart_step)
     NAME ${name_of_input_file}-p${num_proc}
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx"
+      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx"
     )
 
   require_fixture(${name_of_test} test_cleanup)
@@ -89,7 +89,7 @@ macro(baci_test name_of_input_file num_proc restart_step)
       NAME ${name_of_test}-restart
       COMMAND
         bash -c
-        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
+        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
       )
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
@@ -122,7 +122,7 @@ macro(
     NAME ${name_of_test}
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx"
+      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx"
     )
 
   require_fixture(${name_of_test} test_cleanup)
@@ -135,7 +135,7 @@ macro(
       NAME ${name_of_test}-restart
       COMMAND
         bash -c
-        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
+        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
       )
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
@@ -168,7 +168,7 @@ macro(
     NAME ${name_of_input_file}-p${num_proc}-t${num_omp_threads}
     COMMAND
       bash -c
-      "export OMP_NUM_THREADS=${num_omp_threads}; mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx; unset OMP_NUM_THREADS"
+      "export OMP_NUM_THREADS=${num_omp_threads}; mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx; unset OMP_NUM_THREADS"
     )
 
   # Calculate the total number of processors required
@@ -188,7 +188,7 @@ macro(
       NAME ${name_of_test}-restart
       COMMAND
         bash -c
-        "export OMP_NUM_THREADS=${num_omp_threads}; ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}; unset OMP_NUM_THREADS"
+        "export OMP_NUM_THREADS=${num_omp_threads}; ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}; unset OMP_NUM_THREADS"
       )
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
@@ -235,7 +235,7 @@ macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
 
   # additionally run postprocessing in parallel mode
   set(RUNPOSTFILTER_PAR
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_PAR\ --outputtype=bin\ --stress=ndxyz
+      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_PAR\ --outputtype=bin\ --stress=ndxyz
       )
 
   add_test(
@@ -289,7 +289,7 @@ macro(
     NAME ${name_of_test}
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} framework_test_output/${name_of_input_file}_p${num_proc}/xxx${IDENTIFIER} restartfrom=framework_test_output/${name_of_input_file_restart}_p${num_proc_base_run}/xxx${IDENTIFIER} restart=${restart_step}"
+      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} framework_test_output/${name_of_input_file}_p${num_proc}/xxx${IDENTIFIER} restartfrom=framework_test_output/${name_of_input_file_restart}_p${num_proc_base_run}/xxx${IDENTIFIER} restart=${restart_step}"
     )
 
   require_fixture(
@@ -343,7 +343,7 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
     NAME ${name_of_input_file_1}-nestedPar
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional"
+      "mkdir -p ${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional"
     )
 
   require_fixture(${name_of_input_file_1}-nestedPar test_cleanup)
@@ -356,7 +356,7 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
       NAME ${name_of_input_file_1}-nestedPar-restart
       COMMAND
         bash -c
-        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional restart=${restart_step}"
+        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional restart=${restart_step}"
       )
 
     require_fixture(
@@ -380,7 +380,7 @@ macro(baci_test_Nested_Par_CopyDat name_of_input_file num_proc num_groups)
     NAME ${name_of_input_file}-nestedPar_CopyDat-p${num_proc}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat ${test_directory}/xxx"
+      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat ${test_directory}/xxx"
     )
 
   require_fixture(${name_of_input_file}-nestedPar_CopyDat-p${num_proc} test_cleanup)
@@ -413,10 +413,10 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
   endif(NOT ${xml_filename} STREQUAL "")
 
   set(RUNBACI
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${baciname}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
+      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${baciname}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
       ) # baci is run using the generated dat file
   set(RUNPOSTFILTER
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx
+      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx
       ) # post_ensight is run for the resulting output
 
   add_test(
@@ -443,7 +443,7 @@ macro(cut_test num_proc)
 
   set(RUNTESTS
       # Run all the cuttests with num_proc except from alex53
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ${PROJECT_BINARY_DIR}/cut_test\ --ignore_test=alex53
+      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ${PROJECT_BINARY_DIR}/cut_test\ --ignore_test=alex53
       # Run alex53 serially
       ${BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS}\ ${PROJECT_BINARY_DIR}/cut_test\ --test=alex53
       )
@@ -533,7 +533,7 @@ macro(
       ${BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
       )
   set(RUNPOSTFILTER_PAR
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
+      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
       )
 
   # specify test case
@@ -541,7 +541,7 @@ macro(
     NAME "${name_of_test}"
     COMMAND
       sh -c
-      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
+      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${BACI_PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
     )
 
   require_fixture("${name_of_test}" "${name_of_input_file}-p${num_proc_base_run};test_cleanup")

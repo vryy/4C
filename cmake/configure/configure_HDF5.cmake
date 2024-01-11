@@ -1,12 +1,12 @@
-# temporarily disable our own finders for module lookup
-list(REMOVE_ITEM CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
-
 if(${CMAKE_VERSION} VERSION_GREATER "3.10.0")
   set(HDF5_PREFER_PARALLEL true)
 endif()
 
-# call the built-in finder with the specifications set outside
-find_package(HDF5)
+find_package(
+  HDF5
+  COMPONENTS C HL
+  REQUIRED
+  )
 
 # post-process found targets
 if(HDF5_FOUND)
@@ -30,8 +30,5 @@ if(HDF5_FOUND)
   message(STATUS "HDF5 include directory: ${HDF5_INCLUDE_DIRS}")
   message(STATUS "HDF5 libraries: ${HDF5_LIBRARIES}")
   message(STATUS "HDF5 HL libraries: ${HDF5_HL_LIBRARIES}")
-  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS HDF5::HDF5 HDF5::HDF5_HL)
+  baci_add_dependency(baci_all_enabled_external_dependencies HDF5::HDF5 HDF5::HDF5_HL)
 endif()
-
-# re-enable our own finders
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
