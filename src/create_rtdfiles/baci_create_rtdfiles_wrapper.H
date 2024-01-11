@@ -18,58 +18,55 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT
+namespace RTD
 {
-  namespace RTD
-  {
-    /*!
-      \brief Create a restructuredText file containing all header sections and parameters
+  /*!
+    \brief Create a restructuredText file containing all header sections and parameters
 
-      \param[in] string: filename for the the header parameters, should be headerreference.rst
+    \param[in] string: filename for the the header parameters, should be headerreference.rst
 
-    */
-    void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename);
+  */
+  void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename);
 
-    /*!
-      \brief Create a restructuredText file containing the cell type section
-        including node numbers, etc.
-        TODO face IDs, etc.
+  /*!
+    \brief Create a restructuredText file containing the cell type section
+      including node numbers, etc.
+      TODO face IDs, etc.
 
-      \param[in] string: filename for the the header parameters, should be celltypereference.rst
+    \param[in] string: filename for the the header parameters, should be celltypereference.rst
 
-    */
-    void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename);
+  */
+  void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename);
 
-    /*!
-      \brief WCreate a restructuredText file containing all material models and parameters
+  /*!
+    \brief WCreate a restructuredText file containing all material models and parameters
 
-      \param[in] string: filename for the the material parameters, should be materialreference.rst
+    \param[in] string: filename for the the material parameters, should be materialreference.rst
 
-    */
-    void WriteReadTheDocsMaterial(const std::string& materialdocumentationfilename);
+  */
+  void WriteReadTheDocsMaterial(const std::string& materialdocumentationfilename);
 
-    /*!
-      \brief Create a restructuredText file containing all prescribed conditions
+  /*!
+    \brief Create a restructuredText file containing all prescribed conditions
 
-      \param[in] string: filename for the the header parameters, should be conditionreference.rst
+    \param[in] string: filename for the the header parameters, should be conditionreference.rst
 
-    */
-    void WriteReadTheDocsCondition(const std::string& conditiondocumentationfilename);
+  */
+  void WriteReadTheDocsCondition(const std::string& conditiondocumentationfilename);
 
-    /*!
-      \brief Create a restructuredText file containing all other reference sections
-      at this time, it includes: RESULT DESCRIPTION, FUNCTION
+  /*!
+    \brief Create a restructuredText file containing all other reference sections
+    at this time, it includes: RESULT DESCRIPTION, FUNCTION
 
-      \param[in] string: filename for the the header parameters, should be furtherreference.rst
+    \param[in] string: filename for the the header parameters, should be furtherreference.rst
 
-    */
-    void WriteReadTheDocsVarious(const std::string& variousdocumentationfilename);
+  */
+  void WriteReadTheDocsVarious(const std::string& variousdocumentationfilename);
 
 
-    void PrintHelpMessage();
+  void PrintHelpMessage();
 
-  }  // namespace RTD
-}  // namespace DRT
+}  // namespace RTD
 
 BACI_NAMESPACE_CLOSE
 

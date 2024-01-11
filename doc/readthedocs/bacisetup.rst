@@ -50,7 +50,7 @@ General software development:
 
 External solver and linear algebra:
 
-- :ref:`Trilinos <trilinos>` (recommended version: 14.4.0)
+- :ref:`Trilinos <trilinos>` (recommended version: 15.0)
 - :ref:`SuiteSparse <suitesparse>` including Umfpack (recommended version: 5.4)
 - :ref:`SuperLUDist <superludist>` (recommended version: 7.2.0)
 - BLAS
@@ -154,25 +154,11 @@ See the `ArborX repository <https://github.com/arborx/ArborX>`_ for details and 
 **Trilinos**
 
 This essential TPL can be downloaded from the `trilinos Github repository <https://github.com/trilinos/Trilinos>`__.
-The currently used (and tested) version is cd1f2de8.
+The currently used (and tested) version is tagged with *trilinos-release-15-0-0*.
 Additionally, Baci is tested weekly against the Trilinos develop branch. Though, this may not always work.
 
 Instead of downloading manually, the complete download and installation is provided by an :download:`installation script example <trilinos/install.sh>`
 (taken from ``<baci_sourcce>/dependencies/current/trilinos``)
-
-Note that there are two patches necessary in order to use trilinos together with BACI
-(:download:`patch1 <trilinos/trilinos_for_baci.patch>` and :download:`patch2 <trilinos/trilinos_for_baci_output.patch>`.
-These can be applied after one has pulled the trilinos library in the following way:
-
-::
-
-    cd  <trilinos_home>
-    git apply <baci_home>/dependencies/current/trilinos/trilinos_for_baci.patch
-    git apply <baci_home>/dependencies/current/trilinos/trilinos_for_baci_output.patch
-
-.. note::
-
-    It is envisioned that one of the next versions do not need the patches anymore.
 
 
 Set-up your Gitlab account

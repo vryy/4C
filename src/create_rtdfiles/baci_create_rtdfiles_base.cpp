@@ -34,20 +34,20 @@ int main(int argc, char *argv[])
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {
     printf("\n\n");
-    DRT::RTD::PrintHelpMessage();
+    RTD::PrintHelpMessage();
     printf("\n\n");
   }
   else
   {
-    DRT::RTD::WriteReadTheDocsHeader("headerreference.rst");
+    RTD::WriteReadTheDocsHeader("headerreference.rst");
     std::cout << "Writing headerreference.rst finished\n";
-    DRT::RTD::WriteReadTheDocsCelltypes("celltypereference.rst");
+    RTD::WriteReadTheDocsCelltypes("celltypereference.rst");
     std::cout << "Writing celltypes.rst finished\n";
-    DRT::RTD::WriteReadTheDocsMaterial("materialreference.rst");
+    RTD::WriteReadTheDocsMaterial("materialreference.rst");
     std::cout << "Writing materialreference.rst finished\n";
-    DRT::RTD::WriteReadTheDocsCondition("conditionreference.rst");
+    RTD::WriteReadTheDocsCondition("conditionreference.rst");
     std::cout << "Writing conditionreference.rst finished\n";
-    DRT::RTD::WriteReadTheDocsVarious("furtherreference.rst");
+    RTD::WriteReadTheDocsVarious("furtherreference.rst");
     std::cout << "Writing furtherreference.rst finished\n";
     const std::string contactconstitivedocumentationfilename = "contactconstitutivereference.rst";
     const std::string elementdocumentationfilename = "elementreference.rst";
