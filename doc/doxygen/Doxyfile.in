@@ -62,7 +62,6 @@ WARN_NO_PARAMDOC       = NO
 WARN_AS_ERROR          = NO
 WARN_FORMAT            = "$file:$line: $text"
 WARN_LOGFILE           =
-PREDEFINED             = 
 
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
@@ -150,11 +149,12 @@ EXTRA_PACKAGES         = amsmath \
 
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
-EXPAND_ONLY_PREDEF     = NO
+EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
 INCLUDE_PATH           = 
 INCLUDE_FILE_PATTERNS  =
-
+PREDEFINED             = BACI_NAMESPACE_OPEN= \
+                         BACI_NAMESPACE_CLOSE=
 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
