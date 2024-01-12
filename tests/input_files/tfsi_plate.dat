@@ -12,7 +12,6 @@ DIM           3
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Fluid_Structure_Interaction
 RESTART                         0
-RESTARTTIME                     -1
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
 OUTPUT_GMSH                     No

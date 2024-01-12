@@ -84,10 +84,7 @@ void GLOBAL::Problem::Done()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 GLOBAL::Problem::Problem()
-    : probtype_(GLOBAL::ProblemType::none),
-      restartstep_(0),
-      restarttime_(0.0),
-      communicators_(Teuchos::null)
+    : probtype_(GLOBAL::ProblemType::none), restartstep_(0), communicators_(Teuchos::null)
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
   contactconstitutivelaws_ = Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Bundle());
@@ -118,10 +115,6 @@ std::string GLOBAL::Problem::ProblemName() const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int GLOBAL::Problem::Restart() const { return restartstep_; }
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double GLOBAL::Problem::RestartTime() const { return restarttime_; }
 
 
 /*----------------------------------------------------------------------*/

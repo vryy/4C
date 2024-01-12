@@ -10,7 +10,6 @@ DIM           3
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electromagnetics
 RESTART                         0
-RESTARTTIME                     -1
 SHAPEFCT                        HDG
 RANDSEED                        -1
 --------------------------------------------ELECTROMAGNETIC DYNAMIC

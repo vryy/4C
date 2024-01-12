@@ -58,11 +58,4 @@ void ADAPTER::AlgorithmBase::PrintHeader()
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::AlgorithmBase::ReadRestartfromTime(double time)
-{
-  dserror("Subclass has not implemented this restart option");
-}
-
 BACI_NAMESPACE_CLOSE

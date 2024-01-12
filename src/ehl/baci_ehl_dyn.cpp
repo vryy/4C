@@ -116,13 +116,7 @@ void ehl_dyn()
 
   // 3.2- Read restart if needed. (Discretization called inside)
   const int restart = problem->Restart();
-
-  const double restarttime = problem->RestartTime();
-  if (restarttime > 0.0)
-    ehl->ReadRestartfromTime(restarttime);
-
-  else if (restart)
-    ehl->ReadRestart(restart);
+  if (restart) ehl->ReadRestart(restart);
 
   // 4.- Run of the actual problem.
 

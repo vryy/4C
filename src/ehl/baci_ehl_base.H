@@ -60,9 +60,6 @@ namespace EHL
     /// read restart
     void ReadRestart(int restart) override;
 
-    /// read restart from given time
-    void ReadRestartfromTime(double restarttime) override;
-
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
 

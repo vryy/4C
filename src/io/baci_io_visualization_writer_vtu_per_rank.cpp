@@ -31,7 +31,7 @@ IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
       std::pow(10, IO::GetTotalDigitsToReserveInTimeStep(parameters)),
       output_control->DirectoryName(), (output_control->FileNameOnlyPrefix() + "-vtk-files"),
       visualization_data_name_, output_control->RestartName(),
-      GLOBAL::Problem::Instance()->RestartTime(),
+      GLOBAL::Problem::Instance()->Restart(),
       parameters.data_format_ == INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat::binary);
 }
 
