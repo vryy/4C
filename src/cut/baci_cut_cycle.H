@@ -24,9 +24,6 @@ namespace BACI::CORE::GEO
   }
 }  // namespace BACI::CORE::GEO
 
-// must be here, as it is supposed to be a friend of the Cycle-class
-std::ostream& operator<<(std::ostream& stream, const BACI::CORE::GEO::CUT::Cycle& cycle);
-
 BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
@@ -48,12 +45,6 @@ namespace CORE::GEO
       Cycle() {}
 
       Cycle(const std::vector<Point*>& points) : points_(points) {}
-
-      /*!
-      \brief Returns true if the set of lines given a input contains the cycle of points.
-      This means that a facet can be created form these lines
-       */
-      static bool MakeCycle(const point_line_set& lines, Cycle& cycle);
 
       /*!
       \brief Returns true if the cycle of points are suitable for creating a facet
@@ -78,11 +69,6 @@ namespace CORE::GEO
       \brief Find the common edges among the cycle of points
        */
       void CommonEdges(plain_edge_set& edges) const;
-
-      /*!
-      \brief Find the common edges among the cycle of points. NOT USED NOW
-       */
-      void CommonSides(plain_side_set& sides) const;
 
       /*!
       \brief Get only the sides that are cut by any one of the points in the cycle
@@ -127,8 +113,6 @@ namespace CORE::GEO
       void reverse();
 
       void swap(Cycle& other) { std::swap(points_, other.points_); }
-
-      friend std::ostream& ::operator<<(std::ostream& stream, const Cycle& cycle);
 
       void GnuplotDump(std::ostream& stream) const;
 

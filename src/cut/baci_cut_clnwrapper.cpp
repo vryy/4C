@@ -13,7 +13,7 @@
 
 #include <cmath>
 #include <iomanip>
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
 #include <cln/malloc.h>
 #endif
 
@@ -45,7 +45,7 @@ namespace cln
 
 BACI_NAMESPACE_CLOSE
 
-#ifndef CLN_CALC
+#ifndef CUT_CLN_CALC
 
 // If this is true, floating point underflow returns zero instead of throwing an exception.
 cln::cl_inhibit_floating_point_underflow = true;

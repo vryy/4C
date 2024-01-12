@@ -675,7 +675,7 @@ namespace CORE::GEO
             xyze, px, initial_rhs);  // forwarding to normal function
       }
 
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
 
       /// computes adaptive precision for AdaptivePrecision strategies
       template <class T1, class T2, class T3>
@@ -749,7 +749,7 @@ namespace CORE::GEO
             : Strategy(xsi, checklimits)
         {
         }
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
         /// required constructor for CLN
         NewtonSolve(CORE::LINALG::Matrix<dim, 1, ClnWrapper>& xsi, bool checklimits)
             : Strategy(xsi, checklimits)
@@ -1306,7 +1306,7 @@ namespace CORE::GEO
 
 #endif
 
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
 
       /*--------------------------------------------------------------------------*/
       /** \brief Strategy for position of point within element for arbitrary precision
@@ -1605,7 +1605,7 @@ namespace CORE::GEO
        public:
         GenericComputePosition(CORE::LINALG::Matrix<dim, 1>& xsi)
             : Strategy(xsi, true)
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
               ,
               xsi_(xsi)
 #endif
@@ -1618,7 +1618,7 @@ namespace CORE::GEO
           bool conv;
           this->Setup(xyze, px);
           conv = this->Solve();
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
           if (computeCln)  // this is not used up to now!
           {
             {
@@ -1650,7 +1650,7 @@ namespace CORE::GEO
         std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
 
         double GetTolerance() const { return Strategy::GetTolerance(); }
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
 
         PointOnSurfaceLoc GetSideLocation() { return location_; }
 
@@ -2394,7 +2394,7 @@ namespace CORE::GEO
       };  // class ComputeDistanceStrategy
 
 
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
       /*--------------------------------------------------------------------------*/
       /** \brief Strategy class for  distance between side and point for arbitrary precision
        *
@@ -2892,7 +2892,7 @@ namespace CORE::GEO
             : Strategy(xsi, checklimits),
               xsi_ref_(xsi),
               cond_infinity_(false)
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
               ,
               checklimits_ref_(checklimits)
 #endif
@@ -2924,7 +2924,7 @@ namespace CORE::GEO
             }
           }
           bool got_topology_info = GetTopologyInformation();
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
           if (computeCln or !got_topology_info)
           {
 #if DOUBLE_PLUS_CLN_COMPUTE
@@ -3181,7 +3181,7 @@ namespace CORE::GEO
 
         // if condition number is equal to infinity
         bool cond_infinity_;
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
         // Need to remember it in order to call to ComputeDistanceAdaptivePrecision
         bool checklimits_ref_;
 #endif
@@ -3521,7 +3521,7 @@ namespace CORE::GEO
           xsi_.Update(1.0, dx_, 1.0);
 
 
-#ifndef CLN_CALC
+#ifndef CUT_CLN_CALC
           if (debug)
           {
             std::cout << "--- Update\n";
@@ -3819,7 +3819,7 @@ namespace CORE::GEO
       };  // class ComputeIntersectionStrategy
 
 
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
 
       /*--------------------------------------------------------------------------*/
       /** \brief Strategy class for intersection of side and line/edge for arbitrary precision
@@ -4296,7 +4296,7 @@ namespace CORE::GEO
               cond_infinity_(false),
               distance_between_(0.0),
               xsi_(xsi)
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
               ,
               checklimits_(checklimits)
 #endif
@@ -4311,7 +4311,7 @@ namespace CORE::GEO
           conv = this->Solve();
           bool got_topology_info = GetTopologyInformation();
 
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
           if (computeCln or (!got_topology_info))
           {
 #if DOUBLE_PLUS_CLN_COMPUTE
@@ -4540,7 +4540,7 @@ namespace CORE::GEO
         // holds reference to original value passed
         CORE::LINALG::Matrix<dimEdge + dimSide, 1>& xsi_;
 
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
         bool checklimits_;
 #endif
       };  // class GenericComputeIntersection
@@ -4761,7 +4761,7 @@ template <class Strategy, unsigned probDim, CORE::FE::CellType sideType, bool co
 std::vector<int> CORE::GEO::CUT::KERNEL::GenericComputeDistance<Strategy, probDim, sideType,
     computeCln, dimSide, numNodesSide>::touched_nodes_ids_;
 
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
 // for generic compute position
 template <class Strategy, unsigned probDim, CORE::FE::CellType elementType, bool computeCln,
     unsigned numNodesElement, unsigned dim>
@@ -4771,7 +4771,7 @@ std::vector<int> CORE::GEO::CUT::KERNEL::GenericComputePosition<Strategy, probDi
 
 
 
-#ifdef CLN_CALC
+#ifdef CUT_CLN_CALC
 
 // Initializing for static arrays for AdaptivePrecision strategies
 
