@@ -12,6 +12,7 @@
 #include "baci_unittest_utils_assertions_test.H"
 
 #include <fstream>
+#include <vector>
 
 namespace
 {
@@ -119,4 +120,19 @@ namespace
         IO::ReadCsv(2, test_csv_file), CORE::Exception, "separated by commas");
   }
 
+  TEST(ReadCsvAsLines, ValidCsv)
+  {
+    using T = std::map<int, std::array<int, 3>>;
+    std::stringstream test_csv_file;
+    test_csv_file << "1:1,2,3" << std::endl;
+    test_csv_file << "2:4,5,6" << std::endl;
+    test_csv_file << "3:7,8,9" << std::endl;
+
+    std::vector<T> expected_data = {{{1, {1, 2, 3}}}, {{2, {4, 5, 6}}}, {{3, {7, 8, 9}}}};
+
+    std::vector<T> read_data;
+    IO::ReadCsvAsLines(test_csv_file, read_data);
+
+    EXPECT_EQ(read_data, expected_data);
+  }
 }  // namespace

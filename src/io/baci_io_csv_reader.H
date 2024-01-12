@@ -10,6 +10,10 @@
 /*-----------------------------------------------------------------------------------------------*/
 #include "baci_config.H"
 
+#include "baci_io_string_converter.H"
+#include "baci_utils_demangle.H"
+
+#include <fstream>
 #include <sstream>
 #include <vector>
 
@@ -35,6 +39,64 @@ namespace IO
    */
   std::vector<std::vector<double>> ReadCsv(int number_of_columns, std::istream& csv_stream);
 
+  /*!
+   * @brief Read a csv stream line by line. Parse each line into an object of type T and append the
+   * result to the data vector.
+   *
+   * @param[in] csv_stream csv input stream
+   * @param[out] data vector the csv's lines are read into
+   * @tparam type T of object one line is read into
+   */
+  template <typename T>
+  void ReadCsvAsLines(std::istream& csv_stream, std::vector<T>& data);
+
+  /*!
+   * @brief Read and process a csv file line by line. Parse each line into an object of type T and
+   * append the result to the data vector.
+   *
+   * @param[in] csv_file_path absolute path to csv file
+   * @param[out] data vector the csv's lines are read into
+   * @tparam type T of object one line is read into
+   */
+  template <typename T>
+  void ReadCsvAsLines(const std::string& csv_file_path, std::vector<T>& data);
+
+  template <typename T>
+  void ReadCsvAsLines(std::istream& csv_stream, std::vector<T>& data)
+  {
+    // prepare variables
+    T line_data;
+    std::string line_str;
+
+    // read lines of csv file
+    while (std::getline(csv_stream, line_str))
+    {
+      // do not read in line if it is a header
+      if (line_str[0] == '#') continue;
+
+      try
+      {
+        line_data = IO::StringConverter<T>::Parse(line_str);
+        data.emplace_back(line_data);
+      }
+      catch (...)
+      {
+        dserror(
+            "Could not read line '%s' from csv file. Likely the string's pattern is not "
+            "convertible to an object of type %s",
+            line_str.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
+      }
+    }
+  }
+
+  template <typename T>
+  void ReadCsvAsLines(const std::string& csv_file_path, std::vector<T>& data)
+  {
+    std::ifstream csv_file_stream(csv_file_path);
+    if (csv_file_stream.fail()) dserror("Invalid csv file!");
+
+    ReadCsvAsLines(csv_file_stream, data);
+  }
 }  // namespace IO
 
 BACI_NAMESPACE_CLOSE

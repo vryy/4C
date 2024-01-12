@@ -43,7 +43,7 @@ std::vector<std::vector<double>> IO::ReadCsv(const int number_of_columns, std::i
       for (int i = 0; i < number_of_columns; ++i)
       {
         std::getline(line_stream, cell, ',');
-        values[i].push_back(std::stod(cell));
+        values[i].emplace_back(std::stod(cell));
       }
     }
     catch (...)
