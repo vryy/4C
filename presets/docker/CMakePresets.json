@@ -29,7 +29,9 @@
         "BACI_BUILD_READTHEDOCS": "ON",
         "BACI_DOXYGEN_USE_LOCAL_MATHJAX": "ON",
         "BACI_DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/opt/baci-dependencies-testing/MathJax-2.7.9",
-        "BACI_WITH_ARBORX": "ON"
+        "BACI_WITH_ARBORX": "ON",
+        "BACI_WITH_BACKTRACE": "ON",
+        "BACI_BACKTRACE_ROOT": "/opt/baci-dependencies"
       }
     },
     {

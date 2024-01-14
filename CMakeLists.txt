@@ -91,6 +91,7 @@ baci_configure_dependency(ArborX DEFAULT OFF)
 baci_configure_dependency(FFTW DEFAULT ON)
 baci_configure_dependency(CLN DEFAULT ON)
 baci_configure_dependency(MIRCO DEFAULT OFF)
+baci_configure_dependency(Backtrace DEFAULT OFF)
 
 # Generate the macro definition for all dependencies automatically
 get_property(BACI_FLAGS_EXTERNAL_DEPENDENCIES GLOBAL PROPERTY BACI_FLAGS_EXTERNAL_DEPENDENCIES)

@@ -14,23 +14,9 @@ if(Backtrace_INCLUDE_DIR)
   set(Backtrace_FIND_QUIETLY TRUE)
 endif(Backtrace_INCLUDE_DIR)
 
-find_path(
-  Backtrace_INCLUDE_DIR
-  backtrace.h
-  ${INCLUDE_INSTALL_DIR}
-  /usr/include/backtrace
-  /usr/local/include
-  /usr/local/include/backtrace
-  /usr/include
-  )
+find_path(Backtrace_INCLUDE_DIR NAMES backtrace.h)
 
-find_library(
-  Backtrace_LIBRARY
-  NAMES libbacktrace.a libbacktrace.so
-  HINTS ${LIB_INSTALL_DIR} ${Backtrace_LIBRARY_DIR} /usr/local/lib /usr/lib
-  )
-
-mark_as_advanced(Backtrace_INCLUDE_DIR Backtrace_LIBRARY)
+find_library(Backtrace_LIBRARY NAMES libbacktrace.a libbacktrace.so)
 
 # handle the QUIETLY and REQUIRED arguments and set Backtrace_FOUND to TRUE if
 # all listed variables are TRUE
@@ -47,7 +33,8 @@ if(Backtrace_FOUND AND NOT TARGET Backtrace::Backtrace)
 endif()
 
 if(Backtrace_FOUND)
-  list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS Backtrace::Backtrace)
+  baci_add_dependency(baci_all_enabled_external_dependencies Backtrace::Backtrace)
+  baci_add_dependency(baci_all_enabled_external_dependencies ${CMAKE_DL_LIBS})
   message(STATUS "Backtrace include directory: ${Backtrace_INCLUDE_DIR}")
   message(STATUS "Backtrace library directory: ${Backtrace_LIBRARY}")
 endif(Backtrace_FOUND)
