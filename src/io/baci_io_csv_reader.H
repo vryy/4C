@@ -28,7 +28,8 @@ namespace IO
    * @param[in] csv_file_path      absolute path to csv file
    * @return vector of column vectors read from csv file
    */
-  std::vector<std::vector<double>> ReadCsv(int number_of_columns, const std::string& csv_file_path);
+  std::vector<std::vector<double>> ReadCsvAsColumns(
+      int number_of_columns, const std::string& csv_file_path);
 
   /*!
    * @brief Processes csv stream such that a vector of column vectors is returned
@@ -37,7 +38,8 @@ namespace IO
    * @param[in] csv_stream         csv input stream
    * @return vector of column vectors read from csv stream
    */
-  std::vector<std::vector<double>> ReadCsv(int number_of_columns, std::istream& csv_stream);
+  std::vector<std::vector<double>> ReadCsvAsColumns(
+      int number_of_columns, std::istream& csv_stream);
 
   /*!
    * @brief Read a csv stream line by line. Parse each line into an object of type T and append the
