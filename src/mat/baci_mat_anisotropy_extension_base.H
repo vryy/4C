@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+#include <vector>
+
 BACI_NAMESPACE_OPEN
 
 // forward declarations
