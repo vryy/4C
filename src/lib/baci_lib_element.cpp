@@ -469,7 +469,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
 
   if (numnode != static_cast<int>(nds.size()))
   {
-    throw std::runtime_error("wrong number of nodes");
+    throw CORE::Exception("wrong number of nodes");
   }
 
   la.Clear();

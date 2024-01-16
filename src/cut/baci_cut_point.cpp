@@ -216,7 +216,7 @@ CORE::GEO::CUT::Line* CORE::GEO::CUT::Point::CutLine(
       }
       else
       {
-        throw std::runtime_error("not unique");
+        throw CORE::Exception("not unique");
       }
     }
   }
@@ -312,7 +312,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
           << " (Tol = " << Tolerance() + p1->Tolerance() + p2->Tolerance() << ")"
           << "\n"
           << x << x1 << x2 << "\n";
-      throw std::runtime_error(str.str());
+      throw CORE::Exception(str.str());
     }
     // transformation to the parameter space coordinate t of the edge (between -1 and 1)
     ClnWrapper t_cln = 2.0 * z_cln - 1.0;
@@ -349,7 +349,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
           << " (Tol = " << Tolerance() + p1->Tolerance() + p2->Tolerance() << ")"
           << "\n"
           << x << x1 << x2 << "\n";
-      throw std::runtime_error(str.str());
+      throw CORE::Exception(str.str());
     }
     // transformation to the parameter space coordinate t of the edge (between -1 and 1)
     double t = 2.0 * z - 1.0;
@@ -532,7 +532,7 @@ void CORE::GEO::CUT::Point::Position(Point::PointPosition pos)
       //      this->Print(std::cout);
       std::cout << "point with changing position inside->outside or vice versa " << pid_
                 << std::endl;
-      throw std::runtime_error(
+      throw CORE::Exception(
           "Are you sure that you want to change the point-position from inside to outside or vice "
           "versa?");
     }
@@ -585,7 +585,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Point::CutSide(Side* side, Point* other)
       }
       else
       {
-        throw std::runtime_error("side not unique");
+        throw CORE::Exception("side not unique");
       }
     }
   }

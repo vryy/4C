@@ -283,7 +283,7 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
     double det = CORE::LINALG::gaussElimination<true, 3, double>(B, x3, x2);
     if (fabs(det) < LINSOLVETOL)
     {
-      throw std::runtime_error("failed to find point position");
+      throw CORE::Exception("failed to find point position");
     }
 
     if (fabs(x2(2)) > PLANARTOL)
@@ -915,9 +915,9 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Facet::Neighbor(VolumeCell* cell)
       }
     }
 #endif
-    throw std::runtime_error("can only have two neighbors");
+    throw CORE::Exception("can only have two neighbors");
   }
-  if (cells_.count(cell) == 0) throw std::runtime_error("not my neighbor");
+  if (cells_.count(cell) == 0) throw CORE::Exception("not my neighbor");
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* vc = *i;
@@ -1163,7 +1163,7 @@ void CORE::GEO::CUT::Facet::TestFacetArea(double tolerance, bool istetmeshinters
     }
     if (area.size() != 2)
     {
-      throw std::runtime_error("expect two volume cells at facet");
+      throw CORE::Exception("expect two volume cells at facet");
     }
     double diff = area[0] - area[1];
     if (fabs(diff) >= tolerance)
@@ -1183,7 +1183,7 @@ void CORE::GEO::CUT::Facet::TestFacetArea(double tolerance, bool istetmeshinters
 
       std::cout << "WARNING: " << str.str() << "\n";
 #ifdef DEBUGCUTLIBRARY
-      throw std::runtime_error(str.str());
+      throw CORE::Exception(str.str());
 #endif
     }
   }
@@ -1242,7 +1242,7 @@ bool CORE::GEO::CUT::Facet::IsTriangle(const std::vector<Point*>& tri) const
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Facet::IsTriangulatedSide(const std::vector<Point*>& tri) const
 {
-  if (tri.size() != 3) throw std::runtime_error("three points expected");
+  if (tri.size() != 3) throw CORE::Exception("three points expected");
 
   for (std::vector<std::vector<Point*>>::const_iterator i = triangulation_.begin();
        i != triangulation_.end(); ++i)
@@ -1298,14 +1298,14 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::Facet::OtherPoint(Point* p1, Point* p2)
         }
         else
         {
-          throw std::runtime_error("point not unique");
+          throw CORE::Exception("point not unique");
         }
       }
     }
   }
   else
   {
-    throw std::runtime_error("plain triangular facet required");
+    throw CORE::Exception("plain triangular facet required");
   }
   return result;
 }

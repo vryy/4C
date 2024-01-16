@@ -558,7 +558,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
         break;
       }
       default:
-        throw std::runtime_error("unsupported element type");
+        throw CORE::Exception("unsupported element type");
     }
   }
 
@@ -585,7 +585,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
         break;
       }
       default:
-        throw std::runtime_error("unsupported parent Quad element type");
+        throw CORE::Exception("unsupported parent Quad element type");
     }
   }
 #else
@@ -608,7 +608,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
 
     mesh_.DebugDump(elem1_, __FILE__, __LINE__);
     std::cout << "volume: " << TotalInteg << std::endl;
-    throw std::runtime_error("negative volume predicted by the DirectDivergence integration rule;");
+    throw CORE::Exception("negative volume predicted by the DirectDivergence integration rule;");
     //    dserror("negative volume predicted by the DirectDivergence integration rule; volume =
     //    %0.20f",TotalInteg);
   }
@@ -627,7 +627,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     std::cout << "comparison of volume prediction\n";
     std::cout << std::setprecision(15) << volGlobal << "\t" << volMom(0) << "\n";
     // dserror("volume prediction is wrong");
-    throw std::runtime_error("DirectDiv and Momfitting are not producing same volumes!");
+    throw CORE::Exception("DirectDiv and Momfitting are not producing same volumes!");
     // std::cout << "DirectDiv and Momfitting are not producing same volumes!" << std::endl;
   }
 #endif
@@ -647,7 +647,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
                  "reference plane and if the first component "
                  "is close to zero, then the volume is infinity. Check "
                  "CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane() \n";
-    throw std::runtime_error("Volume is not a number.");
+    throw CORE::Exception("Volume is not a number.");
   }
 }
 

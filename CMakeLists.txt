@@ -18,6 +18,11 @@ endif()
 
 project(baci CXX C)
 
+# Add flags that are vital to BACI's build system and cannot be disabled by users
+
+# Export symbols (necessary for stacktraces)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
+
 # Print CMake version to screen
 message(STATUS "Using CMake ${CMAKE_VERSION}")
 
@@ -86,6 +91,7 @@ baci_configure_dependency(ArborX DEFAULT OFF)
 baci_configure_dependency(FFTW DEFAULT ON)
 baci_configure_dependency(CLN DEFAULT ON)
 baci_configure_dependency(MIRCO DEFAULT OFF)
+baci_configure_dependency(Backtrace DEFAULT OFF)
 
 # Generate the macro definition for all dependencies automatically
 get_property(BACI_FLAGS_EXTERNAL_DEPENDENCIES GLOBAL PROPERTY BACI_FLAGS_EXTERNAL_DEPENDENCIES)

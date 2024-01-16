@@ -46,7 +46,7 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_HASH: f19a0abd
+  BACI_DOCKER_DEPENDENCIES_HASH: 6b550ef9
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
   BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
 

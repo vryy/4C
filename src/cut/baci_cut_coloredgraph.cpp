@@ -207,7 +207,7 @@ namespace CORE::GEO
           int facet = *i;
           if (facet >= graph.Split())
           {
-            throw std::runtime_error("no free facet but free lines");
+            throw CORE::Exception("no free facet but free lines");
           }
           plain_int_set& row = graph[facet];
           // check if this facet visited connected lines to it
@@ -221,7 +221,7 @@ namespace CORE::GEO
             }
           }
         }
-        throw std::runtime_error("empty free set");
+        throw CORE::Exception("empty free set");
       }
 
       bool IsValidFacet(plain_int_set& row, const std::vector<int>& visited)
@@ -232,7 +232,7 @@ namespace CORE::GEO
           if (visited[line] >= 2)
           {
             // dserror("Invalid facet!");
-            throw std::runtime_error("Invalid facet");
+            throw CORE::Exception("Invalid facet");
             return false;
           }
         }
@@ -248,7 +248,7 @@ namespace CORE::GEO
           dserror("This should not happen");
         }
         visited[facet] += 1;
-        if (visited[facet] > 1) throw std::runtime_error("facet visited more than once");
+        if (visited[facet] > 1) throw CORE::Exception("facet visited more than once");
         // iterate over lines connected to this facet
         for (const int& line : row)
         {
@@ -262,7 +262,7 @@ namespace CORE::GEO
           // visit it
           visited[line] += 1;
           // was visited by more than two facets
-          if (visited[line] > 2) throw std::runtime_error("too many facets at line");
+          if (visited[line] > 2) throw CORE::Exception("too many facets at line");
         }
       }
 
@@ -281,7 +281,7 @@ namespace CORE::GEO
               num_split_lines += 1;
           }
           visited[line] -= 1;
-          if (visited[line] < 0) throw std::runtime_error("too few facets at line");
+          if (visited[line] < 0) throw CORE::Exception("too few facets at line");
         }
         visited[facet] -= 1;
         if (visited[facet] < 0) dserror("facet left more than once");
@@ -406,7 +406,7 @@ namespace CORE::GEO
             }
           }
         }
-        catch (std::runtime_error& err)
+        catch (CORE::Exception& err)
         {
           std::cout << "Failed in the colored graph in the DFS search" << std::endl;
           std::cout << "Last processed facet is" << facet << std::endl;
@@ -449,7 +449,7 @@ namespace CORE::GEO
             }
           }
           filevisited.close();
-          throw err;
+          dserror("");
         }
         return false;
       }
@@ -468,7 +468,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets(Graph& graph, Graph& us
 
   if (not VisitFacetDFS(graph, used, free, free_facet, all_lines, visited, split_trace))
   {
-    throw std::runtime_error("Failed to find volume split. DFS search failed");
+    throw CORE::Exception("Failed to find volume split. DFS search failed");
   }
 
   // iterate over all facets that are visited and check ( only internal should be visited )
@@ -913,7 +913,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& use
     }
     if (not found)
     {
-      throw std::runtime_error("did not find volume that contains split facets");
+      throw CORE::Exception("did not find volume that contains split facets");
     }
   }
 }

@@ -60,7 +60,7 @@ namespace CORE::GEO
         else if (p2_ == point)
           return p1_;
         else
-          throw std::runtime_error("foreign point provided");
+          throw CORE::Exception("foreign point provided");
       }
 
       Point* BeginPoint() { return p1_; }

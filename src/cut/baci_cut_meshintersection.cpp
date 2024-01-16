@@ -35,7 +35,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int 
       int numnode = nids.size();
       if (numnode != xyz.numCols())
       {
-        throw std::runtime_error("node coordiante number mismatch");
+        throw CORE::Exception("node coordiante number mismatch");
       }
 
       // make sure all nodes are there
@@ -78,7 +78,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(int sid
   int numnode = nids.size();
   if (numnode != xyz.numCols())
   {
-    throw std::runtime_error("node coordiante number mismatch");
+    throw CORE::Exception("node coordiante number mismatch");
   }
 
   //   PointSet nodalpoints;

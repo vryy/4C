@@ -194,7 +194,7 @@ namespace CORE::GEO
 
       Node* MiddleNode()
       {
-        if (nodes_.size() != 3) throw std::runtime_error("middle node in line3 only");
+        if (nodes_.size() != 3) throw CORE::Exception("middle node in line3 only");
         return nodes_[2];
       }
 

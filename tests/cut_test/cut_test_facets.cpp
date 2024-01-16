@@ -35,12 +35,12 @@ unsigned FindNextCornerPoint(const std::vector<CORE::LINALG::Matrix<3, 1>>& poin
 
   double norm = b1.Norm2();
   if (norm < std::numeric_limits<double>::min())
-    throw std::runtime_error("same point in facet not supported");
+    throw CORE::Exception("same point in facet not supported");
 
   b1.Scale(1. / norm);
 
   if (b1.Norm2() < std::numeric_limits<double>::min())
-    throw std::runtime_error("same point in facet not supported");
+    throw CORE::Exception("same point in facet not supported");
 
   i = j;
   for (unsigned k = 2; k < pointsize; ++k)
@@ -52,7 +52,7 @@ unsigned FindNextCornerPoint(const std::vector<CORE::LINALG::Matrix<3, 1>>& poin
 
     norm = b2.Norm2();
     if (norm < std::numeric_limits<double>::min())
-      throw std::runtime_error("same point in facet not supported");
+      throw CORE::Exception("same point in facet not supported");
 
     b2.Scale(1. / norm);
 

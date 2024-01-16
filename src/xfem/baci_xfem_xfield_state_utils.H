@@ -47,31 +47,16 @@ namespace XFEM
         {
           case NOX::NLN::LinSystem::LinalgSparseMatrix:
           {
-            try
-            {
-              Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mat)->Destroy();
-            }
-            catch (const std::runtime_error& e)
-            {
-              run_time_error(e);
-            }
+            Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mat)->Destroy();
             break;
           }
           case NOX::NLN::LinSystem::LinalgBlockSparseMatrix:
           {
-            try
-            {
-              Teuchos::RCP<
-                  CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>
-                  block_mat = Teuchos::rcp_dynamic_cast<
-                      CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>(
-                      mat, true);
-              block_mat->Destroy(false);
-            }
-            catch (const std::runtime_error& e)
-            {
-              run_time_error(e);
-            }
+            Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>
+                block_mat = Teuchos::rcp_dynamic_cast<
+                    CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>(
+                    mat, true);
+            block_mat->Destroy(false);
             break;
           }
           default:

@@ -19,8 +19,8 @@ namespace
   TEST(PstreamTest, UninitializedUseThrows)
   {
     IO::Pstream ps;
-    EXPECT_THROW(ps.flush(), std::runtime_error);
-    EXPECT_THROW((ps << "blub"), std::runtime_error);
+    EXPECT_THROW(ps.flush(), CORE::Exception);
+    EXPECT_THROW((ps << "blub"), CORE::Exception);
     EXPECT_NO_THROW(ps.close());
   }
 
@@ -30,7 +30,7 @@ namespace
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 4, "");
     EXPECT_THROW(
         ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 2, ""),
-        std::runtime_error);
+        CORE::Exception);
   }
 
   TEST(PstreamTest, NonexistantProc)
@@ -39,7 +39,7 @@ namespace
     IO::Pstream ps;
     EXPECT_THROW(
         ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 4, 2, ""),
-        std::runtime_error);
+        CORE::Exception);
   }
 
   TEST(PstreamTest, InitializedUse)

@@ -178,7 +178,7 @@ namespace INPUT
    * whitespace character on both sides. In this case, key and value may contain spaces
    * internally. Leading and trailing whitespace is trimmed from both key and value.
    *
-   * @throws std::runtime_error If the @p line cannot be read.
+   * @throws CORE::Exception If the @p line cannot be read.
    *
    * @return A pair of key and value.
    */

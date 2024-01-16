@@ -195,7 +195,7 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 
     if (integrationcells.size() == 0)
     {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
+      throw CORE::Exception("VolumeCell contains 0 integration cells.");
     }
     //++++++++++++++++++++
   }
@@ -226,7 +226,7 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
   }
   if (error)
   {
-    throw std::runtime_error("Volume predicted by one of the methods is wrong.");
+    throw CORE::Exception("Volume predicted by one of the methods is wrong.");
   }
   //------------------------------------------------------
   // ###########################################################
@@ -264,7 +264,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
 
     if (integrationcells.size() == 0)
     {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
+      throw CORE::Exception("VolumeCell contains 0 integration cells.");
     }
     //++++++++++++++++++++
   }
@@ -311,7 +311,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
   }
   if (error)
   {
-    throw std::runtime_error("Volume predicted by one of the methods is wrong.");
+    throw CORE::Exception("Volume predicted by one of the methods is wrong.");
   }
   //------------------------------------------------------
   // ###########################################################
@@ -1313,7 +1313,7 @@ void test_ls_mesh_hex8_simple()
   }
   if (error)
   {
-    throw std::runtime_error("Volume predicted by one of the methods is wrong.");
+    throw CORE::Exception("Volume predicted by one of the methods is wrong.");
     // dserror("volume predicted by either one of the method is wrong");
   }
   //------------------------------------------------------
@@ -1446,7 +1446,7 @@ void test_ls_hex8_experiment_magnus()
 
     if (integrationcells.size() == 0)
     {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
+      throw CORE::Exception("VolumeCell contains 0 integration cells.");
     }
   }
 }

@@ -10,6 +10,7 @@
 
 #include "baci_io_pstream.H"
 #include "baci_lib_utils.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>
@@ -155,7 +156,7 @@ namespace
 
     EXPECT_THROW(
         CORE::COMM::AreDistributedVectorsIdentical(*communicators_, epetraVector_, "epetraVector"),
-        std::runtime_error);
+        CORE::Exception);
   }
 
   TEST_F(SetupCompareParallelMatricesTest, PositiveTestCompareMatrices)
@@ -176,7 +177,7 @@ namespace
 
     EXPECT_THROW(CORE::COMM::AreDistributedSparseMatricesIdentical(
                      *communicators_, epetraCrsMatrix_, "epetraCrsMatrix"),
-        std::runtime_error);
+        CORE::Exception);
   }
 
 }  // namespace

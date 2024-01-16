@@ -287,7 +287,7 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
     {
       xmlParams = *(Teuchos::getParametersFromXmlFile(xmlfilename));
     }
-    catch (std::runtime_error& e)
+    catch (CORE::Exception& e)
     {
       dserror(
           "The \"Status Test\"->\"XML File\" was not found! "

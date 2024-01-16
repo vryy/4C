@@ -264,7 +264,7 @@ void CORE::GEO::CUT::Edge::CutPoint(
   }
   else
   {
-    throw std::runtime_error("not a valid edge");
+    throw CORE::Exception("not a valid edge");
   }
 }
 
@@ -325,7 +325,7 @@ void CORE::GEO::CUT::Edge::CutPointsBetween(Point* begin, Point* end, std::vecto
   {
     if (begin != end)
     {
-      throw std::runtime_error("different points at the same place");
+      throw CORE::Exception("different points at the same place");
     }
   }
 }
@@ -361,13 +361,13 @@ void CORE::GEO::CUT::Edge::CutPointsIncluding(Point* begin, Point* end, std::vec
   {
     if (begin != end)
     {
-      throw std::runtime_error("different points at the same place");
+      throw CORE::Exception("different points at the same place");
     }
   }
 
   // to detect if cut point local coordinates is outside of edges endpoints
-  if (*bi_or != begin) throw std::runtime_error("beginning point not on edge");
-  if (*et_or != end) throw std::runtime_error("end point not on edge");
+  if (*bi_or != begin) throw CORE::Exception("beginning point not on edge");
+  if (*et_or != end) throw CORE::Exception("end point not on edge");
 }
 
 /*----------------------------------------------------------------------------*
@@ -723,12 +723,11 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
       }
       default:
       {
-        throw std::runtime_error("Unexpected floattype for KERNEL::ComputeDistance!");
+        throw CORE::Exception("Unexpected floattype for KERNEL::ComputeDistance!");
       }
     }
 
-    if (!conv)
-      throw std::runtime_error("Newton did not converge for parallelism detection of lines!");
+    if (!conv) throw CORE::Exception("Newton did not converge for parallelism detection of lines!");
 
     if (SurfaceWithinLimits0) touch_nodes.push_back(node);
 

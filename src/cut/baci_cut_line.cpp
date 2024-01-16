@@ -73,7 +73,7 @@ void CORE::GEO::CUT::Line::AddElement(Element* cut_element)
   {
     if (not p1_->IsCut(cut_element) or not p2_->IsCut(cut_element))
     {
-      throw std::runtime_error("cut line between non-cut points");
+      throw CORE::Exception("cut line between non-cut points");
     }
 
     cut_elements_.insert(cut_element);

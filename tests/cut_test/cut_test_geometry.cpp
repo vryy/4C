@@ -59,7 +59,7 @@ void test_geometry_schleifend1()
   }
   else
   {
-    throw std::runtime_error("not intersected");
+    throw CORE::Exception("not intersected");
   }
 }
 
@@ -103,7 +103,7 @@ void test_geometry_parallel1()
   if (!conv)
   {
     if ((ci.GetEdgeLocation().WithinSide()) and (ci.GetSideLocation().WithinSide()))
-      throw std::runtime_error("intersected");
+      throw CORE::Exception("intersected");
   }
   else
   {

@@ -60,7 +60,7 @@ void MeshLoader::CreateSide(
       break;
     }
     default:
-      throw std::runtime_error("unknown shape creating a side in mesh loader");
+      throw CORE::Exception("unknown shape creating a side in mesh loader");
   }
 }
 
@@ -96,7 +96,7 @@ void MeshLoader::CreateElement(int eid, int nid1, int nid2, int nid3, int nid4, 
       break;
     }
     default:
-      throw std::runtime_error("unknown shape creating an element in mesh loader");
+      throw CORE::Exception("unknown shape creating an element in mesh loader");
   }
 }
 
@@ -104,7 +104,7 @@ void MeshLoader::Fill(std::map<int, std::vector<double>>& nodes, int nid, double
 {
   if (nodes.find(nid) == nodes.end())
   {
-    throw std::runtime_error("node not defined in mesh loader");
+    throw CORE::Exception("node not defined in mesh loader");
   }
   std::vector<double>& v = nodes[nid];
   std::copy(v.begin(), v.end(), values);

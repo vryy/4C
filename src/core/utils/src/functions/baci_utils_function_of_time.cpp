@@ -6,6 +6,7 @@
 #include "baci_utils_function_of_time.H"
 
 #include "baci_io_linedefinition.H"
+#include "baci_utils_exceptions.H"
 #include "baci_utils_symbolic_expression.H"
 
 BACI_NAMESPACE_OPEN
@@ -158,7 +159,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
     {
       call();
     }
-    catch (const std::runtime_error& e)
+    catch (const CORE::Exception& e)
     {
     }
   };

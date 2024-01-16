@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "baci_utils_cubic_spline_interpolation.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -35,7 +36,7 @@ namespace
     const std::vector<double> x = {0.3, 0.6, 0.5};
     const std::vector<double> y(x.size(), 0.0);
 
-    EXPECT_THROW(CORE::UTILS::CubicSplineInterpolation(x, y), std::runtime_error);
+    EXPECT_THROW(CORE::UTILS::CubicSplineInterpolation(x, y), CORE::Exception);
   }
 
   TEST_F(CubicSplineInterpolationTest, InputArgumentsDifferentLength)
@@ -43,7 +44,7 @@ namespace
     const std::vector<double> x = {0.3, 0.5, 0.7};
     const std::vector<double> y(x.size() - 1, 0.0);
 
-    EXPECT_THROW(CORE::UTILS::CubicSplineInterpolation(x, y), std::runtime_error);
+    EXPECT_THROW(CORE::UTILS::CubicSplineInterpolation(x, y), CORE::Exception);
   }
 
   TEST_F(CubicSplineInterpolationTest, EvaluateOutsideValidityBounds)
@@ -52,9 +53,9 @@ namespace
 
     for (double x : x_test)
     {
-      EXPECT_THROW((void)cubic_spline_->Evaluate(x), std::runtime_error);
-      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 1), std::runtime_error);
-      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 2), std::runtime_error);
+      EXPECT_THROW((void)cubic_spline_->Evaluate(x), CORE::Exception);
+      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 1), CORE::Exception);
+      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 2), CORE::Exception);
     }
   }
 

@@ -173,7 +173,7 @@ namespace CORE::FE
         }
         point -= numpoints;
       }
-      throw std::runtime_error("gauss point not available");
+      throw CORE::Exception("gauss point not available");
     }
 
     std::vector<Teuchos::RCP<GaussPoints>> gp_;

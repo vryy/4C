@@ -146,7 +146,7 @@ CORE::GEO::CUT::TetMeshIntersection::TetMeshIntersection(Options& options, Eleme
            i != triangulation.end(); ++i)
       {
         const std::vector<Point*>& tri = *i;
-        if (tri.size() != 3) throw std::runtime_error("tri3 expected");
+        if (tri.size() != 3) throw CORE::Exception("tri3 expected");
         std::vector<Node*> nodes;
         nodes.reserve(3);
         for (std::vector<Point*>::const_iterator i = tri.begin(); i != tri.end(); ++i)
@@ -200,7 +200,7 @@ CORE::GEO::CUT::TetMeshIntersection::TetMeshIntersection(Options& options, Eleme
           break;
         }
         default:
-          throw std::runtime_error("facet with more that three points");
+          throw CORE::Exception("facet with more that three points");
       }
     }
   }
@@ -245,7 +245,7 @@ void CORE::GEO::CUT::TetMeshIntersection::FindEdgeCuts()
           {
             e->ComputeCut(&mesh_, ce, nullptr, nullptr, tolerance);
           }
-          catch (std::runtime_error& err)
+          catch (CORE::Exception& err)
           {
             std::cout << "\n-------------------\n";
             std::cout << "\nCut Edge\n";
@@ -259,7 +259,7 @@ void CORE::GEO::CUT::TetMeshIntersection::FindEdgeCuts()
             edges.insert(e);
             edges.insert(ce);
             CORE::GEO::CUT::OUTPUT::GmshEdgesOnly(edges);
-            run_time_error(err);
+            throw;
           }
         }
       }
@@ -437,7 +437,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
                 else if (child_cells.size() == 2)
                 {
                   // odd.
-                  throw std::runtime_error(
+                  throw CORE::Exception(
                       "illegal number of neighbouring volume cells: child_cells.size()==2");
                 }
                 else
@@ -445,7 +445,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
                   std::stringstream str;
                   str << "illegal number of neighbouring volume cells: child_cells.size()=="
                       << child_cells.size();
-                  throw std::runtime_error(str.str());
+                  throw CORE::Exception(str.str());
                 }
               }
 
@@ -484,7 +484,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
               const std::vector<Facet*>& child_facets = child_side->Facets();
               //               if ( child_facets.size()==0 )
               //               {
-              //                 throw std::runtime_error( "Wo sind die facets?" );
+              //                 throw CORE::Exception( "Wo sind die facets?" );
               //               }
 
               for (std::vector<Facet*>::const_iterator i = child_facets.begin();
@@ -519,7 +519,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
                   }
                   else
                   {
-                    throw std::runtime_error("child must be part of done parent cell");
+                    throw CORE::Exception("child must be part of done parent cell");
                   }
                 }
                 else if (child_cells.size() == 1)
@@ -540,7 +540,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
                   std::stringstream str;
                   str << "illegal number of neighbouring volume cells: child_cells.size() == "
                       << child_cells.size();
-                  throw std::runtime_error(str.str());
+                  throw CORE::Exception(str.str());
                 }
               }
 
@@ -593,13 +593,13 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
           }
           else
           {
-            throw std::runtime_error("more than one open parent cells");
+            throw CORE::Exception("more than one open parent cells");
           }
         }
       }
       if (parent_vc == nullptr)
       {
-        throw std::runtime_error("no open parent cell");
+        throw CORE::Exception("no open parent cell");
       }
 
       ChildCell& cc = *child_cells;
@@ -632,7 +632,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
       }
       else
       {
-        // throw std::runtime_error( "no child cell for open parent cell" );
+        // throw CORE::Exception( "no child cell for open parent cell" );
 
         // Empty parent cell. We did not get any children. The cell is most
         // probably too small.
@@ -680,7 +680,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
     }
 
     if (backup == nonnodecells)
-      throw std::runtime_error("no progress in child cell--parent cell mapping");
+      throw CORE::Exception("no progress in child cell--parent cell mapping");
   }
 
   for (std::map<VolumeCell*, ChildCell>::iterator i = cellmap.begin(); i != cellmap.end(); ++i)
@@ -710,7 +710,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
 
       Point::PointPosition pos = vc->Position();
       //       if ( pos==Point::undecided )
-      //         throw std::runtime_error( "undecided volume cell" );
+      //         throw CORE::Exception( "undecided volume cell" );
       if (pos != Point::undecided)
         for (plain_volumecell_set::iterator i = childset.begin(); i != childset.end(); ++i)
         {
@@ -831,7 +831,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SeedCells(Mesh& parent_mesh,
 
           std::swap(used_parent_cells, intersection);
 
-          if (used_parent_cells.size() == 0) throw std::runtime_error("no possible parent cell");
+          if (used_parent_cells.size() == 0) throw CORE::Exception("no possible parent cell");
         }
 
         if (used_parent_cells.size() == 1)
@@ -840,7 +840,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SeedCells(Mesh& parent_mesh,
           ChildCell& cc = cellmap[parent_vc];
           if (cc.done_)
           {
-            // throw std::runtime_error( "free child cell to done parent cell?" );
+            // throw CORE::Exception( "free child cell to done parent cell?" );
           }
           else
           {
@@ -852,7 +852,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SeedCells(Mesh& parent_mesh,
       }
       else
       {
-        // throw std::runtime_error( "child cell with all new points?" );
+        // throw CORE::Exception( "child cell with all new points?" );
       }
     }
   }
@@ -872,7 +872,7 @@ void CORE::GEO::CUT::TetMeshIntersection::BuildSurfaceCellMap(VolumeCell* vc, Ch
     {
       Side* s = f->ParentSide();
       std::map<Side*, std::vector<Side*>>::iterator j = side_parent_to_child_.find(s);
-      if (j == side_parent_to_child_.end()) throw std::runtime_error("unknown parent cut facet");
+      if (j == side_parent_to_child_.end()) throw CORE::Exception("unknown parent cut facet");
       std::vector<Side*>& side_vector = j->second;
       for (std::vector<Side*>::iterator i = side_vector.begin(); i != side_vector.end(); ++i)
       {
@@ -921,7 +921,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
         Facet* child_facet = bc->GetFacet();
 
         if (not child_facet->OnBoundaryCellSide())
-          throw std::runtime_error("boundary cell not on cut surface");
+          throw CORE::Exception("boundary cell not on cut surface");
 
         std::vector<Facet*> facets;
         std::stringstream str;
@@ -1015,20 +1015,20 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
               else
               {
                 str << "parent facet not unique";
-                throw std::runtime_error(str.str());
+                throw CORE::Exception(str.str());
               }
             }
           }
           if (parent_facet == nullptr)
           {
             str << "no parent facet found";
-            throw std::runtime_error(str.str());
+            throw CORE::Exception(str.str());
           }
         }
         else
         {
           str << "empty list bug";
-          throw std::runtime_error(str.str());
+          throw CORE::Exception(str.str());
         }
 
         parent_cell->NewBoundaryCell(parent_mesh, bc->Shape(), parent_facet, parent_points);
@@ -1043,7 +1043,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(VolumeCell* parent_cell, ChildCel
 
   if (child_cells.size() == 0)
   {
-    throw std::runtime_error("failed to find seed cells");
+    throw CORE::Exception("failed to find seed cells");
   }
 
   plain_volumecell_set done_child_cells;
@@ -1213,7 +1213,7 @@ void CORE::GEO::CUT::TetMeshIntersection::FindVolumeCell(Point* p, plain_volumec
       VolumeCell* vc = *i;
       if (vc->Contains(p)) return;
     }
-    throw std::runtime_error("point not contained in volume cell");
+    throw CORE::Exception("point not contained in volume cell");
   }
 #endif
 }
@@ -1251,7 +1251,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SwapPoints(
     std::map<Point*, Point*>::const_iterator j = pointmap.find(p);
     if (j == pointmap.end())
     {
-      throw std::runtime_error("no such point");
+      throw CORE::Exception("no such point");
     }
     new_points.push_back(j->second);
   }
@@ -1268,7 +1268,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SwapPoints(
     std::map<Point*, Point*>::const_iterator j = pointmap.find(p);
     if (j == pointmap.end())
     {
-      throw std::runtime_error("no such point");
+      throw CORE::Exception("no such point");
     }
     new_points.insert(j->second);
   }
@@ -1281,7 +1281,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::TetMeshIntersection::SwapPoint(
   std::map<Point*, Point*>::const_iterator j = pointmap.find(point);
   if (j == pointmap.end())
   {
-    // throw std::runtime_error( "no such point" );
+    // throw CORE::Exception( "no such point" );
     return nullptr;
   }
   return j->second;
@@ -1310,7 +1310,7 @@ void CORE::GEO::CUT::TetMeshIntersection::CopyCutSide(Side* s, Facet* f)
     {
       if (new_node->point() != np)
       {
-        throw std::runtime_error("did not catch known cut point");
+        throw CORE::Exception("did not catch known cut point");
       }
     }
     else

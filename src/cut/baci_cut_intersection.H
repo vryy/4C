@@ -644,7 +644,7 @@ namespace CORE::GEO
                 tolerance, check_inside, touched_edges);
           }
           default:
-            throw std::runtime_error("Unexpected floattype for ComputeEdgeSideIntersectionT!");
+            throw CORE::Exception("Unexpected floattype for ComputeEdgeSideIntersectionT!");
         }
       }
 
@@ -956,7 +956,7 @@ namespace CORE::GEO
             return ComputeEdgeTri3IntersectionT<INPAR::CUT::floattype_double>(triangleid, location);
           }
           default:
-            throw std::runtime_error("Unexpected floattype for ComputeEdgeTri3IntersectionT!");
+            throw CORE::Exception("Unexpected floattype for ComputeEdgeTri3IntersectionT!");
         }
       }
 
@@ -1004,7 +1004,7 @@ namespace CORE::GEO
                 triangleid, close_to_shared_edge);
           }
           default:
-            throw std::runtime_error(
+            throw CORE::Exception(
                 "Unexpected floattype for ComputeEdgeTri3IntersectionQuad4SplitT!");
         }
       }
@@ -1087,7 +1087,7 @@ namespace CORE::GEO
                 point, distance, tolerance, zeroarea, loc, touched_edges, signeddistance);
           }
           default:
-            throw std::runtime_error("Unexpected floattype for ComputeDistanceT!");
+            throw CORE::Exception("Unexpected floattype for ComputeDistanceT!");
         }
       }
 
@@ -1197,7 +1197,7 @@ namespace CORE::GEO
                 extended_tri_tolerance_loc_triangle_split);
           }
           default:
-            throw std::runtime_error("Unexpected floattype for ComputeDistanceT!");
+            throw CORE::Exception("Unexpected floattype for ComputeDistanceT!");
         }
       }
 

@@ -28,8 +28,8 @@ Writing a new unit test roughly works like this:
 ### Testing for dserror
 
 - In unit test executables, `dserror` is automatically replaced by a version that throws a
-  `std::runtime_error`.
-- You can test for errors with `EXPECT_THROW(<code_with_error>, std::runtime_error);`
+  `CORE::Exception`.
+- You can test for errors with `EXPECT_THROW(<code_with_error>, CORE::Exception);`
 
 ### Testing code that runs in parallel
 

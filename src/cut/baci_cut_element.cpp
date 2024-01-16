@@ -117,7 +117,7 @@ struct nextSideAlongRay
       std::cout << "side 1: " << *s1 << std::endl;
       std::cout << "side 2: " << *s2 << std::endl;
       std::cout << "startpoint: " << startpoint_xyz_ << std::endl;
-      throw std::runtime_error(
+      throw CORE::Exception(
           "ray-tracing-based comparisons to find the nearest side along the ray failed for the "
           "first time!");
     }
@@ -562,7 +562,7 @@ bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* 
     std::cout << "Warning: there is not a unique element's volumecell, number="
               << adjacent_cells.size() << ", the line and facet is adjacent to-> Check this"
               << std::endl;
-    throw std::runtime_error("Warning: there is not a unique element's volumecell");
+    throw CORE::Exception("Warning: there is not a unique element's volumecell");
   }
   else if (adjacent_cells.size() == 0)
   {
@@ -570,7 +570,7 @@ bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* 
     std::cout << "Warning: there is no adjacent volumecell, the line and facet is adjacent "
                  "to-> Check this"
               << std::endl;
-    throw std::runtime_error("Warning: there is no adjacent volumecell");
+    throw CORE::Exception("Warning: there is no adjacent volumecell");
   }
 
   // that's the adjacent volume-cell
@@ -728,7 +728,7 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
     if (s->Shape() != CORE::FE::CellType::tri3)
     {
       std::cout << "HERE !tri3 cutsides are used!!!" << std::endl;
-      //      throw std::runtime_error("expect only tri3 cutsides!");
+      //      throw CORE::Exception("expect only tri3 cutsides!");
     }
 
     // tri3/quad4 element center
@@ -743,7 +743,7 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
       rs = CORE::FE::getLocalCenterPosition<2>(CORE::FE::CellType::quad4);
     }
     else
-      throw std::runtime_error("unsupported side-shape");
+      throw CORE::Exception("unsupported side-shape");
 
     CORE::LINALG::Matrix<3, 1> normal(true);
     s->Normal(rs, normal);

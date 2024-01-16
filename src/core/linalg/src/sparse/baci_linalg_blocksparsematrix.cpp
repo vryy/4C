@@ -43,20 +43,9 @@ CORE::LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtract
 bool CORE::LINALG::BlockSparseMatrixBase::Destroy(bool throw_exception_for_blocks)
 {
   /// destroy matrix blocks
-  unsigned cblock = 0;
   for (auto& block : blocks_)
   {
-    try
-    {
-      block.Destroy(throw_exception_for_blocks);
-      ++cblock;
-    }
-    catch (const std::runtime_error& e)
-    {
-      std::stringstream msg;
-      msg << "The block num = " << cblock << " could not be deleted!";
-      run_time_error(msg.str(), e);
-    }
+    block.Destroy(throw_exception_for_blocks);
   }
   /// destroy full matrix row map
   if (fullrowmap_.strong_count() > 1)

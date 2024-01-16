@@ -470,7 +470,7 @@ CORE::GEO::CUT::Tri3BoundaryCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
   pointtest.insert(points.begin(), points.end());
   if (points.size() != pointtest.size())
   {
-    throw std::runtime_error("point used more than once in boundary cell");
+    throw CORE::Exception("point used more than once in boundary cell");
   }
 #endif
   CORE::LINALG::SerialDenseMatrix xyz(3, 3);
@@ -498,7 +498,7 @@ CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
   pointtest.insert(points.begin(), points.end());
   if (points.size() != pointtest.size())
   {
-    throw std::runtime_error("point used more than once in boundary cell");
+    throw CORE::Exception("point used more than once in boundary cell");
   }
 #endif
   CORE::LINALG::SerialDenseMatrix xyz(3, 4);
@@ -526,7 +526,7 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
   pointtest.insert(points.begin(), points.end());
   if (points.size() != pointtest.size())
   {
-    throw std::runtime_error("point used more than once in boundary cell");
+    throw CORE::Exception("point used more than once in boundary cell");
   }
 #endif
   CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
@@ -623,7 +623,7 @@ CORE::GEO::CUT::Hex8IntegrationCell* CORE::GEO::CUT::Mesh::NewHex8Cell(
 CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  if (points.size() != 4) throw std::runtime_error("wrong number of cell points");
+  if (points.size() != 4) throw CORE::Exception("wrong number of cell points");
   CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
@@ -888,10 +888,10 @@ void CORE::GEO::CUT::Mesh::Cut(Side& side)
     {
       e.Cut(*this, side);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -902,10 +902,10 @@ void CORE::GEO::CUT::Mesh::Cut(Side& side)
     {
       e.Cut(*this, side);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -980,7 +980,7 @@ void CORE::GEO::CUT::Mesh::FindCutPoints()
     {
       e.FindCutPoints(*this);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -994,7 +994,7 @@ void CORE::GEO::CUT::Mesh::FindCutPoints()
     {
       e.FindCutPoints(*this);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1021,10 +1021,10 @@ void CORE::GEO::CUT::Mesh::MakeCutLines()
     {
       e.MakeCutLines(*this);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error("caught runtime_error during elements loop:", err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1039,10 +1039,10 @@ void CORE::GEO::CUT::Mesh::MakeCutLines()
     {
       e.MakeCutLines(*this);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error("caught runtime_error during shadow_elements loop:", err);
+      throw;
     }
   }
 }
@@ -1063,10 +1063,10 @@ void CORE::GEO::CUT::Mesh::MakeFacets()
     {
       e.MakeFacets(*this);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error("caught runtime_error during elements loop:", err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1077,10 +1077,10 @@ void CORE::GEO::CUT::Mesh::MakeFacets()
     {
       e.MakeFacets(*this);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error("caught runtime_error during shadow_elements loop:", err);
+      throw;
     }
   }
 }
@@ -1101,10 +1101,10 @@ void CORE::GEO::CUT::Mesh::MakeVolumeCells()
     {
       e.MakeVolumeCells(*this);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1115,10 +1115,10 @@ void CORE::GEO::CUT::Mesh::MakeVolumeCells()
     {
       e.MakeVolumeCells(*this);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1146,10 +1146,10 @@ void CORE::GEO::CUT::Mesh::FindNodePositions()
     {
       e.FindNodePositions();
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1160,10 +1160,10 @@ void CORE::GEO::CUT::Mesh::FindNodePositions()
     {
       e.FindNodePositions();
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   // find undecided nodes
@@ -1197,7 +1197,7 @@ void CORE::GEO::CUT::Mesh::FindLSNodePositions()
       }
       else  //
       {
-        // throw std::runtime_error( "undecided nodal point on levelset
+        // throw CORE::Exception( "undecided nodal point on levelset
         // surface" );
         std::cout << "UNDECIDED CUT POSITION! SHOULD THIS HAPPEN?!"
                   << " lsv= " << std::setprecision(24) << lsv << std::endl;
@@ -1247,7 +1247,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
           case Point::outside:
             if (position != Point::undecided and position != fp)
             {
-              throw std::runtime_error("mixed facet set");
+              throw CORE::Exception("mixed facet set");
             }
             position = fp;
             break;
@@ -1273,7 +1273,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
   // volume cells, so it should be fine.
 
   if (cells_.size() == undecided.size() and cells_.size() > 0)
-    throw std::runtime_error("all volume cells undecided and volume cells available");
+    throw CORE::Exception("all volume cells undecided and volume cells available");
 
   while (undecided.size() > 0)
   {
@@ -1295,10 +1295,10 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
             {
               case Point::undecided:
                 if (undecided.count(nc) == 0)
-                  throw std::runtime_error("uncomplete set of undecided volume cells");
+                  throw CORE::Exception("uncomplete set of undecided volume cells");
                 break;
               case Point::oncutsurface:
-                throw std::runtime_error("illegal volume position");
+                throw CORE::Exception("illegal volume position");
                 break;
               case Point::inside:
               case Point::outside:
@@ -1322,7 +1322,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
         ++ui;
       }
     }
-    if (size == undecided.size()) throw std::runtime_error("no progress in volume cell position");
+    if (size == undecided.size()) throw CORE::Exception("no progress in volume cell position");
   }
 
   // second pass
@@ -1351,7 +1351,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
   //       case CORE::GEO::CUT::Point::outside:
   //         if ( position!=CORE::GEO::CUT::Point::undecided and position!=fp )
   //         {
-  //           throw std::runtime_error( "mixed facet set" );
+  //           throw CORE::Exception( "mixed facet set" );
   //         }
   //         position = fp;
   //       }
@@ -1436,7 +1436,7 @@ bool CORE::GEO::CUT::Mesh::CheckForUndecidedNodePositions(
     {
       if (n->Id() >= 0)
       {
-        throw std::runtime_error(
+        throw CORE::Exception(
             "this cannot be a shadow node, a shadow node should have negative nid");
       }
 
@@ -1489,7 +1489,7 @@ void CORE::GEO::CUT::Mesh::CreateIntegrationCells(int count, bool tetcellsonly)
     {
       e.CreateIntegrationCells(*this, count + 1, tetcellsonly);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       if (count > 0)
       {
@@ -1503,7 +1503,7 @@ void CORE::GEO::CUT::Mesh::CreateIntegrationCells(int count, bool tetcellsonly)
                    "[i.e. if count > 0 in a call from TetMeshIntersection]:";
 
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(error_msg.str(), err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1514,14 +1514,14 @@ void CORE::GEO::CUT::Mesh::CreateIntegrationCells(int count, bool tetcellsonly)
     {
       e.CreateIntegrationCells(*this, count + 1, tetcellsonly);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       if (count > 0)
         std::cout << "Error occurred in a recursive call i.e. in a call from TetMeshIntersection."
                   << std::endl;
 
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1541,10 +1541,10 @@ void CORE::GEO::CUT::Mesh::MomentFitGaussWeights(
     {
       e.MomentFitGaussWeights(*this, include_inner, Bcellgausstype);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1555,10 +1555,10 @@ void CORE::GEO::CUT::Mesh::MomentFitGaussWeights(
     {
       e.MomentFitGaussWeights(*this, include_inner, Bcellgausstype);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1578,10 +1578,10 @@ void CORE::GEO::CUT::Mesh::DirectDivergenceGaussRule(
     {
       e.DirectDivergenceGaussRule(*this, include_inner, Bcellgausstype);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1592,10 +1592,10 @@ void CORE::GEO::CUT::Mesh::DirectDivergenceGaussRule(
     {
       e.DirectDivergenceGaussRule(*this, include_inner, Bcellgausstype);
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -1614,10 +1614,10 @@ void CORE::GEO::CUT::Mesh::RemoveEmptyVolumeCells()
     {
       e.RemoveEmptyVolumeCells();
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
@@ -1628,10 +1628,10 @@ void CORE::GEO::CUT::Mesh::RemoveEmptyVolumeCells()
     {
       e.RemoveEmptyVolumeCells();
     }
-    catch (std::runtime_error& err)
+    catch (CORE::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
-      run_time_error(err);
+      throw;
     }
   }
 }
@@ -2612,7 +2612,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
   {
     return &*i->second;
   }
-  if (xyz == nullptr) throw std::runtime_error("cannot create node without coordinates");
+  if (xyz == nullptr) throw CORE::Exception("cannot create node without coordinates");
 
   //   Point * p = pp_->GetPoint( xyz, nullptr, nullptr, MINIMALTOL );
   //   if ( p!=nullptr )
@@ -2665,7 +2665,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
   int nid = -shadow_nodes_.size() - 1;
   if (nodes_.find(nid) != nodes_.end())
   {
-    throw std::runtime_error("shadow node already exists");
+    throw CORE::Exception("shadow node already exists");
   }
 
   // Remark: the nid of a shadow node is not unique over processors, consequently numbered with
@@ -2681,7 +2681,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
  *-------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::GetEdge(Node* begin, Node* end)
 {
-  if (begin->point() == end->point()) throw std::runtime_error("edge between same point");
+  if (begin->point() == end->point()) throw CORE::Exception("edge between same point");
 
   plain_int_set nids;
   nids.insert(begin->Id());
@@ -2734,7 +2734,7 @@ CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::GetEdge(const plain_int_set& nids,
   }
 
   //     if ( nodes[0]->point()==nodes[1]->point() )
-  //       throw std::runtime_error( "edge between same point" );
+  //       throw CORE::Exception( "edge between same point" );
   edges_[nids] = Edge::Create(edge_topology.key, nodes);
 
   //  edges_[nids] = Teuchos::rcp( e );
@@ -3209,7 +3209,7 @@ void CORE::GEO::CUT::Mesh::AssignOtherVolumeCells_CutTest(const Mesh& other)
       ++i;
       Side* s2 = *i;
       Element* e = s1->CommonElement(s2);
-      if (e == nullptr) throw std::runtime_error("no common element on cut sides");
+      if (e == nullptr) throw CORE::Exception("no common element on cut sides");
       e->AssignOtherVolumeCell(vc);
     }
     else
@@ -3222,7 +3222,7 @@ void CORE::GEO::CUT::Mesh::AssignOtherVolumeCells_CutTest(const Mesh& other)
   {
     std::stringstream str;
     str << cells.size() << " volume cells left. Need to handle those.";
-    throw std::runtime_error(str.str());
+    throw CORE::Exception(str.str());
   }
 }
 

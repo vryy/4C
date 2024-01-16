@@ -359,7 +359,7 @@ CORE::GEO::CUT::ElementHandle* SCATRA::LEVELSET::Intersection::Cut(
   {
     levelset.Cut(true, cut_screenoutput);
   }
-  catch (std::runtime_error& err)
+  catch (CORE::Exception& err)
   {
     std::cerr << "\n--- failed to cut element ---\n"
               << "coordinates:\n";
@@ -367,7 +367,7 @@ CORE::GEO::CUT::ElementHandle* SCATRA::LEVELSET::Intersection::Cut(
     std::cerr << "g-function values:\n" << std::setprecision(16);
     std::copy(phi_nodes.begin(), phi_nodes.end(), std::ostream_iterator<double>(std::cerr, ", "));
     std::cerr << "\n";
-    run_time_error(err);
+    throw;
   }
 
   return levelset.GetElement(1);

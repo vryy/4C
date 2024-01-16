@@ -88,7 +88,7 @@ namespace CORE::GEO
           }
           else
           {
-            throw std::runtime_error("not unique");
+            throw CORE::Exception("not unique");
           }
         }
       }
