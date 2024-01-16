@@ -3,15 +3,15 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 created by pre_exodus
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                        1600
 //NODES                           1600
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
@@ -32,62 +32,62 @@ MATID                           3
 MESHTYING                       Condensed_Smat
 OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     yes
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ITEMAX                          2
 EXPLPREDICT                     Yes
-----------------------------------------------------------------ELCH CONTROL
+------------------------------------------------------ELCH CONTROL
 TEMPERATURE                     11604.506                       // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
--------------------------------------------------------------MORTAR COUPLING
+---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 MESH_RELOCATION                 initial
--------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 static
 GHOSTING_STRATEGY               redundant_all
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.01 VALENCE 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.02 VALENCE -1.0
 MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 3
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 100
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 100
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
-----------------------------------------------------------------------FUNCT3
+------------------------------------------------------------FUNCT3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 5*(-y^2+0.25)
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
--------------------------------------------------------------FUNCT4
+------------------------------------------------------------FUNCT4
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1 1000 DESCRIPTION 0.5*(sin((t*pi/1)-(pi/2)))+0.5 0.5*(sin((1*pi/1)-(pi/2)))+0.5
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 983 QUANTITY phi1 VALUE 9.98714425745408931e+01 TOLERANCE 1e-08
-SCATRA DIS scatra NODE 983 QUANTITY phi3 VALUE 1.29422547857093893e+01 TOLERANCE 1e-08
-SCATRA DIS scatra NODE 1634 QUANTITY phi1 VALUE 9.99800672063840068e+01 TOLERANCE 1e-08
-SCATRA DIS scatra NODE 1634 QUANTITY phi3 VALUE 1.31024047130424606e+01 TOLERANCE 1e-08
-SCATRA DIS scatra NODE 830 QUANTITY phi1 VALUE 6.82010351903902574e+01 TOLERANCE 1e-08
-SCATRA DIS scatra NODE 830 QUANTITY phi3 VALUE 1.20709518801040403e+01 TOLERANCE 1e-08
----------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 983 QUANTITY phi1 VALUE  9.98714425745490644e+01 TOLERANCE 1.0e-06
+SCATRA DIS scatra NODE 983 QUANTITY phi3 VALUE  1.29422547857118424e+01 TOLERANCE 1.3e-07
+SCATRA DIS scatra NODE 1634 QUANTITY phi1 VALUE  9.99800672063824294e+01 TOLERANCE 1.0e-06
+SCATRA DIS scatra NODE 1634 QUANTITY phi3 VALUE  1.31024047130444767e+01 TOLERANCE 1.3e-07
+SCATRA DIS scatra NODE 830 QUANTITY phi1 VALUE  6.82010351903885805e+01 TOLERANCE 6.8e-07
+SCATRA DIS scatra NODE 830 QUANTITY phi3 VALUE  1.20709518801044791e+01 TOLERANCE 1.2e-07
+-----------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
 E 1 - ID 0 POT 0.0 FUNCT 4 NUMSCAL 2 STOICH -1 0  E- 1 EPSILON -1 ZERO_CUR 0 Butler-Volmer ALPHA_A 0.5 ALPHA_C 0.5 I0 2.0 GAMMA 1.0 REFCON 0.1 DL_SPEC_CAP 0.0
 //                              anode
 E 2 - ID 1 POT 25.0 FUNCT 4 NUMSCAL 2 STOICH -1 0  E- 1 EPSILON -1 ZERO_CUR 0 Butler-Volmer ALPHA_A 0.5 ALPHA_C 0.5 I0 2.0 GAMMA 1.0 REFCON 0.1 DL_SPEC_CAP 0.0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary
 E 5 - 1 Master
 // right internal boundary
 E 6 - 1 Slave
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
 NODE 5 DLINE 1
@@ -418,7 +418,7 @@ NODE 1803 DLINE 6
 NODE 1804 DLINE 6
 NODE 1805 DLINE 6
 NODE 1806 DLINE 6
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
 NODE 3 DSURFACE 1
@@ -2225,7 +2225,7 @@ NODE 1803 DSURFACE 1
 NODE 1804 DSURFACE 1
 NODE 1805 DSURFACE 1
 NODE 1806 DSURFACE 1
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 0.0000000000000000e+00
 NODE 2 COORD -4.4999999999999996e-01 -5.0000000000000000e-01 0.0000000000000000e+00
 NODE 3 COORD -4.4999999999999996e-01 -4.5000000000000001e-01 0.0000000000000000e+00
@@ -4032,7 +4032,7 @@ NODE 1803 COORD 3.6363636363636365e-01 2.5000000000000000e-01 0.0000000000000000
 NODE 1804 COORD 4.0909090909090906e-01 2.5000000000000000e-01 0.0000000000000000e+00
 NODE 1805 COORD 4.5454545454545453e-01 2.5000000000000000e-01 0.0000000000000000e+00
 NODE 1806 COORD 5.0000000000000000e-01 2.5000000000000000e-01 0.0000000000000000e+00
-----------------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP QUAD4 1 2 3 4 MAT 3 TYPE ElchNP
 2 TRANSP QUAD4 2 5 6 3 MAT 3 TYPE ElchNP
 3 TRANSP QUAD4 5 7 8 6 MAT 3 TYPE ElchNP
@@ -5675,4 +5675,4 @@ NODE 1806 COORD 5.0000000000000000e-01 2.5000000000000000e-01 0.0000000000000000
 1640 TRANSP QUAD4 1780 1781 1804 1803 MAT 3 TYPE ElchNP
 1641 TRANSP QUAD4 1781 1782 1805 1804 MAT 3 TYPE ElchNP
 1642 TRANSP QUAD4 1782 1783 1806 1805 MAT 3 TYPE ElchNP
--------------------------------------------------------------------------END
+---------------------------------------------------------------END

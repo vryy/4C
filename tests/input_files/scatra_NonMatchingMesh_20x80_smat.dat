@@ -3,21 +3,21 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 created by pre_exodus
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                        1600
 //NODES                           1600
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
@@ -26,7 +26,7 @@ FLUID_STRESS                    No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      1
@@ -44,44 +44,44 @@ RESULTSEVRY                     1
 CALCERROR                       No
 MESHTYING                       Condensed_Smat
 OUTPUTSCALARS                   entire_domain
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          2
 EXPLPREDICT                     Yes
--------------------------------------------------------------MORTAR COUPLING
+---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 MESH_RELOCATION                 no
--------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 static
 GHOSTING_STRATEGY               redundant_all
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.01
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1265 QUANTITY phi1 VALUE 5.65141547711046410e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 569 QUANTITY phi1 VALUE 4.86300634038829394e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1634 QUANTITY phi1 VALUE 4.99147059886499767e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1524 QUANTITY phi1 VALUE 5.31796052930115004e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 830 QUANTITY phi1 VALUE 1.00000000000000006e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 106 QUANTITY phi1 VALUE 4.68205143633693033e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1797 QUANTITY phi1 VALUE 5.31796052699190613e-01 TOLERANCE 1e-10
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 1265 QUANTITY phi1 VALUE  5.65141547711046188e-01 TOLERANCE 5.7e-09
+SCATRA DIS scatra NODE 569 QUANTITY phi1 VALUE  4.86300634038829449e-01 TOLERANCE 4.9e-09
+SCATRA DIS scatra NODE 1634 QUANTITY phi1 VALUE  4.99147059886499711e-01 TOLERANCE 5.0e-09
+SCATRA DIS scatra NODE 1524 QUANTITY phi1 VALUE  5.31796052930115337e-01 TOLERANCE 5.3e-09
+SCATRA DIS scatra NODE 830 QUANTITY phi1 VALUE  1.00000000000000006e-01 TOLERANCE 1.0e-09
+SCATRA DIS scatra NODE 106 QUANTITY phi1 VALUE  4.68205143633680654e-01 TOLERANCE 4.7e-09
+SCATRA DIS scatra NODE 1797 QUANTITY phi1 VALUE  5.31796052699190946e-01 TOLERANCE 5.3e-09
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 E 1 - NUMDOF 1 ONOFF 1 VAL 0.1 FUNCT 0
 E 2 - NUMDOF 1 ONOFF 1 VAL 0.9 FUNCT 0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary
 E 5 - 1 Master
 // right internal boundary
 E 6 - 1 Slave
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
 NODE 5 DLINE 1
@@ -412,7 +412,7 @@ NODE 1803 DLINE 6
 NODE 1804 DLINE 6
 NODE 1805 DLINE 6
 NODE 1806 DLINE 6
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
 NODE 3 DSURFACE 1
@@ -2219,7 +2219,7 @@ NODE 1803 DSURFACE 1
 NODE 1804 DSURFACE 1
 NODE 1805 DSURFACE 1
 NODE 1806 DSURFACE 1
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 0.0000000000000000e+00
 NODE 2 COORD -4.4999999999999996e-01 -5.0000000000000000e-01 0.0000000000000000e+00
 NODE 3 COORD -4.4999999999999996e-01 -4.5000000000000001e-01 0.0000000000000000e+00
@@ -4026,7 +4026,7 @@ NODE 1803 COORD 3.6363636363636365e-01 2.5000000000000000e-01 0.0000000000000000
 NODE 1804 COORD 4.0909090909090906e-01 2.5000000000000000e-01 0.0000000000000000e+00
 NODE 1805 COORD 4.5454545454545453e-01 2.5000000000000000e-01 0.0000000000000000e+00
 NODE 1806 COORD 5.0000000000000000e-01 2.5000000000000000e-01 0.0000000000000000e+00
-----------------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP QUAD4 1 2 3 4 MAT 1 TYPE Std
 2 TRANSP QUAD4 2 5 6 3 MAT 1 TYPE Std
 3 TRANSP QUAD4 5 7 8 6 MAT 1 TYPE Std
@@ -5669,5 +5669,5 @@ NODE 1806 COORD 5.0000000000000000e-01 2.5000000000000000e-01 0.0000000000000000
 1640 TRANSP QUAD4 1780 1781 1804 1803 MAT 1 TYPE Std
 1641 TRANSP QUAD4 1781 1782 1805 1804 MAT 1 TYPE Std
 1642 TRANSP QUAD4 1782 1783 1806 1805 MAT 1 TYPE Std
--------------------------------------------------------------------------END
+---------------------------------------------------------------END
 //                              END
