@@ -12,6 +12,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
+#include <array>
+
 BACI_NAMESPACE_OPEN
 CONTACT::ElementType CONTACT::ElementType::instance_;
 

@@ -480,7 +480,7 @@ double CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
 
-  if (component_mod < 0 || component_mod >= expr_.size())
+  if (component_mod >= expr_.size())
     dserror("There are %d expressions but tried to access component %d", expr_.size(), component);
 
   // create map for variables
@@ -510,7 +510,7 @@ std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpati
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
 
-  if (component_mod < 0 || component_mod >= expr_.size())
+  if (component_mod >= expr_.size())
     dserror("There are %d expressions but tried to access component %d", expr_.size(), component);
 
 

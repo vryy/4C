@@ -19,6 +19,8 @@
 
 #include <Epetra_Comm.h>
 
+#include <memory>
+
 BACI_NAMESPACE_OPEN
 
 namespace IO

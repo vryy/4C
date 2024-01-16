@@ -17,6 +17,7 @@ In this file, the helper for defining type trait functionality is defined
 #include "baci_discretization_fem_general_cell_type_traits_def.H"
 #include "baci_utils_exceptions.H"
 
+#include <array>
 #include <tuple>
 
 BACI_NAMESPACE_OPEN

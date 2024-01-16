@@ -10,6 +10,8 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
+#include <array>
+
 BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG::VOIGT

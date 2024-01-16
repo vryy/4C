@@ -24,6 +24,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <variant>
 
 BACI_NAMESPACE_OPEN

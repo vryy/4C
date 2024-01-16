@@ -18,6 +18,7 @@
 #include <pwd.h>
 #include <unistd.h>
 
+#include <array>
 #include <ctime>
 #include <filesystem>
 #include <iostream>
