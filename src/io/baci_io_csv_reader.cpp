@@ -15,7 +15,8 @@
 BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*/
-std::vector<std::vector<double>> IO::ReadCsv(const int number_of_columns, std::istream& csv_stream)
+std::vector<std::vector<double>> IO::ReadCsvAsColumns(
+    const int number_of_columns, std::istream& csv_stream)
 {
   // prepare variables
   std::vector<std::vector<double>> values(number_of_columns);
@@ -43,7 +44,7 @@ std::vector<std::vector<double>> IO::ReadCsv(const int number_of_columns, std::i
       for (int i = 0; i < number_of_columns; ++i)
       {
         std::getline(line_stream, cell, ',');
-        values[i].push_back(std::stod(cell));
+        values[i].emplace_back(std::stod(cell));
       }
     }
     catch (...)
@@ -60,13 +61,13 @@ std::vector<std::vector<double>> IO::ReadCsv(const int number_of_columns, std::i
 }
 
 /*-----------------------------------------------------------------------------------------------*/
-std::vector<std::vector<double>> IO::ReadCsv(
+std::vector<std::vector<double>> IO::ReadCsvAsColumns(
     const int number_of_columns, const std::string& csv_file_path)
 {
   std::ifstream csv_file_stream(csv_file_path);
   if (csv_file_stream.fail()) dserror("Invalid csv file!");
 
-  return ReadCsv(number_of_columns, csv_file_stream);
+  return ReadCsvAsColumns(number_of_columns, csv_file_stream);
 }
 
 BACI_NAMESPACE_CLOSE
