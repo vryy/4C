@@ -30,14 +30,14 @@ namespace MORTAR
          is based on "Puso, M.A., Laursen, T.A., Solberg, J., A segment-to-
          segment mortar contact method for quadratic elements and large
          deformations, CMAME, 197, 2008, pp. 555-566". For this type of
-         quadratic formulation, a quadratic MortarElement is split into several
+         quadratic formulation, a quadratic MORTAR::Element is split into several
          linear IntElements, on which the geometrical coupling is performed.
-         Note that this is a derived class from MORTAR::MortarElement, with the
+         Note that this is a derived class from MORTAR::Element, with the
          only difference that we explicitly set the node pointers here!
 
   */
 
-  class IntElement : public MortarElement
+  class IntElement : public MORTAR::Element
   {
    public:
     /*!
@@ -53,9 +53,9 @@ namespace MORTAR
     \param nodes (in):    pointers to nodes adjacent to this element
     \param isslave (in):  flag indicating whether element is slave or master side
     */
-    IntElement(int lid, int id, int owner, MORTAR::MortarElement* parele,
-        const CORE::FE::CellType& shape, const int numnode, const int* nodeids,
-        std::vector<DRT::Node*> nodes, const bool isslave, const bool rewind);
+    IntElement(int lid, int id, int owner, MORTAR::Element* parele, const CORE::FE::CellType& shape,
+        const int numnode, const int* nodeids, std::vector<DRT::Node*> nodes, const bool isslave,
+        const bool rewind);
 
 
     /*!
@@ -74,7 +74,7 @@ namespace MORTAR
     \brief Get shape type of parent element
 
     */
-    virtual MORTAR::MortarElement* ParEle() const { return parele_; }
+    virtual MORTAR::Element* ParEle() const { return parele_; }
 
     /*!
     \brief Affine map of IntElement coordinates to parent element
@@ -127,11 +127,11 @@ namespace MORTAR
     // that this Id is now used twice: once for the control point (as a part
     // of the discretization) and once for the pseudo-node, which is only
     // stored here temporarily.
-    std::vector<MORTAR::MortarNode> nodes_;
+    std::vector<MORTAR::Node> nodes_;
     std::vector<DRT::Node*> nodes_ptr_;
     const bool rewind_;  // if the parameter space of the int element has been rewinded
 
-    MORTAR::MortarElement* parele_;
+    MORTAR::Element* parele_;
 
   };  // class IntElement
 
@@ -139,7 +139,7 @@ namespace MORTAR
   /*!
   \brief A class representing one Integration Cell after triangulation
          of the clip polygon of slave and master element from the Coupling
-         class. This class provides some basic funcitonality a MortarElement would
+         class. This class provides some basic funcitonality a MORTAR::Element would
          also provide (coords, shape functions and derivatives, Jacobian, ...).
          Note that an IntCell can EITHER live in physical space (this is the
          case when an auxiliary plane is used for 3D coupling) or in the slave

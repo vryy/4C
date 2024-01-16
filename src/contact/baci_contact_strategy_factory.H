@@ -134,17 +134,16 @@ namespace CONTACT
       /*! \brief Set Parent Elements for Poro Face Elements
        *
        *  \author Ager */
-      void SetPoroParentElement(enum MORTAR::MortarElement::PhysicalType& slavetype,
-          enum MORTAR::MortarElement::PhysicalType& mastertype,
-          Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<DRT::Element>& ele,
-          const DRT::Discretization& discret) const;
+      void SetPoroParentElement(enum MORTAR::Element::PhysicalType& slavetype,
+          enum MORTAR::Element::PhysicalType& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
+          Teuchos::RCP<DRT::Element>& ele, const DRT::Discretization& discret) const;
 
       /*! \brief Find Physical Type (Poro or Structure) of Poro Interface
        *
        *  \author Ager */
       void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
-          bool& structslave, enum MORTAR::MortarElement::PhysicalType& slavetype,
-          enum MORTAR::MortarElement::PhysicalType& mastertype) const;
+          bool& structslave, enum MORTAR::Element::PhysicalType& slavetype,
+          enum MORTAR::Element::PhysicalType& mastertype) const;
 
       //!@}
 

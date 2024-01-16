@@ -151,14 +151,14 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
     int gid = Elelist()[i];
     DRT::Element* element = Discret().gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
-    MortarElement* mrtrelement = dynamic_cast<MortarElement*>(element);
+    MORTAR::Element* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     DRT::Node** nodes = mrtrelement->Points();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // calculate slabs for every node on every element
     for (int k = 0; k < mrtrelement->NumPoint(); ++k)
     {
-      MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
+      Node* mrtrnode = dynamic_cast<Node*>(nodes[k]);
       if (!mrtrnode) dserror("ERROR: Null pointer!");
 
       // get current node position

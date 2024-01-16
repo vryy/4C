@@ -32,7 +32,7 @@ BACI_NAMESPACE_OPEN
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::AssembleG(
-    const Epetra_Comm& comm, MORTAR::MortarElement& sele, CORE::LINALG::SerialDenseVector& gseg)
+    const Epetra_Comm& comm, MORTAR::Element& sele, CORE::LINALG::SerialDenseVector& gseg)
 {
   // get adjacent slave nodes to assemble to
   DRT::Node** snodes = sele.Nodes();

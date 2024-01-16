@@ -44,7 +44,7 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     MtLagrangeStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 

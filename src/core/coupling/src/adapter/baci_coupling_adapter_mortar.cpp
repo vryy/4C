@@ -221,7 +221,7 @@ void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
     int gid = interface_->SlaveRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // check if this node's dofs are in dbcmap
     for (int k = 0; k < mtnode->NumDof(); ++k)
@@ -293,7 +293,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   input.set<int>("DIMENSION", spatial_dimension_);
 
   // create an empty mortar interface
-  interface_ = MORTAR::MortarInterface::Create(0, comm, spatial_dimension_, input);
+  interface_ = MORTAR::Interface::Create(0, comm, spatial_dimension_, input);
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
@@ -348,8 +348,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
         ii += 1;
       }
     }
-    Teuchos::RCP<MORTAR::MortarNode> mrtrnode =
-        Teuchos::rcp(new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(), dofids, false));
+    Teuchos::RCP<MORTAR::Node> mrtrnode =
+        Teuchos::rcp(new MORTAR::Node(node->Id(), node->X(), node->Owner(), dofids, false));
 
     if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mrtrnode);
     interface_->AddMortarNode(mrtrnode);
@@ -373,8 +373,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
         ii += 1;
       }
     }
-    Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(
-        new MORTAR::MortarNode(node->Id() + nodeoffset, node->X(), node->Owner(), dofids, true));
+    Teuchos::RCP<MORTAR::Node> mrtrnode = Teuchos::rcp(
+        new MORTAR::Node(node->Id() + nodeoffset, node->X(), node->Owner(), dofids, true));
 
     if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mrtrnode);
     interface_->AddMortarNode(mrtrnode);
@@ -401,7 +401,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
-    Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(
+    Teuchos::RCP<MORTAR::Element> mrtrele = Teuchos::rcp(new MORTAR::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, nurbs));
 
     if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*masterdis, ele, mrtrele, spatial_dimension_);
@@ -418,8 +418,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
     // an element offset AND a node offset for the the slave mortar elements
     if (slidingale == false)
     {
-      Teuchos::RCP<MORTAR::MortarElement> mrtrele =
-          Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
+      Teuchos::RCP<MORTAR::Element> mrtrele =
+          Teuchos::rcp(new MORTAR::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
               ele->NumNode(), ele->NodeIds(), true, nurbs));
 
       if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*slavedis, ele, mrtrele, spatial_dimension_);
@@ -433,8 +433,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
         nidsoff.push_back(ele->NodeIds()[ele->NumNode() - 1 - i] + nodeoffset);
       }
 
-      Teuchos::RCP<MORTAR::MortarElement> mrtrele =
-          Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
+      Teuchos::RCP<MORTAR::Element> mrtrele =
+          Teuchos::rcp(new MORTAR::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
               ele->NumNode(), nidsoff.data(), true, nurbs));
 
       interface_->AddMortarElement(mrtrele);
@@ -522,7 +522,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     int gid = interface_->SlaveRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // prepare assembly
     // minimum three coupling dof's otherwise this method is not working
@@ -562,7 +562,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     int gid = interface_->MasterRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // prepare assembly
     // minimum three coupling dof's otherwise this method is not working
@@ -644,7 +644,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   // ONLY, and there is still the underlying problem discretization
   // dealing with the classical finite element evaluation. Thus, it is
   // very important that we apply the nodal relocation to BOTH the
-  // MortarNodes in the meshtying interface discretization AND to the
+  // MORTAR::Node(s) in the meshtying interface discretization AND to the
   // DRT:Nodes in the underlying problem discretization.
   // Finally, we have to ask ourselves whether the node column distribution
   // of the slave nodes in the interface discretization is IDENTICAL
@@ -652,7 +652,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   // is NOT necessarily the case, as we might have redistributed the
   // interface among all processors. Thus, we loop over the fully over-
   // lapping slave column map here to keep all processors around. Then,
-  // the first modification (MortarNode) is always performed, but the
+  // the first modification (MORTAR::Node) is always performed, but the
   // second modification (DRT::Node) is only performed if the respective
   // node in contained in the problem node column map.
   //**********************************************************************
@@ -669,7 +669,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     int gid = interface_->MasterRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // do assembly (overwrite duplicate nodes)
     // minimum three coupling dof's otherwise this method is not working
@@ -717,12 +717,12 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     int ilid = interface_->SlaveColNodes()->LID(gid);
     if (ilid >= 0) isininterfacecolmap = true;
     DRT::Node* node = nullptr;
-    MORTAR::MortarNode* mtnode = nullptr;
+    MORTAR::Node* mtnode = nullptr;
     if (isininterfacecolmap)
     {
       node = interface_->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      mtnode = static_cast<MORTAR::MortarNode*>(node);
+      mtnode = static_cast<MORTAR::Node*>(node);
     }
 
     // ... AND standard node in underlying slave discret
@@ -882,7 +882,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     int gid = interface_->SlaveRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // prepare assembly
     CORE::LINALG::SerialDenseVector val(dim);
@@ -918,7 +918,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     int gid = interface_->MasterRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // prepare assembly
     CORE::LINALG::SerialDenseVector val(dim);

@@ -367,10 +367,10 @@ namespace
       << MAT::Maxwell_0d_acinusExponentialType::Instance().Name() << " "
       << MAT::Maxwell_0d_acinusDoubleExponentialType::Instance().Name() << " "
       << MAT::Maxwell_0d_acinusOgdenType::Instance().Name() << " "
-      << MORTAR::MortarNodeType::Instance().Name() << " "
-      << MORTAR::MortarElementType::Instance().Name() << " " << CONTACT::NodeType::Instance().Name()
-      << " " << CONTACT::FriNodeType::Instance().Name() << " "
-      << CONTACT::ElementType::Instance().Name() << " " << MAT::ActiveFiberType::Instance().Name()
+      << MORTAR::NodeType::Instance().Name() << " " << MORTAR::ElementType::Instance().Name() << " "
+      << CONTACT::NodeType::Instance().Name() << " " << CONTACT::FriNodeType::Instance().Name()
+      << " " << CONTACT::ElementType::Instance().Name() << " "
+      << MAT::ActiveFiberType::Instance().Name()
       << BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Instance().Name() << " "
       << BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Instance().Name() << " "
       << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "

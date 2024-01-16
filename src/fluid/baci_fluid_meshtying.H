@@ -36,7 +36,7 @@ namespace DRT
 
 namespace MORTAR
 {
-  class MortarInterface;
+  class Interface;
 }
 
 namespace ADAPTER

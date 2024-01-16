@@ -42,8 +42,8 @@ namespace MORTAR
 {
   // forward declarations
   class StrategyBase;
-  class MortarNode;
-  class MortarElement;
+  class Node;
+  class Element;
 
   /*!
   \brief Abstract base class to control all mortar coupling

@@ -58,7 +58,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type shape_function(
-        MORTAR::MortarElement& ele, T& xi, V& val)
+        MORTAR::Element& ele, T& xi, V& val)
     {
       CORE::FE::shape_function<type>(xi, val);
       return true;
@@ -72,7 +72,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
-    shape_function_deriv1(MORTAR::MortarElement& ele, T& xi, V& deriv)
+    shape_function_deriv1(MORTAR::Element& ele, T& xi, V& deriv)
     {
       CORE::FE::shape_function_deriv1<type>(xi, deriv);
       return true;
@@ -86,7 +86,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename U, typename V>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
-    shape_function_and_deriv1(MORTAR::MortarElement& ele, T& xi, U& val, V& deriv)
+    shape_function_and_deriv1(MORTAR::Element& ele, T& xi, U& val, V& deriv)
     {
       shape_function<type>(ele, xi, val);
       shape_function_deriv1<type>(ele, xi, deriv);
@@ -101,7 +101,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
-    shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
+    shape_function_deriv2(MORTAR::Element& ele, T& xi, V& deriv2)
     {
       CORE::FE::shape_function_deriv2<type>(xi, deriv2);
       return true;
@@ -115,8 +115,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename U, typename V, typename W>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
-    shape_function_and_deriv1_and_deriv2(
-        MORTAR::MortarElement& ele, T& xi, U& val, V& deriv1, W& deriv2)
+    shape_function_and_deriv1_and_deriv2(MORTAR::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
       CORE::FE::shape_function<type>(xi, val);
       CORE::FE::shape_function_deriv1<type>(xi, deriv1);
@@ -163,13 +162,13 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <typename T>
-    void GetNurbsWeights(const MORTAR::MortarElement& ele, T& weights)
+    void GetNurbsWeights(const MORTAR::Element& ele, T& weights)
     {
       const DRT::Node* const* nodes = ele.Nodes();
       dsassert(static_cast<int>(weights.M()) == ele.NumNode(), "Size mismatch!");
 
       for (unsigned nlid = 0; nlid < static_cast<unsigned>(weights.M()); ++nlid)
-        weights(nlid, 0) = static_cast<const MORTAR::MortarNode*>(nodes[nlid])->NurbsW();
+        weights(nlid, 0) = static_cast<const MORTAR::Node*>(nodes[nlid])->NurbsW();
     }
 
     /** \brief Evaluate the shape function values at a local position xi
@@ -179,7 +178,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type shape_function(
-        MORTAR::MortarElement& ele, T& xi, V& val)
+        MORTAR::Element& ele, T& xi, V& val)
     {
       static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
@@ -197,7 +196,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
-    shape_function_deriv1(MORTAR::MortarElement& ele, T& xi, V& deriv)
+    shape_function_deriv1(MORTAR::Element& ele, T& xi, V& deriv)
     {
       static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
@@ -216,7 +215,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename U, typename V>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
-    shape_function_and_deriv1(MORTAR::MortarElement& ele, T& xi, U& val, V& deriv)
+    shape_function_and_deriv1(MORTAR::Element& ele, T& xi, U& val, V& deriv)
     {
       static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
@@ -234,7 +233,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
-    shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
+    shape_function_deriv2(MORTAR::Element& ele, T& xi, V& deriv2)
     {
       static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
       static const unsigned DIM = CORE::FE::dim<type>;
@@ -256,8 +255,7 @@ namespace CONTACT
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename U, typename V, typename W>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
-    shape_function_and_deriv1_and_deriv2(
-        MORTAR::MortarElement& ele, T& xi, U& val, V& deriv1, W& deriv2)
+    shape_function_and_deriv1_and_deriv2(MORTAR::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
       static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
 

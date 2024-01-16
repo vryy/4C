@@ -61,7 +61,7 @@ namespace FSI
 namespace MORTAR
 {
   class IntCell;
-  class MortarElement;
+  class Element;
 }  // namespace MORTAR
 
 namespace CONTACT

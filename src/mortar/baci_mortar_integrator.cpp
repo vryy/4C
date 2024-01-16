@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------------------*/
 /*! \file
 \brief A class to perform integrations of Mortar matrices on the overlap
-of two MortarElements in 1D and 2D
+of two MORTAR::Elements in 1D and 2D
 
 \level 1
 
@@ -29,8 +29,8 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  impl...                                                  farah 01/14|
  *----------------------------------------------------------------------*/
-MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
-    MortarElement& sele, MortarElement& mele, Teuchos::ParameterList& params)
+MORTAR::Integrator* MORTAR::Integrator::Impl(
+    MORTAR::Element& sele, MORTAR::Element& mele, Teuchos::ParameterList& params)
 {
   switch (sele.Shape())
   {
@@ -41,27 +41,27 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad4,
               CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad4,
               CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad4,
               CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad4,
               CORE::FE::CellType::tri3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad4,
               CORE::FE::CellType::tri6>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
@@ -75,27 +75,27 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad8,
               CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad8,
               CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad8,
               CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad8,
               CORE::FE::CellType::tri3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad8,
               CORE::FE::CellType::tri6>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
@@ -109,27 +109,27 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad9,
               CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad9,
               CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad9,
               CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad9,
               CORE::FE::CellType::tri3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::quad9,
               CORE::FE::CellType::tri6>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
@@ -143,28 +143,28 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri3,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri3,
               CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri3,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri3,
               CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri3,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri3,
               CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>::Instance(
-              CORE::UTILS::SingletonAction::create, params);
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri3,
+              CORE::FE::CellType::tri3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri6>::Instance(
-              CORE::UTILS::SingletonAction::create, params);
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri3,
+              CORE::FE::CellType::tri6>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -177,28 +177,28 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri6,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri6,
               CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri6,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri6,
               CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri6,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri6,
               CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri3>::Instance(
-              CORE::UTILS::SingletonAction::create, params);
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri6,
+              CORE::FE::CellType::tri3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri6>::Instance(
-              CORE::UTILS::SingletonAction::create, params);
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::tri6,
+              CORE::FE::CellType::tri6>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -212,12 +212,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::line2:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::line2,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::line2,
               CORE::FE::CellType::line2>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::line3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::line2,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::line2,
               CORE::FE::CellType::line3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
@@ -231,12 +231,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::line2:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::line3,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::line3,
               CORE::FE::CellType::line2>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::line3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::line3,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::line3,
               CORE::FE::CellType::line3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
@@ -255,12 +255,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::nurbs2:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::nurbs2,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs2,
               CORE::FE::CellType::nurbs2>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::nurbs3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::nurbs2,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs2,
               CORE::FE::CellType::nurbs3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
@@ -274,12 +274,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::nurbs2:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::nurbs3,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs3,
               CORE::FE::CellType::nurbs2>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::nurbs3:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::nurbs3,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs3,
               CORE::FE::CellType::nurbs3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
@@ -293,12 +293,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       {
         case CORE::FE::CellType::nurbs9:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::nurbs9,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs9,
               CORE::FE::CellType::nurbs9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         case CORE::FE::CellType::nurbs4:
         {
-          return MortarIntegratorCalc<CORE::FE::CellType::nurbs9,
+          return MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs9,
               CORE::FE::CellType::nurbs4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
@@ -318,8 +318,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-MORTAR::MortarIntegratorCalc<distypeS, distypeM>::MortarIntegratorCalc(
-    const Teuchos::ParameterList& params)
+MORTAR::IntegratorCalc<distypeS, distypeM>::IntegratorCalc(const Teuchos::ParameterList& params)
     : imortar_(params),
       shapefcn_(INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
       lmquadtype_(INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params, "LM_QUAD"))
@@ -328,15 +327,14 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::MortarIntegratorCalc(
 }
 
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-MORTAR::MortarIntegratorCalc<distypeS, distypeM>*
-MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
+MORTAR::IntegratorCalc<distypeS, distypeM>* MORTAR::IntegratorCalc<distypeS, distypeM>::Instance(
     CORE::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
 {
   static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       [](const Teuchos::ParameterList& p)
       {
-        return std::unique_ptr<MORTAR::MortarIntegratorCalc<distypeS, distypeM>>(
-            new MORTAR::MortarIntegratorCalc<distypeS, distypeM>(p));
+        return std::unique_ptr<MORTAR::IntegratorCalc<distypeS, distypeM>>(
+            new MORTAR::IntegratorCalc<distypeS, distypeM>(p));
       });
 
   return singleton_owner.Instance(action, params);
@@ -347,7 +345,7 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
+void MORTAR::IntegratorCalc<distypeS, distypeM>::InitializeGP()
 {
   // get numgp (for element-based integration)
   int numgp = imortar_.get<int>("NUMGP_PER_DIM");
@@ -695,7 +693,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
     }
     default:
     {
-      dserror("MortarIntegrator: This contact element type is not implemented!");
+      dserror("MORTAR::Integrator: This contact element type is not implemented!");
       break;
     }
   }  // switch(eletype)
@@ -710,16 +708,15 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
  | required                                                                             |
  *--------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
-    MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
-    const Epetra_Comm& comm)
+void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(MORTAR::Element& sele,
+    std::vector<MORTAR::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
 {
   // check for problem dimension
   if (ndim_ != 2) dserror("2D integration method called for non-2D problem");
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
   int nodemaster = meles[0]->NumNode();
 
   // create empty vectors for shape fct. evaluation
@@ -736,7 +733,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -795,7 +792,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
       double mxi[2] = {0.0, 0.0};
       sxi[0] = eta[0];
 
-      MORTAR::MortarProjector::Impl(sele, *meles[nummaster])
+      MORTAR::Projector::Impl(sele, *meles[nummaster])
           ->ProjectGaussPoint2D(sele, eta, *meles[nummaster], mxi);
 
       // evaluate trace space shape functions (on both elements)
@@ -835,9 +832,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
  |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
-    MORTAR::MortarElement& sele, double& sxia, double& sxib, MORTAR::MortarElement& mele,
-    double& mxia, double& mxib, const Epetra_Comm& comm)
+void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(MORTAR::Element& sele,
+    double& sxia, double& sxib, MORTAR::Element& mele, double& mxia, double& mxib,
+    const Epetra_Comm& comm)
 {
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = lmquadtype_;
@@ -851,7 +848,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+    dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
     dserror("IntegrateAndDerivSegment called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
@@ -860,7 +857,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   static CORE::LINALG::Matrix<ns_, 1> sval;
@@ -882,7 +879,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   std::vector<int> ids;
   for (int i = 0; i < nrow; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(sele.Nodes()[i]);
     if (mymrtrnode->IsOnBoundorCE())
     {
       // get local bound id
@@ -900,7 +897,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   // row loop
   for (int i = 0; i < nrow; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(sele.Nodes()[i]);
     if (!mymrtrnode->IsOnBoundorCE())
     {
       trafo(i, i) = 1.0;
@@ -927,13 +924,13 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
     double eta[2] = {Coordinate(gp, 0), 0.0};
     double wgt = Weight(gp);
 
-    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    // coordinate transformation sxi->eta (slave MORTAR::Element->Overlap)
     double sxi[2] = {0.0, 0.0};
     sxi[0] = 0.5 * (1 - eta[0]) * sxia + 0.5 * (1 + eta[0]) * sxib;
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint2D(sele, sxi, mele, mxi);
+    MORTAR::Projector::Impl(sele, mele)->ProjectGaussPoint2D(sele, sxi, mele, mxi);
 
     // check GP projection
     if ((mxi[0] < mxia) || (mxi[0] > mxib))
@@ -982,10 +979,10 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
  |  Compute entries for D and M matrix at GP                 farah 12/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::Matrix<ns_, 1>& lmval,
-    CORE::LINALG::Matrix<ns_, 1>& sval, CORE::LINALG::Matrix<nm_, 1>& mval, double& jac,
-    double& wgt, int& nrow, int& ncol, int& ndof, bool& bound, const Epetra_Comm& comm)
+void inline MORTAR::IntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Element& sele,
+    MORTAR::Element& mele, CORE::LINALG::Matrix<ns_, 1>& lmval, CORE::LINALG::Matrix<ns_, 1>& sval,
+    CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol, int& ndof,
+    bool& bound, const Epetra_Comm& comm)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -1013,7 +1010,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
   {
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
 
       if (cnode->Owner() != comm.MyPID()) continue;
       if (cnode->IsOnBoundorCE()) continue;
@@ -1021,7 +1018,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval(j) * mval(k) * jac * wgt;
@@ -1039,7 +1036,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
 
         for (int k = 0; k < nrow; ++k)
         {
-          MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+          MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(snodes[k]);
 
           bool k_boundnode = mnode->IsOnBoundorCE();
 
@@ -1067,7 +1064,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
   {
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
 
       if (cnode->Owner() != comm.MyPID()) continue;
       if ((shapefcn_ == INPAR::MORTAR::shape_standard && cnode->IsOnBoundorCE()) ||
@@ -1079,7 +1076,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval(j) * mval(k) * jac * wgt;
@@ -1089,7 +1086,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* snode = dynamic_cast<MORTAR::Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmval(j) * sval(k) * jac * wgt;
@@ -1114,11 +1111,11 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
-    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& lmintval,
-    CORE::LINALG::Matrix<ns_, 1>& sval, CORE::LINALG::Matrix<nm_, 1>& mval, double& jac,
-    double& wgt, int& nrow, int& nintrow, int& ncol, int& ndof, bool& bound)
+void inline MORTAR::IntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(MORTAR::Element& sele,
+    MORTAR::Element& mele, MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::Matrix<ns_, 1>& sval,
+    CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,
+    int& ncol, int& ndof, bool& bound)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -1143,12 +1140,12 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * mval(k) * jac * wgt;
@@ -1158,7 +1155,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* snode = dynamic_cast<MORTAR::Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * sval(k) * jac * wgt;
@@ -1183,12 +1180,12 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nintrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(sintnodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmintval[j] * mval(k) * jac * wgt;
@@ -1198,7 +1195,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
       // integrate dseg
       for (int k = 0; k < nrow; ++k)
       {
-        MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::Node* snode = dynamic_cast<MORTAR::Node*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmintval[j] * sval(k) * jac * wgt;
@@ -1221,12 +1218,12 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j = 0; j < nrow; ++j)
     {
-      MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
+      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(snodes[j]);
 
       // integrate mseg
       for (int k = 0; k < ncol; ++k)
       {
-        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j] * mval(k) * jac * wgt;
@@ -1256,8 +1253,8 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>
-MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::MortarElement& sele,
-    double& sxia, double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib)
+MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Element& sele, double& sxia,
+    double& sxib, MORTAR::Element& mele, double& mxia, double& mxib)
 {
   //**********************************************************************
   dserror("IntegrateMmod2D method is outdated!");
@@ -1268,7 +1265,7 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("IntegrateMmod2D called on a wrong type of MortarElement pair!");
+    dserror("IntegrateMmod2D called on a wrong type of MORTAR::Element pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
     dserror("IntegrateMmod2D called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
@@ -1299,11 +1296,11 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
     double sxi[2] = {0.0, 0.0};
     double mxi[2] = {0.0, 0.0};
 
-    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    // coordinate transformation sxi->eta (slave MORTAR::Element->Overlap)
     sxi[0] = 0.5 * (1 - eta[0]) * sxia + 0.5 * (1 + eta[0]) * sxib;
 
     // project Gauss point onto master element
-    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint2D(sele, sxi, mele, mxi);
+    MORTAR::Projector::Impl(sele, mele)->ProjectGaussPoint2D(sele, sxi, mele, mxi);
 
     // check GP projection
     if ((mxi[0] < mxia) || (mxi[0] > mxib))
@@ -1344,8 +1341,8 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
   }  // for (int gp=0;gp<nGP();++gp)
 
   // prepare computation of purely geometric part of Mmod entries
-  MortarNode* snode0 = dynamic_cast<MortarNode*>(sele.Nodes()[0]);
-  MortarNode* snode1 = dynamic_cast<MortarNode*>(sele.Nodes()[1]);
+  Node* snode0 = dynamic_cast<Node*>(sele.Nodes()[0]);
+  Node* snode1 = dynamic_cast<Node*>(sele.Nodes()[1]);
 
   // normals
   double n[2][2];
@@ -1383,9 +1380,8 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
  |  Integrate and linearize without segmentation             farah 01/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
-    MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
-    const Epetra_Comm& comm)
+void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(MORTAR::Element& sele,
+    std::vector<MORTAR::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -1401,13 +1397,13 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
   for (int test = 0; test < (int)meles.size(); ++test)
   {
     if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
-      dserror("IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
+      dserror("IntegrateDerivCell3D called on a wrong type of MORTAR::Element pair!");
   }
 
   int msize = meles.size();
   int nrow = sele.NumNode();
   int nmnode = meles[0]->NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   static CORE::LINALG::Matrix<ns_, 1> sval;
@@ -1455,7 +1451,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
     for (int nummaster = 0; nummaster < msize; ++nummaster)
     {
       // project Gauss point onto master element
-      bool is_on_mele = MORTAR::MortarProjector::Impl(sele, *meles[nummaster])
+      bool is_on_mele = MORTAR::Projector::Impl(sele, *meles[nummaster])
                             ->ProjectGaussPoint3D(sele, sxi, *meles[nummaster], mxi, projalpha);
       if (not is_on_mele) continue;
 
@@ -1511,9 +1507,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
  |  This is the auxiliary plane coupling version!!!                     |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell,
-    double* auxn, const Epetra_Comm& comm)
+void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(MORTAR::Element& sele,
+    MORTAR::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+    const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -1528,14 +1524,14 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
+    dserror("IntegrateDerivCell3DAuxPlane called on a wrong type of MORTAR::Element pair!");
   if (cell == Teuchos::null)
     dserror("IntegrateDerivCell3DAuxPlane called without integration cell");
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   static CORE::LINALG::Matrix<ns_, 1> sval;
@@ -1551,7 +1547,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   std::vector<int> ids;
   for (int i = 0; i < nrow; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(sele.Nodes()[i]);
     if (mymrtrnode->IsOnBoundorCE())
     {
       // get local bound id
@@ -1569,7 +1565,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   // row loop
   for (int i = 0; i < nrow; ++i)
   {
-    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(sele.Nodes()[i]);
+    Node* mymrtrnode = dynamic_cast<Node*>(sele.Nodes()[i]);
     if (!mymrtrnode->IsOnBoundorCE())
     {
       trafo(i, i) = 1.0;
@@ -1597,10 +1593,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     // project Gauss point onto master element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, sele, sxi, sprojalpha);
-    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, mele, mxi, mprojalpha);
+    MORTAR::Projector::Impl(sele)->ProjectGaussPointAuxn3D(globgp, auxn, sele, sxi, sprojalpha);
+    MORTAR::Projector::Impl(mele)->ProjectGaussPointAuxn3D(globgp, auxn, mele, mxi, mprojalpha);
 
     // check GP projection (SLAVE)
     double tol = 0.01;
@@ -1687,9 +1681,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
  |  This is the QUADRATIC auxiliary plane coupling version!!!           |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQuad(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
-    MORTAR::IntElement& mintele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn)
+void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQuad(MORTAR::Element& sele,
+    MORTAR::Element& mele, MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+    Teuchos::RCP<MORTAR::IntCell> cell, double* auxn)
 {
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = lmquadtype_;
@@ -1715,7 +1709,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror(
-        "ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
+        "ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MORTAR::Element pair!");
   if (cell == Teuchos::null)
     dserror("IntegrateDerivCell3DAuxPlaneQuad called without integration cell");
 
@@ -1723,7 +1717,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
   int nintrow = sintele.NumNode();
-  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval;
@@ -1742,7 +1736,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBoundorCE();
   }
@@ -1779,9 +1773,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
     // project Gauss point onto master integration element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(sintele)->ProjectGaussPointAuxn3D(
+    MORTAR::Projector::Impl(sintele)->ProjectGaussPointAuxn3D(
         globgp, auxn, sintele, sxi, sprojalpha);
-    MORTAR::MortarProjector::Impl(mintele)->ProjectGaussPointAuxn3D(
+    MORTAR::Projector::Impl(mintele)->ProjectGaussPointAuxn3D(
         globgp, auxn, mintele, mxi, mprojalpha);
 
     // check GP projection (SLAVE)
@@ -1843,10 +1837,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
     double pmxi[2] = {0.0, 0.0};
     double psprojalpha = 0.0;
     double pmprojalpha = 0.0;
-    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, sele, psxi, psprojalpha);
-    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(
-        globgp, auxn, mele, pmxi, pmprojalpha);
+    MORTAR::Projector::Impl(sele)->ProjectGaussPointAuxn3D(globgp, auxn, sele, psxi, psprojalpha);
+    MORTAR::Projector::Impl(mele)->ProjectGaussPointAuxn3D(globgp, auxn, mele, pmxi, pmprojalpha);
     // sintele.MapToParent(sxi, psxi); // old way of doing it via affine map... wrong (popp 05/2016)
     // mintele.MapToParent(mxi, pmxi); // old way of doing it via affine map... wrong (popp 05/2016)
 
@@ -1945,57 +1937,57 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
 
 
 // line2 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::line2, CORE::FE::CellType::line2>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::line2, CORE::FE::CellType::line3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::line2, CORE::FE::CellType::line2>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::line2, CORE::FE::CellType::line3>;
 
 // line3 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::line3, CORE::FE::CellType::line2>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::line3, CORE::FE::CellType::line3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::line3, CORE::FE::CellType::line2>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::line3, CORE::FE::CellType::line3>;
 
 // quad4 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad8>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad9>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri6>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad8>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad9>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri6>;
 
 // quad8 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad4>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad8>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad9>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::tri3>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::tri6>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad4>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad8>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad9>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::tri3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::tri6>;
 
 // quad9 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad4>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad8>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad9>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::tri3>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::tri6>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad4>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad8>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad9>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::tri3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::tri6>;
 
 // tri3 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad8>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad9>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri6>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad8>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad9>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri6>;
 
 // tri6 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad4>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad8>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad9>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri3>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri6>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad4>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad8>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad9>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri6>;
 
 //==================================================
 //                     NURBS
 //==================================================
 // nurbs2 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3>;
 
 // nurbs3 slave
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2>;
-template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2>;
+template class MORTAR::IntegratorCalc<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3>;
 
 BACI_NAMESPACE_CLOSE

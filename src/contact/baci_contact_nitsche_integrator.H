@@ -62,7 +62,7 @@ namespace CONTACT
     }
 
    protected:
-    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -73,7 +73,7 @@ namespace CONTACT
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override;
 
-    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -111,7 +111,7 @@ namespace CONTACT
      *                                  \boldsymbol{t}}{\mathrm{d} \boldsymbol{d}^2} \f]
      */
     template <int dim>
-    void SoEleCauchy(MORTAR::MortarElement& moEle, double* boundary_gpcoord,
+    void SoEleCauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
         std::vector<CORE::GEN::pairedvector<int, double>> boundary_gpcoord_lin, double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
@@ -145,7 +145,7 @@ namespace CONTACT
      * @param[in] mxi         master side Gauss point coordinates
      */
     template <int dim>
-    void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -157,7 +157,7 @@ namespace CONTACT
 
    protected:
     template <int dim>
-    void BuildAdjointTest(MORTAR::MortarElement& moEle, double fac,
+    void BuildAdjointTest(MORTAR::Element& moEle, double fac,
         const CORE::LINALG::SerialDenseMatrix& dsntdd,
         const CORE::LINALG::SerialDenseMatrix& d2sntdd2,
         const CORE::LINALG::SerialDenseMatrix& d2sntDdDn,
@@ -171,7 +171,7 @@ namespace CONTACT
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test);
 
     template <int dim>
-    void IntegrateTest(double fac, MORTAR::MortarElement& ele,
+    void IntegrateTest(double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dxi, double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, double wgt, double test_val,
@@ -182,7 +182,7 @@ namespace CONTACT
     template <int dim>
     void IntegrateAdjointTest(double fac, double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, double wgt, double test,
-        const CORE::GEN::pairedvector<int, double>& deriv_test, MORTAR::MortarElement& moEle,
+        const CORE::GEN::pairedvector<int, double>& deriv_test, MORTAR::Element& moEle,
         CORE::LINALG::SerialDenseVector& adjoint_test,
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test);
 
@@ -212,20 +212,20 @@ namespace CONTACT
   {
     //! map local surface coordinate to local parent coordinate
     template <int dim>
-    void MapGPtoParent(MORTAR::MortarElement& moEle, double* boundary_gpcoord, double wgt,
+    void MapGPtoParent(MORTAR::Element& moEle, double* boundary_gpcoord, double wgt,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtravo_slave);
 
     //! templated version of MapGPtoParent
     template <CORE::FE::CellType parentdistype, int dim>
-    void inline SoEleGP(MORTAR::MortarElement& sele, double wgt, const double* gpcoord,
+    void inline SoEleGP(MORTAR::Element& sele, double wgt, const double* gpcoord,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo);
 
     //! actually not the velocity but the displacement increment
     template <int dim>
-    void RelVelInvariant(MORTAR::MortarElement& sele, const double* sxi,
+    void RelVelInvariant(MORTAR::Element& sele, const double* sxi,
         const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
-        MORTAR::MortarElement& mele, const double* mxi,
+        MORTAR::Element& mele, const double* mxi,
         const std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
         const double& gap, const CORE::GEN::pairedvector<int, double>& deriv_gap,
@@ -233,7 +233,7 @@ namespace CONTACT
         std::vector<CORE::GEN::pairedvector<int, double>>& relVel_deriv, double fac = 1.0);
 
     template <int dim>
-    void RelVel(MORTAR::MortarElement& ele, const CORE::LINALG::SerialDenseVector& shape,
+    void RelVel(MORTAR::Element& ele, const CORE::LINALG::SerialDenseVector& shape,
         const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dxi, double fac,
         CORE::LINALG::Matrix<dim, 1>& relVel,
@@ -269,7 +269,7 @@ namespace CONTACT
      * @param[out] pen     scaled nitsche penalty parameter in normal direction
      * @param[out] pet     scaled nitsche penalty parameter in tangential direction
      */
-    void NitscheWeightsAndScaling(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void NitscheWeightsAndScaling(MORTAR::Element& sele, MORTAR::Element& mele,
         INPAR::CONTACT::NitscheWeighting nit_wgt, double dt, double& ws, double& wm, double& pen,
         double& pet);
   }  // namespace UTILS

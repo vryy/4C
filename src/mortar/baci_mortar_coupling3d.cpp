@@ -27,7 +27,7 @@ BACI_NAMESPACE_OPEN
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : idiscret_(idiscret),
       dim_(dim),
       shapefcn_(INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
@@ -167,7 +167,7 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mycnode) dserror("RoughCheckNodes: Null pointer!");
 
     // first build difference of point and element center
@@ -269,7 +269,7 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   //  // interpolate between nodal normals
   //  for(int i=0;i<SlaveIntElement().NumNode();++i)
   //  {
-  //    MortarNode* snode = dynamic_cast<MortarNode*>(SlaveIntElement().Nodes()[i]);
+  //    Node* snode = dynamic_cast<Node*>(SlaveIntElement().Nodes()[i]);
   //    Auxn()[0] += val[i]*snode->MoData().n()[0];
   //    Auxn()[1] += val[i]*snode->MoData().n()[1];
   //    Auxn()[2] += val[i]*snode->MoData().n()[2];
@@ -308,7 +308,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mycnode) dserror("ProjectSlave: Null pointer!");
 
     // first build difference of point and element center
@@ -353,7 +353,7 @@ bool MORTAR::Coupling3d::ProjectMaster()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mycnode) dserror("ProjectMaster: Null pointer!");
 
     // first build difference of point and element center
@@ -1697,13 +1697,13 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         int nsnodes = SlaveIntElement().NumNode();
         DRT::Node** mysnodes = SlaveIntElement().Nodes();
         if (!mysnodes) dserror("Null pointer!");
-        std::vector<MortarNode*> mycsnodes(nsnodes);
-        for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<MortarNode*>(mysnodes[i]);
+        std::vector<Node*> mycsnodes(nsnodes);
+        for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<Node*>(mysnodes[i]);
         int nmnodes = MasterIntElement().NumNode();
         DRT::Node** mymnodes = MasterIntElement().Nodes();
         if (!mymnodes) dserror("Null pointer!");
-        std::vector<MortarNode*> mycmnodes(nmnodes);
-        for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<MortarNode*>(mymnodes[i]);
+        std::vector<Node*> mycmnodes(nmnodes);
+        for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<Node*>(mymnodes[i]);
 
         // get node coordinates
         CORE::LINALG::SerialDenseMatrix scoord(3, nsnodes);
@@ -2665,7 +2665,7 @@ bool MORTAR::Coupling3d::HasProjStatus()
   // loop over all slave nodes
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
+    Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mycnode) dserror("HasProjStatus: Null pointer!");
 
     // loop over all vertices of clip polygon
@@ -3379,7 +3379,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     if (!mynodes) dserror("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
-      MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+      MORTAR::Node* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
       if (!mycnode) dserror("Null pointer!");
       mycnode->HasSegment() = true;
     }
@@ -3400,7 +3400,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     if (!Quad())
     {
       // call integrator
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlane(SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
     }
 
@@ -3415,7 +3415,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlaneQuad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
@@ -3435,7 +3435,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlaneQuad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
@@ -3538,10 +3538,10 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
 
 
 /*----------------------------------------------------------------------*
- | Split MortarElements->IntElements for 3D quad. coupling    popp 03/09|
+ | Split MORTAR::Elements->IntElements for 3D quad. coupling    popp 03/09|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3dQuadManager::SplitIntElements(
-    MORTAR::MortarElement& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
+    MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
 {
   // *********************************************************************
   // do splitting for given element
@@ -3851,10 +3851,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
       ele.EvaluateShape(xi, sval, sderiv, 9, true);
       for (int dim = 0; dim < dim_; ++dim)
         for (int n = 0; n < ele.NumNode(); ++n)
-          xspatial[dim] +=
-              sval(n) * dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[n])->xspatial()[dim];
-      pseudo_nodes.push_back(
-          MORTAR::MortarNode(-1, xspatial, ele.Owner(), empty_dofs, ele.IsSlave()));
+          xspatial[dim] += sval(n) * dynamic_cast<MORTAR::Node*>(ele.Nodes()[n])->xspatial()[dim];
+      pseudo_nodes.push_back(MORTAR::Node(-1, xspatial, ele.Owner(), empty_dofs, ele.IsSlave()));
     }
 
     for (int i = 0; i < 4; ++i) pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));
@@ -3877,7 +3875,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele,
     MORTAR::IntElement& sintele, MORTAR::IntElement& mintele)
     : MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
       sintele_(sintele),
@@ -3900,8 +3898,7 @@ const Epetra_Comm& MORTAR::Coupling3dManager::Comm() const { return idiscret_.Co
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
       integrationtype_(INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")),
@@ -3921,8 +3918,8 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int 
  |  ctor (public) -- empty                                   farah 01/13|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idiscret, int dim,
-    bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    bool quad, Teuchos::ParameterList& params, MORTAR::Element* sele,
+    std::vector<MORTAR::Element*> mele)
     : Coupling3dManager(idiscret, dim, quad, params, sele, mele)
 {
   return;
@@ -4001,7 +3998,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
       bool boundary_ele = false;
 
       // integrate D and M -- 2 Cells
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(0), imortar_)
           ->IntegrateEleBased3D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
 
       if (IntType() == INPAR::MORTAR::inttype_elements_BS)
@@ -4091,7 +4088,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
   //**********************************************************************
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
-    // build linear integration elements from quadratic MortarElements
+    // build linear integration elements from quadratic MORTAR::Elements
     std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
     std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
         MasterElements().size());
@@ -4100,7 +4097,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int)MasterElements().size(); ++m)
     {
-      // build linear integration elements from quadratic MortarElements
+      // build linear integration elements from quadratic MORTAR::Elements
       mauxelements[m].resize(0);
       SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
@@ -4135,7 +4132,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
     bool boundary_ele = false;
 
     // integrate D and M -- 2 Cells
-    MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)
+    MORTAR::Integrator::Impl(SlaveElement(), MasterElement(0), imortar_)
         ->IntegrateEleBased3D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
 
     if (IntType() == INPAR::MORTAR::inttype_elements_BS)
@@ -4145,7 +4142,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
         // loop over all master elements associated with this slave element
         for (int m = 0; m < (int)MasterElements().size(); ++m)
         {
-          // build linear integration elements from quadratic MortarElements
+          // build linear integration elements from quadratic MORTAR::Elements
           std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
           std::vector<Teuchos::RCP<MORTAR::IntElement>> mauxelements(0);
           SplitIntElements(SlaveElement(), sauxelements);
@@ -4246,7 +4243,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
       for (int nummaster = 0; nummaster < (int)Coupling().size(); ++nummaster)
       {
         // project Gauss point onto master element
-        MORTAR::MortarProjector::Impl(SlaveElement(), Coupling()[nummaster]->MasterElement())
+        MORTAR::Projector::Impl(SlaveElement(), Coupling()[nummaster]->MasterElement())
             ->ProjectGaussPoint3D(
                 SlaveElement(), sxi, Coupling()[nummaster]->MasterElement(), mxi, projalpha);
 
@@ -4303,16 +4300,15 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 
       // create an integrator for this cell
       for (int gp = 0;
-           gp < MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)->nGP();
-           ++gp)
+           gp < MORTAR::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->nGP(); ++gp)
       {
         // coordinates and weight
-        double eta[2] = {MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)
-                             ->Coordinate(gp, 0),
-            MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)
+        double eta[2] = {
+            MORTAR::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Coordinate(gp, 0),
+            MORTAR::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)
                 ->Coordinate(gp, 1)};
         double wgt =
-            MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Weight(gp);
+            MORTAR::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Weight(gp);
 
         // get global Gauss point coordinates
         double globgp[3] = {0.0, 0.0, 0.0};
@@ -4323,7 +4319,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
         double sprojalpha = 0.0;
 
         // TODO random?
-        MORTAR::MortarProjector::Impl(SlaveElement())
+        MORTAR::Projector::Impl(SlaveElement())
             ->ProjectGaussPointAuxn3D(
                 globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
 

@@ -615,7 +615,7 @@ int CONTACT::SelfBinaryTree::GetEleSpecificNumNodes(DRT::Element* element)
   // center nodes) in both 2D and 3D as they do not bring in any additional information about
   // connectivity / adjacency
   int numnode = 0;
-  MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(element);
+  MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(element);
 
   switch (mele->Shape())
   {
@@ -1632,7 +1632,7 @@ void CONTACT::SelfBinaryTree::SearchContact()
     int gid1 = elements_->GID(i);
     DRT::Element* ele1 = Discret().gElement(gid1);
     if (!ele1) dserror("Cannot find element with gid %", gid1);
-    MORTAR::MortarElement* element1 = dynamic_cast<MORTAR::MortarElement*>(ele1);
+    MORTAR::Element* element1 = dynamic_cast<MORTAR::Element*>(ele1);
 
     // only slave elements store search candidates
     if (!element1->IsSlave()) continue;
@@ -1643,7 +1643,7 @@ void CONTACT::SelfBinaryTree::SearchContact()
       int gid2 = element1->MoData().SearchElements()[j];
       DRT::Element* ele2 = Discret().gElement(gid2);
       if (!ele2) dserror("Cannot find element with gid %", gid2);
-      MORTAR::MortarElement* element2 = dynamic_cast<MORTAR::MortarElement*>(ele2);
+      MORTAR::Element* element2 = dynamic_cast<MORTAR::Element*>(ele2);
 
       // error if this is a slave element (this happens if individual self contact patches are
       // connected, because our sorting algorithm still fails in that case)

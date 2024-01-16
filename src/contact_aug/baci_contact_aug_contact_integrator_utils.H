@@ -22,8 +22,8 @@ BACI_NAMESPACE_OPEN
 
 namespace MORTAR
 {
-  class MortarElement;
-  class MortarNode;
+  class Element;
+  class Node;
 }  // namespace MORTAR
 
 namespace CONTACT
@@ -36,7 +36,7 @@ namespace CONTACT
     class UniqueProjInfo;
 
     /// type definitions
-    typedef CORE::GEN::pairedvector<MORTAR::MortarElement*, CONTACT::INTEGRATOR::UniqueProjInfo>
+    typedef CORE::GEN::pairedvector<MORTAR::Element*, CONTACT::INTEGRATOR::UniqueProjInfo>
         UniqueProjInfoPair;
     typedef CONTACT::AUG::Deriv1stMap Deriv1stMap;
     typedef CONTACT::AUG::Deriv1stVecMap Deriv1stVecMap;
@@ -44,9 +44,9 @@ namespace CONTACT
     typedef CONTACT::AUG::Deriv2ndVecMap Deriv2ndVecMap;
 
     double BuildAveragedNormalAtSlaveNode(
-        std::vector<ElementNormal>& adj_ele_normals, MORTAR::MortarNode& slavenode);
+        std::vector<ElementNormal>& adj_ele_normals, MORTAR::Node& slavenode);
 
-    double UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
+    double UnitSlaveElementNormal(const MORTAR::Element& sele,
         const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal);
 
     void Deriv1st_AveragedSlaveNormal(CONTACT::Node& cnode,
@@ -54,11 +54,11 @@ namespace CONTACT
         Deriv1stVecMap& d_nodal_avg_normal);
 
     void Deriv1st_NonUnitSlaveNormal(
-        const double* xi, MORTAR::MortarElement& sele, Deriv1stVecMap& d_non_unit_normal);
+        const double* xi, MORTAR::Element& sele, Deriv1stVecMap& d_non_unit_normal);
 
     template <CORE::FE::CellType slavetype>
     void Deriv1st_NonUnitSlaveNormal(
-        MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal);
+        MORTAR::Element& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal);
 
     void Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slavetype,
         const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
@@ -69,11 +69,11 @@ namespace CONTACT
         const Deriv1stVecMap& d_nodal_avg_normal);
 
     void Deriv2nd_NonUnitSlaveNormal(
-        const double* xi, MORTAR::MortarElement& sele, Deriv2ndVecMap& dd_non_unit_normal);
+        const double* xi, MORTAR::Element& sele, Deriv2ndVecMap& dd_non_unit_normal);
 
     template <CORE::FE::CellType slavetype>
     void Deriv2nd_NonUnitSlaveNormal(
-        MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal);
+        MORTAR::Element& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal);
 
     void Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slavetype,
         const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
@@ -83,7 +83,7 @@ namespace CONTACT
     /// collect all element nodal dofs and store them in one matrix
     template <unsigned probdim, unsigned numnode>
     void GetElementNodalDofs(
-        const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs);
+        const MORTAR::Element& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs);
 
     /// evaluate the Levi Civita pseudo tensor
     double LeviCivitaSymbol(const int i_1, const int j, const int k);
@@ -101,8 +101,8 @@ namespace CONTACT
      *                             master element
      *
      *  \author hiermeier \date 03/17 */
-    bool FindFeasibleMasterElements(MORTAR::MortarElement& sele,
-        const std::vector<MORTAR::MortarElement*>& meles, bool boundary_ele, Integrator& wrapper,
+    bool FindFeasibleMasterElements(MORTAR::Element& sele,
+        const std::vector<MORTAR::Element*>& meles, bool boundary_ele, Integrator& wrapper,
         UniqueProjInfoPair& projInfo);
 
     /** \brief Find a feasible master element in a given set of master elements
@@ -119,8 +119,8 @@ namespace CONTACT
      *                             master element
      *
      *  \author hiermeier \date 03/17 */
-    inline bool FindFeasibleMasterElements(MORTAR::MortarElement& sele,
-        const std::vector<MORTAR::MortarElement*>& meles, Integrator& wrapper,
+    inline bool FindFeasibleMasterElements(MORTAR::Element& sele,
+        const std::vector<MORTAR::Element*>& meles, Integrator& wrapper,
         UniqueProjInfoPair& projInfo)
     {
       return FindFeasibleMasterElements(sele, meles, true, wrapper, projInfo);
@@ -269,7 +269,7 @@ namespace CONTACT
       CORE::LINALG::Matrix<3, 1> unit_n_;
 
       /// pointer to the corresponding element
-      MORTAR::MortarElement* ele_;
+      MORTAR::Element* ele_;
 
       /// inverse length of the non-unit normal
       double length_n_inv_;

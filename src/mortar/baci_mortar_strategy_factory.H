@@ -44,9 +44,9 @@ namespace STR
 
 namespace MORTAR
 {
-  class MortarElement;
-  class MortarInterface;
-  class MortarNode;
+  class Element;
+  class Interface;
+  class Node;
   class StrategyBase;
 
   namespace STRATEGY
@@ -88,8 +88,7 @@ namespace MORTAR
        *
        * @param[in] interfaces All meshtying interfaces
        */
-      void BuildSearchTree(
-          const std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const;
+      void BuildSearchTree(const std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces) const;
 
       /*! \brief Check the problem dimension
        *
@@ -126,14 +125,14 @@ namespace MORTAR
        *
        *  \author Farah */
       void PrepareNURBSElement(const DRT::Discretization& discret, Teuchos::RCP<DRT::Element> ele,
-          Teuchos::RCP<MORTAR::MortarElement> cele) const;
+          Teuchos::RCP<MORTAR::Element> cele) const;
 
       /*! \brief Prepare mortar node for NURBS case
        *
        *  Stores control point weight
        *
        *  \author Farah */
-      void PrepareNURBSNode(const DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode) const;
+      void PrepareNURBSNode(const DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const;
 
       //!@}
 

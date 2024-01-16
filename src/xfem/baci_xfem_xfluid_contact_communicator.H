@@ -30,7 +30,7 @@ BACI_NAMESPACE_OPEN
 
 namespace MORTAR
 {
-  class MortarElement;
+  class Element;
 }
 namespace CONTACT
 {
@@ -125,7 +125,7 @@ namespace XFEM
     }
 
     /// Get the FSI traction called from contact gausspoint
-    double Get_FSI_Traction(MORTAR::MortarElement* ele,  // Mortar Element
+    double Get_FSI_Traction(MORTAR::Element* ele,        // Mortar Element
         const CORE::LINALG::Matrix<3, 1>& xsi_parent,    // local coord in the parent element
         const CORE::LINALG::Matrix<2, 1>& xsi_boundary,  // local coord on the boundary element
         const CORE::LINALG::Matrix<3, 1>& normal,        // normal for projection
@@ -134,7 +134,7 @@ namespace XFEM
         double* poropressure = nullptr);
 
     /// Get the FSI traction called from contact gausspoint
-    double Get_FSI_Traction(const MORTAR::MortarElement* ele,
+    double Get_FSI_Traction(const MORTAR::Element* ele,
         const CORE::LINALG::Matrix<2, 1>& xsi_parent,
         const CORE::LINALG::Matrix<1, 1>& xsi_boundary, const CORE::LINALG::Matrix<2, 1>& normal,
         bool& FSI_integrated,

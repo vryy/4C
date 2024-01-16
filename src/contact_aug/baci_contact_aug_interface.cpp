@@ -100,7 +100,7 @@ void CONTACT::AUG::Interface::Setup()
     DRT::Element* ele = idiscret_->gElement(gid);
     if (!ele) dserror("Cannot find slave element with gid %i", gid);
 
-    MORTAR::MortarElement* sele = static_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* sele = static_cast<MORTAR::Element*>(ele);
     if (myMinEdgeLength > sele->MinEdgeSize()) myMinEdgeLength = sele->MinEdgeSize();
 
     if (myMaxAreaSl < sele->MoData().Area()) myMaxAreaSl = sele->MoData().Area();
@@ -114,7 +114,7 @@ void CONTACT::AUG::Interface::Setup()
     DRT::Element* ele = idiscret_->gElement(gid);
     if (!ele) dserror("Cannot find master element with gid %i", gid);
 
-    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* mele = static_cast<MORTAR::Element*>(ele);
     if (myMinEdgeLength > mele->MinEdgeSize()) myMinEdgeLength = mele->MinEdgeSize();
 
     // no Mortar Data container on the master side
@@ -301,7 +301,7 @@ void CONTACT::AUG::Interface::Initialize()
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::UpdateMasterSlaveSets()
 {
-  MORTAR::MortarInterface::UpdateMasterSlaveSets();
+  MORTAR::Interface::UpdateMasterSlaveSets();
   SplitSlaveDofs();
 }
 
@@ -325,7 +325,7 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
 
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("Cannot find slave element with gid %", gid1);
-    MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
+    MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
     if (selement->ZeroSized()) continue;
 

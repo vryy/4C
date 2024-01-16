@@ -23,17 +23,17 @@ namespace MORTAR
   \brief A subclass of CORE::COMM::ParObjectType that adds mortar element type specific methods
 
   */
-  class MortarNodeType : public CORE::COMM::ParObjectType
+  class NodeType : public CORE::COMM::ParObjectType
   {
    public:
-    std::string Name() const override { return "MortarNodeType"; }
+    std::string Name() const override { return "MORTAR::NodeType"; }
 
-    static MortarNodeType& Instance() { return instance_; };
+    static NodeType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static MortarNodeType instance_;
+    static NodeType instance_;
   };
 
   /*!
@@ -41,11 +41,11 @@ namespace MORTAR
 
    This class contains additional information from mortar nodes which are
    are not needed for contact search and therefore are only available on the
-   node's processor (ColMap). The class MortarNodeDataContainer must be declared
-   before the MortarNode itself.
+   node's processor (ColMap). The class NodeDataContainer must be declared
+   before the Node itself.
 
    */
-  class MortarNodeDataContainer
+  class NodeDataContainer
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -55,7 +55,7 @@ namespace MORTAR
      \brief Standard Constructor
 
      */
-    MortarNodeDataContainer();
+    NodeDataContainer();
 
     //! @}
 
@@ -197,10 +197,10 @@ namespace MORTAR
 
    private:
     //! don't want = operator
-    MortarNodeDataContainer operator=(const MortarNodeDataContainer& old);
+    NodeDataContainer operator=(const NodeDataContainer& old);
 
     //! don't want copy constructor
-    MortarNodeDataContainer(const MortarNodeDataContainer& old);
+    NodeDataContainer(const NodeDataContainer& old);
 
    protected:
     //! @name Geometry-related vectors
@@ -275,7 +275,7 @@ namespace MORTAR
     std::map<int, double> mrows_ltl_;
 
     //! @}
-  };  // class MortarNodeDataContainer
+  };  // class NodeDataContainer
 
   /*!
    \brief A class for a mortar node derived from DRT::Node
@@ -283,14 +283,14 @@ namespace MORTAR
    This class represents a finite element node capable of mortar coupling.
 
    */
-  class MortarNode : public DRT::Node
+  class Node : public DRT::Node
   {
    public:
     //! @name Enums and Friends
     //! @{
 
     /*!
-     \brief The Discretization is a friend of MortarNode
+     \brief The Discretization is a friend of Node
      */
     friend class DRT::Discretization;
 
@@ -308,22 +308,22 @@ namespace MORTAR
      \param isslave(in): flag indicating whether node is slave or master
 
      */
-    MortarNode(int id, const std::vector<double>& coords, const int owner,
-        const std::vector<int>& dofs, const bool isslave);
+    Node(int id, const std::vector<double>& coords, const int owner, const std::vector<int>& dofs,
+        const bool isslave);
 
     /*!
      \brief Copy Constructor
 
-     Makes a deep copy of a MortarNode
+     Makes a deep copy of a Node
 
      */
-    MortarNode(const MORTAR::MortarNode& old);
+    Node(const MORTAR::Node& old);
 
     /*!
      \brief Deep copy the derived class and return pointer to it
 
      */
-    MORTAR::MortarNode* Clone() const override;
+    MORTAR::Node* Clone() const override;
 
 
 
@@ -334,10 +334,7 @@ namespace MORTAR
      top of lib/parobject.H.
 
      */
-    int UniqueParObjectId() const override
-    {
-      return MortarNodeType::Instance().UniqueParObjectId();
-    }
+    int UniqueParObjectId() const override { return NodeType::Instance().UniqueParObjectId(); }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -360,7 +357,7 @@ namespace MORTAR
     //! @name Access methods
 
     /*!
-     \brief Print this MortarNode
+     \brief Print this Node
      */
     void Print(std::ostream& os) const override;
 
@@ -520,7 +517,7 @@ namespace MORTAR
      contact specific quantities/information are stored.
 
      */
-    inline MORTAR::MortarNodeDataContainer& MoData() const
+    inline MORTAR::NodeDataContainer& MoData() const
     {
       if (modata_ == Teuchos::null) dserror("No mortar data attached. (node-id = %d)", Id());
       return *modata_;
@@ -591,7 +588,7 @@ namespace MORTAR
      \param mindist (out):       Distance to closest node
 
      */
-    virtual MORTAR::MortarNode* FindClosestNode(const Teuchos::RCP<DRT::Discretization> intdis,
+    virtual MORTAR::Node* FindClosestNode(const Teuchos::RCP<DRT::Discretization> intdis,
         const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist);
 
     /*!
@@ -695,7 +692,7 @@ namespace MORTAR
     int dentries_;
 
     //! additional information of proc's mortar nodes
-    Teuchos::RCP<MORTAR::MortarNodeDataContainer> modata_;
+    Teuchos::RCP<MORTAR::NodeDataContainer> modata_;
 
     //! @name Nurbs specifics
     //! @{
@@ -705,12 +702,12 @@ namespace MORTAR
 
     //! @}
 
-  };  // class MortarNode
+  };  // class Node
 }  // namespace MORTAR
 
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& mrtrnode);
+std::ostream& operator<<(std::ostream& os, const MORTAR::Node& mrtrnode);
 
 
 BACI_NAMESPACE_CLOSE

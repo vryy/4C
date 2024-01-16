@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 \brief A class to perform integrations of Mortar matrices on the overlap
-       of two MortarElements in 1D and 2D (derived version for
+       of two MORTAR::Elements in 1D and 2D (derived version for
        augmented contact)
 
 \level 2
@@ -40,8 +40,8 @@ CONTACT::AUG::IntegrationWrapper::IntegrationWrapper(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele,
+    MORTAR::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
@@ -59,7 +59,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Mort
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror(
         "ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of "
-        "MortarElement pair!");
+        "MORTAR::Element pair!");
   if (cell == Teuchos::null)
     dserror("IntegrateDerivCell3DAuxPlane called without integration cell");
 
@@ -80,9 +80,9 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Mort
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
-    std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj,
-    const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele,
+    std::vector<MORTAR::Element*> meles, bool* boundary_ele, bool* proj, const Epetra_Comm& comm,
+    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
@@ -105,7 +105,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::MortarElement
     if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
       dserror(
           "ERROR: IntegrateDerivCell3D called on a wrong type of "
-          "MortarElement pair!");
+          "MORTAR::Element pair!");
   }
 
   // contact with wear
@@ -122,7 +122,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::MortarElement
 
   for (auto& info_pair : projInfo_)
   {
-    MORTAR::MortarElement& mele = *(info_pair.first);
+    MORTAR::Element& mele = *(info_pair.first);
     integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
     integrator_->Evaluate(sele, mele, *boundary_ele, info_pair.second);
   }
@@ -141,7 +141,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::MortarElement
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::MortarElement& sele,
+void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Element& sele,
     const Epetra_Comm& comm, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
@@ -152,7 +152,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Mortar
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::MortarElement& sele,
+void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Element& sele,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
@@ -165,9 +165,9 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Mortar
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
-    double& sxia, double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib,
-    const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia,
+    double& sxib, MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
+    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -188,7 +188,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::MortarEle
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+    dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
     dserror("IntegrateAndDerivSegment called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
@@ -207,8 +207,8 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::MortarEle
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
-    std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
+void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele,
+    std::vector<MORTAR::Element*> meles, bool* boundary_ele,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
@@ -233,7 +233,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+      dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   }
 
   // number of nodes (slave) and problem dimension
@@ -244,7 +244,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
   bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -262,7 +262,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
 
     for (auto& info_pair : projInfo_)
     {
-      MORTAR::MortarElement& mele = *(info_pair.first);
+      MORTAR::Element& mele = *(info_pair.first);
       integrator_ =
           IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
       integrator_->Evaluate(sele, mele, false, info_pair.second);
@@ -494,8 +494,8 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::IntegrateDerivSegment2D(
-    MORTAR::MortarElement& sele, double& sxia, double& sxib, MORTAR::MortarElement& mele,
-    double& mxia, double& mxib)
+    MORTAR::Element& sele, double& sxia, double& sxib, MORTAR::Element& mele, double& mxia,
+    double& mxib)
 {
   dserror(
       "Deprecated method! The segmented based integration is no longer "
@@ -507,8 +507,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, MORTAR::IntCell& cell, double* auxn)
+    IntPolicy>::IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+    MORTAR::IntCell& cell, double* auxn)
 {
   dserror(
       "Deprecated method! The segmented based integration is no longer "
@@ -520,7 +520,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::IntegrateDerivSlaveElement(MORTAR::MortarElement& sele)
+    IntPolicy>::IntegrateDerivSlaveElement(MORTAR::Element& sele)
 {
   // set evaluator
   const enum MORTAR::ActionType action = CParams().GetActionType();
@@ -569,7 +569,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluate(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, bool boundary_ele,
+    MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   if (this->Wrapper().IntegrationType() != INPAR::MORTAR::inttype_elements)
@@ -655,7 +655,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::SetEva
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::IntegrateDerivEle(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, bool boundary_ele,
+    MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   // get slave and master nodal coords for Jacobian / GP evaluation
@@ -790,7 +790,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::IntegrateWeightedGap(
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, bool boundary_ele,
+    MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   // get slave and master nodal coords for Jacobian / GP evaluation
@@ -860,9 +860,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::IntegrateWeightedGapGradientError(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, bool boundary_ele,
-    const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
+    IntPolicy>::IntegrateWeightedGapGradientError(MORTAR::Element& sele, MORTAR::Element& mele,
+    bool boundary_ele, const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   // access unordered maps
   std::unordered_map<int, Deriv1stMap>* grad_error_ma_ptr =
@@ -964,7 +963,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 int CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GetLinSize(
-    MORTAR::MortarElement& sele) const
+    MORTAR::Element& sele) const
 {
   int linsize = 0;
   const DRT::Node* const* mynodes = sele.Nodes();
@@ -983,7 +982,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::ExtractActiveSlaveNodeLIDs(std::vector<unsigned>& active_nlids,
-    const MORTAR::MortarElement& sele) const
+    const MORTAR::Element& sele) const
 {
   const Epetra_Map* active_snode_row_map = this->CParams().template Get<Epetra_Map>(1);
 

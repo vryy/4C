@@ -52,7 +52,7 @@ namespace CROSSLINKING
    This class contains additional information from crosslinker nodes which are
    needed for correct crosslinking in a biopolymer network simulation. Note they are only
    available on the node's processor (ColMap). The class CrosslinkerNodeDataContainer
-   must be declared before the MortarNode itself.
+   must be declared before the MORTAR::Node itself.
 
    \author eichinger
    */
@@ -163,7 +163,7 @@ namespace CROSSLINKING
     //! @name Enums and Friends
 
     /*!
-     \brief The Discretization is a friend of MortarNode
+     \brief The Discretization is a friend of MORTAR::Node
      */
     friend class DRT::Discretization;
 
@@ -230,7 +230,7 @@ namespace CROSSLINKING
     //! @name Access methods
 
     /*!
-     \brief Print this MortarNode
+     \brief Print this MORTAR::Node
      */
     void Print(std::ostream& os) const override;
 

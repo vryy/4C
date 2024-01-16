@@ -99,7 +99,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
 {
   bool isnurbs = input.get<bool>("NURBS");
 
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // get problem dimension (2D or 3D) and create (MORTAR::Interface)
   const int dim = DRT::Problem::Instance()->NDim();
 
   // We need to determine an element offset to start the numbering of the slave
@@ -126,7 +126,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
     if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-    cele->PhysType() = MORTAR::MortarElement::other;
+    cele->PhysType() = MORTAR::Element::other;
 
     std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
     masterdis->GetCondition("PoroCoupling", porocondvec);
@@ -142,18 +142,18 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
             dserror(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
-          cele->PhysType() = MORTAR::MortarElement::poro;
+          cele->PhysType() = MORTAR::Element::poro;
           mastertype_ = 1;
           break;
         }
       }
     }
-    if (cele->PhysType() == MORTAR::MortarElement::other)
+    if (cele->PhysType() == MORTAR::Element::other)
     {
       if (mastertype_ == 1)
         dserror(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::structure;
+      cele->PhysType() = MORTAR::Element::structure;
       mastertype_ = 0;
     }
 
@@ -193,7 +193,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
     if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-    cele->PhysType() = MORTAR::MortarElement::other;
+    cele->PhysType() = MORTAR::Element::other;
 
     std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
     masterdis->GetCondition("PoroCoupling", porocondvec);
@@ -210,18 +210,18 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
             dserror(
                 "struct and poro slave elements on the same processor - no mixed interface "
                 "supported");
-          cele->PhysType() = MORTAR::MortarElement::poro;
+          cele->PhysType() = MORTAR::Element::poro;
           slavetype_ = 1;
           break;
         }
       }
     }
-    if (cele->PhysType() == MORTAR::MortarElement::other)
+    if (cele->PhysType() == MORTAR::Element::other)
     {
       if (slavetype_ == 1)
         dserror(
             "struct and poro slave elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::structure;
+      cele->PhysType() = MORTAR::Element::structure;
       slavetype_ = 0;
     }
     cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
@@ -262,7 +262,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
 {
   // poro lagrange strategy:
 
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // get problem dimension (2D or 3D) and create (MORTAR::Interface)
   const int dim = DRT::Problem::Instance()->NDim();
 
   // bools to decide which side is structural and which side is poroelastic to manage all 4

@@ -783,9 +783,9 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
 
       if (!node) dserror("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
-          node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
-          false));  // all solid elements are master elements
+      Teuchos::RCP<MORTAR::Node> mtnode = Teuchos::rcp(
+          new MORTAR::Node(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
+              false));  // all solid elements are master elements
 
       // note that we do not have to worry about double entries
       // as the AddNode function can deal with this case!
@@ -828,9 +828,9 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
       // have to add the additional offset maxproblemid, which is identical to the maximal element
       // ID in the problem discretization.
       Teuchos::RCP<DRT::Element> ele = fool->second;
-      Teuchos::RCP<MORTAR::MortarElement> mtele =
-          Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + ggsize + maxproblemid + 1,
-              ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(),
+      Teuchos::RCP<MORTAR::Element> mtele =
+          Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
+              ele->Shape(), ele->NumNode(), ele->NodeIds(),
               false,    // all solid elements are master elements
               false));  // no nurbs allowed up to now
 

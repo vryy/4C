@@ -65,8 +65,8 @@ namespace CORE::LINALG
 namespace MORTAR
 {
   class IntCell;
-  class MortarElement;
-  class MortarNode;
+  class Element;
+  class Node;
 }  // namespace MORTAR
 
 namespace SCATRA
@@ -498,8 +498,8 @@ namespace SCATRA
      * @param cellvector2    cell vector 2
      */
     void EvaluateMortarCell(const DRT::Discretization& idiscret, MORTAR::IntCell& cell,
-        const INPAR::SCATRA::ImplType& impltype, MORTAR::MortarElement& slaveelement,
-        MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
+        const INPAR::SCATRA::ImplType& impltype, MORTAR::Element& slaveelement,
+        MORTAR::Element& masterelement, DRT::Element::LocationArray& la_slave,
         DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
         CORE::LINALG::SerialDenseMatrix& cellmatrix1, CORE::LINALG::SerialDenseMatrix& cellmatrix2,
         CORE::LINALG::SerialDenseMatrix& cellmatrix3, CORE::LINALG::SerialDenseMatrix& cellmatrix4,
@@ -525,9 +525,9 @@ namespace SCATRA
      * @param ntsvector1     node-to-segment vector 1
      * @param ntsvector2     node-to-segment vector 2
      */
-    void EvaluateSlaveNode(const DRT::Discretization& idiscret, const MORTAR::MortarNode& slavenode,
+    void EvaluateSlaveNode(const DRT::Discretization& idiscret, const MORTAR::Node& slavenode,
         const double& lumpedarea, const INPAR::SCATRA::ImplType& impltype,
-        MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+        MORTAR::Element& slaveelement, MORTAR::Element& masterelement,
         DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
         const Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& ntsmatrix1,
         CORE::LINALG::SerialDenseMatrix& ntsmatrix2, CORE::LINALG::SerialDenseMatrix& ntsmatrix3,
@@ -549,7 +549,7 @@ namespace SCATRA
      * @param elevector1 element vector 1
      * @param elevector2 element vector 2
      */
-    void EvaluateMortarElement(const DRT::Discretization& idiscret, MORTAR::MortarElement& element,
+    void EvaluateMortarElement(const DRT::Discretization& idiscret, MORTAR::Element& element,
         const INPAR::SCATRA::ImplType& impltype, DRT::Element::LocationArray& la,
         const Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elematrix1,
         CORE::LINALG::SerialDenseMatrix& elematrix2, CORE::LINALG::SerialDenseMatrix& elematrix3,
@@ -715,8 +715,8 @@ namespace SCATRA
     //! discretization types
     virtual void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                                  //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,                    //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,                   //!< master-side mortar element
+        MORTAR::Element& slaveelement,                          //!< slave-side mortar element
+        MORTAR::Element& masterelement,                         //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,                  //!< slave-side location array
         DRT::Element::LocationArray& la_master,                 //!< master-side location array
         const Teuchos::ParameterList& params,                   //!< parameter list
@@ -730,11 +730,11 @@ namespace SCATRA
 
     //! evaluate single slave-side node for node-to-segment coupling
     virtual void EvaluateNTS(const DRT::Discretization& idiscret,  //!< interface discretization
-        const MORTAR::MortarNode& slavenode,                       //!< slave-side node
+        const MORTAR::Node& slavenode,                             //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-        MORTAR::MortarElement& slaveelement,          //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,         //!< master-side mortar element
+        MORTAR::Element& slaveelement,                //!< slave-side mortar element
+        MORTAR::Element& masterelement,               //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,        //!< slave-side location array
         DRT::Element::LocationArray& la_master,       //!< master-side location array
         const Teuchos::ParameterList& params,         //!< parameter list
@@ -749,7 +749,7 @@ namespace SCATRA
     //! evaluate single mortar element
     virtual void EvaluateMortarElement(
         const DRT::Discretization& idiscret,          //!< interface discretization
-        MORTAR::MortarElement& element,               //!< mortar element
+        MORTAR::Element& element,                     //!< mortar element
         DRT::Element::LocationArray& la,              //!< location array
         const Teuchos::ParameterList& params,         //!< parameter list
         CORE::LINALG::SerialDenseMatrix& elematrix1,  //!< element matrix 1
@@ -802,8 +802,8 @@ namespace SCATRA
     //! discretization types
     void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization
         MORTAR::IntCell& cell,                          //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,            //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,           //!< master-side mortar element
+        MORTAR::Element& slaveelement,                  //!< slave-side mortar element
+        MORTAR::Element& masterelement,                 //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,          //!< slave-side location array
         DRT::Element::LocationArray& la_master,         //!< master-side location array
         const Teuchos::ParameterList& params,           //!< parameter list
@@ -817,11 +817,11 @@ namespace SCATRA
 
     //! evaluate single slave-side node for node-to-segment coupling
     void EvaluateNTS(const DRT::Discretization& idiscret,  //!< interface discretization
-        const MORTAR::MortarNode& slavenode,               //!< slave-side node
+        const MORTAR::Node& slavenode,                     //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-        MORTAR::MortarElement& slaveelement,          //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,         //!< master-side mortar element
+        MORTAR::Element& slaveelement,                //!< slave-side mortar element
+        MORTAR::Element& masterelement,               //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,        //!< slave-side location array
         DRT::Element::LocationArray& la_master,       //!< master-side location array
         const Teuchos::ParameterList& params,         //!< parameter list
@@ -835,7 +835,7 @@ namespace SCATRA
 
     //! evaluate single mortar element
     void EvaluateMortarElement(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::MortarElement& element,                              //!< mortar element
+        MORTAR::Element& element,                                    //!< mortar element
         DRT::Element::LocationArray& la,                             //!< location array
         const Teuchos::ParameterList& params,                        //!< parameter list
         CORE::LINALG::SerialDenseMatrix& elematrix1,                 //!< element matrix 1
@@ -869,8 +869,8 @@ namespace SCATRA
 
     //! evaluate mortar matrices
     void EvaluateMortarMatrices(MORTAR::IntCell& cell,  //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,            //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,           //!< master-side mortar element
+        MORTAR::Element& slaveelement,                  //!< slave-side mortar element
+        MORTAR::Element& masterelement,                 //!< master-side mortar element
         CORE::LINALG::SerialDenseMatrix& D,             //!< mortar matrix D
         CORE::LINALG::SerialDenseMatrix& M,             //!< mortar matrix M
         CORE::LINALG::SerialDenseMatrix& E              //!< mortar matrix E
@@ -880,8 +880,8 @@ namespace SCATRA
     virtual void EvaluateCondition(
         const DRT::Discretization& idiscret,     //!< interface discretization
         MORTAR::IntCell& cell,                   //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,    //!< master-side mortar element
+        MORTAR::Element& slaveelement,           //!< slave-side mortar element
+        MORTAR::Element& masterelement,          //!< master-side mortar element
         DRT::Element::LocationArray& la_slave,   //!< slave-side location array
         DRT::Element::LocationArray& la_master,  //!< master-side location array
         const Teuchos::ParameterList& params,    //!< parameter list
@@ -899,12 +899,12 @@ namespace SCATRA
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
     virtual void EvaluateConditionNTS(
-        DRT::Condition& condition,            //!< scatra-scatra interface coupling condition
-        const MORTAR::MortarNode& slavenode,  //!< slave-side node
+        DRT::Condition& condition,      //!< scatra-scatra interface coupling condition
+        const MORTAR::Node& slavenode,  //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-        MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,  //!< master-side mortar element
+        MORTAR::Element& slaveelement,   //!< slave-side mortar element
+        MORTAR::Element& masterelement,  //!< master-side mortar element
         const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>&
             ephinp_slave,  //!< state variables at slave-side nodes
         const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>&
@@ -923,8 +923,7 @@ namespace SCATRA
 
     //! evaluate and assemble lumped interface area fractions associated with slave-side element
     //! nodes
-    void EvaluateNodalAreaFractions(
-        MORTAR::MortarElement& slaveelement,  //!< slave-side mortar element
+    void EvaluateNodalAreaFractions(MORTAR::Element& slaveelement,  //!< slave-side mortar element
         CORE::LINALG::SerialDenseVector&
             areafractions  //!< lumped interface area fractions associated
                            //!< with slave-side element nodes
@@ -970,8 +969,8 @@ namespace SCATRA
     //! evaluate slave-side and master-side shape functions and domain integration factor at cell
     //! integration point
     double EvalShapeFuncAndDomIntFacAtIntPoint(
-        MORTAR::MortarElement& slaveelement,                         //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,                        //!< master-side mortar element
+        MORTAR::Element& slaveelement,                               //!< slave-side mortar element
+        MORTAR::Element& masterelement,                              //!< master-side mortar element
         MORTAR::IntCell& cell,                                       //!< mortar integration cell
         const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
         const int iquad                                              //!< ID of integration point
@@ -979,15 +978,15 @@ namespace SCATRA
 
     //! evaluate slave-side shape functions and domain integration factor at element integration
     //! point
-    double EvalShapeFuncAndDomIntFacAtIntPoint(MORTAR::MortarElement& element,  //!< mortar element
-        const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,             //!< quadrature rule
+    double EvalShapeFuncAndDomIntFacAtIntPoint(MORTAR::Element& element,  //!< mortar element
+        const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,       //!< quadrature rule
         const int iquad  //!< ID of integration point
     );
 
     //! evaluate shape functions at position of slave-side node
-    void EvalShapeFuncAtSlaveNode(const MORTAR::MortarNode& slavenode,  //!< slave-side node
-        MORTAR::MortarElement& slaveelement,                            //!< slave-side element
-        MORTAR::MortarElement& masterelement                            //!< master-side element
+    void EvalShapeFuncAtSlaveNode(const MORTAR::Node& slavenode,  //!< slave-side node
+        MORTAR::Element& slaveelement,                            //!< slave-side element
+        MORTAR::Element& masterelement                            //!< master-side element
     );
 
     //! pointer to scatra boundary parameter list
@@ -1027,8 +1026,8 @@ namespace SCATRA
     static MortarCellInterface* MortarCellCalc(
         const INPAR::SCATRA::ImplType&
             impltype,  //!< physical implementation type of mortar integration cell
-        const MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-        const MORTAR::MortarElement& masterelement,    //!< master-side mortar element
+        const MORTAR::Element& slaveelement,           //!< slave-side mortar element
+        const MORTAR::Element& masterelement,          //!< master-side mortar element
         const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const INPAR::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -1042,7 +1041,7 @@ namespace SCATRA
     static MortarCellInterface* MortarCellCalc(
         const INPAR::SCATRA::ImplType&
             impltype,  //!< physical implementation type of mortar integration cell
-        const MORTAR::MortarElement& masterelement,    //!< master-side mortar element
+        const MORTAR::Element& masterelement,          //!< master-side mortar element
         const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const INPAR::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition

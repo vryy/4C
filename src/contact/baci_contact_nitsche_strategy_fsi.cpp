@@ -83,7 +83,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterfa
         contactinterface.Discret().gElement(cele->MoData().SearchElements()[m]));
     if (!test_ele) dserror("Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
 
-    MORTAR::MortarProjector::Impl(*cele, *test_ele)
+    MORTAR::Projector::Impl(*cele, *test_ele)
         ->ProjectGaussPoint3D(*cele, xsi.A(), *test_ele, mxi, projalpha);
     bool is_inside = false;
     switch (test_ele->Shape())

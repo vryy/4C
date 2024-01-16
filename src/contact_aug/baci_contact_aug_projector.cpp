@@ -161,8 +161,8 @@ void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Setup()
 template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
     CORE::FE::CellType tar_type>
 bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator()(
-    MORTAR::MortarElement& ref_ele, const double* ref_xi, MORTAR::MortarElement& target_ele,
-    double* target_xi, double& alpha)
+    MORTAR::Element& ref_ele, const double* ref_xi, MORTAR::Element& target_ele, double* target_xi,
+    double& alpha)
 {
   Setup();
 
@@ -174,7 +174,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 
   for (unsigned i = 0; i < REF_NUMNODES; ++i)
   {
-    const MORTAR::MortarNode& mnode = static_cast<const MORTAR::MortarNode&>(*ref_nodes[i]);
+    const MORTAR::Node& mnode = static_cast<const MORTAR::Node&>(*ref_nodes[i]);
     const double* x_ref_node = mnode.xspatial();
     const double* n_ref_node = mnode.MoData().n();
 
@@ -190,7 +190,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 
   for (unsigned i = 0; i < TAR_NUMNODES; ++i)
   {
-    const MORTAR::MortarNode& mnode = static_cast<const MORTAR::MortarNode&>(*tnodes[i]);
+    const MORTAR::Node& mnode = static_cast<const MORTAR::Node&>(*tnodes[i]);
     const double* tar_x = mnode.xspatial();
 
     std::copy(tar_x, tar_x + probdim, &tar_coords_(0, i));
@@ -281,7 +281,7 @@ template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
     CORE::FE::CellType tar_type>
 bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::RhsGP(
     CORE::LINALG::Matrix<probdim, 1>& rhs, const CORE::LINALG::Matrix<probdim, 1>& x_ref,
-    const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::MortarElement& target_ele,
+    const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::Element& target_ele,
     const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
     const double& alpha) const
 {
@@ -301,8 +301,8 @@ template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
     CORE::FE::CellType tar_type>
 template <CORE::FE::CellType type, unsigned numnodes>
 bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::GetGlobalPosition(
-    MORTAR::MortarElement& ele, const CORE::LINALG::Matrix<probdim, numnodes>& coords,
-    const double* xi, CORE::LINALG::Matrix<probdim, 1>& pos) const
+    MORTAR::Element& ele, const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
+    CORE::LINALG::Matrix<probdim, 1>& pos) const
 {
   const unsigned dim = CORE::FE::dim<type>;
   const CORE::LINALG::Matrix<dim, 1> mat_xi(xi, true);
@@ -320,7 +320,7 @@ template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
     CORE::FE::CellType tar_type>
 void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::LMatGP(
     CORE::LINALG::Matrix<probdim, probdim>& lmat,
-    CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::MortarElement& tar_ele,
+    CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::Element& tar_ele,
     const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
     const CORE::LINALG::Matrix<probdim, 1>& n_ref) const
 {

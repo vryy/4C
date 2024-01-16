@@ -244,7 +244,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
 {
   const bool isnurbs = input.get<bool>("NURBS");
 
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // get problem dimension (2D or 3D) and create (MORTAR::Interface)
   const int dim = DRT::Problem::Instance()->NDim();
 
   // create an empty mortar interface
@@ -351,7 +351,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
 {
   const bool isnurbs = input.get<bool>("NURBS");
 
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // get problem dimension (2D or 3D) and create (MORTAR::Interface)
   const int dim = DRT::Problem::Instance()->NDim();
 
   // ########## CHECK for a better implementation of this ###################
@@ -654,7 +654,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // as two half pass approach is not implemented for this approach set false
   input.set<bool>("Two_half_pass", false);
 
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // get problem dimension (2D or 3D) and create (MORTAR::Interface)
   const int dim = DRT::Problem::Instance()->NDim();
 
   // generate contact interface

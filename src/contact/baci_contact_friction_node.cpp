@@ -294,7 +294,7 @@ void CONTACT::FriNode::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
 
-  // add base class MORTAR::MortarNode
+  // add base class MORTAR::Node
   CONTACT::Node::Pack(data);
 
   // add data_
@@ -597,7 +597,7 @@ void CONTACT::FriNode::InitializeDataContainer()
   // only initialize if not yet done
   if (modata_ == Teuchos::null && codata_ == Teuchos::null && fridata_ == Teuchos::null)
   {
-    modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
+    modata_ = Teuchos::rcp(new MORTAR::NodeDataContainer());
     codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
     fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
   }

@@ -73,12 +73,12 @@ namespace CONTACT
      * @param[out] electrolyte_data    data bundle of the electrolyte-side element
      */
     template <int dim>
-    void AssignElectrodeAndElectrolyteQuantities(MORTAR::MortarElement& slave_ele, double* slave_xi,
+    void AssignElectrodeAndElectrolyteQuantities(MORTAR::Element& slave_ele, double* slave_xi,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
         const CORE::LINALG::Matrix<dim, 1>& slave_normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-        MORTAR::MortarElement& master_ele, double* master_xi,
+        MORTAR::Element& master_ele, double* master_xi,
         const CORE::LINALG::SerialDenseVector& master_shape,
         const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
         const CORE::LINALG::Matrix<dim, 1>& master_normal,
@@ -151,7 +151,7 @@ namespace CONTACT
      * @param[in] master_xi           master side Gauss point coordinates
      */
     template <int dim>
-    void GPTSForces(MORTAR::MortarElement& slave_ele, MORTAR::MortarElement& master_ele,
+    void GPTSForces(MORTAR::Element& slave_ele, MORTAR::Element& master_ele,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
@@ -183,7 +183,7 @@ namespace CONTACT
         const CORE::GEN::pairedvector<int, double>& d_test_val_dd,
         const CORE::GEN::pairedvector<int, double>& d_test_val_ds);
 
-    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -231,7 +231,7 @@ namespace CONTACT
      * @param[in] d_normal_dd    directional derivative of normal
      */
     template <int dim>
-    void IntegrateTest(double fac, MORTAR::MortarElement& ele,
+    void IntegrateTest(double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape,
         const CORE::LINALG::SerialDenseMatrix& shape_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, double jac,
@@ -285,7 +285,7 @@ namespace CONTACT
      *                             \boldsymbol{t}}{\mathrm{d} e} \f]
      */
     template <int dim>
-    void SoEleCauchy(MORTAR::MortarElement& mortar_ele, double* gp_coord,
+    void SoEleCauchy(MORTAR::Element& mortar_ele, double* gp_coord,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& gp_normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_normal_dd,

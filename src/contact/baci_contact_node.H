@@ -958,12 +958,12 @@ namespace CONTACT
   };
 
   /*!
-   \brief A class for a contact node derived from MORTAR::MortarNode
+   \brief A class for a contact node derived from MORTAR::Node
 
    This class represents a finite element node capable of contact.
 
    */
-  class Node : public MORTAR::MortarNode
+  class Node : public MORTAR::Node
   {
    public:
     //! @name Enums and Friends

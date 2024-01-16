@@ -306,7 +306,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& mtparams,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces, bool& poroslave,
+    std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces, bool& poroslave,
     bool& poromaster) const
 {
   int dim = DRT::Problem::Instance()->NDim();
@@ -444,10 +444,10 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 
     // create an empty meshtying interface and store it in this Manager
     // (for structural meshtying we currently choose redundant master storage)
-    interfaces.push_back(MORTAR::MortarInterface::Create(groupid1, Comm(), dim, mtparams));
+    interfaces.push_back(MORTAR::Interface::Create(groupid1, Comm(), dim, mtparams));
 
     // get it again
-    Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size() - 1];
+    Teuchos::RCP<MORTAR::Interface> interface = interfaces[(int)interfaces.size() - 1];
 
     // note that the nodal ids are unique because they come from
     // one global problem discretization conatining all nodes of the
@@ -469,8 +469,8 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         DRT::Node* node = Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
 
-        // create MortarNode object
-        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(
+        // create Node object
+        Teuchos::RCP<MORTAR::Node> mtnode = Teuchos::rcp(new MORTAR::Node(
             node->Id(), node->X(), node->Owner(), Discret().Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
@@ -542,9 +542,8 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<DRT::Element> ele = fool->second;
-        Teuchos::RCP<MORTAR::MortarElement> mtele =
-            Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
-                ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
+        Teuchos::RCP<MORTAR::Element> mtele = Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize,
+            ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
@@ -569,7 +568,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStrategy(
     const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
-    const int& dof_offset, std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const
+    const int& dof_offset, std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces) const
 {
   const INPAR::CONTACT::SolvingStrategy stype =
       INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
@@ -584,7 +583,7 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
 Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStrategy(
     const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces, const Epetra_Map* dof_row_map,
+    std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const int dim, const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
     Teuchos::RCP<MORTAR::StratDataContainer> data_ptr)
 {

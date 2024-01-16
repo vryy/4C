@@ -49,7 +49,7 @@ CORE::LINALG::SerialDenseMatrix CONTACT::ElementType::ComputeNullSpace(
  *----------------------------------------------------------------------*/
 CONTACT::Element::Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
     const int* nodeids, const bool isslave, bool isnurbs)
-    : MORTAR::MortarElement(id, owner, shape, numnode, nodeids, isslave, isnurbs)
+    : MORTAR::Element(id, owner, shape, numnode, nodeids, isslave, isnurbs)
 {
   // empty constructor
 
@@ -59,7 +59,7 @@ CONTACT::Element::Element(int id, int owner, const CORE::FE::CellType& shape, co
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                        mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Element::Element(const CONTACT::Element& old) : MORTAR::MortarElement(old)
+CONTACT::Element::Element(const CONTACT::Element& old) : MORTAR::Element(old)
 {
   // empty copy-constructor
 
@@ -90,7 +90,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Element& element)
 void CONTACT::Element::Print(std::ostream& os) const
 {
   os << "Contact ";
-  MORTAR::MortarElement::Print(os);
+  MORTAR::Element::Print(os);
 
   return;
 }
@@ -108,8 +108,8 @@ void CONTACT::Element::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
 
-  // add base class MORTAR::MortarElement
-  MORTAR::MortarElement::Pack(data);
+  // add base class MORTAR::Element
+  MORTAR::Element::Pack(data);
 
   return;
 }
@@ -124,10 +124,10 @@ void CONTACT::Element::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class MORTAR::MortarElement
+  // extract base class MORTAR::Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  MORTAR::MortarElement::Unpack(basedata);
+  MORTAR::Element::Unpack(basedata);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -381,7 +381,7 @@ void CONTACT::Element::DJacDXi(
 }
 
 
-void CONTACT::Element::PrepareDderiv(const std::vector<MORTAR::MortarElement*>& meles)
+void CONTACT::Element::PrepareDderiv(const std::vector<MORTAR::Element*>& meles)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
@@ -391,7 +391,7 @@ void CONTACT::Element::PrepareDderiv(const std::vector<MORTAR::MortarElement*>& 
       numderiv, 0, CORE::LINALG::SerialDenseMatrix(NumNode(), NumNode())));
 }
 
-void CONTACT::Element::PrepareMderiv(const std::vector<MORTAR::MortarElement*>& meles, const int m)
+void CONTACT::Element::PrepareMderiv(const std::vector<MORTAR::Element*>& meles, const int m)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
@@ -439,7 +439,7 @@ void CONTACT::Element::AssembleDderivToNodes(bool dual)
   dMatrixDeriv_ = Teuchos::null;
 }
 
-void CONTACT::Element::AssembleMderivToNodes(MORTAR::MortarElement& mele)
+void CONTACT::Element::AssembleMderivToNodes(MORTAR::Element& mele)
 {
   if (mMatrixDeriv_ == Teuchos::null)
     dserror("AssembleMderivToNodes called w/o PrepareMderiv first");

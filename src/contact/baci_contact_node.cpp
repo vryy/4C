@@ -373,7 +373,7 @@ void CONTACT::NodeTSIDataContainer::Clear()
  *----------------------------------------------------------------------*/
 CONTACT::Node::Node(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive)
-    : MORTAR::MortarNode(id, coords, owner, dofs, isslave),
+    : MORTAR::Node(id, coords, owner, dofs, isslave),
       active_(false),
       initactive_(initactive),
       involvedm_(false),
@@ -389,7 +389,7 @@ CONTACT::Node::Node(int id, const std::vector<double>& coords, const int owner,
  |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::Node::Node(const CONTACT::Node& old)
-    : MORTAR::MortarNode(old),
+    : MORTAR::Node(old),
       active_(old.active_),
       initactive_(old.initactive_),
       involvedm_(false),
@@ -431,7 +431,7 @@ void CONTACT::Node::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Contact ";
-  MORTAR::MortarNode::Print(os);
+  MORTAR::Node::Print(os);
   if (IsSlave())
     if (IsInitActive()) os << " InitActive ";
   return;
@@ -450,8 +450,8 @@ void CONTACT::Node::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
 
-  // add base class MORTAR::MortarNode
-  MORTAR::MortarNode::Pack(data);
+  // add base class MORTAR::Node
+  MORTAR::Node::Pack(data);
 
   // add active_
   AddtoPack(data, active_);
@@ -495,10 +495,10 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class MORTAR::MortarNode
+  // extract base class MORTAR::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  MORTAR::MortarNode::Unpack(basedata);
+  MORTAR::Node::Unpack(basedata);
 
   // active_
   active_ = ExtractInt(position, data);
@@ -757,7 +757,7 @@ void CONTACT::Node::InitializeDataContainer()
   if (modata_ == Teuchos::null && codata_ == Teuchos::null)
   {
     codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
-    modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
+    modata_ = Teuchos::rcp(new MORTAR::NodeDataContainer());
   }
 
   return;
@@ -850,7 +850,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
   //              CALCULATE EDGES
   //**************************************************
   // empty vector of slave element pointers
-  std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElementsS;
+  std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsS;
   std::set<std::pair<int, int>> donebefore;
 
   // loop over all surface elements
@@ -899,8 +899,8 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
         }
 
         // check if both nodes on edge geometry
-        bool node0Edge = dynamic_cast<MORTAR::MortarNode*>(cele->Nodes()[nodeLIds[0]])->IsOnEdge();
-        bool node1Edge = dynamic_cast<MORTAR::MortarNode*>(cele->Nodes()[nodeLIds[1]])->IsOnEdge();
+        bool node0Edge = dynamic_cast<MORTAR::Node*>(cele->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<MORTAR::Node*>(cele->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -920,8 +920,8 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, cele->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(
+              new MORTAR::Element(j, cele->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT ::Node*, 2> nodes = {

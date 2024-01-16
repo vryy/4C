@@ -47,7 +47,7 @@ namespace CONTACT
 
 
    */
-  class Element : public MORTAR::MortarElement
+  class Element : public MORTAR::Element
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -217,12 +217,12 @@ namespace CONTACT
     /*!
      \brief Prepare D-Matrix deriv integration of contribution of one slave element
      */
-    virtual void PrepareDderiv(const std::vector<MORTAR::MortarElement*>& meles);
+    virtual void PrepareDderiv(const std::vector<MORTAR::Element*>& meles);
 
     /*!
      \brief Prepare D-Matrix deriv integration of contribution of one slave element
      */
-    virtual void PrepareMderiv(const std::vector<MORTAR::MortarElement*>& meles, const int m);
+    virtual void PrepareMderiv(const std::vector<MORTAR::Element*>& meles, const int m);
 
     /*!
      \brief Access to D-Matrix deriv to add Gauss point contribution
@@ -250,7 +250,7 @@ namespace CONTACT
     /*!
      \brief Assemble M-Matrix deriv contribution of one slave/master pair into the adjacent nodes
      */
-    virtual void AssembleMderivToNodes(MORTAR::MortarElement& mele);
+    virtual void AssembleMderivToNodes(MORTAR::Element& mele);
 
     //@}
    private:

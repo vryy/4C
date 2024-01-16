@@ -30,8 +30,8 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 namespace MORTAR
 {
-  class MortarElement;
-  class MortarNode;
+  class Element;
+  class Node;
 
   namespace UTILS
   {
@@ -39,7 +39,7 @@ namespace MORTAR
      |  Get global coords for given local coords                 farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    bool LocalToGlobal(MORTAR::MortarElement& ele, const double* xi, double* globcoord, int inttype)
+    bool LocalToGlobal(MORTAR::Element& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
@@ -119,7 +119,7 @@ namespace MORTAR
 
           for (int i = 0; i < n; ++i)
           {
-            MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
+            Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
             dsassert(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
 
             for (int j = 0; j < ndim; ++j)
@@ -195,7 +195,7 @@ namespace MORTAR
           }
           for (int i = 0; i < n; ++i)
           {
-            MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
+            Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
             dsassert(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
 
             for (int j = 0; j < ndim; ++j)
@@ -271,7 +271,7 @@ namespace MORTAR
 
           for (int i = 0; i < n; ++i)
           {
-            MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
+            Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
             dsassert(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
 
             if constexpr (ndim > 2)

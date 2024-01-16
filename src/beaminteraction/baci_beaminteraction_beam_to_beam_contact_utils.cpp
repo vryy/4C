@@ -136,7 +136,7 @@ bool BEAMINTERACTION::SolidMeshtyingElement(const DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
-  if (ele_type == MORTAR::MortarElementType::Instance())
+  if (ele_type == MORTAR::ElementType::Instance())
     return true;
   else
     return false;

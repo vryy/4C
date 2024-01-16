@@ -846,7 +846,7 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
  |  Prepare mortar element for nurbs-case                    farah 11/14|
  *----------------------------------------------------------------------*/
 void MORTAR::UTILS::PrepareNURBSElement(DRT::Discretization& discret,
-    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::MortarElement> cele, int dim)
+    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::Element> cele, int dim)
 {
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discret));
@@ -872,7 +872,7 @@ void MORTAR::UTILS::PrepareNURBSElement(DRT::Discretization& discret,
 /*----------------------------------------------------------------------*
  |  Prepare mortar node for nurbs-case                       farah 11/14|
  *----------------------------------------------------------------------*/
-void MORTAR::UTILS::PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode)
+void MORTAR::UTILS::PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode)
 {
   DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(node);
 

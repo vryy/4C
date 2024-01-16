@@ -572,8 +572,8 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
-    const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::MortarElement& slaveelement,
-    MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
+    const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::Element& slaveelement,
+    MORTAR::Element& masterelement, DRT::Element::LocationArray& la_slave,
     DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
     CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
@@ -637,8 +637,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
-    const MORTAR::MortarNode& slavenode, const double& lumpedarea,
-    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+    const MORTAR::Node& slavenode, const double& lumpedarea, MORTAR::Element& slaveelement,
+    MORTAR::Element& masterelement,
     const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
     const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& ephinp_master,
     CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
@@ -756,8 +756,8 @@ template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
     const DRT::Discretization& idiscret,           //!< interface discretization
     MORTAR::IntCell& cell,                         //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,           //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,          //!< master-side mortar element
+    MORTAR::Element& slaveelement,                 //!< slave-side mortar element
+    MORTAR::Element& masterelement,                //!< master-side mortar element
     DRT::Element::LocationArray& la_slave,         //!< slave-side location array
     DRT::Element::LocationArray& la_master,        //!< master-side location array
     const Teuchos::ParameterList& params,          //!< parameter list
@@ -800,8 +800,8 @@ template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionOD(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
+    MORTAR::Element& slaveelement,           //!< slave-side mortar element
+    MORTAR::Element& masterelement,          //!< master-side mortar element
     DRT::Element::LocationArray& la_slave,   //!< slave-side location array
     DRT::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,    //!< parameter list
@@ -966,8 +966,8 @@ template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
     const DRT::Discretization& idiscret,           //!< interface discretization
     MORTAR::IntCell& cell,                         //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,           //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,          //!< master-side mortar element
+    MORTAR::Element& slaveelement,                 //!< slave-side mortar element
+    MORTAR::Element& masterelement,                //!< master-side mortar element
     DRT::Element::LocationArray& la_slave,         //!< slave-side location array
     DRT::Element::LocationArray& la_master,        //!< master-side location array
     const Teuchos::ParameterList& params,          //!< parameter list
@@ -1019,8 +1019,8 @@ template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
+    MORTAR::Element& slaveelement,           //!< slave-side mortar element
+    MORTAR::Element& masterelement,          //!< master-side mortar element
     DRT::Element::LocationArray& la_slave,   //!< slave-side location array
     DRT::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,    //!< parameter list
@@ -1094,8 +1094,8 @@ template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
+    MORTAR::Element& slaveelement,           //!< slave-side mortar element
+    MORTAR::Element& masterelement,          //!< master-side mortar element
     DRT::Element::LocationArray& la_slave,   //!< slave-side location array
     DRT::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,    //!< parameter list

@@ -40,7 +40,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   const int spatialDim = DRT::Problem::Instance()->NDim();
   if (spatialDim != 2 && spatialDim != 3) dserror("Meshtying problem must be 2D or 3D.");
 
-  std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interfaces;
+  std::vector<Teuchos::RCP<MORTAR::Interface>> interfaces;
   Teuchos::ParameterList mtparams;
 
   // read and check meshtying input parameters
@@ -187,10 +187,10 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     }
 
     // create an empty meshtying interface and store it in this Manager
-    interfaces.push_back(MORTAR::MortarInterface::Create(groupid1, Comm(), spatialDim, mtparams));
+    interfaces.push_back(MORTAR::Interface::Create(groupid1, Comm(), spatialDim, mtparams));
 
     // get it again
-    Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces.back();
+    Teuchos::RCP<MORTAR::Interface> interface = interfaces.back();
 
     // note that the nodal IDs are unique because they come from
     // one global problem discretization containing all nodes of the
@@ -212,8 +212,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         DRT::Node* node = discret.gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
 
-        // create MortarNode object
-        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(
+        // create Node object
+        Teuchos::RCP<MORTAR::Node> mtnode = Teuchos::rcp(new MORTAR::Node(
             node->Id(), node->X(), node->Owner(), discret.Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
@@ -281,9 +281,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       for (const auto& element : currele)
       {
         Teuchos::RCP<DRT::Element> ele = element.second;
-        Teuchos::RCP<MORTAR::MortarElement> mtele =
-            Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
-                ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
+        Teuchos::RCP<MORTAR::Element> mtele = Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize,
+            ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs) MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);

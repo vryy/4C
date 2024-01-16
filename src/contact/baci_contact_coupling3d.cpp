@@ -33,7 +33,7 @@ BACI_NAMESPACE_OPEN
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
       stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
@@ -123,7 +123,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     if (!mynodes) dserror("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
-      MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+      MORTAR::Node* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
       if (!mycnode) dserror("Null pointer!");
       mycnode->HasSegment() = true;
     }
@@ -367,11 +367,11 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
 
   // we need all participating slave nodes
   DRT::Node** snodes = SlaveIntElement().Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(nrow);
+  std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("SlaveVertexLinearization: Null pointer!");
   }
 
@@ -409,7 +409,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
   // loop over all vertices
   for (int i = 0; i < SlaveIntElement().NumNode(); ++i)
   {
-    MORTAR::MortarNode* mrtrsnode = dynamic_cast<MORTAR::MortarNode*>(SlaveIntElement().Nodes()[i]);
+    MORTAR::Node* mrtrsnode = dynamic_cast<MORTAR::Node*>(SlaveIntElement().Nodes()[i]);
     if (!mrtrsnode) dserror("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -506,11 +506,11 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
 
   // we need all participating slave nodes
   DRT::Node** snodes = SlaveIntElement().Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(nrow);
+  std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("MasterVertexLinearization: Null pointer!");
   }
 
@@ -557,8 +557,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
     // loop over all intEle nodes
     for (int in = 0; in < MasterIntElement().NumNode(); ++in)
     {
-      MORTAR::MortarNode* mrtrmnode =
-          dynamic_cast<MORTAR::MortarNode*>(MasterIntElement().Nodes()[in]);
+      MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[in]);
       if (mrtrmnode == nullptr) dserror("dynamic cast to mortar node went wrong");
 
       for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->Dofs()[dim]] += 1.;
@@ -571,8 +570,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
   // loop over all vertices
   for (int i = 0; i < MasterIntElement().NumNode(); ++i)
   {
-    MORTAR::MortarNode* mrtrmnode =
-        dynamic_cast<MORTAR::MortarNode*>(MasterIntElement().Nodes()[i]);
+    MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[i]);
     if (!mrtrmnode) dserror("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -1043,7 +1041,7 @@ bool CONTACT::Coupling3d::CenterLinearization(
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele,
     MORTAR::IntElement& sintele, MORTAR::IntElement& mintele)
     : CONTACT::Coupling3d(idiscret, dim, quad, params, sele, mele),
       sintele_(sintele),
@@ -1064,8 +1062,7 @@ const Epetra_Comm& CONTACT::Coupling3dManager::Comm() const { return idiscret_.C
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
       quad_(quad),
@@ -1082,8 +1079,8 @@ CONTACT::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int
  |  ctor (public)                                            farah 01/13|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idiscret, int dim,
-    bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    bool quad, Teuchos::ParameterList& params, MORTAR::Element* sele,
+    std::vector<MORTAR::Element*> mele)
     : MORTAR::Coupling3dQuadManager(idiscret, dim, quad, params, sele, mele),
       CONTACT::Coupling3dManager(idiscret, dim, quad, params, sele, mele),
       smintpairs_(-1),
@@ -1165,7 +1162,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
 
       /* find all feasible master elements (this check is inherent in the
        * segment based integration)                    hiermeier 04/16 */
-      std::vector<MORTAR::MortarElement*> feasible_ma_eles(MasterElements().size());
+      std::vector<MORTAR::Element*> feasible_ma_eles(MasterElements().size());
       FindFeasibleMasterElements(feasible_ma_eles);
 
       // create an integrator instance with correct NumGP and Dim
@@ -1299,7 +1296,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
   {
     Coupling().resize(0);
 
-    // build linear integration elements from quadratic MortarElements
+    // build linear integration elements from quadratic MORTAR::Elements
     std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
     std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
         MasterElements().size());
@@ -1308,7 +1305,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int)MasterElements().size(); ++m)
     {
-      // build linear integration elements from quadratic MortarElements
+      // build linear integration elements from quadratic MORTAR::Elements
       mauxelements[m].resize(0);
       SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
@@ -1380,7 +1377,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
       {
         Coupling().resize(0);
 
-        // build linear integration elements from quadratic MortarElements
+        // build linear integration elements from quadratic MORTAR::Elements
         std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
         std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
             MasterElements().size());
@@ -1389,7 +1386,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
         // loop over all master elements associated with this slave element
         for (int m = 0; m < (int)MasterElements().size(); ++m)
         {
-          // build linear integration elements from quadratic MortarElements
+          // build linear integration elements from quadratic MORTAR::Elements
           mauxelements[m].resize(0);
           SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
@@ -1578,7 +1575,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         for (int bs_test = 0; bs_test < (int)Coupling().size(); ++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::MortarProjector::Impl(SlaveElement(), Coupling()[bs_test]->MasterIntElement())
+          MORTAR::Projector::Impl(SlaveElement(), Coupling()[bs_test]->MasterIntElement())
               ->ProjectGaussPoint3D(SlaveElement(), sxi_test,
                   Coupling()[bs_test]->MasterIntElement(), mxi_test, alpha_test);
 
@@ -1644,7 +1641,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         for (int bs_test = 0; bs_test < (int)Coupling().size(); ++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::MortarProjector::Impl(SlaveElement(), Coupling()[bs_test]->MasterElement())
+          MORTAR::Projector::Impl(SlaveElement(), Coupling()[bs_test]->MasterElement())
               ->ProjectGaussPoint3D(SlaveElement(), sxi_test, Coupling()[bs_test]->MasterElement(),
                   mxi_test, alpha_test);
 
@@ -1763,7 +1760,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         // project Gauss point onto slave integration element
         double sxi[2] = {0.0, 0.0};
         double sprojalpha = 0.0;
-        MORTAR::MortarProjector::Impl(Coupling()[m]->SlaveIntElement())
+        MORTAR::Projector::Impl(Coupling()[m]->SlaveIntElement())
             ->ProjectGaussPointAuxn3D(
                 globgp, Coupling()[m]->Auxn(), Coupling()[m]->SlaveIntElement(), sxi, sprojalpha);
 
@@ -1775,7 +1772,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
           MORTAR::IntElement* ie =
               dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
           if (ie == nullptr) dserror("nullptr pointer");
-          MORTAR::MortarProjector::Impl(SlaveElement())
+          MORTAR::Projector::Impl(SlaveElement())
               ->ProjectGaussPointAuxn3D(
                   globgp, Coupling()[m]->Auxn(), SlaveElement(), psxi, psprojalpha);
           // ie->MapToParent(sxi,psxi); // old way of doing it via affine map... wrong (popp
@@ -1966,7 +1963,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dManager::FindFeasibleMasterElements(
-    std::vector<MORTAR::MortarElement*>& feasible_ma_eles) const
+    std::vector<MORTAR::Element*>& feasible_ma_eles) const
 {
   // feasibility counter
   std::size_t fcount = 0;

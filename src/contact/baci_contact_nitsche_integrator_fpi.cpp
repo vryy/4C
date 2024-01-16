@@ -30,9 +30,9 @@ CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
-    std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
-    const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::Element& sele,
+    std::vector<MORTAR::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   auto* csele = dynamic_cast<CONTACT::Element*>(&sele);
   if (!csele) dserror("Could cast to Contact Element!");
@@ -62,11 +62,10 @@ void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::MortarElement& s
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFpi::IntegrateGP_3D(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
-    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
-    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
-    CORE::LINALG::SerialDenseMatrix& lmderiv,
+void CONTACT::IntegratorNitscheFpi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
     double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -88,9 +87,8 @@ void CONTACT::IntegratorNitscheFpi::IntegrateGP_3D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, const CORE::LINALG::SerialDenseVector& sval,
-    const CORE::LINALG::SerialDenseMatrix& sderiv,
+void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
+    const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
@@ -271,7 +269,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::MortarElement& sele,
   xf_c_comm_->Inc_GP(0);
 }
 
-void CONTACT::IntegratorNitscheFpi::UpdateEleContactState(MORTAR::MortarElement& sele, int state)
+void CONTACT::IntegratorNitscheFpi::UpdateEleContactState(MORTAR::Element& sele, int state)
 {
   if (!state && ele_contact_state_)
   {
@@ -290,8 +288,8 @@ void CONTACT::IntegratorNitscheFpi::UpdateEleContactState(MORTAR::MortarElement&
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double CONTACT::IntegratorNitscheFpi::GetNormalContactTransition(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, const CORE::LINALG::SerialDenseVector& sval,
+double CONTACT::IntegratorNitscheFpi::GetNormalContactTransition(MORTAR::Element& sele,
+    MORTAR::Element& mele, const CORE::LINALG::SerialDenseVector& sval,
     const CORE::LINALG::SerialDenseVector& mval, const double* sxi,
     const CORE::LINALG::Matrix<dim, 1>& pxsi, const CORE::LINALG::Matrix<dim, 1>& normal,
     bool& FSI_integrated, bool& gp_on_this_proc)

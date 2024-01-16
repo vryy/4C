@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 namespace MORTAR
 {
-  class MortarNode;
+  class Node;
 
   namespace UTILS
   {
@@ -48,44 +48,44 @@ namespace MORTAR
     // ----------------------------------------------------------------------
 
     template <class V>
-    void mortar_shape_function_1D(V& funct,    ///< to be filled with shape function values
-        const double& r,                       ///< r coordinate
-        const MortarElement::ShapeType& shape  ///< distinguish between mortar shape
+    void mortar_shape_function_1D(V& funct,      ///< to be filled with shape function values
+        const double& r,                         ///< r coordinate
+        const MORTAR::Element::ShapeType& shape  ///< distinguish between mortar shape
     );
 
     template <class V>
     void mortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
-        const double& r,                       ///< r coordinate
-        const MortarElement::ShapeType& shape  ///< distinguish between mortar shape
+        MORTAR::Element& ele,
+        const double& r,                         ///< r coordinate
+        const MORTAR::Element::ShapeType& shape  ///< distinguish between mortar shape
     );
 
     template <class V>
-    void mortar_shape_function_2D(V& funct,    ///< to be filled with shape function values
-        const double& xi0,                     ///< xi0 coordinate
-        const double& xi1,                     ///< xi1 coordinate
-        const MortarElement::ShapeType& shape  ///< distinguish between mortar shape
+    void mortar_shape_function_2D(V& funct,      ///< to be filled with shape function values
+        const double& xi0,                       ///< xi0 coordinate
+        const double& xi1,                       ///< xi1 coordinate
+        const MORTAR::Element::ShapeType& shape  ///< distinguish between mortar shape
     );
 
     template <class V>
     void mortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
-        const double& xi0,                     ///< xi0 coordinate
-        const double& xi1,                     ///< xi1 coordinate
-        const MortarElement::ShapeType& shape  ///< distinguish between mortar shape
+        MORTAR::Element& ele,
+        const double& xi0,                       ///< xi0 coordinate
+        const double& xi1,                       ///< xi1 coordinate
+        const MORTAR::Element::ShapeType& shape  ///< distinguish between mortar shape
     );
 
     // nurbs shape function evaluation
     template <class V>
     void mortar_nurbs_shape_function_1D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
+        MORTAR::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const CORE::FE::CellType& shape  ///< distinguish between shape
     );
 
     template <class V>
     void mortar_nurbs_shape_function_2D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
+        MORTAR::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const double& xi1,               ///< xi0 coordinate
         const CORE::FE::CellType& shape  ///< distinguish between shape
@@ -93,14 +93,14 @@ namespace MORTAR
 
     template <class V>
     void mortar_nurbs_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
+        MORTAR::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const CORE::FE::CellType& shape  ///< distinguish between shape
     );
 
     template <class V>
     void mortar_nurbs_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
+        MORTAR::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const double& xi1,               ///< xi1 coordinate
         const CORE::FE::CellType& shape  ///< distinguish between shape
@@ -114,7 +114,7 @@ namespace MORTAR
      |  Evaluate displacement shape functions                     popp 01/08|
      *----------------------------------------------------------------------*/
     template <class V>
-    void EvaluateShape_Displ(const double* xi, V& val, MORTAR::MortarElement& ele, bool dualquad)
+    void EvaluateShape_Displ(const double* xi, V& val, MORTAR::Element& ele, bool dualquad)
     {
       if (!xi) dserror("EvaluateShape called with xi=nullptr");
 
@@ -129,7 +129,7 @@ namespace MORTAR
       // valid for 1- and 2-dimensional interfaces
       if (nnode == 1)
       {
-        mortar_shape_function_2D(val, -1.0, -1.0, MortarElement::p0);
+        mortar_shape_function_2D(val, -1.0, -1.0, MORTAR::Element::p0);
         return;
       }
 
@@ -137,7 +137,7 @@ namespace MORTAR
       bool bound = false;
       for (int i = 0; i < nnode; ++i)
       {
-        MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+        Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) dserror("EvaluateShapeLagMult: Null pointer!");
         bound += mymrtrnode->IsOnBound();
       }
@@ -148,7 +148,7 @@ namespace MORTAR
         case CORE::FE::CellType::line2:
         {
           if (nnode != 2) dserror("Inconsistency in EvaluateShape");
-          mortar_shape_function_1D(val, xi[0], MortarElement::lin1D);
+          mortar_shape_function_1D(val, xi[0], MORTAR::Element::lin1D);
           break;
         }
         // 2D quadratic case (3noded line element)
@@ -160,23 +160,23 @@ namespace MORTAR
                 "There is no quadratic interpolation for dual shape functions for 2-D problems "
                 "with quadratic elements available!");
           else if (dualquad && bound)
-            mortar_shape_function_1D(val, xi[0], MortarElement::quad1D_hierarchical);
+            mortar_shape_function_1D(val, xi[0], MORTAR::Element::quad1D_hierarchical);
           else
-            mortar_shape_function_1D(val, xi[0], MortarElement::quad1D);
+            mortar_shape_function_1D(val, xi[0], MORTAR::Element::quad1D);
           break;
         }
         // 3D linear case (3noded triangular element)
         case CORE::FE::CellType::tri3:
         {
           if (nnode != 3) dserror("Inconsistency in EvaluateShape");
-          mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::lin2D);
+          mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::lin2D);
           break;
         }
         // 3D bilinear case (4noded quadrilateral element)
         case CORE::FE::CellType::quad4:
         {
           if (nnode != 4) dserror("Inconsistency in EvaluateShape");
-          mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::bilin2D);
+          mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::bilin2D);
           break;
         }
         // 3D quadratic case (6noded triangular element)
@@ -184,11 +184,11 @@ namespace MORTAR
         {
           if (nnode != 6) dserror("Inconsistency in EvaluateShape");
           if (dualquad && !bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::quad2D_modified);
+            mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::quad2D_modified);
           else if (dualquad && bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::quad2D_hierarchical);
+            mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::quad2D_hierarchical);
           else
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::quad2D);
+            mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::quad2D);
           break;
         }
         // 3D serendipity case (8noded quadrilateral element)
@@ -196,11 +196,12 @@ namespace MORTAR
         {
           if (nnode != 8) dserror("Inconsistency in EvaluateShape");
           if (dualquad && !bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::serendipity2D_modified);
+            mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::serendipity2D_modified);
           else if (dualquad && bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::serendipity2D_hierarchical);
+            mortar_shape_function_2D(
+                val, xi[0], xi[1], MORTAR::Element::serendipity2D_hierarchical);
           else
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::serendipity2D);
+            mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::serendipity2D);
           break;
         }
         // 3D biquadratic case (9noded quadrilateral element)
@@ -208,11 +209,11 @@ namespace MORTAR
         {
           if (nnode != 9) dserror("Inconsistency in EvaluateShape");
           if (dualquad && !bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::biquad2D_modified);
+            mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::biquad2D_modified);
           else if (dualquad && bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::biquad2D_hierarchical);
+            mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::biquad2D_hierarchical);
           else
-            mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::biquad2D);
+            mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::biquad2D);
           break;
         }
         //==================================================
@@ -241,7 +242,7 @@ namespace MORTAR
         // unknown case
         default:
         {
-          dserror("EvaluateShape called for unknown MortarElement type");
+          dserror("EvaluateShape called for unknown MORTAR::Element type");
           break;
         }
       }
@@ -254,7 +255,7 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi, V& val,
-        MORTAR::MortarElement& ele, const int& valdim)
+        MORTAR::Element& ele, const int& valdim)
     {
       if (!xi) dserror("EvaluateShapeLagMult called with xi=nullptr");
 
@@ -271,7 +272,7 @@ namespace MORTAR
       // valid for 1- and 2-dimensional interfaces
       if (ele.NumNode() == 1)
       {
-        mortar_shape_function_2D(val, -1.0, -1.0, MortarElement::p0);
+        mortar_shape_function_2D(val, -1.0, -1.0, MORTAR::Element::p0);
         return;
       }
 
@@ -283,9 +284,9 @@ namespace MORTAR
           if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
           if (dual)
-            mortar_dualshape_function_1D(val, ele, xi[0], MortarElement::lindual1D);
+            mortar_dualshape_function_1D(val, ele, xi[0], MORTAR::Element::lindual1D);
           else
-            mortar_shape_function_1D(val, xi[0], MortarElement::lin1D);
+            mortar_shape_function_1D(val, xi[0], MORTAR::Element::lin1D);
 
           break;
         }
@@ -296,9 +297,9 @@ namespace MORTAR
           if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
           if (dual)
-            mortar_dualshape_function_1D(val, ele, xi[0], MortarElement::quaddual1D);
+            mortar_dualshape_function_1D(val, ele, xi[0], MORTAR::Element::quaddual1D);
           else
-            mortar_shape_function_1D(val, xi[0], MortarElement::quad1D);
+            mortar_shape_function_1D(val, xi[0], MORTAR::Element::quad1D);
           break;
         }
 
@@ -313,31 +314,31 @@ namespace MORTAR
           if (dual)
           {
             if (ele.Shape() == CORE::FE::CellType::tri3)
-              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MortarElement::lindual2D);
+              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MORTAR::Element::lindual2D);
             else if (ele.Shape() == CORE::FE::CellType::quad4)
-              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MortarElement::bilindual2D);
+              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MORTAR::Element::bilindual2D);
             else if (ele.Shape() == CORE::FE::CellType::tri6)
-              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MortarElement::quaddual2D);
+              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MORTAR::Element::quaddual2D);
             else if (ele.Shape() == CORE::FE::CellType::quad8)
               mortar_dualshape_function_2D(
-                  val, ele, xi[0], xi[1], MortarElement::serendipitydual2D);
+                  val, ele, xi[0], xi[1], MORTAR::Element::serendipitydual2D);
             else /*Shape()==quad9*/
-              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MortarElement::biquaddual2D);
+              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], MORTAR::Element::biquaddual2D);
           }
 
           // standard Lagrange multipliers
           else
           {
             if (ele.Shape() == CORE::FE::CellType::tri3)
-              mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::lin2D);
+              mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::lin2D);
             else if (ele.Shape() == CORE::FE::CellType::quad4)
-              mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::bilin2D);
+              mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::bilin2D);
             else if (ele.Shape() == CORE::FE::CellType::tri6)
-              mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::quad2D);
+              mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::quad2D);
             else if (ele.Shape() == CORE::FE::CellType::quad8)
-              mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::serendipity2D);
+              mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::serendipity2D);
             else /*Shape()==quad9*/
-              mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::biquad2D);
+              mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::biquad2D);
           }
 
           break;
@@ -403,7 +404,7 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void EvaluateShape_LM_Const(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi, V& val,
-        MORTAR::MortarElement& ele, const int& valdim)
+        MORTAR::Element& ele, const int& valdim)
     {
       switch (ele.Shape())
       {
@@ -426,7 +427,7 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void EvaluateShape_LM_Lin(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi, V& val,
-        MORTAR::MortarElement& ele, const int& valdim)
+        MORTAR::Element& ele, const int& valdim)
     {
       if (!xi) dserror("EvaluateShapeLagMultLin called with xi=nullptr");
       if (!ele.IsSlave()) dserror("EvaluateShapeLagMultLin called for master element");
@@ -449,7 +450,7 @@ namespace MORTAR
       bool bound = false;
       for (int i = 0; i < ele.NumNode(); ++i)
       {
-        MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
+        Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) dserror("EvaluateShapeLagMult: Null pointer!");
         bound += mymrtrnode->IsOnBound();
       }
@@ -468,10 +469,10 @@ namespace MORTAR
           // the middle node is defined as slave boundary (=master)
           // dual Lagrange multipliers
           if (dual)
-            mortar_dualshape_function_1D(val, ele, xi[0], MortarElement::quaddual1D_only_lin);
+            mortar_dualshape_function_1D(val, ele, xi[0], MORTAR::Element::quaddual1D_only_lin);
           // standard Lagrange multipliers
           else
-            mortar_shape_function_1D(val, xi[0], MortarElement::quad1D_only_lin);
+            mortar_shape_function_1D(val, xi[0], MORTAR::Element::quad1D_only_lin);
 
           break;
         }
@@ -489,24 +490,24 @@ namespace MORTAR
             // implemented");
             if (ele.Shape() == CORE::FE::CellType::tri6)
               mortar_dualshape_function_2D(
-                  val, ele, xi[0], xi[1], MortarElement::quaddual2D_only_lin);
+                  val, ele, xi[0], xi[1], MORTAR::Element::quaddual2D_only_lin);
             else if (ele.Shape() == CORE::FE::CellType::quad8)
               mortar_dualshape_function_2D(
-                  val, ele, xi[0], xi[1], MortarElement::serendipitydual2D_only_lin);
+                  val, ele, xi[0], xi[1], MORTAR::Element::serendipitydual2D_only_lin);
             else /*Shape()==quad9*/
               mortar_dualshape_function_2D(
-                  val, ele, xi[0], xi[1], MortarElement::biquaddual2D_only_lin);
+                  val, ele, xi[0], xi[1], MORTAR::Element::biquaddual2D_only_lin);
           }
 
           // standard Lagrange multipliers
           else
           {
             if (ele.Shape() == CORE::FE::CellType::tri6)
-              mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::quad2D_only_lin);
+              mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::quad2D_only_lin);
             else if (ele.Shape() == CORE::FE::CellType::quad8)
-              mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::serendipity2D_only_lin);
+              mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::serendipity2D_only_lin);
             else /*Shape()==quad9*/
-              mortar_shape_function_2D(val, xi[0], xi[1], MortarElement::biquad2D_only_lin);
+              mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::biquad2D_only_lin);
           }
 
           break;
@@ -527,9 +528,9 @@ namespace MORTAR
      |  evaluate std. shape 1D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_shape_function_1D(V& funct,    ///< to be filled with shape function values
-        const double& r,                       ///< r coordinate
-        const MortarElement::ShapeType& shape  ///< distinguish between mortar shape
+    void mortar_shape_function_1D(V& funct,      ///< to be filled with shape function values
+        const double& r,                         ///< r coordinate
+        const MORTAR::Element::ShapeType& shape  ///< distinguish between mortar shape
     )
     {
       switch (shape)
@@ -538,7 +539,7 @@ namespace MORTAR
         // 1D standard linear shape functions (line2)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case MORTAR::MortarElement::lin1D:
+        case MORTAR::Element::lin1D:
         {
           funct(0) = 0.5 * (1.0 - r);
           funct(1) = 0.5 * (1.0 + r);
@@ -548,7 +549,7 @@ namespace MORTAR
         // 1D modified standard shape functions (const replacing linear, line2)
         // (used for interpolation of Lagrange mult. field near boundaries)
         // *********************************************************************
-        case MORTAR::MortarElement::lin1D_edge0:
+        case MORTAR::Element::lin1D_edge0:
         {
           funct(0) = 0.0;
           funct(1) = 1.0;
@@ -558,7 +559,7 @@ namespace MORTAR
         // 1D modified standard shape functions (const replacing linear, line2)
         // (used for interpolation of Lagrange mult. field near boundaries)
         // *********************************************************************
-        case MORTAR::MortarElement::lin1D_edge1:
+        case MORTAR::Element::lin1D_edge1:
         {
           funct(0) = 1.0;
           funct(1) = 0.0;
@@ -568,7 +569,7 @@ namespace MORTAR
         // 1D standard quadratic shape functions (line3)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case MORTAR::MortarElement::quad1D:
+        case MORTAR::Element::quad1D:
         {
           funct(0) = 0.5 * r * (r - 1.0);
           funct(1) = 0.5 * r * (r + 1.0);
@@ -579,7 +580,7 @@ namespace MORTAR
         // 1D modified (hierarchical) shape functions (line3)
         // (used in combination with linear dual LM field in 2D quadratic mortar)
         // *********************************************************************
-        case MortarElement::quad1D_hierarchical:
+        case MORTAR::Element::quad1D_hierarchical:
         {
           funct(0) = 0.5 * (1 - r);
           funct(1) = 0.5 * (1 + r);
@@ -591,7 +592,7 @@ namespace MORTAR
         // 1D modified standard shape functions (linear replacing quad, line3)
         // (used for interpolation of Lagrange mult. field near boundaries)
         // *********************************************************************
-        case MORTAR::MortarElement::quad1D_edge0:
+        case MORTAR::Element::quad1D_edge0:
         {
           funct(0) = 0.0;
           funct(1) = r;
@@ -602,7 +603,7 @@ namespace MORTAR
         // 1D modified standard shape functions (linear replacing quad, line3)
         // (used for interpolation of Lagrange mult. field near boundaries)
         // *********************************************************************
-        case MORTAR::MortarElement::quad1D_edge1:
+        case MORTAR::Element::quad1D_edge1:
         {
           funct(0) = -r;
           funct(1) = 0.0;
@@ -613,7 +614,7 @@ namespace MORTAR
         // 1D linear part of standard quadratic shape functions (line3)
         // (used for linear interpolation of std LM field in 2D quadratic mortar)
         // *********************************************************************
-        case MORTAR::MortarElement::quad1D_only_lin:
+        case MORTAR::Element::quad1D_only_lin:
         {
           funct(0) = 0.5 * (1 - r);
           funct(1) = 0.5 * (1 + r);
@@ -635,9 +636,9 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void mortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
-        const double& r,                       ///< r coordinate
-        const MortarElement::ShapeType& shape  ///< distinguish between mortar shape
+        MORTAR::Element& ele,
+        const double& r,                         ///< r coordinate
+        const MORTAR::Element::ShapeType& shape  ///< distinguish between mortar shape
     )
     {
       switch (shape)
@@ -646,7 +647,7 @@ namespace MORTAR
         // 1D dual linear shape functions (line2)
         // (used for interpolation of Lagrange multiplier field)
         // *********************************************************************
-        case MortarElement::lindual1D:
+        case MORTAR::Element::lindual1D:
         {
           // use element-based dual shape functions if no coefficient matrix is stored
           if (ele.MoData().DualShape() == Teuchos::null)
@@ -683,7 +684,7 @@ namespace MORTAR
         // 1D modified dual shape functions (const replacing linear, line2)
         // (used for interpolation of Lagrange multiplier field near boundaries)
         // *********************************************************************
-        case MortarElement::lindual1D_edge0:
+        case MORTAR::Element::lindual1D_edge0:
         {
           funct(0) = 0.0;
           funct(1) = 1.0;
@@ -693,7 +694,7 @@ namespace MORTAR
         // 1D modified dual shape functions (const replacing linear, line2)
         // (used for interpolation of Lagrange multiplier field near boundaries)
         // *********************************************************************
-        case MortarElement::lindual1D_edge1:
+        case MORTAR::Element::lindual1D_edge1:
         {
           funct(0) = 1.0;
           funct(1) = 0.0;
@@ -704,7 +705,7 @@ namespace MORTAR
         // (used for interpolation of Lagrange multiplier field)
         // (including adaption process for distorted elements)
         // *********************************************************************
-        case MortarElement::quaddual1D:
+        case MORTAR::Element::quaddual1D:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -764,7 +765,7 @@ namespace MORTAR
         // (used for interpolation of Lagrange multiplier field)
         // (including adaption process for distorted elements)
         // *********************************************************************
-        case MortarElement::quaddual1D_only_lin:
+        case MORTAR::Element::quaddual1D_only_lin:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -783,7 +784,7 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.ShapeFunctions(MortarElement::quad1D_only_lin, gpc, valquad, derivquad);
+            ele.ShapeFunctions(MORTAR::Element::quad1D_only_lin, gpc, valquad, derivquad);
 
             detg = ele.Jacobian(gpc);
 
@@ -818,7 +819,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[1] = {r};
-          ele.ShapeFunctions(MortarElement::quad1D_only_lin, xi, valquad, derivquad);
+          ele.ShapeFunctions(MORTAR::Element::quad1D_only_lin, xi, valquad, derivquad);
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
@@ -832,7 +833,7 @@ namespace MORTAR
         // (used for interpolation of Lagrange mult. field near boundaries)
         // (only form a basis and have to be adapted for distorted elements)
         // *********************************************************************
-        case MortarElement::dual1D_base_for_edge0:
+        case MORTAR::Element::dual1D_base_for_edge0:
         {
           funct(0) = r;
           funct(1) = 1.0 - r;
@@ -843,7 +844,7 @@ namespace MORTAR
         // (used for interpolation of Lagrange mult. field near boundaries)
         // (only form a basis and have to be adapted for distorted elements)
         // *********************************************************************
-        case MortarElement::dual1D_base_for_edge1:
+        case MORTAR::Element::dual1D_base_for_edge1:
         {
           funct(0) = -r;
           funct(1) = 1.0 + r;
@@ -854,7 +855,7 @@ namespace MORTAR
         // (used for interpolation of Lagrange mult. field near boundaries)
         // (including adaption process for distorted elements)
         // *********************************************************************
-        case MortarElement::quaddual1D_edge0:
+        case MORTAR::Element::quaddual1D_edge0:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -877,8 +878,8 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), 0.0};
-            ele.ShapeFunctions(MortarElement::quad1D, gpc, valquad, derivquad);
-            ele.ShapeFunctions(MortarElement::dual1D_base_for_edge0, gpc, vallin, derivlin);
+            ele.ShapeFunctions(MORTAR::Element::quad1D, gpc, valquad, derivquad);
+            ele.ShapeFunctions(MORTAR::Element::dual1D_base_for_edge0, gpc, vallin, derivlin);
             detg = ele.Jacobian(gpc);
 
             for (int j = 1; j < nnodes; ++j)
@@ -905,7 +906,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. r
           double xi[1] = {r};
-          ele.ShapeFunctions(MortarElement::dual1D_base_for_edge0, xi, vallin, derivlin);
+          ele.ShapeFunctions(MORTAR::Element::dual1D_base_for_edge0, xi, vallin, derivlin);
           for (int i = 1; i < nnodes; ++i)
             for (int j = 1; j < nnodes; ++j)
             {
@@ -924,7 +925,7 @@ namespace MORTAR
         // (used for interpolation of Lagrange mult. field near boundaries)
         // (including adaption process for distorted elements)
         // *********************************************************************
-        case MortarElement::quaddual1D_edge1:
+        case MORTAR::Element::quaddual1D_edge1:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -947,8 +948,8 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), 0.0};
-            ele.ShapeFunctions(MortarElement::quad1D, gpc, valquad, derivquad);
-            ele.ShapeFunctions(MortarElement::dual1D_base_for_edge1, gpc, vallin, derivlin);
+            ele.ShapeFunctions(MORTAR::Element::quad1D, gpc, valquad, derivquad);
+            ele.ShapeFunctions(MORTAR::Element::dual1D_base_for_edge1, gpc, vallin, derivlin);
             detg = ele.Jacobian(gpc);
 
             for (int j = 0; j < nnodes - 1; ++j)
@@ -975,7 +976,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. r
           double xi[1] = {r};
-          ele.ShapeFunctions(MortarElement::dual1D_base_for_edge1, xi, vallin, derivlin);
+          ele.ShapeFunctions(MORTAR::Element::dual1D_base_for_edge1, xi, vallin, derivlin);
           for (int i = 0; i < nnodes - 1; ++i)
             for (int j = 0; j < nnodes - 1; ++j)
             {
@@ -1003,10 +1004,10 @@ namespace MORTAR
      |  evaluate std. shape 2D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_shape_function_2D(V& funct,    ///< to be filled with shape function values
-        const double& xi0,                     ///< xi0 coordinate
-        const double& xi1,                     ///< xi1 coordinate
-        const MortarElement::ShapeType& shape  ///< distinguish between mortar shape
+    void mortar_shape_function_2D(V& funct,      ///< to be filled with shape function values
+        const double& xi0,                       ///< xi0 coordinate
+        const double& xi1,                       ///< xi1 coordinate
+        const MORTAR::Element::ShapeType& shape  ///< distinguish between mortar shape
     )
     {
       switch (shape)
@@ -1015,7 +1016,7 @@ namespace MORTAR
         // constant shape function per element
         // (used for interpolation of LM field and primary variable)
         // *********************************************************************
-        case MortarElement::p0:
+        case MORTAR::Element::p0:
         {
           funct(0) = 1;
           break;
@@ -1024,7 +1025,7 @@ namespace MORTAR
         // 2D standard linear shape functions (tri3)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case MortarElement::lin2D:
+        case MORTAR::Element::lin2D:
         {
           funct(0) = 1 - xi0 - xi1;
           funct(1) = xi0;
@@ -1035,7 +1036,7 @@ namespace MORTAR
         // 2D standard bilinear shape functions (quad4)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case MortarElement::bilin2D:
+        case MORTAR::Element::bilin2D:
         {
           funct(0) = 0.25 * (1 - xi0) * (1 - xi1);
           funct(1) = 0.25 * (1 + xi0) * (1 - xi1);
@@ -1047,7 +1048,7 @@ namespace MORTAR
         // 2D standard quadratic shape functions (tri6)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case MortarElement::quad2D:
+        case MORTAR::Element::quad2D:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1068,7 +1069,7 @@ namespace MORTAR
         // 2D modified quadratic shape functions (tri6)
         // (used in combination with quadr dual LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::quad2D_modified:
+        case MORTAR::Element::quad2D_modified:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1105,7 +1106,7 @@ namespace MORTAR
         // 2D modified (hierarchical) quadratic shape functions (tri6)
         // (used in combination with linear dual LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::quad2D_hierarchical:
+        case MORTAR::Element::quad2D_hierarchical:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1126,7 +1127,7 @@ namespace MORTAR
         // 2D linear part of standard quadratic shape functions (tri6)
         // (used for linear interpolation of std. LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::quad2D_only_lin:
+        case MORTAR::Element::quad2D_only_lin:
         {
           funct(0) = 1 - xi0 - xi1;
           funct(1) = xi0;
@@ -1141,7 +1142,7 @@ namespace MORTAR
         // 2D serendipity shape functions (quad8)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case MortarElement::serendipity2D:
+        case MORTAR::Element::serendipity2D:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1177,7 +1178,7 @@ namespace MORTAR
         // 2D modified serendipity shape functions (quad8)
         // (used in combination with quadr dual LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::serendipity2D_modified:
+        case MORTAR::Element::serendipity2D_modified:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1228,7 +1229,7 @@ namespace MORTAR
         // 2D modified (hierarchical) serendipity shape functions (quad8)
         // (used in combination with linear dual LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::serendipity2D_hierarchical:
+        case MORTAR::Element::serendipity2D_hierarchical:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1254,7 +1255,7 @@ namespace MORTAR
         // 2D bilinear part of serendipity quadratic shape functions (quad8)
         // (used for linear interpolation of std LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::serendipity2D_only_lin:
+        case MORTAR::Element::serendipity2D_only_lin:
         {
           funct(0) = 0.25 * (1 - xi0) * (1 - xi1);
           funct(1) = 0.25 * (1 + xi0) * (1 - xi1);
@@ -1271,7 +1272,7 @@ namespace MORTAR
         // 2D standard biquadratic shape functions (quad9)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case MortarElement::biquad2D:
+        case MORTAR::Element::biquad2D:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1301,7 +1302,7 @@ namespace MORTAR
         // 2D standard biquadratic shape functions (quad9)
         // (used in combination with quadr dual LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::biquad2D_modified:
+        case MORTAR::Element::biquad2D_modified:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1348,7 +1349,7 @@ namespace MORTAR
         // 2D standard biquadratic shape functions (quad9)
         // (used in combination with linear dual LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::biquad2D_hierarchical:
+        case MORTAR::Element::biquad2D_hierarchical:
         {
           const double r = xi0;
           const double s = xi1;
@@ -1378,7 +1379,7 @@ namespace MORTAR
         // 2D bilinear part of biquadratic quadratic shape functions (quad9)
         // (used for linear interpolation of std LM field in 3D quadratic mortar)
         // *********************************************************************
-        case MortarElement::biquad2D_only_lin:
+        case MORTAR::Element::biquad2D_only_lin:
         {
           funct(0) = 0.25 * (1 - xi0) * (1 - xi1);
           funct(1) = 0.25 * (1 + xi0) * (1 - xi1);
@@ -1407,10 +1408,10 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void mortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
-        const double& xi0,                     ///< xi0 coordinate
-        const double& xi1,                     ///< xi1 coordinate
-        const MortarElement::ShapeType& shape  ///< distinguish between mortar shape
+        MORTAR::Element& ele,
+        const double& xi0,                       ///< xi0 coordinate
+        const double& xi1,                       ///< xi1 coordinate
+        const MORTAR::Element::ShapeType& shape  ///< distinguish between mortar shape
     )
     {
       switch (shape)
@@ -1419,7 +1420,7 @@ namespace MORTAR
         // 2D dual linear shape functions (tri3)
         // (used for interpolation of Lagrange multiplier field)
         // *********************************************************************
-        case MortarElement::lindual2D:
+        case MORTAR::Element::lindual2D:
         {
           if (ele.MoData().DualShape() == Teuchos::null)
           {
@@ -1458,7 +1459,7 @@ namespace MORTAR
         // (used for interpolation of Lagrange multiplier field)
         // (including adaption process for distorted elements)
         // *********************************************************************
-        case MortarElement::bilindual2D:
+        case MORTAR::Element::bilindual2D:
         {
           const int nnodes = 4;
           // get solution matrix with dual parameters
@@ -1525,7 +1526,7 @@ namespace MORTAR
         // (including adaption process for distorted elements)
         // (including modification of displacement shape functions)
         // *********************************************************************
-        case MortarElement::quaddual2D:
+        case MORTAR::Element::quaddual2D:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -1576,7 +1577,7 @@ namespace MORTAR
         // (including adaption process for distorted elements)
         // (including modification of displacement shape functions)
         // *********************************************************************
-        case MortarElement::serendipitydual2D:
+        case MORTAR::Element::serendipitydual2D:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -1627,7 +1628,7 @@ namespace MORTAR
         // (including adaption process for distorted elements)
         // (including modification of displacement shape functions)
         // *********************************************************************
-        case MortarElement::biquaddual2D:
+        case MORTAR::Element::biquaddual2D:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -1678,7 +1679,7 @@ namespace MORTAR
         // (including adaption process for distorted elements)
         // (including modification of displacement shape functions)
         // *********************************************************************
-        case MortarElement::quaddual2D_only_lin:
+        case MORTAR::Element::quaddual2D_only_lin:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -1696,7 +1697,7 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.ShapeFunctions(MortarElement::quad2D_only_lin, gpc, valquad, derivquad);
+            ele.ShapeFunctions(MORTAR::Element::quad2D_only_lin, gpc, valquad, derivquad);
 
             detg = ele.Jacobian(gpc);
 
@@ -1733,7 +1734,7 @@ namespace MORTAR
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
 
-          ele.ShapeFunctions(MortarElement::quad2D_only_lin, xi, valquad, derivquad);
+          ele.ShapeFunctions(MORTAR::Element::quad2D_only_lin, xi, valquad, derivquad);
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
@@ -1748,7 +1749,7 @@ namespace MORTAR
         // (including adaption process for distorted elements)
         // (including modification of displacement shape functions)
         // *********************************************************************
-        case MortarElement::serendipitydual2D_only_lin:
+        case MORTAR::Element::serendipitydual2D_only_lin:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -1766,7 +1767,7 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.ShapeFunctions(MortarElement::serendipity2D_only_lin, gpc, valquad, derivquad);
+            ele.ShapeFunctions(MORTAR::Element::serendipity2D_only_lin, gpc, valquad, derivquad);
 
             detg = ele.Jacobian(gpc);
 
@@ -1802,7 +1803,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
-          ele.ShapeFunctions(MortarElement::serendipity2D_only_lin, xi, valquad, derivquad);
+          ele.ShapeFunctions(MORTAR::Element::serendipity2D_only_lin, xi, valquad, derivquad);
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
@@ -1817,7 +1818,7 @@ namespace MORTAR
         // (including adaption process for distorted elements)
         // (including modification of displacement shape functions)
         // *********************************************************************
-        case MortarElement::biquaddual2D_only_lin:
+        case MORTAR::Element::biquaddual2D_only_lin:
         {
           // establish fundamental data
           double detg = 0.0;
@@ -1835,7 +1836,7 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.ShapeFunctions(MortarElement::biquad2D_only_lin, gpc, valquad, derivquad);
+            ele.ShapeFunctions(MORTAR::Element::biquad2D_only_lin, gpc, valquad, derivquad);
             detg = ele.Jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -1869,7 +1870,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
-          ele.ShapeFunctions(MortarElement::biquad2D_only_lin, xi, valquad, derivquad);
+          ele.ShapeFunctions(MORTAR::Element::biquad2D_only_lin, xi, valquad, derivquad);
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
@@ -1893,7 +1894,7 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void mortar_nurbs_shape_function_1D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
+        MORTAR::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const CORE::FE::CellType& shape  ///< distinguish between shape
     )
@@ -1907,7 +1908,7 @@ namespace MORTAR
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
-            weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
           CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
           CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
@@ -1921,7 +1922,7 @@ namespace MORTAR
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
-            weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
           CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
           CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
@@ -1944,7 +1945,7 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void mortar_nurbs_shape_function_2D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
+        MORTAR::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const double& xi1,               ///< xi0 coordinate
         const CORE::FE::CellType& shape  ///< distinguish between shape
@@ -1967,7 +1968,7 @@ namespace MORTAR
         {
           CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
-            weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
           CORE::LINALG::SerialDenseVector uv(2);
           uv(0) = xi0;
@@ -1993,7 +1994,7 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void mortar_nurbs_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
+        MORTAR::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const CORE::FE::CellType& shape  ///< distinguish between shape
     )
@@ -2063,7 +2064,7 @@ namespace MORTAR
      *----------------------------------------------------------------------*/
     template <class V>
     void mortar_nurbs_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
-        MORTAR::MortarElement& ele,
+        MORTAR::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const double& xi1,               ///< xi1 coordinate
         const CORE::FE::CellType& shape  ///< distinguish between shape

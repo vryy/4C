@@ -29,22 +29,22 @@ BACI_NAMESPACE_OPEN
 
 namespace MORTAR
 {
-  class MortarElementNitscheContainer
+  class ElementNitscheContainer
   {
    public:
     /**
      * Virtual destructor.
      */
-    virtual ~MortarElementNitscheContainer() = default;
+    virtual ~ElementNitscheContainer() = default;
 
-    MortarElementNitscheContainer() = default;
+    ElementNitscheContainer() = default;
 
     virtual void Clear() = 0;
 
-    virtual void AssembleRHS(MORTAR::MortarElement* mele, CONTACT::VecBlockType row,
-        Teuchos::RCP<Epetra_FEVector> fc) = 0;
+    virtual void AssembleRHS(
+        MORTAR::Element* mele, CONTACT::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc) = 0;
 
-    virtual void AssembleMatrix(MORTAR::MortarElement* mele, CONTACT::MatBlockType block,
+    virtual void AssembleMatrix(MORTAR::Element* mele, CONTACT::MatBlockType block,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) = 0;
 
     virtual double* Rhs(int dof) = 0;
@@ -76,7 +76,7 @@ namespace MORTAR
   };
 
   template <CORE::FE::CellType parent_distype>
-  class MortarElementNitscheDataTsi
+  class ElementNitscheDataTsi
   {
    public:
     void Clear()
@@ -98,7 +98,7 @@ namespace MORTAR
   };
 
   template <CORE::FE::CellType parent_distype>
-  class MortarElementNitscheDataPoro
+  class ElementNitscheDataPoro
   {
    public:
     void Clear()
@@ -121,7 +121,7 @@ namespace MORTAR
   };
 
   template <CORE::FE::CellType parent_distype>
-  class MortarElementNitscheDataSsi
+  class ElementNitscheDataSsi
   {
    public:
     void Clear()
@@ -143,7 +143,7 @@ namespace MORTAR
   };
 
   template <CORE::FE::CellType parent_distype>
-  class MortarElementNitscheDataSsiElch
+  class ElementNitscheDataSsiElch
   {
    public:
     void Clear()
@@ -165,7 +165,7 @@ namespace MORTAR
   };
 
   template <CORE::FE::CellType parent_distype>
-  class MortarElementNitscheData : public MortarElementNitscheContainer
+  class ElementNitscheData : public ElementNitscheContainer
   {
    public:
     double* Rhs(int dof) override { return &rhs_(dof); }
@@ -195,19 +195,19 @@ namespace MORTAR
     double* Ked(int col, int dof) override { return &ssi_elch_data_.k_ed_[col](dof); }
     double* Kde(int col) override { return ssi_elch_data_.k_de_[col].A(); }
 
-    void AssembleRHS(MORTAR::MortarElement* mele, CONTACT::VecBlockType row,
+    void AssembleRHS(MORTAR::Element* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) override;
 
-    void AssembleMatrix(MORTAR::MortarElement* mele, CONTACT::MatBlockType block,
+    void AssembleMatrix(MORTAR::Element* mele, CONTACT::MatBlockType block,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     template <int num_dof_per_node>
-    void AssembleRHS(MORTAR::MortarElement* mele,
+    void AssembleRHS(MORTAR::Element* mele,
         const CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
         std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc);
 
     template <int num_dof_per_node>
-    void AssembleMatrix(MORTAR::MortarElement* mele,
+    void AssembleMatrix(MORTAR::Element* mele,
         const std::unordered_map<int,
             CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
         std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc);
@@ -230,10 +230,10 @@ namespace MORTAR
         CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>,
             1>>
         k_;
-    MORTAR::MortarElementNitscheDataTsi<parent_distype> tsi_data_;
-    MORTAR::MortarElementNitscheDataPoro<parent_distype> poro_data_;
-    MORTAR::MortarElementNitscheDataSsi<parent_distype> ssi_data_;
-    MORTAR::MortarElementNitscheDataSsiElch<parent_distype> ssi_elch_data_;
+    MORTAR::ElementNitscheDataTsi<parent_distype> tsi_data_;
+    MORTAR::ElementNitscheDataPoro<parent_distype> poro_data_;
+    MORTAR::ElementNitscheDataSsi<parent_distype> ssi_data_;
+    MORTAR::ElementNitscheDataSsiElch<parent_distype> ssi_elch_data_;
   };
 
 }  // namespace MORTAR

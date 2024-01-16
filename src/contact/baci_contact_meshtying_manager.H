@@ -42,7 +42,7 @@ namespace CONTACT
     two meshtying boundary conditions. It extracts all meshtying boundary conditions
     and constructs one or multiple meshtying interfaces from them and stores them.
 
-    It calls MORTAR::MortarInterface::FillComplete() on all meshtying interfaces which
+    It calls MORTAR::Interface::FillComplete() on all meshtying interfaces which
     makes the nodes and elements of a meshtying interfaces redundant on all
     processors that either own a node or an element on the interfaces in the
     input discretization.

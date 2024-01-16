@@ -172,7 +172,7 @@ void MORTAR::STRATEGY::Factory::CheckDimension() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& discret,
-    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::MortarElement> cele) const
+    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::Element> cele) const
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discret));
@@ -200,7 +200,7 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& d
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::PrepareNURBSNode(
-    const DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode) const
+    const DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const
 {
   const DRT::NURBS::ControlPoint* cp = dynamic_cast<const DRT::NURBS::ControlPoint*>(node);
 
@@ -212,7 +212,7 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSNode(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::BuildSearchTree(
-    const std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const
+    const std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces) const
 {
   for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
 

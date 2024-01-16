@@ -200,7 +200,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 
       for (int k = 0; k < element->NumPoint(); ++k)
       {
-        MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
+        Node* mrtrnode = dynamic_cast<Node*>(nodes[k]);
         if (!mrtrnode) dserror("Null pointer!");
         const auto& posnode = mrtrnode->X();
 
@@ -544,7 +544,7 @@ void MORTAR::BinaryTree::InitSearchElements()
     int gid = selements_->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    MortarElement* sele = dynamic_cast<MortarElement*>(ele);
+    MORTAR::Element* sele = dynamic_cast<MORTAR::Element*>(ele);
 
     sele->MoData().SearchElements().resize(0);
   }
@@ -611,7 +611,7 @@ void MORTAR::BinaryTree::SetEnlarge()
     int gid = selements_->GID(i);
     DRT::Element* element = Discret().gElement(gid);
     if (!element) dserror("Cannot find element with gid %\n", gid);
-    MORTAR::MortarElement* mrtrelement = dynamic_cast<MORTAR::MortarElement*>(element);
+    MORTAR::Element* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     double mincurrent = mrtrelement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
@@ -622,7 +622,7 @@ void MORTAR::BinaryTree::SetEnlarge()
     int gid = melements_->GID(i);
     DRT::Element* element = Discret().gElement(gid);
     if (!element) dserror("Cannot find element with gid %\n", gid);
-    MORTAR::MortarElement* mrtrelement = dynamic_cast<MORTAR::MortarElement*>(element);
+    MORTAR::Element* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     double mincurrent = mrtrelement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
@@ -785,7 +785,7 @@ void MORTAR::BinaryTree::EvaluateSearch(
       int sgid = (int)streenode->Elelist()[0];  // global id of slave element
       int mgid = (int)mtreenode->Elelist()[0];  // global id of master element
       DRT::Element* element = Discret().gElement(sgid);
-      MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(element);
+      MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(element);
       selement->AddSearchElements(mgid);
     }
   }

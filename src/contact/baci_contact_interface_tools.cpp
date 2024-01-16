@@ -127,8 +127,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       //******************************************************************
       for (int i = 0; i < idiscret_->NumMyRowElements(); ++i)
       {
-        MORTAR::MortarElement* element =
-            dynamic_cast<MORTAR::MortarElement*>(idiscret_->lRowElement(i));
+        MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
         CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
         element->GetNodalCoords(coord);
@@ -4391,7 +4390,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %i", gid);
-      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
     }
@@ -4457,10 +4456,10 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       int gid1 = selecolmap_->GID(i);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("Cannot find slave element with gid %", gid1);
-      MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
+      MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
       // empty vector of master element pointers
-      std::vector<MORTAR::MortarElement*> melements;
+      std::vector<MORTAR::Element*> melements;
 
       // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
@@ -4469,7 +4468,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
         int gid2 = selement->MoData().SearchElements()[j];
         DRT::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) dserror("Cannot find master element with gid %", gid2);
-        MORTAR::MortarElement* melement = dynamic_cast<MORTAR::MortarElement*>(ele2);
+        MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
         melements.push_back(melement);
       }
 
@@ -4593,7 +4592,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("Cannot find ele with gid %i", gid);
-      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
     }
@@ -4659,10 +4658,10 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       int gid1 = selecolmap_->GID(i);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("Cannot find slave element with gid %", gid1);
-      MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
+      MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
       // empty vector of master element pointers
-      std::vector<MORTAR::MortarElement*> melements;
+      std::vector<MORTAR::Element*> melements;
 
       // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
@@ -4671,7 +4670,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
         int gid2 = selement->MoData().SearchElements()[j];
         DRT::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) dserror("Cannot find master element with gid %", gid2);
-        MORTAR::MortarElement* melement = dynamic_cast<MORTAR::MortarElement*>(ele2);
+        MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
         melements.push_back(melement);
       }
 
@@ -4794,7 +4793,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("Cannot find ele with gid %i", gid);
-    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->MoData().SearchElements().resize(0);
   }
@@ -4832,10 +4831,10 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("Cannot find slave element with gid %", gid1);
-    MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
+    MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
     // empty vector of master element pointers
-    std::vector<MORTAR::MortarElement*> melements;
+    std::vector<MORTAR::Element*> melements;
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -4844,7 +4843,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("Cannot find master element with gid %", gid2);
-      MORTAR::MortarElement* melement = dynamic_cast<MORTAR::MortarElement*>(ele2);
+      MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
       melements.push_back(melement);
     }
 

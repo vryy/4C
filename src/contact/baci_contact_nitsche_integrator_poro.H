@@ -51,7 +51,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -67,7 +67,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -82,7 +82,7 @@ namespace CONTACT
     \brief Evaluate cauchy stress component and its derivatives
     */
     template <int dim>
-    void SoEleCauchy(MORTAR::MortarElement& moEle, double* boundary_gpcoord,
+    void SoEleCauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
         std::vector<CORE::GEN::pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
@@ -96,7 +96,7 @@ namespace CONTACT
     \brief evaluate GPTS forces and linearization at this gp
     */
     template <int dim>
-    void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -107,7 +107,7 @@ namespace CONTACT
 
    protected:
     template <int dim>
-    void IntegrateTest(const double fac, MORTAR::MortarElement& ele,
+    void IntegrateTest(const double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dxi, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
@@ -117,18 +117,18 @@ namespace CONTACT
         const std::vector<CORE::GEN::pairedvector<int, double>>& test_dir_deriv);
 
     template <int dim>
-    void IntegratePoroNoOutFlow(const double fac, MORTAR::MortarElement& ele, double* xi,
+    void IntegratePoroNoOutFlow(const double fac, MORTAR::Element& ele, double* xi,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const double jac, const CORE::GEN::pairedvector<int, double>& jacintcellmap,
         const double wgt, const CORE::LINALG::Matrix<dim, 1>& normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
-        MORTAR::MortarElement& otherele, const CORE::LINALG::SerialDenseVector& othershape);
+        MORTAR::Element& otherele, const CORE::LINALG::SerialDenseVector& othershape);
 
-    bool GetPoroPressure(MORTAR::MortarElement& ele, const CORE::LINALG::SerialDenseVector& shape,
-        MORTAR::MortarElement& otherele, const CORE::LINALG::SerialDenseVector& othershape,
+    bool GetPoroPressure(MORTAR::Element& ele, const CORE::LINALG::SerialDenseVector& shape,
+        MORTAR::Element& otherele, const CORE::LINALG::SerialDenseVector& othershape,
         double& poropressure);
 
-    void GetPoroQuantitiesatGP(MORTAR::MortarElement& ele, double* xi, double& spresgp,  //(in)
+    void GetPoroQuantitiesatGP(MORTAR::Element& ele, double* xi, double& spresgp,  //(in)
         double& sJ, std::map<int, double>& sJLin, double& sporosity, double& sdphi_dp,
         double& sdphi_dJ);  // out
 

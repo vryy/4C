@@ -27,7 +27,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : idiscret_(idiscret),
       dim_(dim),
       quad_(quad),
@@ -93,7 +93,7 @@ bool MORTAR::Coupling2d::Project()
   // project slave nodes onto master element
   for (int i = 0; i < SlaveElement().NumNode(); ++i)
   {
-    auto* snode = dynamic_cast<MORTAR::MortarNode*>(mysnodes[i]);
+    auto* snode = dynamic_cast<MORTAR::Node*>(mysnodes[i]);
     std::array<double, 2> xi = {0.0, 0.0};
 
     if (SlaveElement().Shape() == CORE::FE::CellType::nurbs3)
@@ -110,13 +110,13 @@ bool MORTAR::Coupling2d::Project()
 
       // for nurbs we need to use the Gauss point projector, since the actual spatial coords
       // of the point to be projected is calculated by N*X using shape functions N and CP coords X
-      MORTAR::MortarProjector::Impl(SlaveElement(), mele_)
+      MORTAR::Projector::Impl(SlaveElement(), mele_)
           ->ProjectGaussPoint2D(SlaveElement(), xinode.data(), mele_, xi.data());
     }
     else
     {
       // TODO random?
-      MORTAR::MortarProjector::Impl(SlaveElement())
+      MORTAR::Projector::Impl(SlaveElement())
           ->ProjectNodalNormal(*snode, MasterElement(), xi.data());
     }
 
@@ -139,7 +139,7 @@ bool MORTAR::Coupling2d::Project()
   // project master nodes onto slave element
   for (int i = 0; i < 2; ++i)
   {
-    auto* mnode = dynamic_cast<MORTAR::MortarNode*>(mymnodes[i]);
+    auto* mnode = dynamic_cast<MORTAR::Node*>(mymnodes[i]);
     std::array<double, 2> xi = {0.0, 0.0};
 
     if (MasterElement().Shape() == CORE::FE::CellType::nurbs3)
@@ -163,18 +163,18 @@ bool MORTAR::Coupling2d::Project()
 
       for (int mn = 0; mn < MasterElement().NumNode(); mn++)
       {
-        auto* mnode2 = dynamic_cast<MORTAR::MortarNode*>(mymnodes[mn]);
+        auto* mnode2 = dynamic_cast<MORTAR::Node*>(mymnodes[mn]);
         for (int dim = 0; dim < 2; ++dim) xm[dim] += mval(mn) * mnode2->xspatial()[dim];
       }
       std::vector<int> mdofs(2);
-      MORTAR::MortarNode tmp_node(mnode->Id(), xm, mnode->Owner(), mdofs, false);
-      MORTAR::MortarProjector::Impl(SlaveElement())
+      MORTAR::Node tmp_node(mnode->Id(), xm, mnode->Owner(), mdofs, false);
+      MORTAR::Projector::Impl(SlaveElement())
           ->ProjectElementNormal(tmp_node, SlaveElement(), xi.data());
     }
     else
     {
       // TODO random?
-      MORTAR::MortarProjector::Impl(SlaveElement())
+      MORTAR::Projector::Impl(SlaveElement())
           ->ProjectElementNormal(*mnode, SlaveElement(), xi.data());
     }
 
@@ -831,7 +831,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
   if (!mynodes) dserror("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {
-    auto* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    auto* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mycnode) dserror("Null pointer!");
     mycnode->HasSegment() = true;
   }
@@ -860,7 +860,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
       (Quad() && lmtype == INPAR::MORTAR::lagmult_const))
   {
     // do the overlap integration (integrate and linearize both M and gap)
-    MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+    MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
         ->IntegrateSegment2D(SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, Comm());
   }
 
@@ -898,8 +898,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
       quad_(quad),
@@ -972,7 +971,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling(
     if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad) ||
         (Quad() && lmtype == INPAR::MORTAR::lagmult_lin))
     {
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(0), imortar_)
           ->IntegrateEleBased2D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
 
       // Perform Boundary Segmentation if required
@@ -1155,7 +1154,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
     std::array<double, 2> eta = {integrator.Coordinate(gp, 0), 0.0};
     double wgt = integrator.Weight(gp);
 
-    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    // coordinate transformation sxi->eta (slave MORTAR::Element->Overlap)
     std::array<double, 2> sxi = {0.0, 0.0};
     sxi[0] = 0.5 * (1.0 - eta[0]) * ximin + 0.5 * (1.0 + eta[0]) * ximax;
 

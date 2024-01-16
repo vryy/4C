@@ -222,7 +222,7 @@ namespace MORTAR
     store knot vector, zerosized information and normal factor
     */
     void PrepareNURBSElement(DRT::Discretization& discret, Teuchos::RCP<DRT::Element> ele,
-        Teuchos::RCP<MORTAR::MortarElement> cele, int dim);
+        Teuchos::RCP<MORTAR::Element> cele, int dim);
 
     /*!
     \brief Prepare mortar node for nurbs case
@@ -230,7 +230,7 @@ namespace MORTAR
     store control point weight
 
     */
-    void PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode);
+    void PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode);
 
     void MortarMatrixCondensation(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& k,
         const std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>& p);

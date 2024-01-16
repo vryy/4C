@@ -29,7 +29,7 @@ namespace CONTACT
 
     */
     PoroMtLagrangeStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
         int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
 

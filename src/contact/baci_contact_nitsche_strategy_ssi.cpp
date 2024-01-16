@@ -44,7 +44,7 @@ void CONTACT::NitscheStrategySsi::InitTraceHE()
   {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
-      auto* mele = dynamic_cast<MORTAR::MortarElement*>(
+      auto* mele = dynamic_cast<MORTAR::Element*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       // set the initial TraceHE to the edge length size of the element
       mele->TraceHE() = mele->MaxEdgeSize();
@@ -122,7 +122,7 @@ void CONTACT::NitscheStrategySsi::SetParentState(
           auto* interface_ele = interface_dis.gElement(gid);
           if (interface_ele == nullptr) dserror("Did not find element.");
 
-          auto* mortar_ele = dynamic_cast<MORTAR::MortarElement*>(interface_ele);
+          auto* mortar_ele = dynamic_cast<MORTAR::Element*>(interface_ele);
           auto* mortar_parent_ele = scatra_dis->gElement(mortar_ele->ParentElementId());
 
           std::vector<int> lm;

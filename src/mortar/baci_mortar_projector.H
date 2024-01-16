@@ -22,70 +22,68 @@ BACI_NAMESPACE_OPEN
 namespace MORTAR
 {
   // forward declarations
-  class MortarNode;
-  class MortarElement;
+  class Node;
+  class Element;
 
   /*!
   \brief A class to perform projections of nodes onto opposing elements
 
   */
 
-  class MortarProjector
+  class Projector
   {
    public:
-    MortarProjector(){};
+    Projector(){};
 
-    virtual ~MortarProjector() = default;
+    virtual ~Projector() = default;
     //! @name Access methods
 
     /// 1. Internal implementation class
-    static MortarProjector* Impl(MortarElement& ele);
+    static Projector* Impl(MORTAR::Element& ele);
 
     /// 2. Internal implementation class
-    static MortarProjector* Impl(MortarElement& sele, MortarElement& mele);
+    static Projector* Impl(MORTAR::Element& sele, MORTAR::Element& mele);
 
     //! @name virtual functions
-    virtual bool ProjectNodalNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) = 0;
+    virtual bool ProjectNodalNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) = 0;
 
-    virtual bool ProjectElementNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) = 0;
+    virtual bool ProjectElementNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) = 0;
 
-    virtual bool ProjectGaussPoint2D(MORTAR::MortarElement& gpele, const double* gpeta,
-        MORTAR::MortarElement& ele, double* xi) = 0;
+    virtual bool ProjectGaussPoint2D(
+        MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele, double* xi) = 0;
 
-    virtual bool ProjectGaussPoint3D(MORTAR::MortarElement& gpele, const double* gpeta,
-        MORTAR::MortarElement& ele, double* xi, double& par) = 0;
+    virtual bool ProjectGaussPoint3D(MORTAR::Element& gpele, const double* gpeta,
+        MORTAR::Element& ele, double* xi, double& par) = 0;
 
     virtual bool ProjectGaussPointAuxn3D(const double* globgp, const double* auxn,
-        MORTAR::MortarElement& ele, double* xi, double& par) = 0;
+        MORTAR::Element& ele, double* xi, double& par) = 0;
 
-    virtual bool ProjectSNodeByMNormal(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist) = 0;
+    virtual bool ProjectSNodeByMNormal(
+        MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist) = 0;
 
 
-    virtual bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode,
-        MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) = 0;
-
-    virtual bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
+    virtual bool ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode, MORTAR::Element& mele,
         double* xi, double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) = 0;
-  };  // class MortarProjector
+
+    virtual bool ProjectSNodeByMNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) = 0;
+  };  // class Projector
 
   /*!
   \brief A class to perform projections of nodes onto opposing elements
 
   */
   template <CORE::FE::CellType distype>
-  class MortarProjectorCalc : public MortarProjector
+  class ProjectorCalc : public Projector
   {
    public:
     // constructor
-    MortarProjectorCalc();
+    ProjectorCalc();
 
     /// Singleton access method
-    static MortarProjectorCalc<distype>* Instance(
+    static ProjectorCalc<distype>* Instance(
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! n_: number of element nodes
@@ -113,8 +111,7 @@ namespace MORTAR
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectNodalNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) override;
+    bool ProjectNodalNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) override;
 
     /*!
     \brief Project a node onto an element along the interpolated
@@ -134,8 +131,7 @@ namespace MORTAR
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectElementNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) override;
+    bool ProjectElementNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) override;
 
     /*!
     \brief Project a Gauss point onto an element along GP normal
@@ -151,8 +147,8 @@ namespace MORTAR
     \param xi (out)  : Local coordinates of projection on master element
 
     */
-    bool ProjectGaussPoint2D(MORTAR::MortarElement& gpele, const double* gpeta,
-        MORTAR::MortarElement& ele, double* xi) override
+    bool ProjectGaussPoint2D(
+        MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele, double* xi) override
     {
       dserror("Called ele-based projection for segment-based integration!!!");
       return false;
@@ -173,8 +169,8 @@ namespace MORTAR
     \param par (out ): Projection parameter alpha
 
     */
-    bool ProjectGaussPoint3D(MORTAR::MortarElement& gpele, const double* gpeta,
-        MORTAR::MortarElement& ele, double* xi, double& par) override
+    bool ProjectGaussPoint3D(MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele,
+        double* xi, double& par) override
     {
       dserror("Called ele-based projection for segment-based integration!!!");
       return false;
@@ -195,87 +191,83 @@ namespace MORTAR
     \param par (out ): Projection parameter alpha
 
     */
-    bool ProjectGaussPointAuxn3D(const double* globgp, const double* auxn,
-        MORTAR::MortarElement& ele, double* xi, double& par) override;
+    bool ProjectGaussPointAuxn3D(const double* globgp, const double* auxn, MORTAR::Element& ele,
+        double* xi, double& par) override;
 
     // TODO explanation
-    bool ProjectSNodeByMNormal(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
+    bool ProjectSNodeByMNormal(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist) override;
 
     // TODO explanation
-    bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist,
+    bool ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override;
 
     // TODO explanation
-    bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist,
+    bool ProjectSNodeByMNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override;
 
    protected:
-    bool ProjectSNodeByMNormal3D(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
-        double* normal, double& dist);
+    bool ProjectSNodeByMNormal3D(
+        MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist);
 
-    bool ProjectSNodeByMNormal3DLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist,
+    bool ProjectSNodeByMNormal3DLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
-    bool ProjectSNodeByMNormal2D(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
-        double* normal, double& dist);
+    bool ProjectSNodeByMNormal2D(
+        MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist);
 
-    bool ProjectSNodeByMNodalNormal2DLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist,
+    bool ProjectSNodeByMNodalNormal2DLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
-    bool ProjectSNodeByMNodalNormal3DLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist,
+    bool ProjectSNodeByMNodalNormal3DLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
-    bool ProjectSNodeByMNormal2DLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist,
+    bool ProjectSNodeByMNormal2DLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief Evaluate F for nodal normal projection
 
     */
-    double EvaluateFNodalNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, const double* eta);
+    double EvaluateFNodalNormal(MORTAR::Node& node, MORTAR::Element& ele, const double* eta);
 
     /*!
     \brief Evaluate GradF for nodal normal projection
 
     */
-    double EvaluateGradFNodalNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, const double* eta);
+    double EvaluateGradFNodalNormal(MORTAR::Node& node, MORTAR::Element& ele, const double* eta);
 
     /*!
     \brief Evaluate F for element normal projection
 
     */
-    double EvaluateFElementNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, const double* eta);
+    double EvaluateFElementNormal(MORTAR::Node& node, MORTAR::Element& ele, const double* eta);
 
     /*!
     \brief Evaluate GradF for element normal projection
 
     */
-    double EvaluateGradFElementNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, const double* eta);
+    double EvaluateGradFElementNormal(MORTAR::Node& node, MORTAR::Element& ele, const double* eta);
 
     /*!
     \brief Evaluate F for AuxPlane Gauss point projection (3D)
 
     */
     bool EvaluateFGaussPointAuxn3D(double* f, const double* globgp, const double* auxn,
-        MORTAR::MortarElement& ele, const double* eta, const double& alpha);
+        MORTAR::Element& ele, const double* eta, const double& alpha);
 
     /*!
     \brief Evaluate GradF for AuxPlane Gauss point projection (3D)
 
     */
     bool EvaluateGradFGaussPointAuxn3D(CORE::LINALG::Matrix<3, 3>& fgrad, const double* globgp,
-        const double* auxn, MORTAR::MortarElement& ele, const double* eta, const double& alpha);
+        const double* auxn, MORTAR::Element& ele, const double* eta, const double& alpha);
   };
 
   /*!
@@ -283,14 +275,14 @@ namespace MORTAR
 
   */
   template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-  class MortarProjectorCalc_EleBased : public MortarProjector
+  class ProjectorCalc_EleBased : public Projector
   {
    public:
     // constructor
-    MortarProjectorCalc_EleBased();
+    ProjectorCalc_EleBased();
 
     /// Singleton access method
-    static MortarProjectorCalc_EleBased<distypeS, distypeM>* Instance(
+    static ProjectorCalc_EleBased<distypeS, distypeM>* Instance(
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes
@@ -321,8 +313,7 @@ namespace MORTAR
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectNodalNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) override
+    bool ProjectNodalNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) override
     {
       dserror("Called segment-based projection for element-based integration!!!");
       return false;
@@ -346,8 +337,7 @@ namespace MORTAR
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectElementNormal(
-        MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi) override
+    bool ProjectElementNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) override
     {
       dserror("Called segment-based projection for element-based integration!!!");
       return false;
@@ -367,8 +357,8 @@ namespace MORTAR
     \param xi (out)  : Local coordinates of projection on master element
 
     */
-    bool ProjectGaussPoint2D(MORTAR::MortarElement& gpele, const double* gpeta,
-        MORTAR::MortarElement& ele, double* xi) override;
+    bool ProjectGaussPoint2D(
+        MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele, double* xi) override;
 
     /*!
     \brief Project a Gauss point onto an element along GP normal (3D)
@@ -385,8 +375,8 @@ namespace MORTAR
     \param par (out ): Projection parameter alpha
 
     */
-    bool ProjectGaussPoint3D(MORTAR::MortarElement& gpele, const double* gpeta,
-        MORTAR::MortarElement& ele, double* xi, double& par) override;
+    bool ProjectGaussPoint3D(MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele,
+        double* xi, double& par) override;
 
     /*!
     \brief Project a Gauss point onto an element along AuxPlane normal (3D)
@@ -403,30 +393,30 @@ namespace MORTAR
     \param par (out ): Projection parameter alpha
 
     */
-    bool ProjectGaussPointAuxn3D(const double* globgp, const double* auxn,
-        MORTAR::MortarElement& ele, double* xi, double& par) override
+    bool ProjectGaussPointAuxn3D(const double* globgp, const double* auxn, MORTAR::Element& ele,
+        double* xi, double& par) override
     {
       dserror("Called Aux.-plane projection for element-based integration!!!");
       return false;
     };
 
-    bool ProjectSNodeByMNormal(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
+    bool ProjectSNodeByMNormal(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist) override
     {
       dserror("ERROR");
       return false;
     };
 
-    bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist,
+    bool ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override
     {
       dserror("ERROR");
       return false;
     };
 
-    bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
-        double* xi, double* normal, double& dist,
+    bool ProjectSNodeByMNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
+        double* normal, double& dist,
         std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override
     {
       dserror("ERROR");
@@ -447,35 +437,34 @@ namespace MORTAR
     \param globgp(in) : global gp coordinates
 
     */
-    bool CheckProjection4AUXPLANE(MORTAR::MortarElement& ele, double* ngp, double* globgp);
+    bool CheckProjection4AUXPLANE(MORTAR::Element& ele, double* ngp, double* globgp);
 
     /*!
     \brief Evaluate F for Gauss point projection
 
     */
     double EvaluateFGaussPoint2D(
-        const double* gpx, const double* gpn, MORTAR::MortarElement& ele, const double* eta);
+        const double* gpx, const double* gpn, MORTAR::Element& ele, const double* eta);
 
     /*!
     \brief Evaluate GradF for Gauss point projection
 
     */
-    double EvaluateGradFGaussPoint2D(
-        const double* gpn, MORTAR::MortarElement& ele, const double* eta);
+    double EvaluateGradFGaussPoint2D(const double* gpn, MORTAR::Element& ele, const double* eta);
 
     /*!
     \brief Evaluate F for Gauss point projection (3D)
 
     */
     bool EvaluateFGaussPoint3D(double* f, const double* gpx, const double* gpn,
-        MORTAR::MortarElement& ele, const double* eta, const double& alpha);
+        MORTAR::Element& ele, const double* eta, const double& alpha);
 
     /*!
     \brief Evaluate GradF for Gauss point projection (3D)
 
     */
     bool EvaluateGradFGaussPoint3D(CORE::LINALG::Matrix<3, 3>& fgrad, const double* gpx,
-        const double* gpn, MORTAR::MortarElement& ele, const double* eta, const double& alpha);
+        const double* gpn, MORTAR::Element& ele, const double* eta, const double& alpha);
   };
 }  // namespace MORTAR
 

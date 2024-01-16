@@ -28,7 +28,7 @@ namespace DRT
 namespace MORTAR
 {
   // forward declarations
-  class MortarElement;
+  class Element;
   class ParamsInterface;
 
   /*!
@@ -52,7 +52,7 @@ namespace MORTAR
 
      */
     Coupling2d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
-        MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+        MORTAR::Element& sele, MORTAR::Element& mele);
 
     /*!
      \brief Destructor
@@ -71,13 +71,13 @@ namespace MORTAR
      \brief Get coupling slave element
 
      */
-    virtual MORTAR::MortarElement& SlaveElement() const { return sele_; }
+    virtual MORTAR::Element& SlaveElement() const { return sele_; }
 
     /*!
      \brief Get coupling master element
 
      */
-    virtual MORTAR::MortarElement& MasterElement() const { return mele_; }
+    virtual MORTAR::Element& MasterElement() const { return mele_; }
 
     /*!
      \brief Get problem dimension (here: 2D)
@@ -140,8 +140,8 @@ namespace MORTAR
     /*!
      \brief Projection of slave / master pair
 
-     This method projects the nodes of the slave MortarElement sele_ onto
-     the master MortarElement mele_ and vice versa. The variable hasproj
+     This method projects the nodes of the slave MORTAR::Element sele_ onto
+     the master MORTAR::Element mele_ and vice versa. The variable hasproj
      stores a boolean variable for each of the 4 end nodes, indicating
      whether a feasible projection was found or not. The local element
      coordinates of the 4 projection points are stored in xiproj.
@@ -152,7 +152,7 @@ namespace MORTAR
     /*!
      \brief Detect overlap of slave / master pair
 
-     This method evaluates the overlap of the current MortarElement pair
+     This method evaluates the overlap of the current MORTAR::Element pair
      sele_ / mele_ based on the projection status of the 4 end nodes
      (hasproj) and the coordinates of the projection points (xiproj).
      According to the detected overlap case, the integration limits
@@ -165,7 +165,7 @@ namespace MORTAR
     /*!
      \brief Integrate overlap of slave / master pair
 
-     This method integrates the overlap of the current MortarElement
+     This method integrates the overlap of the current MORTAR::Element
      pair sele_ / mele_ based on the integration limits (xiproj). The
      integration always includes the Mortar matrices D/M and the gap g.
 
@@ -200,8 +200,8 @@ namespace MORTAR
     int dim_;                          // problem dimension (here: 2D)
     bool quad_;                        // flag indicating coupling type (true = quadratic)
     Teuchos::ParameterList& imortar_;  // containing contact input parameters
-    MORTAR::MortarElement& sele_;      // slave element to perform coupling for
-    MORTAR::MortarElement& mele_;      // master element to perform coupling for
+    MORTAR::Element& sele_;            // slave element to perform coupling for
+    MORTAR::Element& mele_;            // master element to perform coupling for
 
     std::vector<bool> hasproj_;   // projection status of the four end nodes
     std::vector<double> xiproj_;  // overlap regions in parameter spaces
@@ -228,8 +228,7 @@ namespace MORTAR
 
      */
     Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-        std::vector<MORTAR::MortarElement*> mele);
+        Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele);
 
     /*!
      \brief Destructor
@@ -240,19 +239,19 @@ namespace MORTAR
      \brief Get coupling slave element
 
      */
-    virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
+    virtual MORTAR::Element& SlaveElement() const { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    virtual MORTAR::MortarElement& MasterElement(int k) const { return *(mele_[k]); }
+    virtual MORTAR::Element& MasterElement(int k) const { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+    virtual std::vector<MORTAR::Element*> MasterElements() const { return mele_; }
 
     /*!
      \brief Get coupling pairs
@@ -318,12 +317,12 @@ namespace MORTAR
     Coupling2dManager operator=(const Coupling2dManager& old);
     Coupling2dManager(const Coupling2dManager& old);
 
-    DRT::Discretization& idiscret_;             // discretization of the contact interface
-    int dim_;                                   // problem dimension (here: 2D)
-    bool quad_;                                 // flag indicating coupling type (true = quadratic)
-    Teuchos::ParameterList& imortar_;           // containing contact input parameters
-    MORTAR::MortarElement* sele_;               // slave element
-    std::vector<MORTAR::MortarElement*> mele_;  // master elements
+    DRT::Discretization& idiscret_;       // discretization of the contact interface
+    int dim_;                             // problem dimension (here: 2D)
+    bool quad_;                           // flag indicating coupling type (true = quadratic)
+    Teuchos::ParameterList& imortar_;     // containing contact input parameters
+    MORTAR::Element* sele_;               // slave element
+    std::vector<MORTAR::Element*> mele_;  // master elements
     std::vector<Teuchos::RCP<Coupling2d>> coup_;  // coupling pairs
   };
   // class Coupling2dManager

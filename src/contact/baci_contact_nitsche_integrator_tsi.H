@@ -62,7 +62,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -78,7 +78,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -94,7 +94,7 @@ namespace CONTACT
     \brief evaluate GPTS forces and linearization at this gp
     */
     template <int dim>
-    void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -105,12 +105,12 @@ namespace CONTACT
         double* mxi);
 
     template <int dim>
-    void BuildAdjointTestTsi(MORTAR::MortarElement& moEle, const double fac,
+    void BuildAdjointTestTsi(MORTAR::Element& moEle, const double fac,
         const CORE::LINALG::SerialDenseMatrix& d2sntDdDT,
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
-    void IntegrateTest(const double fac, MORTAR::MortarElement& ele,
+    void IntegrateTest(const double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dxi, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
@@ -123,13 +123,13 @@ namespace CONTACT
     void IntegrateAdjointTest(const double fac, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
         const double test, const CORE::GEN::pairedvector<int, double>& deriv_test_d,
-        const CORE::GEN::pairedvector<int, double>& deriv_test_T, MORTAR::MortarElement& moEle,
+        const CORE::GEN::pairedvector<int, double>& deriv_test_T, MORTAR::Element& moEle,
         CORE::LINALG::SerialDenseVector& adjoint_test,
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_d,
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
-    void IntegrateThermalTest(const double fac, MORTAR::MortarElement& ele,
+    void IntegrateThermalTest(const double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dxi, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
@@ -140,7 +140,7 @@ namespace CONTACT
     void IntegrateThermalAdjointTest(const double fac, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
         const double test, const CORE::GEN::pairedvector<int, double>& deriv_test_d,
-        const CORE::GEN::pairedvector<int, double>& deriv_test_T, MORTAR::MortarElement& moEle,
+        const CORE::GEN::pairedvector<int, double>& deriv_test_T, MORTAR::Element& moEle,
         CORE::LINALG::SerialDenseVector& adjoint_test,
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_d,
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
@@ -148,11 +148,11 @@ namespace CONTACT
 
 
     template <CORE::FE::CellType parentdistype, int dim>
-    void inline SoEleGP(MORTAR::MortarElement& sele, const double wgt, const double* gpcoord,
+    void inline SoEleGP(MORTAR::Element& sele, const double wgt, const double* gpcoord,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo);
 
     template <int dim>
-    void SoEleCauchy(MORTAR::MortarElement& moEle, double* boundary_gpcoord,
+    void SoEleCauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
         std::vector<CORE::GEN::pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
@@ -165,7 +165,7 @@ namespace CONTACT
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
-    void SoEleCauchyHeatflux(MORTAR::MortarElement& moEle, double* boundary_gpcoord,
+    void SoEleCauchyHeatflux(MORTAR::Element& moEle, double* boundary_gpcoord,
         const std::vector<CORE::GEN::pairedvector<int, double>>& boundary_gpcoord_lin,
         const double gp_wgt, const CORE::LINALG::Matrix<dim, 1>& normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv, const double w,
@@ -175,7 +175,7 @@ namespace CONTACT
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
-    void BuildAdjointTestThermo(MORTAR::MortarElement& moEle, const double fac,
+    void BuildAdjointTestThermo(MORTAR::Element& moEle, const double fac,
         const CORE::LINALG::SerialDenseMatrix& dq_dT_ele,
         const CORE::LINALG::SerialDenseMatrix& d2q_dT_dd,
         const CORE::LINALG::SerialDenseMatrix& d2q_dT_dn,
@@ -188,7 +188,7 @@ namespace CONTACT
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
-    void SetupGpTemp(MORTAR::MortarElement& moEle, const CORE::LINALG::SerialDenseVector& val,
+    void SetupGpTemp(MORTAR::Element& moEle, const CORE::LINALG::SerialDenseVector& val,
         const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dxi, double& temp,
         CORE::GEN::pairedvector<int, double>& d_temp_dT,
