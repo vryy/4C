@@ -17,6 +17,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_utils_exceptions.H"
 
+#include <functional>
+
 #define DEBUGGING_ANA 0  // turn on to get debugging printouts
 
 BACI_NAMESPACE_OPEN

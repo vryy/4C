@@ -28,6 +28,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+#include <functional>
 #include <vector>
 
 // forward declarations

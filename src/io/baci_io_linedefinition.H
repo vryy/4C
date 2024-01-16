@@ -16,6 +16,7 @@
 
 #include "baci_io_inputreader.H"
 
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>

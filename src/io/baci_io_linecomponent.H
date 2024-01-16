@@ -15,6 +15,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include <functional>
 #include <variant>
 
 BACI_NAMESPACE_OPEN
