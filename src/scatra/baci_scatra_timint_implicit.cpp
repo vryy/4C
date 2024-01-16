@@ -2689,7 +2689,13 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   // perform explicit predictor step (-> better starting point for nonlinear solver)
   const bool explpredictor =
       (INPUT::IntegralValue<int>(params_->sublist("NONLINEAR"), "EXPLPREDICT") == 1);
-  if (explpredictor) ExplicitPredictor();
+  if (explpredictor)
+  {
+    // explicit predictor + recovery of DBC values
+    auto phinp_dirich = dbcmaps_->ExtractCondVector(phinp_);
+    ExplicitPredictor();
+    dbcmaps_->InsertCondVector(phinp_dirich, phinp_);
+  }
 
   // start Newton-Raphson iteration
   while (true)

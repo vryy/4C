@@ -3,7 +3,7 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 3D Analytical solution for Diffusion-Migration
 // Reference for 2D solution
 // Kwok, Yue-Kuen and Wu, Charles C. K.
@@ -11,13 +11,13 @@ General Data File CCARAT
 // diffusion-migration equation"
 // Numerical Methods for Partial Differential Equations
 // 1995, Vol 11, 389-397
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                        216
 //NODES                           343
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
@@ -34,17 +34,17 @@ CALCFLUX_DOMAIN                 total
 RESULTSEVRY                     1
 CALCERROR                       Kwok_Wu
 MATID                           4
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ITEMAX                          50
 EXPLPREDICT                     Yes
-----------------------------------------------------------------ELCH CONTROL
+------------------------------------------------------ELCH CONTROL
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
 BLOCKPRECOND                    Yes
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Belos
 AZOUTPUT                        0
@@ -76,7 +76,7 @@ ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
 SUB_SOLVER1                     2
 SUB_SOLVER2                     3
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 NAME                            Simple_predictor
 SOLVER                          Belos
 AZOUTPUT                        0
@@ -106,7 +106,7 @@ ML_SMOTIMES                     2 0 0 0 1
 ML_DAMPFINE                     0.67
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
---------------------------------------------------------------------SOLVER 3
+----------------------------------------------------------SOLVER 3
 NAME                            Sca_Tra_Electrical_Potential
 SOLVER                          Belos
 AZOUTPUT                        0
@@ -136,36 +136,36 @@ ML_SMOTIMES                     2 0 0 0 1
 ML_DAMPFINE                     0.67
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.008 VALENCE 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.005 VALENCE -2.0
 MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.0+(cos(pi*x)*cos(2*pi*y)*cos(3*pi*z))
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0+0.5*(cos(pi*x)*cos(2*pi*y)*cos(3*pi*z))
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME (-0.1666666666666)*log((2.0+(cos(1*pi*x)*cos(2*pi*y)*cos(3*pi*z)))/3.0) //initial pot. field
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_x VALUE -4.31853861686137819e-03 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_y VALUE -8.59767665647056742e-03 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_z VALUE -7.27828757768837995e-10 TOLERANCE 2e-14
-SCATRA DIS scatra NODE 131 QUANTITY phi1 VALUE 1.77548332730553371e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 307 QUANTITY phi1 VALUE 2.89806693651398284e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 131 QUANTITY phi2 VALUE 8.87741663652766744e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 307 QUANTITY phi2 VALUE 1.44903346825699098e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 131 QUANTITY phi3 VALUE 8.32267835008624474e-02 TOLERANCE 8e-11
-SCATRA DIS scatra NODE 307 QUANTITY phi3 VALUE 0.00000000000000000e+00 TOLERANCE 4e-10
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_x VALUE  -4.31853861686275035e-03 TOLERANCE 4.3e-11
+SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_y VALUE  -8.59767665647534138e-03 TOLERANCE 8.6e-11
+SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_z VALUE  -7.27827546121920969e-10 TOLERANCE 1.0e-16
+SCATRA DIS scatra NODE 131 QUANTITY phi1 VALUE  1.77548332730553349e+00 TOLERANCE 1.8e-09
+SCATRA DIS scatra NODE 307 QUANTITY phi1 VALUE  2.89806693651398772e+00 TOLERANCE 2.9e-09
+SCATRA DIS scatra NODE 131 QUANTITY phi2 VALUE  8.87741663652766633e-01 TOLERANCE 8.9e-10
+SCATRA DIS scatra NODE 307 QUANTITY phi2 VALUE  1.44903346825699297e+00 TOLERANCE 1.4e-09
+SCATRA DIS scatra NODE 131 QUANTITY phi3 VALUE  8.32267835015413765e-02 TOLERANCE 8.3e-11
+SCATRA DIS scatra NODE 307 QUANTITY phi3 VALUE  -3.16556226133103412e-10 TOLERANCE 1.0e-16
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              origin
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
 NODE 3 DSURFACE 1
@@ -362,7 +362,7 @@ NODE 301 DSURFACE 4
 NODE 303 DSURFACE 4
 NODE 305 DSURFACE 4
 NODE 307 DSURFACE 4
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
 NODE 2 COORD 0.00000000e+00 0.00000000e+00 -1.66666672e-01
 NODE 3 COORD 0.00000000e+00 1.66666672e-01 -1.66666672e-01
@@ -706,7 +706,7 @@ NODE 340 COORD 1.00000000e+00 1.00000000e+00 -5.00000000e-01
 NODE 341 COORD 1.00000000e+00 1.00000000e+00 -6.66666687e-01
 NODE 342 COORD 1.00000000e+00 1.00000000e+00 -8.33333313e-01
 NODE 343 COORD 1.00000000e+00 1.00000000e+00 -1.00000000e+00
-----------------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP HEX8 1 2 3 4 5 6 7 8 MAT 3 TYPE ElchNP
 2 TRANSP HEX8 2 9 10 3 6 11 12 7 MAT 3 TYPE ElchNP
 3 TRANSP HEX8 9 13 14 10 11 15 16 12 MAT 3 TYPE ElchNP
@@ -923,4 +923,4 @@ NODE 343 COORD 1.00000000e+00 1.00000000e+00 -1.00000000e+00
 214 TRANSP HEX8 284 285 292 291 333 334 341 340 MAT 3 TYPE ElchNP
 215 TRANSP HEX8 285 286 293 292 334 335 342 341 MAT 3 TYPE ElchNP
 216 TRANSP HEX8 286 287 294 293 335 336 343 342 MAT 3 TYPE ElchNP
--------------------------------------------------------------------------END
+---------------------------------------------------------------END
