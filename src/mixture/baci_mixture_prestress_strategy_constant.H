@@ -19,6 +19,8 @@
 
 #include <NOX_LAPACK.H>
 
+#include <array>
+
 BACI_NAMESPACE_OPEN
 
 namespace MIXTURE

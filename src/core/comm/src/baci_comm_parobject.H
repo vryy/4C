@@ -20,6 +20,7 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_utils_pairedmatrix.H"
 
+#include <array>
 #include <map>
 #include <set>
 #include <string>

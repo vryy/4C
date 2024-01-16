@@ -30,6 +30,8 @@ the first p-1 steps. For a restart analysis, those values are restored from the 
 
 #include "baci_structure_new_expl_generic.H"
 
+#include <array>
+
 BACI_NAMESPACE_OPEN
 
 namespace STR
