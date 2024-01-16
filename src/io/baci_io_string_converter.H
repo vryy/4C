@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 BACI_NAMESPACE_OPEN
@@ -49,7 +50,7 @@ namespace IO
    * We distinguish map-compatible and list-compatible data types and the associated map-like
    * {':', '=', '@', '#'} and list-like separators {',', ';', '|', '%'}. Each non-arithmetic type T
    * is either map- or list-compatible, and thus can be described using those separators.
-   * - map-compatible types are std::map and std::multimap
+   * - map-compatible types are std::map, std::unordered_map, and std::multimap
    * - list-compatible types are std::vector, std::set, std::list, std::pair, std::array,
    * std::tuple
    *
@@ -205,6 +206,12 @@ namespace IO
 
     template <typename Key, typename Value, typename Compare, typename Alloc>
     struct StringPatternTraits<std::map<Key, Value, Compare, Alloc>> : MapTrait<Key, Value>
+    {
+    };
+
+    template <typename Key, typename Value, typename Compare, typename Alloc>
+    struct StringPatternTraits<std::unordered_map<Key, Value, Compare, Alloc>>
+        : MapTrait<Key, Value>
     {
     };
 
