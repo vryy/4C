@@ -41,7 +41,7 @@ namespace CORE::LINALG
   class MultiMapExtractor;
 }  // namespace CORE::LINALG
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   // forward declarations
   class Constraint;
@@ -364,7 +364,7 @@ namespace UTILS
     void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_MANAGER_H

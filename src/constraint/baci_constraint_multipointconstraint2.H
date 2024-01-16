@@ -17,7 +17,7 @@ BACI_NAMESPACE_OPEN
 
 
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   /*!
   \brief This class can handle twodimensional multi point constraints. It is derived from the basic
@@ -110,7 +110,7 @@ namespace UTILS
 
 
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_MULTIPOINTCONSTRAINT2_H

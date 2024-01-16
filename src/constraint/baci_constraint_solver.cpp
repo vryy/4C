@@ -25,7 +25,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-UTILS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<DRT::Discretization> discr,
+CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<DRT::Discretization> discr,
     CORE::LINALG::Solver& solver, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
     : actdisc_(discr),
@@ -39,7 +39,7 @@ UTILS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<DRT::Discretization> disc
 /*----------------------------------------------------------------------*
  |  set-up (public)                                             tk 11/07|
  *----------------------------------------------------------------------*/
-void UTILS::ConstraintSolver::Setup(Teuchos::RCP<DRT::Discretization> discr,
+void CONSTRAINTS::ConstraintSolver::Setup(Teuchos::RCP<DRT::Discretization> discr,
     CORE::LINALG::Solver& solver, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
 {
@@ -68,7 +68,7 @@ void UTILS::ConstraintSolver::Setup(Teuchos::RCP<DRT::Discretization> discr,
 |(public)                                                               |
 |Solve linear constrained system                                        |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstraintSolver::Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::ConstraintSolver::Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
@@ -95,7 +95,7 @@ void UTILS::ConstraintSolver::Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> sti
 |(public)                                                               |
 |Solve linear constrained system by iterative Uzawa algorithm           |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstraintSolver::SolveUzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::ConstraintSolver::SolveUzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
@@ -246,7 +246,7 @@ void UTILS::ConstraintSolver::SolveUzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix
 |(public)                                                               |
 |Solve linear constrained system by iterative Uzawa algorithm           |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstraintSolver::SolveDirect(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::ConstraintSolver::SolveDirect(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
@@ -293,7 +293,7 @@ void UTILS::ConstraintSolver::SolveDirect(Teuchos::RCP<CORE::LINALG::SparseMatri
   return;
 }
 
-void UTILS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,

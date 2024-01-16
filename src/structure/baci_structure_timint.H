@@ -53,11 +53,15 @@ namespace DRT
 
 namespace UTILS
 {
+  class Cardiovascular0DManager;
+}  // namespace UTILS
+
+namespace CONSTRAINTS
+{
   class ConstrManager;
   class ConstraintSolver;
-  class Cardiovascular0DManager;
   class SpringDashpotManager;
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 
 namespace CONTACT
 {
@@ -804,10 +808,10 @@ namespace STR
     bool HaveSpringDashpot() override = 0;
 
     //! get constraint manager defined in the structure
-    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override = 0;
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override = 0;
 
     //! get spring dashpot manager defined in the structure
-    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override = 0;
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override = 0;
 
     //! get type of thickness scaling for thin shell structures
     INPAR::STR::STC_Scale GetSTCAlgo() override = 0;
@@ -1113,14 +1117,14 @@ namespace STR
     //@{
 
     //! whatever constraints
-    Teuchos::RCP<UTILS::ConstrManager> conman_;      //!< constraint manager
-    Teuchos::RCP<UTILS::ConstraintSolver> consolv_;  //!< constraint solver
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> conman_;      //!< constraint manager
+    Teuchos::RCP<CONSTRAINTS::ConstraintSolver> consolv_;  //!< constraint solver
 
     // for 0D cardiovascular models
     Teuchos::RCP<UTILS::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
 
     // spring dashpot
-    Teuchos::RCP<UTILS::SpringDashpotManager> springman_;
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> springman_;
 
     //! bridge for meshtying and contact
     Teuchos::RCP<CONTACT::MeshtyingContactBridge> cmtbridge_;

@@ -30,7 +30,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                         pfaller Apr15|
  *----------------------------------------------------------------------*/
-UTILS::SpringDashpot::SpringDashpot(
+CONSTRAINTS::SpringDashpot::SpringDashpot(
     Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Condition> cond)
     : actdisc_(std::move(dis)),
       spring_(std::move(cond)),
@@ -99,7 +99,7 @@ UTILS::SpringDashpot::SpringDashpot(
 /*----------------------------------------------------------------------*
  * Integrate a Surface Robin boundary condition (public)       mhv 08/16|
  * ---------------------------------------------------------------------*/
-void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<Epetra_Vector> fint, const Teuchos::RCP<const Epetra_Vector> disp,
     const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p)
 {
@@ -311,7 +311,7 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
 /*----------------------------------------------------------------------*
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
+void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
     const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
     const Teuchos::ParameterList& p)
 {
@@ -424,7 +424,7 @@ void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
 /*----------------------------------------------------------------------*
  |                                                         pfaller mar16|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff,
+void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff,
     Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
     const Teuchos::RCP<const Epetra_Vector> vel, Teuchos::ParameterList p)
 {
@@ -569,7 +569,7 @@ void UTILS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff,
 /*----------------------------------------------------------------------*
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::ResetNewton()
+void CONSTRAINTS::SpringDashpot::ResetNewton()
 {
   // all springs
   gap_.clear();
@@ -588,7 +588,7 @@ void UTILS::SpringDashpot::ResetNewton()
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis)
+void CONSTRAINTS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // this should be sufficient, no need to loop over nodes anymore
   offset_prestr_new_->Update(1.0, *dis, 1.0);
@@ -620,7 +620,7 @@ void UTILS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis)
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::SetRestart(Teuchos::RCP<Epetra_Vector> vec)
+void CONSTRAINTS::SpringDashpot::SetRestart(Teuchos::RCP<Epetra_Vector> vec)
 {
   offset_prestr_new_->Update(1.0, *vec, 0.0);
 }
@@ -628,7 +628,7 @@ void UTILS::SpringDashpot::SetRestart(Teuchos::RCP<Epetra_Vector> vec)
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec)
+void CONSTRAINTS::SpringDashpot::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec)
 {
   // loop nodes of current condition
   for (int node_gid : *nodes_)
@@ -669,7 +669,7 @@ void UTILS::SpringDashpot::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec)
 /*----------------------------------------------------------------------*
  |                                                         pfaller Jan14|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
+void CONSTRAINTS::SpringDashpot::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
     Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const
 {
   // export gap function
@@ -715,7 +715,8 @@ void UTILS::SpringDashpot::OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
 /*----------------------------------------------------------------------*
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::OutputPrestrOffset(Teuchos::RCP<Epetra_Vector>& springprestroffset) const
+void CONSTRAINTS::SpringDashpot::OutputPrestrOffset(
+    Teuchos::RCP<Epetra_Vector>& springprestroffset) const
 {
   springprestroffset->Update(1.0, *offset_prestr_new_, 0.0);
 }
@@ -723,7 +724,7 @@ void UTILS::SpringDashpot::OutputPrestrOffset(Teuchos::RCP<Epetra_Vector>& sprin
 /*----------------------------------------------------------------------*
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::OutputPrestrOffsetOld(
+void CONSTRAINTS::SpringDashpot::OutputPrestrOffsetOld(
     Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const
 {
   // export spring offset length
@@ -745,7 +746,7 @@ void UTILS::SpringDashpot::OutputPrestrOffsetOld(
 /*-----------------------------------------------------------------------*
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::InitializeCurSurfNormal()
+void CONSTRAINTS::SpringDashpot::InitializeCurSurfNormal()
 {
   // create MORTAR interface
   mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(DRT::Problem::Instance()->NDim(),
@@ -774,7 +775,7 @@ void UTILS::SpringDashpot::InitializeCurSurfNormal()
 /*-----------------------------------------------------------------------*
 |(private) adapted from mhv 01/14                           pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom)
+void CONSTRAINTS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom)
 {
   for (const auto& ele : geom)
   {
@@ -901,7 +902,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
 /*-----------------------------------------------------------------------*
 |(private)                                                    mhv 12/2015|
  *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::InitializePrestrOffset()
+void CONSTRAINTS::SpringDashpot::InitializePrestrOffset()
 {
   offset_prestr_.clear();
 
@@ -929,7 +930,7 @@ void UTILS::SpringDashpot::InitializePrestrOffset()
 /*-----------------------------------------------------------------------*
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::GetCurNormals(
+void CONSTRAINTS::SpringDashpot::GetCurNormals(
     const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p)
 {
   // get current time step size
@@ -958,7 +959,7 @@ void UTILS::SpringDashpot::GetCurNormals(
 /*-----------------------------------------------------------------------*
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::SetSpringType()
+void CONSTRAINTS::SpringDashpot::SetSpringType()
 {
   // get spring direction from condition
   const auto* dir = spring_->Get<std::string>("direction");
@@ -979,12 +980,12 @@ void UTILS::SpringDashpot::SetSpringType()
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::Update()
+void CONSTRAINTS::SpringDashpot::Update()
 {
   // store current time step
   gapn_ = gap_;
 }
 
-void UTILS::SpringDashpot::ResetStepState() { gap_ = gapn_; }
+void CONSTRAINTS::SpringDashpot::ResetStepState() { gap_ = gapn_; }
 
 BACI_NAMESPACE_CLOSE

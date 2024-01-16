@@ -179,13 +179,13 @@ namespace ADAPTER
     bool HaveSpringDashpot() override { return structure_->HaveSpringDashpot(); }
 
     /// get constraint manager defined in the structure
-    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
     {
       return structure_->GetConstraintManager();
     }
 
     /// get constraint manager defined in the structure
-    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       return structure_->GetSpringDashpotManager();
     }

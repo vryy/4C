@@ -125,7 +125,7 @@ namespace ADAPTER
     bool HaveConstraint() override { return structure_->HaveConstraint(); };
 
     /// Return bool indicating if constraints are defined
-    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
     {
       return structure_->GetConstraintManager();
     };

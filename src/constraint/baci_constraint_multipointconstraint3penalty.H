@@ -17,13 +17,13 @@ BACI_NAMESPACE_OPEN
 
 
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   /*!
   \brief This class can handle multi point constraints in 3D.
   It is derived from the basic multipointconstraint class.
   */
-  class MPConstraint3Penalty : public UTILS::MPConstraint
+  class MPConstraint3Penalty : public CONSTRAINTS::MPConstraint
   {
    public:
     /*!
@@ -129,7 +129,7 @@ namespace UTILS
 
 
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_H

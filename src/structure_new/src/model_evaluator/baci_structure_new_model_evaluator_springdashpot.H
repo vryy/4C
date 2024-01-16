@@ -126,7 +126,7 @@ namespace STR
 
      private:
       //! all spring dashpot instances
-      std::vector<Teuchos::RCP<UTILS::SpringDashpot>> springs_;
+      std::vector<Teuchos::RCP<CONSTRAINTS::SpringDashpot>> springs_;
 
       //! structural displacement at \f$t_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> disnp_ptr_;

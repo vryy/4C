@@ -20,9 +20,9 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
+CONSTRAINTS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
-    : UTILS::Constraint(discr, conditionname, minID, maxID)
+    : CONSTRAINTS::Constraint(discr, conditionname, minID, maxID)
 {
   return;
 }
@@ -30,16 +30,16 @@ UTILS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint::MPConstraint(
+CONSTRAINTS::MPConstraint::MPConstraint(
     Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname)
-    : UTILS::Constraint(discr, conditionname)
+    : CONSTRAINTS::Constraint(discr, conditionname)
 {
   return;
 }
 
 /// Set state of the underlying constraint discretization
-void UTILS::MPConstraint::SetConstrState(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<const Epetra_Vector> V                             ///< values to set
+void CONSTRAINTS::MPConstraint::SetConstrState(const std::string& state,  ///< name of state to set
+    Teuchos::RCP<const Epetra_Vector> V                                   ///< values to set
 )
 {
   if (constrtype_ != none)

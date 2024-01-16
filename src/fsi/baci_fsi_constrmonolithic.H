@@ -21,7 +21,7 @@
 BACI_NAMESPACE_OPEN
 
 // forward declarations
-namespace UTILS
+namespace CONSTRAINTS
 {
   class ConstrManager;
 }
@@ -196,7 +196,7 @@ namespace FSI
     /// @name information about constraints are taken from structure ConstraintManager
     //!@{
 
-    const Teuchos::RCP<BACI::UTILS::ConstrManager> conman_;  ///< constraint manager
+    const Teuchos::RCP<CONSTRAINTS::ConstrManager> conman_;  ///< constraint manager
 
     //!@}
 

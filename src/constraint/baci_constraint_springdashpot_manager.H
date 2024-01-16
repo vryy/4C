@@ -38,7 +38,7 @@ namespace IO
   class DiscretizationReader;
 }  // namespace IO
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   class SpringDashpot;
 
@@ -86,7 +86,7 @@ namespace UTILS
     bool havespringdashpot_;  ///< are there any spring dashpot BCs at all?
     int n_conds_;             ///< number of spring dashpot conditions
   };                          // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_SPRINGDASHPOT_MANAGER_H

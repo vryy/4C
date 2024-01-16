@@ -26,7 +26,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
+CONSTRAINTS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {
@@ -68,7 +68,7 @@ UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::Constraint::Constraint(
+CONSTRAINTS::Constraint::Constraint(
     Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname)
     : actdisc_(discr)
 {
@@ -103,7 +103,7 @@ UTILS::Constraint::Constraint(
 /*-----------------------------------------------------------------------*
 |(private)                                                       tk 07/08|
 *-----------------------------------------------------------------------*/
-UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const std::string& name)
+CONSTRAINTS::Constraint::ConstrType CONSTRAINTS::Constraint::GetConstrType(const std::string& name)
 {
   if (name == "VolumeConstraint_3D" or name == "VolumeConstraint_3D_Pen")
     return volconstr3d;
@@ -124,7 +124,7 @@ UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const std::string
 |(public)                                                       tk 08/08  |
 |Initialization routine computes ref base values and activates conditions |
 *------------------------------------------------------------------------*/
-void UTILS::Constraint::Initialize(
+void CONSTRAINTS::Constraint::Initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   // choose action
@@ -153,7 +153,7 @@ void UTILS::Constraint::Initialize(
 |(public)                                                       tk 08/08  |
 |Initialization routine activates conditions (restart)                    |
 *------------------------------------------------------------------------*/
-void UTILS::Constraint::Initialize(const double& time)
+void CONSTRAINTS::Constraint::Initialize(const double& time)
 {
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
@@ -179,7 +179,7 @@ void UTILS::Constraint::Initialize(const double& time)
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void UTILS::Constraint::Evaluate(Teuchos::ParameterList& params,
+void CONSTRAINTS::Constraint::Evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -211,7 +211,7 @@ void UTILS::Constraint::Evaluate(Teuchos::ParameterList& params,
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
+void CONSTRAINTS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -358,7 +358,7 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Constraint::InitializeConstraint(
+void CONSTRAINTS::Constraint::InitializeConstraint(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
@@ -437,7 +437,7 @@ void UTILS::Constraint::InitializeConstraint(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-std::vector<int> UTILS::Constraint::GetActiveCondID()
+std::vector<int> CONSTRAINTS::Constraint::GetActiveCondID()
 {
   std::vector<int> condID;
   std::map<int, bool>::const_iterator mapit;

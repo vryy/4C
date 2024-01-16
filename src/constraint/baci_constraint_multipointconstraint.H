@@ -17,7 +17,7 @@ BACI_NAMESPACE_OPEN
 
 
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   /*!
   \brief This pure virtual class is the common interface for multi point constraints.
@@ -130,7 +130,7 @@ namespace UTILS
     //             ///< constraint discretization prescribing ghosting ) const;
 
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_MULTIPOINTCONSTRAINT_H

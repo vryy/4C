@@ -33,7 +33,7 @@ namespace CORE::LINALG
   class SparseOperator;
 }  // namespace CORE::LINALG
 
-namespace UTILS
+namespace CONSTRAINTS
 {
   /*!
   \brief Class containing uzawa algorithm to solve linear system.
@@ -163,7 +163,7 @@ namespace UTILS
     Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat_;
 
   };  // class
-}  // namespace UTILS
+}  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_SOLVER_H

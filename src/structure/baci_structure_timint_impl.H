@@ -722,7 +722,7 @@ namespace STR
     bool HaveSpringDashpot() override;
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override { return conman_; }
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override { return conman_; }
 
     //! Return Teuchos::rcp to Cardiovascular0DManager cardvasc0dman_
     Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
@@ -731,7 +731,7 @@ namespace STR
     }
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       return springman_;
     }
