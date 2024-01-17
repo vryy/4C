@@ -52,17 +52,6 @@ namespace IO
   template <typename T>
   void ReadCsvAsLines(std::istream& csv_stream, std::vector<T>& data);
 
-  /*!
-   * @brief Read and process a csv file line by line. Parse each line into an object of type T and
-   * append the result to the data vector.
-   *
-   * @param[in] csv_file_path absolute path to csv file
-   * @param[out] data vector the csv's lines are read into
-   * @tparam type T of object one line is read into
-   */
-  template <typename T>
-  void ReadCsvAsLines(const std::string& csv_file_path, std::vector<T>& data);
-
   template <typename T>
   void ReadCsvAsLines(std::istream& csv_stream, std::vector<T>& data)
   {
@@ -89,15 +78,6 @@ namespace IO
             line_str.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
       }
     }
-  }
-
-  template <typename T>
-  void ReadCsvAsLines(const std::string& csv_file_path, std::vector<T>& data)
-  {
-    std::ifstream csv_file_stream(csv_file_path);
-    if (csv_file_stream.fail()) dserror("Invalid csv file!");
-
-    ReadCsvAsLines(csv_file_stream, data);
   }
 }  // namespace IO
 
