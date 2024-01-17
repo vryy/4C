@@ -15,6 +15,7 @@
 
 #include "baci_config.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_sparsematrix.H"
@@ -283,7 +284,8 @@ namespace AIRWAY
     /// Hand over restartreader to redairway_tissue
     Teuchos::RCP<IO::DiscretizationReader> GetRestartReader(int step)
     {
-      return Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
+      return Teuchos::rcp(new IO::DiscretizationReader(
+          discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
     }
 
     //@}

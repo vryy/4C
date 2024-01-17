@@ -79,12 +79,6 @@ namespace IO
     DiscretizationReader(
         Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<IO::InputControl> input, int step);
 
-    /// construct reader for a given discretization to read a particular time step
-    /*!
-      Use default control file from global problem.
-     */
-    DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step);
-
     /// destructor
     virtual ~DiscretizationReader() = default;
 

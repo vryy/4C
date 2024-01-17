@@ -133,7 +133,8 @@ void ADAPTER::StructureTimeAda::SetupTimeAda()
     stm_->ReadRestart(restart);
     timeinitial_ = stm_->TimeOld();
     timestepinitial_ = stm_->StepOld();
-    IO::DiscretizationReader ioreader(stm_->Discretization(), timestepinitial_);
+    IO::DiscretizationReader ioreader(
+        stm_->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), timestepinitial_);
     stepsizepre_ = ioreader.ReadDouble("next_delta_time");
     time_ = timeinitial_;
 

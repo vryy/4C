@@ -609,7 +609,7 @@ Teuchos::RCP<DRT::ResultTest> ART::ArtNetImplStationary::CreateFieldTest()
 void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
-  IO::DiscretizationReader reader(discret_, step);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   if (step != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
 

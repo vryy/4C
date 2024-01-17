@@ -154,8 +154,8 @@ void FSI::FluidFluidMonolithicFluidSplit::ReadRestart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdaemb = Teuchos::rcp(
         new Epetra_Vector(*(FluidField()->XFluidFluidMapExtractor()->FluidMap()), true));
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(FluidField()->Discretization(), step);
+    IO::DiscretizationReader reader = IO::DiscretizationReader(
+        FluidField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
     Teuchos::RCP<Epetra_Vector> lambdafull =

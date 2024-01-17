@@ -114,11 +114,10 @@ void EHL::Base::ReadRestart(int restart)
     mortaradapter_->Integrate(structure_->Dispnp(), Dt());
     heightold_ = mortaradapter_->Nodal_Gap();
 
-    IO::DiscretizationReader reader(lubrication_->LubricationField()->Discretization(), restart);
+    IO::DiscretizationReader reader(lubrication_->LubricationField()->Discretization(),
+        GLOBAL::Problem::Instance()->InputControlFile(), restart);
     mortaradapter_->ReadRestart(reader);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

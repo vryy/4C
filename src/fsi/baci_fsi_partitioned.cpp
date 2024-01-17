@@ -975,11 +975,13 @@ void FSI::Partitioned::ReadRestart(int step)
     case fsi_iter_stagg_AITKEN_rel_param:
     {
       double omega = -1234.0;
+      auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
 
       if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed>(MBFluidField()) != Teuchos::null ||
           Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField()) != Teuchos::null)
       {
-        IO::DiscretizationReader reader(MBFluidField()->FluidField()->Discretization(), step);
+        IO::DiscretizationReader reader(
+            MBFluidField()->FluidField()->Discretization(), input_control_file, step);
         omega = reader.ReadDouble("omega");
       }
       else if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()) != Teuchos::null)
@@ -988,7 +990,7 @@ void FSI::Partitioned::ReadRestart(int step)
             Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField());
         IO::DiscretizationReader reader(
             Teuchos::rcp_const_cast<DRT::Discretization>(fluidale->AleField()->Discretization()),
-            step);
+            input_control_file, step);
         omega = reader.ReadDouble("omega");
       }
       else

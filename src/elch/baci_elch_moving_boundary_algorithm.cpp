@@ -385,7 +385,8 @@ void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
   AleField()->ReadRestart(step);  // add reading of ALE restart data
 
   // finally read isdispn which was written to the fluid restart data
-  IO::DiscretizationReader reader(FluidField()->Discretization(), step);
+  IO::DiscretizationReader reader(
+      FluidField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
   reader.ReadVector(idispn_, "idispn");
   // read same result into vector isdispnp_ as a 'good guess'
   reader.ReadVector(idispnp_, "idispn");

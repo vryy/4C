@@ -5067,7 +5067,7 @@ void FLD::XFluid::UpdateIterIncrementally(Teuchos::RCP<const Epetra_Vector> vel)
 void FLD::XFluid::ReadRestart(int step)
 {
   //-------- fluid discretization
-  IO::DiscretizationReader reader(discret_, step);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 

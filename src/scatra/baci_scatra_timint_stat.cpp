@@ -9,6 +9,7 @@
 
 #include "baci_scatra_timint_stat.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_utils_parameter_list.H"
@@ -30,7 +31,6 @@ SCATRA::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization> act
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
-  return;
 }
 
 
@@ -68,10 +68,8 @@ void SCATRA::TimIntStationary::Init()
   PrepareKrylovProjection();
 
   // safety check
-  if (INPUT::IntegralValue<int>(*params_, "NATURAL_CONVECTION") == true)
+  if (static_cast<bool>(INPUT::IntegralValue<int>(*params_, "NATURAL_CONVECTION")))
     dserror("Natural convection for stationary time integration scheme is not implemented!");
-
-  return;
 }
 
 
@@ -87,7 +85,7 @@ void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsol
       "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);
-  if (forcedincrementalsolver == false)
+  if (!forcedincrementalsolver)
     eleparams.set<bool>("incremental solver", incremental_);
   else
     eleparams.set<bool>("incremental solver", true);
@@ -100,8 +98,6 @@ void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsol
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -120,7 +116,6 @@ void SCATRA::TimIntStationary::Setup()
 void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
-  return;
 }
 
 
@@ -134,8 +129,6 @@ void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
   ScaTraTimIntImpl::SetOldPartOfRighthandside();
 
   hist_->PutScalar(0.0);
-
-  return;
 }
 
 
@@ -145,7 +138,6 @@ void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
 void SCATRA::TimIntStationary::AddNeumannToResidual()
 {
   residual_->Update(1.0, *neumann_loads_, 1.0);
-  return;
 }
 
 
@@ -162,8 +154,6 @@ void SCATRA::TimIntStationary::AVM3Separation()
 
   // set fine-scale vector
   discret_->SetState("fsphinp", fsphinp_);
-
-  return;
 }
 
 
@@ -177,8 +167,6 @@ void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincr
 
   discret_->SetState("hist", hist_);
   discret_->SetState("phinp", phinp_);
-
-  return;
 }
 
 
@@ -192,7 +180,10 @@ void SCATRA::TimIntStationary::ReadRestart(const int step, Teuchos::RCP<IO::Inpu
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
+  {
+    reader = Teuchos::rcp(new IO::DiscretizationReader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+  }
   else
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
@@ -201,14 +192,12 @@ void SCATRA::TimIntStationary::ReadRestart(const int step, Teuchos::RCP<IO::Inpu
 
   if (myrank_ == 0)
     std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
-              << std::endl;
+              << '\n';
 
   // read state vectors that are needed for restart
   reader->ReadVector(phinp_, "phinp");
 
   ReadRestartProblemSpecific(step, *reader);
-
-  return;
 }
 
 
@@ -240,8 +229,6 @@ void SCATRA::TimIntStationary::WriteRestart() const
   output_->WriteVector("phin", phinp_);    // for OST and BDF2
   output_->WriteVector("phinm", phinp_);   // for BDF2
   output_->WriteVector("phidtn", zeros_);  // for OST
-
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

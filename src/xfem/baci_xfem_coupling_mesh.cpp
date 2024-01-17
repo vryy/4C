@@ -1668,7 +1668,8 @@ void XFEM::MeshCouplingFSI::ReadRestart(const int step)
   if (myrank_) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
 
   //-------- boundary discretization
-  IO::DiscretizationReader boundaryreader(cutter_dis_, step);
+  IO::DiscretizationReader boundaryreader(
+      cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
   //  const int    step = boundaryreader.ReadInt("step");
@@ -2635,7 +2636,8 @@ void XFEM::MeshCouplingFluidFluid::ReadRestart(const int step)
   if (myrank_) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
 
   //-------- boundary discretization
-  IO::DiscretizationReader boundaryreader(cutter_dis_, step);
+  IO::DiscretizationReader boundaryreader(
+      cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
   //  const int    step = boundaryreader.ReadInt("step");

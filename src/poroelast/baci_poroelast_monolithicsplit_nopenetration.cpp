@@ -666,7 +666,8 @@ void POROELAST::MonolithicSplitNoPenetration::ReadRestart(const int step)
   if (step)
   {
     // get the structure reader (this is where the lagrange multiplier was saved)
-    IO::DiscretizationReader reader(StructureField()->Discretization(), StructureField()->Step());
+    IO::DiscretizationReader reader(StructureField()->Discretization(),
+        GLOBAL::Problem::Instance()->InputControlFile(), StructureField()->Step());
     Teuchos::RCP<Epetra_Vector> fulllambda =
         Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*StructureField()->DofRowMap()));
 

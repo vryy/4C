@@ -11,8 +11,6 @@
 /* headers */
 #include "baci_io_discretization_visualization_writer_nodes.H"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
 #include "baci_io_visualization_manager.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_node.H"

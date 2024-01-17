@@ -1428,12 +1428,14 @@ void FSI::SlidingMonolithicStructureSplit::OutputLambda()
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicStructureSplit::ReadRestart(int step)
 {
+  auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
+
   // read Lagrange multiplier
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =
         Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
     IO::DiscretizationReader reader =
-        IO::DiscretizationReader(StructureField()->Discretization(), step);
+        IO::DiscretizationReader(StructureField()->Discretization(), input_control_file, step);
     reader.ReadVector(lambdafull, "fsilambda");
     lambdaold_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
     // Note: the above is normally enough. However, we can use the restart in order to periodically
@@ -1449,7 +1451,7 @@ void FSI::SlidingMonolithicStructureSplit::ReadRestart(int step)
   if (aleproj_ != INPAR::FSI::ALEprojection_none)
   {
     IO::DiscretizationReader reader =
-        IO::DiscretizationReader(FluidField()->Discretization(), step);
+        IO::DiscretizationReader(FluidField()->Discretization(), input_control_file, step);
     reader.ReadVector(iprojdisp_, "slideALE");
     reader.ReadVector(iprojdispinc_, "slideALEincr");
     slideale_->ReadRestart(reader);

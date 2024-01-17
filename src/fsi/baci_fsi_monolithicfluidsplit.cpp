@@ -1314,8 +1314,8 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =
         Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(), true));
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(FluidField()->Discretization(), step);
+    IO::DiscretizationReader reader = IO::DiscretizationReader(
+        FluidField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdafull, "fsilambda");
     lambdaold_ = FluidField()->Interface()->ExtractFSICondVector(lambdafull);
     // Note: the above is normally enough. However, we can use the restart in order to periodically

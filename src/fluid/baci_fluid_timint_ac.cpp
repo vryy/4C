@@ -39,12 +39,11 @@ void FLD::TimIntAC::ReadRestart(int step)
 
   if (not restartfrompartfsi)  // standard restart
   {
-    IO::DiscretizationReader reader(discret_, step);
+    IO::DiscretizationReader reader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
     reader.ReadVector(trueresidual_, "trueresidual");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

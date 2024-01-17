@@ -12,6 +12,7 @@
 
 #include "baci_fluid_turbulence_dyn_smag.H"
 #include "baci_fluid_turbulence_dyn_vreman.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -306,7 +307,10 @@ void SCATRA::TimIntBDF2::ReadRestart(const int step, Teuchos::RCP<IO::InputContr
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
+  {
+    reader = Teuchos::rcp(new IO::DiscretizationReader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+  }
   else
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
   time_ = reader->ReadDouble("time");
@@ -314,7 +318,7 @@ void SCATRA::TimIntBDF2::ReadRestart(const int step, Teuchos::RCP<IO::InputContr
 
   if (myrank_ == 0)
     std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
-              << std::endl;
+              << '\n';
 
   // read state vectors that are needed for BDF2 restart
   reader->ReadVector(phinp_, "phinp");

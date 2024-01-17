@@ -48,15 +48,6 @@ IO::DiscretizationReader::DiscretizationReader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step)
-    : dis_(dis), input_(GLOBAL::Problem::Instance()->InputControlFile())
-{
-  FindResultGroup(step, input_->ControlFile());
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 int IO::DiscretizationReader::HasInt(std::string name)
 {
   int integer;

@@ -10,6 +10,7 @@
 
 #include "baci_fluid_turbulence_dyn_smag.H"
 #include "baci_fluid_turbulence_dyn_vreman.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_scatra_ele_action.H"
@@ -148,13 +149,13 @@ void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
 {
   if (myrank_ == 0 and not micro_scale_)
   {
-    std::cout << std::endl
+    std::cout << '\n'
               << "TIME: " << std::setw(11) << std::setprecision(4) << std::scientific << time_
               << "/" << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_
               << "  DT = " << std::setw(11) << std::setprecision(4) << std::scientific << dta_
               << "  " << MethodTitle() << " (theta = " << std::setw(3) << std::setprecision(2)
               << theta_ << ") STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_
-              << std::endl;
+              << '\n';
   }
 }
 
@@ -328,7 +329,10 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
+  {
+    reader = Teuchos::rcp(new IO::DiscretizationReader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+  }
   else
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
@@ -337,7 +341,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
 
   if (myrank_ == 0)
     std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
-              << std::endl;
+              << '\n';
 
   // read state vectors that are needed for One-Step-Theta restart
   reader->ReadVector(phinp_, "phinp");

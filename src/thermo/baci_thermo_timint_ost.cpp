@@ -353,7 +353,7 @@ void THR::TimIntOneStepTheta::UpdateStepElement()
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, step_);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(fcap_, "fcap");

@@ -701,7 +701,7 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
 /* read restart forces */
 void STR::TimIntOneStepTheta::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, step_);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(finert_, "finert");

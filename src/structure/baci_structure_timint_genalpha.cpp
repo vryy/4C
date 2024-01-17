@@ -13,6 +13,7 @@
 /* headers */
 #include "baci_structure_timint_genalpha.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_locsys.H"
@@ -51,22 +52,22 @@ void STR::TimIntGenAlpha::VerifyCoeff()
   if ((beta_ <= 0.0) or (beta_ > 0.5))
     dserror("beta out of range (0.0,0.5]");
   else
-    std::cout << "   beta = " << beta_ << std::endl;
+    std::cout << "   beta = " << beta_ << '\n';
   // gamma
   if ((gamma_ <= 0.0) or (gamma_ > 1.0))
     dserror("gamma out of range (0.0,1.0]");
   else
-    std::cout << "   gamma = " << gamma_ << std::endl;
+    std::cout << "   gamma = " << gamma_ << '\n';
   // alpha_f
   if ((alphaf_ < 0.0) or (alphaf_ >= 1.0))
     dserror("alpha_f out of range [0.0,1.0)");
   else
-    std::cout << "   alpha_f = " << alphaf_ << std::endl;
+    std::cout << "   alpha_f = " << alphaf_ << '\n';
   // alpha_m
   if ((alpham_ < -1.0) or (alpham_ >= 1.0))
     dserror("alpha_m out of range [-1.0,1.0)");
   else
-    std::cout << "   alpha_m = " << alpham_ << std::endl;
+    std::cout << "   alpha_m = " << alpham_ << '\n';
 
   // mid-averaging type
   // In principle, there exist two mid-averaging possibilities, TR-like and IMR-like,
@@ -80,10 +81,7 @@ void STR::TimIntGenAlpha::VerifyCoeff()
   if (midavg_ != INPAR::STR::midavg_trlike)
     dserror("mid-averaging of internal forces only implemented TR-like");
   else
-    std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg_) << std::endl;
-
-  // done
-  return;
+    std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg_) << '\n';
 }
 
 /*----------------------------------------------------------------------*/
@@ -121,7 +119,6 @@ STR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
   // is called during Setup() in a base class.
-  return;
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -143,13 +140,10 @@ void STR::TimIntGenAlpha::Init(const Teuchos::ParameterList& timeparams,
     IO::cout << "with generalised-alpha" << IO::endl;
     VerifyCoeff();
 
-    std::cout << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
-              << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
-              << std::endl;
+    std::cout << "   p_dis = " << MethodOrderOfAccuracyDis() << '\n'
+              << "   p_vel = " << MethodOrderOfAccuracyVel() << '\n'
+              << '\n';
   }
-
-  // have a nice day
-  return;
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -259,8 +253,6 @@ void STR::TimIntGenAlpha::Setup()
 
   // init old time step value
   if (fintn_str_ != Teuchos::null) fint_str_->Update(1., *fintn_str_, 0.);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -283,9 +275,6 @@ void STR::TimIntGenAlpha::PredictConstDisConsistVelAcc()
 
   // reset the residual displacement
   disi_->PutScalar(0.0);
-
-  // watch out
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -309,9 +298,6 @@ void STR::TimIntGenAlpha::PredictConstVelConsistAcc()
 
   // reset the residual displacement
   disi_->PutScalar(0.0);
-
-  // That's it!
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -333,9 +319,6 @@ void STR::TimIntGenAlpha::PredictConstAcc()
 
   // reset the residual displacement
   disi_->PutScalar(0.0);
-
-  // That's it!
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -377,9 +360,11 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   else
   {
     if (pred_ != INPAR::STR::pred_constdis)
+    {
       dserror(
           "Only the predictor PredictConstDisConsistVelAcc() allowed for dynamic beam3r "
           "simulations!!!");
+    }
 
     // If we have nonlinear inertia forces, the corresponding contributions are computed together
     // with the internal forces
@@ -513,9 +498,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
 
   // close stiffness matrix
   stiff_->Complete();
-
-  // hallelujah
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -538,9 +520,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidualRelax(Teuchos::ParameterList
     // evaluated at the end point n+1.
     fres_->Update(-1.0, *fifc_, 0.0);
   }
-
-  // oh gosh
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -641,8 +620,6 @@ void STR::TimIntGenAlpha::EvaluateForceResidual()
 
     CORE::LINALG::ApplyDirichletToSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -660,9 +637,6 @@ void STR::TimIntGenAlpha::EvaluateMidState()
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
   accm_->Update(1. - alpham_, *accn_, alpham_, (*acc_)[0], 0.0);
-
-  // jump
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -738,9 +712,6 @@ void STR::TimIntGenAlpha::UpdateIterIteratively()
 
   // new end-point accelerations
   accn_->Update(1.0 / (beta_ * (*dt_)[0] * (*dt_)[0]), *disi_, 1.0);
-
-  // bye
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -796,9 +767,6 @@ void STR::TimIntGenAlpha::UpdateStepState()
 
   // update beam contact
   UpdateStepBeamContact();
-
-  // look out
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -864,12 +832,10 @@ void STR::TimIntGenAlpha::UpdateStepElement()
 /* read and/or calculate forces for restart */
 void STR::TimIntGenAlpha::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, step_);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(finert_, "finert");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -879,7 +845,6 @@ void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrite
   output->WriteVector("fexternal", fext_);
   output->WriteVector("fint", fint_);
   output->WriteVector("finert", finert_);
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
