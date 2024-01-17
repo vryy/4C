@@ -34,7 +34,6 @@ endif()
 
 if(Backtrace_FOUND)
   baci_add_dependency(baci_all_enabled_external_dependencies Backtrace::Backtrace)
-  baci_add_dependency(baci_all_enabled_external_dependencies ${CMAKE_DL_LIBS})
   message(STATUS "Backtrace include directory: ${Backtrace_INCLUDE_DIR}")
   message(STATUS "Backtrace library directory: ${Backtrace_LIBRARY}")
 endif(Backtrace_FOUND)
