@@ -133,8 +133,73 @@ namespace
 
     std::vector<T> expected_data = {{{1, {1, 2, 3}}}, {{2, {4, 5, 6}}}, {{3, {7, 8, 9}}}};
 
-    std::vector<T> read_data;
-    IO::ReadCsvAsLines(test_csv_file, read_data);
+    std::vector<T> read_data = IO::ReadCsvAsLines<T>(test_csv_file);
+
+    EXPECT_EQ(read_data, expected_data);
+  }
+
+  TEST(FoldLines, ReduceMapToVector)
+  {
+    using T = std::map<int, std::array<int, 3>>;
+    std::stringstream test_csv_file;
+    test_csv_file << "1:1,2,3" << std::endl;
+    test_csv_file << "2:4,5,6" << std::endl;
+    test_csv_file << "3:7,8,9" << std::endl;
+
+    std::vector<T> expected_data = {{{1, {1, 2, 3}}}, {{3, {7, 8, 9}}}};
+
+    T read_data = IO::ReadCsvAsLines<T, T>(test_csv_file,
+        [](T&& acc, T&& next)
+        {
+          // add only maps that have a key != 2
+          if (acc.size() == 1 && acc.count(2) == 0) acc.merge(std::move(next));
+          return acc;
+        });
+  }
+
+  TEST(FoldLines, ReduceMapSumValues)
+  {
+    using T = std::map<int, std::array<int, 3>>;
+    std::stringstream test_csv_file;
+    test_csv_file << "1:1,2,3" << std::endl;
+    test_csv_file << "2:4,5,6" << std::endl;
+    test_csv_file << "3:7,8,9" << std::endl;
+
+    std::map<int, int> expected_data{{1, 6}, {2, 15}, {3, 24}};
+
+    using ReducedType = std::map<int, int>;
+    ReducedType read_data = IO::ReadCsvAsLines<T, ReducedType>(test_csv_file,
+        [](ReducedType&& acc, T&& next)
+        {
+          for (const auto& [key, value] : next)
+          {
+            acc[key] = value[0] + value[1] + value[2];
+          }
+          return acc;
+        });
+
+    EXPECT_EQ(read_data, expected_data);
+  }
+
+  TEST(FoldLines, ReduceMapToMap)
+  {
+    using T = std::map<int, std::vector<std::pair<double, double>>>;
+    std::stringstream test_csv_file;
+    test_csv_file << "1:0.0,0.0;0.1,0.1;0.2,0.2" << std::endl;
+    test_csv_file << "2:0.0,0.0;0.1,0.2;0.2,0.4" << std::endl;
+
+    T expected_data = {
+        {1, {{0.0, 0.0}, {0.1, 0.1}, {0.2, 0.2}}}, {2, {{0.0, 0.0}, {0.1, 0.2}, {0.2, 0.4}}}};
+
+    T read_data = IO::ReadCsvAsLines<T, T>(test_csv_file,
+        [](T&& acc, T&& next)
+        {
+          for (const auto& [key, value] : next)
+          {
+            acc[key] = value;
+          }
+          return acc;
+        });
 
     EXPECT_EQ(read_data, expected_data);
   }

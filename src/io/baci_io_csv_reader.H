@@ -42,33 +42,77 @@ namespace IO
       int number_of_columns, std::istream& csv_stream);
 
   /*!
-   * @brief Read a csv stream line by line. Parse each line into an object of type T and append the
-   * result to the data vector.
+   * @brief Read a @p csv_stream line by line and parse each line into an object of type @p T using
+   * `IO::StringConverter<T>::Parse(line_string)`. Return a vector containing all those objects.
    *
    * @param[in] csv_stream csv input stream
-   * @param[out] data vector the csv's lines are read into
-   * @tparam type T of object one line is read into
+   * @tparam T type of object one line is read into
    */
   template <typename T>
-  void ReadCsvAsLines(std::istream& csv_stream, std::vector<T>& data);
+  std::vector<T> ReadCsvAsLines(std::istream& csv_stream);
 
   /*!
-   * @brief Read and process a csv file line by line. Parse each line into an object of type T and
-   * append the result to the data vector.
+   * @brief Read a @p csv_stream line by line and parse each line into an object of type @p T using
+   * `IO::StringConverter<T>::Parse(line_string)`. The parsed objects are then reduced into another
+   * object of @p ReturnType. This process is also known as a `fold` over the data.
+   * The user can specify which @p operation should be performed by supplying a callable that takes
+   * the already accumulated data of type @p ReturnType and the result of parsing a single CSV line
+   * into a type @p T.
    *
-   * @param[in] csv_file_path absolute path to csv file
-   * @param[out] data vector the csv's lines are read into
-   * @tparam type T of object one line is read into
+   * Assume you have a csv stream, where each line follows the pattern `"key:val_1,val_2,val_3"`.
+   * Those lines can be parsed into objects of type `T = std::map<int, std::array<int, 3>>`.
+   * You want to create an `std::map<int,int>` containing the sum of values for each key.
+   * Hence, you need an operation (e.g., a lambda function) that creates a `std::map<int, int>`
+   * (ReturnType) from objects of type `std::map<int, std::array<int, 3>>` (T) by summing up the
+   * array entries:
+   *
+   * @code {.cpp}
+   * auto operation = [](ReducedType &&acc, T &&next)
+   * {
+   *   for (const auto &[key, value] : next)
+   *   {
+   *     acc[key] = value[0] + value[1] + value[2];
+   *   }
+   *   return acc;
+   * };
+   * @endcode
+   *
+   * The desired map could then be read from the csv_stream:
+   *
+   * @code {.cpp}
+   * using ReducedType = std::map<int, int>;
+   * using T = std::map<int, std::array<int, 3>>;
+   * ReducedType read_data = IO::ReadCsvAsLines<T, ReducedType>(csv_stream, operator);
+   * @endcode
+   *
+   * @param[in] csv_stream csv input stream
+   * @param[in] operation Binary operation function object that is apply to create the operated data
+   *                      from the parsed data. Its signature must be:
+   *                      @code {.cpp}
+   *                      ReturnType operation(ReturnType&& a, T&& b)
+   *                      @endcode
+   * @tparam T type of object one line is read into
+   * @tparam ReturnType type of the result created through the binary operation
    */
-  template <typename T>
-  void ReadCsvAsLines(const std::string& csv_file_path, std::vector<T>& data);
+  template <typename T, typename ReturnType, typename BinaryOperation>
+  ReturnType ReadCsvAsLines(std::istream& csv_stream, BinaryOperation operation);
 
   template <typename T>
-  void ReadCsvAsLines(std::istream& csv_stream, std::vector<T>& data)
+  std::vector<T> ReadCsvAsLines(std::istream& csv_stream)
   {
-    // prepare variables
-    T line_data;
+    return ReadCsvAsLines<T, std::vector<T>>(csv_stream,
+        [](std::vector<T>&& accumulator, T&& next)
+        {
+          accumulator.emplace_back(std::move(next));
+          return accumulator;
+        });
+  }
+
+  template <typename T, typename ReturnType, typename BinaryOperation>
+  ReturnType ReadCsvAsLines(std::istream& csv_stream, BinaryOperation operation)
+  {
     std::string line_str;
+    ReturnType operated_data;
 
     // read lines of csv file
     while (std::getline(csv_stream, line_str))
@@ -78,8 +122,9 @@ namespace IO
 
       try
       {
-        line_data = IO::StringConverter<T>::Parse(line_str);
-        data.emplace_back(line_data);
+        // parse line string and apply the specified operation on the parsed data
+        T parsed_data = IO::StringConverter<T>::Parse(line_str);
+        operated_data = operation(std::move(operated_data), std::move(parsed_data));
       }
       catch (...)
       {
@@ -89,15 +134,7 @@ namespace IO
             line_str.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
       }
     }
-  }
-
-  template <typename T>
-  void ReadCsvAsLines(const std::string& csv_file_path, std::vector<T>& data)
-  {
-    std::ifstream csv_file_stream(csv_file_path);
-    if (csv_file_stream.fail()) dserror("Invalid csv file!");
-
-    ReadCsvAsLines(csv_file_stream, data);
+    return operated_data;
   }
 }  // namespace IO
 
