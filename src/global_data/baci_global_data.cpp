@@ -193,9 +193,10 @@ void GLOBAL::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
     }
   }
 
-  outputcontrol_ = Teuchos::rcp(new IO::OutputControl(comm, ProblemName(),
-      SpatialApproximationType(), inputfile, restartkenner, std::move(prefix), NDim(), Restart(),
-      IOParams().get<int>("FILESTEPS"), INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN"), true));
+  outputcontrol_ =
+      Teuchos::rcp(new IO::OutputControl(comm, ProblemName(), SpatialApproximationType(), inputfile,
+          restartkenner, std::move(prefix), NDim(), Restart(), IOParams().get<int>("FILESTEPS"),
+          INPUT::IntegralValue<bool>(IOParams(), "OUTPUT_BIN"), true));
 
   if (!INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN") && comm.MyPID() == 0)
   {

@@ -246,8 +246,8 @@ namespace IO
 
   std::string ExtractFileName(const std::string& full_filename);
 
-  /// remove the restart counter from the file name
-  std::string RemoveRestartCountFromFileName(const std::string& filename);
+  /// remove the @p restart_step from the @p filename
+  std::string RemoveRestartStepFromFileName(const std::string& filename, int restart_step);
 
   /// Create a new directory.
   void CreateDirectory(const std::string& dir_path, const int myrank);
@@ -259,4 +259,4 @@ namespace IO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // IO_EVERY_ITERATION_WRITER_H
+#endif  // BACI_IO_EVERY_ITERATION_WRITER_H

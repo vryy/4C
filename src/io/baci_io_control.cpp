@@ -30,18 +30,20 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    CORE::FE::ShapeFunctionType spatial_approx, std::string inputfile,
-    const std::string& outputname, int ndim, int restart, int filesteps, int create_controlfile)
+    const CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+    const std::string& outputname, const int ndim, const int restart_step, const int filesteps,
+    const bool write_binary_output)
     : problemtype_(std::move(problemtype)),
       inputfile_(std::move(inputfile)),
       ndim_(ndim),
       filename_(outputname),
       restartname_(outputname),
       filesteps_(filesteps),
-      create_controlfile_(create_controlfile),
-      myrank_(comm.MyPID())
+      restart_step_(restart_step),
+      myrank_(comm.MyPID()),
+      write_binary_output_(write_binary_output)
 {
-  if (restart)
+  if (restart_step)
   {
     if (myrank_ == 0)
     {
@@ -84,28 +86,29 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 
   std::stringstream name;
   name << filename_ << ".control";
-  WriteHeader(name.str(), spatial_approx);
+  WriteHeader(name.str(), type_of_spatial_approx);
 
-  InsertRestartBackReference(restart, outputname);
+  InsertRestartBackReference(restart_step, outputname);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    CORE::FE::ShapeFunctionType spatial_approx, std::string inputfile,
-    const std::string& restartname, std::string outputname, int ndim, int restart, int filesteps,
-    int create_controlfile, bool adaptname)
+    const CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+    const std::string& restartname, std::string outputname, const int ndim, const int restart_step,
+    const int filesteps, const bool write_binary_output, const bool adaptname)
     : problemtype_(std::move(problemtype)),
       inputfile_(std::move(inputfile)),
       ndim_(ndim),
       filename_(std::move(outputname)),
       restartname_(restartname),
       filesteps_(filesteps),
-      create_controlfile_(create_controlfile),
-      myrank_(comm.MyPID())
+      restart_step_(restart_step),
+      myrank_(comm.MyPID()),
+      write_binary_output_(write_binary_output)
 {
-  if (restart)
+  if (restart_step)
   {
     if (myrank_ == 0 && adaptname)
     {
@@ -129,7 +132,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
           std::ifstream file(name.str().c_str());
           if (not file)
           {
-            std::cout << "restart with new output file: " << filename_ << std::endl;
+            std::cout << "restart with new output file: " << filename_ << '\n';
             break;
           }
         }
@@ -142,7 +145,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
         {
           filename_ = name.str();
           filename_ = filename_.substr(0, filename_.length() - 8);
-          std::cout << "restart with new output file: " << filename_ << std::endl;
+          std::cout << "restart with new output file: " << filename_ << '\n';
           break;
         }
       }
@@ -161,14 +164,14 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
     }
   }
 
-  if (create_controlfile_)
+  if (write_binary_output_)
   {
     std::stringstream name;
     name << filename_ << ".control";
 
-    WriteHeader(name.str(), spatial_approx);
+    WriteHeader(name.str(), type_of_spatial_approx);
 
-    InsertRestartBackReference(restart, restartname);
+    InsertRestartBackReference(restart_step, restartname);
   }
 }
 
@@ -181,8 +184,9 @@ IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char* new_
       filename_(ocontrol.filename_),
       restartname_(ocontrol.restartname_),
       filesteps_(ocontrol.filesteps_),
-      create_controlfile_(ocontrol.create_controlfile_),
-      myrank_(ocontrol.myrank_)
+      restart_step_(ocontrol.restart_step_),
+      myrank_(ocontrol.myrank_),
+      write_binary_output_(ocontrol.write_binary_output_)
 {
   // replace file names if provided
   if (new_prefix)

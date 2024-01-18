@@ -9,7 +9,6 @@
 
 #include "baci_io_every_iteration_writer.H"
 
-#include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
@@ -69,8 +68,8 @@ void IO::EveryIterationWriter::Setup()
 
   /* Remove the restart counter from the folder name. Note that the restart
    * counter stays a part of the final file name of the corresponding step. */
-  const std::string filename_without_restart =
-      RemoveRestartCountFromFileName(ParentWriter().Output()->FileNameOnlyPrefix());
+  const std::string filename_without_restart = RemoveRestartStepFromFileName(
+      ParentWriter().Output()->FileNameOnlyPrefix(), ParentWriter().Output()->RestartStep());
 
   const std::string dir_name(filename_without_restart + "_every_iter");
 
@@ -161,10 +160,9 @@ std::string IO::ExtractFileName(const std::string& full_filename)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string IO::RemoveRestartCountFromFileName(const std::string& filename)
+std::string IO::RemoveRestartStepFromFileName(const std::string& filename, const int restart_step)
 {
-  const int restart_count = GLOBAL::Problem::Instance()->Restart();
-  if (restart_count == 0) return filename;
+  if (restart_step == 0) return filename;
 
   size_t pos = filename.rfind('-');
   if (pos == std::string::npos) return filename;
