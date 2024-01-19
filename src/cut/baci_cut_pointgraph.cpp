@@ -292,7 +292,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::AddCutLinesToGraph(
         str << "line between " << (*p1) << " and " << (*p2)
             << " is cut by element, but point cuts are: " << p1->IsCut(element) << " and "
             << p2->IsCut(element);
-        throw CORE::Exception(str.str());
+        dserror(str.str());
       }
     }
 #endif
@@ -536,7 +536,7 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
 
   if (erase_count > (save_first ? 2 : 1))
   {
-    throw CORE::Exception("more than one back facet");
+    dserror("more than one back facet");
   }
 
 #if DEBUG_POINTGRAPH
@@ -1087,7 +1087,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
           err_msg << "The single cut point in pointgraph(Id=" << cut_point->Id() << ")"
                   << " is not a nodal point of any of the edges connected to it (Not Touching)\n\
             This can for instance happen if your cut surface is not closed, so check your geometry first!\n";
-          throw CORE::Exception(err_msg.str());
+          dserror(err_msg.str());
         }
       }
     }

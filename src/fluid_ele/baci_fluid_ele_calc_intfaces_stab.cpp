@@ -462,7 +462,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Degree
       degree = 2;
       break;
     default:
-      throw CORE::Exception("unsupported parent/neighbor element shape");
+      dserror("unsupported parent/neighbor element shape");
   }
 
   return degree;

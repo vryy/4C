@@ -470,7 +470,7 @@ CORE::GEO::CUT::Tri3BoundaryCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
   pointtest.insert(points.begin(), points.end());
   if (points.size() != pointtest.size())
   {
-    throw CORE::Exception("point used more than once in boundary cell");
+    dserror("point used more than once in boundary cell");
   }
 #endif
   CORE::LINALG::SerialDenseMatrix xyz(3, 3);
@@ -498,7 +498,7 @@ CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
   pointtest.insert(points.begin(), points.end());
   if (points.size() != pointtest.size())
   {
-    throw CORE::Exception("point used more than once in boundary cell");
+    dserror("point used more than once in boundary cell");
   }
 #endif
   CORE::LINALG::SerialDenseMatrix xyz(3, 4);
@@ -526,7 +526,7 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
   pointtest.insert(points.begin(), points.end());
   if (points.size() != pointtest.size())
   {
-    throw CORE::Exception("point used more than once in boundary cell");
+    dserror("point used more than once in boundary cell");
   }
 #endif
   CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
@@ -623,7 +623,7 @@ CORE::GEO::CUT::Hex8IntegrationCell* CORE::GEO::CUT::Mesh::NewHex8Cell(
 CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  if (points.size() != 4) throw CORE::Exception("wrong number of cell points");
+  if (points.size() != 4) dserror("wrong number of cell points");
   CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
@@ -1197,7 +1197,7 @@ void CORE::GEO::CUT::Mesh::FindLSNodePositions()
       }
       else  //
       {
-        // throw CORE::Exception( "undecided nodal point on levelset
+        // dserror( "undecided nodal point on levelset
         // surface" );
         std::cout << "UNDECIDED CUT POSITION! SHOULD THIS HAPPEN?!"
                   << " lsv= " << std::setprecision(24) << lsv << std::endl;
@@ -1247,7 +1247,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
           case Point::outside:
             if (position != Point::undecided and position != fp)
             {
-              throw CORE::Exception("mixed facet set");
+              dserror("mixed facet set");
             }
             position = fp;
             break;
@@ -1273,7 +1273,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
   // volume cells, so it should be fine.
 
   if (cells_.size() == undecided.size() and cells_.size() > 0)
-    throw CORE::Exception("all volume cells undecided and volume cells available");
+    dserror("all volume cells undecided and volume cells available");
 
   while (undecided.size() > 0)
   {
@@ -1294,11 +1294,10 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
             switch (np)
             {
               case Point::undecided:
-                if (undecided.count(nc) == 0)
-                  throw CORE::Exception("uncomplete set of undecided volume cells");
+                if (undecided.count(nc) == 0) dserror("uncomplete set of undecided volume cells");
                 break;
               case Point::oncutsurface:
-                throw CORE::Exception("illegal volume position");
+                dserror("illegal volume position");
                 break;
               case Point::inside:
               case Point::outside:
@@ -1322,7 +1321,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
         ++ui;
       }
     }
-    if (size == undecided.size()) throw CORE::Exception("no progress in volume cell position");
+    if (size == undecided.size()) dserror("no progress in volume cell position");
   }
 
   // second pass
@@ -1351,7 +1350,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
   //       case CORE::GEO::CUT::Point::outside:
   //         if ( position!=CORE::GEO::CUT::Point::undecided and position!=fp )
   //         {
-  //           throw CORE::Exception( "mixed facet set" );
+  //           dserror( "mixed facet set" );
   //         }
   //         position = fp;
   //       }
@@ -1436,8 +1435,7 @@ bool CORE::GEO::CUT::Mesh::CheckForUndecidedNodePositions(
     {
       if (n->Id() >= 0)
       {
-        throw CORE::Exception(
-            "this cannot be a shadow node, a shadow node should have negative nid");
+        dserror("this cannot be a shadow node, a shadow node should have negative nid");
       }
 
       // for hex20 elements, boundary shadow nodes are identified by the eight side-nids of the
@@ -2612,7 +2610,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
   {
     return &*i->second;
   }
-  if (xyz == nullptr) throw CORE::Exception("cannot create node without coordinates");
+  if (xyz == nullptr) dserror("cannot create node without coordinates");
 
   //   Point * p = pp_->GetPoint( xyz, nullptr, nullptr, MINIMALTOL );
   //   if ( p!=nullptr )
@@ -2665,7 +2663,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
   int nid = -shadow_nodes_.size() - 1;
   if (nodes_.find(nid) != nodes_.end())
   {
-    throw CORE::Exception("shadow node already exists");
+    dserror("shadow node already exists");
   }
 
   // Remark: the nid of a shadow node is not unique over processors, consequently numbered with
@@ -2681,7 +2679,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
  *-------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::GetEdge(Node* begin, Node* end)
 {
-  if (begin->point() == end->point()) throw CORE::Exception("edge between same point");
+  if (begin->point() == end->point()) dserror("edge between same point");
 
   plain_int_set nids;
   nids.insert(begin->Id());
@@ -2734,7 +2732,7 @@ CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::GetEdge(const plain_int_set& nids,
   }
 
   //     if ( nodes[0]->point()==nodes[1]->point() )
-  //       throw CORE::Exception( "edge between same point" );
+  //       dserror( "edge between same point" );
   edges_[nids] = Edge::Create(edge_topology.key, nodes);
 
   //  edges_[nids] = Teuchos::rcp( e );
@@ -3209,7 +3207,7 @@ void CORE::GEO::CUT::Mesh::AssignOtherVolumeCells_CutTest(const Mesh& other)
       ++i;
       Side* s2 = *i;
       Element* e = s1->CommonElement(s2);
-      if (e == nullptr) throw CORE::Exception("no common element on cut sides");
+      if (e == nullptr) dserror("no common element on cut sides");
       e->AssignOtherVolumeCell(vc);
     }
     else
@@ -3222,7 +3220,7 @@ void CORE::GEO::CUT::Mesh::AssignOtherVolumeCells_CutTest(const Mesh& other)
   {
     std::stringstream str;
     str << cells.size() << " volume cells left. Need to handle those.";
-    throw CORE::Exception(str.str());
+    dserror(str.str());
   }
 }
 

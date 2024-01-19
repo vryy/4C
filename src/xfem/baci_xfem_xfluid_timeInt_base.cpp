@@ -3139,7 +3139,7 @@ bool XFEM::XFLUID_STD::WithinLimits(CORE::LINALG::Matrix<3, 1>& xsi_, const doub
       return (xsi_(0) >= -TOL and xsi_(1) >= -TOL and xsi_(2) >= -1 - TOL and xsi_(2) <= 1 + TOL and
               xsi_(0) + xsi_(1) <= 1 + TOL);
     default:
-      throw CORE::Exception("unsupported element type in XFEM::XFLUID_STD::WithinLimits");
+      dserror("unsupported element type in XFEM::XFLUID_STD::WithinLimits");
   }
   return false;
 }

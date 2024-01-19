@@ -863,7 +863,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell(
           {
             // Corner point confusion. This is actually not a pyramid5.
             //
-            // throw CORE::Exception( "illegal pyramid5 cell" );
+            // dserror( "illegal pyramid5 cell" );
             return false;
           }
         }

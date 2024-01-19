@@ -14,19 +14,19 @@
 
 #include "baci_config.H"
 
-#include <boost/stacktrace/stacktrace_fwd.hpp>
-
-#include <cstdarg>
-#include <cstdio>
-#include <cstdlib>
+#include <memory>
 #include <stdexcept>
 #include <string>
-#include <utility>
 
 BACI_NAMESPACE_OPEN
 
 namespace CORE
 {
+  namespace INTERNAL
+  {
+    class ExceptionImplementation;
+  }
+
   /**
    * @brief Base class for all BACI exceptions.
    *
@@ -54,36 +54,31 @@ namespace CORE
 
    private:
     /**
-     * A user-defined message that explains what happened.
+     * Pointer to implementation. This technique is used to minimize the footprint of the exception
+     * class that is put on the stack.
      */
-    std::string message;
-
-    /**
-     * The generated stacktrace which is used to construct a nice error message when calling what().
-     */
-    std::unique_ptr<boost::stacktrace::stacktrace> stacktrace;
-
-    /**
-     * The full message that is returned by what. This message is composed of all the other
-     * information stored in this class.
-     *
-     * @note This needs to be stored here since we only return a `const char*` from what().
-     */
-    mutable std::string what_message_;
+    std::unique_ptr<INTERNAL::ExceptionImplementation> pimpl_;
   };
 
   namespace INTERNAL
   {
+
+    [[noreturn]] void ThrowError(const char* file, int line, const char* format, ...);
+    [[noreturn]] void ThrowError(const char* file, int line, const std::string& format, ...);
+
     /**
      * A helper struct taking the file name and line number from the error macro.
      */
     struct ErrorHelper
     {
-      const char* file;
+      const char* file_name;
       int line_number;
 
-      [[noreturn]] void operator()(const char* format, ...) const;
-      [[noreturn]] void operator()(const std::string& format, ...) const;
+      template <typename StringType, typename... Args>
+      [[noreturn]] void operator()(const StringType& format, Args&&... args) const
+      {
+        ThrowError(file_name, line_number, format, std::forward<Args>(args)...);
+      }
     };
 
   }  // namespace INTERNAL

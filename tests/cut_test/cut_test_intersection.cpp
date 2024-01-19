@@ -105,7 +105,7 @@ void test_quad4_line2(double x1, double y1, double x2, double y2)
     std::stringstream str;
     str << "two cuts expected but got " << cuts.size() << ": ";
     std::copy(cuts.begin(), cuts.end(), std::ostream_iterator<CORE::GEO::CUT::Point*>(str, " "));
-    throw CORE::Exception(str.str());
+    dserror(str.str());
   }
 }
 

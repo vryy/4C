@@ -88,7 +88,7 @@ namespace CORE::GEO
           }
           else
           {
-            throw CORE::Exception("not unique");
+            dserror("not unique");
           }
         }
       }

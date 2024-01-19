@@ -136,7 +136,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
-    throw CORE::Exception("wrong number of nodes for master element");
+    dserror("wrong number of nodes for master element");
   }
 
   //-----------------------------------------------------------------------
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
-    throw CORE::Exception("wrong number of nodes for slave element");
+    dserror("wrong number of nodes for slave element");
   }
 
   //-----------------------------------------------------------------------
@@ -311,7 +311,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
       }
     }
     else
-      throw CORE::Exception("face's nodes not contained in masternodes_offset map");
+      dserror("face's nodes not contained in masternodes_offset map");
   }
 
   return;
@@ -347,7 +347,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
-    throw CORE::Exception("wrong number of nodes for master element");
+    dserror("wrong number of nodes for master element");
   }
 
   //-----------------------------------------------------------------------
@@ -356,7 +356,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
-    throw CORE::Exception("wrong number of nodes for slave element");
+    dserror("wrong number of nodes for slave element");
   }
 
   //-----------------------------------------------------------------------
@@ -551,7 +551,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
       }
     }
     else
-      throw CORE::Exception("face's nodes not contained in masternodes_offset map");
+      dserror("face's nodes not contained in masternodes_offset map");
   }
 
 

@@ -146,7 +146,7 @@ CORE::GEO::CUT::TetMeshIntersection::TetMeshIntersection(Options& options, Eleme
            i != triangulation.end(); ++i)
       {
         const std::vector<Point*>& tri = *i;
-        if (tri.size() != 3) throw CORE::Exception("tri3 expected");
+        if (tri.size() != 3) dserror("tri3 expected");
         std::vector<Node*> nodes;
         nodes.reserve(3);
         for (std::vector<Point*>::const_iterator i = tri.begin(); i != tri.end(); ++i)
@@ -200,7 +200,7 @@ CORE::GEO::CUT::TetMeshIntersection::TetMeshIntersection(Options& options, Eleme
           break;
         }
         default:
-          throw CORE::Exception("facet with more that three points");
+          dserror("facet with more that three points");
       }
     }
   }
@@ -437,15 +437,14 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
                 else if (child_cells.size() == 2)
                 {
                   // odd.
-                  throw CORE::Exception(
-                      "illegal number of neighbouring volume cells: child_cells.size()==2");
+                  dserror("illegal number of neighbouring volume cells: child_cells.size()==2");
                 }
                 else
                 {
                   std::stringstream str;
                   str << "illegal number of neighbouring volume cells: child_cells.size()=="
                       << child_cells.size();
-                  throw CORE::Exception(str.str());
+                  dserror(str.str());
                 }
               }
 
@@ -484,7 +483,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
               const std::vector<Facet*>& child_facets = child_side->Facets();
               //               if ( child_facets.size()==0 )
               //               {
-              //                 throw CORE::Exception( "Wo sind die facets?" );
+              //                 dserror( "Wo sind die facets?" );
               //               }
 
               for (std::vector<Facet*>::const_iterator i = child_facets.begin();
@@ -519,7 +518,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
                   }
                   else
                   {
-                    throw CORE::Exception("child must be part of done parent cell");
+                    dserror("child must be part of done parent cell");
                   }
                 }
                 else if (child_cells.size() == 1)
@@ -540,7 +539,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
                   std::stringstream str;
                   str << "illegal number of neighbouring volume cells: child_cells.size() == "
                       << child_cells.size();
-                  throw CORE::Exception(str.str());
+                  dserror(str.str());
                 }
               }
 
@@ -593,13 +592,13 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
           }
           else
           {
-            throw CORE::Exception("more than one open parent cells");
+            dserror("more than one open parent cells");
           }
         }
       }
       if (parent_vc == nullptr)
       {
-        throw CORE::Exception("no open parent cell");
+        dserror("no open parent cell");
       }
 
       ChildCell& cc = *child_cells;
@@ -632,7 +631,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
       }
       else
       {
-        // throw CORE::Exception( "no child cell for open parent cell" );
+        // dserror( "no child cell for open parent cell" );
 
         // Empty parent cell. We did not get any children. The cell is most
         // probably too small.
@@ -679,8 +678,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
       }
     }
 
-    if (backup == nonnodecells)
-      throw CORE::Exception("no progress in child cell--parent cell mapping");
+    if (backup == nonnodecells) dserror("no progress in child cell--parent cell mapping");
   }
 
   for (std::map<VolumeCell*, ChildCell>::iterator i = cellmap.begin(); i != cellmap.end(); ++i)
@@ -710,7 +708,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
 
       Point::PointPosition pos = vc->Position();
       //       if ( pos==Point::undecided )
-      //         throw CORE::Exception( "undecided volume cell" );
+      //         dserror( "undecided volume cell" );
       if (pos != Point::undecided)
         for (plain_volumecell_set::iterator i = childset.begin(); i != childset.end(); ++i)
         {
@@ -831,7 +829,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SeedCells(Mesh& parent_mesh,
 
           std::swap(used_parent_cells, intersection);
 
-          if (used_parent_cells.size() == 0) throw CORE::Exception("no possible parent cell");
+          if (used_parent_cells.size() == 0) dserror("no possible parent cell");
         }
 
         if (used_parent_cells.size() == 1)
@@ -840,7 +838,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SeedCells(Mesh& parent_mesh,
           ChildCell& cc = cellmap[parent_vc];
           if (cc.done_)
           {
-            // throw CORE::Exception( "free child cell to done parent cell?" );
+            // dserror( "free child cell to done parent cell?" );
           }
           else
           {
@@ -852,7 +850,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SeedCells(Mesh& parent_mesh,
       }
       else
       {
-        // throw CORE::Exception( "child cell with all new points?" );
+        // dserror( "child cell with all new points?" );
       }
     }
   }
@@ -872,7 +870,7 @@ void CORE::GEO::CUT::TetMeshIntersection::BuildSurfaceCellMap(VolumeCell* vc, Ch
     {
       Side* s = f->ParentSide();
       std::map<Side*, std::vector<Side*>>::iterator j = side_parent_to_child_.find(s);
-      if (j == side_parent_to_child_.end()) throw CORE::Exception("unknown parent cut facet");
+      if (j == side_parent_to_child_.end()) dserror("unknown parent cut facet");
       std::vector<Side*>& side_vector = j->second;
       for (std::vector<Side*>::iterator i = side_vector.begin(); i != side_vector.end(); ++i)
       {
@@ -920,8 +918,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
         Facet* parent_facet = nullptr;
         Facet* child_facet = bc->GetFacet();
 
-        if (not child_facet->OnBoundaryCellSide())
-          throw CORE::Exception("boundary cell not on cut surface");
+        if (not child_facet->OnBoundaryCellSide()) dserror("boundary cell not on cut surface");
 
         std::vector<Facet*> facets;
         std::stringstream str;
@@ -1015,20 +1012,20 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
               else
               {
                 str << "parent facet not unique";
-                throw CORE::Exception(str.str());
+                dserror(str.str());
               }
             }
           }
           if (parent_facet == nullptr)
           {
             str << "no parent facet found";
-            throw CORE::Exception(str.str());
+            dserror(str.str());
           }
         }
         else
         {
           str << "empty list bug";
-          throw CORE::Exception(str.str());
+          dserror(str.str());
         }
 
         parent_cell->NewBoundaryCell(parent_mesh, bc->Shape(), parent_facet, parent_points);
@@ -1043,7 +1040,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(VolumeCell* parent_cell, ChildCel
 
   if (child_cells.size() == 0)
   {
-    throw CORE::Exception("failed to find seed cells");
+    dserror("failed to find seed cells");
   }
 
   plain_volumecell_set done_child_cells;
@@ -1213,7 +1210,7 @@ void CORE::GEO::CUT::TetMeshIntersection::FindVolumeCell(Point* p, plain_volumec
       VolumeCell* vc = *i;
       if (vc->Contains(p)) return;
     }
-    throw CORE::Exception("point not contained in volume cell");
+    dserror("point not contained in volume cell");
   }
 #endif
 }
@@ -1251,7 +1248,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SwapPoints(
     std::map<Point*, Point*>::const_iterator j = pointmap.find(p);
     if (j == pointmap.end())
     {
-      throw CORE::Exception("no such point");
+      dserror("no such point");
     }
     new_points.push_back(j->second);
   }
@@ -1268,7 +1265,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SwapPoints(
     std::map<Point*, Point*>::const_iterator j = pointmap.find(p);
     if (j == pointmap.end())
     {
-      throw CORE::Exception("no such point");
+      dserror("no such point");
     }
     new_points.insert(j->second);
   }
@@ -1281,7 +1278,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::TetMeshIntersection::SwapPoint(
   std::map<Point*, Point*>::const_iterator j = pointmap.find(point);
   if (j == pointmap.end())
   {
-    // throw CORE::Exception( "no such point" );
+    // dserror( "no such point" );
     return nullptr;
   }
   return j->second;
@@ -1310,7 +1307,7 @@ void CORE::GEO::CUT::TetMeshIntersection::CopyCutSide(Side* s, Facet* f)
     {
       if (new_node->point() != np)
       {
-        throw CORE::Exception("did not catch known cut point");
+        dserror("did not catch known cut point");
       }
     }
     else

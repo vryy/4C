@@ -67,7 +67,7 @@ void test_unit_intersection_touch()
 
     if (e->Nodes()[0]->point()->Id() != 7 or e->Nodes()[1]->point()->Id() != 4)
     {
-      throw CORE::Exception("unexpected nodal id");
+      dserror("unexpected nodal id");
     }
 
 

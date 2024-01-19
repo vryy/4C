@@ -100,7 +100,7 @@ namespace CORE::GEN
     {
       iterator last = data.begin() + entries;
       iterator it = find(k, data, entries);
-      if (it == last) throw CORE::Exception("pairedvector::at(): invalid key");
+      if (it == last) dserror("pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -109,7 +109,7 @@ namespace CORE::GEN
     {
       const_iterator last = data.begin() + entries;
       const_iterator it = find(k, data, entries);
-      if (it == last) throw CORE::Exception("pairedvector::at(): invalid key");
+      if (it == last) dserror("pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -146,7 +146,7 @@ namespace CORE::GEN
       msg << __LINE__ << " - " << __FUNCTION__ << " in " << __FILE__ << ":\n";
       msg << "Set the define \"DEBUG_INSERT_POLICY\" first to"
              " use the debug functionality!";
-      throw CORE::Exception(msg.str());
+      dserror(msg.str());
 #endif
     }
 
@@ -202,7 +202,7 @@ namespace CORE::GEN
     {
       iterator last = data.begin() + entries;
       iterator it = find(k, data, entries);
-      if (it == last) throw CORE::Exception("pairedvector::at(): invalid key");
+      if (it == last) dserror("pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -212,7 +212,7 @@ namespace CORE::GEN
     {
       const_iterator last = data.begin() + entries;
       const_iterator it = find(k, data, entries);
-      if (it == last) throw CORE::Exception("pairedvector::at(): invalid key");
+      if (it == last) dserror("pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -357,7 +357,7 @@ namespace CORE::GEN
           std::stringstream msg;
           msg << "Size (== " << _id_map.size() << " ) <--> count (== " << _id_index
               << " ) mismatch!\n";
-          throw CORE::Exception(msg.str());
+          dserror(msg.str());
         }
       }
 
@@ -463,7 +463,7 @@ namespace CORE::GEN
         msg << "quick_insert_policy::subsequent_access(): Mismatch of stored "
                "key and given key: "
             << curr_pair.first << " <--> " << k << "\n";
-        throw CORE::Exception(msg.str());
+        dserror(msg.str());
       }
 
       return curr_pair.second;
@@ -685,7 +685,7 @@ namespace CORE::GEN
         msg << "LINE " << linenumber << " in " << functname
             << ": access denied! "
                "call complete first.";
-        throw CORE::Exception(msg.str());
+        dserror(msg.str());
       }
     }
 

@@ -59,7 +59,7 @@ CORE::GEO::CUT::ConstMemoryPool::ConstMemoryPool(size_t constSize, int n)
     if (offset_ != 0) dserror("Offset should be equal to zero!");
   }
   else
-    throw CORE::Exception("Allocation of ConstMemoryPool failed");
+    dserror("Allocation of ConstMemoryPool failed");
 }
 
 CORE::GEO::CUT::ConstMemoryPool::ConstMemoryPool(char* data, size_t constSize, int n)
@@ -303,7 +303,7 @@ CORE::GEO::CUT::GenericMemoryPool::GenericMemoryPool(
     if (most_frequent_size != 0)
       current_ = const_memory_map_[most_frequent_size];
     else
-      throw CORE::Exception("This should not happen!");
+      dserror("This should not happen!");
   }
   else
     AllInOneAllocation(mem_pattern);
@@ -363,7 +363,7 @@ void CORE::GEO::CUT::GenericMemoryPool::AllInOneAllocation(
 #endif
 
   main_ptr_ = (char*)malloc(total_size);
-  if (!main_ptr_) throw CORE::Exception("Allocation failed!");
+  if (!main_ptr_) dserror("Allocation failed!");
 
   size_t wasted_size = 0;
 
@@ -516,7 +516,7 @@ void CORE::GEO::CUT::DebugCustomMemoryManager::SetState(
   if (prev_state != state_)
   {
     if (state_ == normal)
-      throw CORE::Exception("This method only works for setting memory pool allocator state");
+      dserror("This method only works for setting memory pool allocator state");
     else
       prev_ = new GenericMemoryPool(memory_allocations);
     std::swap(mem_, prev_);

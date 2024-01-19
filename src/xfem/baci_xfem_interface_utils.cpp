@@ -412,7 +412,7 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
       break;
     }
     default:
-      throw CORE::Exception("unsupported integration cell type");
+      dserror("unsupported integration cell type");
   }
 
   return;
