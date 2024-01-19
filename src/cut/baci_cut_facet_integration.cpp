@@ -630,7 +630,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
           break;
         }
         default:
-          throw CORE::Exception("unsupported integration cell type");
+          dserror("unsupported integration cell type");
       }
       double wei = iquad.Weight() * drs * normalX;
 
@@ -872,7 +872,7 @@ void CORE::GEO::CUT::FacetIntegration::DebugAreaCheck(
               << "Area2 = " << area2 << "\n";
     std::cout << "!!!WARNING!!! area predicted by splitting and triangulation are not the same\n";
 
-    // throw CORE::Exception( "error: area predicted by splitting and triangulation are not the
+    // dserror( "error: area predicted by splitting and triangulation are not the
     // same" ); dserror( "error: area predicted by splitting and triangulation are not the same" );
 
 
@@ -989,7 +989,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
     std::cout << "eqn_plane_divCell.size(): " << eqn_plane_divCell.size() << std::endl;
     std::cout << "divCells.size():  " << divCells.size() << std::endl;
     // dserror("Something wrong with divCell and clockwise assignment");
-    throw CORE::Exception("Something wrong with divCell and clockwise assignment.");
+    dserror("Something wrong with divCell and clockwise assignment.");
   }
 #endif
 

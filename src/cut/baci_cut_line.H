@@ -60,7 +60,7 @@ namespace CORE::GEO
         else if (p2_ == point)
           return p1_;
         else
-          throw CORE::Exception("foreign point provided");
+          dserror("foreign point provided");
       }
 
       Point* BeginPoint() { return p1_; }

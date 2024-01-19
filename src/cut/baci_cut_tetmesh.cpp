@@ -308,12 +308,11 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
           }
 
           if (not volume_cell_on_facet and not does_not_share_same_cutside)
-            throw CORE::Exception(
-                "cell_domain.Empty() and facets not on same cut-side and not planar");
+            dserror("cell_domain.Empty() and facets not on same cut-side and not planar");
           else if (not volume_cell_on_facet)
-            throw CORE::Exception("cell_domain.Empty() and facets not planar");
+            dserror("cell_domain.Empty() and facets not planar");
           else if (not does_not_share_same_cutside)
-            throw CORE::Exception("cell_domain.Empty() and facets not on same cut-side");
+            dserror("cell_domain.Empty() and facets not on same cut-side");
 #endif
 
           continue;
@@ -357,7 +356,7 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
         if (accept_tets_[t.Id()])
         {
           std::vector<int>& fixedtet = tets_[t.Id()];
-          if (fixedtet.size() != 4) throw CORE::Exception("confused");
+          if (fixedtet.size() != 4) dserror("confused");
           tets.push_back(std::vector<Point*>(4));
           std::vector<Point*>& tet = tets.back();
           for (int i = 0; i < 4; ++i)
@@ -397,7 +396,7 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
 
       if (vc->Empty())
       {
-        throw CORE::Exception("empty volume cell detected");
+        dserror("empty volume cell detected");
       }
     }
   }
@@ -466,7 +465,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
   }
   //   if ( n == 4 )
   //   {
-  //     throw CORE::Exception( "no need to triangulate" );
+  //     dserror( "no need to triangulate" );
   //   }
 
   std::vector<double> coordinates(dim * n);
@@ -580,8 +579,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
         // Double check
         if (not facet->simplicial)
         {
-          throw CORE::Exception(
-              "Qhull returned non-simplicial facets -- try delaunayn with different options");
+          dserror("Qhull returned non-simplicial facets -- try delaunayn with different options");
         }
       }
 
@@ -604,7 +602,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
               int p = qh_pointid(vertex->point);
               if (p >= n)
               {
-                throw CORE::Exception("new node in delaunay");
+                dserror("new node in delaunay");
               }
               ids.push_back(p);
             }
@@ -626,7 +624,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
     {
       std::stringstream str;
       str << "did not free " << totlong << " bytes of long memory (" << curlong << " pieces)";
-      throw CORE::Exception(str.str());
+      dserror(str.str());
     }
 
     if (tets.size() > 0)
@@ -641,7 +639,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
       {
         return;
       }
-      // throw CORE::Exception( "failed to triangulate all points" );
+      // dserror( "failed to triangulate all points" );
 
       // failed! start a new iteration.
       tets.clear();
@@ -666,7 +664,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
   fflush(errfile);
 #endif
 
-  throw CORE::Exception("qhull failed: Maybe the wrong version is used. Check your installation.");
+  dserror("qhull failed: Maybe the wrong version is used. Check your installation.");
 }
 
 /* First check if all the points of a tet share a cut-side, i.e. does the tet lie on a cut-side?
@@ -805,7 +803,7 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
         //            std::cout << std::endl;
         //          }
         //        }
-        // throw CORE::Exception("A LevelSetSide should BE associated to ONE facet. CHECK
+        // dserror("A LevelSetSide should BE associated to ONE facet. CHECK
         // THIS!");
       }
 
@@ -919,7 +917,7 @@ void CORE::GEO::CUT::TetMesh::TestUsedPoints(const std::vector<std::vector<int>>
   }
   if (used_points.size() != points_.size())
   {
-    throw CORE::Exception("failed to triangulate all points");
+    dserror("failed to triangulate all points");
   }
 }
 
@@ -1089,7 +1087,7 @@ void CORE::GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
       {
         if (done)
         {
-          throw CORE::Exception("double tets at cut surface");
+          dserror("double tets at cut surface");
         }
 
         done = true;
@@ -1112,13 +1110,13 @@ void CORE::GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
         }
         if (not found)
         {
-          throw CORE::Exception("failed to find side");
+          dserror("failed to find side");
         }
       }
     }
     if (not done)
     {
-      throw CORE::Exception("failed to find tet");
+      dserror("failed to find tet");
     }
   }
 }
@@ -1152,7 +1150,7 @@ void CORE::GEO::CUT::TetMesh::CollectCoordinates(
 #ifdef DEBUGCUTLIBRARY
     else
     {
-      throw CORE::Exception("Side not on cut or marked surface!!! Shouldn't it be?");
+      dserror("Side not on cut or marked surface!!! Shouldn't it be?");
     }
 #endif
   }

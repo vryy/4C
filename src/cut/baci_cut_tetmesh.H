@@ -331,7 +331,7 @@ namespace CORE::GEO
             // and on the boundary (of the (facet or tet)/domain) only once.
             if (check_done and done_border_.count(b) > 0)
             {
-              throw CORE::Exception("border entity has been visited before");
+              dserror("border entity has been visited before");
             }
             if (border_.count(b) > 0)
             {
@@ -355,7 +355,7 @@ namespace CORE::GEO
         {
           if (members_.size() == 0)
           {
-            throw CORE::Exception("cannot fill without some members");
+            dserror("cannot fill without some members");
           }
 
           // mark the external border as done since this will be the domains
@@ -409,7 +409,7 @@ namespace CORE::GEO
 
           // Throw error if the domain is not filled.
           //  All border_ should be converted into border_done_!!!
-          if (border_.size() != 0) throw CORE::Exception("failed to fill domain");
+          if (border_.size() != 0) dserror("failed to fill domain");
         }
 
        private:
@@ -602,7 +602,7 @@ namespace CORE::GEO
                   //                  ", tri->GetHandle()[1]: " << tri->GetHandle()[1] << ",
                   //                  tri->GetHandle()[2]: " << tri->GetHandle()[2] << std::endl;
 
-                  // throw CORE::Exception( "double tri on cut facet" );
+                  // dserror( "double tri on cut facet" );
                   return nullptr;
                 }
               }
@@ -731,7 +731,7 @@ namespace CORE::GEO
         std::vector<Point*>::const_iterator i2 = std::find(points_.begin(), points_.end(), p2);
         if (i1 == points_.end() or i2 == points_.end())
         {
-          throw CORE::Exception("point not in list");
+          dserror("point not in list");
         }
         int points[2];
         points[0] = i1 - points_.begin();
@@ -747,7 +747,7 @@ namespace CORE::GEO
         std::vector<Point*>::const_iterator i3 = std::find(points_.begin(), points_.end(), p3);
         if (i1 == points_.end() or i2 == points_.end() or i3 == points_.end())
         {
-          throw CORE::Exception("point not in list");
+          dserror("point not in list");
         }
         int points[3];
         points[0] = i1 - points_.begin();

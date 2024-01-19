@@ -374,7 +374,7 @@ void CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     //      bool is_ls_side = wizard->HasLSCuttingSide( sid );
     //      if ( side==nullptr and !is_ls_side )
     //      {
-    //        throw CORE::Exception( "no side with given id available fo combined mesh and
+    //        dserror( "no side with given id available fo combined mesh and
     //        level-set cut" );
     //      }
     //    }

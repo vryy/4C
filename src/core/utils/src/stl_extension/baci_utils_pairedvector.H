@@ -294,7 +294,7 @@ namespace CORE::GEN
      */
     void erase(const Key k)
     {
-      throw CORE::Exception("entries cannot be removed");
+      dserror("entries cannot be removed");
       return;
     }
 

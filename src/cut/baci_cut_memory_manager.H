@@ -87,7 +87,7 @@ namespace CORE::GEO
           }
         }
         else
-          throw CORE::Exception("Not supported");
+          dserror("Not supported");
         linear_ = false;
       }
       // Free all memory
@@ -246,7 +246,7 @@ namespace CORE::GEO
       GenericMemoryPool& GetMemoryPoolAllocator()
       {
         if (mem_ == nullptr)
-          throw CORE::Exception("Memory pool allocator was not yet created");
+          dserror("Memory pool allocator was not yet created");
         else
           return (*dynamic_cast<GenericMemoryPool*>(mem_));
       }
@@ -337,7 +337,7 @@ namespace CORE::GEO
         if (state_ == normal)
         {
           if (not prev_)
-            throw CORE::Exception("Memory pool allocator was not yet created");
+            dserror("Memory pool allocator was not yet created");
           else
             return (*dynamic_cast<GenericMemoryPool*>(prev_));
         }

@@ -310,7 +310,7 @@ namespace CORE::GEO
         std::set<K, key_compare> testset(less_);
         testset.insert(begin(), end());
         if (testset.size() != vec_.size() or not std::equal(begin(), end(), testset.begin()))
-          throw CORE::Exception("set invariance failed");
+          dserror("set invariance failed");
 #endif
         return i;
       }

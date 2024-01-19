@@ -571,7 +571,7 @@ bool CORE::GEO::CUT::Side::FindAmbiguousCutLines(
       }
       CORE::GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(
           this, &side, cut, collected_points, new_lines);
-      throw CORE::Exception("This case should be reported probably");
+      dserror("This case should be reported probably");
     }
   }
   // should not reach here
@@ -1339,7 +1339,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Side::CommonElement(Side* other)
     case 1:
       return *intersection.begin();
     default:
-      throw CORE::Exception("sides with more than one element in common");
+      dserror("sides with more than one element in common");
   }
 }
 
@@ -1716,7 +1716,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
       std::cout << "side orthogonal ? " << std::endl;
       other->Print();
 
-      throw CORE::Exception("IsCloserSide along the ray-tracing line failed! ");
+      dserror("IsCloserSide along the ray-tracing line failed! ");
 
       return false;
     }
@@ -1735,7 +1735,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
                    "ray-tracing line lies in undefined region"
                 << std::endl;
 
-      throw CORE::Exception("IsCloserSide along the ray-tracing line failed! ");
+      dserror("IsCloserSide along the ray-tracing line failed! ");
     }
 
     return false;
@@ -1756,7 +1756,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinS
   bool success = pos->IsGivenPointWithinElement();
   if (not success)
   {
-    throw CORE::Exception("ComputeDistance w.r.t side not successful");
+    dserror("ComputeDistance w.r.t side not successful");
     rs = 0;
     dist = 9999;  // set large value
     return false;

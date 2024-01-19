@@ -1093,7 +1093,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
             }
             GenerateGmshDump();
 
-            throw CORE::Exception(err_msg.str());
+            dserror(err_msg.str());
           }
           else
           {
@@ -1438,7 +1438,7 @@ std::pair<bool, bool> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, 
       }
       default:
       {
-        throw CORE::Exception("Unexpected floattype for KERNEL::ComputeDistance!");
+        dserror("Unexpected floattype for KERNEL::ComputeDistance!");
       }
     }
     if (conv)

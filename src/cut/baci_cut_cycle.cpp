@@ -239,7 +239,7 @@ void CORE::GEO::CUT::Cycle::TestUnique()
         std::stringstream str;
         str << "Multiple( " << num_occ << " ) occcurence of point " << (*it)->Id()
             << " in the cycle" << std::endl;
-        throw CORE::Exception(str.str());
+        dserror(str.str());
       }
     }
   }
