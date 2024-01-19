@@ -19,7 +19,7 @@
 
 #include <boost/stacktrace.hpp>
 
-#include <cstring>
+#include <cstdarg>
 #include <iostream>
 #include <sstream>
 
@@ -29,12 +29,12 @@ namespace CORE
 {
   namespace INTERNAL
   {
-    void ErrorHelper::operator()(const std::string& format, ...) const
+    void ThrowError(const char* file_name, int line_number, const std::string& format, ...)
     {
-      this->operator()(format.c_str());
+      ThrowError(file_name, line_number, format.c_str());
     }
 
-    void ErrorHelper::operator()(const char* format, ...) const
+    void ThrowError(const char* file_name, int line_number, const char* format, ...)
     {
       int initialized;
       MPI_Initialized(&initialized);
@@ -54,19 +54,42 @@ namespace CORE
       std::string formatted_msg(buffer.data(), std::min(buffer_size, written_size));
 
       std::stringstream compound_message;
-      compound_message << "PROC " << myrank << " ERROR in " << file << ", line " << line_number
+      compound_message << "PROC " << myrank << " ERROR in " << file_name << ", line " << line_number
                        << ":\n";
       compound_message << formatted_msg;
       compound_message << "\n------------------\n";
 
       throw CORE::Exception(compound_message.str());
     }
+
+    class ExceptionImplementation
+    {
+     public:
+      /**
+       * A user-defined message that explains what happened.
+       */
+      std::string message;
+
+      /**
+       * The generated stacktrace which is used to construct a nice error message when calling
+       * what().
+       */
+      boost::stacktrace::stacktrace stacktrace;
+
+      /**
+       * The full message that is returned by what. This message is composed of all the other
+       * information stored in this class.
+       *
+       * @note This needs to be stored here since we only return a `const char*` from what().
+       */
+      mutable std::string what_message_{};
+    };
   }  // namespace INTERNAL
 
   const char* Exception::what() const noexcept
   {
-    what_message_ = message + to_string(*stacktrace);
-    return what_message_.c_str();
+    pimpl_->what_message_ = pimpl_->message + to_string(pimpl_->stacktrace);
+    return pimpl_->what_message_.c_str();
   }
 
   // This number tells the stack trace class to skip a certain number of frames that are introduced
@@ -75,12 +98,12 @@ namespace CORE
   constexpr std::size_t skip_frames = 2;
 
   Exception::Exception(std::string message)
-      : message(std::move(message)),
-        stacktrace(std::make_unique<boost::stacktrace::stacktrace>(skip_frames, /*max_depth=*/-1))
+      : pimpl_(new INTERNAL::ExceptionImplementation{
+            std::move(message), boost::stacktrace::stacktrace(skip_frames, /*max_depth=*/-1)})
   {
   }
 
-  // Default the destructor here to facilitate an incomplete stacktrace type as member variable.
+  // Default the destructor here to facilitate an incomplete implementation type as member variable.
   Exception::~Exception() = default;
 }  // namespace CORE
 
